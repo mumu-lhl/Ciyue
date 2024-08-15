@@ -51,7 +51,6 @@ class _LanguageChoiceState extends State<LanguageChoice> {
         leading: const Icon(Icons.language),
         title: Text(locale!.language),
         trailing: PopupMenuButton(
-          icon: const Icon(Icons.keyboard_arrow_down),
           initialValue: language,
           onSelected: (String languageSelected) {
             language = languageSelected;
@@ -67,6 +66,7 @@ class _LanguageChoiceState extends State<LanguageChoice> {
             const PopupMenuItem(value: "zh_HK", child: Text("繁體中文（香港）")),
             const PopupMenuItem(value: "zh_TW", child: Text("正體中文（臺灣）")),
           ],
+          child: const Icon(Icons.keyboard_arrow_down),
         ));
   }
 }
@@ -80,7 +80,6 @@ class _ThemeChoiceState extends State<ThemeChoice> {
         leading: const Icon(Icons.light_mode),
         title: Text(locale!.theme),
         trailing: PopupMenuButton(
-          icon: const Icon(Icons.keyboard_arrow_down),
           initialValue: themeMode,
           onSelected: (ThemeMode themeModeSelected) {
             themeMode = themeModeSelected;
@@ -105,6 +104,7 @@ class _ThemeChoiceState extends State<ThemeChoice> {
             PopupMenuItem(value: ThemeMode.dark, child: Text(locale.dark)),
             PopupMenuItem(value: ThemeMode.system, child: Text(locale.system)),
           ],
+          child: const Icon(Icons.keyboard_arrow_down),
         ));
   }
 }
