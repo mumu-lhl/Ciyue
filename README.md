@@ -1,5 +1,7 @@
 # Ciyue
 
+English | [中文](./README_CN.md)
+
 A mdict dictionary with Android support
 
 ## Screenshots

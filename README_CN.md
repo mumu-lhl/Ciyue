@@ -1,5 +1,7 @@
 # 词悦
 
+[English](./README.md) | 中文
+
 支持 Android 的 mdict 词典。
 
 ## 截图
