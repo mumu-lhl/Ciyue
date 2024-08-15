@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -57,4 +59,3 @@ jobs:
         with:
           artifacts: "build/app/outputs/flutter-apk/ciyue-*-release.apk,build/app/outputs/bundle/release/ciyue-release.aab"
           tag: ${{ github.ref_name }}
-          token: ${{ secrets.TOKEN }}
