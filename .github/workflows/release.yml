@@ -36,8 +36,10 @@ jobs:
 
       - name: Rename
         run: |
-          rename app ciyue build/app/outputs/flutter-apk/*
-          rename app ciyue build/app/outputs/bundle/release/*
+          mv app-armeabi-v7a-release.apk ciyue-armeabi-v7a-release.apk
+          mv app-arm64-v8a-release.apk ciyue-arm64-v8a-release.apk
+          mv app-x86_64-release.apk ciyue-x86_64-release.apk
+          mv app-release.aab ciyue-release.aab
 
       - uses: actions/upload-artifact@v4
         with:
