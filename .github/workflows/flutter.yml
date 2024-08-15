@@ -3,6 +3,8 @@ name: Flutter
 on:
   push:
     branches:
+      paths-ignore:
+        - "**.md"
   pull_request:
 
 jobs:
