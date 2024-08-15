@@ -1,0 +1,16 @@
+{
+  "addDictionary": "请先在设置中添加词典",
+  "startToSearch": "开始搜索吧 :)",
+  "manageDictionaries": "管理词典",
+  "home": "主页",
+  "wordBook": "词汇本",
+  "settings": "设置",
+  "permissionDenied": "你必须授权权限",
+  "close": "关闭",
+  "search": "搜索",
+  "theme": "主题",
+  "light": "明亮",
+  "dark": "黑暗",
+  "system": "系统",
+  "language": "语言"
+}

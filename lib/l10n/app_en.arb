@@ -1,0 +1,16 @@
+{
+  "addDictionary": "Please add a dictionary in the Settings first",
+  "startToSearch": "Start going on a word search :)",
+  "manageDictionaries": "Manage Dictionaries",
+  "home": "Home",
+  "wordBook": "Word Book",
+  "settings": "Settings",
+  "permissionDenied": "You have to authorize the permissions",
+  "close": "Close",
+  "search": "Search",
+  "theme": "Theme",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System",
+  "language": "Language"
+}
