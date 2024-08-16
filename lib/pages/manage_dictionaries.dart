@@ -3,10 +3,10 @@ import "dart:io";
 import "package:device_info_plus/device_info_plus.dart";
 import "package:filesystem_picker/filesystem_picker.dart";
 import "package:flutter/material.dart";
+import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
 import "package:permission_handler/permission_handler.dart";
-import "package:flutter_gen/gen_l10n/app_localizations.dart";
 
 import "../database.dart";
 import "../dictionary.dart";

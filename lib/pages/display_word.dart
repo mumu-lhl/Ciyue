@@ -31,6 +31,29 @@ class DisplayWord extends StatelessWidget {
   }
 }
 
+class LocalResourcesathHandler extends CustomPathHandler {
+  LocalResourcesathHandler({required super.path});
+
+  @override
+  Future<WebResourceResponse?> handle(String path) async {
+    try {
+      Uint8List? data;
+
+      if (dictReaderResource == null) {
+        final file = File("${dirname(currentDictionaryPath!)}/$path");
+        data = await file.readAsBytes();
+      } else {
+        final result = await dictionary!.readResource(path);
+        data = await dictReaderResource!.readOne(result.blockOffset,
+            result.startOffset, result.endOffset, result.compressedSize);
+      }
+      return WebResourceResponse(data: data, contentType: lookupMimeType(path));
+    } catch (e) {
+      return WebResourceResponse(data: null);
+    }
+  }
+}
+
 class StarButton extends StatefulWidget {
   final String word;
 
@@ -40,15 +63,51 @@ class StarButton extends StatefulWidget {
   State<StarButton> createState() => _StarButtonState();
 }
 
-class _StarButtonState extends State<StarButton> {
-  Future<bool>? stared;
+class WebView extends StatelessWidget {
+  final settings = InAppWebViewSettings(
+    useWideViewPort: false,
+    algorithmicDarkeningAllowed: true,
+    resourceCustomSchemes: ["entry"],
+    transparentBackground: true,
+    webViewAssetLoader: WebViewAssetLoader(
+        domain: "ciyue.internal",
+        httpAllowed: true,
+        pathHandlers: [LocalResourcesathHandler(path: "/")]),
+  );
+
+  final String content;
+
+  WebView({super.key, required this.content});
 
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+    return InAppWebView(
+      initialData: InAppWebViewInitialData(
+          data: content, baseUrl: WebUri("http://ciyue.internal/")),
+      initialSettings: settings,
+      shouldOverrideUrlLoading: (controller, navigationAction) async {
+        final url = navigationAction.request.url;
+        if (url!.scheme == "entry") {
+          final word = await dictionary!.getOffset(url
+              .toString()
+              .replaceFirst("entry://", "")
+              .replaceAll("%20", " "));
+          final String data = await dictReader!.readOne(word.blockOffset,
+              word.startOffset, word.endOffset, word.compressedSize);
 
-    stared = dictionary!.wordExist(widget.word);
+          if (context.mounted) {
+            context.push("/word", extra: {"content": data, "word": word.key});
+          }
+        }
+
+        return NavigationActionPolicy.CANCEL;
+      },
+    );
   }
+}
+
+class _StarButtonState extends State<StarButton> {
+  Future<bool>? stared;
 
   @override
   Widget build(BuildContext context) {
@@ -83,70 +142,11 @@ class _StarButtonState extends State<StarButton> {
           );
         });
   }
-}
-
-class WebView extends StatelessWidget {
-  final settings = InAppWebViewSettings(
-    useWideViewPort: false,
-    algorithmicDarkeningAllowed: true,
-    resourceCustomSchemes: ["entry"],
-    transparentBackground: true,
-    webViewAssetLoader: WebViewAssetLoader(
-        domain: "ciyue.internal",
-        httpAllowed: true,
-        pathHandlers: [LocalResourcesathHandler(path: "/")]),
-  );
-
-  WebView({super.key, required this.content});
-
-  final String content;
 
   @override
-  Widget build(BuildContext context) {
-    return InAppWebView(
-      initialData: InAppWebViewInitialData(
-          data: content, baseUrl: WebUri("http://ciyue.internal/")),
-      initialSettings: settings,
-      shouldOverrideUrlLoading: (controller, navigationAction) async {
-        final url = navigationAction.request.url;
-        if (url!.scheme == "entry") {
-          final word = await dictionary!.getOffset(url
-              .toString()
-              .replaceFirst("entry://", "")
-              .replaceAll("%20", " "));
-          final String data = await dictReader!.readOne(word.blockOffset,
-              word.startOffset, word.endOffset, word.compressedSize);
+  void initState() {
+    super.initState();
 
-          if (context.mounted) {
-            context.push("/word", extra: {"content": data, "word": word.key});
-          }
-        }
-
-        return NavigationActionPolicy.CANCEL;
-      },
-    );
-  }
-}
-
-class LocalResourcesathHandler extends CustomPathHandler {
-  LocalResourcesathHandler({required super.path});
-
-  @override
-  Future<WebResourceResponse?> handle(String path) async {
-    try {
-      Uint8List? data;
-
-      if (dictReaderResource == null) {
-        final file = File("${dirname(currentDictionaryPath!)}/$path");
-        data = await file.readAsBytes();
-      } else {
-        final result = await dictionary!.readResource(path);
-        data = await dictReaderResource!.readOne(result.blockOffset,
-            result.startOffset, result.endOffset, result.compressedSize);
-      }
-      return WebResourceResponse(data: data, contentType: lookupMimeType(path));
-    } catch (e) {
-      return WebResourceResponse(data: null);
-    }
+    stared = dictionary!.wordExist(widget.word);
   }
 }
