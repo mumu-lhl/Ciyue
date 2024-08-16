@@ -1,3 +1,4 @@
+import "dart:io";
 import "dart:typed_data";
 
 import "package:flutter/material.dart";
@@ -5,6 +6,7 @@ import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
 import "package:html/parser.dart";
 import "package:mime/mime.dart";
+import "package:path/path.dart";
 
 import "../main.dart";
 
@@ -137,13 +139,16 @@ class LocalResourcesathHandler extends CustomPathHandler {
   @override
   Future<WebResourceResponse?> handle(String path) async {
     try {
-      final result = await dictionary!.readResource(path);
-      final Uint8List data = await dictReaderResource!.readOne(
-          result.blockOffset,
-          result.startOffset,
-          result.endOffset,
-          result.compressedSize);
+      Uint8List? data;
 
+      if (dictReaderResource == null) {
+        final file = File("${dirname(currentDictionaryPath!)}/$path");
+        data = await file.readAsBytes();
+      } else {
+        final result = await dictionary!.readResource(path);
+        data = await dictReaderResource!.readOne(result.blockOffset,
+            result.startOffset, result.endOffset, result.compressedSize);
+      }
       return WebResourceResponse(data: data, contentType: lookupMimeType(path));
     } catch (e) {
       return WebResourceResponse(data: null);

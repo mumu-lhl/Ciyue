@@ -1,9 +1,9 @@
 import "package:dict_reader/dict_reader.dart";
+import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:shared_preferences/shared_preferences.dart";
-import "package:dynamic_color/dynamic_color.dart";
 
 import "database.dart";
 import "pages/display_word.dart";
