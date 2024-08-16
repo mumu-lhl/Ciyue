@@ -2,6 +2,7 @@ import "dart:io";
 import "dart:typed_data";
 
 import "package:flutter/material.dart";
+import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
 import "package:mime/mime.dart";
@@ -64,6 +65,8 @@ class StarButton extends StatefulWidget {
 }
 
 class WebView extends StatelessWidget {
+  final String content;
+
   final settings = InAppWebViewSettings(
     useWideViewPort: false,
     algorithmicDarkeningAllowed: true,
@@ -75,16 +78,61 @@ class WebView extends StatelessWidget {
         pathHandlers: [LocalResourcesathHandler(path: "/")]),
   );
 
-  final String content;
-
   WebView({super.key, required this.content});
 
   @override
   Widget build(BuildContext context) {
+    InAppWebViewController? webViewController;
+    String selectedText = "";
+
+    final locale = AppLocalizations.of(context);
+
+    final contextMenu = ContextMenu(
+      menuItems: [
+        ContextMenuItem(
+            id: 1,
+            title: locale!.lookup,
+            action: () async {
+              try {
+                var word = await dictionary!.getOffset(selectedText);
+
+                String content = await dictReader!.readOne(word.blockOffset,
+                    word.startOffset, word.endOffset, word.compressedSize);
+
+                if (content.startsWith("@@@LINK=")) {
+                  // 8: remove @@@LINK=
+                  // content.length - 3: remove \r\n\x00
+                  word = await dictionary!.getOffset(
+                      content.substring(8, content.length - 3).trimRight());
+                  content = await dictReader!.readOne(word.blockOffset,
+                      word.startOffset, word.endOffset, word.compressedSize);
+                }
+
+                if (context.mounted) {
+                  context.push("/word",
+                      extra: {"content": content, "word": word.key});
+                }
+              } catch (e) {
+                final snackBar = SnackBar(
+                  content: Text(locale.notFound),
+                  duration: const Duration(seconds: 1),
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                }
+              }
+            })
+      ],
+      onCreateContextMenu: (hitTestResult) async {
+        selectedText = await webViewController?.getSelectedText() ?? "";
+      },
+    );
+
     return InAppWebView(
       initialData: InAppWebViewInitialData(
           data: content, baseUrl: WebUri("http://ciyue.internal/")),
       initialSettings: settings,
+      contextMenu: contextMenu,
       shouldOverrideUrlLoading: (controller, navigationAction) async {
         final url = navigationAction.request.url;
         if (url!.scheme == "entry") {
@@ -101,6 +149,9 @@ class WebView extends StatelessWidget {
         }
 
         return NavigationActionPolicy.CANCEL;
+      },
+      onWebViewCreated: (InAppWebViewController controller) {
+        webViewController = controller;
       },
     );
   }

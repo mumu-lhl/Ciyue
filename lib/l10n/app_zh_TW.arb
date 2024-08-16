@@ -12,5 +12,7 @@
   "light": "明亮",
   "dark": "黑暗",
   "system": "系統",
-  "language": "語言"
+  "language": "語言",
+  "lookup": "查詢",
+  "notFound": "沒有找到"
 }

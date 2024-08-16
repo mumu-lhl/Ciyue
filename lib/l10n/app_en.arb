@@ -12,5 +12,7 @@
   "light": "Light",
   "dark": "Dark",
   "system": "System",
-  "language": "Language"
+  "language": "Language",
+  "lookup": "Lookup",
+  "notFound": "Not found"
 }
