@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.2.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.1.0+1..v0.2.0+1) - 2024-08-16
+
+### Bug Fixes
+
+- **(l10n)** fix text for 'not support' - ([83a8e31](https://github.com/mumu-lhl/Ciyue/commit/83a8e3147b515576a9f8257f551e446024b298a9)) - Mumulhl
+- show unsupportable mdx file - ([f94439f](https://github.com/mumu-lhl/Ciyue/commit/f94439fded76141dddb19004c0387c5fecfae663)) - Mumulhl
+
+### Features
+
+- hide system context menu items - ([7c618bb](https://github.com/mumu-lhl/Ciyue/commit/7c618bbbf178426fe4b8deed9e54c47bd1ecfd2e)) - Mumulhl
+- support tts - ([dfe9ee2](https://github.com/mumu-lhl/Ciyue/commit/dfe9ee209a5331e94b27a0d3681402aa6bc99b35)) - Mumulhl
+
+---
 ## [0.1.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.0.1+4..v0.1.0+1) - 2024-08-16
 
 ### Bug Fixes
@@ -32,6 +45,7 @@ All notable changes to this project will be documented in this file. See [conven
 - fix flutter workflow - ([96dab2f](https://github.com/mumu-lhl/Ciyue/commit/96dab2f28ee6a0e1708cc201a6449189a5a87d10)) - Mumulhl
 - add cliff - ([fd0145d](https://github.com/mumu-lhl/Ciyue/commit/fd0145de8545ccdd697d528c61a38b1114c9477b)) - Mumulhl
 - upload to artifact after building - ([fac2d14](https://github.com/mumu-lhl/Ciyue/commit/fac2d1431cc0f9668eba322a5ce8401cb25f84cd)) - Mumulhl
+- release v0.1.0+1 - ([fa7e180](https://github.com/mumu-lhl/Ciyue/commit/fa7e18073c4606c0e1f7be70f895a0a9f202cef0)) - Mumulhl
 
 ### Style
 
