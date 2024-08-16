@@ -15,3 +15,7 @@ A mdict dictionary with Android support
 ### Github Releases
 
 See [Releases](https://github.com/mumu-lhl/Ciyue/releases).
+
+## License
+
+[MIT](./LICENSE)

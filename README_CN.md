@@ -15,3 +15,7 @@
 ### Github Releases
 
 见 [Releases](https://github.com/mumu-lhl/Ciyue/releases)。
+
+## 开源许可证
+
+[MIT](./LICENSE)
