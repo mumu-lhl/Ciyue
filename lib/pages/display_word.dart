@@ -4,7 +4,6 @@ import "dart:typed_data";
 import "package:flutter/material.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
-import "package:html/parser.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 
@@ -18,11 +17,6 @@ class DisplayWord extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final document = parse(content);
-    document.head?.append(parse(
-        '<meta name="viewport" content="width=device-width, initial-scale=1.0">'));
-    final mobileContent = document.outerHtml;
-
     return Scaffold(
       appBar: AppBar(
           leading: IconButton(
@@ -32,7 +26,7 @@ class DisplayWord extends StatelessWidget {
         },
       )),
       floatingActionButton: StarButton(word: word),
-      body: WebView(mobileContent: mobileContent),
+      body: WebView(content: content),
     );
   }
 }
@@ -93,24 +87,25 @@ class _StarButtonState extends State<StarButton> {
 
 class WebView extends StatelessWidget {
   final settings = InAppWebViewSettings(
+    useWideViewPort: false,
     algorithmicDarkeningAllowed: true,
     resourceCustomSchemes: ["entry"],
     transparentBackground: true,
     webViewAssetLoader: WebViewAssetLoader(
-        domain: "dictionary.internal",
+        domain: "ciyue.internal",
         httpAllowed: true,
         pathHandlers: [LocalResourcesathHandler(path: "/")]),
   );
 
-  WebView({super.key, required this.mobileContent});
+  WebView({super.key, required this.content});
 
-  final String mobileContent;
+  final String content;
 
   @override
   Widget build(BuildContext context) {
     return InAppWebView(
       initialData: InAppWebViewInitialData(
-          data: mobileContent, baseUrl: WebUri("http://dictionary.internal/")),
+          data: content, baseUrl: WebUri("http://ciyue.internal/")),
       initialSettings: settings,
       shouldOverrideUrlLoading: (controller, navigationAction) async {
         final url = navigationAction.request.url;
