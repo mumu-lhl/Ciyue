@@ -27,10 +27,7 @@ jobs:
 
       - name: Create key.properties
         run: |
-          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=keystore.jks" >> android/key.properties
+          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 
       - run: flutter pub get
       - run: flutter build apk --split-per-abi
