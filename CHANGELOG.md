@@ -3,17 +3,39 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [unreleased]
+## [0.1.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.0.1+4..v0.1.0+1) - 2024-08-16
+
+### Bug Fixes
+
+- language and theme PopupMenuButton Icon - ([02c420e](https://github.com/mumu-lhl/Ciyue/commit/02c420ed858b7a4dfe27cf28cfe6bf629edd9683)) - Mumulhl
+- entry scheme for word that longer than two words - ([39f397f](https://github.com/mumu-lhl/Ciyue/commit/39f397f14f8efca51c5ca40ff7ed61d5dd0225db)) - Mumulhl
 
 ### Documentation
 
 - add install - ([e28c1ab](https://github.com/mumu-lhl/Ciyue/commit/e28c1ab7b8bdee45b3e7129b177e59500fbcc3c6)) - Mumulhl
+- add screenshots - ([2d95324](https://github.com/mumu-lhl/Ciyue/commit/2d953244be6a793538aec15c850aa87dc2391ca3)) - Mumulhl
+- add language switch - ([0dbc085](https://github.com/mumu-lhl/Ciyue/commit/0dbc08506505793c856ab3b1865d89f3f1c9ba0f)) - Mumulhl
+- fix images - ([9a15975](https://github.com/mumu-lhl/Ciyue/commit/9a159759f2a2bb3cdcb614a93456cc9392f9b3ce)) - Mumulhl
+- fix images - ([a1466e3](https://github.com/mumu-lhl/Ciyue/commit/a1466e3366202177dc618a1f994484d7be76a739)) - Mumulhl
+- fix images - ([6296732](https://github.com/mumu-lhl/Ciyue/commit/6296732bd47bd2d7b3173ccb302607705d1f43be)) - Mumulhl
+
+### Features
+
+- read resources directly if there is no mdd - ([8d1d326](https://github.com/mumu-lhl/Ciyue/commit/8d1d326b80cc9be4df57622f7b8068a8eeb41d82)) - Mumulhl
+- remove html package - ([b6efedd](https://github.com/mumu-lhl/Ciyue/commit/b6efedd321ee100cdd135d4fa72d4034d80e9ae8)) - Mumulhl
+- support lookup in context menu - ([0a1e584](https://github.com/mumu-lhl/Ciyue/commit/0a1e584146ec1190269385ec452d97d2e9a760e3)) - Mumulhl
 
 ### Miscellaneous Chores
 
 - disable flutter workflow for tag push - ([328ed60](https://github.com/mumu-lhl/Ciyue/commit/328ed60757f029ec2164d273130f8a409ae1d198)) - Mumulhl
 - disable **.md for flutter workflow - ([d281da8](https://github.com/mumu-lhl/Ciyue/commit/d281da80db81262ef03b49c1ae843e28a17c15a0)) - Mumulhl
 - fix flutter workflow - ([96dab2f](https://github.com/mumu-lhl/Ciyue/commit/96dab2f28ee6a0e1708cc201a6449189a5a87d10)) - Mumulhl
+- add cliff - ([fd0145d](https://github.com/mumu-lhl/Ciyue/commit/fd0145de8545ccdd697d528c61a38b1114c9477b)) - Mumulhl
+- upload to artifact after building - ([fac2d14](https://github.com/mumu-lhl/Ciyue/commit/fac2d1431cc0f9668eba322a5ce8401cb25f84cd)) - Mumulhl
+
+### Style
+
+- sort members - ([00b5dfc](https://github.com/mumu-lhl/Ciyue/commit/00b5dfcdd67693d0851da93762ebfe646b395ceb)) - Mumulhl
 
 ---
 ## [0.0.1+4](https://github.com/mumu-lhl/Ciyue/compare/v0.0.1+3..v0.0.1+4) - 2024-08-15
