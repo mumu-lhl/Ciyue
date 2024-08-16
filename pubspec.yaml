@@ -53,6 +53,7 @@ dependencies:
   intl: any
   flutter_launcher_icons: ^0.13.1
   dynamic_color: ^1.7.0
+  flutter_tts: ^4.0.2
 
 dev_dependencies:
   flutter_test:

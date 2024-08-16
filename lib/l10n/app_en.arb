@@ -15,5 +15,6 @@
   "language": "Language",
   "lookup": "Lookup",
   "notFound": "Not found",
-  "notSupport": "Not support this MDX file"
+  "notSupport": "Not support this MDX file",
+  "copy": "Copy"
 }
