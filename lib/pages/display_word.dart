@@ -93,7 +93,8 @@ class WebView extends StatelessWidget {
         ContextMenuItem(
             id: 1,
             title: locale!.copy,
-            action: () {
+            action: () async {
+              await webViewController!.clearFocus();
               Clipboard.setData(ClipboardData(text: selectedText));
             }),
         ContextMenuItem(
@@ -128,6 +129,13 @@ class WebView extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                 }
               }
+            }),
+        ContextMenuItem(
+            id: 3,
+            title: locale.readLoudly,
+            action: () async {
+              await webViewController!.clearFocus();
+              await flutterTts.speak(selectedText);
             })
       ],
       onCreateContextMenu: (hitTestResult) async {

@@ -16,5 +16,6 @@
   "lookup": "查詢",
   "notFound": "沒有找到",
   "notSupport": "不支持該 MDX 文件",
-  "copy": "複製"
+  "copy": "複製",
+  "readLoudly": "朗讀"
 }

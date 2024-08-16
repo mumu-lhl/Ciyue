@@ -16,5 +16,6 @@
   "lookup": "Lookup",
   "notFound": "Not found",
   "notSupport": "Not support this MDX file",
-  "copy": "Copy"
+  "copy": "Copy",
+  "readLoudly": "Read Loudly"
 }
