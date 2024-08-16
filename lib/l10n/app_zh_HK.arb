@@ -15,5 +15,5 @@
   "language": "語言",
   "lookup": "查詢",
   "notFound": "沒有找到",
-  "notSupport": "不支持"
+  "notSupport": "不支持該 MDX 文件"
 }
