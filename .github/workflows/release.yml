@@ -23,11 +23,11 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/keystore.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
 
       - name: Create key.properties
         run: |
-          echo "${{ secrets.KEY_PROPERTIES }}" > android/app/key.properties
+          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 
       - run: flutter pub get
       - run: flutter build apk --split-per-abi
