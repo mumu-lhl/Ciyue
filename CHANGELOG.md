@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.2.1+1](https://github.com/mumu-lhl/Ciyue/compare/v0.2.0+1..v0.2.1+1) - 2024-08-16
+
+### Bug Fixes
+
+- stop CircularProgressIndicator when load mdx file failed - ([8d41626](https://github.com/mumu-lhl/Ciyue/commit/8d416260a69d8aa961abf2403e54d5afcaa5366d)) - Mumulhl
+
+### Documentation
+
+- add license - ([05ee2e0](https://github.com/mumu-lhl/Ciyue/commit/05ee2e0d74dde9e3c94ef338b60d82682d7bd027)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(action)** fix keystore path - ([03447e1](https://github.com/mumu-lhl/Ciyue/commit/03447e1bbfd76aedbcd9854d3170772902b92343)) - Mumulhl
+
+---
 ## [0.2.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.1.0+1..v0.2.0+1) - 2024-08-16
 
 ### Bug Fixes
@@ -14,6 +29,10 @@ All notable changes to this project will be documented in this file. See [conven
 
 - hide system context menu items - ([7c618bb](https://github.com/mumu-lhl/Ciyue/commit/7c618bbbf178426fe4b8deed9e54c47bd1ecfd2e)) - Mumulhl
 - support tts - ([dfe9ee2](https://github.com/mumu-lhl/Ciyue/commit/dfe9ee209a5331e94b27a0d3681402aa6bc99b35)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(v0.2.0+1)** release v0.2.0+1 - ([d502e9a](https://github.com/mumu-lhl/Ciyue/commit/d502e9a6d633d63db6f2c709a927016e2fd840bf)) - Mumulhl
 
 ---
 ## [0.1.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.0.1+4..v0.1.0+1) - 2024-08-16
