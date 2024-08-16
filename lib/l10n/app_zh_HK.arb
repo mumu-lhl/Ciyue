@@ -14,5 +14,6 @@
   "system": "系統",
   "language": "語言",
   "lookup": "查詢",
-  "notFound": "沒有找到"
+  "notFound": "沒有找到",
+  "notSupport": "不支持"
 }

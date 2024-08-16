@@ -19,14 +19,14 @@ Future<void> addDictionary(String path) async {
     await dictionary!.close();
   }
 
+  await _initDictReader(path);
+
   await prefs.setString("currentDictionaryPath", path);
 
   await dictionaryList.add(path);
 
   final id = await dictionaryList.getId(path);
   dictionary = DictionaryDatabase(id);
-
-  await _initDictReader(path);
 
   await _addWords();
 
@@ -107,8 +107,10 @@ void _changeCurrentDictionary(int? id, String? path) {
 }
 
 Future<void> _initDictReader(String path, {bool readKey = true}) async {
-  dictReader = DictReader("$path.mdx");
-  await dictReader!.init(readKey);
+  final dictReaderTemp = DictReader("$path.mdx");
+  await dictReaderTemp.init(readKey);
+
+  dictReader = dictReaderTemp;
 
   try {
     dictReaderResource = DictReader("$path.mdd");

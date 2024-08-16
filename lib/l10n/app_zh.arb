@@ -14,5 +14,6 @@
   "system": "系统",
   "language": "语言",
   "lookup": "查询",
-  "notFound": "没有找到"
+  "notFound": "没有找到",
+  "notSupport": "不支持"
 }

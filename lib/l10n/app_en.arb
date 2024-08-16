@@ -14,5 +14,6 @@
   "system": "System",
   "language": "Language",
   "lookup": "Lookup",
-  "notFound": "Not found"
+  "notFound": "Not found",
+  "notSupport": "Not support"
 }
