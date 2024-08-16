@@ -118,11 +118,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
                     try {
                       await addDictionary(path.substring(0, path.length - 4));
-
-                      setState(() {
-                        _loading = false;
-                        dictionaries = dictionaryList.all();
-                      });
                     } catch (e) {
                       if (context.mounted) {
                         final snackBar = SnackBar(
@@ -131,6 +126,11 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       }
                     }
+
+                    setState(() {
+                      _loading = false;
+                      dictionaries = dictionaryList.all();
+                    });
                   }
                 }
               },
