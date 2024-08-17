@@ -13,8 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
-        flutter-version: 3.24.0
         with:
+          flutter-version: 3.24.0
           cache: true
 
       - uses: actions/setup-java@v4
