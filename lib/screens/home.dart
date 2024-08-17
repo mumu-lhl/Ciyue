@@ -44,6 +44,12 @@ class SearchResult extends StatelessWidget {
     for (var word in searchResult) {
       resultWidgets.add(ListTile(
           title: Text(word.key),
+          trailing: IconButton(
+            icon: const Icon(Icons.volume_up),
+            onPressed: () async {
+              await flutterTts.speak(word.key);
+            },
+          ),
           onTap: () async {
             String content = await dictReader!.readOne(word.blockOffset,
                 word.startOffset, word.endOffset, word.compressedSize);
