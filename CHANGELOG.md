@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.4.1+2](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+1..0.4.1+2) - 2024-08-17
+
+### Miscellaneous Chores
+
+- **(workflow)** add flutter-version - ([b1ee295](https://github.com/mumu-lhl/Ciyue/commit/b1ee295a0b7231a7ae2fe40109bbca35eccc82b3)) - Mumulhl
+- add flutter submodule - ([452361a](https://github.com/mumu-lhl/Ciyue/commit/452361ae707ef87d354a62b57528756562021db6)) - Mumulhl
+
+### Revert
+
+- chore: add flutter submodule - ([9e73f92](https://github.com/mumu-lhl/Ciyue/commit/9e73f92936d7c3060fdc7222ab0c5c4414c0d2a4)) - Mumulhl
+
+---
 ## [0.4.1+1](https://github.com/mumu-lhl/Ciyue/compare/v0.4.0+1..v0.4.1+1) - 2024-08-17
 
 ### Miscellaneous Chores
