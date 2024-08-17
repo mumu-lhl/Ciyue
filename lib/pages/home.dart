@@ -29,6 +29,9 @@ class _HomeState extends State<Home> {
         child: Padding(
           padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
           child: TextField(
+            onTapOutside: (pointerDownEvent) {
+              FocusScope.of(context).unfocus();
+            },
             decoration: InputDecoration(
                 labelText: AppLocalizations.of(context)!.search),
             onChanged: (text) async {
@@ -64,27 +67,22 @@ class _HomeState extends State<Home> {
       const SettingsScreen()
     ];
 
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
-      child: Scaffold(
-        appBar: appBar,
-        body: page[_currentIndex],
-        bottomNavigationBar: NavigationBar(
-          onDestinationSelected: (int index) {
-            setState(() {
-              _currentIndex = index;
+    return Scaffold(
+      appBar: appBar,
+      body: page[_currentIndex],
+      bottomNavigationBar: NavigationBar(
+        onDestinationSelected: (int index) {
+          setState(() {
+            _currentIndex = index;
 
-              if (index != 0) {
-                searchWord = "";
-                searchResult = [];
-              }
-            });
-          },
-          selectedIndex: _currentIndex,
-          destinations: destinations,
-        ),
+            if (index != 0) {
+              searchWord = "";
+              searchResult = [];
+            }
+          });
+        },
+        selectedIndex: _currentIndex,
+        destinations: destinations,
       ),
     );
   }

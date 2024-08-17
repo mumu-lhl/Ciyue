@@ -71,6 +71,7 @@ Future<void> removeDictionary(String path) async {
 
 Future<void> _addResource() async {
   final resourceList = <ResourceCompanion>[];
+  var number = 0;
 
   await for (final (key, (blockOffset, startOffset, endOffset, compressedSize))
       in dictReaderResource!.read()) {
@@ -80,13 +81,23 @@ Future<void> _addResource() async {
         startOffset: Value(startOffset),
         endOffset: Value(endOffset),
         compressedSize: Value(compressedSize)));
+    number++;
+
+    if (number == 50000) {
+      number = 0;
+      await dictionary!.insertResource(resourceList);
+      resourceList.clear();
+    }
   }
 
-  await dictionary!.insertResource(resourceList);
+  if (resourceList.isNotEmpty) {
+    await dictionary!.insertResource(resourceList);
+  }
 }
 
 Future<void> _addWords() async {
   final wordList = <DictionaryCompanion>[];
+  var number = 0;
 
   await for (final (key, (blockOffset, startOffset, endOffset, compressedSize))
       in dictReader!.read()) {
@@ -96,9 +107,18 @@ Future<void> _addWords() async {
         startOffset: Value(startOffset),
         endOffset: Value(endOffset),
         compressedSize: Value(compressedSize)));
+    number++;
+
+    if (number == 50000) {
+      number = 0;
+      await dictionary!.insertWords(wordList);
+      wordList.clear();
+    }
   }
 
-  await dictionary!.insertWords(wordList);
+  if (wordList.isNotEmpty) {
+    await dictionary!.insertWords(wordList);
+  }
 }
 
 void _changeCurrentDictionary(int? id, String? path) {
