@@ -1,4 +1,4 @@
-package org.mumulhl.dictionary
+package org.eu.mumulhl.ciyue
 
 import io.flutter.embedding.android.FlutterActivity
 

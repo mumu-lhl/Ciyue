@@ -30,7 +30,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "org.mumulhl.dictionary"
+    namespace = "org.eu.mumulhl.ciyue"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "26.1.10909125"
 
@@ -40,7 +40,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.mumulhl.dictionary"
+        applicationId = "org.eu.mumulhl.ciyue"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
