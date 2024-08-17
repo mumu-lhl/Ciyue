@@ -31,12 +31,14 @@ jobs:
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 
       - run: flutter pub get
+      - run: flutter build apk
       - run: flutter build apk --split-per-abi
       - run: flutter build appbundle
 
       - name: Rename .apk
         run: |
           cd build/app/outputs/flutter-apk
+          mv app-release.apk ciyue-universal-release.apk
           mv app-armeabi-v7a-release.apk ciyue-armeabi-v7a-release.apk
           mv app-arm64-v8a-release.apk ciyue-arm64-v8a-release.apk
           mv app-x86_64-release.apk ciyue-x86_64-release.apk
