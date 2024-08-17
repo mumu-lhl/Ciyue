@@ -242,10 +242,10 @@ packages:
     dependency: "direct main"
     description:
       name: dict_reader
-      sha256: "2e4a0be0113881223c3f27753982668504edbf0a165d2feb85b7479d5a2fa746"
+      sha256: ace6fb2392537a6a3b3fecfb90a5a7583c004caf0b20b0c44851858742a4bbc1
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.1"
   drift:
     dependency: "direct main"
     description:
