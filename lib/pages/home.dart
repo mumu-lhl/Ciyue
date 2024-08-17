@@ -20,11 +20,27 @@ class _HomeState extends State<Home> {
 
   var _currentIndex = 0;
 
+  final textFieldController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     PreferredSizeWidget? appBar;
 
     if (currentDictionaryPath != null && _currentIndex == 0) {
+      Widget? removeButton;
+      if (searchWord != "") {
+        removeButton = IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            textFieldController.clear();
+            setState(() {
+              searchWord = "";
+              searchResult.clear();
+            });
+          },
+        );
+      }
+
       final flexibleSpace = SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
@@ -33,7 +49,9 @@ class _HomeState extends State<Home> {
               FocusScope.of(context).unfocus();
             },
             decoration: InputDecoration(
-                labelText: AppLocalizations.of(context)!.search),
+                labelText: AppLocalizations.of(context)!.search,
+                suffixIcon: removeButton),
+            controller: textFieldController,
             onChanged: (text) async {
               final result = await dictionary!.searchWord(text);
 
