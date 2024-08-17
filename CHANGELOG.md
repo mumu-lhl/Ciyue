@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.4.1+1](https://github.com/mumu-lhl/Ciyue/compare/v0.4.0+1..v0.4.1+1) - 2024-08-17
+
+### Miscellaneous Chores
+
+- change package name - ([ab9c4aa](https://github.com/mumu-lhl/Ciyue/commit/ab9c4aabf32cc9ce4d31139d6c40c9b3cbfbfc15)) - Mumulhl
+
+---
 ## [0.4.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.3.0+1..v0.4.0+1) - 2024-08-17
 
 ### Bug Fixes
