@@ -3,6 +3,53 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.3.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+5..0.3.0+1) - 2024-08-17
+
+### Features
+
+- support more mdx files - ([94ad594](https://github.com/mumu-lhl/Ciyue/commit/94ad5943f43e3913dc640075725f870e39ff05b6)) - Mumulhl
+- add read loudly button to display word - ([73c0bde](https://github.com/mumu-lhl/Ciyue/commit/73c0bde0fc20a716d154d7c8760f58cb65f6238a)) - Mumulhl
+- add read loudly button to search result - ([46982ab](https://github.com/mumu-lhl/Ciyue/commit/46982ab99e62b3fe982d700f6a39dc141cad4ac7)) - Mumulhl
+
+### Miscellaneous Chores
+
+- update pubspec.lock - ([4bb01a1](https://github.com/mumu-lhl/Ciyue/commit/4bb01a16025258216412da7384783501001c5442)) - Mumulhl
+
+---
+## [0.2.1+5](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+4..v0.2.1+5) - 2024-08-16
+
+### Miscellaneous Chores
+
+- **(workflow)** fix keystore path - ([3fddd9b](https://github.com/mumu-lhl/Ciyue/commit/3fddd9bb33d93b0e2c7f4407c66bcb634a0cc042)) - Mumulhl
+- fix sign - ([87975a2](https://github.com/mumu-lhl/Ciyue/commit/87975a20e2111b7c95e839898f75230c8cbd7486)) - Mumulhl
+
+### Revert
+
+- chore(workflow): don't run flutter.yml on tag creation - ([ec3af4a](https://github.com/mumu-lhl/Ciyue/commit/ec3af4a5c189289495454fd4766edf7661b8b9a5)) - Mumulhl
+
+---
+## [0.2.1+4](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+3..v0.2.1+4) - 2024-08-16
+
+### Miscellaneous Chores
+
+- **(workflow)** fix key properties path - ([5ed6e98](https://github.com/mumu-lhl/Ciyue/commit/5ed6e98cdb518d5c70028f59e519ce6323323f11)) - Mumulhl
+
+---
+## [0.2.1+3](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+2..v0.2.1+3) - 2024-08-16
+
+### Miscellaneous Chores
+
+- **(workflow)** don't run flutter.yml on tag creation - ([63818c0](https://github.com/mumu-lhl/Ciyue/commit/63818c08a57be7bf6b67a8f7d1a5eada010fa747)) - Mumulhl
+- fix sign - ([44f64d7](https://github.com/mumu-lhl/Ciyue/commit/44f64d7073bb49a205f8f7b8a69108cb760712dc)) - Mumulhl
+
+---
+## [0.2.1+2](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+1..v0.2.1+2) - 2024-08-16
+
+### Miscellaneous Chores
+
+- fix create key.properties - ([d16efbe](https://github.com/mumu-lhl/Ciyue/commit/d16efbef287bc009c0beba67a81eba5556d71bae)) - Mumulhl
+
+---
 ## [0.2.1+1](https://github.com/mumu-lhl/Ciyue/compare/v0.2.0+1..v0.2.1+1) - 2024-08-16
 
 ### Bug Fixes
