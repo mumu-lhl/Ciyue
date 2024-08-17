@@ -3,7 +3,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [0.4.1+2](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+1..0.4.1+2) - 2024-08-17
+## [0.4.1+3](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+2..0.4.1+3) - 2024-08-17
+
+### Miscellaneous Chores
+
+- **(workflow)** fix flutter-version - ([bfdb7f2](https://github.com/mumu-lhl/Ciyue/commit/bfdb7f2de49bb24fa479918dfbf6caab6fcb6617)) - Mumulhl
+
+---
+## [0.4.1+2](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+1..v0.4.1+2) - 2024-08-17
 
 ### Miscellaneous Chores
 
