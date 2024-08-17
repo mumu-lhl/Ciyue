@@ -3,7 +3,20 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [0.3.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+5..0.3.0+1) - 2024-08-17
+## [0.4.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.3.0+1..v0.4.0+1) - 2024-08-17
+
+### Bug Fixes
+
+- load some mdx files failed - ([987f4ce](https://github.com/mumu-lhl/Ciyue/commit/987f4ce838009ac6dca256c79b459de213a0490c)) - Mumulhl
+
+### Features
+
+- support splashscreen - ([5a8cca2](https://github.com/mumu-lhl/Ciyue/commit/5a8cca26a34fbce50ea27b72729addd963ecfd45)) - Mumulhl
+- support bigger mdx dictionaries - ([ed86c21](https://github.com/mumu-lhl/Ciyue/commit/ed86c215d8f85adf803342a8886c470460e272d0)) - Mumulhl
+- add remove button to search - ([f8b8db8](https://github.com/mumu-lhl/Ciyue/commit/f8b8db89ad14128c2e81642e4148ade1e9b55796)) - Mumulhl
+
+---
+## [0.3.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+5..v0.3.0+1) - 2024-08-17
 
 ### Features
 
