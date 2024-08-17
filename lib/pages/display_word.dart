@@ -26,7 +26,7 @@ class DisplayWord extends StatelessWidget {
           context.pop();
         },
       )),
-      floatingActionButton: StarButton(word: word),
+      floatingActionButton: Button(word: word),
       body: WebView(content: content),
     );
   }
@@ -55,13 +55,13 @@ class LocalResourcesathHandler extends CustomPathHandler {
   }
 }
 
-class StarButton extends StatefulWidget {
+class Button extends StatefulWidget {
   final String word;
 
-  const StarButton({super.key, required this.word});
+  const Button({super.key, required this.word});
 
   @override
-  State<StarButton> createState() => _StarButtonState();
+  State<Button> createState() => _ButtonState();
 }
 
 class WebView extends StatelessWidget {
@@ -172,14 +172,14 @@ class WebView extends StatelessWidget {
   }
 }
 
-class _StarButtonState extends State<StarButton> {
+class _ButtonState extends State<Button> {
   Future<bool>? stared;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return FutureBuilder(
+    final futureWidget = FutureBuilder(
         future: stared,
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           if (snapshot.hasData) {
@@ -207,6 +207,20 @@ class _StarButtonState extends State<StarButton> {
             onPressed: () {},
           );
         });
+
+    final readLoudly = FloatingActionButton.small(
+      foregroundColor: colorScheme.primary,
+      backgroundColor: colorScheme.surface,
+      child: const Icon(Icons.volume_up),
+      onPressed: () async {
+        await flutterTts.speak(widget.word);
+      },
+    );
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [readLoudly, futureWidget],
+    );
   }
 
   @override
