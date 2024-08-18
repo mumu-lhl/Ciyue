@@ -8,10 +8,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.24.0
@@ -55,7 +56,28 @@ jobs:
             build/app/outputs/flutter-apk/ciyue-*-release.apk
             build/app/outputs/bundle/release/ciyue-release.aab
 
+  changelog:
+    runs-on: ubuntu-latest
+    outputs:
+      release_body: ${{ steps.git-cliff.outputs.content }}
+    steps:
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v3
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: -vv --latest --strip header
+        env:
+          OUTPUT: CHANGES.md
+          GITHUB_REPO: ${{ github.repository }}
+
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/app/outputs/flutter-apk/ciyue-*-release.apk,build/app/outputs/bundle/release/ciyue-release.aab"
           tag: ${{ github.ref_name }}
+          body: ${{ needs.changelog.outputs.release_body }}
