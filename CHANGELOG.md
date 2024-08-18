@@ -3,7 +3,64 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [0.4.1+5](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+4..0.4.1+5) - 2024-08-18
+## [0.4.3+12](https://github.com/mumu-lhl/Ciyue/compare/v0.4.2+11..v0.4.3+12) - 2024-08-18
+
+### Revert
+
+- chore: remove Internet permission - ([8d8f1be](https://github.com/mumu-lhl/Ciyue/commit/8d8f1be5f7f97fd6da23988f9e8953e6f99feb35)) - Mumulhl
+
+---
+## [0.4.2+11](https://github.com/mumu-lhl/Ciyue/compare/v0.4.2+10..v0.4.2+11) - 2024-08-18
+
+### Miscellaneous Chores
+
+- **(workflow)** restore release workflow - ([4d32f06](https://github.com/mumu-lhl/Ciyue/commit/4d32f06604749b8b2f9972348559e919affad2e6)) - Mumulhl
+
+---
+## [0.4.2+10](https://github.com/mumu-lhl/Ciyue/compare/v0.4.2+9..v0.4.2+10) - 2024-08-18
+
+### Miscellaneous Chores
+
+- **(workflow)** add needs - ([0f34370](https://github.com/mumu-lhl/Ciyue/commit/0f34370e06cfe1400b0f42b2ccdbe3b68cc008e2)) - Mumulhl
+
+---
+## [0.4.2+9](https://github.com/mumu-lhl/Ciyue/compare/v0.4.2+8..v0.4.2+9) - 2024-08-18
+
+### Miscellaneous Chores
+
+- **(workflow)** remove generate CHANGELOG.md - ([9d39ab1](https://github.com/mumu-lhl/Ciyue/commit/9d39ab105fd12bc81cb4c58dbcd6cd818250c3b0)) - Mumulhl
+
+---
+## [0.4.2+8](https://github.com/mumu-lhl/Ciyue/compare/v0.4.2+7..v0.4.2+8) - 2024-08-18
+
+### Miscellaneous Chores
+
+- **(workflow)** fix src refspec main does not match any - ([8021984](https://github.com/mumu-lhl/Ciyue/commit/8021984d232b087e6a69fd28651009a7f76f7254)) - Mumulhl
+
+---
+## [0.4.2+7](https://github.com/mumu-lhl/Ciyue/compare/v0.4.2+6..v0.4.2+7) - 2024-08-18
+
+### Miscellaneous Chores
+
+- **(workflow)** fix commit changelog - ([4bdf29a](https://github.com/mumu-lhl/Ciyue/commit/4bdf29a3715372b830ca1e1cf64e5eacb91150f3)) - Mumulhl
+
+---
+## [0.4.2+6](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+5..v0.4.2+6) - 2024-08-18
+
+### Documentation
+
+- **(readme)** add Recommended Dictionaries - ([80217be](https://github.com/mumu-lhl/Ciyue/commit/80217bee9e0eb8f5f0f4cd151b6fc4c0734668d8)) - Mumulhl
+- add code of conduct - ([9dacdfd](https://github.com/mumu-lhl/Ciyue/commit/9dacdfd913c8fdb5f8279c3e7b772e32050b5365)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(l10n)** remove app_zh_CN.arb - ([78d356b](https://github.com/mumu-lhl/Ciyue/commit/78d356b3f3a45a8976556226731bc14c64484943)) - Mumulhl
+- **(workflow)** add changelog to release - ([939baad](https://github.com/mumu-lhl/Ciyue/commit/939baad03b9d708a3538b1c8de02abeeaf3fa9b2)) - Mumulhl
+- **(workflow)** generate CHANGELOG.md automatically - ([ab75fa7](https://github.com/mumu-lhl/Ciyue/commit/ab75fa7ab7b2b9b18c218cd7b8c77b913d4eed80)) - Mumulhl
+- remove Internet permission - ([05abe59](https://github.com/mumu-lhl/Ciyue/commit/05abe59d022d0a2063c4cdde826bdda11e2c7c66)) - Mumulhl
+
+---
+## [0.4.1+5](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+4..v0.4.1+5) - 2024-08-18
 
 ### Documentation
 
