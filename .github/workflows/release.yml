@@ -56,7 +56,7 @@ jobs:
           set +e
           git add CHANGELOG.md
           git commit -m "Update changelog"
-          git push
+          git push origin HEAD:main -f
 
   build:
     needs: changelog
