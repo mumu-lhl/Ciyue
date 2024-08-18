@@ -13,7 +13,6 @@ jobs:
     outputs:
       release_body: ${{ steps.git-cliff.outputs.content }}
     steps:
-    steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
