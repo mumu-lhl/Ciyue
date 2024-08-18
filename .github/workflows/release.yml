@@ -39,7 +39,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.ref_name }}
+          ref: "main"
 
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
