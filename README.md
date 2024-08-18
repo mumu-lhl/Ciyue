@@ -7,6 +7,7 @@ A mdict dictionary with Android support
 ## Features
 
 * 📄 Support MDX/MDD
+* 🎨 Support Material You
 * 🔈 Support reading aloud
 * 🔖 Bookmarking words to the word book
 * 📙 Add multiple dictionaries and switch between them
