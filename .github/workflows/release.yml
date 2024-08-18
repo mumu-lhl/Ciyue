@@ -45,7 +45,9 @@ jobs:
           set +e
           git add CHANGELOG.md
           git commit -m "Update changelog"
-          git push origin main
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
 
   build:
     needs: changelog
