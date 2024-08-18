@@ -62,6 +62,10 @@ jobs:
     outputs:
       release_body: ${{ steps.git-cliff.outputs.content }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Generate a changelog for release
         uses: orhun/git-cliff-action@v3
         id: git-cliff
