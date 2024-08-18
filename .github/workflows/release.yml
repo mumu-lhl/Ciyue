@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - "*"
-  workflow_dispatch:
 
 jobs:
   changelog:
@@ -45,10 +44,9 @@ jobs:
         uses: orhun/git-cliff-action@v3
         with:
           config: cliff.toml
-          args: --verbose
+          args: --verbose --tag ${{ github.ref_name }}
         env:
           OUTPUT: CHANGELOG.md
-          GITHUB_REPO: ${{ github.repository }}
 
       - name: Commit
         run: |
