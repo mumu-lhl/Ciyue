@@ -24,6 +24,10 @@
 
 见 [Releases](https://github.com/mumu-lhl/Ciyue/releases)。
 
+## 推荐词典
+
+见 [Wiki](https://github.com/mumu-lhl/Ciyue/wiki/%E6%8E%A8%E8%8D%90%E8%AF%8D%E5%85%B8)。
+
 ## 开源许可证
 
 [MIT](./LICENSE)

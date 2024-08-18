@@ -24,6 +24,10 @@ A mdict dictionary with Android support
 
 See [Releases](https://github.com/mumu-lhl/Ciyue/releases).
 
+## Recommended Dictionaries
+
+See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki/%E6%8E%A8%E8%8D%90%E8%AF%8D%E5%85%B8).
+
 ## License
 
 [MIT](./LICENSE)
