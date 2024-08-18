@@ -3,7 +3,19 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [0.4.1+4](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+3..0.4.1+4) - 2024-08-17
+## [0.4.1+5](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+4..0.4.1+5) - 2024-08-18
+
+### Documentation
+
+- **(readme)** add features - ([9b14f30](https://github.com/mumu-lhl/Ciyue/commit/9b14f30d1453b6c656817dfdc713149cc7cde331)) - Mumulhl
+- **(readme)** add features - ([6a6555c](https://github.com/mumu-lhl/Ciyue/commit/6a6555c0b29868ea0416c3fd4a9eaf4da65b77ff)) - Mumulhl
+
+### Miscellaneous Chores
+
+- add metadata - ([dee13b0](https://github.com/mumu-lhl/Ciyue/commit/dee13b032ec6faacb4ed08b6af44c2d7f30b4860)) - Mumulhl
+
+---
+## [0.4.1+4](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+3..v0.4.1+4) - 2024-08-17
 
 ### Miscellaneous Chores
 
