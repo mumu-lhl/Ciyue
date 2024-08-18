@@ -4,6 +4,13 @@ English | [中文](./README_CN.md)
 
 A mdict dictionary with Android support
 
+## Features
+
+* 📄 Support MDX/MDD
+* 🔈 Support reading aloud
+* 🔖 Bookmarking words to the word book
+* 📙 Add multiple dictionaries and switch between them
+
 ## Screenshots
 
 |||||
