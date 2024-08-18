@@ -46,7 +46,7 @@ jobs:
           set +e
           git add CHANGELOG.md
           git commit -m "Update changelog"
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/mumu-lhl/Ciyue.git origin main
+          git push
 
   build:
     needs: changelog
