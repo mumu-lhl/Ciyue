@@ -28,6 +28,12 @@
 
 见 [Wiki](https://github.com/mumu-lhl/Ciyue/wiki/%E6%8E%A8%E8%8D%90%E8%AF%8D%E5%85%B8)。
 
+## 翻译
+
+<a href="https://hosted.weblate.org/engage/ciyue/">
+<img src="https://hosted.weblate.org/widget/ciyue/app/multi-auto.svg" alt="翻译状态" />
+</a>
+
 ## 开源许可证
 
 [MIT](./LICENSE)

@@ -28,6 +28,12 @@ See [Releases](https://github.com/mumu-lhl/Ciyue/releases).
 
 See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki/%E6%8E%A8%E8%8D%90%E8%AF%8D%E5%85%B8).
 
+## Translation
+
+<a href="https://hosted.weblate.org/engage/ciyue/">
+<img src="https://hosted.weblate.org/widget/ciyue/app/multi-auto.svg" alt="Translation status" />
+</a>
+
 ## License
 
 [MIT](./LICENSE)
