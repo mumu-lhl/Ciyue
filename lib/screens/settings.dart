@@ -62,6 +62,7 @@ class _LanguageChoiceState extends State<LanguageChoice> {
           },
           itemBuilder: (BuildContext context) => [
             const PopupMenuItem(value: "en", child: Text("English")),
+            const PopupMenuItem(value: "nb", child: Text("Bokmål")),
             const PopupMenuItem(value: "zh_CN", child: Text("简体中文")),
             const PopupMenuItem(value: "zh_HK", child: Text("繁體中文（香港）")),
             const PopupMenuItem(value: "zh_TW", child: Text("正體中文（臺灣）")),
