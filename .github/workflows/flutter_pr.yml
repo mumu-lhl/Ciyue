@@ -24,7 +24,7 @@ jobs:
       - run: flutter analyze
 
       - name: Disable signing
-      - run: flutter build apk --debug
+        run: flutter build apk --debug
 
       - uses: actions/upload-artifact@v4
         with:
