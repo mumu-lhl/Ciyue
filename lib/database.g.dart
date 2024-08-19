@@ -210,42 +210,6 @@ typedef $$DictionaryListTableUpdateCompanionBuilder = DictionaryListCompanion
   drift.Value<String> path,
 });
 
-class $$DictionaryListTableTableManager extends drift.RootTableManager<
-    _$AppDatabase,
-    $DictionaryListTable,
-    DictionaryListData,
-    $$DictionaryListTableFilterComposer,
-    $$DictionaryListTableOrderingComposer,
-    $$DictionaryListTableCreateCompanionBuilder,
-    $$DictionaryListTableUpdateCompanionBuilder> {
-  $$DictionaryListTableTableManager(
-      _$AppDatabase db, $DictionaryListTable table)
-      : super(drift.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer: $$DictionaryListTableFilterComposer(
-              drift.ComposerState(db, table)),
-          orderingComposer: $$DictionaryListTableOrderingComposer(
-              drift.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            drift.Value<int> id = const drift.Value.absent(),
-            drift.Value<String> path = const drift.Value.absent(),
-          }) =>
-              DictionaryListCompanion(
-            id: id,
-            path: path,
-          ),
-          createCompanionCallback: ({
-            drift.Value<int> id = const drift.Value.absent(),
-            required String path,
-          }) =>
-              DictionaryListCompanion.insert(
-            id: id,
-            path: path,
-          ),
-        ));
-}
-
 class $$DictionaryListTableFilterComposer
     extends drift.FilterComposer<_$AppDatabase, $DictionaryListTable> {
   $$DictionaryListTableFilterComposer(super.$state);
@@ -273,6 +237,71 @@ class $$DictionaryListTableOrderingComposer
       builder: (column, joinBuilders) =>
           drift.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
+
+class $$DictionaryListTableTableManager extends drift.RootTableManager<
+    _$AppDatabase,
+    $DictionaryListTable,
+    DictionaryListData,
+    $$DictionaryListTableFilterComposer,
+    $$DictionaryListTableOrderingComposer,
+    $$DictionaryListTableCreateCompanionBuilder,
+    $$DictionaryListTableUpdateCompanionBuilder,
+    (
+      DictionaryListData,
+      drift
+      .BaseReferences<_$AppDatabase, $DictionaryListTable, DictionaryListData>
+    ),
+    DictionaryListData,
+    drift.PrefetchHooks Function()> {
+  $$DictionaryListTableTableManager(
+      _$AppDatabase db, $DictionaryListTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: $$DictionaryListTableFilterComposer(
+              drift.ComposerState(db, table)),
+          orderingComposer: $$DictionaryListTableOrderingComposer(
+              drift.ComposerState(db, table)),
+          updateCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            drift.Value<String> path = const drift.Value.absent(),
+          }) =>
+              DictionaryListCompanion(
+            id: id,
+            path: path,
+          ),
+          createCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            required String path,
+          }) =>
+              DictionaryListCompanion.insert(
+            id: id,
+            path: path,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$DictionaryListTableProcessedTableManager
+    = drift.ProcessedTableManager<
+        _$AppDatabase,
+        $DictionaryListTable,
+        DictionaryListData,
+        $$DictionaryListTableFilterComposer,
+        $$DictionaryListTableOrderingComposer,
+        $$DictionaryListTableCreateCompanionBuilder,
+        $$DictionaryListTableUpdateCompanionBuilder,
+        (
+          DictionaryListData,
+          drift.BaseReferences<_$AppDatabase, $DictionaryListTable,
+              DictionaryListData>
+        ),
+        DictionaryListData,
+        drift.PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1117,6 +1146,24 @@ typedef $$WordbookTableUpdateCompanionBuilder = WordbookCompanion Function({
   drift.Value<int> rowid,
 });
 
+class $$WordbookTableFilterComposer
+    extends drift.FilterComposer<_$DictionaryDatabase, $WordbookTable> {
+  $$WordbookTableFilterComposer(super.$state);
+  drift.ColumnFilters<String> get word => $state.composableBuilder(
+      column: $state.table.word,
+      builder: (column, joinBuilders) =>
+          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$WordbookTableOrderingComposer
+    extends drift.OrderingComposer<_$DictionaryDatabase, $WordbookTable> {
+  $$WordbookTableOrderingComposer(super.$state);
+  drift.ColumnOrderings<String> get word => $state.composableBuilder(
+      column: $state.table.word,
+      builder: (column, joinBuilders) =>
+          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 class $$WordbookTableTableManager extends drift.RootTableManager<
     _$DictionaryDatabase,
     $WordbookTable,
@@ -1124,7 +1171,13 @@ class $$WordbookTableTableManager extends drift.RootTableManager<
     $$WordbookTableFilterComposer,
     $$WordbookTableOrderingComposer,
     $$WordbookTableCreateCompanionBuilder,
-    $$WordbookTableUpdateCompanionBuilder> {
+    $$WordbookTableUpdateCompanionBuilder,
+    (
+      WordbookData,
+      drift.BaseReferences<_$DictionaryDatabase, $WordbookTable, WordbookData>
+    ),
+    WordbookData,
+    drift.PrefetchHooks Function()> {
   $$WordbookTableTableManager(_$DictionaryDatabase db, $WordbookTable table)
       : super(drift.TableManagerState(
           db: db,
@@ -1149,27 +1202,28 @@ class $$WordbookTableTableManager extends drift.RootTableManager<
             word: word,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$WordbookTableFilterComposer
-    extends drift.FilterComposer<_$DictionaryDatabase, $WordbookTable> {
-  $$WordbookTableFilterComposer(super.$state);
-  drift.ColumnFilters<String> get word => $state.composableBuilder(
-      column: $state.table.word,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$WordbookTableOrderingComposer
-    extends drift.OrderingComposer<_$DictionaryDatabase, $WordbookTable> {
-  $$WordbookTableOrderingComposer(super.$state);
-  drift.ColumnOrderings<String> get word => $state.composableBuilder(
-      column: $state.table.word,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
+typedef $$WordbookTableProcessedTableManager = drift.ProcessedTableManager<
+    _$DictionaryDatabase,
+    $WordbookTable,
+    WordbookData,
+    $$WordbookTableFilterComposer,
+    $$WordbookTableOrderingComposer,
+    $$WordbookTableCreateCompanionBuilder,
+    $$WordbookTableUpdateCompanionBuilder,
+    (
+      WordbookData,
+      drift.BaseReferences<_$DictionaryDatabase, $WordbookTable, WordbookData>
+    ),
+    WordbookData,
+    drift.PrefetchHooks Function()>;
 typedef $$ResourceTableCreateCompanionBuilder = ResourceCompanion Function({
   required int blockOffset,
   required int compressedSize,
@@ -1186,57 +1240,6 @@ typedef $$ResourceTableUpdateCompanionBuilder = ResourceCompanion Function({
   drift.Value<int> startOffset,
   drift.Value<int> rowid,
 });
-
-class $$ResourceTableTableManager extends drift.RootTableManager<
-    _$DictionaryDatabase,
-    $ResourceTable,
-    ResourceData,
-    $$ResourceTableFilterComposer,
-    $$ResourceTableOrderingComposer,
-    $$ResourceTableCreateCompanionBuilder,
-    $$ResourceTableUpdateCompanionBuilder> {
-  $$ResourceTableTableManager(_$DictionaryDatabase db, $ResourceTable table)
-      : super(drift.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$ResourceTableFilterComposer(drift.ComposerState(db, table)),
-          orderingComposer:
-              $$ResourceTableOrderingComposer(drift.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            drift.Value<int> blockOffset = const drift.Value.absent(),
-            drift.Value<int> compressedSize = const drift.Value.absent(),
-            drift.Value<int> endOffset = const drift.Value.absent(),
-            drift.Value<String> key = const drift.Value.absent(),
-            drift.Value<int> startOffset = const drift.Value.absent(),
-            drift.Value<int> rowid = const drift.Value.absent(),
-          }) =>
-              ResourceCompanion(
-            blockOffset: blockOffset,
-            compressedSize: compressedSize,
-            endOffset: endOffset,
-            key: key,
-            startOffset: startOffset,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int blockOffset,
-            required int compressedSize,
-            required int endOffset,
-            required String key,
-            required int startOffset,
-            drift.Value<int> rowid = const drift.Value.absent(),
-          }) =>
-              ResourceCompanion.insert(
-            blockOffset: blockOffset,
-            compressedSize: compressedSize,
-            endOffset: endOffset,
-            key: key,
-            startOffset: startOffset,
-            rowid: rowid,
-          ),
-        ));
-}
 
 class $$ResourceTableFilterComposer
     extends drift.FilterComposer<_$DictionaryDatabase, $ResourceTable> {
@@ -1296,6 +1299,82 @@ class $$ResourceTableOrderingComposer
           drift.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$ResourceTableTableManager extends drift.RootTableManager<
+    _$DictionaryDatabase,
+    $ResourceTable,
+    ResourceData,
+    $$ResourceTableFilterComposer,
+    $$ResourceTableOrderingComposer,
+    $$ResourceTableCreateCompanionBuilder,
+    $$ResourceTableUpdateCompanionBuilder,
+    (
+      ResourceData,
+      drift.BaseReferences<_$DictionaryDatabase, $ResourceTable, ResourceData>
+    ),
+    ResourceData,
+    drift.PrefetchHooks Function()> {
+  $$ResourceTableTableManager(_$DictionaryDatabase db, $ResourceTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$ResourceTableFilterComposer(drift.ComposerState(db, table)),
+          orderingComposer:
+              $$ResourceTableOrderingComposer(drift.ComposerState(db, table)),
+          updateCompanionCallback: ({
+            drift.Value<int> blockOffset = const drift.Value.absent(),
+            drift.Value<int> compressedSize = const drift.Value.absent(),
+            drift.Value<int> endOffset = const drift.Value.absent(),
+            drift.Value<String> key = const drift.Value.absent(),
+            drift.Value<int> startOffset = const drift.Value.absent(),
+            drift.Value<int> rowid = const drift.Value.absent(),
+          }) =>
+              ResourceCompanion(
+            blockOffset: blockOffset,
+            compressedSize: compressedSize,
+            endOffset: endOffset,
+            key: key,
+            startOffset: startOffset,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int blockOffset,
+            required int compressedSize,
+            required int endOffset,
+            required String key,
+            required int startOffset,
+            drift.Value<int> rowid = const drift.Value.absent(),
+          }) =>
+              ResourceCompanion.insert(
+            blockOffset: blockOffset,
+            compressedSize: compressedSize,
+            endOffset: endOffset,
+            key: key,
+            startOffset: startOffset,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ResourceTableProcessedTableManager = drift.ProcessedTableManager<
+    _$DictionaryDatabase,
+    $ResourceTable,
+    ResourceData,
+    $$ResourceTableFilterComposer,
+    $$ResourceTableOrderingComposer,
+    $$ResourceTableCreateCompanionBuilder,
+    $$ResourceTableUpdateCompanionBuilder,
+    (
+      ResourceData,
+      drift.BaseReferences<_$DictionaryDatabase, $ResourceTable, ResourceData>
+    ),
+    ResourceData,
+    drift.PrefetchHooks Function()>;
 typedef $$DictionaryTableCreateCompanionBuilder = DictionaryCompanion Function({
   required int blockOffset,
   required int compressedSize,
@@ -1312,57 +1391,6 @@ typedef $$DictionaryTableUpdateCompanionBuilder = DictionaryCompanion Function({
   drift.Value<int> startOffset,
   drift.Value<int> rowid,
 });
-
-class $$DictionaryTableTableManager extends drift.RootTableManager<
-    _$DictionaryDatabase,
-    $DictionaryTable,
-    DictionaryData,
-    $$DictionaryTableFilterComposer,
-    $$DictionaryTableOrderingComposer,
-    $$DictionaryTableCreateCompanionBuilder,
-    $$DictionaryTableUpdateCompanionBuilder> {
-  $$DictionaryTableTableManager(_$DictionaryDatabase db, $DictionaryTable table)
-      : super(drift.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$DictionaryTableFilterComposer(drift.ComposerState(db, table)),
-          orderingComposer:
-              $$DictionaryTableOrderingComposer(drift.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            drift.Value<int> blockOffset = const drift.Value.absent(),
-            drift.Value<int> compressedSize = const drift.Value.absent(),
-            drift.Value<int> endOffset = const drift.Value.absent(),
-            drift.Value<String> key = const drift.Value.absent(),
-            drift.Value<int> startOffset = const drift.Value.absent(),
-            drift.Value<int> rowid = const drift.Value.absent(),
-          }) =>
-              DictionaryCompanion(
-            blockOffset: blockOffset,
-            compressedSize: compressedSize,
-            endOffset: endOffset,
-            key: key,
-            startOffset: startOffset,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int blockOffset,
-            required int compressedSize,
-            required int endOffset,
-            required String key,
-            required int startOffset,
-            drift.Value<int> rowid = const drift.Value.absent(),
-          }) =>
-              DictionaryCompanion.insert(
-            blockOffset: blockOffset,
-            compressedSize: compressedSize,
-            endOffset: endOffset,
-            key: key,
-            startOffset: startOffset,
-            rowid: rowid,
-          ),
-        ));
-}
 
 class $$DictionaryTableFilterComposer
     extends drift.FilterComposer<_$DictionaryDatabase, $DictionaryTable> {
@@ -1421,6 +1449,85 @@ class $$DictionaryTableOrderingComposer
       builder: (column, joinBuilders) =>
           drift.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
+
+class $$DictionaryTableTableManager extends drift.RootTableManager<
+    _$DictionaryDatabase,
+    $DictionaryTable,
+    DictionaryData,
+    $$DictionaryTableFilterComposer,
+    $$DictionaryTableOrderingComposer,
+    $$DictionaryTableCreateCompanionBuilder,
+    $$DictionaryTableUpdateCompanionBuilder,
+    (
+      DictionaryData,
+      drift
+      .BaseReferences<_$DictionaryDatabase, $DictionaryTable, DictionaryData>
+    ),
+    DictionaryData,
+    drift.PrefetchHooks Function()> {
+  $$DictionaryTableTableManager(_$DictionaryDatabase db, $DictionaryTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$DictionaryTableFilterComposer(drift.ComposerState(db, table)),
+          orderingComposer:
+              $$DictionaryTableOrderingComposer(drift.ComposerState(db, table)),
+          updateCompanionCallback: ({
+            drift.Value<int> blockOffset = const drift.Value.absent(),
+            drift.Value<int> compressedSize = const drift.Value.absent(),
+            drift.Value<int> endOffset = const drift.Value.absent(),
+            drift.Value<String> key = const drift.Value.absent(),
+            drift.Value<int> startOffset = const drift.Value.absent(),
+            drift.Value<int> rowid = const drift.Value.absent(),
+          }) =>
+              DictionaryCompanion(
+            blockOffset: blockOffset,
+            compressedSize: compressedSize,
+            endOffset: endOffset,
+            key: key,
+            startOffset: startOffset,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int blockOffset,
+            required int compressedSize,
+            required int endOffset,
+            required String key,
+            required int startOffset,
+            drift.Value<int> rowid = const drift.Value.absent(),
+          }) =>
+              DictionaryCompanion.insert(
+            blockOffset: blockOffset,
+            compressedSize: compressedSize,
+            endOffset: endOffset,
+            key: key,
+            startOffset: startOffset,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$DictionaryTableProcessedTableManager = drift.ProcessedTableManager<
+    _$DictionaryDatabase,
+    $DictionaryTable,
+    DictionaryData,
+    $$DictionaryTableFilterComposer,
+    $$DictionaryTableOrderingComposer,
+    $$DictionaryTableCreateCompanionBuilder,
+    $$DictionaryTableUpdateCompanionBuilder,
+    (
+      DictionaryData,
+      drift
+      .BaseReferences<_$DictionaryDatabase, $DictionaryTable, DictionaryData>
+    ),
+    DictionaryData,
+    drift.PrefetchHooks Function()>;
 
 class $DictionaryDatabaseManager {
   final _$DictionaryDatabase _db;
