@@ -1,8 +1,7 @@
 name: Flutter
 
 on:
-  push:
-    branches:
+  pull_request:
     paths-ignore:
       - "**.md"
 
@@ -24,19 +23,11 @@ jobs:
       - run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze
 
-      - name: Decode Keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-
-      - name: Create key.properties
-        run: |
-          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
-
-      - run: flutter build apk
-      - run: flutter build appbundle
+      - name: Disable signing
+      - run: flutter build apk --debug
 
       - uses: actions/upload-artifact@v4
         with:
           name: Apk
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/flutter-apk/app-debug.apk
