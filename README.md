@@ -36,6 +36,12 @@ See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki/%E6%8E%A8%E8%8D%90%E8%AF%8D%E5
 <img src="https://hosted.weblate.org/widget/ciyue/app/multi-auto.svg" alt="Translation status" />
 </a>
 
+## Contributor
+
+<a href="https://github.com/mumu-lhl/Ciyue/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=mumu-lhl/Ciyue" />
+</a>
+
 ## License
 
 [MIT](./LICENSE)

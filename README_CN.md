@@ -36,6 +36,12 @@
 <img src="https://hosted.weblate.org/widget/ciyue/app/multi-auto.svg" alt="翻译状态" />
 </a>
 
+## 贡献者
+
+<a href="https://github.com/mumu-lhl/Ciyue/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=mumu-lhl/Ciyue" />
+</a>
+
 ## 开源许可证
 
 [MIT](./LICENSE)
