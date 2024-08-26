@@ -32,6 +32,8 @@ See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki/%E6%8E%A8%E8%8D%90%E8%AF%8D%E5
 
 ## Translation
 
+You can visit [Weblate](https://hosted.weblate.org/engage/ciyue/) to add languages or fill in translations.
+
 <a href="https://hosted.weblate.org/engage/ciyue/">
 <img src="https://hosted.weblate.org/widget/ciyue/app/multi-auto.svg" alt="Translation status" />
 </a>
