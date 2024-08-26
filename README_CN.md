@@ -22,7 +22,11 @@
 
 ### Github Releases
 
-见 [Releases](https://github.com/mumu-lhl/Ciyue/releases)。
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/org.eu.mumulhl.ciyue/)
+
+或者从 [Releases](https://github.com/mumu-lhl/Ciyue/releases/latest) 下载最新安装包。
 
 ## 推荐词典
 
