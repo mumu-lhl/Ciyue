@@ -11,26 +11,53 @@ class LanguageChoice extends StatefulWidget {
   State<LanguageChoice> createState() => _LanguageChoiceState();
 }
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+class ManageDictionariesWidget extends StatelessWidget {
+  const ManageDictionariesWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
 
+    return ListTile(
+        leading: const Icon(Icons.book),
+        trailing: const Icon(Icons.arrow_forward),
+        title: Text(locale!.manageDictionaries),
+        onTap: () async {
+          await context.push("/settings/dictionaries");
+        });
+  }
+}
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return ListView(
-      children: [
-        ListTile(
-            leading: const Icon(Icons.book),
-            trailing: const Icon(Icons.arrow_forward),
-            title: Text(locale!.manageDictionaries),
-            onTap: () async {
-              await context.push("/settings/dictionaries");
-            }),
-        const Divider(),
-        const ThemeChoice(),
-        const LanguageChoice()
+      children: const [
+        ManageDictionariesWidget(),
+        Divider(),
+        ThemeChoice(),
+        LanguageChoice(),
+        Divider(),
+        AboutWidget()
       ],
+    );
+  }
+}
+
+class AboutWidget extends StatelessWidget {
+  const AboutWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AboutListTile(
+      icon: const Icon(Icons.info),
+      applicationName: packageInfo.appName,
+      applicationVersion: "${packageInfo.version}+${packageInfo.buildNumber}",
+      applicationLegalese: "\u{a9} 2024 Mumulhl and contributors",
     );
   }
 }

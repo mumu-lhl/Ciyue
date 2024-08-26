@@ -4,6 +4,7 @@ import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:go_router/go_router.dart";
+import "package:package_info_plus/package_info_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 import "database.dart";
@@ -50,6 +51,8 @@ void main() async {
 
   flutterTts = FlutterTts();
 
+  packageInfo = await PackageInfo.fromPlatform();
+
   runApp(const Dictionary());
 }
 
@@ -61,6 +64,7 @@ DictReader? dictReader;
 DictReader? dictReaderResource;
 late FlutterTts flutterTts;
 String? language;
+late PackageInfo packageInfo;
 late SharedPreferences prefs;
 late VoidCallback refreshAll;
 late ThemeMode themeMode;

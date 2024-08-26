@@ -55,6 +55,7 @@ dependencies:
   dynamic_color: ^1.7.0
   flutter_tts: ^4.0.2
   flutter_native_splash: ^2.4.1
+  package_info_plus: ^8.0.2
 
 dev_dependencies:
   flutter_test:
