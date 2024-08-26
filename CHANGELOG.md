@@ -3,10 +3,23 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [unreleased]
+## [0.5.0+15](https://github.com/mumu-lhl/Ciyue/compare/v0.4.3+14..v0.5.0+15) - 2024-08-26
+
+### Documentation
+
+- **(readme)** add Translation status - ([b2565f0](https://github.com/mumu-lhl/Ciyue/commit/b2565f0f25ea283247fc1efa445e1ca3d6803059)) - Mumulhl
+- **(readme)** update install ([#4](https://github.com/mumu-lhl/Ciyue/issues/4)) - ([4add0df](https://github.com/mumu-lhl/Ciyue/commit/4add0df3c588d06c0738b3bd8e1e4ea5ae34076c)) - Poussinou
+- **(readme)** update install in README_CN.md - ([043b3e5](https://github.com/mumu-lhl/Ciyue/commit/043b3e5db7df8350c2a030bff9a452bf1be02f55)) - Mumulhl
+- **(readme)** remove 'Github Releases' in README_CN.md - ([183114e](https://github.com/mumu-lhl/Ciyue/commit/183114e81725e4d08db8f732c2a90d6c6ffe2309)) - Mumulhl
+
+### Features
+
+- add Bokmål language - ([78151a2](https://github.com/mumu-lhl/Ciyue/commit/78151a2194db47aa0ab3b5af57966f3f96eb4b8f)) - Mumulhl
 
 ### Miscellaneous Chores
 
+- **(l10n)** create app_nb.arb - ([b0ceb00](https://github.com/mumu-lhl/Ciyue/commit/b0ceb0052e2c226e58bb7e985f005a4c3421e480)) - Mumulhl
+- **(l10n)** delete repeatable arb - ([9498ade](https://github.com/mumu-lhl/Ciyue/commit/9498ade1bbf94af4efd7367156b69f039d4f9015)) - Mumulhl
 - **(workflow)** fix generate changelog push error - ([70a9c88](https://github.com/mumu-lhl/Ciyue/commit/70a9c88890fdce7b03d39225df1f2e2d17894916)) - Mumulhl
 - **(workflow)** fix generate changelog push error again - ([5cc4400](https://github.com/mumu-lhl/Ciyue/commit/5cc4400af0d00651b7f31d003a7768900a47564c)) - Mumulhl
 - **(workflow)** fix generate changelog push error again - ([502dcd6](https://github.com/mumu-lhl/Ciyue/commit/502dcd64e2b9371308a51b3aa8f36e63b19d6e72)) - Mumulhl
@@ -16,6 +29,12 @@ All notable changes to this project will be documented in this file. See [conven
 - **(workflow)** update release - ([3825e15](https://github.com/mumu-lhl/Ciyue/commit/3825e1552f7dfa07e1dfb0f21127f89d3aa46e47)) - Mumulhl
 - **(workflow)** update release - ([3f749b0](https://github.com/mumu-lhl/Ciyue/commit/3f749b089416019a5993617ca921d6743034babb)) - Mumulhl
 - **(workflow)** update release - ([a2c5f26](https://github.com/mumu-lhl/Ciyue/commit/a2c5f26cb7cd7d41fdb48115a1b04d448cb063ae)) - Mumulhl
+- **(workflow)** update release - ([bd1f9b3](https://github.com/mumu-lhl/Ciyue/commit/bd1f9b3b253a5a040d32447dc894e7eae54d2057)) - Mumulhl
+- **(workflow)** make flutter workflow work well when is triggered by pr - ([a49ba8e](https://github.com/mumu-lhl/Ciyue/commit/a49ba8e2a1fb1273c89bd04da89bcc9dc2e279db)) - Mumulhl
+- **(workflow)** fix flutter_pr - ([113843d](https://github.com/mumu-lhl/Ciyue/commit/113843d08e5bc47e9a89a79e9513278805fe0305)) - Mumulhl
+- remove code of conduct - ([08f9870](https://github.com/mumu-lhl/Ciyue/commit/08f987050878306e89da6b247a6afae547b9586c)) - Mumulhl
+- upgrade packages - ([d3c486a](https://github.com/mumu-lhl/Ciyue/commit/d3c486a02744177a88c1b805eb89701b0ec43e99)) - Mumulhl
+- upgrade packages - ([456ad7d](https://github.com/mumu-lhl/Ciyue/commit/456ad7d58ca02a31c844bcc01cc5740d9216f9eb)) - Mumulhl
 
 ### Revert
 
@@ -65,7 +84,7 @@ All notable changes to this project will be documented in this file. See [conven
 - remove Internet permission - ([05abe59](https://github.com/mumu-lhl/Ciyue/commit/05abe59d022d0a2063c4cdde826bdda11e2c7c66)) - Mumulhl
 
 ---
-## [0.4.1+5](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+4..v0.4.1+5) - 2024-08-18
+## [0.4.1+5](https://github.com/mumu-lhl/Ciyue/compare/v0.4.0+1..v0.4.1+5) - 2024-08-18
 
 ### Documentation
 
@@ -74,34 +93,16 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Miscellaneous Chores
 
-- add metadata - ([dee13b0](https://github.com/mumu-lhl/Ciyue/commit/dee13b032ec6faacb4ed08b6af44c2d7f30b4860)) - Mumulhl
-
----
-## [0.4.1+4](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+3..v0.4.1+4) - 2024-08-17
-
-### Miscellaneous Chores
-
-- **(workflow)** add universal apk - ([7bfbab6](https://github.com/mumu-lhl/Ciyue/commit/7bfbab65b27fd10e8e75bbf235911642b0476fed)) - Mumulhl
-
----
-## [0.4.1+3](https://github.com/mumu-lhl/Ciyue/compare/v0.4.1+1..v0.4.1+3) - 2024-08-17
-
-### Miscellaneous Chores
-
 - **(workflow)** add flutter-version - ([b1ee295](https://github.com/mumu-lhl/Ciyue/commit/b1ee295a0b7231a7ae2fe40109bbca35eccc82b3)) - Mumulhl
 - **(workflow)** fix flutter-version - ([bfdb7f2](https://github.com/mumu-lhl/Ciyue/commit/bfdb7f2de49bb24fa479918dfbf6caab6fcb6617)) - Mumulhl
+- **(workflow)** add universal apk - ([7bfbab6](https://github.com/mumu-lhl/Ciyue/commit/7bfbab65b27fd10e8e75bbf235911642b0476fed)) - Mumulhl
+- change package name - ([ab9c4aa](https://github.com/mumu-lhl/Ciyue/commit/ab9c4aabf32cc9ce4d31139d6c40c9b3cbfbfc15)) - Mumulhl
 - add flutter submodule - ([452361a](https://github.com/mumu-lhl/Ciyue/commit/452361ae707ef87d354a62b57528756562021db6)) - Mumulhl
+- add metadata - ([dee13b0](https://github.com/mumu-lhl/Ciyue/commit/dee13b032ec6faacb4ed08b6af44c2d7f30b4860)) - Mumulhl
 
 ### Revert
 
 - chore: add flutter submodule - ([9e73f92](https://github.com/mumu-lhl/Ciyue/commit/9e73f92936d7c3060fdc7222ab0c5c4414c0d2a4)) - Mumulhl
-
----
-## [0.4.1+1](https://github.com/mumu-lhl/Ciyue/compare/v0.4.0+1..v0.4.1+1) - 2024-08-17
-
-### Miscellaneous Chores
-
-- change package name - ([ab9c4aa](https://github.com/mumu-lhl/Ciyue/commit/ab9c4aabf32cc9ce4d31139d6c40c9b3cbfbfc15)) - Mumulhl
 
 ---
 ## [0.4.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.3.0+1..v0.4.0+1) - 2024-08-17
@@ -130,41 +131,7 @@ All notable changes to this project will be documented in this file. See [conven
 - update pubspec.lock - ([4bb01a1](https://github.com/mumu-lhl/Ciyue/commit/4bb01a16025258216412da7384783501001c5442)) - Mumulhl
 
 ---
-## [0.2.1+5](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+4..v0.2.1+5) - 2024-08-16
-
-### Miscellaneous Chores
-
-- **(workflow)** fix keystore path - ([3fddd9b](https://github.com/mumu-lhl/Ciyue/commit/3fddd9bb33d93b0e2c7f4407c66bcb634a0cc042)) - Mumulhl
-- fix sign - ([87975a2](https://github.com/mumu-lhl/Ciyue/commit/87975a20e2111b7c95e839898f75230c8cbd7486)) - Mumulhl
-
-### Revert
-
-- chore(workflow): don't run flutter.yml on tag creation - ([ec3af4a](https://github.com/mumu-lhl/Ciyue/commit/ec3af4a5c189289495454fd4766edf7661b8b9a5)) - Mumulhl
-
----
-## [0.2.1+4](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+3..v0.2.1+4) - 2024-08-16
-
-### Miscellaneous Chores
-
-- **(workflow)** fix key properties path - ([5ed6e98](https://github.com/mumu-lhl/Ciyue/commit/5ed6e98cdb518d5c70028f59e519ce6323323f11)) - Mumulhl
-
----
-## [0.2.1+3](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+2..v0.2.1+3) - 2024-08-16
-
-### Miscellaneous Chores
-
-- **(workflow)** don't run flutter.yml on tag creation - ([63818c0](https://github.com/mumu-lhl/Ciyue/commit/63818c08a57be7bf6b67a8f7d1a5eada010fa747)) - Mumulhl
-- fix sign - ([44f64d7](https://github.com/mumu-lhl/Ciyue/commit/44f64d7073bb49a205f8f7b8a69108cb760712dc)) - Mumulhl
-
----
-## [0.2.1+2](https://github.com/mumu-lhl/Ciyue/compare/v0.2.1+1..v0.2.1+2) - 2024-08-16
-
-### Miscellaneous Chores
-
-- fix create key.properties - ([d16efbe](https://github.com/mumu-lhl/Ciyue/commit/d16efbef287bc009c0beba67a81eba5556d71bae)) - Mumulhl
-
----
-## [0.2.1+1](https://github.com/mumu-lhl/Ciyue/compare/v0.2.0+1..v0.2.1+1) - 2024-08-16
+## [0.2.1+5](https://github.com/mumu-lhl/Ciyue/compare/v0.2.0+1..v0.2.1+5) - 2024-08-16
 
 ### Bug Fixes
 
@@ -177,31 +144,26 @@ All notable changes to this project will be documented in this file. See [conven
 ### Miscellaneous Chores
 
 - **(action)** fix keystore path - ([03447e1](https://github.com/mumu-lhl/Ciyue/commit/03447e1bbfd76aedbcd9854d3170772902b92343)) - Mumulhl
+- **(workflow)** don't run flutter.yml on tag creation - ([63818c0](https://github.com/mumu-lhl/Ciyue/commit/63818c08a57be7bf6b67a8f7d1a5eada010fa747)) - Mumulhl
+- **(workflow)** fix key properties path - ([5ed6e98](https://github.com/mumu-lhl/Ciyue/commit/5ed6e98cdb518d5c70028f59e519ce6323323f11)) - Mumulhl
+- **(workflow)** fix keystore path - ([3fddd9b](https://github.com/mumu-lhl/Ciyue/commit/3fddd9bb33d93b0e2c7f4407c66bcb634a0cc042)) - Mumulhl
+- fix create key.properties - ([d16efbe](https://github.com/mumu-lhl/Ciyue/commit/d16efbef287bc009c0beba67a81eba5556d71bae)) - Mumulhl
+- fix sign - ([44f64d7](https://github.com/mumu-lhl/Ciyue/commit/44f64d7073bb49a205f8f7b8a69108cb760712dc)) - Mumulhl
+- fix sign - ([87975a2](https://github.com/mumu-lhl/Ciyue/commit/87975a20e2111b7c95e839898f75230c8cbd7486)) - Mumulhl
+
+### Revert
+
+- chore(workflow): don't run flutter.yml on tag creation - ([ec3af4a](https://github.com/mumu-lhl/Ciyue/commit/ec3af4a5c189289495454fd4766edf7661b8b9a5)) - Mumulhl
 
 ---
-## [0.2.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.1.0+1..v0.2.0+1) - 2024-08-16
+## [0.2.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.0.1+4..v0.2.0+1) - 2024-08-16
 
 ### Bug Fixes
 
 - **(l10n)** fix text for 'not support' - ([83a8e31](https://github.com/mumu-lhl/Ciyue/commit/83a8e3147b515576a9f8257f551e446024b298a9)) - Mumulhl
-- show unsupportable mdx file - ([f94439f](https://github.com/mumu-lhl/Ciyue/commit/f94439fded76141dddb19004c0387c5fecfae663)) - Mumulhl
-
-### Features
-
-- hide system context menu items - ([7c618bb](https://github.com/mumu-lhl/Ciyue/commit/7c618bbbf178426fe4b8deed9e54c47bd1ecfd2e)) - Mumulhl
-- support tts - ([dfe9ee2](https://github.com/mumu-lhl/Ciyue/commit/dfe9ee209a5331e94b27a0d3681402aa6bc99b35)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(v0.2.0+1)** release v0.2.0+1 - ([d502e9a](https://github.com/mumu-lhl/Ciyue/commit/d502e9a6d633d63db6f2c709a927016e2fd840bf)) - Mumulhl
-
----
-## [0.1.0+1](https://github.com/mumu-lhl/Ciyue/compare/v0.0.1+4..v0.1.0+1) - 2024-08-16
-
-### Bug Fixes
-
 - language and theme PopupMenuButton Icon - ([02c420e](https://github.com/mumu-lhl/Ciyue/commit/02c420ed858b7a4dfe27cf28cfe6bf629edd9683)) - Mumulhl
 - entry scheme for word that longer than two words - ([39f397f](https://github.com/mumu-lhl/Ciyue/commit/39f397f14f8efca51c5ca40ff7ed61d5dd0225db)) - Mumulhl
+- show unsupportable mdx file - ([f94439f](https://github.com/mumu-lhl/Ciyue/commit/f94439fded76141dddb19004c0387c5fecfae663)) - Mumulhl
 
 ### Documentation
 
@@ -217,9 +179,12 @@ All notable changes to this project will be documented in this file. See [conven
 - read resources directly if there is no mdd - ([8d1d326](https://github.com/mumu-lhl/Ciyue/commit/8d1d326b80cc9be4df57622f7b8068a8eeb41d82)) - Mumulhl
 - remove html package - ([b6efedd](https://github.com/mumu-lhl/Ciyue/commit/b6efedd321ee100cdd135d4fa72d4034d80e9ae8)) - Mumulhl
 - support lookup in context menu - ([0a1e584](https://github.com/mumu-lhl/Ciyue/commit/0a1e584146ec1190269385ec452d97d2e9a760e3)) - Mumulhl
+- hide system context menu items - ([7c618bb](https://github.com/mumu-lhl/Ciyue/commit/7c618bbbf178426fe4b8deed9e54c47bd1ecfd2e)) - Mumulhl
+- support tts - ([dfe9ee2](https://github.com/mumu-lhl/Ciyue/commit/dfe9ee209a5331e94b27a0d3681402aa6bc99b35)) - Mumulhl
 
 ### Miscellaneous Chores
 
+- **(v0.2.0+1)** release v0.2.0+1 - ([d502e9a](https://github.com/mumu-lhl/Ciyue/commit/d502e9a6d633d63db6f2c709a927016e2fd840bf)) - Mumulhl
 - disable flutter workflow for tag push - ([328ed60](https://github.com/mumu-lhl/Ciyue/commit/328ed60757f029ec2164d273130f8a409ae1d198)) - Mumulhl
 - disable **.md for flutter workflow - ([d281da8](https://github.com/mumu-lhl/Ciyue/commit/d281da80db81262ef03b49c1ae843e28a17c15a0)) - Mumulhl
 - fix flutter workflow - ([96dab2f](https://github.com/mumu-lhl/Ciyue/commit/96dab2f28ee6a0e1708cc201a6449189a5a87d10)) - Mumulhl
@@ -232,33 +197,7 @@ All notable changes to this project will be documented in this file. See [conven
 - sort members - ([00b5dfc](https://github.com/mumu-lhl/Ciyue/commit/00b5dfcdd67693d0851da93762ebfe646b395ceb)) - Mumulhl
 
 ---
-## [0.0.1+4](https://github.com/mumu-lhl/Ciyue/compare/v0.0.1+3..v0.0.1+4) - 2024-08-15
-
-### Miscellaneous Chores
-
-- fix release workflow token - ([d1a72c8](https://github.com/mumu-lhl/Ciyue/commit/d1a72c8ec94109d6afe2d0b76dcddfa90e102386)) - Mumulhl
-- update build version - ([0b0202c](https://github.com/mumu-lhl/Ciyue/commit/0b0202c46903c6822fe8b50ae9c02d3c18bf9b6a)) - Mumulhl
-
----
-## [0.0.1+3](https://github.com/mumu-lhl/Ciyue/compare/v0.0.1+2..v0.0.1+3) - 2024-08-15
-
-### Miscellaneous Chores
-
-- fix rename aab - ([51dafa9](https://github.com/mumu-lhl/Ciyue/commit/51dafa96898a28a1447ccdf226447ffec14cd9c7)) - Mumulhl
-- update build version - ([2b877f4](https://github.com/mumu-lhl/Ciyue/commit/2b877f41fa5164305fa087fcddd8fb064bf1c8b9)) - Mumulhl
-
----
-## [0.0.1+2](https://github.com/mumu-lhl/Ciyue/compare/v0.0.1+1..v0.0.1+2) - 2024-08-15
-
-### Miscellaneous Chores
-
-- change workflow name of release.yml - ([1166b74](https://github.com/mumu-lhl/Ciyue/commit/1166b7414ef018df329d99aef78134d6dc628e92)) - Mumulhl
-- fix rename for release.yml - ([287e542](https://github.com/mumu-lhl/Ciyue/commit/287e54220a1d2b557a46ead9b2932e061c6e67fc)) - Mumulhl
-- fix rename for release.yml - ([1a7d860](https://github.com/mumu-lhl/Ciyue/commit/1a7d8604dd322221267c693e0ae08aa52002960f)) - Mumulhl
-- update build version - ([ee51e11](https://github.com/mumu-lhl/Ciyue/commit/ee51e115ee7e448466f5273b5fdeb3ff2aa9eef0)) - Mumulhl
-
----
-## [0.0.1+1] - 2024-08-15
+## [0.0.1+4] - 2024-08-15
 
 ### Documentation
 
@@ -278,5 +217,13 @@ All notable changes to this project will be documented in this file. See [conven
 - change dart to flutter workflow - ([9e8eca7](https://github.com/mumu-lhl/Ciyue/commit/9e8eca7a091bbb5d89b3a86cbc4758e2fa0e1d4f)) - Mumulhl
 - update l10n - ([cbe4923](https://github.com/mumu-lhl/Ciyue/commit/cbe4923ffcc20b9e729006daf7dedade4cafd13d)) - Mumulhl
 - add release workflow - ([fa17159](https://github.com/mumu-lhl/Ciyue/commit/fa17159b9e44310af88e06c37d931b86a5970d78)) - Mumulhl
+- change workflow name of release.yml - ([1166b74](https://github.com/mumu-lhl/Ciyue/commit/1166b7414ef018df329d99aef78134d6dc628e92)) - Mumulhl
+- fix rename for release.yml - ([287e542](https://github.com/mumu-lhl/Ciyue/commit/287e54220a1d2b557a46ead9b2932e061c6e67fc)) - Mumulhl
+- fix rename for release.yml - ([1a7d860](https://github.com/mumu-lhl/Ciyue/commit/1a7d8604dd322221267c693e0ae08aa52002960f)) - Mumulhl
+- update build version - ([ee51e11](https://github.com/mumu-lhl/Ciyue/commit/ee51e115ee7e448466f5273b5fdeb3ff2aa9eef0)) - Mumulhl
+- fix rename aab - ([51dafa9](https://github.com/mumu-lhl/Ciyue/commit/51dafa96898a28a1447ccdf226447ffec14cd9c7)) - Mumulhl
+- update build version - ([2b877f4](https://github.com/mumu-lhl/Ciyue/commit/2b877f41fa5164305fa087fcddd8fb064bf1c8b9)) - Mumulhl
+- fix release workflow token - ([d1a72c8](https://github.com/mumu-lhl/Ciyue/commit/d1a72c8ec94109d6afe2d0b76dcddfa90e102386)) - Mumulhl
+- update build version - ([0b0202c](https://github.com/mumu-lhl/Ciyue/commit/0b0202c46903c6822fe8b50ae9c02d3c18bf9b6a)) - Mumulhl
 
 <!-- generated by git-cliff -->
