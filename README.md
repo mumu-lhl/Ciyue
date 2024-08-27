@@ -28,7 +28,7 @@ Or download the latest APK from the [Releases Section](https://github.com/mumu-l
 
 ## Recommended Dictionaries
 
-See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki/%E6%8E%A8%E8%8D%90%E8%AF%8D%E5%85%B8).
+See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries).
 
 ## Translation
 
