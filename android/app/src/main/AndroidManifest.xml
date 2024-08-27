@@ -49,6 +49,11 @@
         <action android:name="android.intent.action.TTS_SERVICE" />
       </intent>
     </queries>
+    <queries>
+      <intent>
+        <action android:name="android.support.customtabs.action.CustomTabsService" />
+      </intent>
+    </queries>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET"/>

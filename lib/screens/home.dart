@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
+import "package:url_launcher/url_launcher.dart";
 
 import "../database.dart";
 import "../main.dart";
@@ -19,7 +20,21 @@ class HomeScreen extends StatelessWidget {
     final locale = AppLocalizations.of(context);
 
     if (currentDictionaryPath == null) {
-      body = Center(child: Text(locale!.addDictionary));
+      body = Center(
+          child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(locale!.addDictionary),
+          ElevatedButton(
+            child: Text(locale.recommendedDictionaries),
+            onPressed: () async {
+              await launchUrl(Uri.parse(
+                  "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
+            },
+          )
+        ],
+      ));
     } else {
       if (searchWord == "") {
         body = Center(child: Text(locale!.startToSearch));

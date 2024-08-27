@@ -36,5 +36,6 @@
   "copy": "复制",
   "@copy": {},
   "readLoudly": "朗读",
-  "@readLoudly": {}
+  "@readLoudly": {},
+  "recommendedDictionaries": "推荐词典"
 }
