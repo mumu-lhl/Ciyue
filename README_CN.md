@@ -48,9 +48,7 @@
 
 您可以到 [Weblate](https://hosted.weblate.org/engage/ciyue/) 添加语言或补齐翻译。
 
-<a href="https://hosted.weblate.org/engage/ciyue/">
-<img src="https://hosted.weblate.org/widget/ciyue/app/multi-auto.svg" alt="翻译状态" />
-</a>
+[![翻译状态](https://hosted.weblate.org/widget/ciyue/multi-auto.svg)](https://hosted.weblate.org/engage/ciyue/)
 
 ## 贡献者
 

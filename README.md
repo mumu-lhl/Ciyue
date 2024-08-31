@@ -48,15 +48,11 @@ Ciyue needs the permission to read mdd file, which is the resources of mdx file.
 
 You can visit [Weblate](https://hosted.weblate.org/engage/ciyue/) to add languages or fill in translations.
 
-<a href="https://hosted.weblate.org/engage/ciyue/">
-<img src="https://hosted.weblate.org/widget/ciyue/app/multi-auto.svg" alt="Translation status" />
-</a>
+[![Translation status](https://hosted.weblate.org/widget/ciyue/multi-auto.svg)](https://hosted.weblate.org/engage/ciyue/)
 
 ## Contributor
 
-<a href="https://github.com/mumu-lhl/Ciyue/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=mumu-lhl/Ciyue" />
-</a>
+[![Contributor](https://contrib.rocks/image?repo=mumu-lhl/Ciyue)](https://github.com/mumu-lhl/Ciyue/graphs/contributors)
 
 ## License
 
