@@ -30,6 +30,16 @@ Or download the latest APK from the [Releases Section](https://github.com/mumu-l
 
 See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries).
 
+## Permissions
+
+### INTERNET (Internet)
+
+Ciyue uses WebView to display words in a dictionary, and WebView needs INTERNET permission to work, even if when displaying local data.
+
+### READ_EXTERNAL_STORAGE / MANAGE_EXTERNAL_STORAGE (Manage External Storage)
+
+Ciyue needs the permission to read mdd file, which is the resources of mdx file. (such as images, JavaScript, CSS, etc.)
+
 ## Translation
 
 You can visit [Weblate](https://hosted.weblate.org/engage/ciyue/) to add languages or fill in translations.

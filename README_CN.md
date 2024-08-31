@@ -38,6 +38,16 @@
 <img src="https://hosted.weblate.org/widget/ciyue/app/multi-auto.svg" alt="翻译状态" />
 </a>
 
+## 权限
+
+### INTERNET（互联网）
+
+词悦使用 WebView 显示单词，WebView 即使显示本地数据也需要 INTERNET 权限才能正常工作。
+
+### READ_EXTERNAL_STORAGE / MANAGE_EXTERNAL_STORAGE（管理外部存储空间）
+
+词悦需要该权限去读取 mdd 文件（mdx 文件的资源）。(如图片、JavaScript、CSS 等）。
+
 ## 贡献者
 
 <a href="https://github.com/mumu-lhl/Ciyue/graphs/contributors">
