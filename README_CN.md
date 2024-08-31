@@ -30,14 +30,6 @@
 
 见 [Wiki](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries)。
 
-## 翻译
-
-您可以到 [Weblate](https://hosted.weblate.org/engage/ciyue/) 添加语言或补齐翻译。
-
-<a href="https://hosted.weblate.org/engage/ciyue/">
-<img src="https://hosted.weblate.org/widget/ciyue/app/multi-auto.svg" alt="翻译状态" />
-</a>
-
 ## 权限
 
 ### INTERNET（互联网）
@@ -47,6 +39,14 @@
 ### READ_EXTERNAL_STORAGE / MANAGE_EXTERNAL_STORAGE（管理外部存储空间）
 
 词悦需要该权限去读取 mdd 文件（mdx 文件的资源）。(如图片、JavaScript、CSS 等）。
+
+## 翻译
+
+您可以到 [Weblate](https://hosted.weblate.org/engage/ciyue/) 添加语言或补齐翻译。
+
+<a href="https://hosted.weblate.org/engage/ciyue/">
+<img src="https://hosted.weblate.org/widget/ciyue/app/multi-auto.svg" alt="翻译状态" />
+</a>
 
 ## 贡献者
 
