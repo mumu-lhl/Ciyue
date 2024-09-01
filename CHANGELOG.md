@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.7.1+18](https://github.com/mumu-lhl/Ciyue/compare/v0.7.0+17..v0.7.1+18) - 2024-09-01
+
+### Bug Fixes
+
+- **(ui)** fix click theme and language chooser - ([7badd79](https://github.com/mumu-lhl/Ciyue/commit/7badd79aa42cfec0793187bfc622039e35e9e39b)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(changelog)** allow refactor in release changelog - ([25152ed](https://github.com/mumu-lhl/Ciyue/commit/25152ed9b040cea778532ac287c859edeb1db599)) - Mumulhl
+
+### Refactoring
+
+- **(ui)** version+buildNumber -> version (buildNumber) - ([e29c6aa](https://github.com/mumu-lhl/Ciyue/commit/e29c6aaf5d23608177f2aa9928f2186df8ea8c06)) - Mumulhl
+
+---
 ## [0.7.0+17](https://github.com/mumu-lhl/Ciyue/compare/v0.6.0+16..v0.7.0+17) - 2024-09-01
 
 ### Documentation
