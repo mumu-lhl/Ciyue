@@ -1,11 +1,12 @@
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
+import "package:url_launcher/url_launcher.dart";
 
 import "../main.dart";
 
-class AboutWidget extends StatelessWidget {
-  const AboutWidget({
+class About extends StatelessWidget {
+  const About({
     super.key,
   });
 
@@ -17,6 +18,37 @@ class AboutWidget extends StatelessWidget {
       applicationVersion: "${packageInfo.version}+${packageInfo.buildNumber}",
       applicationLegalese: "\u{a9} 2024 Mumulhl and contributors",
     );
+  }
+}
+
+class Feedback extends StatelessWidget {
+  const Feedback({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+        title: Text(AppLocalizations.of(context)!.feedback),
+        subtitle: const Text("https://github.com/mumu-lhl/Ciyue/issues"),
+        leading: const Icon(Icons.feedback),
+        onTap: () =>
+            launchUrl(Uri.parse("https://github.com/mumu-lhl/Ciyue/issues")));
+  }
+}
+
+class GithubUrl extends StatelessWidget {
+  const GithubUrl({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+        title: const Text("Github"),
+        subtitle: const Text("https://github.com/mumu-lhl/Ciyue"),
+        leading: const Icon(Icons.public),
+        onTap: () => launchUrl(Uri.parse("https://github.com/mumu-lhl/Ciyue")));
   }
 }
 
@@ -56,7 +88,9 @@ class SettingsScreen extends StatelessWidget {
         ThemeChoice(),
         LanguageChoice(),
         Divider(),
-        AboutWidget()
+        Feedback(),
+        GithubUrl(),
+        About(),
       ],
     );
   }

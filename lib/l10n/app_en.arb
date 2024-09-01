@@ -18,5 +18,6 @@
   "notSupport": "Not support this MDX file",
   "copy": "Copy",
   "readLoudly": "Read Loudly",
-  "recommendedDictionaries": "Recommmended Dictionaries"
+  "recommendedDictionaries": "Recommmended Dictionaries",
+  "feedback": "Feedback"
 }
