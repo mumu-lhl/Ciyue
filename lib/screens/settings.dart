@@ -1,9 +1,21 @@
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:url_launcher/url_launcher.dart";
 
 import "../main.dart";
+
+const feedbackUri = "https://github.com/mumu-lhl/Ciyue/issues";
+const githubUri = "https://github.com/mumu-lhl/Ciyue";
+
+void _copy(BuildContext context, String text) {
+  Clipboard.setData(ClipboardData(text: text));
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    content: Text(AppLocalizations.of(context)!.copied),
+    duration: const Duration(seconds: 1),
+  ));
+}
 
 class About extends StatelessWidget {
   const About({
@@ -30,10 +42,10 @@ class Feedback extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
         title: Text(AppLocalizations.of(context)!.feedback),
-        subtitle: const Text("https://github.com/mumu-lhl/Ciyue/issues"),
+        subtitle: const Text(feedbackUri),
         leading: const Icon(Icons.feedback),
-        onTap: () =>
-            launchUrl(Uri.parse("https://github.com/mumu-lhl/Ciyue/issues")));
+        onTap: () => launchUrl(Uri.parse(feedbackUri)),
+        onLongPress: () => _copy(context, feedbackUri));
   }
 }
 
@@ -46,9 +58,10 @@ class GithubUrl extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
         title: const Text("Github"),
-        subtitle: const Text("https://github.com/mumu-lhl/Ciyue"),
+        subtitle: const Text(githubUri),
         leading: const Icon(Icons.public),
-        onTap: () => launchUrl(Uri.parse("https://github.com/mumu-lhl/Ciyue")));
+        onTap: () => launchUrl(Uri.parse(githubUri)),
+        onLongPress: () => _copy(context, githubUri));
   }
 }
 

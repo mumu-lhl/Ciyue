@@ -38,5 +38,6 @@
   "readLoudly": "朗读",
   "@readLoudly": {},
   "recommendedDictionaries": "推荐词典",
-  "feedback": "反馈"
+  "feedback": "反馈",
+  "copied": "已复制"
 }

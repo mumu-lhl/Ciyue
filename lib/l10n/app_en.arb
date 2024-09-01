@@ -19,5 +19,6 @@
   "copy": "Copy",
   "readLoudly": "Read Loudly",
   "recommendedDictionaries": "Recommmended Dictionaries",
-  "feedback": "Feedback"
+  "feedback": "Feedback",
+  "copied": "Copied"
 }
