@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.7.0+17](https://github.com/mumu-lhl/Ciyue/compare/v0.6.0+16..v0.7.0+17) - 2024-09-01
+
+### Documentation
+
+- **(readme)** update wiki link - ([f7c86eb](https://github.com/mumu-lhl/Ciyue/commit/f7c86eb91a7127433941b05eb5c88a6d3419a552)) - Mumulhl
+- **(readme)** add the usage of permissions - ([6668327](https://github.com/mumu-lhl/Ciyue/commit/6668327c139a78545319799b673709b36de2ffb5)) - Mumulhl
+- **(readme)** fix position - ([a8cee22](https://github.com/mumu-lhl/Ciyue/commit/a8cee22445675172279219b8258e925014c8a243)) - Mumulhl
+- **(readme)** add badges - ([e1e91c7](https://github.com/mumu-lhl/Ciyue/commit/e1e91c77e008b6afd726ad5c34496a6cf468e714)) - Mumulhl
+- **(readme)** html to markdown - ([3b0af72](https://github.com/mumu-lhl/Ciyue/commit/3b0af72464cc88dadcb9ceeb5e536d3c264e65b1)) - Mumulhl
+
+### Features
+
+- add feedback and github link buttons - ([d3d97a9](https://github.com/mumu-lhl/Ciyue/commit/d3d97a99a3d76478e7bc560398d73e8a041c397a)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(workflow)** fix release changelog - ([3ec5131](https://github.com/mumu-lhl/Ciyue/commit/3ec513176328add7321ab6a678faeedf95163404)) - Mumulhl
+- **(workflow)** add lock-threads - ([411ccbd](https://github.com/mumu-lhl/Ciyue/commit/411ccbd1e0ee68746b0d30c6400f8afe9211a8bc)) - Mumulhl
+- upgrade packages - ([28c8a83](https://github.com/mumu-lhl/Ciyue/commit/28c8a83c8bd66dc0884988b0778fc44eb913a604)) - Mumulhl
+- simplify AndroidManifest.xml - ([c1f6717](https://github.com/mumu-lhl/Ciyue/commit/c1f67179362e3286dd8934a9cc0a8e1776ad695a)) - Mumulhl
+
+### Refactoring
+
+- **(ui)** modify theme and language chooser - ([f2014d9](https://github.com/mumu-lhl/Ciyue/commit/f2014d9790b669cfa6249fb042a75d570c99bbbb)) - Mumulhl
+
+---
 ## [0.6.0+16](https://github.com/mumu-lhl/Ciyue/compare/v0.4.3+14..v0.6.0+16) - 2024-08-27
 
 ### Documentation
