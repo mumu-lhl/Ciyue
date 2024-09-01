@@ -4,6 +4,22 @@ import "package:go_router/go_router.dart";
 
 import "../main.dart";
 
+class AboutWidget extends StatelessWidget {
+  const AboutWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AboutListTile(
+      icon: const Icon(Icons.info),
+      applicationName: packageInfo.appName,
+      applicationVersion: "${packageInfo.version}+${packageInfo.buildNumber}",
+      applicationLegalese: "\u{a9} 2024 Mumulhl and contributors",
+    );
+  }
+}
+
 class LanguageChoice extends StatefulWidget {
   const LanguageChoice({super.key});
 
@@ -46,22 +62,6 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-class AboutWidget extends StatelessWidget {
-  const AboutWidget({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AboutListTile(
-      icon: const Icon(Icons.info),
-      applicationName: packageInfo.appName,
-      applicationVersion: "${packageInfo.version}+${packageInfo.buildNumber}",
-      applicationLegalese: "\u{a9} 2024 Mumulhl and contributors",
-    );
-  }
-}
-
 class ThemeChoice extends StatefulWidget {
   const ThemeChoice({super.key});
 
@@ -74,28 +74,42 @@ class _LanguageChoiceState extends State<LanguageChoice> {
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
 
-    return ListTile(
-        leading: const Icon(Icons.language),
-        title: Text(locale!.language),
-        trailing: PopupMenuButton(
+    return GestureDetector(
+      onTapDown: (tapDownDetails) async {
+        final languageSelected = await showMenu(
+          context: context,
+          position: RelativeRect.fromLTRB(
+            tapDownDetails.globalPosition.dx,
+            tapDownDetails.globalPosition.dy,
+            tapDownDetails.globalPosition.dx,
+            tapDownDetails.globalPosition.dy,
+          ),
           initialValue: language,
-          onSelected: (String languageSelected) {
-            language = languageSelected;
-
-            prefs.setString("language", languageSelected);
-
-            setState(() {});
-            refreshAll();
-          },
-          itemBuilder: (BuildContext context) => [
+          items: [
             const PopupMenuItem(value: "en", child: Text("English")),
             const PopupMenuItem(value: "nb", child: Text("Bokmål")),
             const PopupMenuItem(value: "zh_CN", child: Text("简体中文")),
             const PopupMenuItem(value: "zh_HK", child: Text("繁體中文（香港）")),
             const PopupMenuItem(value: "zh_TW", child: Text("正體中文（臺灣）")),
           ],
-          child: const Icon(Icons.keyboard_arrow_down),
-        ));
+        );
+
+        if (languageSelected != null) {
+          language = languageSelected;
+
+          prefs.setString("language", languageSelected);
+
+          setState(() {});
+          refreshAll();
+        }
+      },
+      child: ListTile(
+        leading: const Icon(Icons.language),
+        title: Text(locale!.language),
+        trailing: const Icon(Icons.keyboard_arrow_down),
+        onTap: () {},
+      ),
+    );
   }
 }
 
@@ -104,35 +118,49 @@ class _ThemeChoiceState extends State<ThemeChoice> {
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
 
-    return ListTile(
-        leading: const Icon(Icons.light_mode),
-        title: Text(locale!.theme),
-        trailing: PopupMenuButton(
+    return GestureDetector(
+      onTapDown: (tapDownDetails) async {
+        final themeModeSelected = await showMenu(
+          context: context,
+          position: RelativeRect.fromLTRB(
+            tapDownDetails.globalPosition.dx,
+            tapDownDetails.globalPosition.dy,
+            tapDownDetails.globalPosition.dx,
+            tapDownDetails.globalPosition.dy,
+          ),
           initialValue: themeMode,
-          onSelected: (ThemeMode themeModeSelected) {
-            themeMode = themeModeSelected;
-
-            String themeModeString;
-            switch (themeModeSelected) {
-              case ThemeMode.light:
-                themeModeString = "light";
-              case ThemeMode.dark:
-                themeModeString = "dark";
-              case ThemeMode.system:
-                themeModeString = "system";
-            }
-
-            prefs.setString("themeMode", themeModeString);
-
-            setState(() {});
-            refreshAll();
-          },
-          itemBuilder: (BuildContext context) => [
+          items: [
             PopupMenuItem(value: ThemeMode.light, child: Text(locale.light)),
             PopupMenuItem(value: ThemeMode.dark, child: Text(locale.dark)),
             PopupMenuItem(value: ThemeMode.system, child: Text(locale.system)),
           ],
-          child: const Icon(Icons.keyboard_arrow_down),
-        ));
+        );
+
+        if (themeModeSelected != null) {
+          themeMode = themeModeSelected;
+
+          String themeModeString;
+          switch (themeModeSelected) {
+            case ThemeMode.light:
+              themeModeString = "light";
+            case ThemeMode.dark:
+              themeModeString = "dark";
+            case ThemeMode.system:
+              themeModeString = "system";
+          }
+
+          prefs.setString("themeMode", themeModeString);
+
+          setState(() {});
+          refreshAll();
+        }
+      },
+      child: ListTile(
+        leading: const Icon(Icons.light_mode),
+        title: Text(locale!.theme),
+        trailing: const Icon(Icons.keyboard_arrow_down),
+        onTap: () {},
+      ),
+    );
   }
 }
