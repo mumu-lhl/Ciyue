@@ -108,15 +108,15 @@ class _LanguageChoiceState extends State<LanguageChoice> {
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
 
-    return GestureDetector(
-      onTapDown: (tapDownDetails) async {
+    return InkWell(
+      onTapUp: (tapUpDetails) async {
         final languageSelected = await showMenu(
           context: context,
           position: RelativeRect.fromLTRB(
-            tapDownDetails.globalPosition.dx,
-            tapDownDetails.globalPosition.dy,
-            tapDownDetails.globalPosition.dx,
-            tapDownDetails.globalPosition.dy,
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
           ),
           initialValue: language,
           items: [
@@ -141,7 +141,6 @@ class _LanguageChoiceState extends State<LanguageChoice> {
         leading: const Icon(Icons.language),
         title: Text(locale!.language),
         trailing: const Icon(Icons.keyboard_arrow_down),
-        onTap: () {},
       ),
     );
   }
@@ -152,15 +151,15 @@ class _ThemeChoiceState extends State<ThemeChoice> {
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
 
-    return GestureDetector(
-      onTapDown: (tapDownDetails) async {
+    return InkWell(
+      onTapUp: (tapUpDetails) async {
         final themeModeSelected = await showMenu(
           context: context,
           position: RelativeRect.fromLTRB(
-            tapDownDetails.globalPosition.dx,
-            tapDownDetails.globalPosition.dy,
-            tapDownDetails.globalPosition.dx,
-            tapDownDetails.globalPosition.dy,
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
           ),
           initialValue: themeMode,
           items: [
@@ -193,7 +192,6 @@ class _ThemeChoiceState extends State<ThemeChoice> {
         leading: const Icon(Icons.light_mode),
         title: Text(locale!.theme),
         trailing: const Icon(Icons.keyboard_arrow_down),
-        onTap: () {},
       ),
     );
   }
