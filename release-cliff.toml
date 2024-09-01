@@ -60,7 +60,7 @@ commit_parsers = [
     { message = "^fix", group = "Bug Fixes" },
     { message = "^doc", group = "Documentation", skip = true },
     { message = "^perf", group = "Performance" },
-    { message = "^refactor", group = "Refactoring", skip = true },
+    { message = "^refactor", group = "Refactoring" },
     { message = "^style", group = "Style", skip = true },
     { message = "^revert", group = "Revert", skip = true },
     { message = "^test", group = "Tests", skip = true },
