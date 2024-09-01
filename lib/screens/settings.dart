@@ -15,7 +15,7 @@ class About extends StatelessWidget {
     return AboutListTile(
       icon: const Icon(Icons.info),
       applicationName: packageInfo.appName,
-      applicationVersion: "${packageInfo.version}+${packageInfo.buildNumber}",
+      applicationVersion: "${packageInfo.version} (${packageInfo.buildNumber})",
       applicationLegalese: "\u{a9} 2024 Mumulhl and contributors",
     );
   }
