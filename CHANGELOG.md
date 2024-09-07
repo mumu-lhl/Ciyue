@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.8.0+19](https://github.com/mumu-lhl/Ciyue/compare/v0.7.1+18..v0.8.0+19) - 2024-09-07
+
+### Features
+
+- support long press copy on feedback and github buttons - ([2194f86](https://github.com/mumu-lhl/Ciyue/commit/2194f866751c75b44d4cb4569c714cf34a8fd1a6)) - Mumulhl
+- support file selector for linux - ([0e3f9c1](https://github.com/mumu-lhl/Ciyue/commit/0e3f9c11fb6987b443d1d593f58e133eb3578663)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(workflow)** add different build number to different apks - ([604db64](https://github.com/mumu-lhl/Ciyue/commit/604db64f5ac5c5ccb48593d1697ed8b2ad58c0a4)) - Mumulhl
+- upgrade package - ([b86b5bf](https://github.com/mumu-lhl/Ciyue/commit/b86b5bfe9662922614b9d455ce2ef22de9d71bed)) - Mumulhl
+
+---
 ## [0.7.1+18](https://github.com/mumu-lhl/Ciyue/compare/v0.7.0+17..v0.7.1+18) - 2024-09-01
 
 ### Bug Fixes
