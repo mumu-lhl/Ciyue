@@ -5,8 +5,13 @@ All notable changes to this project will be documented in this file. See [conven
 ---
 ## [0.8.1](https://github.com/mumu-lhl/Ciyue/compare/v0.8.0+19..v0.8.1) - 2024-09-08
 
+### Documentation
+
+- **(readme)** fix release link - ([db13a6e](https://github.com/mumu-lhl/Ciyue/commit/db13a6eec23fbf64b8ef876c6983489f1188ab86)) - Mumulhl
+
 ### Miscellaneous Chores
 
+- **(workflow)** fix version code - ([479fd94](https://github.com/mumu-lhl/Ciyue/commit/479fd942e9c04bb64a69611b8e504782d2536cee)) - Mumulhl
 - change the publish way - ([0c4e89b](https://github.com/mumu-lhl/Ciyue/commit/0c4e89bb143c66ded3d92d65097bdd634c5c7c79)) - Mumulhl
 - fix VERSION_CODE is empty - ([c7cdda9](https://github.com/mumu-lhl/Ciyue/commit/c7cdda9629656121f6617f3a8d1f3c23ef5d0735)) - Mumulhl
 
