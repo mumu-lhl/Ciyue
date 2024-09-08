@@ -3,11 +3,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [0.8.1](https://github.com/mumu-lhl/Ciyue/compare/v0.8.0+19..v0.8.1) - 2024-09-07
+## [0.8.1](https://github.com/mumu-lhl/Ciyue/compare/v0.8.0+19..v0.8.1) - 2024-09-08
 
 ### Miscellaneous Chores
 
 - change the publish way - ([0c4e89b](https://github.com/mumu-lhl/Ciyue/commit/0c4e89bb143c66ded3d92d65097bdd634c5c7c79)) - Mumulhl
+- fix VERSION_CODE is empty - ([c7cdda9](https://github.com/mumu-lhl/Ciyue/commit/c7cdda9629656121f6617f3a8d1f3c23ef5d0735)) - Mumulhl
 
 ---
 ## [0.8.0+19](https://github.com/mumu-lhl/Ciyue/compare/v0.7.1+18..v0.8.0+19) - 2024-09-07
