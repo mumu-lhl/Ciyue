@@ -84,15 +84,11 @@ jobs:
         run: |
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 
-      - name: Get Version Code
-        run: |
-          echo "VERSION_CODE=$(sed -n -E 's/version:\ [0-9]+\.[0-9]+\.[0-9]+\+([0-9]+)/\1/p' pubspec.yaml)" >> $GITHUB_ENV
-
       - run: flutter pub get
       - run: flutter build apk
-      - run: flutter build apk --split-per-abi --target-platform=android-arm64 --build-number=$((VERSION_CODE * 10 + 1))
-      - run: flutter build apk --split-per-abi --target-platform=android-arm --build-number=$((VERSION_CODE * 10 + 2))
-      - run: flutter build apk --split-per-abi --target-platform=android-x64 --build-number=$((VERSION_CODE * 10 + 3))
+      - run: flutter build apk --split-per-abi --target-platform=android-arm64
+      - run: flutter build apk --split-per-abi --target-platform=android-arm
+      - run: flutter build apk --split-per-abi --target-platform=android-x64
       - run: flutter build appbundle
 
       - name: Rename .apk
