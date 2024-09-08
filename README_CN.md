@@ -1,6 +1,6 @@
 # 词悦
 
-[![GitHub Release](https://img.shields.io/github/v/release/mumu-lhl/Ciyue)](https://github.com/mumu-lhl/Ciyue/releases/tag/v0.6.0%2B16)
+[![GitHub Release](https://img.shields.io/github/v/release/mumu-lhl/Ciyue)](https://github.com/mumu-lhl/Ciyue/releases/latest)
 [![F-Droid 版本](https://img.shields.io/f-droid/v/org.eu.mumulhl.ciyue)](https://f-droid.org/packages/org.eu.mumulhl.ciyue/)
 [![翻译状态](https://hosted.weblate.org/widget/ciyue/svg-badge.svg)](https://hosted.weblate.org/engage/ciyue/)
 
