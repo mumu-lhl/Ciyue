@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.8.2](https://github.com/mumu-lhl/Ciyue/compare/v0.8.1..v0.8.2) - 2024-09-08
+
+### Documentation
+
+- **(readme)** add downloads badges - ([a88e087](https://github.com/mumu-lhl/Ciyue/commit/a88e087702f47a5f694a42abf5c865c7740c93cb)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(build)** change version code - ([944cdb9](https://github.com/mumu-lhl/Ciyue/commit/944cdb9e5fe9038369c536806bd735419f3e0232)) - Mumulhl
+- **(workflow)** add dependabot - ([4288151](https://github.com/mumu-lhl/Ciyue/commit/42881513902366db8e4e2897c2ddff9893ded1c6)) - Mumulhl
+
+---
 ## [0.8.1](https://github.com/mumu-lhl/Ciyue/compare/v0.8.0+19..v0.8.1) - 2024-09-08
 
 ### Documentation
