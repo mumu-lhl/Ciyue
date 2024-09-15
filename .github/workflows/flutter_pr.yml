@@ -24,6 +24,9 @@ jobs:
       - run: flutter analyze
 
       - name: Disable signing
+        run: sed -i -e '/signingConfig /d' android/app/build.gradle
+
+      - name: Build apk
         run: flutter build apk --debug
 
       - uses: actions/upload-artifact@v4

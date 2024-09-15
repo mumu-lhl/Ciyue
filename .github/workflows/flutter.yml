@@ -5,6 +5,9 @@ on:
     branches:
     paths-ignore:
       - "**.md"
+  pull_request:
+    branches-ignore:
+      - "*"
 
 jobs:
   build:
