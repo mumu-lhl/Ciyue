@@ -277,10 +277,10 @@ packages:
     dependency: "direct dev"
     description:
       name: drift_dev
-      sha256: "2db55faba578a2068ea69df17114bef0fb267c19d60671d7dc826937e36abe79"
+      sha256: "3ee987578ca2281b5ff91eadd757cd6dd36001458d6e33784f990d67ff38f756"
       url: "https://pub.dev"
     source: hosted
-    version: "2.20.2"
+    version: "2.20.3"
   drift_flutter:
     dependency: "direct main"
     description:
