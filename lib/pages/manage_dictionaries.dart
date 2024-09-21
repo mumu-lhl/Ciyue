@@ -89,7 +89,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
           final sdkVersion =
               (await DeviceInfoPlugin().androidInfo).version.sdkInt;
 
-          if (sdkVersion >= 33) {
+          if (sdkVersion >= 30) {
             if (await Permission.manageExternalStorage.request().isDenied &&
                 context.mounted) {
               showPermissionDenied(context);
