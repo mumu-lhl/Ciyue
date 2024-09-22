@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.8.3](https://github.com/mumu-lhl/Ciyue/compare/v0.8.2..v0.8.3) - 2024-09-22
+
+### Bug Fixes
+
+- fix not being able to find the dictionary on Android 10-12 - ([f154ca5](https://github.com/mumu-lhl/Ciyue/commit/f154ca594b840dcc40c0d977e236e7c9e6af5c71)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(deps)** bump drift_dev from 2.20.1 to 2.20.2 ([#11](https://github.com/mumu-lhl/Ciyue/issues/11)) - ([2369709](https://github.com/mumu-lhl/Ciyue/commit/2369709bdf8961ccd69fe9487fe07469c0020347)) - dependabot[bot]
+- **(deps)** bump drift from 2.20.0 to 2.20.1 ([#10](https://github.com/mumu-lhl/Ciyue/issues/10)) - ([03fd19a](https://github.com/mumu-lhl/Ciyue/commit/03fd19aaf153b8e54cfe7ad84f599b306dee85d5)) - dependabot[bot]
+- **(deps)** bump drift from 2.20.0 to 2.20.2 ([#13](https://github.com/mumu-lhl/Ciyue/issues/13)) - ([43b9403](https://github.com/mumu-lhl/Ciyue/commit/43b9403569807b4acd017488911b89ba6abc6f05)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.20.2 to 2.20.3 ([#14](https://github.com/mumu-lhl/Ciyue/issues/14)) - ([8643ba3](https://github.com/mumu-lhl/Ciyue/commit/8643ba3db12419663097b657e77f72471f57cbfa)) - dependabot[bot]
+- **(workflow)** fix workflow for pr - ([4656bb4](https://github.com/mumu-lhl/Ciyue/commit/4656bb4424420c8b7d9a4ff783036a5ff47bcb14)) - Mumulhl
+- update pubspec.lock - ([f41d4d6](https://github.com/mumu-lhl/Ciyue/commit/f41d4d63880b812ddbea5f488d81d626eee9092a)) - Mumulhl
+
+---
 ## [0.8.2](https://github.com/mumu-lhl/Ciyue/compare/v0.8.1..v0.8.2) - 2024-09-08
 
 ### Documentation
