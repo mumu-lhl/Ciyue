@@ -44,7 +44,7 @@ dependencies:
   permission_handler: ^11.3.1
   device_info_plus: ^10.1.2
   flutter_spinkit: ^5.2.1
-  flutter_inappwebview: ^6.0.0
+  flutter_inappwebview: ^6.1.0+1
   path: ^1.9.0
   path_provider: ^2.1.4
   mime: ^1.0.6
