@@ -47,18 +47,20 @@ android {
         versionName = flutterVersionName
     }
 
-    buildTypes {
-        release {
-            signingConfig = signingConfigs.release
+    if (keystorePropertiesFile.exists()) {
+        signingConfigs {
+            release {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
         }
     }
 
-    signingConfigs {
+    buildTypes {
         release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
+            signingConfig = signingConfigs.release
         }
     }
 }

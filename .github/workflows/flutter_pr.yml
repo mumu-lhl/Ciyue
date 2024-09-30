@@ -26,9 +26,6 @@ jobs:
       - name: Disable signing
         run: sed -i -e '/signingConfig /d' android/app/build.gradle
 
-      - name: View
-        run: cat android/app/build.gradle
-
       - name: Build apk
         run: flutter build apk --debug
 
