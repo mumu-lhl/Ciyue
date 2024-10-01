@@ -41,12 +41,19 @@ class LocalResourcesathHandler extends CustomPathHandler {
       Uint8List? data;
 
       if (dictReaderResource == null) {
+        // Find resource under dictory if no mdd
         final file = File("${dirname(currentDictionaryPath!)}/$path");
         data = await file.readAsBytes();
       } else {
-        final result = await dictionary!.readResource(path);
-        data = await dictReaderResource!.readOne(result.blockOffset,
-            result.startOffset, result.endOffset, result.compressedSize);
+        try {
+          final result = await dictionary!.readResource(path);
+          data = await dictReaderResource!.readOne(result.blockOffset,
+              result.startOffset, result.endOffset, result.compressedSize);
+        } catch (e) {
+          // Find resource under dictory if resource is not in mdd
+          final file = File("${dirname(currentDictionaryPath!)}/$path");
+          data = await file.readAsBytes();
+        }
       }
       return WebResourceResponse(data: data, contentType: lookupMimeType(path));
     } catch (e) {
