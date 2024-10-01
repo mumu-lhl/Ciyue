@@ -266,10 +266,10 @@ packages:
     dependency: "direct main"
     description:
       name: dict_reader
-      sha256: "809b261493dd184be2cb285d7be851c97bff16af56371b7d8945288ae22f9c59"
+      sha256: "7aedd2fe4803e3cedf9f10a535222265caf1b6f5900f2f09a233b2b92749ec3e"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.3"
+    version: "1.1.4"
   drift:
     dependency: "direct main"
     description:
@@ -472,10 +472,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_inappwebview_windows
-      sha256: "86702d2109384311f8ea634855e90ee143b9bfabddd3858696d905a2c28808aa"
+      sha256: "1cb428210f7486e4decb52262b243505023d0c57609c6ff5cee772e63b51f443"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.0"
+    version: "0.4.1"
   flutter_launcher_icons:
     dependency: "direct main"
     description:
