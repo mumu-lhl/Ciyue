@@ -37,6 +37,10 @@ class LocalResourcesathHandler extends CustomPathHandler {
 
   @override
   Future<WebResourceResponse?> handle(String path) async {
+    if (path == "favicon.ico") {
+      return WebResourceResponse(data: null);
+    }
+
     try {
       Uint8List? data;
 
