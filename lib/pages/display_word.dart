@@ -158,10 +158,9 @@ class WebView extends StatelessWidget {
       shouldOverrideUrlLoading: (controller, navigationAction) async {
         final url = navigationAction.request.url;
         if (url!.scheme == "entry") {
-          final word = await dictionary!.getOffset(url
-              .toString()
-              .replaceFirst("entry://", "")
-              .replaceAll("%20", " "));
+          final word = await dictionary!.getOffset(
+              Uri.decodeFull(url.toString().replaceFirst("entry://", "")));
+
           final String data = await dictReader!.readOne(word.blockOffset,
               word.startOffset, word.endOffset, word.compressedSize);
 
