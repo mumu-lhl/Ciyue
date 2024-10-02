@@ -35,7 +35,6 @@ class ManageDictionaries extends StatefulWidget {
 
 class _ManageDictionariesState extends State<ManageDictionaries> {
   var dictionaries = dictionaryList.all();
-  var hasDictionary = false;
   var _loading = false;
 
   @override
@@ -52,8 +51,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
           final children = <Widget>[];
 
           if (snapshot.hasData) {
-            hasDictionary = true;
-
             for (final dictionary in snapshot.data!) {
               children.add(Card(
                   child: RadioListTile(
@@ -153,7 +150,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
       future: dictionaries,
       builder: (BuildContext context,
           AsyncSnapshot<List<DictionaryListData>> snapshot) {
-        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+        if (snapshot.hasData && snapshot.data!.isNotEmpty && !_loading) {
           return FloatingActionButton(
             child: Icon(Icons.info),
             onPressed: () {
