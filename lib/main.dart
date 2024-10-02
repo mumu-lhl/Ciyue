@@ -47,7 +47,7 @@ void main() async {
     }
 
     final id = await dictionaryList.getId(currentDictionaryPath!);
-    dictionary = DictionaryDatabase(id);
+    dictionary = dictionaryDatabase(id);
   }
 
   flutterTts = FlutterTts();

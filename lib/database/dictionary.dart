@@ -1,8 +1,13 @@
 import "package:drift/drift.dart" as drift;
 import "package:drift/drift.dart";
-import 'package:drift_flutter/drift_flutter.dart';
+import "package:drift_flutter/drift_flutter.dart";
 
 part "dictionary.g.dart";
+
+DictionaryDatabase dictionaryDatabase(int id) {
+  final connection = driftDatabase(name: "dictionary_$id");
+  return DictionaryDatabase(connection);
+}
 
 @TableIndex(name: "idx_word", columns: {#key})
 class Dictionary extends Table {
@@ -15,18 +20,27 @@ class Dictionary extends Table {
 
 @DriftDatabase(tables: [Wordbook, Resource, Dictionary])
 class DictionaryDatabase extends _$DictionaryDatabase {
-  DictionaryDatabase(int id) : super(_openConnection(id));
+  DictionaryDatabase(super.e);
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+    );
+  }
 
   @override
   int get schemaVersion => 1;
 
-  Future<int> addWord(String word) {
-    return into(wordbook).insert(WordbookCompanion(word: Value(word)));
+  addAllWords(WordbookData data) async {
+    await into(wordbook).insert(data,
+        onConflict: DoUpdate((old) => data, target: [wordbook.word]));
   }
 
-  addAllWords(WordbookData data) async {
-    final words = await getAllWords();
-    await into(wordbook).insertOnConflictUpdate(data);
+  Future<int> addWord(String word) {
+    return into(wordbook).insert(WordbookCompanion(word: Value(word)));
   }
 
   Future<List<WordbookData>> getAllWords() {
@@ -69,10 +83,6 @@ class DictionaryDatabase extends _$DictionaryDatabase {
   Future<bool> wordExist(String word) async {
     return (await (select(wordbook)..where((u) => u.word.isValue(word))).get())
         .isNotEmpty;
-  }
-
-  static QueryExecutor _openConnection(int id) {
-    return driftDatabase(name: "dictionary_$id");
   }
 }
 

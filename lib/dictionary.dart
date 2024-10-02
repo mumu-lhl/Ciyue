@@ -26,7 +26,7 @@ Future<void> addDictionary(String path) async {
   await dictionaryList.add(path);
 
   final id = await dictionaryList.getId(path);
-  dictionary = DictionaryDatabase(id);
+  dictionary = dictionaryDatabase(id);
 
   await _addWords();
 
@@ -41,7 +41,7 @@ Future<void> changeDictionary(int id, String path) async {
   await prefs.setString("currentDictionaryPath", path);
 
   await dictionary!.close();
-  dictionary = DictionaryDatabase(id);
+  dictionary = dictionaryDatabase(id);
 
   _initDictReader(path);
 }
