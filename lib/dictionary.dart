@@ -8,7 +8,20 @@ import "package:path_provider/path_provider.dart";
 import "database/dictionary.dart";
 import "main.dart";
 
+Future<void> scanDictionaries(String path) async {
+  final dir = Directory(path);
+  final files = await dir.list().toList();
+
+  for (final file in files) {
+    if (extension(file.path) == ".mdx") {
+      await addDictionary(file.path);
+    }
+  }
+}
+
 Future<void> addDictionary(String path) async {
+  path = setExtension(path, "");
+
   try {
     await dictionaryList.getId(path);
     return;

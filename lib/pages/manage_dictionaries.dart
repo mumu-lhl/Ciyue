@@ -1,5 +1,6 @@
 import "dart:io";
 
+import "package:ciyue/widget/loading_dialog.dart";
 import "package:device_info_plus/device_info_plus.dart";
 import "package:file_selector/file_selector.dart";
 import "package:filesystem_picker/filesystem_picker.dart";
@@ -35,50 +36,46 @@ class ManageDictionaries extends StatefulWidget {
 
 class _ManageDictionariesState extends State<ManageDictionaries> {
   var dictionaries = dictionaryList.all();
-  var _loading = false;
 
   @override
   Widget build(BuildContext context) {
-    Widget body;
+    final colorScheme = Theme.of(context).colorScheme;
+    final body = FutureBuilder(
+      future: dictionaries,
+      builder: (BuildContext context,
+          AsyncSnapshot<List<DictionaryListData>> snapshot) {
+        final children = <Widget>[];
 
-    if (_loading) {
-      body = const Center(child: CircularProgressIndicator());
-    } else {
-      body = FutureBuilder(
-        future: dictionaries,
-        builder: (BuildContext context,
-            AsyncSnapshot<List<DictionaryListData>> snapshot) {
-          final children = <Widget>[];
+        if (snapshot.hasData) {
+          for (final dictionary in snapshot.data!) {
+            children.add(Card(
+                color: colorScheme.onInverseSurface,
+                child: RadioListTile(
+                    title: Text(basename(dictionary.path)),
+                    value: dictionary.id,
+                    groupValue: currentDictionaryId,
+                    onChanged: (int? id) {
+                      setState(() {
+                        currentDictionaryId = id;
+                        changeDictionary(dictionary.id, dictionary.path);
+                      });
+                    },
+                    secondary: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () async {
+                        await removeDictionary(dictionary.path);
 
-          if (snapshot.hasData) {
-            for (final dictionary in snapshot.data!) {
-              children.add(Card(
-                  child: RadioListTile(
-                      title: Text(basename(dictionary.path)),
-                      value: dictionary.id,
-                      groupValue: currentDictionaryId,
-                      onChanged: (int? id) {
                         setState(() {
-                          currentDictionaryId = id;
-                          changeDictionary(dictionary.id, dictionary.path);
+                          updateDictionaries();
                         });
                       },
-                      secondary: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () async {
-                          await removeDictionary(dictionary.path);
-                          setState(() {
-                            dictionaries = dictionaryList.all();
-                          });
-                        },
-                      ))));
-            }
+                    ))));
           }
+        }
 
-          return ListView(children: children);
-        },
-      );
-    }
+        return ListView(children: children);
+      },
+    );
 
     final addButton = IconButton(
       icon: const Icon(Icons.add),
@@ -116,12 +113,10 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         }
 
         if (path != null) {
-          setState(() {
-            _loading = true;
-          });
+          if (context.mounted) showLoadingDialog(context);
 
           try {
-            await addDictionary(path.substring(0, path.length - 4));
+            await addDictionary(path);
           } catch (e) {
             if (context.mounted) {
               final snackBar = SnackBar(
@@ -131,26 +126,67 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
           }
 
           setState(() {
-            _loading = false;
-            dictionaries = dictionaryList.all();
+            context.pop();
+            updateDictionaries();
           });
         }
       },
     );
+
+    final settingScanPathButton = IconButton(
+      icon: const Icon(Icons.folder),
+      onPressed: () async {
+        final path = await getDirectoryPath();
+        if (path == null) {
+          return;
+        }
+
+        if (context.mounted) showLoadingDialog(context);
+
+        prefs.setString("scanPath", path);
+        await scanDictionaries(path);
+
+        setState(() {
+          context.pop();
+          updateDictionaries();
+        });
+      },
+    );
+
+    final refreshButton = IconButton(
+      icon: const Icon(Icons.refresh),
+      onPressed: () async {
+        showLoadingDialog(context);
+
+        final path = prefs.getString("scanPath");
+        if (path != null) {
+          await scanDictionaries(path);
+
+          setState(() {
+            context.pop();
+            updateDictionaries();
+          });
+        }
+      },
+    );
+
     final returnButton = IconButton(
       icon: const Icon(Icons.arrow_back),
       onPressed: () {
         context.pop();
       },
     );
-    final appBar = AppBar(leading: returnButton, actions: [addButton]);
+
+    final appBar = AppBar(
+        leading: returnButton,
+        actions: [settingScanPathButton, refreshButton, addButton]);
 
     Widget? floatingActionButton;
     floatingActionButton = FutureBuilder(
       future: dictionaries,
       builder: (BuildContext context,
           AsyncSnapshot<List<DictionaryListData>> snapshot) {
-        if (snapshot.hasData && snapshot.data!.isNotEmpty && !_loading) {
+        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
           return FloatingActionButton(
             child: Icon(Icons.info),
             onPressed: () {
@@ -172,5 +208,9 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
       body: body,
       floatingActionButton: floatingActionButton,
     );
+  }
+
+  void updateDictionaries() {
+    dictionaries = dictionaryList.all();
   }
 }
