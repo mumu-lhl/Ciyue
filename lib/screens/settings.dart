@@ -1,9 +1,15 @@
+import "dart:convert";
+import "dart:io";
+
+import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
+import "package:path/path.dart";
 import "package:url_launcher/url_launcher.dart";
 
+import "../database/dictionary.dart";
 import "../main.dart";
 
 const feedbackUri = "https://github.com/mumu-lhl/Ciyue/issues";
@@ -29,6 +35,37 @@ class About extends StatelessWidget {
       applicationName: packageInfo.appName,
       applicationVersion: "${packageInfo.version} (${packageInfo.buildNumber})",
       applicationLegalese: "\u{a9} 2024 Mumulhl and contributors",
+    );
+  }
+}
+
+class Export extends StatelessWidget {
+  const Export({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(Icons.file_upload),
+      title: Text("导出"),
+      onTap: () async {
+        final directoryPath = await getDirectoryPath();
+        if (directoryPath == null || dictionary == null) {
+          return;
+        }
+
+        final words = await dictionary!.getAllWords();
+        if (words.isNotEmpty) {
+          final dictionaryName = basename(currentDictionaryPath!),
+              filename = setExtension(dictionaryName, ".json"),
+              saveLocation = join(directoryPath, filename),
+              output = jsonEncode(words);
+
+          final file = File(saveLocation);
+          await file.writeAsString(output);
+        }
+      },
     );
   }
 }
@@ -62,6 +99,40 @@ class GithubUrl extends StatelessWidget {
         leading: const Icon(Icons.public),
         onTap: () => launchUrl(Uri.parse(githubUri)),
         onLongPress: () => _copy(context, githubUri));
+  }
+}
+
+class Import extends StatelessWidget {
+  const Import({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(Icons.file_download),
+      title: Text("导入"),
+      onTap: () async {
+        if (dictionary == null) {
+          return;
+        }
+
+        const XTypeGroup typeGroup = XTypeGroup(
+          label: "json",
+          extensions: <String>["json"],
+        );
+        final xFile = await openFile(acceptedTypeGroups: [typeGroup]);
+        if (xFile == null) {
+          return;
+        }
+
+        final file = File(xFile.path),
+            input = await file.readAsString(),
+            json = jsonDecode(input),
+            data = WordbookData.fromJson(json[0]);
+        await dictionary!.addAllWords(data);
+      },
+    );
   }
 }
 
@@ -100,6 +171,9 @@ class SettingsScreen extends StatelessWidget {
         Divider(),
         ThemeChoice(),
         LanguageChoice(),
+        Divider(),
+        Export(),
+        Import(),
         Divider(),
         Feedback(),
         GithubUrl(),

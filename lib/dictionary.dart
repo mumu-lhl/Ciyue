@@ -5,7 +5,7 @@ import "package:drift/drift.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 
-import "database.dart";
+import "database/dictionary.dart";
 import "main.dart";
 
 Future<void> addDictionary(String path) async {

@@ -7,7 +7,8 @@ import "package:go_router/go_router.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
-import "database.dart";
+import "database/app.dart";
+import "database/dictionary.dart";
 import "pages/display_word.dart";
 import "pages/home.dart";
 import "pages/manage_dictionaries.dart";
