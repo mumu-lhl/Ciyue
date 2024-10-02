@@ -48,7 +48,7 @@ class Export extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(Icons.file_upload),
-      title: Text("导出"),
+      title: Text(AppLocalizations.of(context)!.export),
       onTap: () async {
         final directoryPath = await getDirectoryPath();
         if (directoryPath == null || dictionary == null) {
@@ -111,7 +111,7 @@ class Import extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(Icons.file_download),
-      title: Text("导入"),
+      title: Text(AppLocalizations.of(context)!.import),
       onTap: () async {
         if (dictionary == null) {
           return;

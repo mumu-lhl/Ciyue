@@ -20,5 +20,7 @@
   "readLoudly": "Read Loudly",
   "recommendedDictionaries": "Recommmended Dictionaries",
   "feedback": "Feedback",
-  "copied": "Copied"
+  "copied": "Copied",
+  "export": "Export",
+  "import": "Import"
 }

@@ -39,5 +39,7 @@
   "@readLoudly": {},
   "recommendedDictionaries": "推薦詞典",
   "feedback": "反饋",
-  "copied": "已複製"
+  "copied": "已複製",
+  "export": "導出",
+  "import": "導入"
 }
