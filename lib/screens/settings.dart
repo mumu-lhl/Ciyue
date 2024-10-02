@@ -136,11 +136,11 @@ class Import extends StatelessWidget {
   }
 }
 
-class LanguageChoice extends StatefulWidget {
-  const LanguageChoice({super.key});
+class LanguageSelector extends StatefulWidget {
+  const LanguageSelector({super.key});
 
   @override
-  State<LanguageChoice> createState() => _LanguageChoiceState();
+  State<LanguageSelector> createState() => _LanguageSelectorState();
 }
 
 class ManageDictionariesWidget extends StatelessWidget {
@@ -169,8 +169,8 @@ class SettingsScreen extends StatelessWidget {
       children: const [
         ManageDictionariesWidget(),
         Divider(),
-        ThemeChoice(),
-        LanguageChoice(),
+        ThemeSelector(),
+        LanguageSelector(),
         Divider(),
         Export(),
         Import(),
@@ -183,14 +183,14 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-class ThemeChoice extends StatefulWidget {
-  const ThemeChoice({super.key});
+class ThemeSelector extends StatefulWidget {
+  const ThemeSelector({super.key});
 
   @override
-  State<ThemeChoice> createState() => _ThemeChoiceState();
+  State<ThemeSelector> createState() => _ThemeSelectorState();
 }
 
-class _LanguageChoiceState extends State<LanguageChoice> {
+class _LanguageSelectorState extends State<LanguageSelector> {
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
@@ -236,7 +236,7 @@ class _LanguageChoiceState extends State<LanguageChoice> {
   }
 }
 
-class _ThemeChoiceState extends State<ThemeChoice> {
+class _ThemeSelectorState extends State<ThemeSelector> {
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
