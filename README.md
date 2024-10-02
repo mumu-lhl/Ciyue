@@ -21,7 +21,7 @@ A mdict dictionary with Android support
 
 |||||
 |--|--|--|--|
-| <img alt="Home" src="https://github.com/user-attachments/assets/3c8bf743-4a10-403e-b9cf-dc43568adead"> | <img alt="Settings" src="https://github.com/user-attachments/assets/fb3f26ff-648d-49e4-959a-47ab967c81aa"> | <img alt="Manage dictionaries" src="https://github.com/user-attachments/assets/d8b904b6-9ed1-40db-93fd-ddc99d18459e"> | <img alt="Display word" src="https://github.com/user-attachments/assets/6de46e3e-c032-4c7b-9dfc-fd11b70cff52"> |
+| <img alt="Home" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="Settings" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="Manage dictionaries" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="Search Words" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
 
 ## Install
 
