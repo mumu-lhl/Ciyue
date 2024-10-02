@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 
-import "../database.dart";
+import "../database/dictionary.dart";
 import "../main.dart";
 
 class WordBookScreen extends StatelessWidget {

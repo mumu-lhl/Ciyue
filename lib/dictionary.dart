@@ -5,7 +5,7 @@ import "package:drift/drift.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 
-import "database.dart";
+import "database/dictionary.dart";
 import "main.dart";
 
 Future<void> addDictionary(String path) async {
@@ -26,7 +26,7 @@ Future<void> addDictionary(String path) async {
   await dictionaryList.add(path);
 
   final id = await dictionaryList.getId(path);
-  dictionary = DictionaryDatabase(id);
+  dictionary = dictionaryDatabase(id);
 
   await _addWords();
 
@@ -41,7 +41,7 @@ Future<void> changeDictionary(int id, String path) async {
   await prefs.setString("currentDictionaryPath", path);
 
   await dictionary!.close();
-  dictionary = DictionaryDatabase(id);
+  dictionary = dictionaryDatabase(id);
 
   _initDictReader(path);
 }

@@ -1,38 +1,14 @@
 import "package:drift/drift.dart" as drift;
 import "package:drift/drift.dart";
-import 'package:drift_flutter/drift_flutter.dart';
+import "package:drift_flutter/drift_flutter.dart";
 
-part "database.g.dart";
+import "dictionary_schema_versions.dart";
 
-@DriftDatabase(tables: [DictionaryList])
-class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+part "dictionary.g.dart";
 
-  @override
-  int get schemaVersion => 1;
-
-  Future<int> add(String path) {
-    return into(dictionaryList)
-        .insert(DictionaryListCompanion(path: Value(path)));
-  }
-
-  Future<List<DictionaryListData>> all() {
-    return (select(dictionaryList)).get();
-  }
-
-  Future<int> getId(String path) async {
-    return (await ((select(dictionaryList)..where((t) => t.path.isValue(path)))
-            .get()))[0]
-        .id;
-  }
-
-  Future<int> remove(String path) {
-    return (delete(dictionaryList)..where((t) => t.path.isValue(path))).go();
-  }
-
-  static QueryExecutor _openConnection() {
-    return driftDatabase(name: "dictionary_list");
-  }
+DictionaryDatabase dictionaryDatabase(int id) {
+  final connection = driftDatabase(name: "dictionary_$id");
+  return DictionaryDatabase(connection);
 }
 
 @TableIndex(name: "idx_word", columns: {#key})
@@ -46,10 +22,29 @@ class Dictionary extends Table {
 
 @DriftDatabase(tables: [Wordbook, Resource, Dictionary])
 class DictionaryDatabase extends _$DictionaryDatabase {
-  DictionaryDatabase(int id) : super(_openConnection(id));
+  DictionaryDatabase(super.e);
 
   @override
-  int get schemaVersion => 1;
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: stepByStep(
+        from1To2: (m, schema) async {
+          await m.alterTable(TableMigration(wordbook));
+        },
+      ),
+    );
+  }
+
+  @override
+  int get schemaVersion => 2;
+
+  addAllWords(WordbookData data) async {
+    await into(wordbook).insert(data,
+        onConflict: DoUpdate((old) => data, target: [wordbook.word]));
+  }
 
   Future<int> addWord(String word) {
     return into(wordbook).insert(WordbookCompanion(word: Value(word)));
@@ -96,15 +91,6 @@ class DictionaryDatabase extends _$DictionaryDatabase {
     return (await (select(wordbook)..where((u) => u.word.isValue(word))).get())
         .isNotEmpty;
   }
-
-  static QueryExecutor _openConnection(int id) {
-    return driftDatabase(name: "dictionary_$id");
-  }
-}
-
-class DictionaryList extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get path => text()();
 }
 
 @TableIndex(name: "idx_data", columns: {#key})
@@ -118,5 +104,5 @@ class Resource extends Table {
 
 @TableIndex(name: "idx_wordbook", columns: {#word})
 class Wordbook extends Table {
-  TextColumn get word => text()();
+  TextColumn get word => text().unique()();
 }

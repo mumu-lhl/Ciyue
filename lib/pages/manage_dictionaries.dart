@@ -9,7 +9,7 @@ import "package:go_router/go_router.dart";
 import "package:path/path.dart";
 import "package:permission_handler/permission_handler.dart";
 
-import "../database.dart";
+import "../database/app.dart";
 import "../dictionary.dart";
 import "../main.dart";
 
