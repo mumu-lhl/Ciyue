@@ -45,7 +45,7 @@ class LocalResourcesathHandler extends CustomPathHandler {
       Uint8List? data;
 
       if (dictReaderResource == null) {
-        // Find resource under dictory if no mdd
+        // Find resource under directory if no mdd
         final file = File("${dirname(currentDictionaryPath!)}/$path");
         data = await file.readAsBytes();
       } else {
@@ -54,7 +54,7 @@ class LocalResourcesathHandler extends CustomPathHandler {
           data = await dictReaderResource!.readOne(result.blockOffset,
               result.startOffset, result.endOffset, result.compressedSize);
         } catch (e) {
-          // Find resource under dictory if resource is not in mdd
+          // Find resource under directory if resource is not in mdd
           final file = File("${dirname(currentDictionaryPath!)}/$path");
           data = await file.readAsBytes();
         }
