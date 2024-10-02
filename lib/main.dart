@@ -9,7 +9,7 @@ import "package:shared_preferences/shared_preferences.dart";
 
 import "database/app.dart";
 import "database/dictionary.dart";
-import "pages/display_word.dart";
+import "pages/webview_display.dart";
 import "pages/home.dart";
 import "pages/manage_dictionaries.dart";
 

@@ -5,6 +5,7 @@ import "package:flutter/services.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
+import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 
@@ -24,7 +25,11 @@ class WebviewDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget? floatingActionButton;
-    if (!description) {
+    late String html;
+    if (description) {
+      html = HtmlUnescape().convert(content);
+    } else {
+      html = content;
       floatingActionButton = Button(word: word);
     }
 
@@ -37,7 +42,7 @@ class WebviewDisplay extends StatelessWidget {
         },
       )),
       floatingActionButton: floatingActionButton,
-      body: WebView(content: content),
+      body: WebView(content: html),
     );
   }
 }
