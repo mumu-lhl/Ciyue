@@ -14,7 +14,9 @@ class $WordbookTable extends Wordbook
   @override
   late final drift.GeneratedColumn<String> word = drift.GeneratedColumn<String>(
       'word', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
   @override
   List<drift.GeneratedColumn> get $columns => [word];
   @override

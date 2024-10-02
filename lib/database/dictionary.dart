@@ -2,6 +2,8 @@ import "package:drift/drift.dart" as drift;
 import "package:drift/drift.dart";
 import "package:drift_flutter/drift_flutter.dart";
 
+import "dictionary_schema_versions.dart";
+
 part "dictionary.g.dart";
 
 DictionaryDatabase dictionaryDatabase(int id) {
@@ -28,11 +30,16 @@ class DictionaryDatabase extends _$DictionaryDatabase {
       onCreate: (Migrator m) async {
         await m.createAll();
       },
+      onUpgrade: stepByStep(
+        from1To2: (m, schema) async {
+          await m.alterTable(TableMigration(wordbook));
+        },
+      ),
     );
   }
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   addAllWords(WordbookData data) async {
     await into(wordbook).insert(data,
@@ -97,5 +104,5 @@ class Resource extends Table {
 
 @TableIndex(name: "idx_wordbook", columns: {#word})
 class Wordbook extends Table {
-  TextColumn get word => text()();
+  TextColumn get word => text().unique()();
 }

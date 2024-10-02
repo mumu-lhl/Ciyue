@@ -71,6 +71,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   drift_dev: ^2.20.3
   build_runner: ^2.4.13
+  test: ^1.25.7
 
 # https://github.com/pichillilorenzo/flutter_inappwebview/issues/2193
 dependency_overrides:
