@@ -21,7 +21,7 @@
 
 |||||
 |--|--|--|--|
-| <img alt="主页" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="设置" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="管理词典" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="显示单词" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
+| <img alt="主页" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="设置" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="管理词典" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="单词搜索" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
 
 ## 安装
 
