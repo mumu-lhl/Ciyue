@@ -207,6 +207,9 @@ class _LanguageChoiceState extends State<LanguageChoice> {
           ),
           initialValue: language,
           items: [
+            PopupMenuItem(
+                value: "system",
+                child: Text(AppLocalizations.of(context)!.system)),
             const PopupMenuItem(value: "en", child: Text("English")),
             const PopupMenuItem(value: "nb", child: Text("Bokmål")),
             const PopupMenuItem(value: "zh_CN", child: Text("简体中文")),

@@ -30,6 +30,7 @@ void main() async {
   }
 
   language = prefs.getString("language");
+  language ??= "system";
 
   dictionaryList = AppDatabase();
 
@@ -99,7 +100,7 @@ class _DictionaryState extends State<Dictionary> {
   @override
   Widget build(BuildContext context) {
     Locale? locale;
-    if (language != null) {
+    if (language != "system") {
       final splittedLanguage = language!.split("_");
       if (splittedLanguage.length > 1) {
         locale = Locale.fromSubtags(
