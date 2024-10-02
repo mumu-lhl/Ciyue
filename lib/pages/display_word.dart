@@ -10,14 +10,24 @@ import "package:path/path.dart";
 
 import "../main.dart";
 
-class DisplayWord extends StatelessWidget {
+class WebviewDisplay extends StatelessWidget {
   final String content;
   final String word;
+  final bool description;
 
-  const DisplayWord({super.key, required this.content, required this.word});
+  const WebviewDisplay(
+      {super.key,
+      required this.content,
+      required this.word,
+      required this.description});
 
   @override
   Widget build(BuildContext context) {
+    Widget? floatingActionButton;
+    if (!description) {
+      floatingActionButton = Button(word: word);
+    }
+
     return Scaffold(
       appBar: AppBar(
           leading: IconButton(
@@ -26,7 +36,7 @@ class DisplayWord extends StatelessWidget {
           context.pop();
         },
       )),
-      floatingActionButton: Button(word: word),
+      floatingActionButton: floatingActionButton,
       body: WebView(content: content),
     );
   }

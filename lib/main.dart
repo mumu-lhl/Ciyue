@@ -81,7 +81,11 @@ final _router = GoRouter(
         path: "/word",
         builder: (context, state) {
           final extra = state.extra as Map<String, String>;
-          return DisplayWord(content: extra["content"]!, word: extra["word"]!);
+          return WebviewDisplay(
+            content: extra["content"]!,
+            word: extra["word"]!,
+            description: extra.containsKey("description"),
+          );
         }),
     GoRoute(
         path: "/settings/dictionaries",
