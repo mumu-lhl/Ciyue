@@ -74,14 +74,6 @@ dev_dependencies:
   build_runner: ^2.4.13
   test: ^1.25.7
 
-# https://github.com/pichillilorenzo/flutter_inappwebview/issues/2193
-dependency_overrides:
-  flutter_inappwebview_android:
-    git:
-      url: https://github.com/holzgeist/flutter_inappwebview
-      path: flutter_inappwebview_android
-      ref: d89b1d32638b49dfc58c4b7c84153be0c269d057
-
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
