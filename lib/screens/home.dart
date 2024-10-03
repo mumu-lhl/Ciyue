@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
 
     final locale = AppLocalizations.of(context);
 
-    if (currentDictionaryPath == null) {
+    if (dict.path == null) {
       body = Center(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -66,15 +66,15 @@ class SearchResult extends StatelessWidget {
             },
           ),
           onTap: () async {
-            String content = await dictReader!.readOne(word.blockOffset,
+            String content = await dict.reader!.readOne(word.blockOffset,
                 word.startOffset, word.endOffset, word.compressedSize);
 
             if (content.startsWith("@@@LINK=")) {
               // 8: remove @@@LINK=
               // content.length - 3: remove \r\n\x00
-              word = await dictionary!.getOffset(
+              word = await dict.db!.getOffset(
                   content.substring(8, content.length - 3).trimRight());
-              content = await dictReader!.readOne(word.blockOffset,
+              content = await dict.reader!.readOne(word.blockOffset,
                   word.startOffset, word.endOffset, word.compressedSize);
             }
 

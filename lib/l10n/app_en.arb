@@ -22,5 +22,6 @@
   "feedback": "Feedback",
   "copied": "Copied",
   "export": "Export",
-  "import": "Import"
+  "import": "Import",
+  "customFont": "Custom Font"
 }

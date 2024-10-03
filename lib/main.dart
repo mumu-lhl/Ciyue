@@ -1,3 +1,5 @@
+import "package:ciyue/dictionary.dart";
+import "package:ciyue/pages/settings_dictionary.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
@@ -9,15 +11,15 @@ import "package:shared_preferences/shared_preferences.dart";
 
 import "database/app.dart";
 import "database/dictionary.dart";
-import "pages/webview_display.dart";
 import "pages/home.dart";
 import "pages/manage_dictionaries.dart";
+import "pages/webview_display.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   prefs = await SharedPreferences.getInstance();
-  currentDictionaryPath = prefs.getString("currentDictionaryPath");
+  dict.path = prefs.getString("currentDictionaryPath");
 
   final themeModeString = prefs.getString("themeMode");
   switch (themeModeString) {
@@ -32,23 +34,23 @@ void main() async {
   language = prefs.getString("language");
   language ??= "system";
 
-  dictionaryList = AppDatabase();
+  dictionaryList = appDatabase();
 
-  if (currentDictionaryPath != null) {
-    currentDictionaryId = await dictionaryList.getId(currentDictionaryPath!);
+  if (dict.path != null) {
+    dict.id = await dictionaryList.getId(dict.path!);
 
-    dictReader = DictReader("${currentDictionaryPath!}.mdx");
-    await dictReader!.init(false);
+    dict.reader = DictReader("${dict.path!}.mdx");
+    await dict.reader!.init(false);
 
     try {
-      dictReaderResource = DictReader("${currentDictionaryPath!}.mdd");
-      await dictReaderResource!.init(false);
+      dict.readerResource = DictReader("${dict.path!}.mdd");
+      await dict.readerResource!.init(false);
     } catch (e) {
-      dictReaderResource = null;
+      dict.readerResource = null;
     }
 
-    final id = await dictionaryList.getId(currentDictionaryPath!);
-    dictionary = dictionaryDatabase(id);
+    final id = await dictionaryList.getId(dict.path!);
+    dict.db = dictionaryDatabase(id);
   }
 
   flutterTts = FlutterTts();
@@ -58,12 +60,8 @@ void main() async {
   runApp(const Dictionary());
 }
 
-int? currentDictionaryId;
-String? currentDictionaryPath;
-DictionaryDatabase? dictionary;
+final dict = Dict();
 late AppDatabase dictionaryList;
-DictReader? dictReader;
-DictReader? dictReaderResource;
 late FlutterTts flutterTts;
 String? language;
 late PackageInfo packageInfo;
@@ -90,6 +88,9 @@ final _router = GoRouter(
     GoRoute(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),
+    GoRoute(
+        path: "/settings/dictionary",
+        builder: (context, state) => const SettingsDictionary()),
   ],
 );
 

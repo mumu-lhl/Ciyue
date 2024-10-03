@@ -49,14 +49,15 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         if (snapshot.hasData) {
           for (final dictionary in snapshot.data!) {
             children.add(Card(
+                elevation: 0,
                 color: colorScheme.onInverseSurface,
                 child: RadioListTile(
                     title: Text(basename(dictionary.path)),
                     value: dictionary.id,
-                    groupValue: currentDictionaryId,
+                    groupValue: dict.id,
                     onChanged: (int? id) {
                       setState(() {
-                        currentDictionaryId = id;
+                        dict.id = id;
                         changeDictionary(dictionary.id, dictionary.path);
                       });
                     },
@@ -187,15 +188,29 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
       builder: (BuildContext context,
           AsyncSnapshot<List<DictionaryListData>> snapshot) {
         if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-          return FloatingActionButton(
+          final settingsButton = FloatingActionButton.small(
+            elevation: 0,
+            highlightElevation: 0,
+            child: Icon(Icons.settings),
+            onPressed: () {
+              context.push("/settings/dictionary");
+            },
+          );
+          final infoButton = FloatingActionButton.small(
+            elevation: 0,
+            highlightElevation: 0,
             child: Icon(Icons.info),
             onPressed: () {
               context.push("/word", extra: {
-                "content": dictReader!.header["Description"]!,
+                "content": dict.reader!.header["Description"]!,
                 "word": "",
                 "description": "1",
               });
             },
+          );
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [settingsButton, infoButton],
           );
         }
 
