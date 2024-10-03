@@ -26,7 +26,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     PreferredSizeWidget? appBar;
 
-    if (currentDictionaryPath != null && _currentIndex == 0) {
+    if (dict.path != null && _currentIndex == 0) {
       Widget? removeButton;
       if (searchWord != "") {
         removeButton = IconButton(
@@ -53,7 +53,7 @@ class _HomeState extends State<Home> {
                 suffixIcon: removeButton),
             controller: textFieldController,
             onChanged: (text) async {
-              final result = await dictionary!.searchWord(text);
+              final result = await dict.db!.searchWord(text);
 
               setState(() {
                 searchResult = result;

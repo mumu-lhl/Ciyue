@@ -9,11 +9,11 @@ class WordBookScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (dictionary == null) {
+    if (dict.db == null) {
       return ListView();
     }
 
-    final allWords = dictionary!.getAllWords();
+    final allWords = dict.db!.getAllWords();
 
     return FutureBuilder(
         future: allWords,
@@ -25,8 +25,8 @@ class WordBookScreen extends StatelessWidget {
               list.add(ListTile(
                 title: Text(data.word),
                 onTap: () async {
-                  final offset = await dictionary!.getOffset(data.word);
-                  String content = await dictReader!.readOne(
+                  final offset = await dict.db!.getOffset(data.word);
+                  String content = await dict.reader!.readOne(
                       offset.blockOffset,
                       offset.startOffset,
                       offset.endOffset,

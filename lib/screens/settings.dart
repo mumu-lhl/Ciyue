@@ -51,13 +51,13 @@ class Export extends StatelessWidget {
       title: Text(AppLocalizations.of(context)!.export),
       onTap: () async {
         final directoryPath = await getDirectoryPath();
-        if (directoryPath == null || dictionary == null) {
+        if (directoryPath == null || dict.db == null) {
           return;
         }
 
-        final words = await dictionary!.getAllWords();
+        final words = await dict.db!.getAllWords();
         if (words.isNotEmpty) {
-          final dictionaryName = basename(currentDictionaryPath!),
+          final dictionaryName = basename(dict.path!),
               filename = setExtension(dictionaryName, ".json"),
               saveLocation = join(directoryPath, filename),
               output = jsonEncode(words);
@@ -113,7 +113,7 @@ class Import extends StatelessWidget {
       leading: Icon(Icons.file_download),
       title: Text(AppLocalizations.of(context)!.import),
       onTap: () async {
-        if (dictionary == null) {
+        if (dict.db == null) {
           return;
         }
 
@@ -130,7 +130,7 @@ class Import extends StatelessWidget {
             input = await file.readAsString(),
             json = jsonDecode(input),
             data = WordbookData.fromJson(json[0]);
-        await dictionary!.addAllWords(data);
+        await dict.db!.addAllWords(data);
       },
     );
   }

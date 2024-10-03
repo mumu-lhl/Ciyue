@@ -34,9 +34,7 @@ class WebviewDisplay extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-          leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
+      appBar: AppBar(leading: BackButton(
         onPressed: () {
           context.pop();
         },
@@ -56,21 +54,27 @@ class LocalResourcesathHandler extends CustomPathHandler {
       return WebResourceResponse(data: null);
     }
 
+    if (path == dict.fontName) {
+      final file = File(dict.fontPath!);
+      final data = await file.readAsBytes();
+      return WebResourceResponse(data: data, contentType: lookupMimeType(path));
+    }
+
     try {
       Uint8List? data;
 
-      if (dictReaderResource == null) {
+      if (dict.readerResource == null) {
         // Find resource under directory if no mdd
-        final file = File("${dirname(currentDictionaryPath!)}/$path");
+        final file = File("${dirname(dict.path!)}/$path");
         data = await file.readAsBytes();
       } else {
         try {
-          final result = await dictionary!.readResource(path);
-          data = await dictReaderResource!.readOne(result.blockOffset,
+          final result = await dict.db!.readResource(path);
+          data = await dict.readerResource!.readOne(result.blockOffset,
               result.startOffset, result.endOffset, result.compressedSize);
         } catch (e) {
           // Find resource under directory if resource is not in mdd
-          final file = File("${dirname(currentDictionaryPath!)}/$path");
+          final file = File("${dirname(dict.path!)}/$path");
           data = await file.readAsBytes();
         }
       }
@@ -128,17 +132,17 @@ class WebView extends StatelessWidget {
             title: locale.lookup,
             action: () async {
               try {
-                var word = await dictionary!.getOffset(selectedText);
+                var word = await dict.db!.getOffset(selectedText);
 
-                String content = await dictReader!.readOne(word.blockOffset,
+                String content = await dict.reader!.readOne(word.blockOffset,
                     word.startOffset, word.endOffset, word.compressedSize);
 
                 if (content.startsWith("@@@LINK=")) {
                   // 8: remove @@@LINK=
                   // content.length - 3: remove \r\n\x00
-                  word = await dictionary!.getOffset(
+                  word = await dict.db!.getOffset(
                       content.substring(8, content.length - 3).trimRight());
-                  content = await dictReader!.readOne(word.blockOffset,
+                  content = await dict.reader!.readOne(word.blockOffset,
                       word.startOffset, word.endOffset, word.compressedSize);
                 }
 
@@ -177,10 +181,10 @@ class WebView extends StatelessWidget {
       shouldOverrideUrlLoading: (controller, navigationAction) async {
         final url = navigationAction.request.url;
         if (url!.scheme == "entry") {
-          final word = await dictionary!.getOffset(
+          final word = await dict.db!.getOffset(
               Uri.decodeFull(url.toString().replaceFirst("entry://", "")));
 
-          final String data = await dictReader!.readOne(word.blockOffset,
+          final String data = await dict.reader!.readOne(word.blockOffset,
               word.startOffset, word.endOffset, word.compressedSize);
 
           if (context.mounted) {
@@ -190,8 +194,18 @@ class WebView extends StatelessWidget {
 
         return NavigationActionPolicy.CANCEL;
       },
-      onWebViewCreated: (InAppWebViewController controller) {
+      onWebViewCreated: (controller) {
         webViewController = controller;
+      },
+      onPageCommitVisible: (controller, url) async {
+        if (dict.fontName != null) {
+          await controller.evaluateJavascript(source: """
+const font = new FontFace('Custom Font', 'url(/${dict.fontName})');
+font.load();
+document.fonts.add(font);
+document.body.style.fontFamily = 'Custom Font';
+          """);
+        }
       },
     );
   }
@@ -214,12 +228,12 @@ class _ButtonState extends State<Button> {
               child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),
               onPressed: () async {
                 if (snapshot.data!) {
-                  await dictionary!.removeWord(widget.word);
+                  await dict.db!.removeWord(widget.word);
                 } else {
-                  await dictionary!.addWord(widget.word);
+                  await dict.db!.addWord(widget.word);
                 }
                 setState(() {
-                  stared = dictionary!.wordExist(widget.word);
+                  stared = dict.db!.wordExist(widget.word);
                 });
               },
             );
@@ -252,6 +266,6 @@ class _ButtonState extends State<Button> {
   void initState() {
     super.initState();
 
-    stared = dictionary!.wordExist(widget.word);
+    stared = dict.db!.wordExist(widget.word);
   }
 }
