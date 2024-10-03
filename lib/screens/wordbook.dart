@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:flutter_gen/gen_l10n/app_localizations.dart";
 
 import "../database/dictionary.dart";
 import "../main.dart";
@@ -41,7 +42,11 @@ class WordBookScreen extends StatelessWidget {
             }
           }
 
-          return ListView(children: list);
+          if (list.isEmpty) {
+            return Center(child: Text(AppLocalizations.of(context)!.empty));
+          } else {
+            return ListView(children: list);
+          }
         });
   }
 }

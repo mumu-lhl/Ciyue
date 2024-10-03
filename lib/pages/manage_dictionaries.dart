@@ -74,7 +74,11 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
           }
         }
 
-        return ListView(children: children);
+        if (children.isEmpty) {
+          return Center(child: Text(AppLocalizations.of(context)!.empty));
+        } else {
+          return ListView(children: children);
+        }
       },
     );
 

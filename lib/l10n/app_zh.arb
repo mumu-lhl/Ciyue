@@ -42,5 +42,6 @@
   "copied": "已复制",
   "export": "导出",
   "import": "导入",
-  "customFont": "自定义字体"
+  "customFont": "自定义字体",
+  "empty": "空空如也..."
 }

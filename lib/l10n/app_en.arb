@@ -23,5 +23,6 @@
   "copied": "Copied",
   "export": "Export",
   "import": "Import",
-  "customFont": "Custom Font"
+  "customFont": "Custom Font",
+  "empty": "Empty..."
 }
