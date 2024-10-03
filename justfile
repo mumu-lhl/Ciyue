@@ -12,3 +12,9 @@ steps:
 generate_test:
     flutter pub run drift_dev schema generate drift_schemas/app/ test/generated_migrations/app/
     flutter pub run drift_dev schema generate drift_schemas/dictionary/ test/generated_migrations/dictionary/
+
+icon:
+    flutter pub run flutter_launcher_icons:main
+
+splash:
+    flutter pub run flutter_native_splash:create
