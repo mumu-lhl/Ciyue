@@ -56,7 +56,7 @@ Future<void> changeDictionary(int id, String path) async {
   await dictionary!.close();
   dictionary = dictionaryDatabase(id);
 
-  _initDictReader(path);
+  _initDictReader(path, readKey: false);
 }
 
 Future<void> removeDictionary(String path) async {
