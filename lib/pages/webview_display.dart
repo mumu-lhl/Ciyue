@@ -45,8 +45,8 @@ class WebviewDisplay extends StatelessWidget {
   }
 }
 
-class LocalResourcesathHandler extends CustomPathHandler {
-  LocalResourcesathHandler({required super.path});
+class LocalResourcesPathHandler extends CustomPathHandler {
+  LocalResourcesPathHandler({required super.path});
 
   @override
   Future<WebResourceResponse?> handle(String path) async {
@@ -105,7 +105,7 @@ class WebView extends StatelessWidget {
     webViewAssetLoader: WebViewAssetLoader(
         domain: "ciyue.internal",
         httpAllowed: true,
-        pathHandlers: [LocalResourcesathHandler(path: "/")]),
+        pathHandlers: [LocalResourcesPathHandler(path: "/")]),
   );
 
   WebView({super.key, required this.content});
