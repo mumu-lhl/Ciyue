@@ -89,7 +89,6 @@ jobs:
       - run: flutter build apk --split-per-abi --target-platform=android-arm64
       - run: flutter build apk --split-per-abi --target-platform=android-arm
       - run: flutter build apk --split-per-abi --target-platform=android-x64
-      - run: flutter build appbundle
 
       - name: Rename .apk
         run: |
@@ -99,20 +98,13 @@ jobs:
           mv app-arm64-v8a-release.apk ciyue-arm64-v8a-release.apk
           mv app-x86_64-release.apk ciyue-x86_64-release.apk
 
-      - name: Rename .aab
-        run: |
-          cd build/app/outputs/bundle/release
-          mv app-release.aab ciyue-release.aab
-
       - uses: actions/upload-artifact@v4
         with:
           name: Releases
-          path: |
-            build/app/outputs/flutter-apk/ciyue-*-release.apk
-            build/app/outputs/bundle/release/ciyue-release.aab
+          path: build/app/outputs/flutter-apk/ciyue-*-release.apk
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/flutter-apk/ciyue-*-release.apk,build/app/outputs/bundle/release/ciyue-release.aab"
+          artifacts: "build/app/outputs/flutter-apk/ciyue-*-release.apk"
           tag: ${{ github.ref_name }}
           body: ${{ needs.changelog.outputs.release_body }}
