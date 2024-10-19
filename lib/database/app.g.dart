@@ -255,41 +255,62 @@ typedef $$DictionaryListTableUpdateCompanionBuilder = DictionaryListCompanion
 });
 
 class $$DictionaryListTableFilterComposer
-    extends drift.FilterComposer<_$AppDatabase, $DictionaryListTable> {
-  $$DictionaryListTableFilterComposer(super.$state);
-  drift.ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+    extends drift.Composer<_$AppDatabase, $DictionaryListTable> {
+  $$DictionaryListTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnFilters(column));
 
-  drift.ColumnFilters<String> get path => $state.composableBuilder(
-      column: $state.table.path,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+  drift.ColumnFilters<String> get path => $composableBuilder(
+      column: $table.path, builder: (column) => drift.ColumnFilters(column));
 
-  drift.ColumnFilters<String> get fontPath => $state.composableBuilder(
-      column: $state.table.fontPath,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+  drift.ColumnFilters<String> get fontPath => $composableBuilder(
+      column: $table.fontPath,
+      builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$DictionaryListTableOrderingComposer
-    extends drift.OrderingComposer<_$AppDatabase, $DictionaryListTable> {
-  $$DictionaryListTableOrderingComposer(super.$state);
-  drift.ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+    extends drift.Composer<_$AppDatabase, $DictionaryListTable> {
+  $$DictionaryListTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnOrderings(column));
 
-  drift.ColumnOrderings<String> get path => $state.composableBuilder(
-      column: $state.table.path,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+  drift.ColumnOrderings<String> get path => $composableBuilder(
+      column: $table.path, builder: (column) => drift.ColumnOrderings(column));
 
-  drift.ColumnOrderings<String> get fontPath => $state.composableBuilder(
-      column: $state.table.fontPath,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+  drift.ColumnOrderings<String> get fontPath => $composableBuilder(
+      column: $table.fontPath,
+      builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$DictionaryListTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $DictionaryListTable> {
+  $$DictionaryListTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get fontPath =>
+      $composableBuilder(column: $table.fontPath, builder: (column) => column);
 }
 
 class $$DictionaryListTableTableManager extends drift.RootTableManager<
@@ -298,6 +319,7 @@ class $$DictionaryListTableTableManager extends drift.RootTableManager<
     DictionaryListData,
     $$DictionaryListTableFilterComposer,
     $$DictionaryListTableOrderingComposer,
+    $$DictionaryListTableAnnotationComposer,
     $$DictionaryListTableCreateCompanionBuilder,
     $$DictionaryListTableUpdateCompanionBuilder,
     (
@@ -312,10 +334,12 @@ class $$DictionaryListTableTableManager extends drift.RootTableManager<
       : super(drift.TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$DictionaryListTableFilterComposer(
-              drift.ComposerState(db, table)),
-          orderingComposer: $$DictionaryListTableOrderingComposer(
-              drift.ComposerState(db, table)),
+          createFilteringComposer: () =>
+              $$DictionaryListTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DictionaryListTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DictionaryListTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             drift.Value<int> id = const drift.Value.absent(),
             drift.Value<String> path = const drift.Value.absent(),
@@ -351,6 +375,7 @@ typedef $$DictionaryListTableProcessedTableManager
         DictionaryListData,
         $$DictionaryListTableFilterComposer,
         $$DictionaryListTableOrderingComposer,
+        $$DictionaryListTableAnnotationComposer,
         $$DictionaryListTableCreateCompanionBuilder,
         $$DictionaryListTableUpdateCompanionBuilder,
         (

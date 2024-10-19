@@ -842,21 +842,42 @@ typedef $$WordbookTableUpdateCompanionBuilder = WordbookCompanion Function({
 });
 
 class $$WordbookTableFilterComposer
-    extends drift.FilterComposer<_$DictionaryDatabase, $WordbookTable> {
-  $$WordbookTableFilterComposer(super.$state);
-  drift.ColumnFilters<String> get word => $state.composableBuilder(
-      column: $state.table.word,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+    extends drift.Composer<_$DictionaryDatabase, $WordbookTable> {
+  $$WordbookTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$WordbookTableOrderingComposer
-    extends drift.OrderingComposer<_$DictionaryDatabase, $WordbookTable> {
-  $$WordbookTableOrderingComposer(super.$state);
-  drift.ColumnOrderings<String> get word => $state.composableBuilder(
-      column: $state.table.word,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+    extends drift.Composer<_$DictionaryDatabase, $WordbookTable> {
+  $$WordbookTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$WordbookTableAnnotationComposer
+    extends drift.Composer<_$DictionaryDatabase, $WordbookTable> {
+  $$WordbookTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<String> get word =>
+      $composableBuilder(column: $table.word, builder: (column) => column);
 }
 
 class $$WordbookTableTableManager extends drift.RootTableManager<
@@ -865,6 +886,7 @@ class $$WordbookTableTableManager extends drift.RootTableManager<
     WordbookData,
     $$WordbookTableFilterComposer,
     $$WordbookTableOrderingComposer,
+    $$WordbookTableAnnotationComposer,
     $$WordbookTableCreateCompanionBuilder,
     $$WordbookTableUpdateCompanionBuilder,
     (
@@ -877,10 +899,12 @@ class $$WordbookTableTableManager extends drift.RootTableManager<
       : super(drift.TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$WordbookTableFilterComposer(drift.ComposerState(db, table)),
-          orderingComposer:
-              $$WordbookTableOrderingComposer(drift.ComposerState(db, table)),
+          createFilteringComposer: () =>
+              $$WordbookTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WordbookTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WordbookTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             drift.Value<String> word = const drift.Value.absent(),
             drift.Value<int> rowid = const drift.Value.absent(),
@@ -911,6 +935,7 @@ typedef $$WordbookTableProcessedTableManager = drift.ProcessedTableManager<
     WordbookData,
     $$WordbookTableFilterComposer,
     $$WordbookTableOrderingComposer,
+    $$WordbookTableAnnotationComposer,
     $$WordbookTableCreateCompanionBuilder,
     $$WordbookTableUpdateCompanionBuilder,
     (
@@ -937,61 +962,86 @@ typedef $$ResourceTableUpdateCompanionBuilder = ResourceCompanion Function({
 });
 
 class $$ResourceTableFilterComposer
-    extends drift.FilterComposer<_$DictionaryDatabase, $ResourceTable> {
-  $$ResourceTableFilterComposer(super.$state);
-  drift.ColumnFilters<int> get blockOffset => $state.composableBuilder(
-      column: $state.table.blockOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+    extends drift.Composer<_$DictionaryDatabase, $ResourceTable> {
+  $$ResourceTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get blockOffset => $composableBuilder(
+      column: $table.blockOffset,
+      builder: (column) => drift.ColumnFilters(column));
 
-  drift.ColumnFilters<int> get compressedSize => $state.composableBuilder(
-      column: $state.table.compressedSize,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+  drift.ColumnFilters<int> get compressedSize => $composableBuilder(
+      column: $table.compressedSize,
+      builder: (column) => drift.ColumnFilters(column));
 
-  drift.ColumnFilters<int> get endOffset => $state.composableBuilder(
-      column: $state.table.endOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+  drift.ColumnFilters<int> get endOffset => $composableBuilder(
+      column: $table.endOffset,
+      builder: (column) => drift.ColumnFilters(column));
 
-  drift.ColumnFilters<String> get key => $state.composableBuilder(
-      column: $state.table.key,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+  drift.ColumnFilters<String> get key => $composableBuilder(
+      column: $table.key, builder: (column) => drift.ColumnFilters(column));
 
-  drift.ColumnFilters<int> get startOffset => $state.composableBuilder(
-      column: $state.table.startOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+  drift.ColumnFilters<int> get startOffset => $composableBuilder(
+      column: $table.startOffset,
+      builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$ResourceTableOrderingComposer
-    extends drift.OrderingComposer<_$DictionaryDatabase, $ResourceTable> {
-  $$ResourceTableOrderingComposer(super.$state);
-  drift.ColumnOrderings<int> get blockOffset => $state.composableBuilder(
-      column: $state.table.blockOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+    extends drift.Composer<_$DictionaryDatabase, $ResourceTable> {
+  $$ResourceTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get blockOffset => $composableBuilder(
+      column: $table.blockOffset,
+      builder: (column) => drift.ColumnOrderings(column));
 
-  drift.ColumnOrderings<int> get compressedSize => $state.composableBuilder(
-      column: $state.table.compressedSize,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+  drift.ColumnOrderings<int> get compressedSize => $composableBuilder(
+      column: $table.compressedSize,
+      builder: (column) => drift.ColumnOrderings(column));
 
-  drift.ColumnOrderings<int> get endOffset => $state.composableBuilder(
-      column: $state.table.endOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+  drift.ColumnOrderings<int> get endOffset => $composableBuilder(
+      column: $table.endOffset,
+      builder: (column) => drift.ColumnOrderings(column));
 
-  drift.ColumnOrderings<String> get key => $state.composableBuilder(
-      column: $state.table.key,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+  drift.ColumnOrderings<String> get key => $composableBuilder(
+      column: $table.key, builder: (column) => drift.ColumnOrderings(column));
 
-  drift.ColumnOrderings<int> get startOffset => $state.composableBuilder(
-      column: $state.table.startOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+  drift.ColumnOrderings<int> get startOffset => $composableBuilder(
+      column: $table.startOffset,
+      builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$ResourceTableAnnotationComposer
+    extends drift.Composer<_$DictionaryDatabase, $ResourceTable> {
+  $$ResourceTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get blockOffset => $composableBuilder(
+      column: $table.blockOffset, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get compressedSize => $composableBuilder(
+      column: $table.compressedSize, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get endOffset =>
+      $composableBuilder(column: $table.endOffset, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get startOffset => $composableBuilder(
+      column: $table.startOffset, builder: (column) => column);
 }
 
 class $$ResourceTableTableManager extends drift.RootTableManager<
@@ -1000,6 +1050,7 @@ class $$ResourceTableTableManager extends drift.RootTableManager<
     ResourceData,
     $$ResourceTableFilterComposer,
     $$ResourceTableOrderingComposer,
+    $$ResourceTableAnnotationComposer,
     $$ResourceTableCreateCompanionBuilder,
     $$ResourceTableUpdateCompanionBuilder,
     (
@@ -1012,10 +1063,12 @@ class $$ResourceTableTableManager extends drift.RootTableManager<
       : super(drift.TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$ResourceTableFilterComposer(drift.ComposerState(db, table)),
-          orderingComposer:
-              $$ResourceTableOrderingComposer(drift.ComposerState(db, table)),
+          createFilteringComposer: () =>
+              $$ResourceTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ResourceTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ResourceTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             drift.Value<int> blockOffset = const drift.Value.absent(),
             drift.Value<int> compressedSize = const drift.Value.absent(),
@@ -1062,6 +1115,7 @@ typedef $$ResourceTableProcessedTableManager = drift.ProcessedTableManager<
     ResourceData,
     $$ResourceTableFilterComposer,
     $$ResourceTableOrderingComposer,
+    $$ResourceTableAnnotationComposer,
     $$ResourceTableCreateCompanionBuilder,
     $$ResourceTableUpdateCompanionBuilder,
     (
@@ -1088,61 +1142,86 @@ typedef $$DictionaryTableUpdateCompanionBuilder = DictionaryCompanion Function({
 });
 
 class $$DictionaryTableFilterComposer
-    extends drift.FilterComposer<_$DictionaryDatabase, $DictionaryTable> {
-  $$DictionaryTableFilterComposer(super.$state);
-  drift.ColumnFilters<int> get blockOffset => $state.composableBuilder(
-      column: $state.table.blockOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+    extends drift.Composer<_$DictionaryDatabase, $DictionaryTable> {
+  $$DictionaryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get blockOffset => $composableBuilder(
+      column: $table.blockOffset,
+      builder: (column) => drift.ColumnFilters(column));
 
-  drift.ColumnFilters<int> get compressedSize => $state.composableBuilder(
-      column: $state.table.compressedSize,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+  drift.ColumnFilters<int> get compressedSize => $composableBuilder(
+      column: $table.compressedSize,
+      builder: (column) => drift.ColumnFilters(column));
 
-  drift.ColumnFilters<int> get endOffset => $state.composableBuilder(
-      column: $state.table.endOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+  drift.ColumnFilters<int> get endOffset => $composableBuilder(
+      column: $table.endOffset,
+      builder: (column) => drift.ColumnFilters(column));
 
-  drift.ColumnFilters<String> get key => $state.composableBuilder(
-      column: $state.table.key,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+  drift.ColumnFilters<String> get key => $composableBuilder(
+      column: $table.key, builder: (column) => drift.ColumnFilters(column));
 
-  drift.ColumnFilters<int> get startOffset => $state.composableBuilder(
-      column: $state.table.startOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnFilters(column, joinBuilders: joinBuilders));
+  drift.ColumnFilters<int> get startOffset => $composableBuilder(
+      column: $table.startOffset,
+      builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$DictionaryTableOrderingComposer
-    extends drift.OrderingComposer<_$DictionaryDatabase, $DictionaryTable> {
-  $$DictionaryTableOrderingComposer(super.$state);
-  drift.ColumnOrderings<int> get blockOffset => $state.composableBuilder(
-      column: $state.table.blockOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+    extends drift.Composer<_$DictionaryDatabase, $DictionaryTable> {
+  $$DictionaryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get blockOffset => $composableBuilder(
+      column: $table.blockOffset,
+      builder: (column) => drift.ColumnOrderings(column));
 
-  drift.ColumnOrderings<int> get compressedSize => $state.composableBuilder(
-      column: $state.table.compressedSize,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+  drift.ColumnOrderings<int> get compressedSize => $composableBuilder(
+      column: $table.compressedSize,
+      builder: (column) => drift.ColumnOrderings(column));
 
-  drift.ColumnOrderings<int> get endOffset => $state.composableBuilder(
-      column: $state.table.endOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+  drift.ColumnOrderings<int> get endOffset => $composableBuilder(
+      column: $table.endOffset,
+      builder: (column) => drift.ColumnOrderings(column));
 
-  drift.ColumnOrderings<String> get key => $state.composableBuilder(
-      column: $state.table.key,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+  drift.ColumnOrderings<String> get key => $composableBuilder(
+      column: $table.key, builder: (column) => drift.ColumnOrderings(column));
 
-  drift.ColumnOrderings<int> get startOffset => $state.composableBuilder(
-      column: $state.table.startOffset,
-      builder: (column, joinBuilders) =>
-          drift.ColumnOrderings(column, joinBuilders: joinBuilders));
+  drift.ColumnOrderings<int> get startOffset => $composableBuilder(
+      column: $table.startOffset,
+      builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$DictionaryTableAnnotationComposer
+    extends drift.Composer<_$DictionaryDatabase, $DictionaryTable> {
+  $$DictionaryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get blockOffset => $composableBuilder(
+      column: $table.blockOffset, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get compressedSize => $composableBuilder(
+      column: $table.compressedSize, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get endOffset =>
+      $composableBuilder(column: $table.endOffset, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get startOffset => $composableBuilder(
+      column: $table.startOffset, builder: (column) => column);
 }
 
 class $$DictionaryTableTableManager extends drift.RootTableManager<
@@ -1151,6 +1230,7 @@ class $$DictionaryTableTableManager extends drift.RootTableManager<
     DictionaryData,
     $$DictionaryTableFilterComposer,
     $$DictionaryTableOrderingComposer,
+    $$DictionaryTableAnnotationComposer,
     $$DictionaryTableCreateCompanionBuilder,
     $$DictionaryTableUpdateCompanionBuilder,
     (
@@ -1164,10 +1244,12 @@ class $$DictionaryTableTableManager extends drift.RootTableManager<
       : super(drift.TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$DictionaryTableFilterComposer(drift.ComposerState(db, table)),
-          orderingComposer:
-              $$DictionaryTableOrderingComposer(drift.ComposerState(db, table)),
+          createFilteringComposer: () =>
+              $$DictionaryTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DictionaryTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DictionaryTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             drift.Value<int> blockOffset = const drift.Value.absent(),
             drift.Value<int> compressedSize = const drift.Value.absent(),
@@ -1214,6 +1296,7 @@ typedef $$DictionaryTableProcessedTableManager = drift.ProcessedTableManager<
     DictionaryData,
     $$DictionaryTableFilterComposer,
     $$DictionaryTableOrderingComposer,
+    $$DictionaryTableAnnotationComposer,
     $$DictionaryTableCreateCompanionBuilder,
     $$DictionaryTableUpdateCompanionBuilder,
     (
