@@ -1,5 +1,8 @@
 import "dart:io";
 
+import "package:ciyue/database/app.dart";
+import "package:ciyue/dictionary.dart";
+import "package:ciyue/main.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:device_info_plus/device_info_plus.dart";
 import "package:file_selector/file_selector.dart";
@@ -9,10 +12,6 @@ import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
 import "package:permission_handler/permission_handler.dart";
-
-import "../database/app.dart";
-import "../dictionary.dart";
-import "../main.dart";
 
 const XTypeGroup typeGroup = XTypeGroup(
   label: "custom",
@@ -58,13 +57,13 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                     onChanged: (int? id) {
                       setState(() {
                         dict.id = id;
-                        changeDictionary(dictionary.id, dictionary.path);
+                        dict.changeDictionary(dictionary.id, dictionary.path);
                       });
                     },
                     secondary: IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () async {
-                        await removeDictionary(dictionary.path);
+                        await dict.removeDictionary(dictionary.path);
 
                         setState(() {
                           updateDictionaries();
@@ -121,7 +120,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
           if (context.mounted) showLoadingDialog(context);
 
           try {
-            await addDictionary(path);
+            await dict.addDictionary(path);
           } catch (e) {
             if (context.mounted) {
               final snackBar = SnackBar(
@@ -149,7 +148,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         if (context.mounted) showLoadingDialog(context);
 
         prefs.setString("scanPath", path);
-        await scanDictionaries(path);
+        await dict.scanDictionaries(path);
 
         setState(() {
           context.pop();
@@ -165,7 +164,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
         final path = prefs.getString("scanPath");
         if (path != null) {
-          await scanDictionaries(path);
+          await dict.scanDictionaries(path);
 
           setState(() {
             context.pop();

@@ -1,10 +1,10 @@
+import "package:ciyue/database/dictionary.dart";
+import "package:ciyue/dictionary.dart";
+import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:url_launcher/url_launcher.dart";
-
-import "../database/dictionary.dart";
-import "../main.dart";
 
 class HomeScreen extends StatelessWidget {
   final String searchWord;

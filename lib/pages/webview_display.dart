@@ -1,5 +1,7 @@
 import "dart:io";
 
+import "package:ciyue/dictionary.dart";
+import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
@@ -9,40 +11,13 @@ import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 
-import "../main.dart";
-
-class WebviewDisplay extends StatelessWidget {
-  final String content;
+class Button extends StatefulWidget {
   final String word;
-  final bool description;
 
-  const WebviewDisplay(
-      {super.key,
-      required this.content,
-      required this.word,
-      required this.description});
+  const Button({super.key, required this.word});
 
   @override
-  Widget build(BuildContext context) {
-    Widget? floatingActionButton;
-    late String html;
-    if (description) {
-      html = HtmlUnescape().convert(content);
-    } else {
-      html = content;
-      floatingActionButton = Button(word: word);
-    }
-
-    return Scaffold(
-      appBar: AppBar(leading: BackButton(
-        onPressed: () {
-          context.pop();
-        },
-      )),
-      floatingActionButton: floatingActionButton,
-      body: WebView(content: html),
-    );
-  }
+  State<Button> createState() => _ButtonState();
 }
 
 class LocalResourcesPathHandler extends CustomPathHandler {
@@ -83,15 +58,6 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       return WebResourceResponse(data: null);
     }
   }
-}
-
-class Button extends StatefulWidget {
-  final String word;
-
-  const Button({super.key, required this.word});
-
-  @override
-  State<Button> createState() => _ButtonState();
 }
 
 class WebView extends StatelessWidget {
@@ -207,6 +173,40 @@ document.body.style.fontFamily = 'Custom Font';
           """);
         }
       },
+    );
+  }
+}
+
+class WebviewDisplay extends StatelessWidget {
+  final String content;
+  final String word;
+  final bool description;
+
+  const WebviewDisplay(
+      {super.key,
+      required this.content,
+      required this.word,
+      required this.description});
+
+  @override
+  Widget build(BuildContext context) {
+    Widget? floatingActionButton;
+    late String html;
+    if (description) {
+      html = HtmlUnescape().convert(content);
+    } else {
+      html = content;
+      floatingActionButton = Button(word: word);
+    }
+
+    return Scaffold(
+      appBar: AppBar(leading: BackButton(
+        onPressed: () {
+          context.pop();
+        },
+      )),
+      floatingActionButton: floatingActionButton,
+      body: WebView(content: html),
     );
   }
 }

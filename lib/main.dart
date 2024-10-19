@@ -1,5 +1,10 @@
+import "package:ciyue/database/app.dart";
+import "package:ciyue/database/dictionary.dart";
 import "package:ciyue/dictionary.dart";
+import "package:ciyue/pages/home.dart";
+import "package:ciyue/pages/manage_dictionaries.dart";
 import "package:ciyue/pages/settings_dictionary.dart";
+import "package:ciyue/pages/webview_display.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
@@ -8,12 +13,6 @@ import "package:flutter_tts/flutter_tts.dart";
 import "package:go_router/go_router.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
-
-import "database/app.dart";
-import "database/dictionary.dart";
-import "pages/home.dart";
-import "pages/manage_dictionaries.dart";
-import "pages/webview_display.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,7 +59,6 @@ void main() async {
   runApp(const Dictionary());
 }
 
-final dict = Dict();
 late AppDatabase dictionaryList;
 late FlutterTts flutterTts;
 String? language;
