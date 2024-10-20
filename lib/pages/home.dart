@@ -91,11 +91,6 @@ class _HomeState extends State<Home> {
         onDestinationSelected: (int index) {
           setState(() {
             _currentIndex = index;
-
-            if (index != 0) {
-              searchWord = "";
-              searchResult = [];
-            }
           });
         },
         selectedIndex: _currentIndex,
