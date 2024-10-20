@@ -140,31 +140,65 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     final settingScanPathButton = IconButton(
       icon: const Icon(Icons.folder),
       onPressed: () async {
-        final path = await getDirectoryPath();
-        if (path == null) {
-          return;
+        final paths = prefs.getStringList("scanPaths") ?? [];
+
+        if (paths.isEmpty) {
+          await _addScanPath(context);
+        } else {
+          final listTiles = <Widget>[];
+          for (final path in paths) {
+            listTiles.add(ListTile(
+              title: Text(path.replaceFirst("/storage/emulated/0/", "")),
+              trailing: IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () async {
+                  await _removeScanPath(path);
+
+                  if (context.mounted) context.pop();
+                },
+              ),
+            ));
+          }
+
+          await showDialog(
+              context: context,
+              builder: (BuildContext _) => SimpleDialog(
+                    children: [
+                      ...listTiles,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            child: const Text("关闭"),
+                            onPressed: () {
+                              context.pop();
+                            },
+                          ),
+                          TextButton(
+                            child: const Text("添加"),
+                            onPressed: () async {
+                              await _addScanPath(context);
+                              if (context.mounted) context.pop();
+                            },
+                          )
+                        ],
+                      ),
+                    ],
+                  ));
         }
-
-        if (context.mounted) showLoadingDialog(context);
-
-        prefs.setString("scanPath", path);
-        await dict.scanDictionaries(path);
-
-        setState(() {
-          context.pop();
-          updateDictionaries();
-        });
       },
     );
 
     final refreshButton = IconButton(
       icon: const Icon(Icons.refresh),
       onPressed: () async {
-        showLoadingDialog(context);
+        final paths = prefs.getStringList("scanPaths");
+        if (paths != null) {
+          showLoadingDialog(context);
 
-        final path = prefs.getString("scanPath");
-        if (path != null) {
-          await dict.scanDictionaries(path);
+          for (final path in paths) {
+            await dict.scanDictionaries(path);
+          }
 
           setState(() {
             context.pop();
@@ -230,5 +264,37 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
   void updateDictionaries() {
     dictionaries = dictionaryList.all();
+  }
+
+  Future<void> _addScanPath(BuildContext context) async {
+    final path = await getDirectoryPath();
+    if (path == null) {
+      return;
+    }
+
+    final paths = prefs.getStringList("scanPaths") ?? [];
+    if (paths.contains(path)) {
+      return;
+    }
+
+    if (context.mounted) showLoadingDialog(context);
+
+    paths.add(path);
+    prefs.setStringList("scanPaths", paths);
+
+    for (final path in paths) {
+      await dict.scanDictionaries(path);
+    }
+
+    setState(() {
+      context.pop();
+      updateDictionaries();
+    });
+  }
+
+  Future<void> _removeScanPath(String path) async {
+    final paths = prefs.getStringList("scanPaths")!;
+    paths.remove(path);
+    prefs.setStringList("scanPaths", paths);
   }
 }
