@@ -37,6 +37,7 @@ class _Dict {
     await dictionaryList.add(path);
 
     final id = await dictionaryList.getId(path);
+    this.id = id;
     db = dictionaryDatabase(id);
 
     await _addWords();
@@ -164,8 +165,8 @@ class _Dict {
   }
 
   void _changeCurrentDictionary(int? id, String? path) {
-    id = id;
-    path = path;
+    this.id = id;
+    this.path = path;
   }
 
   Future<void> _initDictReader(String path, {bool readKey = true}) async {
