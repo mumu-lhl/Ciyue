@@ -13,6 +13,7 @@ class _Dict {
   String? path;
   String? fontName;
   String? fontPath;
+  String? backupPath;
   DictionaryDatabase? db;
   DictReader? reader;
   DictReader? readerResource;
@@ -47,6 +48,7 @@ class _Dict {
     _changeCurrentDictionary(id, path);
 
     customFont(null);
+    customBackupPath(null);
   }
 
   Future<void> changeDictionary(int id, String path) async {
@@ -60,6 +62,9 @@ class _Dict {
     final fontPath = await dictionaryList.getFontPath(id);
     customFont(fontPath);
 
+    final backupPath = await dictionaryList.getBackupPath(id);
+    customBackupPath(backupPath);
+
     _initDictReader(path, readKey: false);
   }
 
@@ -72,6 +77,11 @@ class _Dict {
     }
 
     await dictionaryList.updateFont(id!, path);
+  }
+
+  Future<void> customBackupPath(String? path) async {
+    backupPath = path;
+    await dictionaryList.updateBackup(id!, path);
   }
 
   Future<void> removeDictionary(String path) async {

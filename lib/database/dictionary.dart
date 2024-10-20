@@ -2,7 +2,7 @@ import "package:drift/drift.dart" as drift;
 import "package:drift/drift.dart";
 import "package:drift_flutter/drift_flutter.dart";
 
-import "dictionary_schema_versions.dart";
+import "dictionary.steps.dart";
 
 part "dictionary.g.dart";
 

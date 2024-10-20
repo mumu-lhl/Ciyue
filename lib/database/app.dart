@@ -2,7 +2,7 @@ import "package:drift/drift.dart" as drift;
 import "package:drift/drift.dart";
 import "package:drift_flutter/drift_flutter.dart";
 
-import "app_schema_versions.dart";
+import "app.steps.dart";
 
 part "app.g.dart";
 
@@ -16,9 +16,6 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
-
-  @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
@@ -28,9 +25,15 @@ class AppDatabase extends _$AppDatabase {
         from1To2: (m, schema) async {
           await m.addColumn(dictionaryList, dictionaryList.fontPath);
         },
+        from2To3: (m, schema) async {
+          await m.addColumn(dictionaryList, dictionaryList.backupPath);
+        },
       ),
     );
   }
+
+  @override
+  int get schemaVersion => 3;
 
   Future<int> add(String path) {
     return into(dictionaryList)
@@ -39,6 +42,18 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<DictionaryListData>> all() {
     return (select(dictionaryList)).get();
+  }
+
+  Future<String?> getFontPath(int id) async {
+    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
+            .get()))[0]
+        .fontPath;
+  }
+
+  Future<String?> getBackupPath(int id) async {
+    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
+            .get()))[0]
+        .backupPath;
   }
 
   Future<int> getId(String path) async {
@@ -56,15 +71,15 @@ class AppDatabase extends _$AppDatabase {
         .write(DictionaryListCompanion(fontPath: Value(fontPath)));
   }
 
-  Future<String?> getFontPath(int id) async {
-    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
-            .get()))[0]
-        .fontPath;
+  Future<int> updateBackup(int id, String? backupPath) {
+    return (update(dictionaryList)..where((t) => t.id.isValue(id)))
+        .write(DictionaryListCompanion(backupPath: Value(backupPath)));
   }
 }
 
 class DictionaryList extends Table {
+  TextColumn get backupPath => text().nullable()();
+  TextColumn get fontPath => text().nullable()();
   IntColumn get id => integer().autoIncrement()();
   TextColumn get path => text()();
-  TextColumn get fontPath => text().nullable()();
 }

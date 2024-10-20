@@ -75,7 +75,7 @@ class Shape0 extends i0.VersionedTable {
 i1.GeneratedColumn<String> _column_0(String aliasedName) =>
     i1.GeneratedColumn<String>('word', aliasedName, false,
         type: i1.DriftSqlType.string,
-        defaultConstraints: i1.GeneratedColumn.constraintIsAlways(' UNIQUE'));
+        defaultConstraints: i1.GeneratedColumn.constraintIsAlways('UNIQUE'));
 
 class Shape1 extends i0.VersionedTable {
   Shape1({required super.source, required super.alias}) : super.aliased();

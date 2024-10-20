@@ -25,5 +25,6 @@
   "import": "Import",
   "customFont": "Custom Font",
   "empty": "Empty...",
-  "add": "Add"
+  "add": "Add",
+  "autoExport": "Auto Export"
 }

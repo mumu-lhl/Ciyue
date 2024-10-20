@@ -1,7 +1,9 @@
+import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/settings.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
@@ -232,6 +234,14 @@ class _ButtonState extends State<Button> {
                 } else {
                   await dict.db!.addWord(widget.word);
                 }
+
+                if (settings.autoExport && dict.backupPath != null) {
+                  final words = await dict.db!.getAllWords();
+                  final output = jsonEncode(words);
+                  final file = File(dict.backupPath!);
+                  await file.writeAsString(output);
+                }
+
                 setState(() {
                   stared = dict.db!.wordExist(widget.word);
                 });

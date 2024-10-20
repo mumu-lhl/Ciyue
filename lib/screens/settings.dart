@@ -4,6 +4,7 @@ import "dart:io";
 import "package:ciyue/database/dictionary.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/settings.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -55,12 +56,17 @@ class Export extends StatelessWidget {
           return;
         }
 
+        final dictionaryName = basename(dict.path!),
+            filename = setExtension(dictionaryName, ".json"),
+            saveLocation = join(directoryPath, filename);
+
+        if (settings.autoExport) {
+          dict.customBackupPath(saveLocation);
+        }
+
         final words = await dict.db!.getAllWords();
         if (words.isNotEmpty) {
-          final dictionaryName = basename(dict.path!),
-              filename = setExtension(dictionaryName, ".json"),
-              saveLocation = join(directoryPath, filename),
-              output = jsonEncode(words);
+          final output = jsonEncode(words);
 
           final file = File(saveLocation);
           await file.writeAsString(output);
@@ -172,6 +178,7 @@ class SettingsScreen extends StatelessWidget {
         ThemeSelector(),
         LanguageSelector(),
         Divider(),
+        AutoExport(),
         Export(),
         Import(),
         Divider(),
@@ -179,6 +186,31 @@ class SettingsScreen extends StatelessWidget {
         GithubUrl(),
         About(),
       ],
+    );
+  }
+}
+
+class AutoExport extends StatefulWidget {
+  const AutoExport({
+    super.key,
+  });
+
+  @override
+  State<AutoExport> createState() => _AutoExportState();
+}
+
+class _AutoExportState extends State<AutoExport> {
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      title: Text(AppLocalizations.of(context)!.autoExport),
+      secondary: Icon(Icons.backup),
+      value: settings.autoExport,
+      onChanged: (bool value) {
+        settings.autoExport = value;
+        prefs.setBool("autoExport", value);
+        setState(() {});
+      },
     );
   }
 }
