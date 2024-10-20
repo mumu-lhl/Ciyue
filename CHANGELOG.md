@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.10.0](https://github.com/mumu-lhl/Ciyue/compare/v0.9.0..v0.10.0) - 2024-10-20
+
+### Bug Fixes
+
+- fix adding dictionary - ([c553fda](https://github.com/mumu-lhl/Ciyue/commit/c553fdad4433b83dab2decc98c3732291730ae4a)) - Mumulhl
+- fix no search result after switching bottom destination - ([61cbbde](https://github.com/mumu-lhl/Ciyue/commit/61cbbde3a0e4face79078dbc7b0fc083847d762a)) - Mumulhl
+
+### Features
+
+- scan in mutiple paths - ([b1fe716](https://github.com/mumu-lhl/Ciyue/commit/b1fe7163c73687d6645ff67624abd0911cec0b21)) - Mumulhl
+- auto export - ([a53ee9b](https://github.com/mumu-lhl/Ciyue/commit/a53ee9b844c55e9e3f1575ace2cda425de383ab3)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** disable build appbundle for release - ([92279a2](https://github.com/mumu-lhl/Ciyue/commit/92279a2eb00bb44a9c5cb8139475e41c26b64b5e)) - Mumulhl
+- **(deps)** update - ([2ebc6ba](https://github.com/mumu-lhl/Ciyue/commit/2ebc6ba7f58333400f74f034c7471dd4682cc835)) - Mumulhl
+- **(deps)** bump mime from 1.0.6 to 2.0.0 ([#31](https://github.com/mumu-lhl/Ciyue/issues/31)) - ([93d53a3](https://github.com/mumu-lhl/Ciyue/commit/93d53a30c9e943436f65fcc69ef1a921e3c8d85b)) - dependabot[bot]
+- **(deps)** bump go_router from 14.2.9 to 14.3.0 ([#30](https://github.com/mumu-lhl/Ciyue/issues/30)) - ([0f99fc2](https://github.com/mumu-lhl/Ciyue/commit/0f99fc2602b124056d50f78d579c222309b70d8a)) - dependabot[bot]
+- **(deps)** update - ([08ba2fc](https://github.com/mumu-lhl/Ciyue/commit/08ba2fce4ea88076cddd50134cec4c588fa9cc24)) - Mumulhl
+- **(deps)** update - ([c2e92d8](https://github.com/mumu-lhl/Ciyue/commit/c2e92d8fa5da477d2ac469eef65fe43949b5f585)) - Mumulhl
+- regenerate g.dart files - ([ceb8e5f](https://github.com/mumu-lhl/Ciyue/commit/ceb8e5fd9c75904e30e188b9af241b19084ad17f)) - Mumulhl
+
+### Refactoring
+
+- refactor code - ([b9a413e](https://github.com/mumu-lhl/Ciyue/commit/b9a413ef5f75b972e569b74ab39200320399747b)) - Mumulhl
+- display empty in workbook screen when there is no dictionary - ([8d69ae8](https://github.com/mumu-lhl/Ciyue/commit/8d69ae862432f1bf197539492f96a7c2d9e6bc47)) - Mumulhl
+
+### Style
+
+- fix typo - ([40ce9b5](https://github.com/mumu-lhl/Ciyue/commit/40ce9b5f69f747324d14cd151fe8216f7bb34c9e)) - Mumulhl
+- finish l10n - ([65c9fd0](https://github.com/mumu-lhl/Ciyue/commit/65c9fd0e33612eeb7c446a275ec30a7a2bb93d18)) - Mumulhl
+
+---
 ## [0.9.0](https://github.com/mumu-lhl/Ciyue/compare/v0.8.3..v0.9.0) - 2024-10-03
 
 ### Bug Fixes
