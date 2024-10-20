@@ -43,5 +43,6 @@
   "export": "导出",
   "import": "导入",
   "customFont": "自定义字体",
-  "empty": "空空如也..."
+  "empty": "空空如也...",
+  "add": "添加"
 }

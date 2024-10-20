@@ -169,13 +169,13 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           TextButton(
-                            child: const Text("关闭"),
+                            child: Text(AppLocalizations.of(context)!.close),
                             onPressed: () {
                               context.pop();
                             },
                           ),
                           TextButton(
-                            child: const Text("添加"),
+                            child: Text(AppLocalizations.of(context)!.add),
                             onPressed: () async {
                               await _addScanPath(context);
                               if (context.mounted) context.pop();
