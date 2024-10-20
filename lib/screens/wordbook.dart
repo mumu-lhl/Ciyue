@@ -10,7 +10,7 @@ class WordBookScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (dict.db == null) {
-      return ListView();
+      return Center(child: Text(AppLocalizations.of(context)!.empty));
     }
 
     final allWords = dict.db!.getAllWords();
