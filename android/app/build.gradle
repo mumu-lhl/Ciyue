@@ -69,7 +69,7 @@ flutter {
     source = "../.."
 }
 
-ext.abiCodes = ["arm64-v8a": 1, "armeabi-v7a": 2, "x86_64": 3]
+ext.abiCodes = ["x86_64": 1, "armeabi-v7a": 2, "arm64-v8a": 3]
 import com.android.build.OutputFile
 android.applicationVariants.all { variant ->
   variant.outputs.each { output ->
