@@ -70,7 +70,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
-  drift_dev: ^2.21.0
+  drift_dev: ^2.21.1
   build_runner: ^2.4.13
   test: ^1.25.7
 
