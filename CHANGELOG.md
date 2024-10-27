@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.10.1](https://github.com/mumu-lhl/Ciyue/compare/v0.10.0..v0.10.1) - 2024-10-27
+
+### Miscellaneous Chores
+
+- **(deps)** bump flutter_native_splash from 2.4.1 to 2.4.2 ([#36](https://github.com/mumu-lhl/Ciyue/issues/36)) - ([3c19293](https://github.com/mumu-lhl/Ciyue/commit/3c19293089bb39e1aa9e45e0141d3d37bd07fba9)) - dependabot[bot]
+- **(deps)** update - ([6940076](https://github.com/mumu-lhl/Ciyue/commit/6940076786178f77bc33757198adda46d01079a8)) - Mumulhl
+- **(deps)** update - ([e358127](https://github.com/mumu-lhl/Ciyue/commit/e358127dce1bf78a0d7d180613013e021ec3b6d4)) - Mumulhl
+- modify abi codes - ([b959e62](https://github.com/mumu-lhl/Ciyue/commit/b959e62c28f279eba5e8b251efde09b50a062078)) - Mumulhl
+
+---
 ## [0.10.0](https://github.com/mumu-lhl/Ciyue/compare/v0.9.0..v0.10.0) - 2024-10-20
 
 ### Bug Fixes
