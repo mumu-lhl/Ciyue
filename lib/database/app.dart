@@ -23,10 +23,12 @@ class AppDatabase extends _$AppDatabase {
       },
       onUpgrade: stepByStep(
         from1To2: (m, schema) async {
-          await m.addColumn(dictionaryList, dictionaryList.fontPath);
+          await m.addColumn(
+              schema.dictionaryList, schema.dictionaryList.fontPath);
         },
         from2To3: (m, schema) async {
-          await m.addColumn(dictionaryList, dictionaryList.backupPath);
+          await m.addColumn(
+              schema.dictionaryList, schema.dictionaryList.backupPath);
         },
       ),
     );
