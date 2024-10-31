@@ -243,6 +243,7 @@ class _LanguageSelectorState extends State<LanguageSelector> {
                 value: "system",
                 child: Text(AppLocalizations.of(context)!.system)),
             const PopupMenuItem(value: "en", child: Text("English")),
+            const PopupMenuItem(value: "ru", child: Text("Русский")),
             const PopupMenuItem(value: "nb", child: Text("Bokmål")),
             const PopupMenuItem(value: "zh_CN", child: Text("简体中文")),
             const PopupMenuItem(value: "zh_HK", child: Text("繁體中文（香港）")),
