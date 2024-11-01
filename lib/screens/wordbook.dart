@@ -197,7 +197,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
                     onSelected: (selected) {
                       setState(() {
                         selectedTag = selected ? tag.id : null;
-                        allWords = dict.db!.getAllWords(tag: selectedTag);
+                        allWords =
+                            dict.db!.getAllWordsWithTag(tag: selectedTag);
                       });
                     },
                   ));
@@ -218,7 +219,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
     super.initState();
 
     if (dict.db != null) {
-      allWords = dict.db!.getAllWords();
+      allWords = dict.db!.getAllWordsWithTag();
       tags = dict.db!.getAllTags();
     }
   }

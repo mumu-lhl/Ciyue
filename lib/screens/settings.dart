@@ -64,12 +64,14 @@ class Export extends StatelessWidget {
           dict.customBackupPath(saveLocation);
         }
 
-        final words = await dict.db!.getAllWords();
+        final words = await dict.db!.getAllWords(),
+            tags = await dict.db!.getAllTags();
+
         if (words.isNotEmpty) {
-          final output = jsonEncode(words);
+          final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
 
           final file = File(saveLocation);
-          await file.writeAsString(output);
+          await file.writeAsString("$wordsOutput\n$tagsOutput");
         }
       },
     );
@@ -133,10 +135,22 @@ class Import extends StatelessWidget {
         }
 
         final file = File(xFile.path),
-            input = await file.readAsString(),
-            json = jsonDecode(input),
-            data = WordbookData.fromJson(json[0]);
-        await dict.db!.addAllWords(data);
+            input = await file.readAsLines(),
+            wordsJson = jsonDecode(input[0]),
+            tagsJson = jsonDecode(input[1]);
+
+        final wordsData = <WordbookData>[];
+        for (final i in wordsJson) {
+          wordsData.add(WordbookData.fromJson(i));
+        }
+
+        final tagsData = <WordbookTag>[];
+        for (final i in tagsJson) {
+          tagsData.add(WordbookTag.fromJson(i));
+        }
+
+        await dict.db!.addAllWords(wordsData);
+        await dict.db!.addAllTags(tagsData);
       },
     );
   }

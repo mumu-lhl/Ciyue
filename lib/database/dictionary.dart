@@ -47,9 +47,16 @@ class DictionaryDatabase extends _$DictionaryDatabase {
   @override
   int get schemaVersion => 3;
 
-  Future<void> addAllWords(WordbookData data) async {
-    await into(wordbook).insert(data,
-        onConflict: DoUpdate((old) => data, target: [wordbook.word]));
+  Future<void> addAllTags(List<WordbookTag> data) async {
+    await batch((batch) {
+      batch.insertAllOnConflictUpdate(wordbookTags, data);
+    });
+  }
+
+  Future<void> addAllWords(List<WordbookData> data) async {
+    await batch((batch) {
+      batch.insertAll(wordbook, data);
+    });
   }
 
   Future<int> addTag(String tag) {
@@ -70,8 +77,12 @@ class DictionaryDatabase extends _$DictionaryDatabase {
     return (select(wordbookTags)).get();
   }
 
+  Future<List<WordbookData>> getAllWords() {
+    return (select(wordbook)).get();
+  }
+
   // ignore: avoid_init_to_null
-  Future<List<WordbookData>> getAllWords({int? tag = null}) {
+  Future<List<WordbookData>> getAllWordsWithTag({int? tag = null}) {
     if (tag == null) {
       return (select(wordbook)..where((t) => t.tag.isNull())).get();
     } else {

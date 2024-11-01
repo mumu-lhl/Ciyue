@@ -235,6 +235,19 @@ class WebviewDisplay extends StatelessWidget {
 class _ButtonState extends State<Button> {
   Future<bool>? stared;
 
+  Future<void> autoExport() async {
+    if (settings.autoExport && dict.backupPath != null) {
+      final words = await dict.db!.getAllWords(),
+          tags = await dict.db!.getAllTags();
+
+      final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
+
+      final file = File(dict.backupPath!);
+
+      await file.writeAsString("$wordsOutput\n$tagsOutput");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -287,13 +300,7 @@ class _ButtonState extends State<Button> {
                   await dict.db!.addWord(widget.word);
                 }
 
-                if (settings.autoExport && dict.backupPath != null) {
-                  final words = await dict.db!.getAllWords();
-                  final output = jsonEncode(words);
-                  final file = File(dict.backupPath!);
-                  await file.writeAsString(output);
-                }
-
+                await autoExport();
                 checkStared();
               }
 
@@ -326,6 +333,8 @@ class _ButtonState extends State<Button> {
                                     .removeWordWithAllTags(widget.word);
 
                                 if (context.mounted) context.pop();
+
+                                await autoExport();
                                 checkStared();
                               },
                             ),
@@ -346,6 +355,8 @@ class _ButtonState extends State<Button> {
                                 }
 
                                 if (context.mounted) context.pop();
+
+                                await autoExport();
                                 checkStared();
                               },
                             ),
