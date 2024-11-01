@@ -5,60 +5,9 @@ import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 
-class WordBookScreen extends StatefulWidget {
+class WordBookScreen extends StatelessWidget {
   const WordBookScreen({super.key});
 
-  @override
-  State<WordBookScreen> createState() => _WordBookScreenState();
-}
-
-class WordListView extends StatelessWidget {
-  const WordListView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    if (dict.db == null) {
-      return Center(child: Text(AppLocalizations.of(context)!.empty));
-    }
-
-    final allWords = dict.db!.getAllWords();
-
-    return FutureBuilder(
-        future: allWords,
-        builder:
-            (BuildContext context, AsyncSnapshot<List<WordbookData>> snapshot) {
-          final list = <Widget>[];
-          if (snapshot.hasData) {
-            for (final data in snapshot.data!) {
-              list.add(ListTile(
-                title: Text(data.word),
-                onTap: () async {
-                  final offset = await dict.db!.getOffset(data.word);
-                  String content = await dict.reader!.readOne(
-                      offset.blockOffset,
-                      offset.startOffset,
-                      offset.endOffset,
-                      offset.compressedSize);
-
-                  if (context.mounted) {
-                    context.push("/word",
-                        extra: {"content": content, "word": data.word});
-                  }
-                },
-              ));
-            }
-          }
-
-          if (list.isEmpty) {
-            return Center(child: Text(AppLocalizations.of(context)!.empty));
-          } else {
-            return ListView(children: list);
-          }
-        });
-  }
-}
-
-class _WordBookScreenState extends State<WordBookScreen> {
   @override
   Widget build(BuildContext context) {
     late final PreferredSizeWidget? appBar;
@@ -87,7 +36,7 @@ class _WordBookScreenState extends State<WordBookScreen> {
 
     return Scaffold(
       appBar: appBar,
-      body: WordListView(),
+      body: WordViewWithTagsClips(),
     );
   }
 
@@ -163,5 +112,114 @@ class _WordBookScreenState extends State<WordBookScreen> {
                 ),
               ]);
         });
+  }
+}
+
+class WordView extends StatelessWidget {
+  final Future<List<WordbookData>> allWords;
+
+  const WordView({
+    super.key,
+    required this.allWords,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: allWords,
+        builder:
+            (BuildContext context, AsyncSnapshot<List<WordbookData>> snapshot) {
+          final list = <Widget>[];
+          if (snapshot.hasData) {
+            for (final data in snapshot.data!) {
+              list.add(ListTile(
+                title: Text(data.word),
+                onTap: () async {
+                  final offset = await dict.db!.getOffset(data.word);
+                  String content = await dict.reader!.readOne(
+                      offset.blockOffset,
+                      offset.startOffset,
+                      offset.endOffset,
+                      offset.compressedSize);
+
+                  if (context.mounted) {
+                    context.push("/word",
+                        extra: {"content": content, "word": data.word});
+                  }
+                },
+              ));
+            }
+          }
+
+          if (list.isEmpty) {
+            return Expanded(
+                child:
+                    Center(child: Text(AppLocalizations.of(context)!.empty)));
+          } else {
+            return Expanded(child: ListView(children: list));
+          }
+        });
+  }
+}
+
+class WordViewWithTagsClips extends StatefulWidget {
+  const WordViewWithTagsClips({super.key});
+
+  @override
+  State<WordViewWithTagsClips> createState() => _WordViewWithTagsClipsState();
+}
+
+class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
+  late Future<List<WordbookData>> allWords;
+  late Future<List<WordbookTag>> tags;
+
+  int? selectedTag;
+
+  @override
+  Widget build(BuildContext context) {
+    if (dict.db == null) {
+      return Center(child: Text(AppLocalizations.of(context)!.empty));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FutureBuilder(
+            future: tags,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                final choiceChips = <Widget>[];
+
+                for (final tag in snapshot.data!) {
+                  choiceChips.add(ChoiceChip(
+                    label: Text(tag.tag),
+                    selected: selectedTag == tag.id,
+                    onSelected: (selected) {
+                      setState(() {
+                        selectedTag = selected ? tag.id : null;
+                        allWords = dict.db!.getAllWords(tag: selectedTag);
+                      });
+                    },
+                  ));
+                }
+
+                return Wrap(children: choiceChips);
+              }
+
+              return Wrap();
+            }),
+        WordView(allWords: allWords),
+      ],
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (dict.db != null) {
+      allWords = dict.db!.getAllWords();
+      tags = dict.db!.getAllTags();
+    }
   }
 }
