@@ -111,6 +111,7 @@ class _WordBookScreenState extends State<WordBookScreen> {
                 child: Text(AppLocalizations.of(context)!.add),
                 onPressed: () async {
                   await dict.db!.addTag(textController.text);
+                  await dict.checkTagExist();
 
                   if (context.mounted) context.pop();
                 },
@@ -133,6 +134,7 @@ class _WordBookScreenState extends State<WordBookScreen> {
                 icon: Icon(Icons.delete),
                 onPressed: () async {
                   await dict.db!.removeTag(tag.id);
+                  await dict.checkTagExist();
 
                   if (context.mounted) context.pop();
                 },
@@ -140,25 +142,22 @@ class _WordBookScreenState extends State<WordBookScreen> {
             ));
           }
 
-          return SimpleDialog(
-            title: Text("Tags List"),
-            children: [
-              ...tagListTile,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextCloseButton(),
-                  TextButton(
-                    child: Text(AppLocalizations.of(context)!.add),
-                    onPressed: () async {
-                      context.pop();
-                      await buildAddTag(context);
-                    },
-                  )
-                ],
-              ),
-            ],
-          );
+          return SimpleDialog(title: Text("Tags List"), children: [
+            ...tagListTile,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextCloseButton(),
+                TextButton(
+                  child: Text(AppLocalizations.of(context)!.add),
+                  onPressed: () async {
+                    context.pop();
+                    await buildAddTag(context);
+                  },
+                ),
+              ],
+            ),
+          ]);
         });
   }
 }

@@ -62,12 +62,21 @@ class DictionaryDatabase extends _$DictionaryDatabase {
         .insert(WordbookCompanion(tag: Value(tag), word: Value(word)));
   }
 
+  Future<bool> existTag() async {
+    return (await (select(wordbookTags)..limit(1)).get()).isNotEmpty;
+  }
+
   Future<List<WordbookTag>> getAllTags() {
     return (select(wordbookTags)).get();
   }
 
-  Future<List<WordbookData>> getAllWords() {
-    return (select(wordbook)).get();
+  // ignore: avoid_init_to_null
+  Future<List<WordbookData>> getAllWords({int? tag = null}) {
+    if (tag == null) {
+      return (select(wordbook)..where((t) => t.tag.isNull())).get();
+    } else {
+      return (select(wordbook)..where((t) => t.tag.isValue(tag))).get();
+    }
   }
 
   Future<DictionaryData> getOffset(String word) async {
@@ -103,16 +112,26 @@ class DictionaryDatabase extends _$DictionaryDatabase {
       return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
     } else {
       return (delete(wordbook)
-            ..where((t) => t.word.isValue(word))
-            ..where((t) => t.tag.isValue(tag)))
+            ..where((t) => t.word.isValue(word) & t.tag.isValue(tag)))
           .go();
     }
+  }
+
+  Future<int> removeWordWithAllTags(String word) {
+    return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
   }
 
   Future<List<DictionaryData>> searchWord(String word) {
     return (select(dictionary)
           ..where((u) => u.key.like("$word%"))
           ..limit(20))
+        .get();
+  }
+
+  Future<List<int>> tagsOfWord(String word) {
+    return (select(wordbook)
+          ..where((t) => t.word.isValue(word) & t.tag.isNotNull()))
+        .map((row) => row.tag!)
         .get();
   }
 

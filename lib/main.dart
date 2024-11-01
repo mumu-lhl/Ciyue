@@ -50,6 +50,8 @@ void main() async {
 
     final id = await dictionaryList.getId(dict.path!);
     dict.db = dictionaryDatabase(id);
+
+    await dict.checkTagExist();
   }
 
   flutterTts = FlutterTts();

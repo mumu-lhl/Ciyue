@@ -1,9 +1,11 @@
 import "dart:convert";
 import "dart:io";
 
+import "package:ciyue/database/dictionary.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
+import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
@@ -60,6 +62,23 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       return WebResourceResponse(data: null);
     }
   }
+}
+
+class TagsList extends StatefulWidget {
+  final List<WordbookTag> tags;
+  final List<int> tagsOfWord;
+  final List<int> toAdd;
+  final List<int> toDel;
+
+  const TagsList(
+      {super.key,
+      required this.tags,
+      required this.tagsOfWord,
+      required this.toAdd,
+      required this.toDel});
+
+  @override
+  State<StatefulWidget> createState() => _TagsListState();
 }
 
 class WebView extends StatelessWidget {
@@ -246,12 +265,21 @@ class _ButtonState extends State<Button> {
     return FutureBuilder(
         future: stared,
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-          if (snapshot.hasData) {
+          if (!snapshot.hasData) {
             return FloatingActionButton.small(
               foregroundColor: colorScheme.primary,
               backgroundColor: colorScheme.surface,
-              child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),
-              onPressed: () async {
+              child: const Icon(Icons.star_outline),
+              onPressed: () {},
+            );
+          }
+
+          return FloatingActionButton.small(
+            foregroundColor: colorScheme.primary,
+            backgroundColor: colorScheme.surface,
+            child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),
+            onPressed: () async {
+              Future<void> star() async {
                 if (snapshot.data!) {
                   await dict.db!.removeWord(widget.word);
                 } else {
@@ -265,20 +293,77 @@ class _ButtonState extends State<Button> {
                   await file.writeAsString(output);
                 }
 
-                setState(() {
-                  stared = dict.db!.wordExist(widget.word);
-                });
-              },
-            );
-          }
+                checkStared();
+              }
 
-          return FloatingActionButton.small(
-            foregroundColor: colorScheme.primary,
-            backgroundColor: colorScheme.surface,
-            child: const Icon(Icons.star_outline),
-            onPressed: () {},
+              if (dict.tagExist!) {
+                final tagsOfWord = await dict.db!.tagsOfWord(widget.word),
+                    tags = await dict.db!.getAllTags();
+
+                final toAdd = <int>[], toDel = <int>[];
+
+                if (!context.mounted) return;
+
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return SimpleDialog(title: Text("Tags"), children: [
+                        TagsList(
+                          tags: tags,
+                          tagsOfWord: tagsOfWord,
+                          toAdd: toAdd,
+                          toDel: toDel,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextCloseButton(),
+                            TextButton(
+                              child: Text("Remove"),
+                              onPressed: () async {
+                                await dict.db!
+                                    .removeWordWithAllTags(widget.word);
+
+                                if (context.mounted) context.pop();
+                                checkStared();
+                              },
+                            ),
+                            TextButton(
+                              child: Text("Confirm"),
+                              onPressed: () async {
+                                if (!snapshot.data!) {
+                                  await dict.db!.addWord(widget.word);
+                                }
+
+                                for (final tag in toAdd) {
+                                  await dict.db!.addWord(widget.word, tag: tag);
+                                }
+
+                                for (final tag in toDel) {
+                                  await dict.db!
+                                      .removeWord(widget.word, tag: tag);
+                                }
+
+                                if (context.mounted) context.pop();
+                                checkStared();
+                              },
+                            ),
+                          ],
+                        ),
+                      ]);
+                    });
+              } else {
+                await star();
+              }
+            },
           );
         });
+  }
+
+  void checkStared() {
+    setState(() {
+      stared = dict.db!.wordExist(widget.word);
+    });
   }
 
   @override
@@ -286,5 +371,46 @@ class _ButtonState extends State<Button> {
     super.initState();
 
     stared = dict.db!.wordExist(widget.word);
+  }
+}
+
+class _TagsListState extends State<TagsList> {
+  List<int>? oldTagsOfWord;
+
+  @override
+  Widget build(BuildContext context) {
+    final checkboxListTile = <Widget>[];
+
+    oldTagsOfWord ??= List<int>.from(widget.tagsOfWord);
+
+    for (final tag in widget.tags) {
+      checkboxListTile.add(CheckboxListTile(
+        title: Text(tag.tag),
+        value: widget.tagsOfWord.contains(tag.id),
+        onChanged: (value) {
+          setState(() {
+            if (value == true) {
+              if (!oldTagsOfWord!.contains(tag.id)) {
+                widget.toAdd.add(tag.id);
+              }
+
+              widget.toDel.remove(tag.id);
+
+              widget.tagsOfWord.add(tag.id);
+            } else {
+              if (oldTagsOfWord!.contains(tag.id)) {
+                widget.toDel.add(tag.id);
+              }
+
+              widget.toAdd.remove(tag.id);
+
+              widget.tagsOfWord.remove(tag.id);
+            }
+          });
+        },
+      ));
+    }
+
+    return Column(children: checkboxListTile);
   }
 }
