@@ -45,5 +45,11 @@
   "customFont": "自定义字体",
   "empty": "空空如也...",
   "add": "添加",
-  "autoExport": "自动导出"
+  "autoExport": "自动导出",
+  "tags": "标签",
+  "addTag": "新增标签",
+  "tagName": "标签名称",
+  "tagList": "标签列表",
+  "remove": "删除",
+  "confirm": "确定"
 }

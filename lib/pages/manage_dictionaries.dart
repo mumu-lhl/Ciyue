@@ -4,6 +4,7 @@ import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/widget/loading_dialog.dart";
+import "package:ciyue/widget/text_buttons.dart";
 import "package:device_info_plus/device_info_plus.dart";
 import "package:file_selector/file_selector.dart";
 import "package:filesystem_picker/filesystem_picker.dart";
@@ -168,12 +169,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          TextButton(
-                            child: Text(AppLocalizations.of(context)!.close),
-                            onPressed: () {
-                              context.pop();
-                            },
-                          ),
+                          TextCloseButton(),
                           TextButton(
                             child: Text(AppLocalizations.of(context)!.add),
                             onPressed: () async {

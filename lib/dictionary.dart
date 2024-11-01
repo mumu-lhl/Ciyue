@@ -8,6 +8,8 @@ import "package:path_provider/path_provider.dart";
 import "database/dictionary.dart";
 import "main.dart";
 
+final dict = _Dict();
+
 class _Dict {
   int? id;
   String? path;
@@ -17,6 +19,7 @@ class _Dict {
   DictionaryDatabase? db;
   DictReader? reader;
   DictReader? readerResource;
+  bool? tagExist;
 
   Future<void> addDictionary(String path) async {
     path = setExtension(path, "");
@@ -49,6 +52,8 @@ class _Dict {
 
     customFont(null);
     customBackupPath(null);
+
+    tagExist = false;
   }
 
   Future<void> changeDictionary(int id, String path) async {
@@ -65,7 +70,18 @@ class _Dict {
     final backupPath = await dictionaryList.getBackupPath(id);
     customBackupPath(backupPath);
 
+    await checkTagExist();
+
     _initDictReader(path, readKey: false);
+  }
+
+  Future<void> checkTagExist() async {
+    tagExist = await db!.existTag();
+  }
+
+  Future<void> customBackupPath(String? path) async {
+    backupPath = path;
+    await dictionaryList.updateBackup(id!, path);
   }
 
   Future<void> customFont(String? path) async {
@@ -77,11 +93,6 @@ class _Dict {
     }
 
     await dictionaryList.updateFont(id!, path);
-  }
-
-  Future<void> customBackupPath(String? path) async {
-    backupPath = path;
-    await dictionaryList.updateBackup(id!, path);
   }
 
   Future<void> removeDictionary(String path) async {
@@ -193,5 +204,3 @@ class _Dict {
     }
   }
 }
-
-final dict = _Dict();

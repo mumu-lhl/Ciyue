@@ -1,9 +1,11 @@
 import "dart:convert";
 import "dart:io";
 
+import "package:ciyue/database/dictionary.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
+import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
@@ -62,6 +64,23 @@ class LocalResourcesPathHandler extends CustomPathHandler {
   }
 }
 
+class TagsList extends StatefulWidget {
+  final List<WordbookTag> tags;
+  final List<int> tagsOfWord;
+  final List<int> toAdd;
+  final List<int> toDel;
+
+  const TagsList(
+      {super.key,
+      required this.tags,
+      required this.tagsOfWord,
+      required this.toAdd,
+      required this.toDel});
+
+  @override
+  State<StatefulWidget> createState() => _TagsListState();
+}
+
 class WebView extends StatelessWidget {
   final String content;
 
@@ -83,14 +102,14 @@ class WebView extends StatelessWidget {
     InAppWebViewController? webViewController;
     String selectedText = "";
 
-    final locale = AppLocalizations.of(context);
+    final locale = AppLocalizations.of(context)!;
 
     final contextMenu = ContextMenu(
       settings: ContextMenuSettings(hideDefaultSystemContextMenuItems: true),
       menuItems: [
         ContextMenuItem(
             id: 1,
-            title: locale!.copy,
+            title: locale.copy,
             action: () async {
               await webViewController!.clearFocus();
               Clipboard.setData(ClipboardData(text: selectedText));
@@ -216,60 +235,147 @@ class WebviewDisplay extends StatelessWidget {
 class _ButtonState extends State<Button> {
   Future<bool>? stared;
 
+  Future<void> autoExport() async {
+    if (settings.autoExport && dict.backupPath != null) {
+      final words = await dict.db!.getAllWords(),
+          tags = await dict.db!.getAllTags();
+
+      final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
+
+      final file = File(dict.backupPath!);
+
+      await file.writeAsString("$wordsOutput\n$tagsOutput");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        buildReadLoudlyButton(context, widget.word),
+        buildStarButton(context)
+      ],
+    );
+  }
+
+  Widget buildReadLoudlyButton(BuildContext context, word) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final futureWidget = FutureBuilder(
+    return FloatingActionButton.small(
+      foregroundColor: colorScheme.primary,
+      backgroundColor: colorScheme.surface,
+      child: const Icon(Icons.volume_up),
+      onPressed: () async {
+        await flutterTts.speak(word);
+      },
+    );
+  }
+
+  Widget buildStarButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final locale = AppLocalizations.of(context)!;
+
+    return FutureBuilder(
         future: stared,
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-          if (snapshot.hasData) {
+          if (!snapshot.hasData) {
             return FloatingActionButton.small(
               foregroundColor: colorScheme.primary,
               backgroundColor: colorScheme.surface,
-              child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),
-              onPressed: () async {
-                if (snapshot.data!) {
-                  await dict.db!.removeWord(widget.word);
-                } else {
-                  await dict.db!.addWord(widget.word);
-                }
-
-                if (settings.autoExport && dict.backupPath != null) {
-                  final words = await dict.db!.getAllWords();
-                  final output = jsonEncode(words);
-                  final file = File(dict.backupPath!);
-                  await file.writeAsString(output);
-                }
-
-                setState(() {
-                  stared = dict.db!.wordExist(widget.word);
-                });
-              },
+              child: const Icon(Icons.star_outline),
+              onPressed: () {},
             );
           }
 
           return FloatingActionButton.small(
             foregroundColor: colorScheme.primary,
             backgroundColor: colorScheme.surface,
-            child: const Icon(Icons.star_outline),
-            onPressed: () {},
+            child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),
+            onPressed: () async {
+              Future<void> star() async {
+                if (snapshot.data!) {
+                  await dict.db!.removeWord(widget.word);
+                } else {
+                  await dict.db!.addWord(widget.word);
+                }
+
+                await autoExport();
+                checkStared();
+              }
+
+              if (dict.tagExist!) {
+                final tagsOfWord = await dict.db!.tagsOfWord(widget.word),
+                    tags = await dict.db!.getAllTags();
+
+                final toAdd = <int>[], toDel = <int>[];
+
+                if (!context.mounted) return;
+
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return SimpleDialog(title: Text(locale.tags), children: [
+                        TagsList(
+                          tags: tags,
+                          tagsOfWord: tagsOfWord,
+                          toAdd: toAdd,
+                          toDel: toDel,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextCloseButton(),
+                            TextButton(
+                              child: Text(locale.remove),
+                              onPressed: () async {
+                                await dict.db!
+                                    .removeWordWithAllTags(widget.word);
+
+                                if (context.mounted) context.pop();
+
+                                await autoExport();
+                                checkStared();
+                              },
+                            ),
+                            TextButton(
+                              child: Text(locale.confirm),
+                              onPressed: () async {
+                                if (!snapshot.data!) {
+                                  await dict.db!.addWord(widget.word);
+                                }
+
+                                for (final tag in toAdd) {
+                                  await dict.db!.addWord(widget.word, tag: tag);
+                                }
+
+                                for (final tag in toDel) {
+                                  await dict.db!
+                                      .removeWord(widget.word, tag: tag);
+                                }
+
+                                if (context.mounted) context.pop();
+
+                                await autoExport();
+                                checkStared();
+                              },
+                            ),
+                          ],
+                        ),
+                      ]);
+                    });
+              } else {
+                await star();
+              }
+            },
           );
         });
+  }
 
-    final readLoudly = FloatingActionButton.small(
-      foregroundColor: colorScheme.primary,
-      backgroundColor: colorScheme.surface,
-      child: const Icon(Icons.volume_up),
-      onPressed: () async {
-        await flutterTts.speak(widget.word);
-      },
-    );
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [readLoudly, futureWidget],
-    );
+  void checkStared() {
+    setState(() {
+      stared = dict.db!.wordExist(widget.word);
+    });
   }
 
   @override
@@ -277,5 +383,46 @@ class _ButtonState extends State<Button> {
     super.initState();
 
     stared = dict.db!.wordExist(widget.word);
+  }
+}
+
+class _TagsListState extends State<TagsList> {
+  List<int>? oldTagsOfWord;
+
+  @override
+  Widget build(BuildContext context) {
+    final checkboxListTile = <Widget>[];
+
+    oldTagsOfWord ??= List<int>.from(widget.tagsOfWord);
+
+    for (final tag in widget.tags) {
+      checkboxListTile.add(CheckboxListTile(
+        title: Text(tag.tag),
+        value: widget.tagsOfWord.contains(tag.id),
+        onChanged: (value) {
+          setState(() {
+            if (value == true) {
+              if (!oldTagsOfWord!.contains(tag.id)) {
+                widget.toAdd.add(tag.id);
+              }
+
+              widget.toDel.remove(tag.id);
+
+              widget.tagsOfWord.add(tag.id);
+            } else {
+              if (oldTagsOfWord!.contains(tag.id)) {
+                widget.toDel.add(tag.id);
+              }
+
+              widget.toAdd.remove(tag.id);
+
+              widget.tagsOfWord.remove(tag.id);
+            }
+          });
+        },
+      ));
+    }
+
+    return Column(children: checkboxListTile);
   }
 }

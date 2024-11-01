@@ -20,7 +20,7 @@ class Dictionary extends Table {
   IntColumn get startOffset => integer()();
 }
 
-@DriftDatabase(tables: [Wordbook, Resource, Dictionary])
+@DriftDatabase(tables: [Wordbook, WordbookTags, Resource, Dictionary])
 class DictionaryDatabase extends _$DictionaryDatabase {
   DictionaryDatabase(super.e);
 
@@ -32,26 +32,62 @@ class DictionaryDatabase extends _$DictionaryDatabase {
       },
       onUpgrade: stepByStep(
         from1To2: (m, schema) async {
-          await m.alterTable(TableMigration(wordbook));
+          await m.alterTable(TableMigration(schema.wordbook));
+        },
+        from2To3: (m, schema) async {
+          await m.addColumn(schema.wordbook, schema.wordbook.tag);
+
+          await m.createTable(schema.wordbookTags);
+          await m.createIndex(schema.idxWordbookTags);
         },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
-  addAllWords(WordbookData data) async {
-    await into(wordbook).insert(data,
-        onConflict: DoUpdate((old) => data, target: [wordbook.word]));
+  Future<void> addAllTags(List<WordbookTag> data) async {
+    await batch((batch) {
+      batch.insertAllOnConflictUpdate(wordbookTags, data);
+    });
   }
 
-  Future<int> addWord(String word) {
-    return into(wordbook).insert(WordbookCompanion(word: Value(word)));
+  Future<void> addAllWords(List<WordbookData> data) async {
+    await batch((batch) {
+      batch.insertAll(wordbook, data);
+    });
+  }
+
+  Future<int> addTag(String tag) {
+    return into(wordbookTags).insert(WordbookTagsCompanion(tag: Value(tag)));
+  }
+
+  // ignore: avoid_init_to_null
+  Future<int> addWord(String word, {int? tag = null}) {
+    return into(wordbook)
+        .insert(WordbookCompanion(tag: Value(tag), word: Value(word)));
+  }
+
+  Future<bool> existTag() async {
+    return (await (select(wordbookTags)..limit(1)).get()).isNotEmpty;
+  }
+
+  Future<List<WordbookTag>> getAllTags() {
+    return (select(wordbookTags)).get();
   }
 
   Future<List<WordbookData>> getAllWords() {
     return (select(wordbook)).get();
+  }
+
+  // ignore: avoid_init_to_null
+  Future<List<WordbookData>> getAllWordsWithTag({int? tag = null}) {
+    if (tag == null) {
+      return (select(wordbook)..where((t) => t.tag.isNull())).get();
+    } else {
+      return (select(wordbook)..where((t) => t.tag.isValue(tag))).get();
+    }
   }
 
   Future<DictionaryData> getOffset(String word) async {
@@ -76,7 +112,23 @@ class DictionaryDatabase extends _$DictionaryDatabase {
         .get()))[0];
   }
 
-  Future<int> removeWord(String word) {
+  Future<void> removeTag(int tag) async {
+    await (delete(wordbookTags)..where((t) => t.id.isValue(tag))).go();
+    await (delete(wordbook)..where((t) => t.tag.isValue(tag))).go();
+  }
+
+  // ignore: avoid_init_to_null
+  Future<int> removeWord(String word, {int? tag = null}) {
+    if (tag == null) {
+      return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
+    } else {
+      return (delete(wordbook)
+            ..where((t) => t.word.isValue(word) & t.tag.isValue(tag)))
+          .go();
+    }
+  }
+
+  Future<int> removeWordWithAllTags(String word) {
     return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
   }
 
@@ -84,6 +136,13 @@ class DictionaryDatabase extends _$DictionaryDatabase {
     return (select(dictionary)
           ..where((u) => u.key.like("$word%"))
           ..limit(20))
+        .get();
+  }
+
+  Future<List<int>> tagsOfWord(String word) {
+    return (select(wordbook)
+          ..where((t) => t.word.isValue(word) & t.tag.isNotNull()))
+        .map((row) => row.tag!)
         .get();
   }
 
@@ -104,5 +163,12 @@ class Resource extends Table {
 
 @TableIndex(name: "idx_wordbook", columns: {#word})
 class Wordbook extends Table {
-  TextColumn get word => text().unique()();
+  IntColumn get tag => integer().nullable()();
+  TextColumn get word => text()();
+}
+
+@TableIndex(name: "idx_wordbook_tags", columns: {#tag})
+class WordbookTags extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get tag => text().unique()();
 }
