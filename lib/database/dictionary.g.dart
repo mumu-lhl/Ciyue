@@ -9,16 +9,20 @@ class $WordbookTable extends Wordbook
   final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $WordbookTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _tagMeta =
+      const drift.VerificationMeta('tag');
+  @override
+  late final drift.GeneratedColumn<int> tag = drift.GeneratedColumn<int>(
+      'tag', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const drift.VerificationMeta _wordMeta =
       const drift.VerificationMeta('word');
   @override
   late final drift.GeneratedColumn<String> word = drift.GeneratedColumn<String>(
       'word', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+      type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<drift.GeneratedColumn> get $columns => [word];
+  List<drift.GeneratedColumn> get $columns => [tag, word];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -30,6 +34,10 @@ class $WordbookTable extends Wordbook
       {bool isInserting = false}) {
     final context = drift.VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('tag')) {
+      context.handle(
+          _tagMeta, tag.isAcceptableOrUnknown(data['tag']!, _tagMeta));
+    }
     if (data.containsKey('word')) {
       context.handle(
           _wordMeta, word.isAcceptableOrUnknown(data['word']!, _wordMeta));
@@ -45,6 +53,8 @@ class $WordbookTable extends Wordbook
   WordbookData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WordbookData(
+      tag: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}tag']),
       word: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
     );
@@ -58,17 +68,24 @@ class $WordbookTable extends Wordbook
 
 class WordbookData extends drift.DataClass
     implements drift.Insertable<WordbookData> {
+  final int? tag;
   final String word;
-  const WordbookData({required this.word});
+  const WordbookData({this.tag, required this.word});
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
+    if (!nullToAbsent || tag != null) {
+      map['tag'] = drift.Variable<int>(tag);
+    }
     map['word'] = drift.Variable<String>(word);
     return map;
   }
 
   WordbookCompanion toCompanion(bool nullToAbsent) {
     return WordbookCompanion(
+      tag: tag == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(tag),
       word: drift.Value(word),
     );
   }
@@ -77,6 +94,7 @@ class WordbookData extends drift.DataClass
       {ValueSerializer? serializer}) {
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return WordbookData(
+      tag: serializer.fromJson<int?>(json['tag']),
       word: serializer.fromJson<String>(json['word']),
     );
   }
@@ -84,15 +102,20 @@ class WordbookData extends drift.DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'tag': serializer.toJson<int?>(tag),
       'word': serializer.toJson<String>(word),
     };
   }
 
-  WordbookData copyWith({String? word}) => WordbookData(
+  WordbookData copyWith(
+          {drift.Value<int?> tag = const drift.Value.absent(), String? word}) =>
+      WordbookData(
+        tag: tag.present ? tag.value : this.tag,
         word: word ?? this.word,
       );
   WordbookData copyWithCompanion(WordbookCompanion data) {
     return WordbookData(
+      tag: data.tag.present ? data.tag.value : this.tag,
       word: data.word.present ? data.word.value : this.word,
     );
   }
@@ -100,43 +123,54 @@ class WordbookData extends drift.DataClass
   @override
   String toString() {
     return (StringBuffer('WordbookData(')
+          ..write('tag: $tag, ')
           ..write('word: $word')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => word.hashCode;
+  int get hashCode => Object.hash(tag, word);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is WordbookData && other.word == this.word);
+      (other is WordbookData &&
+          other.tag == this.tag &&
+          other.word == this.word);
 }
 
 class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
+  final drift.Value<int?> tag;
   final drift.Value<String> word;
   final drift.Value<int> rowid;
   const WordbookCompanion({
+    this.tag = const drift.Value.absent(),
     this.word = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   });
   WordbookCompanion.insert({
+    this.tag = const drift.Value.absent(),
     required String word,
     this.rowid = const drift.Value.absent(),
   }) : word = drift.Value(word);
   static drift.Insertable<WordbookData> custom({
+    drift.Expression<int>? tag,
     drift.Expression<String>? word,
     drift.Expression<int>? rowid,
   }) {
     return drift.RawValuesInsertable({
+      if (tag != null) 'tag': tag,
       if (word != null) 'word': word,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   WordbookCompanion copyWith(
-      {drift.Value<String>? word, drift.Value<int>? rowid}) {
+      {drift.Value<int?>? tag,
+      drift.Value<String>? word,
+      drift.Value<int>? rowid}) {
     return WordbookCompanion(
+      tag: tag ?? this.tag,
       word: word ?? this.word,
       rowid: rowid ?? this.rowid,
     );
@@ -145,6 +179,9 @@ class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
+    if (tag.present) {
+      map['tag'] = drift.Variable<int>(tag.value);
+    }
     if (word.present) {
       map['word'] = drift.Variable<String>(word.value);
     }
@@ -157,8 +194,193 @@ class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
   @override
   String toString() {
     return (StringBuffer('WordbookCompanion(')
+          ..write('tag: $tag, ')
           ..write('word: $word, ')
           ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WordbookTagsTable extends WordbookTags
+    with drift.TableInfo<$WordbookTagsTable, WordbookTag> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WordbookTagsTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _idMeta =
+      const drift.VerificationMeta('id');
+  @override
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const drift.VerificationMeta _tagMeta =
+      const drift.VerificationMeta('tag');
+  @override
+  late final drift.GeneratedColumn<String> tag = drift.GeneratedColumn<String>(
+      'tag', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  @override
+  List<drift.GeneratedColumn> get $columns => [id, tag];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'wordbook_tags';
+  @override
+  drift.VerificationContext validateIntegrity(
+      drift.Insertable<WordbookTag> instance,
+      {bool isInserting = false}) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('tag')) {
+      context.handle(
+          _tagMeta, tag.isAcceptableOrUnknown(data['tag']!, _tagMeta));
+    } else if (isInserting) {
+      context.missing(_tagMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
+  @override
+  WordbookTag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WordbookTag(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      tag: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}tag'])!,
+    );
+  }
+
+  @override
+  $WordbookTagsTable createAlias(String alias) {
+    return $WordbookTagsTable(attachedDatabase, alias);
+  }
+}
+
+class WordbookTag extends drift.DataClass
+    implements drift.Insertable<WordbookTag> {
+  final int id;
+  final String tag;
+  const WordbookTag({required this.id, required this.tag});
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['tag'] = drift.Variable<String>(tag);
+    return map;
+  }
+
+  WordbookTagsCompanion toCompanion(bool nullToAbsent) {
+    return WordbookTagsCompanion(
+      id: drift.Value(id),
+      tag: drift.Value(tag),
+    );
+  }
+
+  factory WordbookTag.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return WordbookTag(
+      id: serializer.fromJson<int>(json['id']),
+      tag: serializer.fromJson<String>(json['tag']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'tag': serializer.toJson<String>(tag),
+    };
+  }
+
+  WordbookTag copyWith({int? id, String? tag}) => WordbookTag(
+        id: id ?? this.id,
+        tag: tag ?? this.tag,
+      );
+  WordbookTag copyWithCompanion(WordbookTagsCompanion data) {
+    return WordbookTag(
+      id: data.id.present ? data.id.value : this.id,
+      tag: data.tag.present ? data.tag.value : this.tag,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WordbookTag(')
+          ..write('id: $id, ')
+          ..write('tag: $tag')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, tag);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WordbookTag && other.id == this.id && other.tag == this.tag);
+}
+
+class WordbookTagsCompanion extends drift.UpdateCompanion<WordbookTag> {
+  final drift.Value<int> id;
+  final drift.Value<String> tag;
+  const WordbookTagsCompanion({
+    this.id = const drift.Value.absent(),
+    this.tag = const drift.Value.absent(),
+  });
+  WordbookTagsCompanion.insert({
+    this.id = const drift.Value.absent(),
+    required String tag,
+  }) : tag = drift.Value(tag);
+  static drift.Insertable<WordbookTag> custom({
+    drift.Expression<int>? id,
+    drift.Expression<String>? tag,
+  }) {
+    return drift.RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (tag != null) 'tag': tag,
+    });
+  }
+
+  WordbookTagsCompanion copyWith(
+      {drift.Value<int>? id, drift.Value<String>? tag}) {
+    return WordbookTagsCompanion(
+      id: id ?? this.id,
+      tag: tag ?? this.tag,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (id.present) {
+      map['id'] = drift.Variable<int>(id.value);
+    }
+    if (tag.present) {
+      map['tag'] = drift.Variable<String>(tag.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WordbookTagsCompanion(')
+          ..write('id: $id, ')
+          ..write('tag: $tag')
           ..write(')'))
         .toString();
   }
@@ -816,10 +1038,13 @@ abstract class _$DictionaryDatabase extends drift.GeneratedDatabase {
   _$DictionaryDatabase(QueryExecutor e) : super(e);
   $DictionaryDatabaseManager get managers => $DictionaryDatabaseManager(this);
   late final $WordbookTable wordbook = $WordbookTable(this);
+  late final $WordbookTagsTable wordbookTags = $WordbookTagsTable(this);
   late final $ResourceTable resource = $ResourceTable(this);
   late final $DictionaryTable dictionary = $DictionaryTable(this);
   late final Index idxWordbook = drift.Index(
       'idx_wordbook', 'CREATE INDEX idx_wordbook ON wordbook (word)');
+  late final Index idxWordbookTags = drift.Index('idx_wordbook_tags',
+      'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)');
   late final Index idxData =
       drift.Index('idx_data', 'CREATE INDEX idx_data ON resource ("key")');
   late final Index idxWord =
@@ -828,15 +1053,25 @@ abstract class _$DictionaryDatabase extends drift.GeneratedDatabase {
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
   @override
-  List<drift.DatabaseSchemaEntity> get allSchemaEntities =>
-      [wordbook, resource, dictionary, idxWordbook, idxData, idxWord];
+  List<drift.DatabaseSchemaEntity> get allSchemaEntities => [
+        wordbook,
+        wordbookTags,
+        resource,
+        dictionary,
+        idxWordbook,
+        idxWordbookTags,
+        idxData,
+        idxWord
+      ];
 }
 
 typedef $$WordbookTableCreateCompanionBuilder = WordbookCompanion Function({
+  drift.Value<int?> tag,
   required String word,
   drift.Value<int> rowid,
 });
 typedef $$WordbookTableUpdateCompanionBuilder = WordbookCompanion Function({
+  drift.Value<int?> tag,
   drift.Value<String> word,
   drift.Value<int> rowid,
 });
@@ -850,6 +1085,9 @@ class $$WordbookTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  drift.ColumnFilters<int> get tag => $composableBuilder(
+      column: $table.tag, builder: (column) => drift.ColumnFilters(column));
+
   drift.ColumnFilters<String> get word => $composableBuilder(
       column: $table.word, builder: (column) => drift.ColumnFilters(column));
 }
@@ -863,6 +1101,9 @@ class $$WordbookTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  drift.ColumnOrderings<int> get tag => $composableBuilder(
+      column: $table.tag, builder: (column) => drift.ColumnOrderings(column));
+
   drift.ColumnOrderings<String> get word => $composableBuilder(
       column: $table.word, builder: (column) => drift.ColumnOrderings(column));
 }
@@ -876,6 +1117,9 @@ class $$WordbookTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  drift.GeneratedColumn<int> get tag =>
+      $composableBuilder(column: $table.tag, builder: (column) => column);
+
   drift.GeneratedColumn<String> get word =>
       $composableBuilder(column: $table.word, builder: (column) => column);
 }
@@ -906,18 +1150,22 @@ class $$WordbookTableTableManager extends drift.RootTableManager<
           createComputedFieldComposer: () =>
               $$WordbookTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
+            drift.Value<int?> tag = const drift.Value.absent(),
             drift.Value<String> word = const drift.Value.absent(),
             drift.Value<int> rowid = const drift.Value.absent(),
           }) =>
               WordbookCompanion(
+            tag: tag,
             word: word,
             rowid: rowid,
           ),
           createCompanionCallback: ({
+            drift.Value<int?> tag = const drift.Value.absent(),
             required String word,
             drift.Value<int> rowid = const drift.Value.absent(),
           }) =>
               WordbookCompanion.insert(
+            tag: tag,
             word: word,
             rowid: rowid,
           ),
@@ -943,6 +1191,132 @@ typedef $$WordbookTableProcessedTableManager = drift.ProcessedTableManager<
       drift.BaseReferences<_$DictionaryDatabase, $WordbookTable, WordbookData>
     ),
     WordbookData,
+    drift.PrefetchHooks Function()>;
+typedef $$WordbookTagsTableCreateCompanionBuilder = WordbookTagsCompanion
+    Function({
+  drift.Value<int> id,
+  required String tag,
+});
+typedef $$WordbookTagsTableUpdateCompanionBuilder = WordbookTagsCompanion
+    Function({
+  drift.Value<int> id,
+  drift.Value<String> tag,
+});
+
+class $$WordbookTagsTableFilterComposer
+    extends drift.Composer<_$DictionaryDatabase, $WordbookTagsTable> {
+  $$WordbookTagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<String> get tag => $composableBuilder(
+      column: $table.tag, builder: (column) => drift.ColumnFilters(column));
+}
+
+class $$WordbookTagsTableOrderingComposer
+    extends drift.Composer<_$DictionaryDatabase, $WordbookTagsTable> {
+  $$WordbookTagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<String> get tag => $composableBuilder(
+      column: $table.tag, builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$WordbookTagsTableAnnotationComposer
+    extends drift.Composer<_$DictionaryDatabase, $WordbookTagsTable> {
+  $$WordbookTagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get tag =>
+      $composableBuilder(column: $table.tag, builder: (column) => column);
+}
+
+class $$WordbookTagsTableTableManager extends drift.RootTableManager<
+    _$DictionaryDatabase,
+    $WordbookTagsTable,
+    WordbookTag,
+    $$WordbookTagsTableFilterComposer,
+    $$WordbookTagsTableOrderingComposer,
+    $$WordbookTagsTableAnnotationComposer,
+    $$WordbookTagsTableCreateCompanionBuilder,
+    $$WordbookTagsTableUpdateCompanionBuilder,
+    (
+      WordbookTag,
+      drift
+      .BaseReferences<_$DictionaryDatabase, $WordbookTagsTable, WordbookTag>
+    ),
+    WordbookTag,
+    drift.PrefetchHooks Function()> {
+  $$WordbookTagsTableTableManager(
+      _$DictionaryDatabase db, $WordbookTagsTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WordbookTagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WordbookTagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WordbookTagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            drift.Value<String> tag = const drift.Value.absent(),
+          }) =>
+              WordbookTagsCompanion(
+            id: id,
+            tag: tag,
+          ),
+          createCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            required String tag,
+          }) =>
+              WordbookTagsCompanion.insert(
+            id: id,
+            tag: tag,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$WordbookTagsTableProcessedTableManager = drift.ProcessedTableManager<
+    _$DictionaryDatabase,
+    $WordbookTagsTable,
+    WordbookTag,
+    $$WordbookTagsTableFilterComposer,
+    $$WordbookTagsTableOrderingComposer,
+    $$WordbookTagsTableAnnotationComposer,
+    $$WordbookTagsTableCreateCompanionBuilder,
+    $$WordbookTagsTableUpdateCompanionBuilder,
+    (
+      WordbookTag,
+      drift
+      .BaseReferences<_$DictionaryDatabase, $WordbookTagsTable, WordbookTag>
+    ),
+    WordbookTag,
     drift.PrefetchHooks Function()>;
 typedef $$ResourceTableCreateCompanionBuilder = ResourceCompanion Function({
   required int blockOffset,
@@ -1312,6 +1686,8 @@ class $DictionaryDatabaseManager {
   $DictionaryDatabaseManager(this._db);
   $$WordbookTableTableManager get wordbook =>
       $$WordbookTableTableManager(_db, _db.wordbook);
+  $$WordbookTagsTableTableManager get wordbookTags =>
+      $$WordbookTagsTableTableManager(_db, _db.wordbookTags);
   $$ResourceTableTableManager get resource =>
       $$ResourceTableTableManager(_db, _db.resource);
   $$DictionaryTableTableManager get dictionary =>

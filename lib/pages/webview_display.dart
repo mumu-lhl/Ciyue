@@ -218,9 +218,32 @@ class _ButtonState extends State<Button> {
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        buildReadLoudlyButton(context, widget.word),
+        buildStarButton(context)
+      ],
+    );
+  }
+
+  Widget buildReadLoudlyButton(BuildContext context, word) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final futureWidget = FutureBuilder(
+    return FloatingActionButton.small(
+      foregroundColor: colorScheme.primary,
+      backgroundColor: colorScheme.surface,
+      child: const Icon(Icons.volume_up),
+      onPressed: () async {
+        await flutterTts.speak(word);
+      },
+    );
+  }
+
+  Widget buildStarButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return FutureBuilder(
         future: stared,
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           if (snapshot.hasData) {
@@ -256,20 +279,6 @@ class _ButtonState extends State<Button> {
             onPressed: () {},
           );
         });
-
-    final readLoudly = FloatingActionButton.small(
-      foregroundColor: colorScheme.primary,
-      backgroundColor: colorScheme.surface,
-      child: const Icon(Icons.volume_up),
-      onPressed: () async {
-        await flutterTts.speak(widget.word);
-      },
-    );
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [readLoudly, futureWidget],
-    );
   }
 
   @override
