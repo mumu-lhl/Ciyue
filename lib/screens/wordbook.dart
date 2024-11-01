@@ -92,23 +92,25 @@ class _WordBookScreenState extends State<WordBookScreen> {
   }
 
   Future<void> buildAddTag(BuildContext context) async {
+    final locale = AppLocalizations.of(context)!;
+
     await showDialog(
         context: context,
         builder: (BuildContext context) {
           final textController = TextEditingController();
 
           return AlertDialog(
-            title: Text("Add tag"),
+            title: Text(locale.addTag),
             content: TextField(
               decoration: InputDecoration(
-                labelText: "Tag Name",
+                labelText: locale.tagName,
               ),
               controller: textController,
             ),
             actions: [
               TextCloseButton(),
               TextButton(
-                child: Text(AppLocalizations.of(context)!.add),
+                child: Text(locale.add),
                 onPressed: () async {
                   await dict.db!.addTag(textController.text);
                   await dict.checkTagExist();
@@ -142,22 +144,24 @@ class _WordBookScreenState extends State<WordBookScreen> {
             ));
           }
 
-          return SimpleDialog(title: Text("Tags List"), children: [
-            ...tagListTile,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+          return SimpleDialog(
+              title: Text(AppLocalizations.of(context)!.tagList),
               children: [
-                TextCloseButton(),
-                TextButton(
-                  child: Text(AppLocalizations.of(context)!.add),
-                  onPressed: () async {
-                    context.pop();
-                    await buildAddTag(context);
-                  },
+                ...tagListTile,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextCloseButton(),
+                    TextButton(
+                      child: Text(AppLocalizations.of(context)!.add),
+                      onPressed: () async {
+                        context.pop();
+                        await buildAddTag(context);
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ]);
+              ]);
         });
   }
 }

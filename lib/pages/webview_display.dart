@@ -102,14 +102,14 @@ class WebView extends StatelessWidget {
     InAppWebViewController? webViewController;
     String selectedText = "";
 
-    final locale = AppLocalizations.of(context);
+    final locale = AppLocalizations.of(context)!;
 
     final contextMenu = ContextMenu(
       settings: ContextMenuSettings(hideDefaultSystemContextMenuItems: true),
       menuItems: [
         ContextMenuItem(
             id: 1,
-            title: locale!.copy,
+            title: locale.copy,
             action: () async {
               await webViewController!.clearFocus();
               Clipboard.setData(ClipboardData(text: selectedText));
@@ -261,6 +261,7 @@ class _ButtonState extends State<Button> {
 
   Widget buildStarButton(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final locale = AppLocalizations.of(context)!;
 
     return FutureBuilder(
         future: stared,
@@ -307,7 +308,7 @@ class _ButtonState extends State<Button> {
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
-                      return SimpleDialog(title: Text("Tags"), children: [
+                      return SimpleDialog(title: Text(locale.tags), children: [
                         TagsList(
                           tags: tags,
                           tagsOfWord: tagsOfWord,
@@ -319,7 +320,7 @@ class _ButtonState extends State<Button> {
                           children: [
                             TextCloseButton(),
                             TextButton(
-                              child: Text("Remove"),
+                              child: Text(locale.remove),
                               onPressed: () async {
                                 await dict.db!
                                     .removeWordWithAllTags(widget.word);
@@ -329,7 +330,7 @@ class _ButtonState extends State<Button> {
                               },
                             ),
                             TextButton(
-                              child: Text("Confirm"),
+                              child: Text(locale.confirm),
                               onPressed: () async {
                                 if (!snapshot.data!) {
                                   await dict.db!.addWord(widget.word);

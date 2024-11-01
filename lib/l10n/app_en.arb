@@ -26,5 +26,11 @@
   "customFont": "Custom Font",
   "empty": "Empty...",
   "add": "Add",
-  "autoExport": "Auto Export"
+  "autoExport": "Auto Export",
+  "tags": "Tags",
+  "addTag": "Add Tag",
+  "tagName": "Tag Name",
+  "tagList": "Tag List",
+  "remove": "Remove",
+  "confirm": "Confirm"
 }
