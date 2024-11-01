@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.11.0](https://github.com/mumu-lhl/Ciyue/compare/v0.10.1..v0.11.0) - 2024-11-01
+
+### Features
+
+- **(language)** support Русский - ([239ac59](https://github.com/mumu-lhl/Ciyue/commit/239ac597097d6bc944a720abbc396a760852f149)) - Mumulhl
+- tag word in wordbook ([#42](https://github.com/mumu-lhl/Ciyue/issues/42)) - ([d9f7242](https://github.com/mumu-lhl/Ciyue/commit/d9f72420c88e9c8b2c4d7ca41fa05b5936b44d4e)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** add test - ([cfba288](https://github.com/mumu-lhl/Ciyue/commit/cfba288782a80b9b1a06bad36c67633f2235039e)) - Mumulhl
+- **(deps)** bump drift_dev from 2.21.1 to 2.21.2 ([#39](https://github.com/mumu-lhl/Ciyue/issues/39)) - ([4e0d327](https://github.com/mumu-lhl/Ciyue/commit/4e0d3279fb242f334fd7cdac7f6076776730144d)) - dependabot[bot]
+- **(deps)** update - ([54b9bd4](https://github.com/mumu-lhl/Ciyue/commit/54b9bd4f20347f731f7195b76d8524bc2bad797a)) - Mumulhl
+- **(deps)** update - ([038b813](https://github.com/mumu-lhl/Ciyue/commit/038b813c27958477501746ff06c51a41f79a66b9)) - Mumulhl
+
+### Refactoring
+
+- **(database)** refactor migration - ([90ea7a3](https://github.com/mumu-lhl/Ciyue/commit/90ea7a336cdbdfb64ce5bb11c8c9a1409034b594)) - Mumulhl
+
+---
 ## [0.10.1](https://github.com/mumu-lhl/Ciyue/compare/v0.10.0..v0.10.1) - 2024-10-27
 
 ### Miscellaneous Chores
