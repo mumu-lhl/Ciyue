@@ -54,5 +54,17 @@
   "notSupport": "Не поддерживается этот MDX файл",
   "@notSupport": {},
   "autoExport": "Автоэкспорт",
-  "@autoExport": {}
+  "@autoExport": {},
+  "tags": "Теги",
+  "@tags": {},
+  "addTag": "Добавить тег",
+  "@addTag": {},
+  "tagName": "Имя тега",
+  "@tagName": {},
+  "tagList": "Список тегов",
+  "@tagList": {},
+  "remove": "Убрать",
+  "@remove": {},
+  "confirm": "Подтвердить",
+  "@confirm": {}
 }
