@@ -5,6 +5,8 @@ import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 
+VoidCallback? _refreshTagsAndWords;
+
 class WordBookScreen extends StatelessWidget {
   const WordBookScreen({super.key});
 
@@ -64,6 +66,8 @@ class WordBookScreen extends StatelessWidget {
                   await dict.db!.addTag(textController.text);
                   await dict.checkTagExist();
 
+                  if (_refreshTagsAndWords != null) _refreshTagsAndWords!();
+
                   if (context.mounted) context.pop();
                 },
               )
@@ -86,6 +90,8 @@ class WordBookScreen extends StatelessWidget {
                 onPressed: () async {
                   await dict.db!.removeTag(tag.id);
                   await dict.checkTagExist();
+
+                  _refreshTagsAndWords!();
 
                   if (context.mounted) context.pop();
                 },
@@ -222,5 +228,14 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
       allWords = dict.db!.getAllWordsWithTag();
       tags = dict.db!.getAllTags();
     }
+
+    _refreshTagsAndWords = refresh;
+  }
+
+  void refresh() {
+    setState(() {
+      allWords = dict.db!.getAllWordsWithTag();
+      tags = dict.db!.getAllTags();
+    });
   }
 }
