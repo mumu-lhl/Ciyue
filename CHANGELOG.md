@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.11.1](https://github.com/mumu-lhl/Ciyue/compare/v0.11.0..v0.11.1) - 2024-11-09
+
+### Bug Fixes
+
+- **(build)** remove `DependencyInfoBlock` - ([b191834](https://github.com/mumu-lhl/Ciyue/commit/b191834e33466de1c68e0f7da8ff3046b01918ed)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(translation)** translations update from Hosted Weblate ([#44](https://github.com/mumu-lhl/Ciyue/issues/44)) - ([7b7eff9](https://github.com/mumu-lhl/Ciyue/commit/7b7eff98ffe413aebf97ce697e13f244848ebbb4)) - Weblate (bot)
+
+---
 ## [0.11.0](https://github.com/mumu-lhl/Ciyue/compare/v0.10.1..v0.11.0) - 2024-11-01
 
 ### Features
