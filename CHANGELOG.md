@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.11.2](https://github.com/mumu-lhl/Ciyue/compare/v0.11.1..v0.11.2) - 2024-11-10
+
+### Bug Fixes
+
+- **(ui)** refresh instantly after adding tag - ([e56e072](https://github.com/mumu-lhl/Ciyue/commit/e56e0722c72e4bdd4f5e97d405856e52c91d2b1a)) - Mumulhl
+
+### Refactoring
+
+- refactor dialog - ([a7f3aff](https://github.com/mumu-lhl/Ciyue/commit/a7f3aff19a6cdc140cc5ea23199e2fb03db6b370)) - Mumulhl
+
+---
 ## [0.11.1](https://github.com/mumu-lhl/Ciyue/compare/v0.11.0..v0.11.1) - 2024-11-09
 
 ### Bug Fixes
