@@ -99,24 +99,25 @@ class WordBookScreen extends StatelessWidget {
             ));
           }
 
-          return SimpleDialog(
-              title: Text(AppLocalizations.of(context)!.tagList),
+          return AlertDialog(
+            title: Text(AppLocalizations.of(context)!.tagList),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 ...tagListTile,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextCloseButton(),
-                    TextButton(
-                      child: Text(AppLocalizations.of(context)!.add),
-                      onPressed: () async {
-                        context.pop();
-                        await buildAddTag(context);
-                      },
-                    ),
-                  ],
-                ),
-              ]);
+              ],
+            ),
+            actions: [
+              TextCloseButton(),
+              TextButton(
+                child: Text(AppLocalizations.of(context)!.add),
+                onPressed: () async {
+                  context.pop();
+                  await buildAddTag(context);
+                },
+              ),
+            ],
+          );
         });
   }
 }

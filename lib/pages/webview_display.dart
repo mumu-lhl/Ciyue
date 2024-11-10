@@ -315,54 +315,56 @@ class _ButtonState extends State<Button> {
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
-                      return SimpleDialog(title: Text(locale.tags), children: [
-                        TagsList(
-                          tags: tags,
-                          tagsOfWord: tagsOfWord,
-                          toAdd: toAdd,
-                          toDel: toDel,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                      return AlertDialog(
+                        title: Text(locale.tags),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            TextCloseButton(),
-                            TextButton(
-                              child: Text(locale.remove),
-                              onPressed: () async {
-                                await dict.db!
-                                    .removeWordWithAllTags(widget.word);
-
-                                if (context.mounted) context.pop();
-
-                                await autoExport();
-                                checkStared();
-                              },
-                            ),
-                            TextButton(
-                              child: Text(locale.confirm),
-                              onPressed: () async {
-                                if (!snapshot.data!) {
-                                  await dict.db!.addWord(widget.word);
-                                }
-
-                                for (final tag in toAdd) {
-                                  await dict.db!.addWord(widget.word, tag: tag);
-                                }
-
-                                for (final tag in toDel) {
-                                  await dict.db!
-                                      .removeWord(widget.word, tag: tag);
-                                }
-
-                                if (context.mounted) context.pop();
-
-                                await autoExport();
-                                checkStared();
-                              },
+                            TagsList(
+                              tags: tags,
+                              tagsOfWord: tagsOfWord,
+                              toAdd: toAdd,
+                              toDel: toDel,
                             ),
                           ],
                         ),
-                      ]);
+                        actions: [
+                          TextCloseButton(),
+                          TextButton(
+                            child: Text(locale.remove),
+                            onPressed: () async {
+                              await dict.db!.removeWordWithAllTags(widget.word);
+
+                              if (context.mounted) context.pop();
+
+                              await autoExport();
+                              checkStared();
+                            },
+                          ),
+                          TextButton(
+                            child: Text(locale.confirm),
+                            onPressed: () async {
+                              if (!snapshot.data!) {
+                                await dict.db!.addWord(widget.word);
+                              }
+
+                              for (final tag in toAdd) {
+                                await dict.db!.addWord(widget.word, tag: tag);
+                              }
+
+                              for (final tag in toDel) {
+                                await dict.db!
+                                    .removeWord(widget.word, tag: tag);
+                              }
+
+                              if (context.mounted) context.pop();
+
+                              await autoExport();
+                              checkStared();
+                            },
+                          ),
+                        ],
+                      );
                     });
               } else {
                 await star();

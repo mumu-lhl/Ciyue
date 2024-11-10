@@ -163,21 +163,21 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
           await showDialog(
               context: context,
-              builder: (BuildContext _) => SimpleDialog(
-                    children: [
-                      ...listTiles,
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextCloseButton(),
-                          TextButton(
-                            child: Text(AppLocalizations.of(context)!.add),
-                            onPressed: () async {
-                              await _addScanPath(context);
-                              if (context.mounted) context.pop();
-                            },
-                          )
-                        ],
+              builder: (BuildContext _) => AlertDialog(
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: listTiles,
+                      ),
+                    ),
+                    actions: [
+                      TextCloseButton(),
+                      TextButton(
+                        child: Text(AppLocalizations.of(context)!.add),
+                        onPressed: () async {
+                          await _addScanPath(context);
+                          if (context.mounted) context.pop();
+                        },
                       ),
                     ],
                   ));
