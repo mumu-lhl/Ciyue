@@ -55,7 +55,7 @@ dependencies:
   dynamic_color: ^1.7.0
   flutter_tts: ^4.0.2
   flutter_native_splash: ^2.4.2
-  package_info_plus: ^8.1.0
+  package_info_plus: ^8.1.1
   url_launcher: ^6.3.1
   file_selector: ^1.0.3
   html_unescape: ^2.0.0
