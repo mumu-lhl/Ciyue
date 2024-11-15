@@ -42,7 +42,7 @@ dependencies:
   go_router: ^14.6.0
   filesystem_picker: ^4.1.0
   permission_handler: ^11.3.1
-  device_info_plus: ^11.1.0
+  device_info_plus: ^11.1.1
   flutter_spinkit: ^5.2.1
   flutter_inappwebview: ^6.1.5
   path: ^1.9.0
