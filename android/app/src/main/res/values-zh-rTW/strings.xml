@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="appName">詞悅</string>
+  <string name="process_text_menu_item">在詞悅中查詢</string>
 </resources>
