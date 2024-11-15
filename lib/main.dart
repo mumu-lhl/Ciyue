@@ -64,7 +64,6 @@ void main() async {
   platform.setMethodCallHandler((call) async {
     if (call.method == "processText") {
       final text = call.arguments as String;
-      print(text);
 
       late DictionaryData word;
       try {
