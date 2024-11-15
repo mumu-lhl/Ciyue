@@ -38,7 +38,7 @@ dependencies:
   drift: ^2.21.0
   drift_flutter: ^0.2.1
   dict_reader: ^1.1.4
-  shared_preferences: ^2.3.2
+  shared_preferences: ^2.3.3
   go_router: ^14.3.0
   filesystem_picker: ^4.1.0
   permission_handler: ^11.3.1
