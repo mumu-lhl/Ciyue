@@ -203,4 +203,20 @@ class _Dict {
       readerResource = null;
     }
   }
+
+  Future<String> readWord(DictionaryData word) async {
+    String content = await dict.reader!.readOne(word.blockOffset,
+        word.startOffset, word.endOffset, word.compressedSize);
+
+    if (content.startsWith("@@@LINK=")) {
+      // 8: remove @@@LINK=
+      // content.length - 3: remove \r\n\x00
+      word = await dict.db!
+          .getOffset(content.substring(8, content.length - 3).trimRight());
+      content = await dict.reader!.readOne(word.blockOffset, word.startOffset,
+          word.endOffset, word.compressedSize);
+    }
+
+    return content;
+  }
 }

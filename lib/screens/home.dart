@@ -56,7 +56,7 @@ class SearchResult extends StatelessWidget {
   Widget build(BuildContext context) {
     final resultWidgets = <Widget>[];
 
-    for (var word in searchResult) {
+    for (final word in searchResult) {
       resultWidgets.add(ListTile(
           title: Text(word.key),
           trailing: IconButton(
@@ -66,17 +66,7 @@ class SearchResult extends StatelessWidget {
             },
           ),
           onTap: () async {
-            String content = await dict.reader!.readOne(word.blockOffset,
-                word.startOffset, word.endOffset, word.compressedSize);
-
-            if (content.startsWith("@@@LINK=")) {
-              // 8: remove @@@LINK=
-              // content.length - 3: remove \r\n\x00
-              word = await dict.db!.getOffset(
-                  content.substring(8, content.length - 3).trimRight());
-              content = await dict.reader!.readOne(word.blockOffset,
-                  word.startOffset, word.endOffset, word.compressedSize);
-            }
+            final content = await dict.readWord(word);
 
             if (context.mounted) {
               context
