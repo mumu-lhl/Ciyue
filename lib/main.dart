@@ -85,7 +85,7 @@ void main() async {
       }
 
       // Navigate to search result with the text
-      _router.push("/word", extra: {"content": content, "word": text});
+      _router.go("/word", extra: {"content": content, "word": text});
     }
   });
 
