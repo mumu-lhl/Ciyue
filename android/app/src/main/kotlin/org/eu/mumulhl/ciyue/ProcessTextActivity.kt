@@ -15,6 +15,7 @@ class ProcessTextActivity : Activity() {
             action = Intent.ACTION_PROCESS_TEXT
             putExtra(Intent.EXTRA_PROCESS_TEXT, text)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
         
         startActivity(intent)
