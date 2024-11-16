@@ -84,9 +84,19 @@ class DictionaryDatabase extends _$DictionaryDatabase {
   // ignore: avoid_init_to_null
   Future<List<WordbookData>> getAllWordsWithTag({int? tag = null}) {
     if (tag == null) {
-      return (select(wordbook)..where((t) => t.tag.isNull())).get();
+      return (select(wordbook)
+            ..where((t) => t.tag.isNull())
+            ..orderBy([
+              (t) => OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)
+            ]))
+          .get();
     } else {
-      return (select(wordbook)..where((t) => t.tag.isValue(tag))).get();
+      return (select(wordbook)
+            ..where((t) => t.tag.isValue(tag))
+            ..orderBy([
+              (t) => OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)
+            ]))
+          .get();
     }
   }
 
