@@ -13,6 +13,9 @@ import "package:flutter_tts/flutter_tts.dart";
 import "package:go_router/go_router.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
+import "package:flutter/services.dart";
+
+const platform = MethodChannel("org.eu.mumulhl.ciyue/process_text");
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +60,34 @@ void main() async {
   flutterTts = FlutterTts();
 
   packageInfo = await PackageInfo.fromPlatform();
+
+  platform.setMethodCallHandler((call) async {
+    if (call.method == "processText") {
+      final text = call.arguments as String;
+
+      late DictionaryData word;
+      try {
+        word = await dict.db!.getOffset(text);
+      } catch (e) {
+        word = await dict.db!.getOffset(text.toLowerCase());
+      }
+
+      String content = await dict.reader!.readOne(word.blockOffset,
+          word.startOffset, word.endOffset, word.compressedSize);
+
+      if (content.startsWith("@@@LINK=")) {
+        // 8: remove @@@LINK=
+        // content.length - 3: remove \r\n\x00
+        word = await dict.db!
+            .getOffset(content.substring(8, content.length - 3).trimRight());
+        content = await dict.reader!.readOne(word.blockOffset, word.startOffset,
+            word.endOffset, word.compressedSize);
+      }
+
+      // Navigate to search result with the text
+      _router.go("/word", extra: {"content": content, "word": text});
+    }
+  });
 
   runApp(const Dictionary());
 }

@@ -223,7 +223,12 @@ class WebviewDisplay extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(leading: BackButton(
         onPressed: () {
-          context.pop();
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            // When opened from context menu
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+          }
         },
       )),
       floatingActionButton: floatingActionButton,
