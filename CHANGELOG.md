@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.12.0](https://github.com/mumu-lhl/Ciyue/compare/v0.11.2..v0.12.0) - 2024-11-16
+
+### Features
+
+- support context menu ([#55](https://github.com/mumu-lhl/Ciyue/issues/55)) - ([043c8a3](https://github.com/mumu-lhl/Ciyue/commit/043c8a3dcc299f7ee22044b38a1002279f2f2c78)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(deps)** bump shared_preferences from 2.3.2 to 2.3.3 ([#47](https://github.com/mumu-lhl/Ciyue/issues/47)) - ([4a43577](https://github.com/mumu-lhl/Ciyue/commit/4a43577cd3506b07921dc2ddc1865aa4091df398)) - dependabot[bot]
+- **(deps)** bump package_info_plus from 8.1.0 to 8.1.1 ([#48](https://github.com/mumu-lhl/Ciyue/issues/48)) - ([9ed4eae](https://github.com/mumu-lhl/Ciyue/commit/9ed4eae9223d797072591af74248540da94f3f2c)) - dependabot[bot]
+- **(deps)** bump flutter_tts from 4.0.2 to 4.1.0 ([#50](https://github.com/mumu-lhl/Ciyue/issues/50)) - ([9820df4](https://github.com/mumu-lhl/Ciyue/commit/9820df4bebb62062624b152b8b16a0deb53b96ee)) - dependabot[bot]
+- **(deps)** bump go_router from 14.3.0 to 14.6.0 ([#53](https://github.com/mumu-lhl/Ciyue/issues/53)) - ([c4dac51](https://github.com/mumu-lhl/Ciyue/commit/c4dac51bbdad39167233573d352c70d463079fbd)) - dependabot[bot]
+- **(deps)** bump device_info_plus from 11.1.0 to 11.1.1 ([#51](https://github.com/mumu-lhl/Ciyue/issues/51)) - ([a1935be](https://github.com/mumu-lhl/Ciyue/commit/a1935be5dff7c681796724761a069b674ecfadfa)) - dependabot[bot]
+- **(deps)** bump flutter_tts from 4.1.0 to 4.2.0 ([#54](https://github.com/mumu-lhl/Ciyue/issues/54)) - ([58d95d2](https://github.com/mumu-lhl/Ciyue/commit/58d95d2e307076cb473a7ea83dc0c6d508610ff8)) - dependabot[bot]
+- **(deps)** update - ([c252820](https://github.com/mumu-lhl/Ciyue/commit/c2528202f09ffc67a74c09d5a82340dd867ad2ef)) - Mumulhl
+
+### Refactoring
+
+- order wordbook ([#56](https://github.com/mumu-lhl/Ciyue/issues/56)) - ([d9e6cf6](https://github.com/mumu-lhl/Ciyue/commit/d9e6cf672ef3ab0ff43dfa7d503807682c38e0fb)) - Mumulhl
+- reduce code - ([047dd2c](https://github.com/mumu-lhl/Ciyue/commit/047dd2c8ae4656919a52db0d92f414110116a7cd)) - Mumulhl
+
+### Style
+
+- new icon and remove splash screen ([#57](https://github.com/mumu-lhl/Ciyue/issues/57)) - ([28302b3](https://github.com/mumu-lhl/Ciyue/commit/28302b386628601f5dda57323f82ba9642569537)) - Mumulhl
+
+---
 ## [0.11.2](https://github.com/mumu-lhl/Ciyue/compare/v0.11.1..v0.11.2) - 2024-11-10
 
 ### Bug Fixes
