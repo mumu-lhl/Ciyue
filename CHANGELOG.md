@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.13.0](https://github.com/mumu-lhl/Ciyue/compare/v0.12.0..v0.13.0) - 2024-11-24
+
+### Features
+
+- support share text menu ([#60](https://github.com/mumu-lhl/Ciyue/issues/60)) - ([a61f863](https://github.com/mumu-lhl/Ciyue/commit/a61f86345b31ed3c387cb84b2fcd4b9787102813)) - Mumulhl
+
+### Miscellaneous Chores
+
+- create FUNDING.yml - ([bb23ca1](https://github.com/mumu-lhl/Ciyue/commit/bb23ca1a386420739dc30a07c5778151c498e093)) - Mumulhl
+
+---
 ## [0.12.0](https://github.com/mumu-lhl/Ciyue/compare/v0.11.2..v0.12.0) - 2024-11-16
 
 ### Features
