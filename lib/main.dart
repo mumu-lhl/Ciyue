@@ -5,6 +5,7 @@ import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
 import "package:ciyue/pages/webview_display.dart";
+import "package:ciyue/settings.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
@@ -20,19 +21,6 @@ void main() async {
 
   prefs = await SharedPreferences.getInstance();
   dict.path = prefs.getString("currentDictionaryPath");
-
-  final themeModeString = prefs.getString("themeMode");
-  switch (themeModeString) {
-    case "light":
-      themeMode = ThemeMode.light;
-    case "dark":
-      themeMode = ThemeMode.dark;
-    case "system" || null:
-      themeMode = ThemeMode.system;
-  }
-
-  language = prefs.getString("language");
-  language ??= "system";
 
   dictionaryList = appDatabase();
 
@@ -84,11 +72,9 @@ const platform = MethodChannel("org.eu.mumulhl.ciyue/process_text");
 
 late AppDatabase dictionaryList;
 late FlutterTts flutterTts;
-String? language;
 late PackageInfo packageInfo;
 late SharedPreferences prefs;
 late VoidCallback refreshAll;
-late ThemeMode themeMode;
 
 final _router = GoRouter(
   routes: [
@@ -126,14 +112,14 @@ class _DictionaryState extends State<Dictionary> {
   @override
   Widget build(BuildContext context) {
     Locale? locale;
-    if (language != "system") {
-      final splittedLanguage = language!.split("_");
+    if (settings.language != "system") {
+      final splittedLanguage = settings.language!.split("_");
       if (splittedLanguage.length > 1) {
         locale = Locale.fromSubtags(
             languageCode: splittedLanguage[0],
             countryCode: splittedLanguage[1]);
       } else {
-        locale = Locale(language!);
+        locale = Locale(settings.language!);
       }
     }
 
@@ -142,7 +128,7 @@ class _DictionaryState extends State<Dictionary> {
         title: "Dictionary",
         theme: ThemeData(colorScheme: lightColorScheme),
         darkTheme: ThemeData(colorScheme: darkColorScheme),
-        themeMode: themeMode,
+        themeMode: settings.themeMode,
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

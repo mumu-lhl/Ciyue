@@ -251,7 +251,7 @@ class _LanguageSelectorState extends State<LanguageSelector> {
             tapUpDetails.globalPosition.dx,
             tapUpDetails.globalPosition.dy,
           ),
-          initialValue: language,
+          initialValue: settings.language,
           items: [
             PopupMenuItem(
                 value: "system",
@@ -266,7 +266,7 @@ class _LanguageSelectorState extends State<LanguageSelector> {
         );
 
         if (languageSelected != null) {
-          language = languageSelected;
+          settings.language = languageSelected;
 
           prefs.setString("language", languageSelected);
 
@@ -298,7 +298,7 @@ class _ThemeSelectorState extends State<ThemeSelector> {
             tapUpDetails.globalPosition.dx,
             tapUpDetails.globalPosition.dy,
           ),
-          initialValue: themeMode,
+          initialValue: settings.themeMode,
           items: [
             PopupMenuItem(value: ThemeMode.light, child: Text(locale.light)),
             PopupMenuItem(value: ThemeMode.dark, child: Text(locale.dark)),
@@ -307,7 +307,7 @@ class _ThemeSelectorState extends State<ThemeSelector> {
         );
 
         if (themeModeSelected != null) {
-          themeMode = themeModeSelected;
+          settings.themeMode = themeModeSelected;
 
           String themeModeString;
           switch (themeModeSelected) {
