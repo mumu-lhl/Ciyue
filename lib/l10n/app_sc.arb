@@ -66,5 +66,7 @@
   "import": "Importa",
   "@import": {},
   "tags": "Etichetas",
-  "@tags": {}
+  "@tags": {},
+  "noResult": "Nenhum resultado",
+  "@noResult": {}
 }

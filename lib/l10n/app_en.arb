@@ -32,5 +32,6 @@
   "tagName": "Tag Name",
   "tagList": "Tag List",
   "remove": "Remove",
-  "confirm": "Confirm"
+  "confirm": "Confirm",
+  "noResult": "No Result"
 }

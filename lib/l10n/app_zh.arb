@@ -51,5 +51,6 @@
   "tagName": "标签名称",
   "tagList": "标签列表",
   "remove": "删除",
-  "confirm": "确定"
+  "confirm": "确定",
+  "noResult": "无结果"
 }
