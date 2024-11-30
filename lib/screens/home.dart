@@ -75,8 +75,14 @@ class SearchResult extends StatelessWidget {
           }));
     }
 
-    return ListView(
-      children: resultWidgets,
-    );
+    if (searchResult.isEmpty) {
+      return Center(
+          child: Text(AppLocalizations.of(context)!.noResult,
+              style: Theme.of(context).textTheme.titleLarge));
+    } else {
+      return ListView(
+        children: resultWidgets,
+      );
+    }
   }
 }

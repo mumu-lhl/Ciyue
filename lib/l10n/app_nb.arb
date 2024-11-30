@@ -36,5 +36,7 @@
   "permissionDenied": "Du må innvilge tilgangene",
   "@permissionDenied": {},
   "manageDictionaries": "Håndter ordbøker",
-  "@manageDictionaries": {}
+  "@manageDictionaries": {},
+  "noResult": "Ingen resultat",
+  "@noResult": {}
 }

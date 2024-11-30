@@ -66,5 +66,7 @@
   "remove": "Убрать",
   "@remove": {},
   "confirm": "Подтвердить",
-  "@confirm": {}
+  "@confirm": {},
+  "noResult": "Ничего не найдено",
+  "@noResult": {}
 }
