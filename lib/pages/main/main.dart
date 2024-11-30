@@ -1,8 +1,8 @@
 import "package:ciyue/database/dictionary.dart";
 import "package:ciyue/dictionary.dart";
-import "package:ciyue/screens/home.dart";
-import "package:ciyue/screens/settings.dart";
-import "package:ciyue/screens/wordbook.dart";
+import "package:ciyue/pages/main/home.dart";
+import "package:ciyue/pages/main/settings.dart";
+import "package:ciyue/pages/main/wordbook.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 
