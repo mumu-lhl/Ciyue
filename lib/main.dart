@@ -51,17 +51,8 @@ void main() async {
     if (call.method == "processText") {
       final text = call.arguments as String;
 
-      late DictionaryData word;
-      try {
-        word = await dict.db!.getOffset(text);
-      } catch (e) {
-        word = await dict.db!.getOffset(text.toLowerCase());
-      }
-
-      final content = await dict.readWord(word);
-
       // Navigate to search result with the text
-      _router.go("/word", extra: {"content": content, "word": text});
+      _router.go("/word", extra: {"word": text});
     }
   });
 
@@ -86,12 +77,11 @@ final _router = GoRouter(
         path: "/word",
         builder: (context, state) {
           final extra = state.extra as Map<String, String>;
-          return WebviewDisplay(
-            content: extra["content"]!,
-            word: extra["word"]!,
-            description: extra.containsKey("description"),
-          );
+          return WebviewDisplay(word: extra["word"]!);
         }),
+    GoRoute(
+        path: "/description",
+        builder: (context, state) => const WebviewDisplayDescription()),
     GoRoute(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),

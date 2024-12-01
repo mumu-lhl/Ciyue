@@ -66,12 +66,7 @@ class SearchResult extends StatelessWidget {
             },
           ),
           onTap: () async {
-            final content = await dict.readWord(word);
-
-            if (context.mounted) {
-              context
-                  .push("/word", extra: {"content": content, "word": word.key});
-            }
+            context.push("/word", extra: {"word": word.key});
           }));
     }
 

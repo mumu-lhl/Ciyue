@@ -234,11 +234,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
             highlightElevation: 0,
             child: Icon(Icons.info),
             onPressed: () {
-              context.push("/word", extra: {
-                "content": dict.reader!.header["Description"]!,
-                "word": "",
-                "description": "1",
-              });
+              context.push("/description");
             },
           );
           return Column(
