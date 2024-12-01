@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.13.1](https://github.com/mumu-lhl/Ciyue/compare/v0.13.0..v0.13.1) - 2024-12-01
+
+### Miscellaneous Chores
+
+- **(deps)** bump go_router from 14.6.0 to 14.6.1 ([#63](https://github.com/mumu-lhl/Ciyue/issues/63)) - ([c420a74](https://github.com/mumu-lhl/Ciyue/commit/c420a74d15f5d8a7288101781d556aca7f915a1a)) - dependabot[bot]
+- **(deps)** remove useless dependent - ([63c8f8c](https://github.com/mumu-lhl/Ciyue/commit/63c8f8cae9c54abf129ebf2ca18355cda419cbf5)) - Mumulhl
+- **(translation)** translated using Weblate (Sardinian) ([#62](https://github.com/mumu-lhl/Ciyue/issues/62)) - ([3afb036](https://github.com/mumu-lhl/Ciyue/commit/3afb03638a0ec872e3f0b008500136b919fa665d)) - Weblate (bot)
+- configuring automatically generated release notes ([#66](https://github.com/mumu-lhl/Ciyue/issues/66)) - ([316fe4a](https://github.com/mumu-lhl/Ciyue/commit/316fe4a6ec3c165ee778aa7419bb0ea5c026ff49)) - Mumulhl
+- disable generating release changelog by git-cliff - ([f33d701](https://github.com/mumu-lhl/Ciyue/commit/f33d7012e8119a01e689d9789463bf0d500c28b7)) - Mumulhl
+
+### Refactoring
+
+- display no result when search word not in the dict ([#65](https://github.com/mumu-lhl/Ciyue/issues/65)) - ([c49c224](https://github.com/mumu-lhl/Ciyue/commit/c49c22432c07de739413cb2a0443f3172102f187)) - Mumulhl
+- refactor path - ([c215604](https://github.com/mumu-lhl/Ciyue/commit/c2156043dfd81c58aee4fd75467cb5c5972338a8)) - Mumulhl
+- refactor settings - ([ba08d6d](https://github.com/mumu-lhl/Ciyue/commit/ba08d6d5cce1bc199975020c0b02c6350ccc7f3d)) - Mumulhl
+- webview display - ([5adffbe](https://github.com/mumu-lhl/Ciyue/commit/5adffbeb18820925a8d4115aa7d9076dcee6fd76)) - Mumulhl
+
+---
 ## [0.13.0](https://github.com/mumu-lhl/Ciyue/compare/v0.12.0..v0.13.0) - 2024-11-24
 
 ### Features
