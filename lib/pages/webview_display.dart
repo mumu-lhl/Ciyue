@@ -118,23 +118,7 @@ class WebView extends StatelessWidget {
             id: 2,
             title: locale.lookup,
             action: () async {
-              try {
-                final word = await dict.db!.getOffset(selectedText);
-                final content = await dict.readWord(word);
-
-                if (context.mounted) {
-                  context.push("/word",
-                      extra: {"content": content, "word": word.key});
-                }
-              } catch (e) {
-                final snackBar = SnackBar(
-                  content: Text(locale.notFound),
-                  duration: const Duration(seconds: 1),
-                );
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                }
-              }
+              context.push("/word", extra: {"word": selectedText});
             }),
         ContextMenuItem(
             id: 3,
@@ -188,41 +172,57 @@ document.body.style.fontFamily = 'Custom Font';
 }
 
 class WebviewDisplay extends StatelessWidget {
-  final String content;
   final String word;
-  final bool description;
 
-  const WebviewDisplay(
-      {super.key,
-      required this.content,
-      required this.word,
-      required this.description});
+  const WebviewDisplay({super.key, required this.word});
 
   @override
   Widget build(BuildContext context) {
-    Widget? floatingActionButton;
-    late String html;
-    if (description) {
-      html = HtmlUnescape().convert(content);
-    } else {
-      html = content;
-      floatingActionButton = Button(word: word);
-    }
+    final content = dict.readWord(word);
 
     return Scaffold(
-      appBar: AppBar(leading: BackButton(
-        onPressed: () {
-          if (context.canPop()) {
+        appBar: AppBar(leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              // When opened from context menu
+              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+            }
+          },
+        )),
+        floatingActionButton: Button(word: word),
+        body: FutureBuilder(
+            future: content,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return WebView(content: snapshot.data!);
+              } else if (snapshot.hasError) {
+                return Center(
+                    child: Text(AppLocalizations.of(context)!.notFound,
+                        style: Theme.of(context).textTheme.titleLarge));
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            }));
+  }
+}
+
+class WebviewDisplayDescription extends StatelessWidget {
+  const WebviewDisplayDescription({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    String html = dict.reader!.header["Description"]!;
+    html = HtmlUnescape().convert(html);
+
+    return Scaffold(
+        appBar: AppBar(leading: BackButton(
+          onPressed: () {
             context.pop();
-          } else {
-            // When opened from context menu
-            SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-          }
-        },
-      )),
-      floatingActionButton: floatingActionButton,
-      body: WebView(content: html),
-    );
+          },
+        )),
+        body: WebView(content: html));
   }
 }
 

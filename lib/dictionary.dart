@@ -95,6 +95,29 @@ class _Dict {
     await dictionaryList.updateFont(id!, path);
   }
 
+  Future<String> readWord(String word) async {
+    late DictionaryData data;
+    try {
+      data = await db!.getOffset(word);
+    } catch (e) {
+      data = await db!.getOffset(word.toLowerCase());
+    }
+
+    String content = await dict.reader!.readOne(data.blockOffset,
+        data.startOffset, data.endOffset, data.compressedSize);
+
+    if (content.startsWith("@@@LINK=")) {
+      // 8: remove @@@LINK=
+      // content.length - 3: remove \r\n\x00
+      data = await db!
+          .getOffset(content.substring(8, content.length - 3).trimRight());
+      content = await dict.reader!.readOne(data.blockOffset, data.startOffset,
+          data.endOffset, data.compressedSize);
+    }
+
+    return content;
+  }
+
   Future<void> removeDictionary(String path) async {
     reader = null;
     readerResource = null;
@@ -202,21 +225,5 @@ class _Dict {
     } catch (e) {
       readerResource = null;
     }
-  }
-
-  Future<String> readWord(DictionaryData word) async {
-    String content = await dict.reader!.readOne(word.blockOffset,
-        word.startOffset, word.endOffset, word.compressedSize);
-
-    if (content.startsWith("@@@LINK=")) {
-      // 8: remove @@@LINK=
-      // content.length - 3: remove \r\n\x00
-      word = await dict.db!
-          .getOffset(content.substring(8, content.length - 3).trimRight());
-      content = await dict.reader!.readOne(word.blockOffset, word.startOffset,
-          word.endOffset, word.compressedSize);
-    }
-
-    return content;
   }
 }
