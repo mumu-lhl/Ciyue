@@ -1,12 +1,11 @@
 import "package:ciyue/database/app.dart";
-import "package:ciyue/database/dictionary.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
 import "package:ciyue/pages/webview_display.dart";
 import "package:ciyue/settings.dart";
-import "package:dict_reader/dict_reader.dart";
+import "package:drift/drift.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -19,28 +18,16 @@ import "package:shared_preferences/shared_preferences.dart";
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+
   prefs = await SharedPreferences.getInstance();
-  dict.path = prefs.getString("currentDictionaryPath");
+  final path = prefs.getString("currentDictionaryPath");
 
   dictionaryList = appDatabase();
 
-  if (dict.path != null) {
-    dict.id = await dictionaryList.getId(dict.path!);
-
-    dict.reader = DictReader("${dict.path!}.mdx");
-    await dict.reader!.init(false);
-
-    try {
-      dict.readerResource = DictReader("${dict.path!}.mdd");
-      await dict.readerResource!.init(false);
-    } catch (e) {
-      dict.readerResource = null;
-    }
-
-    final id = await dictionaryList.getId(dict.path!);
-    dict.db = dictionaryDatabase(id);
-
-    await dict.checkTagExist();
+  if (path != null) {
+    dict = Mdict(path: path);
+    await dict!.init();
   }
 
   flutterTts = FlutterTts();
@@ -66,6 +53,7 @@ late FlutterTts flutterTts;
 late PackageInfo packageInfo;
 late SharedPreferences prefs;
 late VoidCallback refreshAll;
+Mdict? dict;
 
 final _router = GoRouter(
   routes: [

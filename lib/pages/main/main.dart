@@ -1,5 +1,5 @@
 import "package:ciyue/database/dictionary.dart";
-import "package:ciyue/dictionary.dart";
+import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/settings.dart";
 import "package:ciyue/pages/main/wordbook.dart";
@@ -25,7 +25,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     PreferredSizeWidget? appBar;
 
-    if (dict.path != null && _currentIndex == 0) {
+    if (dict != null && _currentIndex == 0) {
       Widget? removeButton;
       if (searchWord != "") {
         removeButton = IconButton(
@@ -52,7 +52,7 @@ class _HomeState extends State<Home> {
                 suffixIcon: removeButton),
             controller: textFieldController,
             onChanged: (text) async {
-              final result = await dict.db!.searchWord(text);
+              final result = await dict!.db.searchWord(text);
 
               setState(() {
                 searchResult = result;

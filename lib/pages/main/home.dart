@@ -1,5 +1,4 @@
 import "package:ciyue/database/dictionary.dart";
-import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
@@ -19,7 +18,7 @@ class HomeScreen extends StatelessWidget {
 
     final locale = AppLocalizations.of(context);
 
-    if (dict.path == null) {
+    if (dict == null) {
       body = Center(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

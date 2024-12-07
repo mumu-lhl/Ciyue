@@ -8,60 +8,32 @@ import "package:path_provider/path_provider.dart";
 import "database/dictionary.dart";
 import "main.dart";
 
-final dict = _Dict();
-
-class _Dict {
-  int? id;
-  String? path;
+class Mdict {
+  late final int id;
+  final String path;
   String? fontName;
   String? fontPath;
   String? backupPath;
-  DictionaryDatabase? db;
-  DictReader? reader;
+  late final DictionaryDatabase db;
+  late final DictReader reader;
   DictReader? readerResource;
   bool? tagExist;
 
-  Future<void> addDictionary(String path) async {
-    path = setExtension(path, "");
+  Mdict({required this.path});
+
+  Future<void> init() async {
+    id = await dictionaryList.getId(path);
+
+    reader = DictReader("$path.mdx");
+    await reader.init(false);
 
     try {
-      await dictionaryList.getId(path);
-      return;
-      // ignore: empty_catches
-    } catch (e) {}
-
-    if (db != null) {
-      await db!.close();
+      readerResource = DictReader("$path.mdd");
+      await readerResource!.init(false);
+    } catch (e) {
+      readerResource = null;
     }
 
-    await _initDictReader(path);
-
-    await prefs.setString("currentDictionaryPath", path);
-
-    await dictionaryList.add(path);
-
-    final id = await dictionaryList.getId(path);
-    this.id = id;
-    db = dictionaryDatabase(id);
-
-    await _addWords();
-
-    if (readerResource != null) await _addResource();
-
-    _changeCurrentDictionary(id, path);
-
-    customFont(null);
-    customBackupPath(null);
-
-    tagExist = false;
-  }
-
-  Future<void> changeDictionary(int id, String path) async {
-    _changeCurrentDictionary(id, path);
-
-    await prefs.setString("currentDictionaryPath", path);
-
-    await db!.close();
     db = dictionaryDatabase(id);
 
     final fontPath = await dictionaryList.getFontPath(id);
@@ -71,17 +43,47 @@ class _Dict {
     customBackupPath(backupPath);
 
     await checkTagExist();
+  }
 
-    _initDictReader(path, readKey: false);
+  Future<void> close() async {
+    await db.close();
+  }
+
+  Future<bool> add() async {
+    try {
+      await dictionaryList.getId(path);
+      return false;
+      // ignore: empty_catches
+    } catch (e) {}
+
+    await _initDictReader(path);
+
+    await prefs.setString("currentDictionaryPath", path);
+
+    await dictionaryList.add(path);
+
+    id = await dictionaryList.getId(path);
+    db = dictionaryDatabase(id);
+
+    await _addWords();
+
+    if (readerResource != null) await _addResource();
+
+    customFont(null);
+    customBackupPath(null);
+
+    tagExist = false;
+
+    return true;
   }
 
   Future<void> checkTagExist() async {
-    tagExist = await db!.existTag();
+    tagExist = await db.existTag();
   }
 
   Future<void> customBackupPath(String? path) async {
     backupPath = path;
-    await dictionaryList.updateBackup(id!, path);
+    await dictionaryList.updateBackup(id, path);
   }
 
   Future<void> customFont(String? path) async {
@@ -92,64 +94,42 @@ class _Dict {
       fontName = basename(path);
     }
 
-    await dictionaryList.updateFont(id!, path);
+    await dictionaryList.updateFont(id, path);
   }
 
   Future<String> readWord(String word) async {
     late DictionaryData data;
     try {
-      data = await db!.getOffset(word);
+      data = await db.getOffset(word);
     } catch (e) {
-      data = await db!.getOffset(word.toLowerCase());
+      data = await db.getOffset(word.toLowerCase());
     }
 
-    String content = await dict.reader!.readOne(data.blockOffset,
-        data.startOffset, data.endOffset, data.compressedSize);
+    String content = await reader.readOne(data.blockOffset, data.startOffset,
+        data.endOffset, data.compressedSize);
 
     if (content.startsWith("@@@LINK=")) {
       // 8: remove @@@LINK=
       // content.length - 3: remove \r\n\x00
-      data = await db!
+      data = await db
           .getOffset(content.substring(8, content.length - 3).trimRight());
-      content = await dict.reader!.readOne(data.blockOffset, data.startOffset,
+      content = await reader.readOne(data.blockOffset, data.startOffset,
           data.endOffset, data.compressedSize);
     }
 
     return content;
   }
 
-  Future<void> removeDictionary(String path) async {
-    reader = null;
-    readerResource = null;
-    _changeCurrentDictionary(null, null);
-
+  Future<void> removeDictionary() async {
     await prefs.remove("currentDictionaryPath");
 
-    await db!.close();
-    final id = await dictionaryList.getId(path);
+    await db.close();
     final databasePath = join((await getApplicationDocumentsDirectory()).path,
         "dictionary_$id.sqlite");
     final file = File(databasePath);
     await file.delete();
 
     await dictionaryList.remove(path);
-
-    try {
-      final newDictionary = (await dictionaryList.all())[0];
-      changeDictionary(newDictionary.id, newDictionary.path);
-      // ignore: empty_catches
-    } catch (e) {}
-  }
-
-  Future<void> scanDictionaries(String path) async {
-    final dir = Directory(path);
-    final files = await dir.list().toList();
-
-    for (final file in files) {
-      if (extension(file.path) == ".mdx") {
-        await addDictionary(file.path);
-      }
-    }
   }
 
   Future<void> _addResource() async {
@@ -170,13 +150,13 @@ class _Dict {
 
       if (number == 50000) {
         number = 0;
-        await db!.insertResource(resourceList);
+        await db.insertResource(resourceList);
         resourceList.clear();
       }
     }
 
     if (resourceList.isNotEmpty) {
-      await db!.insertResource(resourceList);
+      await db.insertResource(resourceList);
     }
   }
 
@@ -187,7 +167,7 @@ class _Dict {
     await for (final (
           key,
           (blockOffset, startOffset, endOffset, compressedSize)
-        ) in reader!.read()) {
+        ) in reader.read()) {
       wordList.add(DictionaryCompanion(
           key: Value(key),
           blockOffset: Value(blockOffset),
@@ -198,19 +178,14 @@ class _Dict {
 
       if (number == 50000) {
         number = 0;
-        await db!.insertWords(wordList);
+        await db.insertWords(wordList);
         wordList.clear();
       }
     }
 
     if (wordList.isNotEmpty) {
-      await db!.insertWords(wordList);
+      await db.insertWords(wordList);
     }
-  }
-
-  void _changeCurrentDictionary(int? id, String? path) {
-    this.id = id;
-    this.path = path;
   }
 
   Future<void> _initDictReader(String path, {bool readKey = true}) async {
