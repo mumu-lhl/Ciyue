@@ -1,4 +1,4 @@
-import "package:ciyue/dictionary.dart";
+import "package:ciyue/main.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
@@ -31,13 +31,13 @@ class _BodyState extends State<_Body> {
   Widget build(BuildContext context) {
     Widget? fontPathSubtitle;
     Widget? removeButton;
-    if (dict.fontName != null) {
-      fontPathSubtitle = Text(dict.fontName!);
+    if (dict!.fontName != null) {
+      fontPathSubtitle = Text(dict!.fontName!);
       removeButton = IconButton(
         icon: Icon(Icons.delete_sweep),
         onPressed: () {
           setState(() {
-            dict.customFont(null);
+            dict!.customFont(null);
           });
         },
       );
@@ -59,7 +59,7 @@ class _BodyState extends State<_Body> {
             }
 
             setState(() {
-              dict.customFont(xFile.path);
+              dict!.customFont(xFile.path);
             });
           },
         )

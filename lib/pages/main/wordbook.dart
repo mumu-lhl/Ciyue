@@ -1,5 +1,5 @@
 import "package:ciyue/database/dictionary.dart";
-import "package:ciyue/dictionary.dart";
+import "package:ciyue/main.dart";
 import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
@@ -13,13 +13,13 @@ class WordBookScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     late final PreferredSizeWidget? appBar;
-    if (dict.db != null) {
+    if (dict != null) {
       appBar = AppBar(
         actions: [
           IconButton(
             icon: Icon(Icons.bookmark),
             onPressed: () async {
-              final tags = await dict.db!.getAllTags();
+              final tags = await dict!.db.getAllTags();
 
               if (!context.mounted) return;
 
@@ -63,8 +63,8 @@ class WordBookScreen extends StatelessWidget {
               TextButton(
                 child: Text(locale.add),
                 onPressed: () async {
-                  await dict.db!.addTag(textController.text);
-                  await dict.checkTagExist();
+                  await dict!.db.addTag(textController.text);
+                  await dict!.checkTagExist();
 
                   if (_refreshTagsAndWords != null) _refreshTagsAndWords!();
 
@@ -88,8 +88,8 @@ class WordBookScreen extends StatelessWidget {
               trailing: IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () async {
-                  await dict.db!.removeTag(tag.id);
-                  await dict.checkTagExist();
+                  await dict!.db.removeTag(tag.id);
+                  await dict!.checkTagExist();
 
                   _refreshTagsAndWords!();
 
@@ -142,8 +142,8 @@ class WordView extends StatelessWidget {
               list.add(ListTile(
                 title: Text(data.word),
                 onTap: () async {
-                  final offset = await dict.db!.getOffset(data.word);
-                  String content = await dict.reader!.readOne(
+                  final offset = await dict!.db.getOffset(data.word);
+                  String content = await dict!.reader.readOne(
                       offset.blockOffset,
                       offset.startOffset,
                       offset.endOffset,
@@ -184,7 +184,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
   @override
   Widget build(BuildContext context) {
-    if (dict.db == null) {
+    if (dict == null) {
       return Center(child: Text(AppLocalizations.of(context)!.empty));
     }
 
@@ -205,7 +205,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
                       setState(() {
                         selectedTag = selected ? tag.id : null;
                         allWords =
-                            dict.db!.getAllWordsWithTag(tag: selectedTag);
+                            dict!.db.getAllWordsWithTag(tag: selectedTag);
                       });
                     },
                   ));
@@ -225,9 +225,9 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   void initState() {
     super.initState();
 
-    if (dict.db != null) {
-      allWords = dict.db!.getAllWordsWithTag();
-      tags = dict.db!.getAllTags();
+    if (dict != null) {
+      allWords = dict!.db.getAllWordsWithTag();
+      tags = dict!.db.getAllTags();
     }
 
     _refreshTagsAndWords = refresh;
@@ -235,8 +235,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
   void refresh() {
     setState(() {
-      allWords = dict.db!.getAllWordsWithTag();
-      tags = dict.db!.getAllTags();
+      allWords = dict!.db.getAllWordsWithTag();
+      tags = dict!.db.getAllTags();
     });
   }
 }

@@ -2,7 +2,6 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/database/dictionary.dart";
-import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
 import "package:file_selector/file_selector.dart";
@@ -52,20 +51,20 @@ class Export extends StatelessWidget {
       title: Text(AppLocalizations.of(context)!.export),
       onTap: () async {
         final directoryPath = await getDirectoryPath();
-        if (directoryPath == null || dict.db == null) {
+        if (directoryPath == null || dict == null) {
           return;
         }
 
-        final dictionaryName = basename(dict.path!),
+        final dictionaryName = basename(dict!.path),
             filename = setExtension(dictionaryName, ".json"),
             saveLocation = join(directoryPath, filename);
 
         if (settings.autoExport) {
-          dict.customBackupPath(saveLocation);
+          dict!.customBackupPath(saveLocation);
         }
 
-        final words = await dict.db!.getAllWords(),
-            tags = await dict.db!.getAllTags();
+        final words = await dict!.db.getAllWords(),
+            tags = await dict!.db.getAllTags();
 
         if (words.isNotEmpty) {
           final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
@@ -121,7 +120,7 @@ class Import extends StatelessWidget {
       leading: Icon(Icons.file_download),
       title: Text(AppLocalizations.of(context)!.import),
       onTap: () async {
-        if (dict.db == null) {
+        if (dict == null) {
           return;
         }
 
@@ -149,8 +148,8 @@ class Import extends StatelessWidget {
           tagsData.add(WordbookTag.fromJson(i));
         }
 
-        await dict.db!.addAllWords(wordsData);
-        await dict.db!.addAllTags(tagsData);
+        await dict!.db.addAllWords(wordsData);
+        await dict!.db.addAllTags(tagsData);
       },
     );
   }
