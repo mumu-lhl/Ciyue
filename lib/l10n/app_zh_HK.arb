@@ -52,5 +52,6 @@
   "tagList": "標籤列表",
   "remove": "刪除",
   "confirm": "確定",
-  "noResult": "無結果"
+  "noResult": "無結果",
+  "updateAnnouncement": "更新至 %s 的公告"
 }

@@ -33,5 +33,6 @@
   "tagList": "Tag List",
   "remove": "Remove",
   "confirm": "Confirm",
-  "noResult": "No Result"
+  "noResult": "No Result",
+  "updateAnnouncement": "The Announcement of Updating to %s"
 }

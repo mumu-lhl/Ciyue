@@ -36,7 +36,20 @@ class HomeScreen extends StatelessWidget {
       ));
     } else {
       if (searchWord == "") {
-        body = Center(child: Text(locale!.startToSearch));
+        body = Center(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(locale!.startToSearch),
+            ElevatedButton(
+                onPressed: () async {
+                  await launchUrl(Uri.parse(
+                      "https://github.com/mumu-lhl/Ciyue/discussions/80"));
+                },
+                child: Text(locale.updateAnnouncement.replaceFirst("%s", "v1")))
+          ],
+        ));
       } else {
         body = Center(child: SearchResult(searchResult: searchResult));
       }
