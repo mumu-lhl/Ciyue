@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.14.0](https://github.com/mumu-lhl/Ciyue/compare/v0.13.1..v0.14.0) - 2024-12-08
+
+### Features
+
+- notice users the announcement of update - ([b235997](https://github.com/mumu-lhl/Ciyue/commit/b235997526f9c69f8b01c5c6b307119bc47fbc7f)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** modify the cron of the thread locker - ([c7858c7](https://github.com/mumu-lhl/Ciyue/commit/c7858c7f7decb12ae9ebb54e32f681a7497b4f8a)) - Mumulhl
+- **(deps)** bump drift from 2.21.0 to 2.22.1 ([#70](https://github.com/mumu-lhl/Ciyue/issues/70)) - ([6382f9d](https://github.com/mumu-lhl/Ciyue/commit/6382f9db68a215c8b3082900fa35e0c80ab65f6b)) - dependabot[bot]
+- **(deps)** bump drift_flutter from 0.2.1 to 0.2.2 ([#71](https://github.com/mumu-lhl/Ciyue/issues/71)) - ([7d93618](https://github.com/mumu-lhl/Ciyue/commit/7d93618c95721d296eea57898b57a9309b0a2c3b)) - dependabot[bot]
+- **(deps)** bump flutter_launcher_icons from 0.14.1 to 0.14.2 ([#75](https://github.com/mumu-lhl/Ciyue/issues/75)) - ([34c9484](https://github.com/mumu-lhl/Ciyue/commit/34c9484bd1bf73495e0b5526fee8d11e0d0fad3b)) - dependabot[bot]
+- **(deps)** bump go_router from 14.6.1 to 14.6.2 ([#76](https://github.com/mumu-lhl/Ciyue/issues/76)) - ([8956e09](https://github.com/mumu-lhl/Ciyue/commit/8956e0962ec1973b8794c878a85d2243bc9e2b3c)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.22.0 to 2.22.1 ([#77](https://github.com/mumu-lhl/Ciyue/issues/77)) - ([f892345](https://github.com/mumu-lhl/Ciyue/commit/f892345c5703508c79cc7a1f7d38aea958d99a5a)) - dependabot[bot]
+- **(deps)** update - ([da53695](https://github.com/mumu-lhl/Ciyue/commit/da53695c2fa06c269456a4b13bf95d08f0779fc7)) - Mumulhl
+
+### Refactoring
+
+- `Dict` class - ([90b0173](https://github.com/mumu-lhl/Ciyue/commit/90b0173ee8a01480961ae332e0fc9fc7c4ac5bb8)) - Mumulhl
+
+### Tests
+
+- fix import - ([e89418d](https://github.com/mumu-lhl/Ciyue/commit/e89418d988920cc395752ae3532f535ec91ba4d9)) - Mumulhl
+- fix import package - ([cc4cb0c](https://github.com/mumu-lhl/Ciyue/commit/cc4cb0c47ed71fb70f4537ee04bb8ad70fdf7059)) - Mumulhl
+- fix migration import - ([0ab306e](https://github.com/mumu-lhl/Ciyue/commit/0ab306e2a9f8b9b193df4cbfed08a51c422148b0)) - Mumulhl
+
+---
 ## [0.13.1](https://github.com/mumu-lhl/Ciyue/compare/v0.13.0..v0.13.1) - 2024-12-01
 
 ### Miscellaneous Chores
