@@ -53,7 +53,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.2
   dynamic_color: ^1.7.0
   flutter_tts: ^4.2.0
-  package_info_plus: ^8.1.1
+  package_info_plus: ^8.1.2
   url_launcher: ^6.3.1
   file_selector: ^1.0.3
   html_unescape: ^2.0.0
