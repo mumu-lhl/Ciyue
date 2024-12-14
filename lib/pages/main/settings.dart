@@ -258,6 +258,7 @@ class _LanguageSelectorState extends State<LanguageSelector> {
             const PopupMenuItem(value: "en", child: Text("English")),
             const PopupMenuItem(value: "ru", child: Text("Русский")),
             const PopupMenuItem(value: "nb", child: Text("Bokmål")),
+            const PopupMenuItem(value: "ta", child: Text("Tamil")),
             const PopupMenuItem(value: "zh_CN", child: Text("简体中文")),
             const PopupMenuItem(value: "zh_HK", child: Text("繁體中文（香港）")),
             const PopupMenuItem(value: "zh_TW", child: Text("正體中文（臺灣）")),
