@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.15.0](https://github.com/mumu-lhl/Ciyue/compare/v0.14.0..v0.15.0) - 2024-12-15
+
+### Features
+
+- **(translation)** added translation using Weblate (Tamil) - ([ea6786b](https://github.com/mumu-lhl/Ciyue/commit/ea6786b820f1486f45804bff61c82aca98d3227c)) - தமிழ்நேரம்
+- **(translation)** translated using Weblate (Tamil) - ([f2043ad](https://github.com/mumu-lhl/Ciyue/commit/f2043ad666ad7c78150ca2137d09d31c6b165fb3)) - தமிழ்நேரம்
+- **(translation)** add Tamil language - ([f00ebce](https://github.com/mumu-lhl/Ciyue/commit/f00ebce056cde51b259f4ab804fd7869bbec10e6)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** update flutter version - ([a844d36](https://github.com/mumu-lhl/Ciyue/commit/a844d36e610bd68c181c55c87d05e8fb0893168c)) - Mumulhl
+- **(ci)** update flutter version - ([c8fc5f6](https://github.com/mumu-lhl/Ciyue/commit/c8fc5f6619f1a877058331d95b1f2b3bd852eb78)) - Mumulhl
+- **(deps)** bump test from 1.25.7 to 1.25.8 ([#86](https://github.com/mumu-lhl/Ciyue/issues/86)) - ([a9a644c](https://github.com/mumu-lhl/Ciyue/commit/a9a644c222d348e0f58ecc6aa632e4dacf4129f2)) - dependabot[bot]
+- **(deps)** bump device_info_plus from 11.1.1 to 11.2.0 ([#85](https://github.com/mumu-lhl/Ciyue/issues/85)) - ([c2b9a5c](https://github.com/mumu-lhl/Ciyue/commit/c2b9a5c3d4a17089d8517c5d39610b949ba9736f)) - dependabot[bot]
+- **(deps)** bump package_info_plus from 8.1.1 to 8.1.2 ([#84](https://github.com/mumu-lhl/Ciyue/issues/84)) - ([1691ad2](https://github.com/mumu-lhl/Ciyue/commit/1691ad21dd37abcc862259c3ef4484fd35d27cbf)) - dependabot[bot]
+
+---
 ## [0.14.0](https://github.com/mumu-lhl/Ciyue/compare/v0.13.1..v0.14.0) - 2024-12-08
 
 ### Features
