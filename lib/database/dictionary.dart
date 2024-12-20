@@ -144,7 +144,7 @@ class DictionaryDatabase extends _$DictionaryDatabase {
 
   Future<List<DictionaryData>> searchWord(String word) {
     return (select(dictionary)
-          ..where((u) => u.key.like("$word%"))
+          ..where((u) => u.key.like("${word.trimRight()}%"))
           ..limit(20))
         .get();
   }
