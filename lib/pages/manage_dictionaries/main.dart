@@ -14,19 +14,6 @@ import "package:go_router/go_router.dart";
 import "package:path/path.dart";
 import "package:permission_handler/permission_handler.dart";
 
-const XTypeGroup typeGroup = XTypeGroup(
-  label: "custom",
-  extensions: <String>["mdx"],
-);
-
-void showPermissionDenied(BuildContext context) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    content: Text(AppLocalizations.of(context)!.permissionDenied),
-    action: SnackBarAction(
-        label: AppLocalizations.of(context)!.close, onPressed: () {}),
-  ));
-}
-
 class ManageDictionaries extends StatefulWidget {
   const ManageDictionaries({super.key});
 
@@ -39,69 +26,19 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final body = FutureBuilder(
-      future: dictionaries,
-      builder: (BuildContext context,
-          AsyncSnapshot<List<DictionaryListData>> snapshot) {
-        final children = <Widget>[];
-
-        if (snapshot.hasData) {
-          final dictionaries = snapshot.data!;
-          for (final dictionary in dictionaries) {
-            children.add(Card(
-                elevation: 0,
-                color: colorScheme.onInverseSurface,
-                child: RadioListTile(
-                    title: Text(basename(dictionary.path)),
-                    value: dictionary.id,
-                    groupValue: dict!.id,
-                    onChanged: (int? id) async {
-                      await _changeDictionary(dictionary.path);
-                      setState(() {});
-                    },
-                    secondary: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        if (dictionary.id == dict!.id) {
-                          dict!.removeDictionary();
-
-                          if (dictionaries.length == 1) {
-                            dict = null;
-                            await prefs.remove("currentDictionaryPath");
-                          } else {
-                            final index = dictionaries.indexOf(dictionary);
-                            if (index + 1 == dictionaries.length) {
-                              await _changeDictionary(
-                                  dictionaries[index - 1].path);
-                            } else {
-                              await _changeDictionary(dictionaries.last.path);
-                            }
-                          }
-                        } else {
-                          final tmpDict = Mdict(path: dictionary.path);
-                          await tmpDict.init();
-                          await tmpDict.removeDictionary();
-                          await tmpDict.close();
-                        }
-
-                        setState(() {
-                          updateDictionaries();
-                        });
-                      },
-                    ))));
-          }
-        }
-
-        if (children.isEmpty) {
-          return Center(child: Text(AppLocalizations.of(context)!.empty));
-        } else {
-          return ListView(children: children);
-        }
-      },
+    return Scaffold(
+      appBar: AppBar(leading: buildReturnButton(context), actions: [
+        buildSettingScanPathButton(context),
+        buildRefreshButton(context),
+        buildAddButton(context)
+      ]),
+      body: buildBody(context),
+      floatingActionButton: buildFloatingActionButton(),
     );
+  }
 
-    final addButton = IconButton(
+  IconButton buildAddButton(BuildContext context) {
+    return IconButton(
       icon: const Icon(Icons.add),
       onPressed: () async {
         String? path;
@@ -132,6 +69,11 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                 rootDirectory: Directory("/storage/emulated/0/"));
           }
         } else {
+          const XTypeGroup typeGroup = XTypeGroup(
+            label: "custom",
+            extensions: <String>["mdx"],
+          );
+
           final file = await openFile(acceptedTypeGroups: [typeGroup]);
           path = file?.path;
         }
@@ -164,8 +106,148 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         }
       },
     );
+  }
 
-    final settingScanPathButton = IconButton(
+  FutureBuilder<List<DictionaryListData>> buildBody(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return FutureBuilder(
+      future: dictionaries,
+      builder: (BuildContext context,
+          AsyncSnapshot<List<DictionaryListData>> snapshot) {
+        final children = <Widget>[];
+
+        if (snapshot.hasData) {
+          final dictionaries = snapshot.data!;
+          for (final dictionary in dictionaries) {
+            children.add(
+                buildDictionaryCard(colorScheme, dictionary, dictionaries));
+          }
+        }
+
+        if (children.isEmpty) {
+          return Center(child: Text(AppLocalizations.of(context)!.empty));
+        } else {
+          return ListView(children: children);
+        }
+      },
+    );
+  }
+
+  Card buildDictionaryCard(ColorScheme colorScheme,
+      DictionaryListData dictionary, List<DictionaryListData> dictionaries) {
+    return Card(
+        elevation: 0,
+        color: colorScheme.onInverseSurface,
+        child: RadioListTile(
+            title: Text(basename(dictionary.path)),
+            value: dictionary.id,
+            groupValue: dict!.id,
+            onChanged: (int? id) async {
+              await _changeDictionary(dictionary.path);
+              setState(() {});
+            },
+            secondary: buildRemoveButton(dictionary, dictionaries)));
+  }
+
+  FutureBuilder<List<DictionaryListData>> buildFloatingActionButton() {
+    return FutureBuilder(
+      future: dictionaries,
+      builder: (BuildContext context,
+          AsyncSnapshot<List<DictionaryListData>> snapshot) {
+        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+          final settingsButton = FloatingActionButton.small(
+            elevation: 0,
+            highlightElevation: 0,
+            child: Icon(Icons.settings),
+            onPressed: () {
+              context.push("/settings/dictionary");
+            },
+          );
+          final infoButton = FloatingActionButton.small(
+            elevation: 0,
+            highlightElevation: 0,
+            child: Icon(Icons.info),
+            onPressed: () {
+              context.push("/description");
+            },
+          );
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [settingsButton, infoButton],
+          );
+        }
+
+        return Text("");
+      },
+    );
+  }
+
+  IconButton buildRefreshButton(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.refresh),
+      onPressed: () async {
+        final paths = prefs.getStringList("scanPaths");
+        if (paths != null) {
+          showLoadingDialog(context);
+
+          try {
+            await _scanDictionaries(paths);
+          } finally {
+            setState(() {
+              context.pop();
+              updateDictionaries();
+            });
+          }
+        }
+      },
+    );
+  }
+
+  IconButton buildRemoveButton(
+      DictionaryListData dictionary, List<DictionaryListData> dictionaries) {
+    return IconButton(
+      icon: const Icon(Icons.delete),
+      onPressed: () async {
+        if (dictionary.id == dict!.id) {
+          dict!.removeDictionary();
+
+          if (dictionaries.length == 1) {
+            dict = null;
+            await prefs.remove("currentDictionaryPath");
+          } else {
+            final index = dictionaries.indexOf(dictionary);
+            if (index + 1 == dictionaries.length) {
+              await _changeDictionary(dictionaries[index - 1].path);
+            } else {
+              await _changeDictionary(dictionaries.last.path);
+            }
+          }
+        } else {
+          final tmpDict = Mdict(path: dictionary.path);
+          await tmpDict.init();
+          await tmpDict.removeDictionary();
+          await tmpDict.close();
+        }
+
+        setState(() {
+          updateDictionaries();
+        });
+      },
+    );
+  }
+
+  IconButton buildReturnButton(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        context.pop();
+      },
+    );
+  }
+
+  IconButton buildSettingScanPathButton(BuildContext context) {
+    return IconButton(
       icon: const Icon(Icons.folder),
       onPressed: () async {
         final paths = prefs.getStringList("scanPaths") ?? [];
@@ -211,74 +293,14 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         }
       },
     );
+  }
 
-    final refreshButton = IconButton(
-      icon: const Icon(Icons.refresh),
-      onPressed: () async {
-        final paths = prefs.getStringList("scanPaths");
-        if (paths != null) {
-          showLoadingDialog(context);
-
-          try {
-            await _scanDictionaries(paths);
-          } finally {
-            setState(() {
-              context.pop();
-              updateDictionaries();
-            });
-          }
-        }
-      },
-    );
-
-    final returnButton = IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        context.pop();
-      },
-    );
-
-    final appBar = AppBar(
-        leading: returnButton,
-        actions: [settingScanPathButton, refreshButton, addButton]);
-
-    Widget? floatingActionButton;
-    floatingActionButton = FutureBuilder(
-      future: dictionaries,
-      builder: (BuildContext context,
-          AsyncSnapshot<List<DictionaryListData>> snapshot) {
-        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-          final settingsButton = FloatingActionButton.small(
-            elevation: 0,
-            highlightElevation: 0,
-            child: Icon(Icons.settings),
-            onPressed: () {
-              context.push("/settings/dictionary");
-            },
-          );
-          final infoButton = FloatingActionButton.small(
-            elevation: 0,
-            highlightElevation: 0,
-            child: Icon(Icons.info),
-            onPressed: () {
-              context.push("/description");
-            },
-          );
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [settingsButton, infoButton],
-          );
-        }
-
-        return Text("");
-      },
-    );
-
-    return Scaffold(
-      appBar: appBar,
-      body: body,
-      floatingActionButton: floatingActionButton,
-    );
+  void showPermissionDenied(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(AppLocalizations.of(context)!.permissionDenied),
+      action: SnackBarAction(
+          label: AppLocalizations.of(context)!.close, onPressed: () {}),
+    ));
   }
 
   void updateDictionaries() {
@@ -311,6 +333,19 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     }
   }
 
+  Future<void> _changeDictionary(String path) async {
+    await prefs.setString("currentDictionaryPath", path);
+    await dict!.close();
+    dict = Mdict(path: path);
+    await dict!.init();
+  }
+
+  Future<void> _removeScanPath(String path) async {
+    final paths = prefs.getStringList("scanPaths")!;
+    paths.remove(path);
+    prefs.setStringList("scanPaths", paths);
+  }
+
   Future<void> _scanDictionaries(List<String> paths) async {
     for (final path in paths) {
       final dir = Directory(path);
@@ -323,18 +358,5 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         }
       }
     }
-  }
-
-  Future<void> _changeDictionary(String path) async {
-    await prefs.setString("currentDictionaryPath", path);
-    await dict!.close();
-    dict = Mdict(path: path);
-    await dict!.init();
-  }
-
-  Future<void> _removeScanPath(String path) async {
-    final paths = prefs.getStringList("scanPaths")!;
-    paths.remove(path);
-    prefs.setStringList("scanPaths", paths);
   }
 }
