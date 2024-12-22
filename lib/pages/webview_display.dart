@@ -1,7 +1,7 @@
 import "dart:convert";
 import "dart:io";
 
-import "package:ciyue/database/dictionary.dart";
+import "package:ciyue/database/app.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/widget/text_buttons.dart";
@@ -230,8 +230,8 @@ class _ButtonState extends State<Button> {
 
   Future<void> autoExport() async {
     if (settings.autoExport && dict!.backupPath != null) {
-      final words = await dict!.db.getAllWords(),
-          tags = await dict!.db.getAllTags();
+      final words = await mainDatabase.getAllWords(),
+          tags = await mainDatabase.getAllTags();
 
       final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
 
@@ -288,9 +288,9 @@ class _ButtonState extends State<Button> {
             onPressed: () async {
               Future<void> star() async {
                 if (snapshot.data!) {
-                  await dict!.db.removeWord(widget.word);
+                  await mainDatabase.removeWord(widget.word);
                 } else {
-                  await dict!.db.addWord(widget.word);
+                  await mainDatabase.addWord(widget.word);
                 }
 
                 await autoExport();
@@ -298,8 +298,8 @@ class _ButtonState extends State<Button> {
               }
 
               if (dict!.tagExist!) {
-                final tagsOfWord = await dict!.db.tagsOfWord(widget.word),
-                    tags = await dict!.db.getAllTags();
+                final tagsOfWord = await mainDatabase.tagsOfWord(widget.word),
+                    tags = await mainDatabase.getAllTags();
 
                 final toAdd = <int>[], toDel = <int>[];
 
@@ -326,7 +326,8 @@ class _ButtonState extends State<Button> {
                           TextButton(
                             child: Text(locale.remove),
                             onPressed: () async {
-                              await dict!.db.removeWordWithAllTags(widget.word);
+                              await mainDatabase
+                                  .removeWordWithAllTags(widget.word);
 
                               if (context.mounted) context.pop();
 
@@ -338,16 +339,17 @@ class _ButtonState extends State<Button> {
                             child: Text(locale.confirm),
                             onPressed: () async {
                               if (!snapshot.data!) {
-                                await dict!.db.addWord(widget.word);
+                                await mainDatabase.addWord(widget.word);
                               }
 
                               for (final tag in toAdd) {
-                                await dict!.db.addWord(widget.word, tag: tag);
+                                await mainDatabase.addWord(widget.word,
+                                    tag: tag);
                               }
 
                               for (final tag in toDel) {
-                                await dict!.db
-                                    .removeWord(widget.word, tag: tag);
+                                await mainDatabase.removeWord(widget.word,
+                                    tag: tag);
                               }
 
                               if (context.mounted) context.pop();
@@ -369,7 +371,7 @@ class _ButtonState extends State<Button> {
 
   void checkStared() {
     setState(() {
-      stared = dict!.db.wordExist(widget.word);
+      stared = mainDatabase.wordExist(widget.word);
     });
   }
 
@@ -377,7 +379,7 @@ class _ButtonState extends State<Button> {
   void initState() {
     super.initState();
 
-    stared = dict!.db.wordExist(widget.word);
+    stared = mainDatabase.wordExist(widget.word);
   }
 }
 

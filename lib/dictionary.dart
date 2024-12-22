@@ -22,7 +22,7 @@ class Mdict {
   Mdict({required this.path});
 
   Future<void> init() async {
-    id = await dictionaryList.getId(path);
+    id = await mainDatabase.getId(path);
 
     reader = DictReader("$path.mdx");
     await reader.init(false);
@@ -36,10 +36,10 @@ class Mdict {
 
     db = dictionaryDatabase(id);
 
-    final fontPath = await dictionaryList.getFontPath(id);
+    final fontPath = await mainDatabase.getFontPath(id);
     customFont(fontPath);
 
-    final backupPath = await dictionaryList.getBackupPath(id);
+    final backupPath = await mainDatabase.getBackupPath(id);
     customBackupPath(backupPath);
 
     await checkTagExist();
@@ -51,7 +51,7 @@ class Mdict {
 
   Future<bool> add() async {
     try {
-      await dictionaryList.getId(path);
+      await mainDatabase.getId(path);
       return false;
       // ignore: empty_catches
     } catch (e) {}
@@ -60,9 +60,9 @@ class Mdict {
 
     await prefs.setString("currentDictionaryPath", path);
 
-    await dictionaryList.add(path);
+    await mainDatabase.add(path);
 
-    id = await dictionaryList.getId(path);
+    id = await mainDatabase.getId(path);
     db = dictionaryDatabase(id);
 
     await _addWords();
@@ -78,12 +78,12 @@ class Mdict {
   }
 
   Future<void> checkTagExist() async {
-    tagExist = await db.existTag();
+    tagExist = await mainDatabase.existTag();
   }
 
   Future<void> customBackupPath(String? path) async {
     backupPath = path;
-    await dictionaryList.updateBackup(id, path);
+    await mainDatabase.updateBackup(id, path);
   }
 
   Future<void> customFont(String? path) async {
@@ -94,7 +94,7 @@ class Mdict {
       fontName = basename(path);
     }
 
-    await dictionaryList.updateFont(id, path);
+    await mainDatabase.updateFont(id, path);
   }
 
   Future<String> readWord(String word) async {
@@ -129,7 +129,7 @@ class Mdict {
     final file = File(databasePath);
     await file.delete();
 
-    await dictionaryList.remove(path);
+    await mainDatabase.remove(path);
   }
 
   Future<void> _addResource() async {

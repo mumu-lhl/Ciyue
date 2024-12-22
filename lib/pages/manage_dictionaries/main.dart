@@ -22,7 +22,7 @@ class ManageDictionaries extends StatefulWidget {
 }
 
 class _ManageDictionariesState extends State<ManageDictionaries> {
-  var dictionaries = dictionaryList.all();
+  var dictionaries = mainDatabase.all();
 
   @override
   Widget build(BuildContext context) {
@@ -304,7 +304,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
   }
 
   void updateDictionaries() {
-    dictionaries = dictionaryList.all();
+    dictionaries = mainDatabase.all();
   }
 
   Future<void> _addScanPath(BuildContext context) async {

@@ -1,4 +1,4 @@
-import "package:ciyue/database/dictionary.dart";
+import "package:ciyue/database/app.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
@@ -19,7 +19,7 @@ class WordBookScreen extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.bookmark),
             onPressed: () async {
-              final tags = await dict!.db.getAllTags();
+              final tags = await mainDatabase.getAllTags();
 
               if (!context.mounted) return;
 
@@ -63,7 +63,7 @@ class WordBookScreen extends StatelessWidget {
               TextButton(
                 child: Text(locale.add),
                 onPressed: () async {
-                  await dict!.db.addTag(textController.text);
+                  await mainDatabase.addTag(textController.text);
                   await dict!.checkTagExist();
 
                   if (_refreshTagsAndWords != null) _refreshTagsAndWords!();
@@ -88,7 +88,7 @@ class WordBookScreen extends StatelessWidget {
               trailing: IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () async {
-                  await dict!.db.removeTag(tag.id);
+                  await mainDatabase.removeTag(tag.id);
                   await dict!.checkTagExist();
 
                   _refreshTagsAndWords!();
@@ -205,7 +205,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
                       setState(() {
                         selectedTag = selected ? tag.id : null;
                         allWords =
-                            dict!.db.getAllWordsWithTag(tag: selectedTag);
+                            mainDatabase.getAllWordsWithTag(tag: selectedTag);
                       });
                     },
                   ));
@@ -226,8 +226,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
     super.initState();
 
     if (dict != null) {
-      allWords = dict!.db.getAllWordsWithTag();
-      tags = dict!.db.getAllTags();
+      allWords = mainDatabase.getAllWordsWithTag();
+      tags = mainDatabase.getAllTags();
     }
 
     _refreshTagsAndWords = refresh;
@@ -235,8 +235,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
   void refresh() {
     setState(() {
-      allWords = dict!.db.getAllWordsWithTag();
-      tags = dict!.db.getAllTags();
+      allWords = mainDatabase.getAllWordsWithTag();
+      tags = mainDatabase.getAllTags();
     });
   }
 }

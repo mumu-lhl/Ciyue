@@ -1,7 +1,7 @@
 import "dart:convert";
 import "dart:io";
 
-import "package:ciyue/database/dictionary.dart";
+import "package:ciyue/database/app.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
 import "package:file_selector/file_selector.dart";
@@ -63,8 +63,8 @@ class Export extends StatelessWidget {
           dict!.customBackupPath(saveLocation);
         }
 
-        final words = await dict!.db.getAllWords(),
-            tags = await dict!.db.getAllTags();
+        final words = await mainDatabase.getAllWords(),
+            tags = await mainDatabase.getAllTags();
 
         if (words.isNotEmpty) {
           final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
@@ -148,8 +148,8 @@ class Import extends StatelessWidget {
           tagsData.add(WordbookTag.fromJson(i));
         }
 
-        await dict!.db.addAllWords(wordsData);
-        await dict!.db.addAllTags(tagsData);
+        await mainDatabase.addAllWords(wordsData);
+        await mainDatabase.addAllTags(tagsData);
       },
     );
   }

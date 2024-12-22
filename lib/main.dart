@@ -23,7 +23,7 @@ void main() async {
   prefs = await SharedPreferences.getInstance();
   final path = prefs.getString("currentDictionaryPath");
 
-  dictionaryList = appDatabase();
+  mainDatabase = appDatabase();
 
   if (path != null) {
     dict = Mdict(path: path);
@@ -48,7 +48,7 @@ void main() async {
 
 const platform = MethodChannel("org.eu.mumulhl.ciyue/process_text");
 
-late AppDatabase dictionaryList;
+late AppDatabase mainDatabase;
 late FlutterTts flutterTts;
 late PackageInfo packageInfo;
 late SharedPreferences prefs;
