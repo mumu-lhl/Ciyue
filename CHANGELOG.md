@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [0.15.1](https://github.com/mumu-lhl/Ciyue/compare/v0.15.0..v0.15.1) - 2024-12-22
+
+### Miscellaneous Chores
+
+- **(ci)** update flutter version - ([b93d6a3](https://github.com/mumu-lhl/Ciyue/commit/b93d6a3a49c128b7d1986a78da6979a8d1318450)) - Mumulhl
+- **(deps)** bump build_runner from 2.4.13 to 2.4.14 ([#91](https://github.com/mumu-lhl/Ciyue/issues/91)) - ([45e1290](https://github.com/mumu-lhl/Ciyue/commit/45e1290f125e5d3c26efa6b4e79e5f2375011b1c)) - dependabot[bot]
+- **(deps)** bump shared_preferences from 2.3.3 to 2.3.4 ([#92](https://github.com/mumu-lhl/Ciyue/issues/92)) - ([c79bb61](https://github.com/mumu-lhl/Ciyue/commit/c79bb618af8b1dae175e43e37667cab753956aad)) - dependabot[bot]
+- **(deps)** bump drift_flutter from 0.2.2 to 0.2.3 ([#93](https://github.com/mumu-lhl/Ciyue/issues/93)) - ([59c8ca5](https://github.com/mumu-lhl/Ciyue/commit/59c8ca5f966eb94ebe017a5c2ae00517fd56fe6d)) - dependabot[bot]
+
+### Refactoring
+
+- ignore space in the end in the search bar - ([03b8966](https://github.com/mumu-lhl/Ciyue/commit/03b896656e14af0efb1b072bf8473cc656fc3364)) - Mumulhl
+- refactor manage dictionaries code - ([b812f7a](https://github.com/mumu-lhl/Ciyue/commit/b812f7af8a342a5aa134331c51f123a22fc46568)) - Mumulhl
+
+---
 ## [0.15.0](https://github.com/mumu-lhl/Ciyue/compare/v0.14.0..v0.15.0) - 2024-12-15
 
 ### Features
