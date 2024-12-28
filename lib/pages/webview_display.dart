@@ -25,7 +25,9 @@ class Button extends StatefulWidget {
 }
 
 class LocalResourcesPathHandler extends CustomPathHandler {
-  LocalResourcesPathHandler({required super.path});
+  final int dictId;
+
+  LocalResourcesPathHandler({required super.path, required this.dictId});
 
   @override
   Future<WebResourceResponse?> handle(String path) async {
@@ -33,8 +35,8 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       return WebResourceResponse(data: null);
     }
 
-    if (path == dictManager.dicts.values.first.fontName) {
-      final file = File(dictManager.dicts.values.first.fontPath!);
+    if (path == dictManager.dicts[dictId]!.fontName) {
+      final file = File(dictManager.dicts[dictId]!.fontPath!);
       final data = await file.readAsBytes();
       return WebResourceResponse(data: data, contentType: lookupMimeType(path));
     }
@@ -42,16 +44,14 @@ class LocalResourcesPathHandler extends CustomPathHandler {
     try {
       Uint8List? data;
 
-      if (dictManager.dicts.values.first.readerResource == null) {
+      if (dictManager.dicts[dictId]!.readerResource == null) {
         // Find resource under directory if no mdd
-        final file =
-            File("${dirname(dictManager.dicts.values.first.path)}/$path");
+        final file = File("${dirname(dictManager.dicts[dictId]!.path)}/$path");
         data = await file.readAsBytes();
       } else {
         try {
-          final result =
-              await dictManager.dicts.values.first.db.readResource(path);
-          data = await dictManager.dicts.values.first.readerResource!.readOne(
+          final result = await dictManager.dicts[dictId]!.db.readResource(path);
+          data = await dictManager.dicts[dictId]!.readerResource!.readOne(
               result.blockOffset,
               result.startOffset,
               result.endOffset,
@@ -59,7 +59,7 @@ class LocalResourcesPathHandler extends CustomPathHandler {
         } catch (e) {
           // Find resource under directory if resource is not in mdd
           final file =
-              File("${dirname(dictManager.dicts.values.first.path)}/$path");
+              File("${dirname(dictManager.dicts[dictId]!.path)}/$path");
           data = await file.readAsBytes();
         }
       }
@@ -89,22 +89,23 @@ class TagsList extends StatefulWidget {
 
 class WebView extends StatelessWidget {
   final String content;
+  final int dictId;
 
-  final settings = InAppWebViewSettings(
-    useWideViewPort: false,
-    algorithmicDarkeningAllowed: true,
-    resourceCustomSchemes: ["entry"],
-    transparentBackground: true,
-    webViewAssetLoader: WebViewAssetLoader(
-        domain: "ciyue.internal",
-        httpAllowed: true,
-        pathHandlers: [LocalResourcesPathHandler(path: "/")]),
-  );
-
-  WebView({super.key, required this.content});
+  const WebView({super.key, required this.content, required this.dictId});
 
   @override
   Widget build(BuildContext context) {
+    final settings = InAppWebViewSettings(
+      useWideViewPort: false,
+      algorithmicDarkeningAllowed: true,
+      resourceCustomSchemes: ["entry"],
+      transparentBackground: true,
+      webViewAssetLoader: WebViewAssetLoader(
+          domain: "ciyue.internal",
+          httpAllowed: true,
+          pathHandlers: [LocalResourcesPathHandler(path: "/", dictId: dictId)]),
+    );
+
     InAppWebViewController? webViewController;
     String selectedText = "";
 
@@ -147,12 +148,14 @@ class WebView extends StatelessWidget {
       shouldOverrideUrlLoading: (controller, navigationAction) async {
         final url = navigationAction.request.url;
         if (url!.scheme == "entry") {
-          final word = await dictManager.dicts.values.first.db.getOffset(
+          final word = await dictManager.dicts[dictId]!.db.getOffset(
               Uri.decodeFull(url.toString().replaceFirst("entry://", "")));
 
-          final String data = await dictManager.dicts.values.first.reader
-              .readOne(word.blockOffset, word.startOffset, word.endOffset,
-                  word.compressedSize);
+          final String data = await dictManager.dicts[dictId]!.reader.readOne(
+              word.blockOffset,
+              word.startOffset,
+              word.endOffset,
+              word.compressedSize);
 
           if (context.mounted) {
             context.push("/word", extra: {"content": data, "word": word.key});
@@ -165,9 +168,9 @@ class WebView extends StatelessWidget {
         webViewController = controller;
       },
       onPageCommitVisible: (controller, url) async {
-        if (dictManager.dicts.values.first.fontName != null) {
+        if (dictManager.dicts[dictId]!.fontName != null) {
           await controller.evaluateJavascript(source: """
-const font = new FontFace('Custom Font', 'url(/${dictManager.dicts.values.first.fontName})');
+const font = new FontFace('Custom Font', 'url(/${dictManager.dicts[dictId]!.fontName})');
 font.load();
 document.fonts.add(font);
 document.body.style.fontFamily = 'Custom Font';
@@ -185,33 +188,48 @@ class WebviewDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = dictManager.dicts.values.first.readWord(word);
-
-    return Scaffold(
-        appBar: AppBar(leading: BackButton(
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              // When opened from context menu
-              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-            }
-          },
-        )),
-        floatingActionButton: Button(word: word),
-        body: FutureBuilder(
-            future: content,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return WebView(content: snapshot.data!);
-              } else if (snapshot.hasError) {
-                return Center(
-                    child: Text(AppLocalizations.of(context)!.notFound,
-                        style: Theme.of(context).textTheme.titleLarge));
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            }));
+    return DefaultTabController(
+        initialIndex: 0,
+        length: dictManager.dicts.length,
+        child: Scaffold(
+            appBar: AppBar(
+                leading: BackButton(
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      // When opened from context menu
+                      SystemChannels.platform
+                          .invokeMethod('SystemNavigator.pop');
+                    }
+                  },
+                ),
+                bottom: TabBar(
+                  tabs: [
+                    for (final dict in dictManager.dicts.values)
+                      Tab(text: basename(dict.path))
+                  ],
+                )),
+            floatingActionButton: Button(word: word),
+            body: TabBarView(children: [
+              for (final dict in dictManager.dicts.values)
+                FutureBuilder(
+                    future: dict.readWord(word),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return WebView(
+                          content: snapshot.data!,
+                          dictId: dict.id,
+                        );
+                      } else if (snapshot.hasError) {
+                        return Center(
+                            child: Text(AppLocalizations.of(context)!.notFound,
+                                style: Theme.of(context).textTheme.titleLarge));
+                      } else {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    })
+            ])));
   }
 }
 
@@ -229,7 +247,10 @@ class WebviewDisplayDescription extends StatelessWidget {
             context.pop();
           },
         )),
-        body: WebView(content: html));
+        body: WebView(
+          content: html,
+          dictId: dictManager.dicts.values.first.id,
+        ));
   }
 }
 

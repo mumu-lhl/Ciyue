@@ -38,8 +38,13 @@ class _HomeState extends State<Home> {
                 suffixIcon: buildRemoveButton()),
             controller: textFieldController,
             onChanged: (text) async {
-              final result =
-                  await dictManager.dicts.values.first.db.searchWord(text);
+              final searchers = <Future<List<DictionaryData>>>[];
+              for (final dict in dictManager.dicts.values) {
+                searchers.add(dict.db.searchWord(text));
+              }
+              final futureResult = await Future.wait(searchers);
+              final result = [for (final i in futureResult) ...i];
+              result.sort((a, b) => a.key.compareTo(b.key));
 
               setState(() {
                 searchResult = result;

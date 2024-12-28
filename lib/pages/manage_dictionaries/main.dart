@@ -87,7 +87,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
             tmpDict = Mdict(path: path);
             if (await tmpDict.add()) {
               await tmpDict.close();
-              await dictManager.add(path);
             }
           } catch (e) {
             await tmpDict.close();
