@@ -21,13 +21,14 @@ void main() async {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   prefs = await SharedPreferences.getInstance();
-  final path = prefs.getString("currentDictionaryPath");
+  final paths = prefs.getStringList("currentDictionaryPaths");
 
   mainDatabase = appDatabase();
 
-  if (path != null) {
-    dict = Mdict(path: path);
-    await dict!.init();
+  if (paths != null) {
+    for (final path in paths) {
+      await dictManager.add(path);
+    }
   }
 
   flutterTts = FlutterTts();
@@ -53,7 +54,6 @@ late FlutterTts flutterTts;
 late PackageInfo packageInfo;
 late SharedPreferences prefs;
 late VoidCallback refreshAll;
-Mdict? dict;
 
 final _router = GoRouter(
   routes: [

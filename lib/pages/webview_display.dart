@@ -2,6 +2,7 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/database/app.dart";
+import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/widget/text_buttons.dart";
@@ -32,8 +33,8 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       return WebResourceResponse(data: null);
     }
 
-    if (path == dict!.fontName) {
-      final file = File(dict!.fontPath!);
+    if (path == dictManager.dicts.values.first.fontName) {
+      final file = File(dictManager.dicts.values.first.fontPath!);
       final data = await file.readAsBytes();
       return WebResourceResponse(data: data, contentType: lookupMimeType(path));
     }
@@ -41,18 +42,24 @@ class LocalResourcesPathHandler extends CustomPathHandler {
     try {
       Uint8List? data;
 
-      if (dict!.readerResource == null) {
+      if (dictManager.dicts.values.first.readerResource == null) {
         // Find resource under directory if no mdd
-        final file = File("${dirname(dict!.path)}/$path");
+        final file =
+            File("${dirname(dictManager.dicts.values.first.path)}/$path");
         data = await file.readAsBytes();
       } else {
         try {
-          final result = await dict!.db.readResource(path);
-          data = await dict!.readerResource!.readOne(result.blockOffset,
-              result.startOffset, result.endOffset, result.compressedSize);
+          final result =
+              await dictManager.dicts.values.first.db.readResource(path);
+          data = await dictManager.dicts.values.first.readerResource!.readOne(
+              result.blockOffset,
+              result.startOffset,
+              result.endOffset,
+              result.compressedSize);
         } catch (e) {
           // Find resource under directory if resource is not in mdd
-          final file = File("${dirname(dict!.path)}/$path");
+          final file =
+              File("${dirname(dictManager.dicts.values.first.path)}/$path");
           data = await file.readAsBytes();
         }
       }
@@ -140,11 +147,12 @@ class WebView extends StatelessWidget {
       shouldOverrideUrlLoading: (controller, navigationAction) async {
         final url = navigationAction.request.url;
         if (url!.scheme == "entry") {
-          final word = await dict!.db.getOffset(
+          final word = await dictManager.dicts.values.first.db.getOffset(
               Uri.decodeFull(url.toString().replaceFirst("entry://", "")));
 
-          final String data = await dict!.reader.readOne(word.blockOffset,
-              word.startOffset, word.endOffset, word.compressedSize);
+          final String data = await dictManager.dicts.values.first.reader
+              .readOne(word.blockOffset, word.startOffset, word.endOffset,
+                  word.compressedSize);
 
           if (context.mounted) {
             context.push("/word", extra: {"content": data, "word": word.key});
@@ -157,9 +165,9 @@ class WebView extends StatelessWidget {
         webViewController = controller;
       },
       onPageCommitVisible: (controller, url) async {
-        if (dict!.fontName != null) {
+        if (dictManager.dicts.values.first.fontName != null) {
           await controller.evaluateJavascript(source: """
-const font = new FontFace('Custom Font', 'url(/${dict!.fontName})');
+const font = new FontFace('Custom Font', 'url(/${dictManager.dicts.values.first.fontName})');
 font.load();
 document.fonts.add(font);
 document.body.style.fontFamily = 'Custom Font';
@@ -177,7 +185,7 @@ class WebviewDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = dict!.readWord(word);
+    final content = dictManager.dicts.values.first.readWord(word);
 
     return Scaffold(
         appBar: AppBar(leading: BackButton(
@@ -212,7 +220,7 @@ class WebviewDisplayDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String html = dict!.reader.header["Description"]!;
+    String html = dictManager.dicts.values.first.reader.header["Description"]!;
     html = HtmlUnescape().convert(html);
 
     return Scaffold(
@@ -229,13 +237,14 @@ class _ButtonState extends State<Button> {
   Future<bool>? stared;
 
   Future<void> autoExport() async {
-    if (settings.autoExport && dict!.backupPath != null) {
+    if (settings.autoExport &&
+        dictManager.dicts.values.first.backupPath != null) {
       final words = await mainDatabase.getAllWords(),
           tags = await mainDatabase.getAllTags();
 
       final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
 
-      final file = File(dict!.backupPath!);
+      final file = File(dictManager.dicts.values.first.backupPath!);
 
       await file.writeAsString("$wordsOutput\n$tagsOutput");
     }
@@ -297,7 +306,7 @@ class _ButtonState extends State<Button> {
                 checkStared();
               }
 
-              if (dict!.tagExist!) {
+              if (mainDatabase.tagExist) {
                 final tagsOfWord = await mainDatabase.tagsOfWord(widget.word),
                     tags = await mainDatabase.getAllTags();
 

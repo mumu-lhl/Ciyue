@@ -15,6 +15,8 @@ AppDatabase appDatabase() {
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
+  bool tagExist = false;
+
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -71,8 +73,8 @@ class AppDatabase extends _$AppDatabase {
     return (select(dictionaryList)).get();
   }
 
-  Future<bool> existTag() async {
-    return (await (select(wordbookTags)..limit(1)).get()).isNotEmpty;
+  Future<void> existTag() async {
+    tagExist = (await (select(wordbookTags)..limit(1)).get()).isNotEmpty;
   }
 
   Future<List<WordbookTag>> getAllTags() {

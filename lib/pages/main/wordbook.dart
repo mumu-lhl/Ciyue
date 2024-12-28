@@ -1,4 +1,5 @@
 import "package:ciyue/database/app.dart";
+import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
@@ -13,7 +14,7 @@ class WordBookScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     late final PreferredSizeWidget? appBar;
-    if (dict != null) {
+    if (!dictManager.isEmpty) {
       appBar = AppBar(
         actions: [
           IconButton(
@@ -64,7 +65,7 @@ class WordBookScreen extends StatelessWidget {
                 child: Text(locale.add),
                 onPressed: () async {
                   await mainDatabase.addTag(textController.text);
-                  await dict!.checkTagExist();
+                  await mainDatabase.existTag();
 
                   if (_refreshTagsAndWords != null) _refreshTagsAndWords!();
 
@@ -89,7 +90,7 @@ class WordBookScreen extends StatelessWidget {
                 icon: Icon(Icons.delete),
                 onPressed: () async {
                   await mainDatabase.removeTag(tag.id);
-                  await dict!.checkTagExist();
+                  await mainDatabase.existTag();
 
                   _refreshTagsAndWords!();
 
@@ -142,12 +143,11 @@ class WordView extends StatelessWidget {
               list.add(ListTile(
                 title: Text(data.word),
                 onTap: () async {
-                  final offset = await dict!.db.getOffset(data.word);
-                  String content = await dict!.reader.readOne(
-                      offset.blockOffset,
-                      offset.startOffset,
-                      offset.endOffset,
-                      offset.compressedSize);
+                  final offset = await dictManager.dicts.values.first.db
+                      .getOffset(data.word);
+                  String content = await dictManager.dicts.values.first.reader
+                      .readOne(offset.blockOffset, offset.startOffset,
+                          offset.endOffset, offset.compressedSize);
 
                   if (context.mounted) {
                     context.push("/word",
@@ -184,7 +184,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
   @override
   Widget build(BuildContext context) {
-    if (dict == null) {
+    if (dictManager.isEmpty) {
       return Center(child: Text(AppLocalizations.of(context)!.empty));
     }
 
@@ -225,7 +225,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   void initState() {
     super.initState();
 
-    if (dict != null) {
+    if (!dictManager.isEmpty) {
       allWords = mainDatabase.getAllWordsWithTag();
       tags = mainDatabase.getAllTags();
     }

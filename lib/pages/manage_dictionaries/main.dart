@@ -83,12 +83,11 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
           late final Mdict tmpDict;
           try {
-            tmpDict = Mdict(path: setExtension(path, ""));
+            path = setExtension(path, "");
+            tmpDict = Mdict(path: path);
             if (await tmpDict.add()) {
-              if (dict != null) {
-                await dict!.close();
-              }
-              dict = tmpDict;
+              await tmpDict.close();
+              await dictManager.add(path);
             }
           } catch (e) {
             await tmpDict.close();
@@ -139,12 +138,18 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     return Card(
         elevation: 0,
         color: colorScheme.onInverseSurface,
-        child: RadioListTile(
+        child: CheckboxListTile(
             title: Text(basename(dictionary.path)),
-            value: dictionary.id,
-            groupValue: dict!.id,
-            onChanged: (int? id) async {
-              await _changeDictionary(dictionary.path);
+            value: dictManager.contain(dictionary.id),
+            onChanged: (bool? value) async {
+              if (value == true) {
+                await dictManager.add(dictionary.path);
+              } else {
+                await dictManager.remove(dictionary.id);
+              }
+              await prefs.setStringList("currentDictionaryPaths",
+                  [for (final dict in dictManager.dicts.values) dict.path]);
+
               setState(() {});
             },
             secondary: buildRemoveButton(dictionary, dictionaries)));
@@ -209,20 +214,14 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     return IconButton(
       icon: const Icon(Icons.delete),
       onPressed: () async {
-        if (dictionary.id == dict!.id) {
-          dict!.removeDictionary();
+        if (dictManager.contain(dictionary.id)) {
+          dictManager.remove(dictionary.id);
 
-          if (dictionaries.length == 1) {
-            dict = null;
-            await prefs.remove("currentDictionaryPath");
-          } else {
-            final index = dictionaries.indexOf(dictionary);
-            if (index + 1 == dictionaries.length) {
-              await _changeDictionary(dictionaries[index - 1].path);
-            } else {
-              await _changeDictionary(dictionaries.last.path);
-            }
-          }
+          final paths = [
+            for (final dict in dictManager.dicts.values) dict.path
+          ];
+
+          await prefs.setStringList("currentDictionaryPaths", paths);
         } else {
           final tmpDict = Mdict(path: dictionary.path);
           await tmpDict.init();
@@ -333,13 +332,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     }
   }
 
-  Future<void> _changeDictionary(String path) async {
-    await prefs.setString("currentDictionaryPath", path);
-    await dict!.close();
-    dict = Mdict(path: path);
-    await dict!.init();
-  }
-
   Future<void> _removeScanPath(String path) async {
     final paths = prefs.getStringList("scanPaths")!;
     paths.remove(path);
@@ -353,8 +345,9 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
       for (final file in files) {
         if (extension(file.path) == ".mdx") {
-          dict = Mdict(path: setExtension(file.path, ""));
-          await dict!.add();
+          final tempDict = Mdict(path: setExtension(file.path, ""));
+          await tempDict.add();
+          await tempDict.close();
         }
       }
     }

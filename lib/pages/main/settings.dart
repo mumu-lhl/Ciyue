@@ -2,6 +2,7 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/database/app.dart";
+import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
 import "package:file_selector/file_selector.dart";
@@ -51,16 +52,16 @@ class Export extends StatelessWidget {
       title: Text(AppLocalizations.of(context)!.export),
       onTap: () async {
         final directoryPath = await getDirectoryPath();
-        if (directoryPath == null || dict == null) {
+        if (directoryPath == null || dictManager.isEmpty) {
           return;
         }
 
-        final dictionaryName = basename(dict!.path),
+        final dictionaryName = basename(dictManager.dicts.values.first.path),
             filename = setExtension(dictionaryName, ".json"),
             saveLocation = join(directoryPath, filename);
 
         if (settings.autoExport) {
-          dict!.customBackupPath(saveLocation);
+          dictManager.dicts.values.first.customBackupPath(saveLocation);
         }
 
         final words = await mainDatabase.getAllWords(),
@@ -120,7 +121,7 @@ class Import extends StatelessWidget {
       leading: Icon(Icons.file_download),
       title: Text(AppLocalizations.of(context)!.import),
       onTap: () async {
-        if (dict == null) {
+        if (dictManager.isEmpty) {
           return;
         }
 

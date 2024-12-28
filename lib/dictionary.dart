@@ -8,6 +8,27 @@ import "package:path_provider/path_provider.dart";
 import "database/dictionary.dart";
 import "main.dart";
 
+class DictManager {
+  final Map<int, Mdict> dicts = {};
+
+  bool get isEmpty => dicts.isEmpty;
+
+  bool contain(int id) => dicts.keys.contains(id);
+
+  Future<void> add(String path) async {
+    final dict = Mdict(path: path);
+    await dict.init();
+    dicts[dict.id] = dict;
+  }
+
+  Future<void> remove(int id) async {
+    await dicts[id]!.removeDictionary();
+    dicts.remove(id);
+  }
+}
+
+final dictManager = DictManager();
+
 class Mdict {
   late final int id;
   final String path;
@@ -17,7 +38,6 @@ class Mdict {
   late final DictionaryDatabase db;
   late final DictReader reader;
   DictReader? readerResource;
-  bool? tagExist;
 
   Mdict({required this.path});
 
@@ -41,8 +61,6 @@ class Mdict {
 
     final backupPath = await mainDatabase.getBackupPath(id);
     customBackupPath(backupPath);
-
-    await checkTagExist();
   }
 
   Future<void> close() async {
@@ -72,13 +90,7 @@ class Mdict {
     customFont(null);
     customBackupPath(null);
 
-    tagExist = false;
-
     return true;
-  }
-
-  Future<void> checkTagExist() async {
-    tagExist = await mainDatabase.existTag();
   }
 
   Future<void> customBackupPath(String? path) async {
