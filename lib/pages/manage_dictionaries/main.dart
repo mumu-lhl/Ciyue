@@ -145,7 +145,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               if (value == true) {
                 await dictManager.add(dictionary.path);
               } else {
-                await dictManager.remove(dictionary.id);
+                await dictManager.close(dictionary.id);
               }
               await prefs.setStringList("currentDictionaryPaths",
                   [for (final dict in dictManager.dicts.values) dict.path]);

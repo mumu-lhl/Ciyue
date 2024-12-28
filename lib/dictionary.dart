@@ -21,8 +21,14 @@ class DictManager {
     dicts[dict.id] = dict;
   }
 
+  Future<void> close(int id) async {
+    await dicts[id]!.close();
+    dicts.remove(id);
+  }
+
   Future<void> remove(int id) async {
     await dicts[id]!.removeDictionary();
+    await dicts[id]!.close();
     dicts.remove(id);
   }
 }
