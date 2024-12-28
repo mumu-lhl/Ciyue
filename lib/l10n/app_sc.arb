@@ -68,5 +68,7 @@
   "tags": "Etichetas",
   "@tags": {},
   "noResult": "Nenhum resultado",
-  "@noResult": {}
+  "@noResult": {},
+  "updateAnnouncement": "S'annùntziu de atualizatzione a %s",
+  "@updateAnnouncement": {}
 }
