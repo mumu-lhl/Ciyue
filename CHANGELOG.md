@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.0.0-alpha.1](https://github.com/mumu-lhl/Ciyue/compare/v0.15.1..v1.0.0-alpha.1) - 2024-12-29
+
+### Features
+
+- **(language)** add Persian in language selector - ([37589be](https://github.com/mumu-lhl/Ciyue/commit/37589bec4a18254761efdec2bcb09e83184b5b01)) - Mumulhl
+- **(translation)** translated using Weblate (Sardinian) - ([29aea63](https://github.com/mumu-lhl/Ciyue/commit/29aea63545527c1866a3dbf0580bade5421b43e9)) - Ajeje Brazorf
+- **(translation)** added translation using Weblate (Persian) - ([f065cbb](https://github.com/mumu-lhl/Ciyue/commit/f065cbbe934b19e1c1ade885c1545656297f5c09)) - Mo
+- **(translation)** translated using Weblate (Persian) - ([a1be096](https://github.com/mumu-lhl/Ciyue/commit/a1be09631bf4a90d2581e52b2b25a4d85bb56d2c)) - Mo
+
+---
 ## [0.15.1](https://github.com/mumu-lhl/Ciyue/compare/v0.15.0..v0.15.1) - 2024-12-22
 
 ### Miscellaneous Chores
