@@ -143,15 +143,8 @@ class WordView extends StatelessWidget {
               list.add(ListTile(
                 title: Text(data.word),
                 onTap: () async {
-                  final offset = await dictManager.dicts.values.first.db
-                      .getOffset(data.word);
-                  String content = await dictManager.dicts.values.first.reader
-                      .readOne(offset.blockOffset, offset.startOffset,
-                          offset.endOffset, offset.compressedSize);
-
                   if (context.mounted) {
-                    context.push("/word",
-                        extra: {"content": content, "word": data.word});
+                    context.push("/word", extra: {"word": data.word});
                   }
                 },
               ));
