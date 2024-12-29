@@ -1,5 +1,5 @@
 import "package:ciyue/database/dictionary.dart";
-import "package:ciyue/main.dart";
+import "package:ciyue/dictionary.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/settings.dart";
 import "package:ciyue/pages/main/wordbook.dart";
@@ -25,21 +25,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     PreferredSizeWidget? appBar;
 
-    if (dict != null && _currentIndex == 0) {
-      Widget? removeButton;
-      if (searchWord != "") {
-        removeButton = IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            textFieldController.clear();
-            setState(() {
-              searchWord = "";
-              searchResult.clear();
-            });
-          },
-        );
-      }
-
+    if (!dictManager.isEmpty && _currentIndex == 0) {
       final flexibleSpace = SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
@@ -49,10 +35,16 @@ class _HomeState extends State<Home> {
             },
             decoration: InputDecoration(
                 labelText: AppLocalizations.of(context)!.search,
-                suffixIcon: removeButton),
+                suffixIcon: buildRemoveButton()),
             controller: textFieldController,
             onChanged: (text) async {
-              final result = await dict!.db.searchWord(text);
+              final searchers = <Future<List<DictionaryData>>>[];
+              for (final dict in dictManager.dicts.values) {
+                searchers.add(dict.db.searchWord(text));
+              }
+              final futureResult = await Future.wait(searchers);
+              final result = [for (final i in futureResult) ...i];
+              result.sort((a, b) => a.key.compareTo(b.key));
 
               setState(() {
                 searchResult = result;
@@ -97,5 +89,22 @@ class _HomeState extends State<Home> {
         destinations: destinations,
       ),
     );
+  }
+
+  IconButton? buildRemoveButton() {
+    if (searchWord == "") {
+      return null;
+    } else {
+      return IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: () {
+          textFieldController.clear();
+          setState(() {
+            searchWord = "";
+            searchResult.clear();
+          });
+        },
+      );
+    }
   }
 }

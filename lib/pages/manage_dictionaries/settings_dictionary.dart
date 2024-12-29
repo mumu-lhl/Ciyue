@@ -1,3 +1,4 @@
+import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
@@ -5,7 +6,8 @@ import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 
 class SettingsDictionary extends StatelessWidget {
-  const SettingsDictionary({super.key});
+  final int dictId;
+  const SettingsDictionary({super.key, required this.dictId});
 
   @override
   Widget build(BuildContext context) {
@@ -15,29 +17,41 @@ class SettingsDictionary extends StatelessWidget {
             context.pop();
           },
         )),
-        body: _Body());
+        body: _Body(dictId: dictId));
   }
 }
 
 class _Body extends StatefulWidget {
-  const _Body();
+  final int dictId;
+  const _Body({required this.dictId});
 
   @override
   State<_Body> createState() => _BodyState();
 }
 
 class _BodyState extends State<_Body> {
+  void customFont(String? path) async {
+    if (dictManager.dicts.containsKey(widget.dictId)) {
+      await dictManager.dicts[widget.dictId]!.customFont(path);
+    } else {
+      final dict = Mdict(path: await mainDatabase.getPath(widget.dictId));
+      await dict.init();
+      await dict.customFont(path);
+      await dict.close();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget? fontPathSubtitle;
     Widget? removeButton;
-    if (dict!.fontName != null) {
-      fontPathSubtitle = Text(dict!.fontName!);
+    if (dictManager.dicts.values.first.fontName != null) {
+      fontPathSubtitle = Text(dictManager.dicts.values.first.fontName!);
       removeButton = IconButton(
         icon: Icon(Icons.delete_sweep),
         onPressed: () {
-          setState(() {
-            dict!.customFont(null);
+          setState(() async {
+            customFont(null);
           });
         },
       );
@@ -58,8 +72,8 @@ class _BodyState extends State<_Body> {
               return;
             }
 
-            setState(() {
-              dict!.customFont(xFile.path);
+            setState(() async {
+              customFont(xFile.path);
             });
           },
         )

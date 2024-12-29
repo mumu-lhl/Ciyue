@@ -8,6 +8,33 @@ import "package:path_provider/path_provider.dart";
 import "database/dictionary.dart";
 import "main.dart";
 
+class DictManager {
+  final Map<int, Mdict> dicts = {};
+
+  bool get isEmpty => dicts.isEmpty;
+
+  bool contain(int id) => dicts.keys.contains(id);
+
+  Future<void> add(String path) async {
+    final dict = Mdict(path: path);
+    await dict.init();
+    dicts[dict.id] = dict;
+  }
+
+  Future<void> close(int id) async {
+    await dicts[id]!.close();
+    dicts.remove(id);
+  }
+
+  Future<void> remove(int id) async {
+    await dicts[id]!.removeDictionary();
+    await dicts[id]!.close();
+    dicts.remove(id);
+  }
+}
+
+final dictManager = DictManager();
+
 class Mdict {
   late final int id;
   final String path;
@@ -17,12 +44,11 @@ class Mdict {
   late final DictionaryDatabase db;
   late final DictReader reader;
   DictReader? readerResource;
-  bool? tagExist;
 
   Mdict({required this.path});
 
   Future<void> init() async {
-    id = await dictionaryList.getId(path);
+    id = await mainDatabase.getId(path);
 
     reader = DictReader("$path.mdx");
     await reader.init(false);
@@ -36,13 +62,11 @@ class Mdict {
 
     db = dictionaryDatabase(id);
 
-    final fontPath = await dictionaryList.getFontPath(id);
+    final fontPath = await mainDatabase.getFontPath(id);
     customFont(fontPath);
 
-    final backupPath = await dictionaryList.getBackupPath(id);
+    final backupPath = await mainDatabase.getBackupPath(id);
     customBackupPath(backupPath);
-
-    await checkTagExist();
   }
 
   Future<void> close() async {
@@ -51,7 +75,7 @@ class Mdict {
 
   Future<bool> add() async {
     try {
-      await dictionaryList.getId(path);
+      await mainDatabase.getId(path);
       return false;
       // ignore: empty_catches
     } catch (e) {}
@@ -60,9 +84,9 @@ class Mdict {
 
     await prefs.setString("currentDictionaryPath", path);
 
-    await dictionaryList.add(path);
+    await mainDatabase.add(path);
 
-    id = await dictionaryList.getId(path);
+    id = await mainDatabase.getId(path);
     db = dictionaryDatabase(id);
 
     await _addWords();
@@ -72,18 +96,12 @@ class Mdict {
     customFont(null);
     customBackupPath(null);
 
-    tagExist = false;
-
     return true;
-  }
-
-  Future<void> checkTagExist() async {
-    tagExist = await db.existTag();
   }
 
   Future<void> customBackupPath(String? path) async {
     backupPath = path;
-    await dictionaryList.updateBackup(id, path);
+    await mainDatabase.updateBackup(id, path);
   }
 
   Future<void> customFont(String? path) async {
@@ -94,7 +112,7 @@ class Mdict {
       fontName = basename(path);
     }
 
-    await dictionaryList.updateFont(id, path);
+    await mainDatabase.updateFont(id, path);
   }
 
   Future<String> readWord(String word) async {
@@ -129,7 +147,7 @@ class Mdict {
     final file = File(databasePath);
     await file.delete();
 
-    await dictionaryList.remove(path);
+    await mainDatabase.remove(path);
   }
 
   Future<void> _addResource() async {

@@ -1,7 +1,8 @@
 import "dart:convert";
 import "dart:io";
 
-import "package:ciyue/database/dictionary.dart";
+import "package:ciyue/database/app.dart";
+import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/widget/text_buttons.dart";
@@ -24,7 +25,9 @@ class Button extends StatefulWidget {
 }
 
 class LocalResourcesPathHandler extends CustomPathHandler {
-  LocalResourcesPathHandler({required super.path});
+  final int dictId;
+
+  LocalResourcesPathHandler({required super.path, required this.dictId});
 
   @override
   Future<WebResourceResponse?> handle(String path) async {
@@ -32,8 +35,8 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       return WebResourceResponse(data: null);
     }
 
-    if (path == dict!.fontName) {
-      final file = File(dict!.fontPath!);
+    if (path == dictManager.dicts[dictId]!.fontName) {
+      final file = File(dictManager.dicts[dictId]!.fontPath!);
       final data = await file.readAsBytes();
       return WebResourceResponse(data: data, contentType: lookupMimeType(path));
     }
@@ -41,18 +44,22 @@ class LocalResourcesPathHandler extends CustomPathHandler {
     try {
       Uint8List? data;
 
-      if (dict!.readerResource == null) {
+      if (dictManager.dicts[dictId]!.readerResource == null) {
         // Find resource under directory if no mdd
-        final file = File("${dirname(dict!.path)}/$path");
+        final file = File("${dirname(dictManager.dicts[dictId]!.path)}/$path");
         data = await file.readAsBytes();
       } else {
         try {
-          final result = await dict!.db.readResource(path);
-          data = await dict!.readerResource!.readOne(result.blockOffset,
-              result.startOffset, result.endOffset, result.compressedSize);
+          final result = await dictManager.dicts[dictId]!.db.readResource(path);
+          data = await dictManager.dicts[dictId]!.readerResource!.readOne(
+              result.blockOffset,
+              result.startOffset,
+              result.endOffset,
+              result.compressedSize);
         } catch (e) {
           // Find resource under directory if resource is not in mdd
-          final file = File("${dirname(dict!.path)}/$path");
+          final file =
+              File("${dirname(dictManager.dicts[dictId]!.path)}/$path");
           data = await file.readAsBytes();
         }
       }
@@ -82,22 +89,23 @@ class TagsList extends StatefulWidget {
 
 class WebView extends StatelessWidget {
   final String content;
+  final int dictId;
 
-  final settings = InAppWebViewSettings(
-    useWideViewPort: false,
-    algorithmicDarkeningAllowed: true,
-    resourceCustomSchemes: ["entry"],
-    transparentBackground: true,
-    webViewAssetLoader: WebViewAssetLoader(
-        domain: "ciyue.internal",
-        httpAllowed: true,
-        pathHandlers: [LocalResourcesPathHandler(path: "/")]),
-  );
-
-  WebView({super.key, required this.content});
+  const WebView({super.key, required this.content, required this.dictId});
 
   @override
   Widget build(BuildContext context) {
+    final settings = InAppWebViewSettings(
+      useWideViewPort: false,
+      algorithmicDarkeningAllowed: true,
+      resourceCustomSchemes: ["entry"],
+      transparentBackground: true,
+      webViewAssetLoader: WebViewAssetLoader(
+          domain: "ciyue.internal",
+          httpAllowed: true,
+          pathHandlers: [LocalResourcesPathHandler(path: "/", dictId: dictId)]),
+    );
+
     InAppWebViewController? webViewController;
     String selectedText = "";
 
@@ -140,11 +148,14 @@ class WebView extends StatelessWidget {
       shouldOverrideUrlLoading: (controller, navigationAction) async {
         final url = navigationAction.request.url;
         if (url!.scheme == "entry") {
-          final word = await dict!.db.getOffset(
+          final word = await dictManager.dicts[dictId]!.db.getOffset(
               Uri.decodeFull(url.toString().replaceFirst("entry://", "")));
 
-          final String data = await dict!.reader.readOne(word.blockOffset,
-              word.startOffset, word.endOffset, word.compressedSize);
+          final String data = await dictManager.dicts[dictId]!.reader.readOne(
+              word.blockOffset,
+              word.startOffset,
+              word.endOffset,
+              word.compressedSize);
 
           if (context.mounted) {
             context.push("/word", extra: {"content": data, "word": word.key});
@@ -157,9 +168,9 @@ class WebView extends StatelessWidget {
         webViewController = controller;
       },
       onPageCommitVisible: (controller, url) async {
-        if (dict!.fontName != null) {
+        if (dictManager.dicts[dictId]!.fontName != null) {
           await controller.evaluateJavascript(source: """
-const font = new FontFace('Custom Font', 'url(/${dict!.fontName})');
+const font = new FontFace('Custom Font', 'url(/${dictManager.dicts[dictId]!.fontName})');
 font.load();
 document.fonts.add(font);
 document.body.style.fontFamily = 'Custom Font';
@@ -177,51 +188,96 @@ class WebviewDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = dict!.readWord(word);
-
-    return Scaffold(
-        appBar: AppBar(leading: BackButton(
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              // When opened from context menu
-              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-            }
-          },
-        )),
-        floatingActionButton: Button(word: word),
-        body: FutureBuilder(
-            future: content,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return WebView(content: snapshot.data!);
-              } else if (snapshot.hasError) {
-                return Center(
-                    child: Text(AppLocalizations.of(context)!.notFound,
-                        style: Theme.of(context).textTheme.titleLarge));
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            }));
+    return DefaultTabController(
+        initialIndex: 0,
+        length: dictManager.dicts.length,
+        child: Scaffold(
+            appBar: AppBar(
+                leading: BackButton(
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      // When opened from context menu
+                      SystemChannels.platform
+                          .invokeMethod('SystemNavigator.pop');
+                    }
+                  },
+                ),
+                bottom: TabBar(
+                  tabs: [
+                    for (final dict in dictManager.dicts.values)
+                      Tab(text: basename(dict.path))
+                  ],
+                )),
+            floatingActionButton: Button(word: word),
+            body: TabBarView(children: [
+              for (final dict in dictManager.dicts.values)
+                FutureBuilder(
+                    future: dict.readWord(word),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return WebView(
+                          content: snapshot.data!,
+                          dictId: dict.id,
+                        );
+                      } else if (snapshot.hasError) {
+                        return Center(
+                            child: Text(AppLocalizations.of(context)!.notFound,
+                                style: Theme.of(context).textTheme.titleLarge));
+                      } else {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    })
+            ])));
   }
 }
 
 class WebviewDisplayDescription extends StatelessWidget {
-  const WebviewDisplayDescription({super.key});
+  final int dictId;
+
+  const WebviewDisplayDescription({super.key, required this.dictId});
 
   @override
   Widget build(BuildContext context) {
-    String html = dict!.reader.header["Description"]!;
-    html = HtmlUnescape().convert(html);
+    String html;
+    if (dictManager.dicts.containsKey(dictId)) {
+      html = dictManager.dicts[dictId]!.reader.header["Description"]!;
+      html = HtmlUnescape().convert(html);
 
-    return Scaffold(
-        appBar: AppBar(leading: BackButton(
-          onPressed: () {
-            context.pop();
-          },
-        )),
-        body: WebView(content: html));
+      return Scaffold(
+          appBar: AppBar(leading: BackButton(
+            onPressed: () {
+              context.pop();
+            },
+          )),
+          body: WebView(content: html, dictId: dictId));
+    } else {
+      final html = getDescriptionFromInactiveDict();
+      return FutureBuilder(
+          future: html,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Scaffold(
+                  appBar: AppBar(leading: BackButton(
+                    onPressed: () {
+                      context.pop();
+                    },
+                  )),
+                  body: WebView(content: snapshot.data!, dictId: dictId));
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          });
+    }
+  }
+
+  Future<String> getDescriptionFromInactiveDict() async {
+    final dict = Mdict(path: await mainDatabase.getPath(dictId));
+    await dict.init();
+    final html = dict.reader.header["Description"]!;
+    await dict.close();
+    return HtmlUnescape().convert(html);
   }
 }
 
@@ -229,13 +285,14 @@ class _ButtonState extends State<Button> {
   Future<bool>? stared;
 
   Future<void> autoExport() async {
-    if (settings.autoExport && dict!.backupPath != null) {
-      final words = await dict!.db.getAllWords(),
-          tags = await dict!.db.getAllTags();
+    if (settings.autoExport &&
+        dictManager.dicts.values.first.backupPath != null) {
+      final words = await mainDatabase.getAllWords(),
+          tags = await mainDatabase.getAllTags();
 
       final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
 
-      final file = File(dict!.backupPath!);
+      final file = File(dictManager.dicts.values.first.backupPath!);
 
       await file.writeAsString("$wordsOutput\n$tagsOutput");
     }
@@ -288,18 +345,18 @@ class _ButtonState extends State<Button> {
             onPressed: () async {
               Future<void> star() async {
                 if (snapshot.data!) {
-                  await dict!.db.removeWord(widget.word);
+                  await mainDatabase.removeWord(widget.word);
                 } else {
-                  await dict!.db.addWord(widget.word);
+                  await mainDatabase.addWord(widget.word);
                 }
 
                 await autoExport();
                 checkStared();
               }
 
-              if (dict!.tagExist!) {
-                final tagsOfWord = await dict!.db.tagsOfWord(widget.word),
-                    tags = await dict!.db.getAllTags();
+              if (mainDatabase.tagExist) {
+                final tagsOfWord = await mainDatabase.tagsOfWord(widget.word),
+                    tags = await mainDatabase.getAllTags();
 
                 final toAdd = <int>[], toDel = <int>[];
 
@@ -326,7 +383,8 @@ class _ButtonState extends State<Button> {
                           TextButton(
                             child: Text(locale.remove),
                             onPressed: () async {
-                              await dict!.db.removeWordWithAllTags(widget.word);
+                              await mainDatabase
+                                  .removeWordWithAllTags(widget.word);
 
                               if (context.mounted) context.pop();
 
@@ -338,16 +396,17 @@ class _ButtonState extends State<Button> {
                             child: Text(locale.confirm),
                             onPressed: () async {
                               if (!snapshot.data!) {
-                                await dict!.db.addWord(widget.word);
+                                await mainDatabase.addWord(widget.word);
                               }
 
                               for (final tag in toAdd) {
-                                await dict!.db.addWord(widget.word, tag: tag);
+                                await mainDatabase.addWord(widget.word,
+                                    tag: tag);
                               }
 
                               for (final tag in toDel) {
-                                await dict!.db
-                                    .removeWord(widget.word, tag: tag);
+                                await mainDatabase.removeWord(widget.word,
+                                    tag: tag);
                               }
 
                               if (context.mounted) context.pop();
@@ -369,7 +428,7 @@ class _ButtonState extends State<Button> {
 
   void checkStared() {
     setState(() {
-      stared = dict!.db.wordExist(widget.word);
+      stared = mainDatabase.wordExist(widget.word);
     });
   }
 
@@ -377,7 +436,7 @@ class _ButtonState extends State<Button> {
   void initState() {
     super.initState();
 
-    stared = dict!.db.wordExist(widget.word);
+    stared = mainDatabase.wordExist(widget.word);
   }
 }
 

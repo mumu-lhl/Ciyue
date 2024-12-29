@@ -21,13 +21,14 @@ void main() async {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   prefs = await SharedPreferences.getInstance();
-  final path = prefs.getString("currentDictionaryPath");
+  final paths = prefs.getStringList("currentDictionaryPaths");
 
-  dictionaryList = appDatabase();
+  mainDatabase = appDatabase();
 
-  if (path != null) {
-    dict = Mdict(path: path);
-    await dict!.init();
+  if (paths != null) {
+    for (final path in paths) {
+      await dictManager.add(path);
+    }
   }
 
   flutterTts = FlutterTts();
@@ -48,12 +49,11 @@ void main() async {
 
 const platform = MethodChannel("org.eu.mumulhl.ciyue/process_text");
 
-late AppDatabase dictionaryList;
+late AppDatabase mainDatabase;
 late FlutterTts flutterTts;
 late PackageInfo packageInfo;
 late SharedPreferences prefs;
 late VoidCallback refreshAll;
-Mdict? dict;
 
 final _router = GoRouter(
   routes: [
@@ -68,14 +68,18 @@ final _router = GoRouter(
           return WebviewDisplay(word: extra["word"]!);
         }),
     GoRoute(
-        path: "/description",
-        builder: (context, state) => const WebviewDisplayDescription()),
+        path: "/description/:dictId",
+        builder: (context, state) => WebviewDisplayDescription(
+              dictId: int.parse(state.pathParameters['dictId']!),
+            )),
     GoRoute(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),
     GoRoute(
-        path: "/settings/dictionary",
-        builder: (context, state) => const SettingsDictionary()),
+        path: "/settings/dictionary/:dictId",
+        builder: (context, state) => SettingsDictionary(
+              dictId: int.parse(state.pathParameters['dictId']!),
+            )),
   ],
 );
 
