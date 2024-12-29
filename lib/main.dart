@@ -68,14 +68,18 @@ final _router = GoRouter(
           return WebviewDisplay(word: extra["word"]!);
         }),
     GoRoute(
-        path: "/description",
-        builder: (context, state) => const WebviewDisplayDescription()),
+      path: "/description/:dictId",
+      builder: (context, state) => WebviewDisplayDescription(
+          dictId: int.parse(state.pathParameters['dictId']!),
+        )),
     GoRoute(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),
     GoRoute(
-        path: "/settings/dictionary",
-        builder: (context, state) => const SettingsDictionary()),
+      path: "/settings/dictionary/:dictId",
+      builder: (context, state) => SettingsDictionary(
+        dictId: int.parse(state.pathParameters['dictId']!),
+      )),
   ],
 );
 

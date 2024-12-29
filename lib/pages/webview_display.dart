@@ -234,23 +234,50 @@ class WebviewDisplay extends StatelessWidget {
 }
 
 class WebviewDisplayDescription extends StatelessWidget {
-  const WebviewDisplayDescription({super.key});
+  final int dictId;
+
+  const WebviewDisplayDescription({super.key, required this.dictId});
 
   @override
   Widget build(BuildContext context) {
-    String html = dictManager.dicts.values.first.reader.header["Description"]!;
-    html = HtmlUnescape().convert(html);
+    String html;
+    if (dictManager.dicts.containsKey(dictId)) {
+      html = dictManager.dicts[dictId]!.reader.header["Description"]!;
+      html = HtmlUnescape().convert(html);
 
-    return Scaffold(
-        appBar: AppBar(leading: BackButton(
-          onPressed: () {
-            context.pop();
-          },
-        )),
-        body: WebView(
-          content: html,
-          dictId: dictManager.dicts.values.first.id,
-        ));
+      return Scaffold(
+          appBar: AppBar(leading: BackButton(
+            onPressed: () {
+              context.pop();
+            },
+          )),
+          body: WebView(content: html, dictId: dictId));
+    } else {
+      final html = getDescriptionFromInactiveDict();
+      return FutureBuilder(
+          future: html,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Scaffold(
+                  appBar: AppBar(leading: BackButton(
+                    onPressed: () {
+                      context.pop();
+                    },
+                  )),
+                  body: WebView(content: snapshot.data!, dictId: dictId));
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          });
+    }
+  }
+
+  Future<String> getDescriptionFromInactiveDict() async {
+    final dict = Mdict(path: await mainDatabase.getPath(dictId));
+    await dict.init();
+    final html = dict.reader.header["Description"]!;
+    await dict.close();
+    return HtmlUnescape().convert(html);
   }
 }
 

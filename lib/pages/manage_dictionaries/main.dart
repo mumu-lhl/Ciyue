@@ -33,7 +33,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         buildAddButton(context)
       ]),
       body: buildBody(context),
-      floatingActionButton: buildFloatingActionButton(),
     );
   }
 
@@ -118,8 +117,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         if (snapshot.hasData) {
           final dictionaries = snapshot.data!;
           for (final dictionary in dictionaries) {
-            children.add(
-                buildDictionaryCard(colorScheme, dictionary, dictionaries));
+            children.add(buildDictionaryCard(context, colorScheme, dictionary));
           }
         }
 
@@ -132,12 +130,75 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     );
   }
 
-  Card buildDictionaryCard(ColorScheme colorScheme,
-      DictionaryListData dictionary, List<DictionaryListData> dictionaries) {
+  Card buildDictionaryCard(BuildContext context, ColorScheme colorScheme,
+      DictionaryListData dictionary) {
     return Card(
         elevation: 0,
         color: colorScheme.onInverseSurface,
-        child: CheckboxListTile(
+        child: GestureDetector(
+          onLongPress: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return SimpleDialog(
+                  title: Text(basename(dictionary.path)),
+                  children: <Widget>[
+                    SimpleDialogOption(
+                      onPressed: () async {
+                        if (dictManager.contain(dictionary.id)) {
+                          dictManager.remove(dictionary.id);
+
+                          final paths = [
+                            for (final dict in dictManager.dicts.values)
+                              dict.path
+                          ];
+
+                          await prefs.setStringList(
+                              "currentDictionaryPaths", paths);
+                        } else {
+                          final tmpDict = Mdict(path: dictionary.path);
+                          await tmpDict.init();
+                          await tmpDict.removeDictionary();
+                          await tmpDict.close();
+                        }
+
+                        setState(() {
+                          updateDictionaries();
+                        });
+
+                        if (context.mounted) context.pop();
+                      },
+                      child: ListTile(
+                        leading: Icon(Icons.delete),
+                        title: Text(AppLocalizations.of(context)!.remove),
+                      ),
+                    ),
+                    SimpleDialogOption(
+                      onPressed: () {
+                        context.pop();
+                        context.push("/description/${dictionary.id}");
+                      },
+                      child: ListTile(
+                        leading: Icon(Icons.info),
+                        title: Text(AppLocalizations.of(context)!.description),
+                      ),
+                    ),
+                    SimpleDialogOption(
+                      onPressed: () {
+                        context.pop();
+                        context.push("/settings/dictionary/${dictionary.id}");
+                      },
+                      child: ListTile(
+                        leading: Icon(Icons.settings),
+                        title: Text(AppLocalizations.of(context)!.settings),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+          child: CheckboxListTile(
             title: Text(basename(dictionary.path)),
             value: dictManager.contain(dictionary.id),
             onChanged: (bool? value) async {
@@ -151,40 +212,8 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
               setState(() {});
             },
-            secondary: buildRemoveButton(dictionary, dictionaries)));
-  }
-
-  FutureBuilder<List<DictionaryListData>> buildFloatingActionButton() {
-    return FutureBuilder(
-      future: dictionaries,
-      builder: (BuildContext context,
-          AsyncSnapshot<List<DictionaryListData>> snapshot) {
-        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-          final settingsButton = FloatingActionButton.small(
-            elevation: 0,
-            highlightElevation: 0,
-            child: Icon(Icons.settings),
-            onPressed: () {
-              context.push("/settings/dictionary");
-            },
-          );
-          final infoButton = FloatingActionButton.small(
-            elevation: 0,
-            highlightElevation: 0,
-            child: Icon(Icons.info),
-            onPressed: () {
-              context.push("/description");
-            },
-          );
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [settingsButton, infoButton],
-          );
-        }
-
-        return Text("");
-      },
-    );
+          ),
+        ));
   }
 
   IconButton buildRefreshButton(BuildContext context) {
@@ -204,33 +233,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
             });
           }
         }
-      },
-    );
-  }
-
-  IconButton buildRemoveButton(
-      DictionaryListData dictionary, List<DictionaryListData> dictionaries) {
-    return IconButton(
-      icon: const Icon(Icons.delete),
-      onPressed: () async {
-        if (dictManager.contain(dictionary.id)) {
-          dictManager.remove(dictionary.id);
-
-          final paths = [
-            for (final dict in dictManager.dicts.values) dict.path
-          ];
-
-          await prefs.setStringList("currentDictionaryPaths", paths);
-        } else {
-          final tmpDict = Mdict(path: dictionary.path);
-          await tmpDict.init();
-          await tmpDict.removeDictionary();
-          await tmpDict.close();
-        }
-
-        setState(() {
-          updateDictionaries();
-        });
       },
     );
   }

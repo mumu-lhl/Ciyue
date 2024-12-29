@@ -13,9 +13,9 @@ AppDatabase appDatabase() {
 
 @DriftDatabase(tables: [DictionaryList, Wordbook, WordbookTags])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase(super.e);
-
   bool tagExist = false;
+
+  AppDatabase(super.e);
 
   @override
   MigrationStrategy get migration {
@@ -120,6 +120,12 @@ class AppDatabase extends _$AppDatabase {
     return (await ((select(dictionaryList)..where((t) => t.path.isValue(path)))
             .get()))[0]
         .id;
+  }
+
+  Future<String> getPath(int id) async {
+    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
+            .get()))[0]
+        .path;
   }
 
   Future<int> remove(String path) {
