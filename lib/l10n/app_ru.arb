@@ -68,5 +68,7 @@
   "confirm": "Подтвердить",
   "@confirm": {},
   "noResult": "Ничего не найдено",
-  "@noResult": {}
+  "@noResult": {},
+  "updateAnnouncement": "Есть обновление до %s",
+  "@updateAnnouncement": {}
 }
