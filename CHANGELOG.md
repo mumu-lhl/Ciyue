@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [1.0.0-alpha.1](https://github.com/mumu-lhl/Ciyue/compare/v0.15.1..v1.0.0-alpha.1) - 2024-12-29
+## [1.0.0-alpha.2](https://github.com/mumu-lhl/Ciyue/compare/v0.15.1..v1.0.0-alpha.2) - 2024-12-31
 
 ### Features
 
@@ -11,6 +11,12 @@ All notable changes to this project will be documented in this file. See [conven
 - **(translation)** translated using Weblate (Sardinian) - ([29aea63](https://github.com/mumu-lhl/Ciyue/commit/29aea63545527c1866a3dbf0580bade5421b43e9)) - Ajeje Brazorf
 - **(translation)** added translation using Weblate (Persian) - ([f065cbb](https://github.com/mumu-lhl/Ciyue/commit/f065cbbe934b19e1c1ade885c1545656297f5c09)) - Mo
 - **(translation)** translated using Weblate (Persian) - ([a1be096](https://github.com/mumu-lhl/Ciyue/commit/a1be09631bf4a90d2581e52b2b25a4d85bb56d2c)) - Mo
+
+### Miscellaneous Chores
+
+- **(deps)** bump drift_dev from 2.22.1 to 2.23.0 ([#97](https://github.com/mumu-lhl/Ciyue/issues/97)) - ([668a5d5](https://github.com/mumu-lhl/Ciyue/commit/668a5d513978622ba0ed8e3266ff93003ba83722)) - dependabot[bot]
+- **(deps)** bump flutter_tts from 4.2.0 to 4.2.1 ([#98](https://github.com/mumu-lhl/Ciyue/issues/98)) - ([fc6b4e9](https://github.com/mumu-lhl/Ciyue/commit/fc6b4e97ced9d2cfc04b69c1341aa081fa514655)) - dependabot[bot]
+- **(deps)** bump drift_flutter from 0.2.3 to 0.2.4 ([#100](https://github.com/mumu-lhl/Ciyue/issues/100)) - ([330a4b9](https://github.com/mumu-lhl/Ciyue/commit/330a4b92aa40ff1a338f269d29d36c6e0ebf880c)) - dependabot[bot]
 
 ---
 ## [0.15.1](https://github.com/mumu-lhl/Ciyue/compare/v0.15.0..v0.15.1) - 2024-12-22
