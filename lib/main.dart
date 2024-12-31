@@ -24,6 +24,7 @@ void main() async {
   final paths = prefs.getStringList("currentDictionaryPaths");
 
   mainDatabase = appDatabase();
+  historyDao = HistoryDao(mainDatabase);
 
   if (paths != null) {
     for (final path in paths) {
@@ -49,11 +50,12 @@ void main() async {
 
 const platform = MethodChannel("org.eu.mumulhl.ciyue/process_text");
 
-late AppDatabase mainDatabase;
-late FlutterTts flutterTts;
-late PackageInfo packageInfo;
-late SharedPreferences prefs;
-late VoidCallback refreshAll;
+late final AppDatabase mainDatabase;
+late final HistoryDao historyDao;
+late final FlutterTts flutterTts;
+late final PackageInfo packageInfo;
+late final SharedPreferences prefs;
+late final VoidCallback refreshAll;
 
 final _router = GoRouter(
   routes: [

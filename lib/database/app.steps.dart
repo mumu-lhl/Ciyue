@@ -172,10 +172,91 @@ i1.GeneratedColumn<String> _column_6(String aliasedName) =>
     i1.GeneratedColumn<String>('tag', aliasedName, false,
         type: i1.DriftSqlType.string,
         defaultConstraints: i1.GeneratedColumn.constraintIsAlways('UNIQUE'));
+
+final class Schema5 extends i0.VersionedSchema {
+  Schema5({required super.database}) : super(version: 5);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    dictionaryList,
+    wordbook,
+    wordbookTags,
+    history,
+    idxWordbook,
+    idxWordbookTags,
+  ];
+  late final Shape1 dictionaryList = Shape1(
+      source: i0.VersionedTable(
+        entityName: 'dictionary_list',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_3,
+          _column_2,
+          _column_0,
+          _column_1,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape2 wordbook = Shape2(
+      source: i0.VersionedTable(
+        entityName: 'wordbook',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_4,
+          _column_5,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape3 wordbookTags = Shape3(
+      source: i0.VersionedTable(
+        entityName: 'wordbook_tags',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_0,
+          _column_6,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape4 history = Shape4(
+      source: i0.VersionedTable(
+        entityName: 'history',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_0,
+          _column_5,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  final i1.Index idxWordbook =
+      i1.Index('idx_wordbook', 'CREATE INDEX idx_wordbook ON wordbook (word)');
+  final i1.Index idxWordbookTags = i1.Index('idx_wordbook_tags',
+      'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)');
+}
+
+class Shape4 extends i0.VersionedTable {
+  Shape4({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get word =>
+      columnsByName['word']! as i1.GeneratedColumn<String>;
+}
+
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
+  required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -194,6 +275,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from3To4(migrator, schema);
         return 4;
+      case 4:
+        final schema = Schema5(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from4To5(migrator, schema);
+        return 5;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -204,10 +290,12 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
+  required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
 }) =>
     i0.VersionedSchema.stepByStepHelper(
         step: migrationSteps(
       from1To2: from1To2,
       from2To3: from2To3,
       from3To4: from3To4,
+      from4To5: from4To5,
     ));
