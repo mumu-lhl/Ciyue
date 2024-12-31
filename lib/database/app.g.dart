@@ -3,10 +3,6 @@
 part of 'app.dart';
 
 // ignore_for_file: type=lint
-mixin _$HistoryDaoMixin on DatabaseAccessor<AppDatabase> {
-  $HistoryTable get history => attachedDatabase.history;
-}
-
 class $DictionaryListTable extends DictionaryList
     with drift.TableInfo<$DictionaryListTable, DictionaryListData> {
   @override
@@ -1407,4 +1403,17 @@ class $AppDatabaseManager {
       $$WordbookTagsTableTableManager(_db, _db.wordbookTags);
   $$HistoryTableTableManager get history =>
       $$HistoryTableTableManager(_db, _db.history);
+}
+
+mixin _$DictionaryListDaoMixin on DatabaseAccessor<AppDatabase> {
+  $DictionaryListTable get dictionaryList => attachedDatabase.dictionaryList;
+}
+mixin _$HistoryDaoMixin on DatabaseAccessor<AppDatabase> {
+  $HistoryTable get history => attachedDatabase.history;
+}
+mixin _$WordbookDaoMixin on DatabaseAccessor<AppDatabase> {
+  $WordbookTable get wordbook => attachedDatabase.wordbook;
+}
+mixin _$WordbookTagsDaoMixin on DatabaseAccessor<AppDatabase> {
+  $WordbookTagsTable get wordbookTags => attachedDatabase.wordbookTags;
 }

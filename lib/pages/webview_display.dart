@@ -273,7 +273,7 @@ class WebviewDisplayDescription extends StatelessWidget {
   }
 
   Future<String> getDescriptionFromInactiveDict() async {
-    final dict = Mdict(path: await mainDatabase.getPath(dictId));
+    final dict = Mdict(path: await dictionaryListDao.getPath(dictId));
     await dict.init();
     final html = dict.reader.header["Description"]!;
     await dict.close();
@@ -287,8 +287,8 @@ class _ButtonState extends State<Button> {
   Future<void> autoExport() async {
     if (settings.autoExport &&
         dictManager.dicts.values.first.backupPath != null) {
-      final words = await mainDatabase.getAllWords(),
-          tags = await mainDatabase.getAllTags();
+      final words = await wordbookDao.getAllWords(),
+          tags = await wordbookTagsDao.getAllTags();
 
       final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
 
@@ -345,18 +345,18 @@ class _ButtonState extends State<Button> {
             onPressed: () async {
               Future<void> star() async {
                 if (snapshot.data!) {
-                  await mainDatabase.removeWord(widget.word);
+                  await wordbookDao.removeWord(widget.word);
                 } else {
-                  await mainDatabase.addWord(widget.word);
+                  await wordbookDao.addWord(widget.word);
                 }
 
                 await autoExport();
                 checkStared();
               }
 
-              if (mainDatabase.tagExist) {
-                final tagsOfWord = await mainDatabase.tagsOfWord(widget.word),
-                    tags = await mainDatabase.getAllTags();
+              if (wordbookTagsDao.tagExist) {
+                final tagsOfWord = await wordbookDao.tagsOfWord(widget.word),
+                    tags = await wordbookTagsDao.getAllTags();
 
                 final toAdd = <int>[], toDel = <int>[];
 
@@ -383,7 +383,7 @@ class _ButtonState extends State<Button> {
                           TextButton(
                             child: Text(locale.remove),
                             onPressed: () async {
-                              await mainDatabase
+                              await wordbookDao
                                   .removeWordWithAllTags(widget.word);
 
                               if (context.mounted) context.pop();
@@ -396,16 +396,16 @@ class _ButtonState extends State<Button> {
                             child: Text(locale.confirm),
                             onPressed: () async {
                               if (!snapshot.data!) {
-                                await mainDatabase.addWord(widget.word);
+                                await wordbookDao.addWord(widget.word);
                               }
 
                               for (final tag in toAdd) {
-                                await mainDatabase.addWord(widget.word,
+                                await wordbookDao.addWord(widget.word,
                                     tag: tag);
                               }
 
                               for (final tag in toDel) {
-                                await mainDatabase.removeWord(widget.word,
+                                await wordbookDao.removeWord(widget.word,
                                     tag: tag);
                               }
 
@@ -428,7 +428,7 @@ class _ButtonState extends State<Button> {
 
   void checkStared() {
     setState(() {
-      stared = mainDatabase.wordExist(widget.word);
+      stared = wordbookDao.wordExist(widget.word);
     });
   }
 
@@ -436,7 +436,7 @@ class _ButtonState extends State<Button> {
   void initState() {
     super.initState();
 
-    stared = mainDatabase.wordExist(widget.word);
+    stared = wordbookDao.wordExist(widget.word);
   }
 }
 

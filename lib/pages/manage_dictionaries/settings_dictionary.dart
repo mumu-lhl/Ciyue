@@ -34,7 +34,7 @@ class _BodyState extends State<_Body> {
     if (dictManager.dicts.containsKey(widget.dictId)) {
       await dictManager.dicts[widget.dictId]!.customFont(path);
     } else {
-      final dict = Mdict(path: await mainDatabase.getPath(widget.dictId));
+      final dict = Mdict(path: await dictionaryListDao.getPath(widget.dictId));
       await dict.init();
       await dict.customFont(path);
       await dict.close();

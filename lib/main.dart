@@ -23,9 +23,6 @@ void main() async {
   prefs = await SharedPreferences.getInstance();
   final paths = prefs.getStringList("currentDictionaryPaths");
 
-  mainDatabase = appDatabase();
-  historyDao = HistoryDao(mainDatabase);
-
   if (paths != null) {
     for (final path in paths) {
       await dictManager.add(path);
@@ -50,12 +47,15 @@ void main() async {
 
 const platform = MethodChannel("org.eu.mumulhl.ciyue/process_text");
 
-late final AppDatabase mainDatabase;
-late final HistoryDao historyDao;
+final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
 late final FlutterTts flutterTts;
+final HistoryDao historyDao = HistoryDao(mainDatabase);
+final AppDatabase mainDatabase = appDatabase();
 late final PackageInfo packageInfo;
 late final SharedPreferences prefs;
 late final VoidCallback refreshAll;
+final WordbookDao wordbookDao = WordbookDao(mainDatabase);
+final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
 
 final _router = GoRouter(
   routes: [

@@ -109,8 +109,8 @@ class Export extends StatelessWidget {
           dictManager.dicts.values.first.customBackupPath(saveLocation);
         }
 
-        final words = await mainDatabase.getAllWords(),
-            tags = await mainDatabase.getAllTags();
+        final words = await wordbookDao.getAllWords(),
+            tags = await wordbookTagsDao.getAllTags();
 
         if (words.isNotEmpty) {
           final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
@@ -194,8 +194,8 @@ class Import extends StatelessWidget {
           tagsData.add(WordbookTag.fromJson(i));
         }
 
-        await mainDatabase.addAllWords(wordsData);
-        await mainDatabase.addAllTags(tagsData);
+        await wordbookDao.addAllWords(wordsData);
+        await wordbookTagsDao.addAllTags(tagsData);
       },
     );
   }
