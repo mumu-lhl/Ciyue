@@ -48,7 +48,7 @@ class Mdict {
   Mdict({required this.path});
 
   Future<void> init() async {
-    id = await mainDatabase.getId(path);
+    id = await dictionaryListDao.getId(path);
 
     reader = DictReader("$path.mdx");
     await reader.init(false);
@@ -62,10 +62,10 @@ class Mdict {
 
     db = dictionaryDatabase(id);
 
-    final fontPath = await mainDatabase.getFontPath(id);
+    final fontPath = await dictionaryListDao.getFontPath(id);
     customFont(fontPath);
 
-    final backupPath = await mainDatabase.getBackupPath(id);
+    final backupPath = await dictionaryListDao.getBackupPath(id);
     customBackupPath(backupPath);
   }
 
@@ -75,7 +75,7 @@ class Mdict {
 
   Future<bool> add() async {
     try {
-      await mainDatabase.getId(path);
+      await dictionaryListDao.getId(path);
       return false;
       // ignore: empty_catches
     } catch (e) {}
@@ -84,9 +84,9 @@ class Mdict {
 
     await prefs.setString("currentDictionaryPath", path);
 
-    await mainDatabase.add(path);
+    await dictionaryListDao.add(path);
 
-    id = await mainDatabase.getId(path);
+    id = await dictionaryListDao.getId(path);
     db = dictionaryDatabase(id);
 
     await _addWords();
@@ -101,7 +101,7 @@ class Mdict {
 
   Future<void> customBackupPath(String? path) async {
     backupPath = path;
-    await mainDatabase.updateBackup(id, path);
+    await dictionaryListDao.updateBackup(id, path);
   }
 
   Future<void> customFont(String? path) async {
@@ -112,7 +112,7 @@ class Mdict {
       fontName = basename(path);
     }
 
-    await mainDatabase.updateFont(id, path);
+    await dictionaryListDao.updateFont(id, path);
   }
 
   Future<String> readWord(String word) async {
@@ -147,7 +147,7 @@ class Mdict {
     final file = File(databasePath);
     await file.delete();
 
-    await mainDatabase.remove(path);
+    await dictionaryListDao.remove(path);
   }
 
   Future<void> _addResource() async {

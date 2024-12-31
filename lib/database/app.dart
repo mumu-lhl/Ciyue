@@ -11,35 +11,8 @@ AppDatabase appDatabase() {
   return AppDatabase(connection);
 }
 
-@DriftAccessor(tables: [History])
-class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
-  HistoryDao(super.attachedDatabase);
-
-  Future<int> addHistory(String word) async {
-    await removeHistory(word);
-    return into(history).insert(HistoryCompanion(word: Value(word)));
-  }
-
-  Future<List<HistoryData>> getAllHistory() {
-    return (select(history)
-          ..orderBy(
-              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
-        .get();
-  }
-
-  Future<int> removeHistory(String word) {
-    return (delete(history)..where((t) => t.word.isValue(word))).go();
-  }
-
-  Future<void> clearHistory() {
-    return delete(history).go();
-  }
-}
-
 @DriftDatabase(tables: [DictionaryList, Wordbook, WordbookTags, History])
 class AppDatabase extends _$AppDatabase {
-  bool tagExist = false;
-
   AppDatabase(super.e);
 
   @override
@@ -69,17 +42,108 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 5;
+}
+
+class DictionaryList extends Table {
+  TextColumn get backupPath => text().nullable()();
+  TextColumn get fontPath => text().nullable()();
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get path => text()();
+}
+
+@DriftAccessor(tables: [DictionaryList])
+class DictionaryListDao extends DatabaseAccessor<AppDatabase>
+    with _$DictionaryListDaoMixin {
+  DictionaryListDao(super.attachedDatabase);
 
   Future<int> add(String path) {
     return into(dictionaryList)
         .insert(DictionaryListCompanion(path: Value(path)));
   }
 
-  Future<void> addAllTags(List<WordbookTag> data) async {
-    await batch((batch) {
-      batch.insertAllOnConflictUpdate(wordbookTags, data);
-    });
+  Future<List<DictionaryListData>> all() {
+    return (select(dictionaryList)).get();
   }
+
+  Future<String?> getBackupPath(int id) async {
+    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
+            .getSingle()))
+        .backupPath;
+  }
+
+  Future<String?> getFontPath(int id) async {
+    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
+            .getSingle()))
+        .fontPath;
+  }
+
+  Future<int> getId(String path) async {
+    return (await ((select(dictionaryList)..where((t) => t.path.isValue(path)))
+            .getSingle()))
+        .id;
+  }
+
+  Future<String> getPath(int id) async {
+    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
+            .getSingle()))
+        .path;
+  }
+
+  Future<int> remove(String path) {
+    return (delete(dictionaryList)..where((t) => t.path.isValue(path))).go();
+  }
+
+  Future<int> updateBackup(int id, String? backupPath) {
+    return (update(dictionaryList)..where((t) => t.id.isValue(id)))
+        .write(DictionaryListCompanion(backupPath: Value(backupPath)));
+  }
+
+  Future<int> updateFont(int id, String? fontPath) {
+    return (update(dictionaryList)..where((t) => t.id.isValue(id)))
+        .write(DictionaryListCompanion(fontPath: Value(fontPath)));
+  }
+}
+
+class History extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get word => text()();
+}
+
+@DriftAccessor(tables: [History])
+class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
+  HistoryDao(super.attachedDatabase);
+
+  Future<int> addHistory(String word) async {
+    await removeHistory(word);
+    return into(history).insert(HistoryCompanion(word: Value(word)));
+  }
+
+  Future<void> clearHistory() {
+    return delete(history).go();
+  }
+
+  Future<List<HistoryData>> getAllHistory() {
+    return (select(history)
+          ..orderBy(
+              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
+        .get();
+  }
+
+  Future<int> removeHistory(String word) {
+    return (delete(history)..where((t) => t.word.isValue(word))).go();
+  }
+}
+
+@TableIndex(name: "idx_wordbook", columns: {#word})
+class Wordbook extends Table {
+  IntColumn get tag => integer().nullable()();
+  TextColumn get word => text()();
+}
+
+@DriftAccessor(tables: [Wordbook])
+class WordbookDao extends DatabaseAccessor<AppDatabase>
+    with _$WordbookDaoMixin {
+  WordbookDao(super.attachedDatabase);
 
   Future<void> addAllWords(List<WordbookData> data) async {
     await batch((batch) {
@@ -87,26 +151,10 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<int> addTag(String tag) {
-    return into(wordbookTags).insert(WordbookTagsCompanion(tag: Value(tag)));
-  }
-
   // ignore: avoid_init_to_null
   Future<int> addWord(String word, {int? tag = null}) {
     return into(wordbook)
         .insert(WordbookCompanion(tag: Value(tag), word: Value(word)));
-  }
-
-  Future<List<DictionaryListData>> all() {
-    return (select(dictionaryList)).get();
-  }
-
-  Future<void> existTag() async {
-    tagExist = (await (select(wordbookTags)..limit(1)).get()).isNotEmpty;
-  }
-
-  Future<List<WordbookTag>> getAllTags() {
-    return (select(wordbookTags)).get();
   }
 
   Future<List<WordbookData>> getAllWords() {
@@ -132,39 +180,6 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  Future<String?> getBackupPath(int id) async {
-    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
-            .get()))[0]
-        .backupPath;
-  }
-
-  Future<String?> getFontPath(int id) async {
-    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
-            .get()))[0]
-        .fontPath;
-  }
-
-  Future<int> getId(String path) async {
-    return (await ((select(dictionaryList)..where((t) => t.path.isValue(path)))
-            .get()))[0]
-        .id;
-  }
-
-  Future<String> getPath(int id) async {
-    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
-            .get()))[0]
-        .path;
-  }
-
-  Future<int> remove(String path) {
-    return (delete(dictionaryList)..where((t) => t.path.isValue(path))).go();
-  }
-
-  Future<void> removeTag(int tag) async {
-    await (delete(wordbookTags)..where((t) => t.id.isValue(tag))).go();
-    await (delete(wordbook)..where((t) => t.tag.isValue(tag))).go();
-  }
-
   // ignore: avoid_init_to_null
   Future<int> removeWord(String word, {int? tag = null}) {
     if (tag == null) {
@@ -187,33 +202,10 @@ class AppDatabase extends _$AppDatabase {
         .get();
   }
 
-  Future<int> updateBackup(int id, String? backupPath) {
-    return (update(dictionaryList)..where((t) => t.id.isValue(id)))
-        .write(DictionaryListCompanion(backupPath: Value(backupPath)));
-  }
-
-  Future<int> updateFont(int id, String? fontPath) {
-    return (update(dictionaryList)..where((t) => t.id.isValue(id)))
-        .write(DictionaryListCompanion(fontPath: Value(fontPath)));
-  }
-
   Future<bool> wordExist(String word) async {
     return (await (select(wordbook)..where((u) => u.word.isValue(word))).get())
         .isNotEmpty;
   }
-}
-
-class DictionaryList extends Table {
-  TextColumn get backupPath => text().nullable()();
-  TextColumn get fontPath => text().nullable()();
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get path => text()();
-}
-
-@TableIndex(name: "idx_wordbook", columns: {#word})
-class Wordbook extends Table {
-  IntColumn get tag => integer().nullable()();
-  TextColumn get word => text()();
 }
 
 @TableIndex(name: "idx_wordbook_tags", columns: {#tag})
@@ -222,7 +214,32 @@ class WordbookTags extends Table {
   TextColumn get tag => text().unique()();
 }
 
-class History extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get word => text()();
+@DriftAccessor(tables: [WordbookTags])
+class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
+    with _$WordbookTagsDaoMixin {
+  bool tagExist = false;
+
+  WordbookTagsDao(super.attachedDatabase);
+
+  Future<void> addAllTags(List<WordbookTag> data) async {
+    await batch((batch) {
+      batch.insertAllOnConflictUpdate(wordbookTags, data);
+    });
+  }
+
+  Future<int> addTag(String tag) {
+    return into(wordbookTags).insert(WordbookTagsCompanion(tag: Value(tag)));
+  }
+
+  Future<void> existTag() async {
+    tagExist = (await (select(wordbookTags)..limit(1)).get()).isNotEmpty;
+  }
+
+  Future<List<WordbookTag>> getAllTags() {
+    return select(wordbookTags).get();
+  }
+
+  Future<void> removeTag(int tagId) async {
+    await (delete(wordbookTags)..where((t) => t.id.isValue(tagId))).go();
+  }
 }

@@ -20,7 +20,7 @@ class WordBookScreen extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.bookmark),
             onPressed: () async {
-              final tags = await mainDatabase.getAllTags();
+              final tags = await wordbookTagsDao.getAllTags();
 
               if (!context.mounted) return;
 
@@ -64,8 +64,8 @@ class WordBookScreen extends StatelessWidget {
               TextButton(
                 child: Text(locale.add),
                 onPressed: () async {
-                  await mainDatabase.addTag(textController.text);
-                  await mainDatabase.existTag();
+                  await wordbookTagsDao.addTag(textController.text);
+                  await wordbookTagsDao.existTag();
 
                   if (_refreshTagsAndWords != null) _refreshTagsAndWords!();
 
@@ -89,8 +89,8 @@ class WordBookScreen extends StatelessWidget {
               trailing: IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () async {
-                  await mainDatabase.removeTag(tag.id);
-                  await mainDatabase.existTag();
+                  await wordbookTagsDao.removeTag(tag.id);
+                  await wordbookTagsDao.existTag();
 
                   _refreshTagsAndWords!();
 
@@ -198,7 +198,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
                       setState(() {
                         selectedTag = selected ? tag.id : null;
                         allWords =
-                            mainDatabase.getAllWordsWithTag(tag: selectedTag);
+                            wordbookDao.getAllWordsWithTag(tag: selectedTag);
                       });
                     },
                   ));
@@ -219,8 +219,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
     super.initState();
 
     if (!dictManager.isEmpty) {
-      allWords = mainDatabase.getAllWordsWithTag();
-      tags = mainDatabase.getAllTags();
+      allWords = wordbookDao.getAllWordsWithTag();
+      tags = wordbookTagsDao.getAllTags();
     }
 
     _refreshTagsAndWords = refresh;
@@ -228,8 +228,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
   void refresh() {
     setState(() {
-      allWords = mainDatabase.getAllWordsWithTag();
-      tags = mainDatabase.getAllTags();
+      allWords = wordbookDao.getAllWordsWithTag();
+      tags = wordbookTagsDao.getAllTags();
     });
   }
 }
