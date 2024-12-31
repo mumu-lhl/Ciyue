@@ -11,7 +11,32 @@ AppDatabase appDatabase() {
   return AppDatabase(connection);
 }
 
-@DriftDatabase(tables: [DictionaryList, Wordbook, WordbookTags])
+@DriftAccessor(tables: [History])
+class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
+  HistoryDao(super.attachedDatabase);
+
+  Future<int> addHistory(String word) async {
+    await removeHistory(word);
+    return into(history).insert(HistoryCompanion(word: Value(word)));
+  }
+
+  Future<List<HistoryData>> getAllHistory() {
+    return (select(history)
+          ..orderBy(
+              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
+        .get();
+  }
+
+  Future<int> removeHistory(String word) {
+    return (delete(history)..where((t) => t.word.isValue(word))).go();
+  }
+
+  Future<void> clearHistory() {
+    return delete(history).go();
+  }
+}
+
+@DriftDatabase(tables: [DictionaryList, Wordbook, WordbookTags, History])
 class AppDatabase extends _$AppDatabase {
   bool tagExist = false;
 
@@ -35,12 +60,15 @@ class AppDatabase extends _$AppDatabase {
         from3To4: (m, schema) async {
           await m.createAll();
         },
+        from4To5: (m, schema) async {
+          await m.createTable(schema.history);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   Future<int> add(String path) {
     return into(dictionaryList)
@@ -192,4 +220,9 @@ class Wordbook extends Table {
 class WordbookTags extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get tag => text().unique()();
+}
+
+class History extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get word => text()();
 }

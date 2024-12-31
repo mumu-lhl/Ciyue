@@ -1,4 +1,3 @@
-import "package:ciyue/database/dictionary.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/settings.dart";
@@ -14,7 +13,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  var searchResult = <DictionaryData>[];
   var searchWord = "";
 
   var _currentIndex = 0;
@@ -38,16 +36,7 @@ class _HomeState extends State<Home> {
                 suffixIcon: buildRemoveButton()),
             controller: textFieldController,
             onChanged: (text) async {
-              final searchers = <Future<List<DictionaryData>>>[];
-              for (final dict in dictManager.dicts.values) {
-                searchers.add(dict.db.searchWord(text));
-              }
-              final futureResult = await Future.wait(searchers);
-              final result = [for (final i in futureResult) ...i];
-              result.sort((a, b) => a.key.compareTo(b.key));
-
               setState(() {
-                searchResult = result;
                 searchWord = text;
               });
             },
@@ -71,7 +60,7 @@ class _HomeState extends State<Home> {
     ];
 
     final page = [
-      HomeScreen(searchWord: searchWord, searchResult: searchResult),
+      HomeScreen(searchWord: searchWord),
       const WordBookScreen(),
       const SettingsScreen()
     ];
@@ -101,7 +90,6 @@ class _HomeState extends State<Home> {
           textFieldController.clear();
           setState(() {
             searchWord = "";
-            searchResult.clear();
           });
         },
       );

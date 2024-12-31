@@ -3,6 +3,10 @@
 part of 'app.dart';
 
 // ignore_for_file: type=lint
+mixin _$HistoryDaoMixin on DatabaseAccessor<AppDatabase> {
+  $HistoryTable get history => attachedDatabase.history;
+}
+
 class $DictionaryListTable extends DictionaryList
     with drift.TableInfo<$DictionaryListTable, DictionaryListData> {
   @override
@@ -653,12 +657,194 @@ class WordbookTagsCompanion extends drift.UpdateCompanion<WordbookTag> {
   }
 }
 
+class $HistoryTable extends History
+    with drift.TableInfo<$HistoryTable, HistoryData> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HistoryTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _idMeta =
+      const drift.VerificationMeta('id');
+  @override
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const drift.VerificationMeta _wordMeta =
+      const drift.VerificationMeta('word');
+  @override
+  late final drift.GeneratedColumn<String> word = drift.GeneratedColumn<String>(
+      'word', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<drift.GeneratedColumn> get $columns => [id, word];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'history';
+  @override
+  drift.VerificationContext validateIntegrity(
+      drift.Insertable<HistoryData> instance,
+      {bool isInserting = false}) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('word')) {
+      context.handle(
+          _wordMeta, word.isAcceptableOrUnknown(data['word']!, _wordMeta));
+    } else if (isInserting) {
+      context.missing(_wordMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
+  @override
+  HistoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HistoryData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      word: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+    );
+  }
+
+  @override
+  $HistoryTable createAlias(String alias) {
+    return $HistoryTable(attachedDatabase, alias);
+  }
+}
+
+class HistoryData extends drift.DataClass
+    implements drift.Insertable<HistoryData> {
+  final int id;
+  final String word;
+  const HistoryData({required this.id, required this.word});
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['word'] = drift.Variable<String>(word);
+    return map;
+  }
+
+  HistoryCompanion toCompanion(bool nullToAbsent) {
+    return HistoryCompanion(
+      id: drift.Value(id),
+      word: drift.Value(word),
+    );
+  }
+
+  factory HistoryData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return HistoryData(
+      id: serializer.fromJson<int>(json['id']),
+      word: serializer.fromJson<String>(json['word']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'word': serializer.toJson<String>(word),
+    };
+  }
+
+  HistoryData copyWith({int? id, String? word}) => HistoryData(
+        id: id ?? this.id,
+        word: word ?? this.word,
+      );
+  HistoryData copyWithCompanion(HistoryCompanion data) {
+    return HistoryData(
+      id: data.id.present ? data.id.value : this.id,
+      word: data.word.present ? data.word.value : this.word,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HistoryData(')
+          ..write('id: $id, ')
+          ..write('word: $word')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, word);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HistoryData && other.id == this.id && other.word == this.word);
+}
+
+class HistoryCompanion extends drift.UpdateCompanion<HistoryData> {
+  final drift.Value<int> id;
+  final drift.Value<String> word;
+  const HistoryCompanion({
+    this.id = const drift.Value.absent(),
+    this.word = const drift.Value.absent(),
+  });
+  HistoryCompanion.insert({
+    this.id = const drift.Value.absent(),
+    required String word,
+  }) : word = drift.Value(word);
+  static drift.Insertable<HistoryData> custom({
+    drift.Expression<int>? id,
+    drift.Expression<String>? word,
+  }) {
+    return drift.RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (word != null) 'word': word,
+    });
+  }
+
+  HistoryCompanion copyWith({drift.Value<int>? id, drift.Value<String>? word}) {
+    return HistoryCompanion(
+      id: id ?? this.id,
+      word: word ?? this.word,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (id.present) {
+      map['id'] = drift.Variable<int>(id.value);
+    }
+    if (word.present) {
+      map['word'] = drift.Variable<String>(word.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HistoryCompanion(')
+          ..write('id: $id, ')
+          ..write('word: $word')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $DictionaryListTable dictionaryList = $DictionaryListTable(this);
   late final $WordbookTable wordbook = $WordbookTable(this);
   late final $WordbookTagsTable wordbookTags = $WordbookTagsTable(this);
+  late final $HistoryTable history = $HistoryTable(this);
   late final drift.Index idxWordbook = drift.Index(
       'idx_wordbook', 'CREATE INDEX idx_wordbook ON wordbook (word)');
   late final drift.Index idxWordbookTags = drift.Index('idx_wordbook_tags',
@@ -667,8 +853,14 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
   @override
-  List<drift.DatabaseSchemaEntity> get allSchemaEntities =>
-      [dictionaryList, wordbook, wordbookTags, idxWordbook, idxWordbookTags];
+  List<drift.DatabaseSchemaEntity> get allSchemaEntities => [
+        dictionaryList,
+        wordbook,
+        wordbookTags,
+        history,
+        idxWordbook,
+        idxWordbookTags
+      ];
 }
 
 typedef $$DictionaryListTableCreateCompanionBuilder = DictionaryListCompanion
@@ -1082,6 +1274,127 @@ typedef $$WordbookTagsTableProcessedTableManager = drift.ProcessedTableManager<
     ),
     WordbookTag,
     drift.PrefetchHooks Function()>;
+typedef $$HistoryTableCreateCompanionBuilder = HistoryCompanion Function({
+  drift.Value<int> id,
+  required String word,
+});
+typedef $$HistoryTableUpdateCompanionBuilder = HistoryCompanion Function({
+  drift.Value<int> id,
+  drift.Value<String> word,
+});
+
+class $$HistoryTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $HistoryTable> {
+  $$HistoryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnFilters(column));
+}
+
+class $$HistoryTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $HistoryTable> {
+  $$HistoryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$HistoryTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $HistoryTable> {
+  $$HistoryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get word =>
+      $composableBuilder(column: $table.word, builder: (column) => column);
+}
+
+class $$HistoryTableTableManager extends drift.RootTableManager<
+    _$AppDatabase,
+    $HistoryTable,
+    HistoryData,
+    $$HistoryTableFilterComposer,
+    $$HistoryTableOrderingComposer,
+    $$HistoryTableAnnotationComposer,
+    $$HistoryTableCreateCompanionBuilder,
+    $$HistoryTableUpdateCompanionBuilder,
+    (
+      HistoryData,
+      drift.BaseReferences<_$AppDatabase, $HistoryTable, HistoryData>
+    ),
+    HistoryData,
+    drift.PrefetchHooks Function()> {
+  $$HistoryTableTableManager(_$AppDatabase db, $HistoryTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HistoryTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HistoryTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HistoryTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            drift.Value<String> word = const drift.Value.absent(),
+          }) =>
+              HistoryCompanion(
+            id: id,
+            word: word,
+          ),
+          createCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            required String word,
+          }) =>
+              HistoryCompanion.insert(
+            id: id,
+            word: word,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$HistoryTableProcessedTableManager = drift.ProcessedTableManager<
+    _$AppDatabase,
+    $HistoryTable,
+    HistoryData,
+    $$HistoryTableFilterComposer,
+    $$HistoryTableOrderingComposer,
+    $$HistoryTableAnnotationComposer,
+    $$HistoryTableCreateCompanionBuilder,
+    $$HistoryTableUpdateCompanionBuilder,
+    (
+      HistoryData,
+      drift.BaseReferences<_$AppDatabase, $HistoryTable, HistoryData>
+    ),
+    HistoryData,
+    drift.PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1092,4 +1405,6 @@ class $AppDatabaseManager {
       $$WordbookTableTableManager(_db, _db.wordbook);
   $$WordbookTagsTableTableManager get wordbookTags =>
       $$WordbookTagsTableTableManager(_db, _db.wordbookTags);
+  $$HistoryTableTableManager get history =>
+      $$HistoryTableTableManager(_db, _db.history);
 }

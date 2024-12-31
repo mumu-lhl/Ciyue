@@ -40,6 +40,51 @@ class About extends StatelessWidget {
   }
 }
 
+class AutoExport extends StatefulWidget {
+  const AutoExport({
+    super.key,
+  });
+
+  @override
+  State<AutoExport> createState() => _AutoExportState();
+}
+
+class ClearHistory extends StatelessWidget {
+  const ClearHistory({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+
+    return ListTile(
+      leading: const Icon(Icons.delete),
+      title: Text(locale!.clearHistory),
+      onTap: () => showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(locale.clearHistory),
+          content: Text(locale.clearHistoryConfirm),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: Text(locale.close),
+            ),
+            TextButton(
+              onPressed: () async {
+                await historyDao.clearHistory();
+                if (context.mounted) {
+                  context.pop(context);
+                }
+              },
+              child: Text(locale.confirm),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class Export extends StatelessWidget {
   const Export({
     super.key,
@@ -196,6 +241,8 @@ class SettingsScreen extends StatelessWidget {
         Export(),
         Import(),
         Divider(),
+        ClearHistory(),
+        Divider(),
         Feedback(),
         GithubUrl(),
         About(),
@@ -204,13 +251,11 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-class AutoExport extends StatefulWidget {
-  const AutoExport({
-    super.key,
-  });
+class ThemeSelector extends StatefulWidget {
+  const ThemeSelector({super.key});
 
   @override
-  State<AutoExport> createState() => _AutoExportState();
+  State<ThemeSelector> createState() => _ThemeSelectorState();
 }
 
 class _AutoExportState extends State<AutoExport> {
@@ -227,13 +272,6 @@ class _AutoExportState extends State<AutoExport> {
       },
     );
   }
-}
-
-class ThemeSelector extends StatefulWidget {
-  const ThemeSelector({super.key});
-
-  @override
-  State<ThemeSelector> createState() => _ThemeSelectorState();
 }
 
 class _LanguageSelectorState extends State<LanguageSelector> {

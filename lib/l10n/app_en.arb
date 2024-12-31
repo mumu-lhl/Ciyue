@@ -73,5 +73,13 @@
   "updateAnnouncement": "The Announcement of Updating to %s",
   "@updateAnnouncement": {},
   "description": "Description",
-  "@description": {}
+  "@description": {},
+  "removeOneHistory": "Remove History",
+  "@removeOneHistory": {},
+  "removeOneHistoryConfirm": "Are you sure you want to remove '%s' from history?",
+  "@removeOneHistoryConfirm": {},
+  "clearHistory": "Clear History",
+  "@clearHistory": {},
+  "clearHistoryConfirm": "Are you sure you want to clear history?",
+  "@clearHistoryConfirm": {}
 }

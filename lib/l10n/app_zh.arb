@@ -36,5 +36,9 @@
   "confirm": "确定",
   "noResult": "无结果",
   "updateAnnouncement": "更新至 %s 的公告",
-  "description": "简介"
+  "description": "简介",
+  "removeOneHistory": "删除历史记录",
+  "removeOneHistoryConfirm": "你确定要从历史记录中删除 “%s” 吗？",
+  "clearHistory": "清空历史记录",
+  "clearHistoryConfirm": "你确定要清空历史记录吗？"
 }
