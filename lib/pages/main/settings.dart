@@ -106,7 +106,7 @@ class Export extends StatelessWidget {
             saveLocation = join(directoryPath, filename);
 
         if (settings.autoExport) {
-          dictManager.dicts.values.first.customBackupPath(saveLocation);
+          prefs.setString("autoExportPath", saveLocation);
         }
 
         final words = await wordbookDao.getAllWords(),

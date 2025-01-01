@@ -21,13 +21,13 @@ void main() async {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   prefs = await SharedPreferences.getInstance();
-  final paths = prefs.getStringList("currentDictionaryPaths");
 
-  if (paths != null) {
-    for (final path in paths) {
-      await dictManager.add(path);
-    }
+  int? groupId = prefs.getInt("currentDictionaryGroupId");
+  if (groupId == null) {
+    groupId = await dictGroupDao.addGroup("Default", []);
+    await prefs.setInt("currentDictionaryGroupId", groupId);
   }
+  await dictManager.setCurrentGroup(groupId);
 
   flutterTts = FlutterTts();
 
@@ -47,6 +47,7 @@ void main() async {
 
 const platform = MethodChannel("org.eu.mumulhl.ciyue/process_text");
 
+final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
 final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
 late final FlutterTts flutterTts;
 final HistoryDao historyDao = HistoryDao(mainDatabase);

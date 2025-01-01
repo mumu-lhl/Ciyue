@@ -148,13 +148,12 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                         if (dictManager.contain(dictionary.id)) {
                           dictManager.remove(dictionary.id);
 
-                          final paths = [
+                          final dictIds = [
                             for (final dict in dictManager.dicts.values)
-                              dict.path
+                              dict.id
                           ];
 
-                          await prefs.setStringList(
-                              "currentDictionaryPaths", paths);
+                          dictGroupDao.updateDictIds(dictManager.groupId, dictIds);
                         } else {
                           final tmpDict = Mdict(path: dictionary.path);
                           await tmpDict.init();
@@ -207,8 +206,8 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               } else {
                 await dictManager.close(dictionary.id);
               }
-              await prefs.setStringList("currentDictionaryPaths",
-                  [for (final dict in dictManager.dicts.values) dict.path]);
+              dictGroupDao.updateDictIds(
+                  dictManager.groupId, [for (final dict in dictManager.dicts.values) dict.id]);
 
               setState(() {});
             },
