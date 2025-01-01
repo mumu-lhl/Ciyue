@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [1.0.0-alpha.2](https://github.com/mumu-lhl/Ciyue/compare/v0.15.1..v1.0.0-alpha.2) - 2024-12-31
+## [0.16.0](https://github.com/mumu-lhl/Ciyue/compare/v0.15.1..v0.16.0) - 2025-01-01
 
 ### Features
 
@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. See [conven
 - **(translation)** translated using Weblate (Sardinian) - ([29aea63](https://github.com/mumu-lhl/Ciyue/commit/29aea63545527c1866a3dbf0580bade5421b43e9)) - Ajeje Brazorf
 - **(translation)** added translation using Weblate (Persian) - ([f065cbb](https://github.com/mumu-lhl/Ciyue/commit/f065cbbe934b19e1c1ade885c1545656297f5c09)) - Mo
 - **(translation)** translated using Weblate (Persian) - ([a1be096](https://github.com/mumu-lhl/Ciyue/commit/a1be09631bf4a90d2581e52b2b25a4d85bb56d2c)) - Mo
+- **(translation)** translated using Weblate (Russian) - ([6e024a2](https://github.com/mumu-lhl/Ciyue/commit/6e024a294a7d64f273981a3b168b85005f88da3e)) - Xapitonov
 
 ### Miscellaneous Chores
 
