@@ -285,14 +285,13 @@ class _ButtonState extends State<Button> {
   Future<bool>? stared;
 
   Future<void> autoExport() async {
-    if (settings.autoExport &&
-        dictManager.dicts.values.first.backupPath != null) {
+    if (settings.autoExport && prefs.getString("autoExportPath") != null) {
       final words = await wordbookDao.getAllWords(),
           tags = await wordbookTagsDao.getAllTags();
 
       final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
 
-      final file = File(dictManager.dicts.values.first.backupPath!);
+      final file = File(prefs.getString("autoExportPath")!);
 
       await file.writeAsString("$wordsOutput\n$tagsOutput");
     }
