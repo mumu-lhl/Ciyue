@@ -115,24 +115,48 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         final children = <Widget>[];
 
         if (snapshot.hasData) {
+          int index = 0;
           final dictionaries = snapshot.data!;
           for (final dictionary in dictionaries) {
-            children.add(buildDictionaryCard(context, colorScheme, dictionary));
+            children.add(
+                buildDictionaryCard(context, colorScheme, dictionary, index));
+            index += 1;
           }
         }
 
         if (children.isEmpty) {
           return Center(child: Text(AppLocalizations.of(context)!.empty));
         } else {
-          return ListView(children: children);
+          return ReorderableListView(
+            onReorder: (oldIndex, newIndex) async {
+              if (oldIndex < newIndex) {
+                newIndex -= 1;
+              }
+
+              final dicts = await dictionaries;
+              final dict = dicts.removeAt(oldIndex);
+              dicts.insert(newIndex, dict);
+              if (dictManager.contain(dict.id)) {
+                await dictGroupDao.updateDictIds(dictManager.groupId, [
+                  for (final dict in dicts)
+                    if (dictManager.contain(dict.id)) dict.id
+                ]);
+                dictManager.updateGroup();
+              }
+
+              setState(() {});
+            },
+            children: children,
+          );
         }
       },
     );
   }
 
   Card buildDictionaryCard(BuildContext context, ColorScheme colorScheme,
-      DictionaryListData dictionary) {
+      DictionaryListData dictionary, int index) {
     return Card(
+      key: ValueKey(dictionary.id),
       elevation: 0,
       color: colorScheme.onInverseSurface,
       child: GestureDetector(
@@ -197,44 +221,24 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               },
             );
           },
-          child: ReorderableListView(
-            onReorder: (oldIndex, newIndex) {
-              // TODO: Implement reordering logic
-              setState(() async {
-                if (oldIndex < newIndex) {
-                  newIndex -= 1;
-                }
+          child: CheckboxListTile(
+            title: Text(basename(dictionary.path)),
+            value: dictManager.contain(dictionary.id),
+            secondary: ReorderableDragStartListener(
+                index: index,
+                child:
+                    IconButton(icon: Icon(Icons.reorder), onPressed: () => {})),
+            onChanged: (bool? value) async {
+              if (value == true) {
+                await dictManager.add(dictionary.path);
+              } else {
+                await dictManager.close(dictionary.id);
+              }
+              await dictGroupDao.updateDictIds(dictManager.groupId,
+                  [for (final dict in dictManager.dicts.values) dict.id]);
 
-                final dicts = await dictionaries;
-                final dict = dicts.removeAt(oldIndex);
-                dicts.insert(newIndex, dict);
-                if (dictManager.contain(dict.id)) {
-                  await dictGroupDao.updateDictIds(dictManager.groupId, [
-                    for (final dict in dicts)
-                      if (dictManager.contain(dict.id)) dict.id
-                  ]);
-                  dictManager.updateGroup();
-                }
-              });
+              setState(() {});
             },
-            children: [
-              CheckboxListTile(
-                key: ValueKey(dictionary.id),
-                title: Text(basename(dictionary.path)),
-                value: dictManager.contain(dictionary.id),
-                onChanged: (bool? value) async {
-                  if (value == true) {
-                    await dictManager.add(dictionary.path);
-                  } else {
-                    await dictManager.close(dictionary.id);
-                  }
-                  await dictGroupDao.updateDictIds(dictManager.groupId,
-                      [for (final dict in dictManager.dicts.values) dict.id]);
-
-                  setState(() {});
-                },
-              ),
-            ],
           )),
     );
   }
