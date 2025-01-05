@@ -133,9 +133,9 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
   Card buildDictionaryCard(BuildContext context, ColorScheme colorScheme,
       DictionaryListData dictionary) {
     return Card(
-        elevation: 0,
-        color: colorScheme.onInverseSurface,
-        child: GestureDetector(
+      elevation: 0,
+      color: colorScheme.onInverseSurface,
+      child: GestureDetector(
           onLongPress: () {
             showDialog(
               context: context,
@@ -197,22 +197,46 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               },
             );
           },
-          child: CheckboxListTile(
-            title: Text(basename(dictionary.path)),
-            value: dictManager.contain(dictionary.id),
-            onChanged: (bool? value) async {
-              if (value == true) {
-                await dictManager.add(dictionary.path);
-              } else {
-                await dictManager.close(dictionary.id);
-              }
-              dictGroupDao.updateDictIds(dictManager.groupId,
-                  [for (final dict in dictManager.dicts.values) dict.id]);
+          child: ReorderableListView(
+            onReorder: (oldIndex, newIndex) {
+              // TODO: Implement reordering logic
+              setState(() async {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
+                }
 
-              setState(() {});
+                final dicts = await dictionaries;
+                final dict = dicts.removeAt(oldIndex);
+                dicts.insert(newIndex, dict);
+                if (dictManager.contain(dict.id)) {
+                  await dictGroupDao.updateDictIds(dictManager.groupId, [
+                    for (final dict in dicts)
+                      if (dictManager.contain(dict.id)) dict.id
+                  ]);
+                  dictManager.updateGroup();
+                }
+              });
             },
-          ),
-        ));
+            children: [
+              CheckboxListTile(
+                key: ValueKey(dictionary.id),
+                title: Text(basename(dictionary.path)),
+                value: dictManager.contain(dictionary.id),
+                onChanged: (bool? value) async {
+                  if (value == true) {
+                    await dictManager.add(dictionary.path);
+                  } else {
+                    await dictManager.close(dictionary.id);
+                  }
+                  await dictGroupDao.updateDictIds(dictManager.groupId,
+                      [for (final dict in dictManager.dicts.values) dict.id]);
+
+                  setState(() {});
+                },
+              ),
+            ],
+          )),
+    );
   }
 
   IconButton buildRefreshButton(BuildContext context) {

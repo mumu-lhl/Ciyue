@@ -31,6 +31,10 @@ class DictManager {
     }
   }
 
+  void updateGroup() {
+    groups = dictGroupDao.getAllGroups();
+  }
+
   Future<void> clear() async {
     for (final id in dicts.keys) {
       await close(id);
