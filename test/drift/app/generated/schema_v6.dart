@@ -697,7 +697,9 @@ class DictGroup extends Table with TableInfo<DictGroup, DictGroupData> {
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
   @override
   List<GeneratedColumn> get $columns => [dictIds, id, name];
   @override

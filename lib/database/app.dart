@@ -52,7 +52,7 @@ class AppDatabase extends _$AppDatabase {
 class DictGroup extends Table {
   TextColumn get dictIds => text()();
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()();
+  TextColumn get name => text().unique()();
 }
 
 @DriftAccessor(tables: [DictGroup])
@@ -75,9 +75,13 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<int>> getDictIds(int id) async {
-    final group =
-        await (select(dictGroup)..where((t) => t.id.isValue(id))).getSingle();
-    return group.dictIds.split(',').map((e) => int.parse(e)).toList();
+    try {
+      final group =
+          await (select(dictGroup)..where((t) => t.id.isValue(id))).getSingle();
+      return group.dictIds.split(',').map((e) => int.parse(e)).toList();
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<List<DictGroupData>> getAllGroups() {

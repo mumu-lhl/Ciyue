@@ -1,5 +1,6 @@
 import "dart:io";
 
+import "package:ciyue/database/app.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
 import "package:path/path.dart";
@@ -10,6 +11,7 @@ import "main.dart";
 
 class DictManager {
   final Map<int, Mdict> dicts = {};
+  Future<List<DictGroupData>> groups = dictGroupDao.getAllGroups();
   int groupId = 0;
 
   bool get isEmpty => dicts.isEmpty;

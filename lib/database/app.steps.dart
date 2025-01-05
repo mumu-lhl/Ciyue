@@ -352,7 +352,8 @@ i1.GeneratedColumn<String> _column_7(String aliasedName) =>
         type: i1.DriftSqlType.string);
 i1.GeneratedColumn<String> _column_8(String aliasedName) =>
     i1.GeneratedColumn<String>('name', aliasedName, false,
-        type: i1.DriftSqlType.string);
+        type: i1.DriftSqlType.string,
+        defaultConstraints: i1.GeneratedColumn.constraintIsAlways('UNIQUE'));
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,

@@ -821,7 +821,9 @@ class $DictGroupTable extends DictGroup
   @override
   late final drift.GeneratedColumn<String> name = drift.GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
   @override
   List<drift.GeneratedColumn> get $columns => [dictIds, id, name];
   @override
