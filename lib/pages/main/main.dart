@@ -81,7 +81,9 @@ class _HomeState extends State<Home> {
                     children: [
                       for (final group in snapshot.data as List<DictGroupData>)
                         ListTile(
-                          leading: group.id == dictManager.groupId ? const Icon(Icons.circle) : const Icon(Icons.circle_outlined),
+                          leading: group.id == dictManager.groupId
+                              ? const Icon(Icons.circle)
+                              : const Icon(Icons.circle_outlined),
                           title: Text(group.name),
                           onTap: () async {
                             context.pop();

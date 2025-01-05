@@ -149,11 +149,11 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                           dictManager.remove(dictionary.id);
 
                           final dictIds = [
-                            for (final dict in dictManager.dicts.values)
-                              dict.id
+                            for (final dict in dictManager.dicts.values) dict.id
                           ];
 
-                          dictGroupDao.updateDictIds(dictManager.groupId, dictIds);
+                          dictGroupDao.updateDictIds(
+                              dictManager.groupId, dictIds);
                         } else {
                           final tmpDict = Mdict(path: dictionary.path);
                           await tmpDict.init();
@@ -206,8 +206,8 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               } else {
                 await dictManager.close(dictionary.id);
               }
-              dictGroupDao.updateDictIds(
-                  dictManager.groupId, [for (final dict in dictManager.dicts.values) dict.id]);
+              dictGroupDao.updateDictIds(dictManager.groupId,
+                  [for (final dict in dictManager.dicts.values) dict.id]);
 
               setState(() {});
             },
