@@ -46,10 +46,7 @@ class _HomeState extends State<Home> {
 
   AppBar? buildAppBar(BuildContext context) {
     if (!dictManager.isEmpty && _currentIndex == 0) {
-      return AppBar(
-        flexibleSpace: buildSearchBar(context),
-        leading: buildDrawerButton(context),
-      );
+      return AppBar(title: buildSearchBar(context));
     }
     return null;
   }
@@ -75,8 +72,8 @@ class _HomeState extends State<Home> {
           for (final group in dictManager.groups)
             ListTile(
               leading: group.id == dictManager.groupId
-                  ? const Icon(Icons.circle)
-                  : const Icon(Icons.circle_outlined),
+                  ? const Icon(Icons.circle, size: 10)
+                  : const Icon(Icons.circle_outlined, size: 10),
               title: Text(group.name),
               onTap: () async {
                 context.pop();
@@ -86,18 +83,6 @@ class _HomeState extends State<Home> {
         ],
       ),
     );
-  }
-
-  IconButton? buildDrawerButton(BuildContext context) {
-    if (_currentIndex == 0) {
-      return IconButton(
-        icon: const Icon(Icons.menu),
-        onPressed: () {
-          Scaffold.of(context).openDrawer();
-        },
-      );
-    }
-    return null;
   }
 
   IconButton? buildRemoveButton() {
