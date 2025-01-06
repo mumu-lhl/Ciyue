@@ -28,6 +28,7 @@ void main() async {
     await prefs.setInt("currentDictionaryGroupId", groupId);
   }
   await dictManager.setCurrentGroup(groupId);
+  await dictManager.updateGroupList();
 
   flutterTts = FlutterTts();
 

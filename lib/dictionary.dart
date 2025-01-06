@@ -11,7 +11,8 @@ import "main.dart";
 
 class DictManager {
   final Map<int, Mdict> dicts = {};
-  Future<List<DictGroupData>> groups = dictGroupDao.getAllGroups();
+  List<DictGroupData> groups = [];
+  List<int> dictIds = [];
   int groupId = 0;
 
   bool get isEmpty => dicts.isEmpty;
@@ -22,17 +23,21 @@ class DictManager {
     await clear();
 
     groupId = id;
-    final dictGroup = await dictGroupDao.getDictIds(id);
+    dictIds = await dictGroupDao.getDictIds(id);
     final paths = [
-      for (final id in dictGroup) await dictionaryListDao.getPath(id)
+      for (final id in dictIds) await dictionaryListDao.getPath(id)
     ];
     for (final path in paths) {
       await add(path);
     }
   }
 
-  void updateGroup() {
-    groups = dictGroupDao.getAllGroups();
+  Future<void> updateGroupList() async {
+    groups = await dictGroupDao.getAllGroups();
+  }
+
+  Future<void> updateDictIds() async {
+    dictIds = await dictGroupDao.getDictIds(groupId);
   }
 
   Future<void> clear() async {

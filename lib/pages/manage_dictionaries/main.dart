@@ -106,8 +106,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
   }
 
   FutureBuilder<List<DictionaryListData>> buildBody(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return FutureBuilder(
       future: dictionaries,
       builder: (BuildContext context,
@@ -116,11 +114,17 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
         if (snapshot.hasData) {
           int index = 0;
-          final dictionaries = snapshot.data!;
-          for (final dictionary in dictionaries) {
-            children.add(
-                buildDictionaryCard(context, colorScheme, dictionary, index));
+          final dicts = snapshot.data!;
+          final dictsMap = {for (final dict in dicts) dict.id: dict};
+          for (final id in dictManager.dictIds) {
+            children.add(buildDictionaryCard(context, dictsMap[id]!, index));
             index += 1;
+          }
+          for (final dict in dicts) {
+            if (!dictManager.contain(dict.id)) {
+              children.add(buildDictionaryCard(context, dict, index));
+              index += 1;
+            }
           }
         }
 
@@ -141,7 +145,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                   for (final dict in dicts)
                     if (dictManager.contain(dict.id)) dict.id
                 ]);
-                dictManager.updateGroup();
+                await dictManager.updateDictIds();
               }
 
               setState(() {});
@@ -153,8 +157,10 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     );
   }
 
-  Card buildDictionaryCard(BuildContext context, ColorScheme colorScheme,
-      DictionaryListData dictionary, int index) {
+  Card buildDictionaryCard(
+      BuildContext context, DictionaryListData dictionary, int index) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       key: ValueKey(dictionary.id),
       elevation: 0,

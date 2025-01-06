@@ -206,20 +206,20 @@ class WebviewDisplay extends StatelessWidget {
                 ),
                 bottom: TabBar(
                   tabs: [
-                    for (final dict in dictManager.dicts.values)
-                      Tab(text: basename(dict.path))
+                    for (final id in dictManager.dictIds)
+                      Tab(text: basename(dictManager.dicts[id]!.path))
                   ],
                 )),
             floatingActionButton: Button(word: word),
             body: TabBarView(children: [
-              for (final dict in dictManager.dicts.values)
+              for (final id in dictManager.dictIds)
                 FutureBuilder(
-                    future: dict.readWord(word),
+                    future: dictManager.dicts[id]!.readWord(word),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         return WebView(
                           content: snapshot.data!,
-                          dictId: dict.id,
+                          dictId: id,
                         );
                       } else if (snapshot.hasError) {
                         return Center(

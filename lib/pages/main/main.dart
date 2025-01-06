@@ -1,4 +1,3 @@
-import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/settings.dart";
@@ -69,41 +68,24 @@ class _HomeState extends State<Home> {
     ];
   }
 
-  FutureBuilder buildDrawer() {
-    return FutureBuilder(
-        future: dictManager.groups,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            for (final group in snapshot.data as List<DictGroupData>) {
-              if (group.id == dictManager.groupId) {
-                return Drawer(
-                  child: ListView(
-                    children: [
-                      for (final group in snapshot.data as List<DictGroupData>)
-                        ListTile(
-                          leading: group.id == dictManager.groupId
-                              ? const Icon(Icons.circle)
-                              : const Icon(Icons.circle_outlined),
-                          title: Text(group.name),
-                          onTap: () async {
-                            context.pop();
-                            await dictManager.setCurrentGroup(group.id);
-                          },
-                        ),
-                    ],
-                  ),
-                );
-              }
-            }
-            return Drawer(child: ListView(children: [ListTile()]));
-          } else {
-            return Drawer(
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-        });
+  Drawer buildDrawer() {
+    return Drawer(
+      child: ListView(
+        children: [
+          for (final group in dictManager.groups)
+            ListTile(
+              leading: group.id == dictManager.groupId
+                  ? const Icon(Icons.circle)
+                  : const Icon(Icons.circle_outlined),
+              title: Text(group.name),
+              onTap: () async {
+                context.pop();
+                await dictManager.setCurrentGroup(group.id);
+              },
+            ),
+        ],
+      ),
+    );
   }
 
   IconButton? buildDrawerButton(BuildContext context) {
