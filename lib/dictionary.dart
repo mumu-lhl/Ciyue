@@ -41,7 +41,7 @@ class DictManager {
   }
 
   Future<void> clear() async {
-    for (final id in dicts.keys) {
+    for (final id in dictIds) {
       await close(id);
     }
   }

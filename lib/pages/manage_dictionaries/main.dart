@@ -33,6 +33,119 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         buildAddButton(context)
       ]),
       body: buildBody(context),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => _buildGroupDialog(context),
+          );
+        },
+        child: const Icon(Icons.group),
+      ),
+    );
+  }
+
+  Widget _buildGroupDialog(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Manage Groups'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final group in dictManager.groups)
+            RadioListTile(
+              title: Text(group.name),
+              value: group.id,
+              groupValue: dictManager.groupId,
+              secondary: buildGroupDeleteButton(context, group),
+              onChanged: (int? groupId) async {
+                if (groupId != dictManager.groupId) {
+                  await dictManager.setCurrentGroup(groupId!);
+                  setState(() {});
+                }
+                if (context.mounted) context.pop();
+              },
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: Text(AppLocalizations.of(context)!.close),
+        ),
+        TextButton(
+          onPressed: () {
+            context.pop();
+            showDialog(
+              context: context,
+              builder: (context) {
+                final controller = TextEditingController();
+                return AlertDialog(
+                  title: Text(AppLocalizations.of(context)!.add),
+                  content: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    onSubmitted: (value) async {
+                      if (value.isNotEmpty) {
+                        await dictGroupDao.addGroup(value, []);
+                        await dictManager.updateGroupList();
+                        if (context.mounted) {
+                          context.pop();
+                        }
+                      }
+                    },
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => context.pop(),
+                      child: Text(AppLocalizations.of(context)!.close),
+                    ),
+                    TextButton(
+                        onPressed: () async {
+                          if (controller.text != "") {
+                            await dictGroupDao.addGroup(controller.text, []);
+                            await dictManager.updateGroupList();
+                            if (context.mounted) {
+                              context.pop();
+                            }
+                          }
+                        },
+                        child: Text(AppLocalizations.of(context)!.add)),
+                  ],
+                );
+              },
+            );
+          },
+          child: Text(AppLocalizations.of(context)!.add),
+        ),
+      ],
+    );
+  }
+
+  IconButton? buildGroupDeleteButton(
+      BuildContext context, DictGroupData group) {
+    if (group.name == "Default") {
+      return null;
+    }
+
+    return IconButton(
+      icon: const Icon(Icons.delete),
+      onPressed: () async {
+        if (group.id == dictManager.groupId) {
+          if (group.id == dictManager.groups.last.id) {
+            await dictManager.setCurrentGroup(
+                dictManager.groups[dictManager.groups.length - 2].id);
+          } else {
+            final index =
+                dictManager.groups.indexWhere((g) => g.id == group.id);
+            await dictManager.setCurrentGroup(dictManager.groups[index + 1].id);
+          }
+        }
+
+        await dictGroupDao.removeGroup(group.id);
+        await dictManager.updateGroupList();
+
+        if (context.mounted) context.pop();
+      },
     );
   }
 
@@ -242,6 +355,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               }
               await dictGroupDao.updateDictIds(dictManager.groupId,
                   [for (final dict in dictManager.dicts.values) dict.id]);
+              await dictManager.updateDictIds();
 
               setState(() {});
             },
