@@ -11,7 +11,8 @@ AppDatabase appDatabase() {
   return AppDatabase(connection);
 }
 
-@DriftDatabase(tables: [DictionaryList, Wordbook, WordbookTags, History])
+@DriftDatabase(
+    tables: [DictionaryList, Wordbook, WordbookTags, History, DictGroup])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
@@ -36,16 +37,63 @@ class AppDatabase extends _$AppDatabase {
         from4To5: (m, schema) async {
           await m.createTable(schema.history);
         },
+        from5To6: (m, schema) async {
+          await m.dropColumn(schema.dictionaryList, "backup_path");
+          await m.create(schema.dictGroup);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
+}
+
+class DictGroup extends Table {
+  TextColumn get dictIds => text()();
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().unique()();
+}
+
+@DriftAccessor(tables: [DictGroup])
+class DictGroupDao extends DatabaseAccessor<AppDatabase>
+    with _$DictGroupDaoMixin {
+  DictGroupDao(super.attachedDatabase);
+
+  Future<int> addGroup(String name, List<int> dictIds) {
+    return into(dictGroup).insert(
+      DictGroupCompanion(
+        name: Value(name),
+        dictIds: Value(dictIds.join(',')),
+      ),
+    );
+  }
+
+  Future<void> updateDictIds(int id, List<int> dictIds) {
+    return (update(dictGroup)..where((t) => t.id.isValue(id)))
+        .write(DictGroupCompanion(dictIds: Value(dictIds.join(','))));
+  }
+
+  Future<List<int>> getDictIds(int id) async {
+    try {
+      final group =
+          await (select(dictGroup)..where((t) => t.id.isValue(id))).getSingle();
+      return group.dictIds.split(',').map((e) => int.parse(e)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<DictGroupData>> getAllGroups() {
+    return select(dictGroup).get();
+  }
+
+  Future<void> removeGroup(int id) async {
+    await (delete(dictGroup)..where((t) => t.id.isValue(id))).go();
+  }
 }
 
 class DictionaryList extends Table {
-  TextColumn get backupPath => text().nullable()();
   TextColumn get fontPath => text().nullable()();
   IntColumn get id => integer().autoIncrement()();
   TextColumn get path => text()();
@@ -63,12 +111,6 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<DictionaryListData>> all() {
     return (select(dictionaryList)).get();
-  }
-
-  Future<String?> getBackupPath(int id) async {
-    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
-            .getSingle()))
-        .backupPath;
   }
 
   Future<String?> getFontPath(int id) async {
@@ -91,11 +133,6 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
 
   Future<int> remove(String path) {
     return (delete(dictionaryList)..where((t) => t.path.isValue(path))).go();
-  }
-
-  Future<int> updateBackup(int id, String? backupPath) {
-    return (update(dictionaryList)..where((t) => t.id.isValue(id)))
-        .write(DictionaryListCompanion(backupPath: Value(backupPath)));
   }
 
   Future<int> updateFont(int id, String? fontPath) {

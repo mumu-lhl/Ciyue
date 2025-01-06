@@ -206,20 +206,20 @@ class WebviewDisplay extends StatelessWidget {
                 ),
                 bottom: TabBar(
                   tabs: [
-                    for (final dict in dictManager.dicts.values)
-                      Tab(text: basename(dict.path))
+                    for (final id in dictManager.dictIds)
+                      Tab(text: basename(dictManager.dicts[id]!.path))
                   ],
                 )),
             floatingActionButton: Button(word: word),
             body: TabBarView(children: [
-              for (final dict in dictManager.dicts.values)
+              for (final id in dictManager.dictIds)
                 FutureBuilder(
-                    future: dict.readWord(word),
+                    future: dictManager.dicts[id]!.readWord(word),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         return WebView(
                           content: snapshot.data!,
-                          dictId: dict.id,
+                          dictId: id,
                         );
                       } else if (snapshot.hasError) {
                         return Center(
@@ -285,14 +285,13 @@ class _ButtonState extends State<Button> {
   Future<bool>? stared;
 
   Future<void> autoExport() async {
-    if (settings.autoExport &&
-        dictManager.dicts.values.first.backupPath != null) {
+    if (settings.autoExport && prefs.getString("autoExportPath") != null) {
       final words = await wordbookDao.getAllWords(),
           tags = await wordbookTagsDao.getAllTags();
 
       final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
 
-      final file = File(dictManager.dicts.values.first.backupPath!);
+      final file = File(prefs.getString("autoExportPath")!);
 
       await file.writeAsString("$wordsOutput\n$tagsOutput");
     }

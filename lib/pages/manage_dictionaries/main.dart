@@ -33,6 +33,119 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         buildAddButton(context)
       ]),
       body: buildBody(context),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => _buildGroupDialog(context),
+          );
+        },
+        child: const Icon(Icons.group),
+      ),
+    );
+  }
+
+  Widget _buildGroupDialog(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Manage Groups'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final group in dictManager.groups)
+            RadioListTile(
+              title: Text(group.name),
+              value: group.id,
+              groupValue: dictManager.groupId,
+              secondary: buildGroupDeleteButton(context, group),
+              onChanged: (int? groupId) async {
+                if (groupId != dictManager.groupId) {
+                  await dictManager.setCurrentGroup(groupId!);
+                  setState(() {});
+                }
+                if (context.mounted) context.pop();
+              },
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: Text(AppLocalizations.of(context)!.close),
+        ),
+        TextButton(
+          onPressed: () {
+            context.pop();
+            showDialog(
+              context: context,
+              builder: (context) {
+                final controller = TextEditingController();
+                return AlertDialog(
+                  title: Text(AppLocalizations.of(context)!.add),
+                  content: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    onSubmitted: (value) async {
+                      if (value.isNotEmpty) {
+                        await dictGroupDao.addGroup(value, []);
+                        await dictManager.updateGroupList();
+                        if (context.mounted) {
+                          context.pop();
+                        }
+                      }
+                    },
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => context.pop(),
+                      child: Text(AppLocalizations.of(context)!.close),
+                    ),
+                    TextButton(
+                        onPressed: () async {
+                          if (controller.text != "") {
+                            await dictGroupDao.addGroup(controller.text, []);
+                            await dictManager.updateGroupList();
+                            if (context.mounted) {
+                              context.pop();
+                            }
+                          }
+                        },
+                        child: Text(AppLocalizations.of(context)!.add)),
+                  ],
+                );
+              },
+            );
+          },
+          child: Text(AppLocalizations.of(context)!.add),
+        ),
+      ],
+    );
+  }
+
+  IconButton? buildGroupDeleteButton(
+      BuildContext context, DictGroupData group) {
+    if (group.name == "Default") {
+      return null;
+    }
+
+    return IconButton(
+      icon: const Icon(Icons.delete),
+      onPressed: () async {
+        if (group.id == dictManager.groupId) {
+          if (group.id == dictManager.groups.last.id) {
+            await dictManager.setCurrentGroup(
+                dictManager.groups[dictManager.groups.length - 2].id);
+          } else {
+            final index =
+                dictManager.groups.indexWhere((g) => g.id == group.id);
+            await dictManager.setCurrentGroup(dictManager.groups[index + 1].id);
+          }
+        }
+
+        await dictGroupDao.removeGroup(group.id);
+        await dictManager.updateGroupList();
+
+        if (context.mounted) context.pop();
+      },
     );
   }
 
@@ -106,8 +219,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
   }
 
   FutureBuilder<List<DictionaryListData>> buildBody(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return FutureBuilder(
       future: dictionaries,
       builder: (BuildContext context,
@@ -115,27 +226,59 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         final children = <Widget>[];
 
         if (snapshot.hasData) {
-          final dictionaries = snapshot.data!;
-          for (final dictionary in dictionaries) {
-            children.add(buildDictionaryCard(context, colorScheme, dictionary));
+          int index = 0;
+          final dicts = snapshot.data!;
+          final dictsMap = {for (final dict in dicts) dict.id: dict};
+          for (final id in dictManager.dictIds) {
+            children.add(buildDictionaryCard(context, dictsMap[id]!, index));
+            index += 1;
+          }
+          for (final dict in dicts) {
+            if (!dictManager.contain(dict.id)) {
+              children.add(buildDictionaryCard(context, dict, index));
+              index += 1;
+            }
           }
         }
 
         if (children.isEmpty) {
           return Center(child: Text(AppLocalizations.of(context)!.empty));
         } else {
-          return ListView(children: children);
+          return ReorderableListView(
+            onReorder: (oldIndex, newIndex) async {
+              if (oldIndex < newIndex) {
+                newIndex -= 1;
+              }
+
+              final dicts = await dictionaries;
+              final dict = dicts.removeAt(oldIndex);
+              dicts.insert(newIndex, dict);
+              if (dictManager.contain(dict.id)) {
+                await dictGroupDao.updateDictIds(dictManager.groupId, [
+                  for (final dict in dicts)
+                    if (dictManager.contain(dict.id)) dict.id
+                ]);
+                await dictManager.updateDictIds();
+              }
+
+              setState(() {});
+            },
+            children: children,
+          );
         }
       },
     );
   }
 
-  Card buildDictionaryCard(BuildContext context, ColorScheme colorScheme,
-      DictionaryListData dictionary) {
+  Card buildDictionaryCard(
+      BuildContext context, DictionaryListData dictionary, int index) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
-        elevation: 0,
-        color: colorScheme.onInverseSurface,
-        child: GestureDetector(
+      key: ValueKey(dictionary.id),
+      elevation: 0,
+      color: colorScheme.onInverseSurface,
+      child: GestureDetector(
           onLongPress: () {
             showDialog(
               context: context,
@@ -148,13 +291,12 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                         if (dictManager.contain(dictionary.id)) {
                           dictManager.remove(dictionary.id);
 
-                          final paths = [
-                            for (final dict in dictManager.dicts.values)
-                              dict.path
+                          final dictIds = [
+                            for (final dict in dictManager.dicts.values) dict.id
                           ];
 
-                          await prefs.setStringList(
-                              "currentDictionaryPaths", paths);
+                          dictGroupDao.updateDictIds(
+                              dictManager.groupId, dictIds);
                         } else {
                           final tmpDict = Mdict(path: dictionary.path);
                           await tmpDict.init();
@@ -201,19 +343,24 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
           child: CheckboxListTile(
             title: Text(basename(dictionary.path)),
             value: dictManager.contain(dictionary.id),
+            secondary: ReorderableDragStartListener(
+                index: index,
+                child:
+                    IconButton(icon: Icon(Icons.reorder), onPressed: () => {})),
             onChanged: (bool? value) async {
               if (value == true) {
                 await dictManager.add(dictionary.path);
               } else {
                 await dictManager.close(dictionary.id);
               }
-              await prefs.setStringList("currentDictionaryPaths",
-                  [for (final dict in dictManager.dicts.values) dict.path]);
+              await dictGroupDao.updateDictIds(dictManager.groupId,
+                  [for (final dict in dictManager.dicts.values) dict.id]);
+              await dictManager.updateDictIds();
 
               setState(() {});
             },
-          ),
-        ));
+          )),
+    );
   }
 
   IconButton buildRefreshButton(BuildContext context) {

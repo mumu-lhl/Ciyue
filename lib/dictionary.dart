@@ -1,5 +1,6 @@
 import "dart:io";
 
+import "package:ciyue/database/app.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
 import "package:path/path.dart";
@@ -10,10 +11,40 @@ import "main.dart";
 
 class DictManager {
   final Map<int, Mdict> dicts = {};
+  List<DictGroupData> groups = [];
+  List<int> dictIds = [];
+  int groupId = 0;
 
   bool get isEmpty => dicts.isEmpty;
 
   bool contain(int id) => dicts.keys.contains(id);
+
+  Future<void> setCurrentGroup(int id) async {
+    await clear();
+
+    groupId = id;
+    dictIds = await dictGroupDao.getDictIds(id);
+    final paths = [
+      for (final id in dictIds) await dictionaryListDao.getPath(id)
+    ];
+    for (final path in paths) {
+      await add(path);
+    }
+  }
+
+  Future<void> updateGroupList() async {
+    groups = await dictGroupDao.getAllGroups();
+  }
+
+  Future<void> updateDictIds() async {
+    dictIds = await dictGroupDao.getDictIds(groupId);
+  }
+
+  Future<void> clear() async {
+    for (final id in dictIds) {
+      await close(id);
+    }
+  }
 
   Future<void> add(String path) async {
     final dict = Mdict(path: path);
@@ -40,7 +71,6 @@ class Mdict {
   final String path;
   String? fontName;
   String? fontPath;
-  String? backupPath;
   late final DictionaryDatabase db;
   late final DictReader reader;
   DictReader? readerResource;
@@ -64,9 +94,6 @@ class Mdict {
 
     final fontPath = await dictionaryListDao.getFontPath(id);
     customFont(fontPath);
-
-    final backupPath = await dictionaryListDao.getBackupPath(id);
-    customBackupPath(backupPath);
   }
 
   Future<void> close() async {
@@ -94,14 +121,8 @@ class Mdict {
     if (readerResource != null) await _addResource();
 
     customFont(null);
-    customBackupPath(null);
 
     return true;
-  }
-
-  Future<void> customBackupPath(String? path) async {
-    backupPath = path;
-    await dictionaryListDao.updateBackup(id, path);
   }
 
   Future<void> customFont(String? path) async {
