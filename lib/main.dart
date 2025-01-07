@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/pages/main/main.dart";
@@ -13,7 +15,36 @@ import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:go_router/go_router.dart";
 import "package:package_info_plus/package_info_plus.dart";
+import "package:path/path.dart";
 import "package:shared_preferences/shared_preferences.dart";
+import "package:path_provider/path_provider.dart";
+
+Future<void> _addDictionaries(List<FileSystemEntity> entities) async {
+  for (final entity in entities) {
+    if (entity is File) {
+      if (!entity.path.endsWith(".mdx")) continue;
+
+      try {
+        final path = setExtension(entity.path, "");
+        final tmpDict = Mdict(path: path);
+        if (await tmpDict.add()) {
+          await tmpDict.close();
+        }
+        // ignore: empty_catches
+      } catch (e) {}
+    } else {
+      final entities = await (entity as Directory).list().toList();
+      await _addDictionaries(entities);
+    }
+  }
+}
+
+Future<void> updateAllDictionaries() async {
+  final cacheDir = Directory(
+      join((await getApplicationCacheDirectory()).path, "dictionaries_cache"));
+  final entities = await cacheDir.list().toList();
+  _addDictionaries(entities);
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,14 +52,14 @@ void main() async {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   prefs = await SharedPreferences.getInstance();
-  final path = prefs.getString("currentDictionaryPath");
 
-  dictionaryList = appDatabase();
-
-  if (path != null) {
-    dict = Mdict(path: path);
-    await dict!.init();
+  int? groupId = prefs.getInt("currentDictionaryGroupId");
+  if (groupId == null) {
+    groupId = await dictGroupDao.addGroup("Default", []);
+    await prefs.setInt("currentDictionaryGroupId", groupId);
   }
+  await dictManager.setCurrentGroup(groupId);
+  await dictManager.updateGroupList();
 
   flutterTts = FlutterTts();
 
@@ -40,20 +71,26 @@ void main() async {
 
       // Navigate to search result with the text
       _router.go("/word", extra: {"word": text});
+    } else if (call.method == "inputDirectory") {
+      updateAllDictionaries();
     }
   });
 
   runApp(const Dictionary());
 }
 
-const platform = MethodChannel("org.eu.mumulhl.ciyue/process_text");
+const platform = MethodChannel("org.eu.mumulhl.ciyue");
 
-late AppDatabase dictionaryList;
-late FlutterTts flutterTts;
-late PackageInfo packageInfo;
-late SharedPreferences prefs;
-late VoidCallback refreshAll;
-Mdict? dict;
+final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
+final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
+late final FlutterTts flutterTts;
+final HistoryDao historyDao = HistoryDao(mainDatabase);
+final AppDatabase mainDatabase = appDatabase();
+late final PackageInfo packageInfo;
+late final SharedPreferences prefs;
+late final VoidCallback refreshAll;
+final WordbookDao wordbookDao = WordbookDao(mainDatabase);
+final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
 
 final _router = GoRouter(
   routes: [
@@ -68,14 +105,18 @@ final _router = GoRouter(
           return WebviewDisplay(word: extra["word"]!);
         }),
     GoRoute(
-        path: "/description",
-        builder: (context, state) => const WebviewDisplayDescription()),
+        path: "/description/:dictId",
+        builder: (context, state) => WebviewDisplayDescription(
+              dictId: int.parse(state.pathParameters['dictId']!),
+            )),
     GoRoute(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),
     GoRoute(
-        path: "/settings/dictionary",
-        builder: (context, state) => const SettingsDictionary()),
+        path: "/settings/dictionary/:dictId",
+        builder: (context, state) => SettingsDictionary(
+              dictId: int.parse(state.pathParameters['dictId']!),
+            )),
   ],
 );
 

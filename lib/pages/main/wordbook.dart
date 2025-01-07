@@ -1,4 +1,5 @@
-import "package:ciyue/database/dictionary.dart";
+import "package:ciyue/database/app.dart";
+import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
@@ -13,13 +14,13 @@ class WordBookScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     late final PreferredSizeWidget? appBar;
-    if (dict != null) {
+    if (!dictManager.isEmpty) {
       appBar = AppBar(
         actions: [
           IconButton(
             icon: Icon(Icons.bookmark),
             onPressed: () async {
-              final tags = await dict!.db.getAllTags();
+              final tags = await wordbookTagsDao.getAllTags();
 
               if (!context.mounted) return;
 
@@ -63,8 +64,8 @@ class WordBookScreen extends StatelessWidget {
               TextButton(
                 child: Text(locale.add),
                 onPressed: () async {
-                  await dict!.db.addTag(textController.text);
-                  await dict!.checkTagExist();
+                  await wordbookTagsDao.addTag(textController.text);
+                  await wordbookTagsDao.existTag();
 
                   if (_refreshTagsAndWords != null) _refreshTagsAndWords!();
 
@@ -88,8 +89,8 @@ class WordBookScreen extends StatelessWidget {
               trailing: IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () async {
-                  await dict!.db.removeTag(tag.id);
-                  await dict!.checkTagExist();
+                  await wordbookTagsDao.removeTag(tag.id);
+                  await wordbookTagsDao.existTag();
 
                   _refreshTagsAndWords!();
 
@@ -142,16 +143,8 @@ class WordView extends StatelessWidget {
               list.add(ListTile(
                 title: Text(data.word),
                 onTap: () async {
-                  final offset = await dict!.db.getOffset(data.word);
-                  String content = await dict!.reader.readOne(
-                      offset.blockOffset,
-                      offset.startOffset,
-                      offset.endOffset,
-                      offset.compressedSize);
-
                   if (context.mounted) {
-                    context.push("/word",
-                        extra: {"content": content, "word": data.word});
+                    context.push("/word", extra: {"word": data.word});
                   }
                 },
               ));
@@ -184,7 +177,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
   @override
   Widget build(BuildContext context) {
-    if (dict == null) {
+    if (dictManager.isEmpty) {
       return Center(child: Text(AppLocalizations.of(context)!.empty));
     }
 
@@ -205,7 +198,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
                       setState(() {
                         selectedTag = selected ? tag.id : null;
                         allWords =
-                            dict!.db.getAllWordsWithTag(tag: selectedTag);
+                            wordbookDao.getAllWordsWithTag(tag: selectedTag);
                       });
                     },
                   ));
@@ -225,9 +218,9 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   void initState() {
     super.initState();
 
-    if (dict != null) {
-      allWords = dict!.db.getAllWordsWithTag();
-      tags = dict!.db.getAllTags();
+    if (!dictManager.isEmpty) {
+      allWords = wordbookDao.getAllWordsWithTag();
+      tags = wordbookTagsDao.getAllTags();
     }
 
     _refreshTagsAndWords = refresh;
@@ -235,8 +228,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
   void refresh() {
     setState(() {
-      allWords = dict!.db.getAllWordsWithTag();
-      tags = dict!.db.getAllTags();
+      allWords = wordbookDao.getAllWordsWithTag();
+      tags = wordbookTagsDao.getAllTags();
     });
   }
 }

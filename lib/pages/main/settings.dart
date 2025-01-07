@@ -1,7 +1,8 @@
 import "dart:convert";
 import "dart:io";
 
-import "package:ciyue/database/dictionary.dart";
+import "package:ciyue/database/app.dart";
+import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
 import "package:file_selector/file_selector.dart";
@@ -39,6 +40,51 @@ class About extends StatelessWidget {
   }
 }
 
+class AutoExport extends StatefulWidget {
+  const AutoExport({
+    super.key,
+  });
+
+  @override
+  State<AutoExport> createState() => _AutoExportState();
+}
+
+class ClearHistory extends StatelessWidget {
+  const ClearHistory({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+
+    return ListTile(
+      leading: const Icon(Icons.delete),
+      title: Text(locale!.clearHistory),
+      onTap: () => showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(locale.clearHistory),
+          content: Text(locale.clearHistoryConfirm),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: Text(locale.close),
+            ),
+            TextButton(
+              onPressed: () async {
+                await historyDao.clearHistory();
+                if (context.mounted) {
+                  context.pop(context);
+                }
+              },
+              child: Text(locale.confirm),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class Export extends StatelessWidget {
   const Export({
     super.key,
@@ -51,20 +97,20 @@ class Export extends StatelessWidget {
       title: Text(AppLocalizations.of(context)!.export),
       onTap: () async {
         final directoryPath = await getDirectoryPath();
-        if (directoryPath == null || dict == null) {
+        if (directoryPath == null || dictManager.isEmpty) {
           return;
         }
 
-        final dictionaryName = basename(dict!.path),
+        final dictionaryName = basename(dictManager.dicts.values.first.path),
             filename = setExtension(dictionaryName, ".json"),
             saveLocation = join(directoryPath, filename);
 
         if (settings.autoExport) {
-          dict!.customBackupPath(saveLocation);
+          prefs.setString("autoExportPath", saveLocation);
         }
 
-        final words = await dict!.db.getAllWords(),
-            tags = await dict!.db.getAllTags();
+        final words = await wordbookDao.getAllWords(),
+            tags = await wordbookTagsDao.getAllTags();
 
         if (words.isNotEmpty) {
           final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
@@ -120,7 +166,7 @@ class Import extends StatelessWidget {
       leading: Icon(Icons.file_download),
       title: Text(AppLocalizations.of(context)!.import),
       onTap: () async {
-        if (dict == null) {
+        if (dictManager.isEmpty) {
           return;
         }
 
@@ -148,8 +194,8 @@ class Import extends StatelessWidget {
           tagsData.add(WordbookTag.fromJson(i));
         }
 
-        await dict!.db.addAllWords(wordsData);
-        await dict!.db.addAllTags(tagsData);
+        await wordbookDao.addAllWords(wordsData);
+        await wordbookTagsDao.addAllTags(tagsData);
       },
     );
   }
@@ -195,6 +241,8 @@ class SettingsScreen extends StatelessWidget {
         Export(),
         Import(),
         Divider(),
+        ClearHistory(),
+        Divider(),
         Feedback(),
         GithubUrl(),
         About(),
@@ -203,13 +251,11 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-class AutoExport extends StatefulWidget {
-  const AutoExport({
-    super.key,
-  });
+class ThemeSelector extends StatefulWidget {
+  const ThemeSelector({super.key});
 
   @override
-  State<AutoExport> createState() => _AutoExportState();
+  State<ThemeSelector> createState() => _ThemeSelectorState();
 }
 
 class _AutoExportState extends State<AutoExport> {
@@ -226,13 +272,6 @@ class _AutoExportState extends State<AutoExport> {
       },
     );
   }
-}
-
-class ThemeSelector extends StatefulWidget {
-  const ThemeSelector({super.key});
-
-  @override
-  State<ThemeSelector> createState() => _ThemeSelectorState();
 }
 
 class _LanguageSelectorState extends State<LanguageSelector> {
