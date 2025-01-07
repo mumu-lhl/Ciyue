@@ -3,7 +3,20 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [0.16.0](https://github.com/mumu-lhl/Ciyue/compare/v0.15.1..v0.16.0) - 2025-01-01
+## [1.0.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v0.16.0..v1.0.0-beta.1) - 2025-01-07
+
+### Bug Fixes
+
+- fix l10n - ([83ed02b](https://github.com/mumu-lhl/Ciyue/commit/83ed02b4c29745e94c15b2ff866dc5c4de554691)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(deps)** bump drift from 2.23.0 to 2.23.1 - ([128de43](https://github.com/mumu-lhl/Ciyue/commit/128de4353351e6cff306e07e1661996699f7c199)) - dependabot[bot]
+- **(deps)** bump shared_preferences from 2.3.4 to 2.3.5 - ([1c5604a](https://github.com/mumu-lhl/Ciyue/commit/1c5604ae76f4a0cc4951a5632cfed72ff1536d08)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.23.0 to 2.23.1 - ([a4043a9](https://github.com/mumu-lhl/Ciyue/commit/a4043a9001932f2ab4cff4b5baa532d7ded0591c)) - dependabot[bot]
+
+---
+## [0.16.0](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-alpha.3..v0.16.0) - 2025-01-01
 
 ### Features
 
@@ -12,12 +25,73 @@ All notable changes to this project will be documented in this file. See [conven
 - **(translation)** added translation using Weblate (Persian) - ([f065cbb](https://github.com/mumu-lhl/Ciyue/commit/f065cbbe934b19e1c1ade885c1545656297f5c09)) - Mo
 - **(translation)** translated using Weblate (Persian) - ([a1be096](https://github.com/mumu-lhl/Ciyue/commit/a1be09631bf4a90d2581e52b2b25a4d85bb56d2c)) - Mo
 - **(translation)** translated using Weblate (Russian) - ([6e024a2](https://github.com/mumu-lhl/Ciyue/commit/6e024a294a7d64f273981a3b168b85005f88da3e)) - Xapitonov
+- remove external storage permission - ([ccdfec9](https://github.com/mumu-lhl/Ciyue/commit/ccdfec9cf6b727a634e955059ff1ec35c75d430c)) - Mumulhl
+- add update button - ([7da3688](https://github.com/mumu-lhl/Ciyue/commit/7da36886c783db60bf5f4c8e6456bd4fd3f75e6e)) - Mumulhl
 
 ### Miscellaneous Chores
 
 - **(deps)** bump drift_dev from 2.22.1 to 2.23.0 ([#97](https://github.com/mumu-lhl/Ciyue/issues/97)) - ([668a5d5](https://github.com/mumu-lhl/Ciyue/commit/668a5d513978622ba0ed8e3266ff93003ba83722)) - dependabot[bot]
 - **(deps)** bump flutter_tts from 4.2.0 to 4.2.1 ([#98](https://github.com/mumu-lhl/Ciyue/issues/98)) - ([fc6b4e9](https://github.com/mumu-lhl/Ciyue/commit/fc6b4e97ced9d2cfc04b69c1341aa081fa514655)) - dependabot[bot]
 - **(deps)** bump drift_flutter from 0.2.3 to 0.2.4 ([#100](https://github.com/mumu-lhl/Ciyue/issues/100)) - ([330a4b9](https://github.com/mumu-lhl/Ciyue/commit/330a4b92aa40ff1a338f269d29d36c6e0ebf880c)) - dependabot[bot]
+
+### Style
+
+- format code - ([93b2adf](https://github.com/mumu-lhl/Ciyue/commit/93b2adf0a0ab640dad82c16e1887e34882293f27)) - Mumulhl
+- format code - ([ef003f0](https://github.com/mumu-lhl/Ciyue/commit/ef003f0b421a30161e880552cdc9c3b780b19299)) - Mumulhl
+
+---
+## [1.0.0-alpha.3](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-alpha.2..v1.0.0-alpha.3) - 2025-01-06
+
+### Bug Fixes
+
+- fix sort dictionaries - ([1d9be71](https://github.com/mumu-lhl/Ciyue/commit/1d9be71af19bf089677c6d061fc4e35466e0610f)) - Mumulhl
+- fix sort dictionaries - ([fa1d2fa](https://github.com/mumu-lhl/Ciyue/commit/fa1d2fa5719cf817b9c0623429d2d9e8ea2f903b)) - Mumulhl
+- fix drawer - ([35a55f5](https://github.com/mumu-lhl/Ciyue/commit/35a55f54325872a5c738a7eb531e568b68f708de)) - Mumulhl
+
+### Features
+
+- group dictionaries - ([9944dd6](https://github.com/mumu-lhl/Ciyue/commit/9944dd6e45ec2fe25f69251453029d6d560c0e76)) - Mumulhl
+- implement group bugly - ([7589015](https://github.com/mumu-lhl/Ciyue/commit/7589015c6a86848450f1b785b79fec4b4cd5726f)) - Mumulhl
+- implement group fully - ([2ad1e42](https://github.com/mumu-lhl/Ciyue/commit/2ad1e422a7ecccd8bff47f5f1caa9390f4757358)) - Mumulhl
+- finish group dictionaries - ([9502310](https://github.com/mumu-lhl/Ciyue/commit/9502310f48f0b50ac1c21e67a7a980426f323e28)) - Mumulhl
+
+### Style
+
+- format code - ([1bc13bd](https://github.com/mumu-lhl/Ciyue/commit/1bc13bd918b2360bc2ce22d776cf92fa96f993ab)) - Mumulhl
+
+---
+## [1.0.0-alpha.2](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-alpha.1..v1.0.0-alpha.2) - 2024-12-31
+
+### Features
+
+- look up history - ([fdaa3a8](https://github.com/mumu-lhl/Ciyue/commit/fdaa3a85c32f5478b5cb4a11faf8b3a5d961bb05)) - Mumulhl
+- look up history ([#101](https://github.com/mumu-lhl/Ciyue/issues/101)) - ([4affaec](https://github.com/mumu-lhl/Ciyue/commit/4affaecdcd03f035206bd29e5fa30a98f9a0abbd)) - Mumulhl
+
+### Refactoring
+
+- **(database)** refactor database - ([e656ce7](https://github.com/mumu-lhl/Ciyue/commit/e656ce7dcf36cfc36b1ff1c7c5b2d14ac21cf357)) - Mumulhl
+
+---
+## [1.0.0-alpha.1](https://github.com/mumu-lhl/Ciyue/compare/v0.15.1..v1.0.0-alpha.1) - 2024-12-29
+
+### Bug Fixes
+
+- fix unselect dictionary - ([f1a16ed](https://github.com/mumu-lhl/Ciyue/commit/f1a16ed86917f25de5a486a27b4e12ba0d7c4e39)) - Mumulhl
+- fix wordbook - ([3fdd522](https://github.com/mumu-lhl/Ciyue/commit/3fdd52246ff0d41e07425cba5081c16c3c2a53fc)) - Mumulhl
+
+### Features
+
+- support mutiple dictionaries bugly - ([4577245](https://github.com/mumu-lhl/Ciyue/commit/45772459a9d2d3a5038d5f688402c5ba77d237a9)) - Mumulhl
+- support multiple dictionaries in searching and displaying - ([b99470c](https://github.com/mumu-lhl/Ciyue/commit/b99470cd61c4f6527065cd82cdf75012a671fbca)) - Mumulhl
+- support settings for mutiple dictionaries - ([a12633d](https://github.com/mumu-lhl/Ciyue/commit/a12633dceb16faed090f1e10d4cf2e5b9980568b)) - Mumulhl
+
+### Refactoring
+
+- refactor database - ([766f2fe](https://github.com/mumu-lhl/Ciyue/commit/766f2fef3a6e2722a9e5b82820503e35fe1a07c2)) - Mumulhl
+
+### Style
+
+- format - ([b10eace](https://github.com/mumu-lhl/Ciyue/commit/b10eaceabdb3479f2350fffc03f3be812b4ca3d5)) - Mumulhl
 
 ---
 ## [0.15.1](https://github.com/mumu-lhl/Ciyue/compare/v0.15.0..v0.15.1) - 2024-12-22
