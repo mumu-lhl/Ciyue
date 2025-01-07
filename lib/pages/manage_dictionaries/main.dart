@@ -23,9 +23,9 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: buildReturnButton(context), actions: [
-        buildAddButton(context)
-      ]),
+      appBar: AppBar(
+          leading: buildReturnButton(context),
+          actions: [buildAddButton(context)]),
       body: buildBody(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
