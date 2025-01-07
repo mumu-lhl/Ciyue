@@ -39,6 +39,13 @@ Future<void> _addDictionaries(List<FileSystemEntity> entities) async {
   }
 }
 
+Future<void> updateAllDictionaries() async {
+  final cacheDir = Directory(
+      join((await getApplicationCacheDirectory()).path, "dictionaries_cache"));
+  final entities = await cacheDir.list().toList();
+  _addDictionaries(entities);
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -65,10 +72,7 @@ void main() async {
       // Navigate to search result with the text
       _router.go("/word", extra: {"word": text});
     } else if (call.method == "inputDirectory") {
-      final cacheDir = Directory(join(
-          (await getApplicationCacheDirectory()).path, "dictionaries_cache"));
-      final entities = await cacheDir.list().toList();
-      _addDictionaries(entities);
+      updateAllDictionaries();
     }
   });
 

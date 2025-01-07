@@ -23,9 +23,10 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          leading: buildReturnButton(context),
-          actions: [buildAddButton(context)]),
+      appBar: AppBar(leading: buildReturnButton(context), actions: [
+        buildUpdateButton(),
+        buildAddButton(context)
+      ]),
       body: buildBody(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -37,6 +38,15 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         child: const Icon(Icons.group),
       ),
     );
+  }
+
+  IconButton buildUpdateButton() {
+    return IconButton(
+        icon: Icon(Icons.refresh),
+        onPressed: () async {
+          await updateAllDictionaries();
+        },
+      );
   }
 
   Widget _buildGroupDialog(BuildContext context) {
