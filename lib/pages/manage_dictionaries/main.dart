@@ -4,15 +4,11 @@ import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/widget/loading_dialog.dart";
-import "package:ciyue/widget/text_buttons.dart";
-import "package:device_info_plus/device_info_plus.dart";
 import "package:file_selector/file_selector.dart";
-import "package:filesystem_picker/filesystem_picker.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
-import "package:permission_handler/permission_handler.dart";
 
 class ManageDictionaries extends StatefulWidget {
   const ManageDictionaries({super.key});
@@ -28,8 +24,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(leading: buildReturnButton(context), actions: [
-        buildSettingScanPathButton(context),
-        buildRefreshButton(context),
         buildAddButton(context)
       ]),
       body: buildBody(context),
@@ -156,30 +150,8 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         String? path;
 
         if (Platform.isAndroid) {
-          final sdkVersion =
-              (await DeviceInfoPlugin().androidInfo).version.sdkInt;
-
-          if (sdkVersion >= 30) {
-            if (await Permission.manageExternalStorage.request().isDenied &&
-                context.mounted) {
-              showPermissionDenied(context);
-              return;
-            }
-          } else {
-            if (await Permission.storage.request().isDenied &&
-                context.mounted) {
-              showPermissionDenied(context);
-              return;
-            }
-          }
-
-          if (context.mounted) {
-            path = await FilesystemPicker.open(
-                context: context,
-                fsType: FilesystemType.file,
-                allowedExtensions: [".mdx"],
-                rootDirectory: Directory("/storage/emulated/0/"));
-          }
+          platform.invokeMethod("openDirectory");
+          return;
         } else {
           const XTypeGroup typeGroup = XTypeGroup(
             label: "custom",
@@ -363,81 +335,11 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     );
   }
 
-  IconButton buildRefreshButton(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.refresh),
-      onPressed: () async {
-        final paths = prefs.getStringList("scanPaths");
-        if (paths != null) {
-          showLoadingDialog(context);
-
-          try {
-            await _scanDictionaries(paths);
-          } finally {
-            setState(() {
-              context.pop();
-              updateDictionaries();
-            });
-          }
-        }
-      },
-    );
-  }
-
   IconButton buildReturnButton(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.arrow_back),
       onPressed: () {
         context.pop();
-      },
-    );
-  }
-
-  IconButton buildSettingScanPathButton(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.folder),
-      onPressed: () async {
-        final paths = prefs.getStringList("scanPaths") ?? [];
-
-        if (paths.isEmpty) {
-          await _addScanPath(context);
-        } else {
-          final listTiles = <Widget>[];
-          for (final path in paths) {
-            listTiles.add(ListTile(
-              title: Text(path.replaceFirst("/storage/emulated/0/", "")),
-              trailing: IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () async {
-                  await _removeScanPath(path);
-
-                  if (context.mounted) context.pop();
-                },
-              ),
-            ));
-          }
-
-          await showDialog(
-              context: context,
-              builder: (BuildContext _) => AlertDialog(
-                    content: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: listTiles,
-                      ),
-                    ),
-                    actions: [
-                      TextCloseButton(),
-                      TextButton(
-                        child: Text(AppLocalizations.of(context)!.add),
-                        onPressed: () async {
-                          await _addScanPath(context);
-                          if (context.mounted) context.pop();
-                        },
-                      ),
-                    ],
-                  ));
-        }
       },
     );
   }
@@ -452,52 +354,5 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
   void updateDictionaries() {
     dictionaries = dictionaryListDao.all();
-  }
-
-  Future<void> _addScanPath(BuildContext context) async {
-    final path = await getDirectoryPath();
-    if (path == null) {
-      return;
-    }
-
-    final paths = prefs.getStringList("scanPaths") ?? [];
-    if (paths.contains(path)) {
-      return;
-    }
-
-    if (context.mounted) showLoadingDialog(context);
-
-    try {
-      await _scanDictionaries(paths);
-    } finally {
-      paths.add(path);
-      prefs.setStringList("scanPaths", paths);
-
-      setState(() {
-        context.pop();
-        updateDictionaries();
-      });
-    }
-  }
-
-  Future<void> _removeScanPath(String path) async {
-    final paths = prefs.getStringList("scanPaths")!;
-    paths.remove(path);
-    prefs.setStringList("scanPaths", paths);
-  }
-
-  Future<void> _scanDictionaries(List<String> paths) async {
-    for (final path in paths) {
-      final dir = Directory(path);
-      final files = await dir.list().toList();
-
-      for (final file in files) {
-        if (extension(file.path) == ".mdx") {
-          final tempDict = Mdict(path: setExtension(file.path, ""));
-          await tempDict.add();
-          await tempDict.close();
-        }
-      }
-    }
   }
 }
