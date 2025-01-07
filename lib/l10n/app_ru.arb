@@ -35,6 +35,6 @@
   "remove": "Убрать",
   "confirm": "Подтвердить",
   "noResult": "Ничего не найдено",
-  "updateAnnouncement": "Обновление до %s",
   "description": "Описание"
+  "updateAnnouncement": "Есть обновление до %s",
 }
