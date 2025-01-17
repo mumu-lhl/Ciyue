@@ -19,6 +19,8 @@ jobs:
           java-version: 21
           distribution: "temurin"
 
+      - run: sudo apt install -y libsqlite3-dev
+
       - run: flutter pub get
       - run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze
