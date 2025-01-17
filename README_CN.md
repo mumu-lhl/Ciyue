@@ -43,6 +43,8 @@
 
 ### READ_EXTERNAL_STORAGE / MANAGE_EXTERNAL_STORAGE（管理外部存储空间）
 
+**将在 V1 版本中被移除**
+
 词悦需要该权限去读取 mdd 文件（mdx 文件的资源）。(如图片、JavaScript、CSS 等）。
 
 ## 翻译

@@ -43,6 +43,8 @@ Ciyue uses WebView to display words in a dictionary, and WebView needs INTERNET 
 
 ### READ_EXTERNAL_STORAGE / MANAGE_EXTERNAL_STORAGE (Manage External Storage)
 
+**Will be removed in v1**
+
 Ciyue needs the permission to read mdd file, which is the resources of mdx file. (such as images, JavaScript, CSS, etc.)
 
 ## Translation
