@@ -19,10 +19,12 @@ jobs:
           java-version: 21
           distribution: "temurin"
 
+      - run: apt install sqlite3
+
       - run: flutter pub get
       - run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze
-      - run: flutter test test/
+      - run: flutter test
 
       - name: Disable signing
         run: sed -i -e '/signingConfig /d' android/app/build.gradle
