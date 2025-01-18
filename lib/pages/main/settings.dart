@@ -10,7 +10,6 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
-import "package:path/path.dart";
 import "package:url_launcher/url_launcher.dart";
 
 const feedbackUri = "https://github.com/mumu-lhl/Ciyue/issues";
@@ -86,9 +85,7 @@ class ClearHistory extends StatelessWidget {
 }
 
 class Export extends StatelessWidget {
-  const Export({
-    super.key,
-  });
+  const Export({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -96,27 +93,12 @@ class Export extends StatelessWidget {
       leading: Icon(Icons.file_upload),
       title: Text(AppLocalizations.of(context)!.export),
       onTap: () async {
-        final directoryPath = await getDirectoryPath();
-        if (directoryPath == null || dictManager.isEmpty) {
-          return;
-        }
-
-        final dictionaryName = basename(dictManager.dicts.values.first.path),
-            filename = setExtension(dictionaryName, ".json"),
-            saveLocation = join(directoryPath, filename);
-
-        if (settings.autoExport) {
-          prefs.setString("autoExportPath", saveLocation);
-        }
-
         final words = await wordbookDao.getAllWords(),
             tags = await wordbookTagsDao.getAllTags();
 
         if (words.isNotEmpty) {
           final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
-
-          final file = File(saveLocation);
-          await file.writeAsString("$wordsOutput\n$tagsOutput");
+          platform.invokeMethod("createFile", "$wordsOutput\n$tagsOutput");
         }
       },
     );
