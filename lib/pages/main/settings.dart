@@ -1,5 +1,4 @@
 import "dart:convert";
-import "dart:io";
 
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
@@ -161,10 +160,9 @@ class Import extends StatelessWidget {
           return;
         }
 
-        final file = File(xFile.path),
-            input = await file.readAsLines(),
-            wordsJson = jsonDecode(input[0]),
-            tagsJson = jsonDecode(input[1]);
+        final content = (await xFile.readAsString()).split("\n"),
+            wordsJson = jsonDecode(content[0]),
+            tagsJson = jsonDecode(content[1]);
 
         final wordsData = <WordbookData>[];
         for (final i in wordsJson) {
