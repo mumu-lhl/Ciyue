@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.0.0-beta.2](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.1..v1.0.0-beta.2) - 2025-01-18
+
+### Bug Fixes
+
+- export workbook - ([2eeeb1b](https://github.com/mumu-lhl/Ciyue/commit/2eeeb1b48d8d3ecdc9655a038b21d42e2a4bd10c)) - Mumulhl
+- import wordbook - ([5f0c0a7](https://github.com/mumu-lhl/Ciyue/commit/5f0c0a7e53e770b514cdc6fb786fc30ea6ea43f3)) - Mumulhl
+
+### Features
+
+- **(localization)** add default and manage groups translations - ([e4bdc7a](https://github.com/mumu-lhl/Ciyue/commit/e4bdc7a88d71292860df6a4b34abc165e90ea727)) - Mumulhl
+- **(translation)** translated using Weblate (Persian) - ([805de30](https://github.com/mumu-lhl/Ciyue/commit/805de3023db7c10b304e3e3827c90bd7ff88bdce)) - Mo
+- remove announcement - ([794f920](https://github.com/mumu-lhl/Ciyue/commit/794f920e7c5a8f397d748487fbcbd43fcc0dd1c8)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(build)** reduce apk size - ([20e1ba9](https://github.com/mumu-lhl/Ciyue/commit/20e1ba903101ee3609c68f02b113321a926a6a28)) - Mumulhl
+- **(ci)** fix ci - ([e1bb757](https://github.com/mumu-lhl/Ciyue/commit/e1bb757749820ed3e525a3325520dda246e27129)) - Mumulhl
+- **(ci)** fix apt install - ([7785644](https://github.com/mumu-lhl/Ciyue/commit/77856442f5394591beabfda25c664be3cf7b1d9a)) - Mumulhl
+- **(ci)** install libsqlite3-dev - ([525ad29](https://github.com/mumu-lhl/Ciyue/commit/525ad29ef818b911a83d5d01b35a0f283e963933)) - Mumulhl
+- **(deps)** bump go_router from 14.6.2 to 14.6.3 - ([6d4771c](https://github.com/mumu-lhl/Ciyue/commit/6d4771c99749eb7869519a792b380ab1a095bc01)) - dependabot[bot]
+- **(deps)** update - ([3e921eb](https://github.com/mumu-lhl/Ciyue/commit/3e921eb1a2ac205f66b11ad31c49efa93b8a261d)) - Mumulhl
+- remove external storage permission - ([7833b14](https://github.com/mumu-lhl/Ciyue/commit/7833b145901340d3a54f0963653cd5f2bcbfcf83)) - Mumulhl
+- update AGP - ([2da10e0](https://github.com/mumu-lhl/Ciyue/commit/2da10e0815246eab88fedc6d404ca3cc6cd17d08)) - Mumulhl
+
+### Style
+
+- format code - ([9d8c1f8](https://github.com/mumu-lhl/Ciyue/commit/9d8c1f8a191c5e8aea82ebd525ab1c3ab34747f7)) - Mumulhl
+
+---
 ## [1.0.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v0.16.0..v1.0.0-beta.1) - 2025-01-07
 
 ### Bug Fixes
