@@ -7,6 +7,7 @@ import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
 import "package:ciyue/pages/webview_display.dart";
 import "package:ciyue/settings.dart";
+import "package:ciyue/widget/loading_dialog.dart";
 import "package:drift/drift.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
@@ -43,7 +44,7 @@ Future<void> updateAllDictionaries() async {
   final cacheDir = Directory(
       join((await getApplicationCacheDirectory()).path, "dictionaries_cache"));
   final entities = await cacheDir.list().toList();
-  _addDictionaries(entities);
+  await _addDictionaries(entities);
 }
 
 void main() async {
@@ -66,13 +67,21 @@ void main() async {
   packageInfo = await PackageInfo.fromPlatform();
 
   platform.setMethodCallHandler((call) async {
-    if (call.method == "processText") {
-      final text = call.arguments as String;
+    switch (call.method) {
+      case "processText":
+        final text = call.arguments as String;
 
-      // Navigate to search result with the text
-      _router.go("/word", extra: {"word": text});
-    } else if (call.method == "inputDirectory") {
-      updateAllDictionaries();
+        // Navigate to search result with the text
+        _router.go("/word", extra: {"word": text});
+        break;
+      case "inputDirectory":
+        await updateAllDictionaries();
+        _router.pop();
+        updateManageDictionariesPage();
+        break;
+      case "showLoadingDialog":
+        showLoadingDialog(_navigatorKey.currentContext!);
+        break;
     }
   });
 
@@ -92,7 +101,9 @@ late final VoidCallback refreshAll;
 final WordbookDao wordbookDao = WordbookDao(mainDatabase);
 final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
 
+final _navigatorKey = GlobalKey<NavigatorState>();
 final _router = GoRouter(
+  navigatorKey: _navigatorKey,
   routes: [
     GoRoute(
       path: "/",
