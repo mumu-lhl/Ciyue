@@ -81,5 +81,9 @@
   "clearHistory": "Clear History",
   "@clearHistory": {},
   "clearHistoryConfirm": "Are you sure you want to clear history?",
-  "@clearHistoryConfirm": {}
+  "@clearHistoryConfirm": {},
+  "default_": "Default",
+  "@default_": {},
+  "manageGroups": "Manage Groups",
+  "@manageGroups": {}
 }

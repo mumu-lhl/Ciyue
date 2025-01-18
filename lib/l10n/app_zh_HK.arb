@@ -40,5 +40,7 @@
   "removeOneHistoryConfirm": "你確定要從歷史記錄中刪除 “%s” 嗎？",
   "removeOneHistory": "刪除歷史記錄",
   "clearHistory": "清空歷史記錄",
-  "clearHistoryConfirm": "你確定要清空歷史記錄嗎？"
+  "clearHistoryConfirm": "你確定要清空歷史記錄嗎？",
+  "default_": "默認",
+  "manageGroups": "管理分組"
 }

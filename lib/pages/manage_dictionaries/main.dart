@@ -50,13 +50,15 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
 
   Widget _buildGroupDialog(BuildContext context) {
     return AlertDialog(
-      title: const Text('Manage Groups'),
+      title: Text(AppLocalizations.of(context)!.manageGroups),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           for (final group in dictManager.groups)
             RadioListTile(
-              title: Text(group.name),
+              title: Text(group.name == "Default"
+                  ? AppLocalizations.of(context)!.default_
+                  : group.name),
               value: group.id,
               groupValue: dictManager.groupId,
               secondary: buildGroupDeleteButton(context, group),
