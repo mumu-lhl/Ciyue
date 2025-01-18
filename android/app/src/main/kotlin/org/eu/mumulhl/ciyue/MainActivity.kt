@@ -14,6 +14,7 @@ import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import java.io.File
@@ -67,6 +68,8 @@ class MainActivity : FlutterActivity() {
 
     private fun openDocumentTree(data: Intent?) {
         data?.data?.also { uri ->
+            methodChannel!!.invokeMethod("showLoadingDialog", null)
+
             val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
             applicationContext.contentResolver.takePersistableUriPermission(
                 uri, takeFlags
@@ -78,8 +81,7 @@ class MainActivity : FlutterActivity() {
             if (!cacheDir.exists()) {
                 cacheDir.mkdir()
             }
-            val targetFolder =
-                DocumentFileCompat.fromFile(applicationContext, cacheDir)!!
+            val targetFolder = DocumentFileCompat.fromFile(applicationContext, cacheDir)!!
 
             ioScope.launch {
                 documents.copyFolderTo(applicationContext,
@@ -98,19 +100,19 @@ class MainActivity : FlutterActivity() {
                             conflictedFiles: MutableList<FileConflict>,
                             action: FolderContentConflictAction
                         ) {
-                            val newSolution =
-                                ArrayList<FileConflict>(conflictedFiles.size)
+                            val newSolution = ArrayList<FileConflict>(conflictedFiles.size)
                             conflictedFiles.forEach {
-                                it.solution =
-                                    SingleFileConflictCallback.ConflictResolution.SKIP
+                                it.solution = SingleFileConflictCallback.ConflictResolution.SKIP
                             }
                             newSolution.addAll(conflictedFiles)
                             action.confirmResolution(newSolution)
-
                         }
-                    }).onCompletion {}.collect { _ -> }
+                    }).onCompletion {
+                     withContext(Dispatchers.Main) {
+                        methodChannel!!.invokeMethod("inputDirectory", null)
+                    }
+                }.collect { _ -> }
             }
-            methodChannel!!.invokeMethod("inputDirectory", null)
         }
     }
 

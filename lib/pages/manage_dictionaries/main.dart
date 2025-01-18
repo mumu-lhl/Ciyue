@@ -10,6 +10,8 @@ import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
 
+late VoidCallback updateManageDictionariesPage;
+
 class ManageDictionaries extends StatefulWidget {
   const ManageDictionaries({super.key});
 
@@ -19,6 +21,13 @@ class ManageDictionaries extends StatefulWidget {
 
 class _ManageDictionariesState extends State<ManageDictionaries> {
   var dictionaries = dictionaryListDao.all();
+
+  @override
+  void initState() {
+    super.initState();
+
+    updateManageDictionariesPage = updateDictionaries;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -192,10 +201,9 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
             }
           }
 
-          setState(() {
-            context.pop();
-            updateDictionaries();
-          });
+          if (context.mounted) context.pop();
+
+          updateDictionaries();
         }
       },
     );
@@ -287,9 +295,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                           await tmpDict.close();
                         }
 
-                        setState(() {
-                          updateDictionaries();
-                        });
+                        updateDictionaries();
 
                         if (context.mounted) context.pop();
                       },
@@ -364,6 +370,8 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
   }
 
   void updateDictionaries() {
-    dictionaries = dictionaryListDao.all();
+    setState(() {
+      dictionaries = dictionaryListDao.all();
+    });
   }
 }
