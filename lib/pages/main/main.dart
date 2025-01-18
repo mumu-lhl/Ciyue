@@ -74,7 +74,9 @@ class _HomeState extends State<Home> {
               leading: group.id == dictManager.groupId
                   ? const Icon(Icons.circle, size: 10)
                   : const Icon(Icons.circle_outlined, size: 10),
-              title: Text(group.name == "Default" ? AppLocalizations.of(context)!.default_ : group.name),
+              title: Text(group.name == "Default"
+                  ? AppLocalizations.of(context)!.default_
+                  : group.name),
               onTap: () async {
                 context.pop();
                 await dictManager.setCurrentGroup(group.id);
