@@ -33,7 +33,7 @@ class About extends StatelessWidget {
       icon: const Icon(Icons.info),
       applicationName: packageInfo.appName,
       applicationVersion: "${packageInfo.version} (${packageInfo.buildNumber})",
-      applicationLegalese: "\u{a9} 2024 Mumulhl and contributors",
+      applicationLegalese: "\u{a9} 2024-2025 Mumulhl and contributors",
     );
   }
 }
