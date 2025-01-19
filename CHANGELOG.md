@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.0.0-beta.3](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.2..v1.0.0-beta.3) - 2025-01-19
+
+### Features
+
+- add loading dialog when adding dictionaries - ([a5b2110](https://github.com/mumu-lhl/Ciyue/commit/a5b211065dfdd8e6c8c264ddacf5066e5a891264)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** update flutter version - ([946018b](https://github.com/mumu-lhl/Ciyue/commit/946018b69d6499357223153f492eb7069d76e6d3)) - Mumulhl
+- bump copyright year - ([367a39b](https://github.com/mumu-lhl/Ciyue/commit/367a39ba29524605489bc2e5bd9563e9fba94213)) - Mumulhl
+
+---
 ## [1.0.0-beta.2](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.1..v1.0.0-beta.2) - 2025-01-18
 
 ### Bug Fixes
