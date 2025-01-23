@@ -144,36 +144,3 @@ class HomeScreen extends StatelessWidget {
         });
   }
 }
-
-class SearchResult extends StatelessWidget {
-  final List<DictionaryData> searchResult;
-
-  const SearchResult({super.key, required this.searchResult});
-
-  @override
-  Widget build(BuildContext context) {
-    final resultWidgets = <Widget>[];
-
-    for (final word in searchResult) {
-      resultWidgets.add(ListTile(
-          title: Text(word.key),
-          trailing: IconButton(
-            icon: const Icon(Icons.volume_up),
-            onPressed: () async {
-              await flutterTts.speak(word.key);
-            },
-          ),
-          onTap: () async {
-            context.push("/word", extra: {"word": word.key});
-          }));
-    }
-
-    if (searchResult.isEmpty) {
-      return Center(
-          child: Text(AppLocalizations.of(context)!.noResult,
-              style: Theme.of(context).textTheme.titleLarge));
-    } else {
-      return ListView(children: resultWidgets);
-    }
-  }
-}

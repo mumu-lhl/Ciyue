@@ -109,8 +109,6 @@ class Mdict {
 
     await _initDictReader(path);
 
-    await prefs.setString("currentDictionaryPath", path);
-
     await dictionaryListDao.add(path);
 
     id = await dictionaryListDao.getId(path);
@@ -160,8 +158,6 @@ class Mdict {
   }
 
   Future<void> removeDictionary() async {
-    await prefs.remove("currentDictionaryPath");
-
     await db.close();
     final databasePath = join((await getApplicationDocumentsDirectory()).path,
         "dictionary_$id.sqlite");
