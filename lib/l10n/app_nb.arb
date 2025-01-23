@@ -36,5 +36,16 @@
   "tagName": "Tag navn",
   "tagList": "Tag liste",
   "remove": "Fjern",
-  "confirm": "Bekreft"
+  "confirm": "Bekreft",
+  "properties": "Egenskaper",
+  "removeOneHistory": "Fjern historikk",
+  "removeOneHistoryConfirm": "Er du sikker på at du vil fjerne '%s' fra historikken?",
+  "clearHistory": "Tøm historikk",
+  "clearHistoryConfirm": "Er du sikker på at du vil tømme historikken?",
+  "default_": "Standard",
+  "manageGroups": "Administrer grupper",
+  "exportFileName": "Eksporter filnavn",
+  "exportDirectory": "Eksporter katalog",
+  "title": "Tittel",
+  "totalNumberOfEntries": "Totalt antall oppføringer"
 }

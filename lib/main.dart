@@ -4,6 +4,7 @@ import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
+import "package:ciyue/pages/manage_dictionaries/properties.dart";
 import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
 import "package:ciyue/pages/webview_display.dart";
 import "package:ciyue/settings.dart";
@@ -127,20 +128,25 @@ final _router = GoRouter(
     GoRoute(
         path: "/description/:dictId",
         builder: (context, state) => WebviewDisplayDescription(
-              dictId: int.parse(state.pathParameters['dictId']!),
+              dictId: int.parse(state.pathParameters["dictId"]!),
             )),
     GoRoute(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),
     GoRoute(
-        path: "/settings/dictionary/:dictId",
+        path: "/settings/:dictId",
         builder: (context, state) => SettingsDictionary(
-              dictId: int.parse(state.pathParameters['dictId']!),
+              dictId: int.parse(state.pathParameters["dictId"]!),
             )),
     GoRoute(
       path: "/settings/autoExport",
-      builder: (context, state) => const AutoExportPage(),
+      builder: (context, state) => const AutoExport(),
     ),
+    GoRoute(
+        path: "/properties",
+        builder: (context, state) => PropertiesDictionary(
+              path: (state.extra as Map<String, dynamic>)["path"],
+            )),
   ],
 );
 

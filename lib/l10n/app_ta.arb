@@ -36,5 +36,16 @@
   "home": "வீடு",
   "wordBook": "சொல் நூல்",
   "settings": "அமைப்புகள்",
-  "description": "விளக்கம்"
+  "description": "விளக்கம்",
+  "properties": "பண்புகள்",
+  "removeOneHistory": "வரலாற்றை அகற்று",
+  "removeOneHistoryConfirm": "வரலாற்றிலிருந்து '%s' ஐ அகற்ற விரும்புகிறீர்களா?",
+  "clearHistory": "வரலாற்றை அழி",
+  "clearHistoryConfirm": "வரலாற்றை அழிக்க விரும்புகிறீர்களா?",
+  "default_": "இயல்புநிலை",
+  "manageGroups": "குழுக்களை நிர்வகிக்கவும்",
+  "exportFileName": "ஏற்றுமதி கோப்பு பெயர்",
+  "exportDirectory": "ஏற்றுமதி அடைவு",
+  "title": "தலைப்பு",
+  "totalNumberOfEntries": "மொத்த உள்ளீடுகளின் எண்ணிக்கை"
 }

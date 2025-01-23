@@ -44,5 +44,8 @@
   "default_": "默認",
   "manageGroups": "管理分組",
   "exportFileName": "導出文件名",
-  "exportDirectory": "導出目錄"
+  "exportDirectory": "導出目錄",
+  "properties": "屬性",
+  "title": "標題",
+  "totalNumberOfEntries": "總條目數"
 }

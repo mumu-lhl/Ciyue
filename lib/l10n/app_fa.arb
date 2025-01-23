@@ -81,5 +81,12 @@
   "clearHistory": "حذف سوابق",
   "@clearHistory": {},
   "clearHistoryConfirm": "آیا از حذف سوابق اطمینان دارید؟",
-  "@clearHistoryConfirm": {}
+  "@clearHistoryConfirm": {},
+  "properties": "خصوصیات",
+  "default_": "پیش فرض",
+  "manageGroups": "مدیریت گروه ها",
+  "exportFileName": "نام فایل خروجی",
+  "exportDirectory": "مسیر خروجی",
+  "title": "عنوان",
+  "totalNumberOfEntries": "تعداد کل ورودی ها"
 }

@@ -278,6 +278,18 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                   title: Text(basename(dictionary.path)),
                   children: <Widget>[
                     SimpleDialogOption(
+                      onPressed: () {
+                        context.pop();
+                        context.push("/properties", extra: {
+                          "path": dictionary.path,
+                        });
+                      },
+                      child: ListTile(
+                        leading: Icon(Icons.settings),
+                        title: Text(AppLocalizations.of(context)!.properties),
+                      ),
+                    ),
+                    SimpleDialogOption(
                       onPressed: () async {
                         if (dictManager.contain(dictionary.id)) {
                           dictManager.remove(dictionary.id);
@@ -317,7 +329,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                     SimpleDialogOption(
                       onPressed: () {
                         context.pop();
-                        context.push("/settings/dictionary/${dictionary.id}");
+                        context.push("/settings/${dictionary.id}");
                       },
                       child: ListTile(
                         leading: Icon(Icons.settings),
