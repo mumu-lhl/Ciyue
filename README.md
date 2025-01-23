@@ -12,16 +12,16 @@ A mdict dictionary with Android support
 ## Features
 
 * 📄 Support MDX/MDD
+* 🔍 Support multiple dictionaries search and display
 * 🎨 Support Material You
 * 🔈 Support reading aloud
 * 🔖 Bookmarking words to the word book
-* 📙 Add multiple dictionaries and switch between them
 
 ## Screenshots
 
 |||||
 |--|--|--|--|
-| <img alt="Home" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="Settings" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="Manage dictionaries" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="Search Words" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
+| <img alt="Home" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="Settings" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="Manage dictionaries" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="Display Word" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
 
 ## Install
 
@@ -40,12 +40,6 @@ See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries).
 ### INTERNET (Internet)
 
 Ciyue uses WebView to display words in a dictionary, and WebView needs INTERNET permission to work, even if when displaying local data.
-
-### READ_EXTERNAL_STORAGE / MANAGE_EXTERNAL_STORAGE (Manage External Storage)
-
-**Will be removed in v1**
-
-Ciyue needs the permission to read mdd file, which is the resources of mdx file. (such as images, JavaScript, CSS, etc.)
 
 ## Translation
 

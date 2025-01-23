@@ -12,16 +12,16 @@
 ## 特点
 
 * 📄 支持 MDX/MDD
+* 🔍 支持多词典搜索和显示
 * 🎨 支持 Material You
 * 🔈 支持朗读
 * 🔖 收藏单词到单词本
-* 📙 添加多个词典并在它们之间切换
 
 ## 截图
 
 |||||
 |--|--|--|--|
-| <img alt="主页" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="设置" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="管理词典" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="单词搜索" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
+| <img alt="主页" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="设置" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="管理词典" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="单词显示" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
 
 ## 安装
 
@@ -40,12 +40,6 @@
 ### INTERNET（互联网）
 
 词悦使用 WebView 显示单词，WebView 即使显示本地数据也需要 INTERNET 权限才能正常工作。
-
-### READ_EXTERNAL_STORAGE / MANAGE_EXTERNAL_STORAGE（管理外部存储空间）
-
-**将在 V1 版本中被移除**
-
-词悦需要该权限去读取 mdd 文件（mdx 文件的资源）。(如图片、JavaScript、CSS 等）。
 
 ## 翻译
 
