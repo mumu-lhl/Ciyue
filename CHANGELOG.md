@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.0.0-beta.4](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.3..v1.0.0-beta.4) - 2025-01-23
+
+### Bug Fixes
+
+- auto export feature - ([6d583ee](https://github.com/mumu-lhl/Ciyue/commit/6d583ee4eb40c091afb900f33c744b2b6508055b)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(deps)** bump flutter_launcher_icons from 0.14.2 to 0.14.3 - ([f3e8d8f](https://github.com/mumu-lhl/Ciyue/commit/f3e8d8f3b0e9b76b383de49caa65b8358b50e1e2)) - dependabot[bot]
+
+---
 ## [1.0.0-beta.3](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.2..v1.0.0-beta.3) - 2025-01-19
 
 ### Features
