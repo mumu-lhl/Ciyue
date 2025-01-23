@@ -3,11 +3,15 @@ import "package:flutter/material.dart";
 
 class _Settings {
   late bool autoExport;
+  late String exportFileName;
+  late String? exportDirectory;
   late ThemeMode themeMode;
   String? language;
 
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
+    exportFileName = prefs.getString("exportFileName") ?? "ciyue";
+    exportDirectory = prefs.getString("exportDirectory");
 
     language = prefs.getString("language");
     language ??= "system";

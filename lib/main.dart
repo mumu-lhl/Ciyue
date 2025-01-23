@@ -8,6 +8,7 @@ import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
 import "package:ciyue/pages/webview_display.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/widget/loading_dialog.dart";
+import "package:ciyue/pages/auto_export.dart";
 import "package:drift/drift.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
@@ -74,13 +75,21 @@ void main() async {
         // Navigate to search result with the text
         _router.go("/word", extra: {"word": text});
         break;
+
       case "inputDirectory":
         await updateAllDictionaries();
         _router.pop();
         updateManageDictionariesPage();
         break;
+
       case "showLoadingDialog":
         showLoadingDialog(_navigatorKey.currentContext!);
+        break;
+
+      case "getDirectory":
+        final directory = call.arguments as String;
+        settings.exportDirectory = directory;
+        prefs.setString('exportDirectory', directory);
         break;
     }
   });
@@ -128,6 +137,10 @@ final _router = GoRouter(
         builder: (context, state) => SettingsDictionary(
               dictId: int.parse(state.pathParameters['dictId']!),
             )),
+    GoRoute(
+      path: "/settings/autoExport",
+      builder: (context, state) => const AutoExportPage(),
+    ),
   ],
 );
 

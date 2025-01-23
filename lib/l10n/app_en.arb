@@ -85,5 +85,9 @@
   "default_": "Default",
   "@default_": {},
   "manageGroups": "Manage Groups",
-  "@manageGroups": {}
+  "@manageGroups": {},
+  "exportFileName": "Export File Name",
+  "@exportFileName": {},
+  "exportDirectory": "Export Directory",
+  "@exportDirectory": {}
 }
