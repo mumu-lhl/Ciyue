@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.0.0](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.4..v1.0.0) - 2025-01-23
+
+### Documentation
+
+- update README.md and metadata - ([50316d1](https://github.com/mumu-lhl/Ciyue/commit/50316d1a70b1e99b50026ae7e0c87d453a6f7a11)) - Mumulhl
+
+### Features
+
+- add properties page - ([b53ecf8](https://github.com/mumu-lhl/Ciyue/commit/b53ecf8248e0e496c8b4759a685fa9235bc02e71)) - Mumulhl
+- add title and total number of entries to localization files - ([f3debf9](https://github.com/mumu-lhl/Ciyue/commit/f3debf9173e4c890ac347292238042cd73aa22e9)) - Mumulhl
+
+### Miscellaneous Chores
+
+- update Flutter version to 3.27.3 in release workflow - ([0d25ccb](https://github.com/mumu-lhl/Ciyue/commit/0d25ccb42f62c658dea23063dcd54f2f768119fd)) - Mumulhl
+
+### Refactoring
+
+- remove unused codes - ([15ea1f7](https://github.com/mumu-lhl/Ciyue/commit/15ea1f72dbaf79681a976a979398c282487eb449)) - Mumulhl
+
+### Style
+
+- format code - ([ecc56ec](https://github.com/mumu-lhl/Ciyue/commit/ecc56ece703cffb4a52ca1331bbb5885db2ce35a)) - Mumulhl
+
+---
 ## [1.0.0-beta.4](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.3..v1.0.0-beta.4) - 2025-01-23
 
 ### Bug Fixes
