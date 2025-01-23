@@ -45,5 +45,7 @@
    "default_": "Predefinidu",
   "manageGroups": "Manìgia sos grupos",
   "exportFileName": "Nùmene de s'archìviu de esportatzione",
-  "exportDirectory": "Repertòriu de esportatzione"
+  "exportDirectory": "Repertòriu de esportatzione",
+  "title": "Tìtulu",
+  "totalNumberOfEntries": "Nùmeru totale de intradas"
 }

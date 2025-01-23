@@ -45,5 +45,7 @@
   "default_": "По умолчанию",
   "manageGroups": "Управление группами",
   "exportFileName": "Имя файла экспорта",
-  "exportDirectory": "Каталог экспорта"
+  "exportDirectory": "Каталог экспорта",
+  "title": "Заголовок",
+  "totalNumberOfEntries": "Общее количество записей"
 }

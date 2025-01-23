@@ -45,5 +45,7 @@
   "default_": "Standard",
   "manageGroups": "Administrer grupper",
   "exportFileName": "Eksporter filnavn",
-  "exportDirectory": "Eksporter katalog"
+  "exportDirectory": "Eksporter katalog",
+  "title": "Tittel",
+  "totalNumberOfEntries": "Totalt antall oppføringer"
 }

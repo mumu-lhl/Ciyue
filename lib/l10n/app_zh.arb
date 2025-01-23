@@ -45,5 +45,7 @@
   "manageGroups": "管理分组",
   "exportFileName": "导出文件名",
   "exportDirectory": "导出目录",
-  "properties": "属性"
+  "properties": "属性",
+  "title": "标题",
+  "totalNumberOfEntries": "总条目数"
 }
