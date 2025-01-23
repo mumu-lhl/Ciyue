@@ -74,6 +74,8 @@
   "@updateAnnouncement": {},
   "description": "Description",
   "@description": {},
+  "properties": "Properties",
+  "@properties": {},
   "removeOneHistory": "Remove History",
   "@removeOneHistory": {},
   "removeOneHistoryConfirm": "Are you sure you want to remove '%s' from history?",
@@ -89,5 +91,9 @@
   "exportFileName": "Export File Name",
   "@exportFileName": {},
   "exportDirectory": "Export Directory",
-  "@exportDirectory": {}
+  "@exportDirectory": {},
+  "title": "Title",
+  "@title": {},
+  "totalNumberOfEntries": "Total Number of Entries",
+  "@totalNumberOfEntries": {}
 }

@@ -44,5 +44,6 @@
   "default_": "默认",
   "manageGroups": "管理分组",
   "exportFileName": "导出文件名",
-  "exportDirectory": "导出目录"
+  "exportDirectory": "导出目录",
+  "properties": "属性"
 }

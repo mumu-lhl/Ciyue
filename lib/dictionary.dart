@@ -9,6 +9,8 @@ import "package:path_provider/path_provider.dart";
 import "database/dictionary.dart";
 import "main.dart";
 
+final dictManager = DictManager();
+
 class DictManager {
   final Map<int, Mdict> dicts = {};
   List<DictGroupData> groups = [];
@@ -17,7 +19,30 @@ class DictManager {
 
   bool get isEmpty => dicts.isEmpty;
 
+  Future<void> add(String path) async {
+    final dict = Mdict(path: path);
+    await dict.init();
+    dicts[dict.id] = dict;
+  }
+
+  Future<void> clear() async {
+    for (final id in dictIds) {
+      await close(id);
+    }
+  }
+
+  Future<void> close(int id) async {
+    await dicts[id]!.close();
+    dicts.remove(id);
+  }
+
   bool contain(int id) => dicts.keys.contains(id);
+
+  Future<void> remove(int id) async {
+    await dicts[id]!.removeDictionary();
+    await dicts[id]!.close();
+    dicts.remove(id);
+  }
 
   Future<void> setCurrentGroup(int id) async {
     await clear();
@@ -32,39 +57,14 @@ class DictManager {
     }
   }
 
-  Future<void> updateGroupList() async {
-    groups = await dictGroupDao.getAllGroups();
-  }
-
   Future<void> updateDictIds() async {
     dictIds = await dictGroupDao.getDictIds(groupId);
   }
 
-  Future<void> clear() async {
-    for (final id in dictIds) {
-      await close(id);
-    }
-  }
-
-  Future<void> add(String path) async {
-    final dict = Mdict(path: path);
-    await dict.init();
-    dicts[dict.id] = dict;
-  }
-
-  Future<void> close(int id) async {
-    await dicts[id]!.close();
-    dicts.remove(id);
-  }
-
-  Future<void> remove(int id) async {
-    await dicts[id]!.removeDictionary();
-    await dicts[id]!.close();
-    dicts.remove(id);
+  Future<void> updateGroupList() async {
+    groups = await dictGroupDao.getAllGroups();
   }
 }
-
-final dictManager = DictManager();
 
 class Mdict {
   late final int id;
@@ -74,31 +74,10 @@ class Mdict {
   late final DictionaryDatabase db;
   late final DictReader reader;
   DictReader? readerResource;
+  late final String title;
+  late final int entriesTotal;
 
   Mdict({required this.path});
-
-  Future<void> init() async {
-    id = await dictionaryListDao.getId(path);
-
-    reader = DictReader("$path.mdx");
-    await reader.init(false);
-
-    try {
-      readerResource = DictReader("$path.mdd");
-      await readerResource!.init(false);
-    } catch (e) {
-      readerResource = null;
-    }
-
-    db = dictionaryDatabase(id);
-
-    final fontPath = await dictionaryListDao.getFontPath(id);
-    customFont(fontPath);
-  }
-
-  Future<void> close() async {
-    await db.close();
-  }
 
   Future<bool> add() async {
     try {
@@ -120,7 +99,13 @@ class Mdict {
 
     customFont(null);
 
+    title = reader.header["Title"] ?? basename(path);
+
     return true;
+  }
+
+  Future<void> close() async {
+    await db.close();
   }
 
   Future<void> customFont(String? path) async {
@@ -132,6 +117,35 @@ class Mdict {
     }
 
     await dictionaryListDao.updateFont(id, path);
+  }
+
+  Future<void> initOnlyMetadata() async {
+    reader = DictReader("$path.mdx");
+    await reader.init();
+
+    title = reader.header["Title"] ?? basename(path);
+    entriesTotal = reader.numEntries;
+  }
+
+  Future<void> init() async {
+    id = await dictionaryListDao.getId(path);
+
+    reader = DictReader("$path.mdx");
+    await reader.init(false);
+
+    try {
+      readerResource = DictReader("$path.mdd");
+      await readerResource!.init(false);
+    } catch (e) {
+      readerResource = null;
+    }
+
+    db = dictionaryDatabase(id);
+
+    final fontPath = await dictionaryListDao.getFontPath(id);
+    customFont(fontPath);
+
+    title = reader.header["Title"] ?? basename(path);
   }
 
   Future<String> readWord(String word) async {

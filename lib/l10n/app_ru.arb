@@ -36,5 +36,14 @@
   "confirm": "Подтвердить",
   "noResult": "Ничего не найдено",
   "description": "Описание",
-  "updateAnnouncement": "Есть обновление до %s"
+  "updateAnnouncement": "Есть обновление до %s",
+  "properties": "Свойства",
+  "removeOneHistory": "Удалить из истории",
+  "removeOneHistoryConfirm": "Вы уверены, что хотите удалить '%s' из истории?",
+  "clearHistory": "Очистить историю",
+  "clearHistoryConfirm": "Вы уверены, что хотите очистить историю?",
+  "default_": "По умолчанию",
+  "manageGroups": "Управление группами",
+  "exportFileName": "Имя файла экспорта",
+  "exportDirectory": "Каталог экспорта"
 }
