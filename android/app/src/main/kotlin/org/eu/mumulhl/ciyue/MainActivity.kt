@@ -2,12 +2,15 @@ package org.eu.mumulhl.ciyue
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.callback.SingleFileConflictCallback
 import com.anggrayudi.storage.callback.SingleFolderConflictCallback
 import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.copyFolderTo
+import com.anggrayudi.storage.file.openOutputStream
+import com.anggrayudi.storage.file.recreateFile
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -26,6 +29,7 @@ class MainActivity : FlutterActivity() {
 
     private val OPEN_DOCUMENT_TREE = 0
     private val CREATE_FILE = 1
+    private val GET_DIRECTORY = 2
 
     private val job = Job()
     private val ioScope = CoroutineScope(Dispatchers.IO + job)
@@ -46,6 +50,31 @@ class MainActivity : FlutterActivity() {
         startActivityForResult(intent, CREATE_FILE)
     }
 
+    private fun getDirectory() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        startActivityForResult(intent, GET_DIRECTORY)
+    }
+
+    private fun writeFile(path: String, directory: String, filename: String, content: String) {
+//        val uri = Uri.parse(path)
+//        val file = DocumentFile.fromSingleUri(context, uri)
+        val directoryFile = DocumentFile.fromTreeUri(context, Uri.parse(directory))
+        val file = directoryFile!!.findFile(filename)
+        if (file == null) {
+            val newFile = directoryFile.createFile("application/json", filename)
+            newFile!!.openOutputStream(context, append = false).use { outputStream ->
+                outputStream!!.write(content.toByteArray())
+            }
+
+        } else {
+            file.delete()
+            val newFile = directoryFile.createFile("application/json", filename)
+            newFile!!.openOutputStream(context, append = false).use { outputStream ->
+                outputStream!!.write(content.toByteArray())
+            }
+        }
+    }
+
     override fun onActivityResult(
         requestCode: Int, resultCode: Int, data: Intent?
     ) {
@@ -54,14 +83,30 @@ class MainActivity : FlutterActivity() {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
                 OPEN_DOCUMENT_TREE -> openDocumentTree(data)
-                CREATE_FILE -> {
-                    data?.data?.also { uri ->
-                        contentResolver.openOutputStream(uri)?.use { outputStream ->
-                            outputStream.write(exportContent.toByteArray())
-                            exportContent = ""
-                        }
-                    }
-                }
+                CREATE_FILE -> createFileHandler(data)
+                GET_DIRECTORY -> getDirectoryHandler(data)
+            }
+        }
+    }
+
+    private fun getDirectoryHandler(data: Intent?) {
+        data?.data?.also { uri ->
+            val takeFlags: Int = Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            contentResolver.takePersistableUriPermission(
+                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+            contentResolver.takePersistableUriPermission(
+                uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            methodChannel!!.invokeMethod("getDirectory", uri.toString())
+        }
+    }
+
+    private fun createFileHandler(data: Intent?) {
+        data?.data?.also { uri ->
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                outputStream.write(exportContent.toByteArray())
+                exportContent = ""
             }
         }
     }
@@ -71,7 +116,7 @@ class MainActivity : FlutterActivity() {
             methodChannel!!.invokeMethod("showLoadingDialog", null)
 
             val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            applicationContext.contentResolver.takePersistableUriPermission(
+            contentResolver.takePersistableUriPermission(
                 uri, takeFlags
             )
 
@@ -108,7 +153,7 @@ class MainActivity : FlutterActivity() {
                             action.confirmResolution(newSolution)
                         }
                     }).onCompletion {
-                     withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.Main) {
                         methodChannel!!.invokeMethod("inputDirectory", null)
                     }
                 }.collect { _ -> }
@@ -130,6 +175,22 @@ class MainActivity : FlutterActivity() {
                     "createFile" -> {
                         exportContent = call.arguments as String
                         createFile()
+                        result.success(0)
+                    }
+
+                    "getDirectory" -> {
+                        getDirectory()
+                        result.success(0)
+                    }
+
+                    "writeFile" -> {
+                        val arguments = call.arguments as Map<*, *>
+                        writeFile(
+                            arguments["path"] as String,
+                            arguments["directory"] as String,
+                            arguments["filename"] as String,
+                            arguments["content"] as String
+                        )
                         result.success(0)
                     }
 

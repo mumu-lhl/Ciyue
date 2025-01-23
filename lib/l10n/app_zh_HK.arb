@@ -42,5 +42,7 @@
   "clearHistory": "清空歷史記錄",
   "clearHistoryConfirm": "你確定要清空歷史記錄嗎？",
   "default_": "默認",
-  "manageGroups": "管理分組"
+  "manageGroups": "管理分組",
+  "exportFileName": "導出文件名",
+  "exportDirectory": "導出目錄"
 }

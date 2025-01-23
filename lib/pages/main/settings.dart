@@ -241,16 +241,10 @@ class ThemeSelector extends StatefulWidget {
 class _AutoExportState extends State<AutoExport> {
   @override
   Widget build(BuildContext context) {
-    return SwitchListTile(
-      title: Text(AppLocalizations.of(context)!.autoExport),
-      secondary: Icon(Icons.backup),
-      value: settings.autoExport,
-      onChanged: (bool value) {
-        settings.autoExport = value;
-        prefs.setBool("autoExport", value);
-        setState(() {});
-      },
-    );
+    return ListTile(
+        leading: Icon(Icons.backup),
+        title: Text(AppLocalizations.of(context)!.autoExport),
+        onTap: () => context.push("/settings/autoExport"));
   }
 }
 

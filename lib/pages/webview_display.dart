@@ -285,15 +285,19 @@ class _ButtonState extends State<Button> {
   Future<bool>? stared;
 
   Future<void> autoExport() async {
-    if (settings.autoExport && prefs.getString("autoExportPath") != null) {
+    if (settings.autoExport && settings.exportDirectory != null) {
       final words = await wordbookDao.getAllWords(),
           tags = await wordbookTagsDao.getAllTags();
 
       final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
+      final fileName = setExtension(settings.exportFileName, ".json");
 
-      final file = File(prefs.getString("autoExportPath")!);
-
-      await file.writeAsString("$wordsOutput\n$tagsOutput");
+      platform.invokeMethod("writeFile", {
+        "path": join(settings.exportDirectory!, fileName),
+        "directory": settings.exportDirectory,
+        "filename": fileName,
+        "content": "$wordsOutput\n$tagsOutput"
+      });
     }
   }
 
