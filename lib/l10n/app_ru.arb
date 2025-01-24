@@ -48,5 +48,7 @@
   "exportDirectory": "Каталог экспорта",
   "title": "Заголовок",
   "totalNumberOfEntries": "Общее количество записей",
-  "sponsor": "Спонсор"
+  "sponsor": "Спонсор",
+  "more": "Больше",
+  "autoRemoveSearchWord": "Автоматически удалять поисковое слово"
 }

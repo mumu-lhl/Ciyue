@@ -2,6 +2,8 @@ import "package:ciyue/database/app.dart";
 import "package:ciyue/database/dictionary.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/main/main.dart";
+import "package:ciyue/settings.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
@@ -128,6 +130,9 @@ class HomeScreen extends StatelessWidget {
                   onTap: () async {
                     context.push("/word", extra: {"word": word.key});
                     await historyDao.addHistory(word.key);
+                    if (settings.autoRemoveSearchWord) {
+                      clearSearchWord();
+                    }
                   }));
             }
 

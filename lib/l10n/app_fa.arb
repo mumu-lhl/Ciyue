@@ -48,5 +48,7 @@
   "exportDirectory": "مسیر خروجی",
   "title": "عنوان",
   "totalNumberOfEntries": "تعداد کل ورودی ها",
-  "sponsor": "حامی"
+  "sponsor": "حامی",
+  "more": "بیشتر",
+  "autoRemoveSearchWord": "حذف خودکار کلمه جستجو"
 }

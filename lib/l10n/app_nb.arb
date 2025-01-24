@@ -48,5 +48,7 @@
   "exportDirectory": "Eksporter katalog",
   "title": "Tittel",
   "totalNumberOfEntries": "Totalt antall oppføringer",
-  "sponsor": "Sponsor"
+  "sponsor": "Sponsor",
+  "more": "Mer",
+  "autoRemoveSearchWord": "Fjern søkeord automatisk"
 }

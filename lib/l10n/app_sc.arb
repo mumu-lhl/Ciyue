@@ -48,5 +48,7 @@
   "exportDirectory": "Repertòriu de esportatzione",
   "title": "Tìtulu",
   "totalNumberOfEntries": "Nùmeru totale de intradas",
-  "sponsor": "Sponsor"
+  "sponsor": "Sponsor",
+  "more": "De più",
+  "autoRemoveSearchWord": "Cancia automatica sa paraula de chirca"
 }
