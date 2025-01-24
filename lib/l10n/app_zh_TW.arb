@@ -48,5 +48,7 @@
   "properties": "屬性",
   "title": "標題",
   "totalNumberOfEntries": "總條目數",
-  "sponsor": "贊助"
+  "sponsor": "贊助",
+  "more": "更多",
+  "autoRemoveSearchWord": "自動移除搜尋字詞"
 }

@@ -97,5 +97,9 @@
   "totalNumberOfEntries": "Total Number of Entries",
   "@totalNumberOfEntries": {},
   "sponsor": "Sponsor",
-  "@sponsor": {}
+  "@sponsor": {},
+  "more": "More",
+  "@more": {},
+  "autoRemoveSearchWord": "Auto Remove Search Word",
+  "@autoRemoveSearchWord": {}
 }

@@ -1,16 +1,27 @@
 import "package:ciyue/dictionary.dart";
+import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/settings.dart";
 import "package:ciyue/pages/main/wordbook.dart";
+import "package:ciyue/settings.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
+
+late VoidCallback clearSearchWord;
 
 class Home extends StatefulWidget {
   const Home({super.key});
 
   @override
   State<Home> createState() => _HomeState();
+}
+
+class MoreOptionsDialog extends StatefulWidget {
+  const MoreOptionsDialog({super.key});
+
+  @override
+  State<MoreOptionsDialog> createState() => _MoreOptionsDialogState();
 }
 
 class _HomeState extends State<Home> {
@@ -46,7 +57,12 @@ class _HomeState extends State<Home> {
 
   AppBar? buildAppBar(BuildContext context) {
     if (!dictManager.isEmpty && _currentIndex == 0) {
-      return AppBar(title: buildSearchBar(context));
+      return AppBar(
+        title: buildSearchBar(context),
+        actions: [
+          buildMoreButton(context),
+        ],
+      );
     }
     return null;
   }
@@ -87,6 +103,20 @@ class _HomeState extends State<Home> {
     );
   }
 
+  IconButton buildMoreButton(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.more_vert),
+      onPressed: () async {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const MoreOptionsDialog();
+          },
+        );
+      },
+    );
+  }
+
   IconButton? buildRemoveButton() {
     if (searchWord == "") {
       return null;
@@ -122,6 +152,41 @@ class _HomeState extends State<Home> {
           },
         ),
       ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    clearSearchWord = () {
+      textFieldController.clear();
+      setState(() {
+        searchWord = "";
+      });
+    };
+  }
+}
+
+class _MoreOptionsDialogState extends State<MoreOptionsDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return SimpleDialog(
+      title: Text(AppLocalizations.of(context)!.more),
+      children: [
+        SimpleDialogOption(
+          child: CheckboxListTile(
+            value: settings.autoRemoveSearchWord,
+            onChanged: (value) async {
+              if (value != null) {
+                settings.autoRemoveSearchWord = value;
+                await prefs.setBool("autoRemoveSearchWord", value);
+                setState(() {});
+              }
+            },
+            title: Text(AppLocalizations.of(context)!.autoRemoveSearchWord),
+          ),
+        ),
+      ],
     );
   }
 }

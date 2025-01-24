@@ -48,5 +48,7 @@
   "properties": "属性",
   "title": "标题",
   "totalNumberOfEntries": "总条目数",
-  "sponsor": "赞助"
+  "sponsor": "赞助",
+  "more": "更多",
+  "autoRemoveSearchWord": "自动移除搜索词"
 }
