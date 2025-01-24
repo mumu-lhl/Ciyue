@@ -47,5 +47,6 @@
   "exportFileName": "ஏற்றுமதி கோப்பு பெயர்",
   "exportDirectory": "ஏற்றுமதி அடைவு",
   "title": "தலைப்பு",
-  "totalNumberOfEntries": "மொத்த உள்ளீடுகளின் எண்ணிக்கை"
+  "totalNumberOfEntries": "மொத்த உள்ளீடுகளின் எண்ணிக்கை",
+  "sponsor": "ஸ்பான்சர்"
 }

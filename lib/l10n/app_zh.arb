@@ -47,5 +47,6 @@
   "exportDirectory": "导出目录",
   "properties": "属性",
   "title": "标题",
-  "totalNumberOfEntries": "总条目数"
+  "totalNumberOfEntries": "总条目数",
+  "sponsor": "赞助"
 }

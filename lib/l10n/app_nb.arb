@@ -47,5 +47,6 @@
   "exportFileName": "Eksporter filnavn",
   "exportDirectory": "Eksporter katalog",
   "title": "Tittel",
-  "totalNumberOfEntries": "Totalt antall oppføringer"
+  "totalNumberOfEntries": "Totalt antall oppføringer",
+  "sponsor": "Sponsor"
 }

@@ -95,5 +95,7 @@
   "title": "Title",
   "@title": {},
   "totalNumberOfEntries": "Total Number of Entries",
-  "@totalNumberOfEntries": {}
+  "@totalNumberOfEntries": {},
+  "sponsor": "Sponsor",
+  "@sponsor": {}
 }
