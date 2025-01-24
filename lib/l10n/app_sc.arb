@@ -47,5 +47,6 @@
   "exportFileName": "Nùmene de s'archìviu de esportatzione",
   "exportDirectory": "Repertòriu de esportatzione",
   "title": "Tìtulu",
-  "totalNumberOfEntries": "Nùmeru totale de intradas"
+  "totalNumberOfEntries": "Nùmeru totale de intradas",
+  "sponsor": "Sponsor"
 }

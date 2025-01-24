@@ -47,5 +47,6 @@
   "exportFileName": "Имя файла экспорта",
   "exportDirectory": "Каталог экспорта",
   "title": "Заголовок",
-  "totalNumberOfEntries": "Общее количество записей"
+  "totalNumberOfEntries": "Общее количество записей",
+  "sponsor": "Спонсор"
 }

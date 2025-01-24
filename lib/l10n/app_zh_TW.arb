@@ -47,5 +47,6 @@
   "exportDirectory": "導出目錄",
   "properties": "屬性",
   "title": "標題",
-  "totalNumberOfEntries": "總條目數"
+  "totalNumberOfEntries": "總條目數",
+  "sponsor": "贊助"
 }

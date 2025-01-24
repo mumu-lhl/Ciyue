@@ -13,6 +13,7 @@ import "package:url_launcher/url_launcher.dart";
 
 const feedbackUri = "https://github.com/mumu-lhl/Ciyue/issues";
 const githubUri = "https://github.com/mumu-lhl/Ciyue";
+const sponsorUri = "https://afdian.com/a/mumulhl";
 
 void _copy(BuildContext context, String text) {
   Clipboard.setData(ClipboardData(text: text));
@@ -225,9 +226,26 @@ class SettingsScreen extends StatelessWidget {
         Divider(),
         Feedback(),
         GithubUrl(),
+        SponsorUrl(),
         About(),
       ],
     );
+  }
+}
+
+class SponsorUrl extends StatelessWidget {
+  const SponsorUrl({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+        title: Text(AppLocalizations.of(context)!.sponsor),
+        subtitle: const Text(sponsorUri),
+        leading: const Icon(Icons.favorite),
+        onTap: () => launchUrl(Uri.parse(sponsorUri)),
+        onLongPress: () => _copy(context, sponsorUri));
   }
 }
 
