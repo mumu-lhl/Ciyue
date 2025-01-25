@@ -267,7 +267,8 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> addTag(String tag) async {
-    final tagId = await into(wordbookTags).insert(WordbookTagsCompanion(tag: Value(tag)));
+    final tagId =
+        await into(wordbookTags).insert(WordbookTagsCompanion(tag: Value(tag)));
     tagsOrder!.add(tagId);
     await updateTagsOrder();
   }
