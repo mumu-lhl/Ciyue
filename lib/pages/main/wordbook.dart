@@ -67,9 +67,11 @@ class WordBookScreen extends StatelessWidget {
                   await wordbookTagsDao.addTag(textController.text);
                   await wordbookTagsDao.existTag();
 
-                  if (_refreshTagsAndWords != null) _refreshTagsAndWords!();
+                  _refreshTagsAndWords!();
 
-                  if (context.mounted) context.pop();
+                  if (context.mounted) {
+                    context.pop();
+                  }
                 },
               )
             ],
@@ -79,13 +81,29 @@ class WordBookScreen extends StatelessWidget {
 
   Future<void> buildTagsList(
       BuildContext context, List<WordbookTag> tags) async {
+    if (!context.mounted) return;
+
     await showDialog(
         context: context,
         builder: (BuildContext context) {
-          final tagListTile = <Widget>[];
+          final tagsMap = <int, WordbookTag>{};
           for (final tag in tags) {
+            tagsMap[tag.id] = tag;
+          }
+          final tagListTile = <Widget>[];
+
+          final tagsDisplay = wordbookTagsDao.tagsOrder!.isEmpty
+              ? tags
+              : wordbookTagsDao.tagsOrder!.map((e) => tagsMap[e]!).toList();
+
+          for (final tag in tagsDisplay) {
             tagListTile.add(ListTile(
+              key: ValueKey(tag.id),
               title: Text(tag.tag),
+              leading: ReorderableDragStartListener(
+                index: tagsDisplay.indexOf(tag),
+                child: Icon(Icons.drag_handle),
+              ),
               trailing: IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () async {
@@ -102,11 +120,28 @@ class WordBookScreen extends StatelessWidget {
 
           return AlertDialog(
             title: Text(AppLocalizations.of(context)!.tagList),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ...tagListTile,
-              ],
+            content: SizedBox(
+              height: 300,
+              width: 300,
+              child: ReorderableListView(
+                buildDefaultDragHandles: false,
+                shrinkWrap: true,
+                onReorder: (oldIndex, newIndex) async {
+                  if (oldIndex < newIndex) {
+                    newIndex -= 1;
+                  }
+
+                  final tag = tagsDisplay.removeAt(oldIndex);
+                  tagsDisplay.insert(newIndex, tag);
+
+                  wordbookTagsDao.tagsOrder =
+                      tagsDisplay.map((e) => e.id).toList();
+                  await wordbookTagsDao.updateTagsOrder();
+
+                  _refreshTagsAndWords!();
+                },
+                children: tagListTile,
+              ),
             ),
             actions: [
               TextCloseButton(),
@@ -189,8 +224,15 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                 final choiceChips = <Widget>[];
-
+                final tagsMap = <int, WordbookTag>{};
                 for (final tag in snapshot.data!) {
+                  tagsMap[tag.id] = tag;
+                }
+
+                for (final tagId in wordbookTagsDao.tagsOrder!) {
+                  final tag = tagsMap[tagId];
+                  if (tag == null) continue;
+
                   choiceChips.add(ChoiceChip(
                     label: Text(tag.tag),
                     selected: selectedTag == tag.id,
