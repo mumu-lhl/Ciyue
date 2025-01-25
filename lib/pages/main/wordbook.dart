@@ -8,6 +8,20 @@ import "package:go_router/go_router.dart";
 
 VoidCallback? _refreshTagsAndWords;
 
+class TagListDialog extends StatefulWidget {
+  final List<WordbookTag> tagsDisplay;
+
+  final Future<void> Function(BuildContext context) buildAddTag;
+  const TagListDialog({
+    super.key,
+    required this.tagsDisplay,
+    required this.buildAddTag,
+  });
+
+  @override
+  State<TagListDialog> createState() => _TagListDialogState();
+}
+
 class WordBookScreen extends StatelessWidget {
   const WordBookScreen({super.key});
 
@@ -92,9 +106,9 @@ class WordBookScreen extends StatelessWidget {
           }
           final tagListTile = <Widget>[];
 
-          final tagsDisplay = wordbookTagsDao.tagsOrder!.isEmpty
+          final tagsDisplay = wordbookTagsDao.tagsOrder.isEmpty
               ? tags
-              : wordbookTagsDao.tagsOrder!.map((e) => tagsMap[e]!).toList();
+              : wordbookTagsDao.tagsOrder.map((e) => tagsMap[e]!).toList();
 
           for (final tag in tagsDisplay) {
             tagListTile.add(ListTile(
@@ -118,42 +132,8 @@ class WordBookScreen extends StatelessWidget {
             ));
           }
 
-          return AlertDialog(
-            title: Text(AppLocalizations.of(context)!.tagList),
-            content: SizedBox(
-              height: 300,
-              width: 300,
-              child: ReorderableListView(
-                buildDefaultDragHandles: false,
-                shrinkWrap: true,
-                onReorder: (oldIndex, newIndex) async {
-                  if (oldIndex < newIndex) {
-                    newIndex -= 1;
-                  }
-
-                  final tag = tagsDisplay.removeAt(oldIndex);
-                  tagsDisplay.insert(newIndex, tag);
-
-                  wordbookTagsDao.tagsOrder =
-                      tagsDisplay.map((e) => e.id).toList();
-                  await wordbookTagsDao.updateTagsOrder();
-
-                  _refreshTagsAndWords!();
-                },
-                children: tagListTile,
-              ),
-            ),
-            actions: [
-              TextCloseButton(),
-              TextButton(
-                child: Text(AppLocalizations.of(context)!.add),
-                onPressed: () async {
-                  context.pop();
-                  await buildAddTag(context);
-                },
-              ),
-            ],
-          );
+          return TagListDialog(
+              tagsDisplay: tagsDisplay, buildAddTag: buildAddTag);
         });
   }
 }
@@ -204,6 +184,69 @@ class WordViewWithTagsClips extends StatefulWidget {
   State<WordViewWithTagsClips> createState() => _WordViewWithTagsClipsState();
 }
 
+class _TagListDialogState extends State<TagListDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(AppLocalizations.of(context)!.tagList),
+      content: SizedBox(
+        height: 300,
+        width: 300,
+        child: ReorderableListView(
+          buildDefaultDragHandles: false,
+          shrinkWrap: true,
+          onReorder: (oldIndex, newIndex) async {
+            if (oldIndex < newIndex) {
+              newIndex -= 1;
+            }
+
+            final tag = widget.tagsDisplay.removeAt(oldIndex);
+            widget.tagsDisplay.insert(newIndex, tag);
+
+            wordbookTagsDao.tagsOrder =
+                widget.tagsDisplay.map((e) => e.id).toList();
+            await wordbookTagsDao.updateTagsOrder();
+
+            _refreshTagsAndWords!();
+            setState(() {});
+          },
+          children: widget.tagsDisplay
+              .map((tag) => ListTile(
+                    key: ValueKey(tag.id),
+                    title: Text(tag.tag),
+                    leading: ReorderableDragStartListener(
+                      index: widget.tagsDisplay.indexOf(tag),
+                      child: Icon(Icons.drag_handle),
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () async {
+                        await wordbookTagsDao.removeTag(tag.id);
+                        await wordbookTagsDao.existTag();
+
+                        _refreshTagsAndWords!();
+
+                        if (context.mounted) context.pop();
+                      },
+                    ),
+                  ))
+              .toList(),
+        ),
+      ),
+      actions: [
+        TextCloseButton(),
+        TextButton(
+          child: Text(AppLocalizations.of(context)!.add),
+          onPressed: () async {
+            context.pop();
+            await widget.buildAddTag(context);
+          },
+        ),
+      ],
+    );
+  }
+}
+
 class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   late Future<List<WordbookData>> allWords;
   late Future<List<WordbookTag>> tags;
@@ -229,7 +272,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
                   tagsMap[tag.id] = tag;
                 }
 
-                for (final tagId in wordbookTagsDao.tagsOrder!) {
+                for (final tagId in wordbookTagsDao.tagsOrder) {
                   final tag = tagsMap[tagId];
                   if (tag == null) continue;
 

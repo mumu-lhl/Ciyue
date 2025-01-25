@@ -256,7 +256,7 @@ class WordbookTags extends Table {
 class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
     with _$WordbookTagsDaoMixin {
   bool tagExist = false;
-  List<int>? tagsOrder;
+  List<int> tagsOrder = [];
 
   WordbookTagsDao(super.attachedDatabase);
 
@@ -269,7 +269,7 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
   Future<void> addTag(String tag) async {
     final tagId =
         await into(wordbookTags).insert(WordbookTagsCompanion(tag: Value(tag)));
-    tagsOrder!.add(tagId);
+    tagsOrder.add(tagId);
     await updateTagsOrder();
   }
 
@@ -282,8 +282,6 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> loadTagsOrder() async {
-    if (tagsOrder != null) return;
-
     final order = prefs.getString('tagsOrder');
     if (order == null) {
       tagsOrder = [];
@@ -295,11 +293,11 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
   Future<void> removeTag(int tagId) async {
     await (delete(wordbookTags)..where((t) => t.id.isValue(tagId))).go();
 
-    tagsOrder!.remove(tagId);
+    tagsOrder.remove(tagId);
     await updateTagsOrder();
   }
 
   Future<void> updateTagsOrder() async {
-    await prefs.setString('tagsOrder', tagsOrder!.join(','));
+    await prefs.setString('tagsOrder', tagsOrder.join(','));
   }
 }
