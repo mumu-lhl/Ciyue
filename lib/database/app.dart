@@ -1,3 +1,4 @@
+import "package:ciyue/main.dart";
 import "package:drift/drift.dart" as drift;
 import "package:drift/drift.dart";
 import "package:drift_flutter/drift_flutter.dart";
@@ -69,9 +70,8 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
     );
   }
 
-  Future<void> updateDictIds(int id, List<int> dictIds) {
-    return (update(dictGroup)..where((t) => t.id.isValue(id)))
-        .write(DictGroupCompanion(dictIds: Value(dictIds.join(','))));
+  Future<List<DictGroupData>> getAllGroups() {
+    return select(dictGroup).get();
   }
 
   Future<List<int>> getDictIds(int id) async {
@@ -84,12 +84,13 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
     }
   }
 
-  Future<List<DictGroupData>> getAllGroups() {
-    return select(dictGroup).get();
-  }
-
   Future<void> removeGroup(int id) async {
     await (delete(dictGroup)..where((t) => t.id.isValue(id))).go();
+  }
+
+  Future<void> updateDictIds(int id, List<int> dictIds) {
+    return (update(dictGroup)..where((t) => t.id.isValue(id)))
+        .write(DictGroupCompanion(dictIds: Value(dictIds.join(','))));
   }
 }
 
@@ -255,6 +256,7 @@ class WordbookTags extends Table {
 class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
     with _$WordbookTagsDaoMixin {
   bool tagExist = false;
+  List<int>? tagsOrder;
 
   WordbookTagsDao(super.attachedDatabase);
 
@@ -264,8 +266,11 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
-  Future<int> addTag(String tag) {
-    return into(wordbookTags).insert(WordbookTagsCompanion(tag: Value(tag)));
+  Future<void> addTag(String tag) async {
+    final tagId =
+        await into(wordbookTags).insert(WordbookTagsCompanion(tag: Value(tag)));
+    tagsOrder!.add(tagId);
+    await updateTagsOrder();
   }
 
   Future<void> existTag() async {
@@ -276,7 +281,25 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
     return select(wordbookTags).get();
   }
 
+  Future<void> loadTagsOrder() async {
+    if (tagsOrder != null) return;
+
+    final order = prefs.getString('tagsOrder');
+    if (order == null) {
+      tagsOrder = [];
+    } else {
+      tagsOrder = order.split(',').map((e) => int.parse(e)).toList();
+    }
+  }
+
   Future<void> removeTag(int tagId) async {
     await (delete(wordbookTags)..where((t) => t.id.isValue(tagId))).go();
+
+    tagsOrder!.remove(tagId);
+    await updateTagsOrder();
+  }
+
+  Future<void> updateTagsOrder() async {
+    await prefs.setString('tagsOrder', tagsOrder!.join(','));
   }
 }

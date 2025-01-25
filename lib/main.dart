@@ -68,6 +68,8 @@ void main() async {
 
   packageInfo = await PackageInfo.fromPlatform();
 
+  await wordbookTagsDao.loadTagsOrder();
+
   platform.setMethodCallHandler((call) async {
     switch (call.method) {
       case "processText":
