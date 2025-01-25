@@ -52,8 +52,26 @@ class DictManager {
     final paths = [
       for (final id in dictIds) await dictionaryListDao.getPath(id)
     ];
+
+    int index = 0;
     for (final path in paths) {
-      await add(path);
+      // Avoid the mdict that has been removed
+      try {
+        await add(path);
+      } catch (_) {
+        await dictionaryListDao.remove(path);
+
+        final dictId = dictIds.removeAt(index);
+        final databasePath = join(
+            (await getApplicationDocumentsDirectory()).path,
+            "dictionary_$dictId.sqlite");
+        final file = File(databasePath);
+        await file.delete();
+
+        await dictGroupDao.updateDictIds(groupId, dictIds);
+      }
+
+      index += 1;
     }
   }
 
