@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.1.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0..v1.1.0-beta.1) - 2025-01-26
+
+### Features
+
+- add sponsor - ([be735bf](https://github.com/mumu-lhl/Ciyue/commit/be735bf5da1b0fab744f88b1217222a647f8969c)) - Mumulhl
+- add auto remove search word feature - ([dd28da4](https://github.com/mumu-lhl/Ciyue/commit/dd28da442ed8dfc79c02f588960ee0e3ba7d67d0)) - Mumulhl
+- handle removal of missing dictionary files - ([f2b91b1](https://github.com/mumu-lhl/Ciyue/commit/f2b91b165ec176218e63cca37cce2fcf42542629)) - Mumulhl
+- implement tag ordering - ([67f9234](https://github.com/mumu-lhl/Ciyue/commit/67f923465e08d5882d8f300ebc72cbf53396b5bc)) - Mumulhl
+- migrate SharedPreferences to SharedPreferencesWithCache - ([99380b0](https://github.com/mumu-lhl/Ciyue/commit/99380b0eff0a74b376497e1a4799f342819d23bb)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(deps)** update - ([0550afe](https://github.com/mumu-lhl/Ciyue/commit/0550afe7036a54c268d02ad459e1207d844b3d86)) - Mumulhl
+
+### Refactoring
+
+- refactor TagListDialog - ([8fff5fc](https://github.com/mumu-lhl/Ciyue/commit/8fff5fc5561bd93085146e266e435dd98a88da89)) - Mumulhl
+
+### Style
+
+- format code - ([b0bdb28](https://github.com/mumu-lhl/Ciyue/commit/b0bdb2894bcc169e373710747e2fc6727bdbde49)) - Mumulhl
+
+---
 ## [1.0.0](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.4..v1.0.0) - 2025-01-23
 
 ### Documentation
