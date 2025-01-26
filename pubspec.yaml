@@ -55,6 +55,7 @@ dependencies:
   url_launcher: ^6.3.1
   file_selector: ^1.0.3
   html_unescape: ^2.0.0
+  shared_preferences_platform_interface: ^2.4.1
 
 dev_dependencies:
   flutter_test:

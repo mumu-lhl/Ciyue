@@ -282,7 +282,7 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> loadTagsOrder() async {
-    final order = prefs.getString('tagsOrder');
+    final order = prefs.getString("tagsOrder");
     if (order == null) {
       tagsOrder = [];
     } else {
