@@ -236,6 +236,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
           return Center(child: Text(AppLocalizations.of(context)!.empty));
         } else {
           return ReorderableListView(
+            buildDefaultDragHandles: false,
             onReorder: (oldIndex, newIndex) async {
               if (oldIndex < newIndex) {
                 newIndex -= 1;
