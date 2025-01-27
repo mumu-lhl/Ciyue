@@ -54,5 +54,6 @@
   "aiSettings": "Настройки ИИ",
   "aiProvider": "Провайдер ИИ",
   "apiKey": "Ключ API",
-  "enterApiKey": "Введите свой ключ API"
+  "enterApiKey": "Введите свой ключ API",
+  "aiModel": "Модель ИИ"
 }

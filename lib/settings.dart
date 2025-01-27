@@ -1,7 +1,34 @@
+import 'dart:convert';
+
 import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
 
 final settings = _Settings();
+
+class AIProviderConfig {
+  final String provider;
+  final String apiKey;
+  final String model;
+
+  AIProviderConfig(
+      {required this.provider, required this.apiKey, required this.model});
+
+  factory AIProviderConfig.fromJson(Map<String, dynamic> json) {
+    return AIProviderConfig(
+      provider: json["provider"]!,
+      apiKey: json["apiKey"]!,
+      model: json["model"]!,
+    );
+  }
+
+  Map<String, String> toJson() {
+    return {
+      "provider": provider,
+      "apiKey": apiKey,
+      "model": model,
+    };
+  }
+}
 
 class _Settings {
   bool autoExport;
@@ -11,7 +38,7 @@ class _Settings {
   bool autoRemoveSearchWord;
   String? language;
   String aiProvider;
-  String? apiKey;
+  List<AIProviderConfig> aiProviderConfigs;
 
   _Settings()
       : autoExport = prefs.getBool("autoExport") ?? false,
@@ -20,7 +47,13 @@ class _Settings {
         autoRemoveSearchWord = prefs.getBool("autoRemoveSearchWord") ?? false,
         language = prefs.getString("language") ?? "system",
         aiProvider = prefs.getString("aiProvider") ?? "OpenAI",
-        apiKey = prefs.getString("apiKey"),
+        aiProviderConfigs = (() {
+          final aiProviderConfigsJson =
+              prefs.getStringList("aiProviderConfigs") ?? [];
+          return aiProviderConfigsJson
+              .map((e) => AIProviderConfig.fromJson(jsonDecode(e)))
+              .toList();
+        })(),
         themeMode = (() {
           final themeModeString = prefs.getString("themeMode");
           switch (themeModeString) {
@@ -33,4 +66,11 @@ class _Settings {
           }
           return ThemeMode.system;
         })();
+
+  AIProviderConfig get currentAIProviderConfig {
+    return aiProviderConfigs.firstWhere(
+        (config) => config.provider == aiProvider,
+        orElse: () =>
+            AIProviderConfig(provider: "OpenAI", apiKey: "", model: ""));
+  }
 }

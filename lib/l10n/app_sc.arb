@@ -54,5 +54,6 @@
   "aiSettings": "Impostatziones AI",
   "aiProvider": "Provididore AI",
   "apiKey": "Chiave API",
-  "enterApiKey": "Inserta sa crae API tua"
+  "enterApiKey": "Inserta sa crae API tua",
+  "aiModel": "Modellu AI"
 }

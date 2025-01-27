@@ -50,7 +50,7 @@ void main() async {
     "themeMode",
     "tagsOrder",
     "aiProvider",
-    "apiKey",
+    "aiProviderConfigs",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");

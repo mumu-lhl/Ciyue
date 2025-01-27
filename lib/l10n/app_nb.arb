@@ -54,5 +54,6 @@
   "aiSettings": "AI-innstillinger",
   "aiProvider": "AI-leverandør",
   "apiKey": "API-nøkkel",
-  "enterApiKey": "Skriv inn API-nøkkelen din"
+  "enterApiKey": "Skriv inn API-nøkkelen din",
+  "aiModel": "AI-modell"
 }

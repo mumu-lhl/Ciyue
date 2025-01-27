@@ -54,5 +54,6 @@
   "aiSettings": "تنظیمات هوش مصنوعی",
   "aiProvider": "ارائه دهنده هوش مصنوعی",
   "apiKey": "کلید API",
-  "enterApiKey": "کلید API خود را وارد کنید"
+  "enterApiKey": "کلید API خود را وارد کنید",
+  "aiModel": "مدل هوش مصنوعی"
 }

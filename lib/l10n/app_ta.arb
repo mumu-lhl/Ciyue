@@ -54,5 +54,6 @@
   "aiSettings": "AI அமைப்புகள்",
   "aiProvider": "AI வழங்குநர்",
   "apiKey": "API சாவி",
-  "enterApiKey": "உங்கள் API சாவியை உள்ளிடவும்"
+  "enterApiKey": "உங்கள் API சாவியை உள்ளிடவும்",
+  "aiModel": "AI மாதிரி"
 }

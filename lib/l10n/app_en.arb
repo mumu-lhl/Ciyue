@@ -109,5 +109,7 @@
   "apiKey": "API Key",
   "@apiKey": {},
   "enterApiKey": "Enter your API key",
-  "@enterApiKey": {}
+  "@enterApiKey": {},
+  "aiModel": "AI Model",
+  "@aiModel": {}
 }

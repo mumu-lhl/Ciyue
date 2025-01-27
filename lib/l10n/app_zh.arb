@@ -54,5 +54,6 @@
   "aiSettings": "AI 设置",
   "aiProvider": "AI 提供商",
   "apiKey": "API 密钥",
-  "enterApiKey": "输入你的 API 密钥"
+  "enterApiKey": "输入你的 API 密钥",
+  "aiModel": "AI 模型"
 }
