@@ -39,6 +39,20 @@ class About extends StatelessWidget {
   }
 }
 
+class AISettingsListTile extends StatelessWidget {
+  const AISettingsListTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.settings_suggest),
+      title: Text(AppLocalizations.of(context)!.aiSettings),
+      trailing: const Icon(Icons.arrow_forward),
+      onTap: () => context.push("/settings/ai"),
+    );
+  }
+}
+
 class AutoExport extends StatefulWidget {
   const AutoExport({
     super.key,
@@ -214,6 +228,7 @@ class SettingsScreen extends StatelessWidget {
     return ListView(
       children: const [
         ManageDictionariesWidget(),
+        AISettingsListTile(),
         Divider(),
         ThemeSelector(),
         LanguageSelector(),

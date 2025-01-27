@@ -4,6 +4,7 @@ import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/pages/auto_export.dart";
 import "package:ciyue/pages/main/main.dart";
+import "package:ciyue/pages/main/settings/ai_settings.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/pages/manage_dictionaries/properties.dart";
 import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
@@ -48,6 +49,8 @@ void main() async {
     "language",
     "themeMode",
     "tagsOrder",
+    "aiProvider",
+    "apiKey",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
@@ -86,7 +89,7 @@ void main() async {
       case "getDirectory":
         final directory = call.arguments as String;
         settings.exportDirectory = directory;
-        prefs.setString('exportDirectory', directory);
+        prefs.setString("exportDirectory", directory);
         break;
     }
   });
@@ -127,6 +130,10 @@ final _router = GoRouter(
         builder: (context, state) => WebviewDisplayDescription(
               dictId: int.parse(state.pathParameters["dictId"]!),
             )),
+    GoRoute(
+      path: "/settings/ai",
+      builder: (context, state) => const AISettingsPage(),
+    ),
     GoRoute(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),

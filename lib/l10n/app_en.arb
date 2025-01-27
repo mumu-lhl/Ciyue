@@ -101,5 +101,13 @@
   "more": "More",
   "@more": {},
   "autoRemoveSearchWord": "Auto Remove Search Word",
-  "@autoRemoveSearchWord": {}
+  "@autoRemoveSearchWord": {},
+  "aiSettings": "AI Settings",
+  "@aiSettings": {},
+  "aiProvider": "AI Provider",
+  "@aiProvider": {},
+  "apiKey": "API Key",
+  "@apiKey": {},
+  "enterApiKey": "Enter your API key",
+  "@enterApiKey": {}
 }

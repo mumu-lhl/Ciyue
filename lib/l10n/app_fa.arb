@@ -50,5 +50,9 @@
   "totalNumberOfEntries": "تعداد کل ورودی ها",
   "sponsor": "حامی",
   "more": "بیشتر",
-  "autoRemoveSearchWord": "حذف خودکار کلمه جستجو"
+  "autoRemoveSearchWord": "حذف خودکار کلمه جستجو",
+  "aiSettings": "تنظیمات هوش مصنوعی",
+  "aiProvider": "ارائه دهنده هوش مصنوعی",
+  "apiKey": "کلید API",
+  "enterApiKey": "کلید API خود را وارد کنید"
 }

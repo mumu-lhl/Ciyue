@@ -50,5 +50,9 @@
   "totalNumberOfEntries": "總條目數",
   "sponsor": "贊助",
   "more": "更多",
-  "autoRemoveSearchWord": "自動移除搜尋字詞"
+  "autoRemoveSearchWord": "自動移除搜尋字詞",
+  "aiSettings": "AI 設定",
+  "aiProvider": "AI 提供者",
+  "apiKey": "API 密鑰",
+  "enterApiKey": "輸入你的 API 密鑰"
 }

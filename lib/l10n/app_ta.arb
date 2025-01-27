@@ -50,5 +50,9 @@
   "totalNumberOfEntries": "மொத்த உள்ளீடுகளின் எண்ணிக்கை",
   "sponsor": "ஸ்பான்சர்",
   "more": "மேலும்",
-  "autoRemoveSearchWord": "தேடல் சொல்லை தானாக அகற்று"
+  "autoRemoveSearchWord": "தேடல் சொல்லை தானாக அகற்று",
+  "aiSettings": "AI அமைப்புகள்",
+  "aiProvider": "AI வழங்குநர்",
+  "apiKey": "API சாவி",
+  "enterApiKey": "உங்கள் API சாவியை உள்ளிடவும்"
 }

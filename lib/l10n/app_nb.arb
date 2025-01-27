@@ -50,5 +50,9 @@
   "totalNumberOfEntries": "Totalt antall oppføringer",
   "sponsor": "Sponsor",
   "more": "Mer",
-  "autoRemoveSearchWord": "Fjern søkeord automatisk"
+  "autoRemoveSearchWord": "Fjern søkeord automatisk",
+  "aiSettings": "AI-innstillinger",
+  "aiProvider": "AI-leverandør",
+  "apiKey": "API-nøkkel",
+  "enterApiKey": "Skriv inn API-nøkkelen din"
 }

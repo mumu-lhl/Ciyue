@@ -50,5 +50,9 @@
   "totalNumberOfEntries": "Nùmeru totale de intradas",
   "sponsor": "Sponsor",
   "more": "De più",
-  "autoRemoveSearchWord": "Cancia automatica sa paraula de chirca"
+  "autoRemoveSearchWord": "Cancia automatica sa paraula de chirca",
+  "aiSettings": "Impostatziones AI",
+  "aiProvider": "Provididore AI",
+  "apiKey": "Chiave API",
+  "enterApiKey": "Inserta sa crae API tua"
 }
