@@ -56,6 +56,8 @@ void main() async {
     "showMoreOptionsButton",
     "skipTaggedWord",
     "showNotFound",
+    "aiProvider",
+    "apiKey",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
@@ -129,6 +131,10 @@ final router = GoRouter(
     GoRoute(
       path: "/settings/autoExport",
       builder: (context, state) => const AutoExport(),
+    ),
+    GoRoute(
+      path: "/settings/ai",
+      builder: (context, state) => const AISettingsPage(),
     ),
     GoRoute(
         path: "/settings/dictionaries",
