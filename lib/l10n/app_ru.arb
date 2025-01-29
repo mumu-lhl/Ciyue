@@ -51,6 +51,7 @@
   "sponsor": "Спонсор",
   "more": "Больше",
   "autoRemoveSearchWord": "Автоматически удалять поисковое слово",
+  "secureScreen": "Безопасный экран",
   "aiSettings": "Настройки ИИ",
   "aiProvider": "Провайдер ИИ",
   "apiKey": "Ключ API",

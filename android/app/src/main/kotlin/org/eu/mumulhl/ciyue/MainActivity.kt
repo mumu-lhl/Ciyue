@@ -4,13 +4,13 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.callback.SingleFileConflictCallback
 import com.anggrayudi.storage.callback.SingleFolderConflictCallback
 import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.copyFolderTo
 import com.anggrayudi.storage.file.openOutputStream
-import com.anggrayudi.storage.file.recreateFile
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -55,9 +55,7 @@ class MainActivity : FlutterActivity() {
         startActivityForResult(intent, GET_DIRECTORY)
     }
 
-    private fun writeFile(path: String, directory: String, filename: String, content: String) {
-//        val uri = Uri.parse(path)
-//        val file = DocumentFile.fromSingleUri(context, uri)
+    private fun writeFile(directory: String, filename: String, content: String) {
         val directoryFile = DocumentFile.fromTreeUri(context, Uri.parse(directory))
         val file = directoryFile!!.findFile(filename)
         if (file == null) {
@@ -72,6 +70,14 @@ class MainActivity : FlutterActivity() {
             newFile!!.openOutputStream(context, append = false).use { outputStream ->
                 outputStream!!.write(content.toByteArray())
             }
+        }
+    }
+
+    private fun setSecureFlag(secure: Boolean) {
+        if (secure) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
 
@@ -91,7 +97,6 @@ class MainActivity : FlutterActivity() {
 
     private fun getDirectoryHandler(data: Intent?) {
         data?.data?.also { uri ->
-            val takeFlags: Int = Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             contentResolver.takePersistableUriPermission(
                 uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
@@ -169,33 +174,33 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "openDirectory" -> {
                         openDirectory()
-                        result.success(0)
                     }
 
                     "createFile" -> {
                         exportContent = call.arguments as String
                         createFile()
-                        result.success(0)
                     }
 
                     "getDirectory" -> {
                         getDirectory()
-                        result.success(0)
                     }
 
                     "writeFile" -> {
                         val arguments = call.arguments as Map<*, *>
                         writeFile(
-                            arguments["path"] as String,
                             arguments["directory"] as String,
                             arguments["filename"] as String,
                             arguments["content"] as String
                         )
-                        result.success(0)
+                    }
+
+                    "setSecureFlag" -> {
+                        setSecureFlag(call.arguments as Boolean)
                     }
 
                     else -> result.notImplemented()
                 }
+                result.success(0)
             }
         }
     }

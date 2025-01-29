@@ -31,41 +31,59 @@ class AIProviderConfig {
 }
 
 class _Settings {
-  bool autoExport;
-  String exportFileName;
-  String? exportDirectory;
-  ThemeMode themeMode;
-  bool autoRemoveSearchWord;
+  late bool autoExport;
+  late String exportFileName;
+  late String? exportDirectory;
+  late String? exportPath;
+  late ThemeMode themeMode;
+  late bool autoRemoveSearchWord;
+  late bool secureScreen;
   String? language;
-  String aiProvider;
-  List<AIProviderConfig> aiProviderConfigs;
+  late bool searchBarInAppBar;
+  late bool showSidebarIcon;
+  late bool showMoreOptionsButton;
+  late bool notification;
+  late bool skipTaggedWord;
+  late bool showNotFound;
+  late String aiProvider;
+  late List<AIProviderConfig> aiProviderConfigs;
+  String? apiKey;
 
-  _Settings()
-      : autoExport = prefs.getBool("autoExport") ?? false,
-        exportFileName = prefs.getString("exportFileName") ?? "ciyue",
-        exportDirectory = prefs.getString("exportDirectory"),
-        autoRemoveSearchWord = prefs.getBool("autoRemoveSearchWord") ?? false,
-        language = prefs.getString("language") ?? "system",
-        aiProvider = prefs.getString("aiProvider") ?? "OpenAI",
-        aiProviderConfigs = (() {
-          final aiProviderConfigsJson =
-              prefs.getStringList("aiProviderConfigs") ?? [];
-          return aiProviderConfigsJson
-              .map((e) => AIProviderConfig.fromJson(jsonDecode(e)))
-              .toList();
-        })(),
-        themeMode = (() {
-          final themeModeString = prefs.getString("themeMode");
-          switch (themeModeString) {
-            case "light":
-              return ThemeMode.light;
-            case "dark":
-              return ThemeMode.dark;
-            case "system" || null:
-              return ThemeMode.system;
-          }
-          return ThemeMode.system;
-        })();
+  _Settings() {
+    autoExport = prefs.getBool("autoExport") ?? false;
+    notification = prefs.getBool("notification") ?? false;
+    exportFileName = prefs.getString("exportFileName") ?? "ciyue";
+    exportDirectory = prefs.getString("exportDirectory");
+    exportPath = prefs.getString("exportPath");
+    autoRemoveSearchWord = prefs.getBool("autoRemoveSearchWord") ?? false;
+    secureScreen = prefs.getBool("secureScreen") ?? false;
+    searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
+    showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
+    showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
+    skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
+    showNotFound = prefs.getBool("showNotFound") ?? true;
+    language = prefs.getString("language") ?? "system";
+    aiProvider = prefs.getString("aiProvider") ?? "OpenAI";
+    apiKey = prefs.getString("apiKey");
+
+    aiProviderConfigs = (() {
+      final aiProviderConfigsJson =
+          prefs.getStringList("aiProviderConfigs") ?? [];
+      return aiProviderConfigsJson
+          .map((e) => AIProviderConfig.fromJson(jsonDecode(e)))
+          .toList();
+    })();
+
+    final themeModeString = prefs.getString("themeMode");
+    switch (themeModeString) {
+      case "light":
+        themeMode = ThemeMode.light;
+      case "dark":
+        themeMode = ThemeMode.dark;
+      case "system" || null:
+        themeMode = ThemeMode.system;
+    }
+  }
 
   AIProviderConfig get currentAIProviderConfig {
     return aiProviderConfigs.firstWhere(

@@ -220,6 +220,13 @@ class ManageDictionariesWidget extends StatelessWidget {
   }
 }
 
+class SecureScreenSwitch extends StatefulWidget {
+  const SecureScreenSwitch({super.key});
+
+  @override
+  State<SecureScreenSwitch> createState() => _SecureScreenSwitchState();
+}
+
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -232,6 +239,8 @@ class SettingsScreen extends StatelessWidget {
         Divider(),
         ThemeSelector(),
         LanguageSelector(),
+        Divider(),
+        SecureScreenSwitch(),
         Divider(),
         AutoExport(),
         Export(),
@@ -277,6 +286,7 @@ class _AutoExportState extends State<AutoExport> {
     return ListTile(
         leading: Icon(Icons.backup),
         title: Text(AppLocalizations.of(context)!.autoExport),
+        trailing: Icon(Icons.arrow_forward),
         onTap: () => context.push("/settings/autoExport"));
   }
 }
@@ -326,6 +336,25 @@ class _LanguageSelectorState extends State<LanguageSelector> {
         title: Text(locale!.language),
         trailing: const Icon(Icons.keyboard_arrow_down),
       ),
+    );
+  }
+}
+
+class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.secureScreen),
+      value: settings.secureScreen,
+      onChanged: (value) async {
+        await platform.invokeMethod("setSecureFlag", value);
+        await prefs.setBool("secureScreen", value);
+        setState(() {
+          settings.secureScreen = value;
+        });
+      },
+      secondary: const Icon(Icons.security),
     );
   }
 }

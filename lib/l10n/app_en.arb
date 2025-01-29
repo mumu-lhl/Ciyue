@@ -111,5 +111,7 @@
   "enterApiKey": "Enter your API key",
   "@enterApiKey": {},
   "aiModel": "AI Model",
-  "@aiModel": {}
+  "@aiModel": {},
+  "secureScreen": "Anti-Screenshot",
+  "@secureScreen": {}
 }

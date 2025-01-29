@@ -23,7 +23,6 @@ import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
-import "package:shared_preferences_platform_interface/types.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +50,7 @@ void main() async {
     "tagsOrder",
     "aiProvider",
     "aiProviderConfigs",
+    "secureScreen",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");

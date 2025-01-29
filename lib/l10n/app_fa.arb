@@ -51,9 +51,11 @@
   "sponsor": "حامی",
   "more": "بیشتر",
   "autoRemoveSearchWord": "حذف خودکار کلمه جستجو",
+  "secureScreen": "جلوگیری از اسکرین شات",
   "aiSettings": "تنظیمات هوش مصنوعی",
   "aiProvider": "ارائه دهنده هوش مصنوعی",
   "apiKey": "کلید API",
   "enterApiKey": "کلید API خود را وارد کنید",
   "aiModel": "مدل هوش مصنوعی"
 }
+
