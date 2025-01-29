@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.1.0](https://github.com/mumu-lhl/Ciyue/compare/v1.1.0-beta.1..v1.1.0) - 2025-01-29
+
+### Features
+
+- **(translation)** added translation using Weblate (German) - ([e96d306](https://github.com/mumu-lhl/Ciyue/commit/e96d306ec5bd1eed4cd1e2e022c209cc0c42db3f)) - Jean-Luc Tibaux
+- **(translation)** translated using Weblate (German) - ([abed181](https://github.com/mumu-lhl/Ciyue/commit/abed181f93c8dd7c7d1cf3ca6e87b6a065504c32)) - Jean-Luc Tibaux
+- add secure screen feature - ([9e171e7](https://github.com/mumu-lhl/Ciyue/commit/9e171e7c55ba7a7229d68b2a434b3e9448969128)) - Mumulhl
+
+### Miscellaneous Chores
+
+- Add .aider* to gitignore - ([be77cd2](https://github.com/mumu-lhl/Ciyue/commit/be77cd2d9a8fa827d5ad611d6d2a249ddb797fd9)) - Mumulhl
+
+---
 ## [1.1.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0..v1.1.0-beta.1) - 2025-01-26
 
 ### Features
