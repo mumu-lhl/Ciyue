@@ -50,5 +50,6 @@
   "totalNumberOfEntries": "Общее количество записей",
   "sponsor": "Спонсор",
   "more": "Больше",
-  "autoRemoveSearchWord": "Автоматически удалять поисковое слово"
+  "autoRemoveSearchWord": "Автоматически удалять поисковое слово",
+  "secureScreen": "Безопасный экран"
 }

@@ -48,6 +48,7 @@ void main() async {
     "language",
     "themeMode",
     "tagsOrder",
+    "secureScreen",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
