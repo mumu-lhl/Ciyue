@@ -101,5 +101,7 @@
   "more": "More",
   "@more": {},
   "autoRemoveSearchWord": "Auto Remove Search Word",
-  "@autoRemoveSearchWord": {}
+  "@autoRemoveSearchWord": {},
+  "secureScreen": "Anti-Screenshot",
+  "@secureScreen": {}
 }

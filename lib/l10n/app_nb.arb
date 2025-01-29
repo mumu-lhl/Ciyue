@@ -50,5 +50,6 @@
   "totalNumberOfEntries": "Totalt antall oppføringer",
   "sponsor": "Sponsor",
   "more": "Mer",
-  "autoRemoveSearchWord": "Fjern søkeord automatisk"
+  "autoRemoveSearchWord": "Fjern søkeord automatisk",
+  "secureScreen": "Sikker skjerm"
 }

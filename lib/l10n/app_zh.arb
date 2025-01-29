@@ -50,5 +50,6 @@
   "totalNumberOfEntries": "总条目数",
   "sponsor": "赞助",
   "more": "更多",
-  "autoRemoveSearchWord": "自动移除搜索词"
+  "autoRemoveSearchWord": "自动移除搜索词",
+  "secureScreen": "防截屏"
 }

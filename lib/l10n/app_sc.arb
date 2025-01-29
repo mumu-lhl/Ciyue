@@ -42,7 +42,7 @@
   "removeOneHistoryConfirm": "Ses seguru de bòlere bogare '%s' dae s'istòria?",
   "clearHistory": "Neta s'istòria",
   "clearHistoryConfirm": "Ses seguru de bòlere netare s'istòria?",
-   "default_": "Predefinidu",
+  "default_": "Predefinidu",
   "manageGroups": "Manìgia sos grupos",
   "exportFileName": "Nùmene de s'archìviu de esportatzione",
   "exportDirectory": "Repertòriu de esportatzione",
@@ -50,5 +50,6 @@
   "totalNumberOfEntries": "Nùmeru totale de intradas",
   "sponsor": "Sponsor",
   "more": "De più",
-  "autoRemoveSearchWord": "Cancia automatica sa paraula de chirca"
+  "autoRemoveSearchWord": "Cancia automatica sa paraula de chirca",
+  "secureScreen": "Iscranu de seguresa"
 }

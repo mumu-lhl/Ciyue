@@ -9,6 +9,7 @@ class _Settings {
   late String? exportDirectory;
   late ThemeMode themeMode;
   late bool autoRemoveSearchWord;
+  late bool secureScreen;
   String? language;
 
   _Settings() {
@@ -16,6 +17,7 @@ class _Settings {
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
     exportDirectory = prefs.getString("exportDirectory");
     autoRemoveSearchWord = prefs.getBool("autoRemoveSearchWord") ?? false;
+    secureScreen = prefs.getBool("secureScreen") ?? false;
 
     language = prefs.getString("language");
     language ??= "system";

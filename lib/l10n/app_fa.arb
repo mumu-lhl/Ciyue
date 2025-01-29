@@ -50,5 +50,6 @@
   "totalNumberOfEntries": "تعداد کل ورودی ها",
   "sponsor": "حامی",
   "more": "بیشتر",
-  "autoRemoveSearchWord": "حذف خودکار کلمه جستجو"
+  "autoRemoveSearchWord": "حذف خودکار کلمه جستجو",
+  "secureScreen": "جلوگیری از اسکرین شات"
 }
