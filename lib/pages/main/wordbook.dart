@@ -1,5 +1,4 @@
 import "package:ciyue/database/app.dart";
-import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
@@ -27,32 +26,8 @@ class WordBookScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    late final PreferredSizeWidget? appBar;
-    if (!dictManager.isEmpty) {
-      appBar = AppBar(
-        actions: [
-          IconButton(
-            icon: Icon(Icons.bookmark),
-            onPressed: () async {
-              final tags = await wordbookTagsDao.getAllTags();
-
-              if (!context.mounted) return;
-
-              if (tags.isEmpty) {
-                await buildAddTag(context);
-              } else {
-                await buildTagsList(context, tags);
-              }
-            },
-          )
-        ],
-      );
-    } else {
-      appBar = null;
-    }
-
     return Scaffold(
-      appBar: appBar,
+      appBar: buildAppBar(context),
       body: WordViewWithTagsClips(),
     );
   }
@@ -91,6 +66,27 @@ class WordBookScreen extends StatelessWidget {
             ],
           );
         });
+  }
+
+  AppBar buildAppBar(BuildContext context) {
+    return AppBar(
+      actions: [
+        IconButton(
+          icon: Icon(Icons.bookmark),
+          onPressed: () async {
+            final tags = await wordbookTagsDao.getAllTags();
+
+            if (!context.mounted) return;
+
+            if (tags.isEmpty) {
+              await buildAddTag(context);
+            } else {
+              await buildTagsList(context, tags);
+            }
+          },
+        )
+      ],
+    );
   }
 
   Future<void> buildTagsList(
@@ -255,10 +251,6 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
   @override
   Widget build(BuildContext context) {
-    if (dictManager.isEmpty) {
-      return Center(child: Text(AppLocalizations.of(context)!.empty));
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -289,7 +281,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
                   ));
                 }
 
-                return Wrap(children: choiceChips);
+                return Wrap(spacing: 8.0, children: choiceChips);
               }
 
               return Wrap();
@@ -303,10 +295,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   void initState() {
     super.initState();
 
-    if (!dictManager.isEmpty) {
-      allWords = wordbookDao.getAllWordsWithTag();
-      tags = wordbookTagsDao.getAllTags();
-    }
+    allWords = wordbookDao.getAllWordsWithTag();
+    tags = wordbookTagsDao.getAllTags();
 
     _refreshTagsAndWords = refresh;
   }
