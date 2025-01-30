@@ -1,4 +1,5 @@
 import 'package:ciyue/main.dart';
+import 'package:ciyue/platform.dart';
 import 'package:ciyue/settings.dart';
 import 'package:flutter/material.dart';
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
@@ -75,7 +76,7 @@ class _ExportDirectoryState extends State<ExportDirectory> {
           : Text(settings.exportDirectory!),
       leading: Icon(Icons.folder),
       onTap: () async {
-        platform.invokeMethod('getDirectory');
+        PlatformMethod.getDirectory();
       },
     );
   }

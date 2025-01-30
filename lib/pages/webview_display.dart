@@ -4,6 +4,7 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
@@ -292,7 +293,7 @@ class _ButtonState extends State<Button> {
       final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
       final fileName = setExtension(settings.exportFileName, ".json");
 
-      platform.invokeMethod("writeFile", {
+      PlatformMethod.writeFile({
         "path": join(settings.exportDirectory!, fileName),
         "directory": settings.exportDirectory,
         "filename": fileName,

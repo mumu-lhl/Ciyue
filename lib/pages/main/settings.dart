@@ -3,6 +3,7 @@ import "dart:convert";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
@@ -98,7 +99,7 @@ class Export extends StatelessWidget {
 
         if (words.isNotEmpty) {
           final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
-          platform.invokeMethod("createFile", "$wordsOutput\n$tagsOutput");
+          PlatformMethod.createFile("$wordsOutput\n$tagsOutput");
         }
       },
     );
@@ -333,7 +334,7 @@ class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
       title: Text(locale!.secureScreen),
       value: settings.secureScreen,
       onChanged: (value) async {
-        await platform.invokeMethod("setSecureFlag", value);
+        PlatformMethod.setSecureFlag(value);
         await prefs.setBool("secureScreen", value);
         setState(() {
           settings.secureScreen = value;
