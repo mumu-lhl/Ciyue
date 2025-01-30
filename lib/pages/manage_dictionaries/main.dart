@@ -3,6 +3,7 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/platform.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
@@ -170,7 +171,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         String? path;
 
         if (Platform.isAndroid) {
-          platform.invokeMethod("openDirectory");
+          PlatformMethod.openDirectory();
           return;
         } else {
           const XTypeGroup typeGroup = XTypeGroup(

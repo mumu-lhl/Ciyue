@@ -1,5 +1,3 @@
-import "dart:io";
-
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/pages/auto_export.dart";
@@ -8,18 +6,15 @@ import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/pages/manage_dictionaries/properties.dart";
 import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
 import "package:ciyue/pages/webview_display.dart";
+import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
-import "package:ciyue/widget/loading_dialog.dart";
 import "package:drift/drift.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:go_router/go_router.dart";
 import "package:package_info_plus/package_info_plus.dart";
-import "package:path/path.dart";
-import "package:path_provider/path_provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
 import "package:shared_preferences_platform_interface/types.dart";
@@ -65,37 +60,14 @@ void main() async {
 
   await wordbookTagsDao.loadTagsOrder();
 
-  platform.setMethodCallHandler((call) async {
-    switch (call.method) {
-      case "processText":
-        final text = call.arguments as String;
+  if (settings.secureScreen) {
+    PlatformMethod.setSecureFlag(true);
+  }
 
-        // Navigate to search result with the text
-        _router.go("/word", extra: {"word": text});
-        break;
-
-      case "inputDirectory":
-        await updateAllDictionaries();
-        _router.pop();
-        updateManageDictionariesPage();
-        break;
-
-      case "showLoadingDialog":
-        showLoadingDialog(_navigatorKey.currentContext!);
-        break;
-
-      case "getDirectory":
-        final directory = call.arguments as String;
-        settings.exportDirectory = directory;
-        prefs.setString('exportDirectory', directory);
-        break;
-    }
-  });
+  PlatformMethod.initHandler();
 
   runApp(const Dictionary());
 }
-
-const platform = MethodChannel("org.eu.mumulhl.ciyue");
 
 final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
 
@@ -109,9 +81,9 @@ late final SharedPreferencesWithCache prefs;
 late final VoidCallback refreshAll;
 final WordbookDao wordbookDao = WordbookDao(mainDatabase);
 final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
-final _navigatorKey = GlobalKey<NavigatorState>();
-final _router = GoRouter(
-  navigatorKey: _navigatorKey,
+final navigatorKey = GlobalKey<NavigatorState>();
+final router = GoRouter(
+  navigatorKey: navigatorKey,
   routes: [
     GoRoute(
       path: "/",
@@ -148,33 +120,6 @@ final _router = GoRouter(
   ],
 );
 
-Future<void> updateAllDictionaries() async {
-  final cacheDir = Directory(
-      join((await getApplicationCacheDirectory()).path, "dictionaries_cache"));
-  final entities = await cacheDir.list().toList();
-  await _addDictionaries(entities);
-}
-
-Future<void> _addDictionaries(List<FileSystemEntity> entities) async {
-  for (final entity in entities) {
-    if (entity is File) {
-      if (!entity.path.endsWith(".mdx")) continue;
-
-      try {
-        final path = setExtension(entity.path, "");
-        final tmpDict = Mdict(path: path);
-        if (await tmpDict.add()) {
-          await tmpDict.close();
-        }
-        // ignore: empty_catches
-      } catch (e) {}
-    } else {
-      final entities = await (entity as Directory).list().toList();
-      await _addDictionaries(entities);
-    }
-  }
-}
-
 class Dictionary extends StatefulWidget {
   const Dictionary({super.key});
 
@@ -206,7 +151,7 @@ class _DictionaryState extends State<Dictionary> {
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        routerConfig: _router,
+        routerConfig: router,
       ),
     );
   }
