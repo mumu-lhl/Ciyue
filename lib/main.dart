@@ -120,7 +120,6 @@ final router = GoRouter(
   ],
 );
 
-
 class Dictionary extends StatefulWidget {
   const Dictionary({super.key});
 
