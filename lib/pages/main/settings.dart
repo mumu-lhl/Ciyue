@@ -228,6 +228,8 @@ class SettingsScreen extends StatelessWidget {
         Divider(),
         SecureScreenSwitch(),
         Divider(),
+        SearchbarLocationSelector(),
+        Divider(),
         AutoExport(),
         Export(),
         Import(),
@@ -341,6 +343,52 @@ class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
         });
       },
       secondary: const Icon(Icons.security),
+    );
+  }
+}
+
+class SearchbarLocationSelector extends StatefulWidget {
+  const SearchbarLocationSelector({super.key});
+
+  @override
+  State<SearchbarLocationSelector> createState() =>
+      _SearchbarLocationSelectorState();
+}
+
+class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+
+    return InkWell(
+      onTapUp: (tapUpDetails) async {
+        final searchBarLocationSelected = await showMenu(
+          context: context,
+          position: RelativeRect.fromLTRB(
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+          ),
+          initialValue: settings.searchBarInAppBar,
+          items: [
+            PopupMenuItem(value: true, child: Text(locale.top)),
+            PopupMenuItem(value: false, child: Text(locale.bottom)),
+          ],
+        );
+
+        if (searchBarLocationSelected != null) {
+          settings.searchBarInAppBar = searchBarLocationSelected;
+          await prefs.setBool("searchBarInAppBar", searchBarLocationSelected);
+
+          setState(() {});
+        }
+      },
+      child: ListTile(
+        leading: const Icon(Icons.search),
+        title: Text(locale!.searchBarLocation),
+        trailing: const Icon(Icons.keyboard_arrow_down),
+      ),
     );
   }
 }

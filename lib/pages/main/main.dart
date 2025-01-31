@@ -41,7 +41,12 @@ class _HomeState extends State<Home> {
 
     return Scaffold(
       appBar: buildAppBar(context),
-      body: page[_currentIndex],
+      body: Column(
+        children: [
+          Expanded(child: page[_currentIndex]),
+          if (!settings.searchBarInAppBar) buildSearchBar(context),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
           setState(() {
@@ -57,8 +62,10 @@ class _HomeState extends State<Home> {
 
   AppBar? buildAppBar(BuildContext context) {
     if (!dictManager.isEmpty && _currentIndex == 0) {
+      final searchBar =
+          settings.searchBarInAppBar ? buildSearchBar(context) : null;
       return AppBar(
-        title: buildSearchBar(context),
+        title: searchBar,
         actions: [
           buildMoreButton(context),
         ],
@@ -133,7 +140,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  SafeArea buildSearchBar(BuildContext context) {
+  Widget buildSearchBar(BuildContext context) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),

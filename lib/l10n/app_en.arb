@@ -103,5 +103,11 @@
   "autoRemoveSearchWord": "Auto Remove Search Word",
   "@autoRemoveSearchWord": {},
   "secureScreen": "Anti-Screenshot",
-  "@secureScreen": {}
+  "@secureScreen": {},
+  "searchBarLocation": "Search Bar Location",
+  "@searchBarLocation": {},
+  "top": "Top",
+  "@top": {},
+  "bottom": "Bottom",
+  "@bottom": {}
 }
