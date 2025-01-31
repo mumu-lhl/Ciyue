@@ -2,11 +2,11 @@ import "dart:io";
 import 'dart:convert';
 
 import "package:ciyue/database/app.dart";
+import "package:ciyue/utils.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
-import "package:path_provider/path_provider.dart";
 
 import "database/dictionary.dart";
 import "main.dart";
@@ -64,9 +64,8 @@ class DictManager {
         await dictionaryListDao.remove(path);
 
         final dictId = dictIds.removeAt(index);
-        final databasePath = join(
-            (await getApplicationDocumentsDirectory()).path,
-            "dictionary_$dictId.sqlite");
+        final databasePath =
+            join((await databaseDirectory()).path, "dictionary_$dictId.sqlite");
         final file = File(databasePath);
         await file.delete();
 
@@ -278,8 +277,8 @@ class Mdict {
 
   Future<void> removeDictionary() async {
     await db.close();
-    final databasePath = join((await getApplicationDocumentsDirectory()).path,
-        "dictionary_$id.sqlite");
+    final databasePath =
+        join((await databaseDirectory()).path, "dictionary_$id.sqlite");
     final file = File(databasePath);
     await file.delete();
 
