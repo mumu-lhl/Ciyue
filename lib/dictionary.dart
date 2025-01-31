@@ -181,7 +181,6 @@ class Mdict {
       port = server!.port;
 
       server!.listen((HttpRequest request) async {
-        print("${request.method} ${request.uri}");
         if (request.method == "POST" && request.uri.path == "/") {
           final body = await utf8.decoder.bind(request).join();
           final jsonData = json.decode(body);
