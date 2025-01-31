@@ -54,5 +54,6 @@
   "secureScreen": "Sicherer Bildschirm",
   "searchBarLocation": "Suchleistenposition",
   "top": "Top",
-  "bottom": "Bottom"
+  "bottom": "Unten",
+  "sidebarIcon": "Seitenleisten-Symbol"
 }

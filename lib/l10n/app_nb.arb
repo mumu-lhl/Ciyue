@@ -54,5 +54,6 @@
   "secureScreen": "Sikker skjerm",
   "searchBarLocation": "Søkefeltplassering",
   "top": "Topp",
-  "bottom": "Bunn"
+  "bottom": "Bunn",
+  "sidebarIcon": "Sidepanelikon"
 }

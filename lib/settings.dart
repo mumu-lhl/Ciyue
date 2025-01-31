@@ -12,6 +12,7 @@ class _Settings {
   late bool secureScreen;
   String? language;
   late bool searchBarInAppBar;
+  late bool showSidebarIcon;
 
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
@@ -20,6 +21,7 @@ class _Settings {
     autoRemoveSearchWord = prefs.getBool("autoRemoveSearchWord") ?? false;
     secureScreen = prefs.getBool("secureScreen") ?? false;
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
+    showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
 
     language = prefs.getString("language");
     language ??= "system";
