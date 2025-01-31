@@ -53,6 +53,6 @@
   "autoRemoveSearchWord": "Автоматически удалять поисковое слово",
   "secureScreen": "Безопасный экран",
   "searchBarLocation": "Расположение панели поиска",
-  "appbar": "Панель приложения",
-  "belowResults": "Под результатами"
+  "top": "Топ",
+  "bottom": "Низ"
 }

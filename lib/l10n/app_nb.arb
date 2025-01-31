@@ -53,6 +53,6 @@
   "autoRemoveSearchWord": "Fjern søkeord automatisk",
   "secureScreen": "Sikker skjerm",
   "searchBarLocation": "Søkefeltplassering",
-  "appbar": "Applinje",
-  "belowResults": "Under resultater"
+  "top": "Topp",
+  "bottom": "Bunn"
 }

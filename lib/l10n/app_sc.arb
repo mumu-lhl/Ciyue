@@ -53,6 +53,6 @@
   "autoRemoveSearchWord": "Cancia automatica sa paraula de chirca",
   "secureScreen": "Iscranu de seguresa",
   "searchBarLocation": "Positzione barra de chirca",
-  "appbar": "Barra de s'app",
-  "belowResults": "A suta de sos resurtados"
+  "top": "In artu",
+  "bottom": "In bàsciu"
 }

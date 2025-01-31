@@ -53,6 +53,6 @@
   "autoRemoveSearchWord": "自動移除搜尋字詞",
   "secureScreen": "防截屏",
   "searchBarLocation": "搜尋欄位置",
-  "appbar": "應用欄",
-  "belowResults": "結果下方"
+  "top": "頂部",
+  "bottom": "底部"
 }

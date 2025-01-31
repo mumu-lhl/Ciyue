@@ -53,6 +53,6 @@
   "exportDirectory": "Export Verzeichnis",
   "secureScreen": "Sicherer Bildschirm",
   "searchBarLocation": "Suchleistenposition",
-  "appbar": "Appbar",
-  "belowResults": "Unterhalb der Ergebnisse"
+  "top": "Top",
+  "bottom": "Bottom"
 }

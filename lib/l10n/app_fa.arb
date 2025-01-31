@@ -53,6 +53,6 @@
   "autoRemoveSearchWord": "حذف خودکار کلمه جستجو",
   "secureScreen": "جلوگیری از اسکرین شات",
   "searchBarLocation": "محل نوار جستجو",
-  "appbar": "نوار برنامه",
-  "belowResults": "پایین نتایج"
+  "top": "بالا",
+  "bottom": "پایین"
 }
