@@ -78,7 +78,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Releases
+          name: APK
           path: build/app/outputs/flutter-apk/ciyue-*-release.apk
 
   build-windows:
@@ -110,7 +110,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Releases
+          name: Windows
           path: Ciyue.zip
 
   release:
@@ -123,8 +123,6 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
-        with:
-          name: Releases
 
       - uses: ncipollo/release-action@v1
         with:
