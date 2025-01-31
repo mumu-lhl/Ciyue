@@ -77,7 +77,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: APK
+          name: APKs
           path: build/app/outputs/flutter-apk/ciyue-*-release.apk
 
   build-windows:
@@ -123,5 +123,5 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/flutter-apk/ciyue-*-release.apk,Ciyue.zip"
+          artifacts: "APKs/build/app/outputs/flutter-apk/ciyue-*-release.apk,Windows/Ciyue.zip"
           tag: ${{ github.ref_name }}
