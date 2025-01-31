@@ -64,9 +64,8 @@ class DictManager {
         await dictionaryListDao.remove(path);
 
         final dictId = dictIds.removeAt(index);
-        final databasePath = join(
-            (await databaseDirectory()).path,
-            "dictionary_$dictId.sqlite");
+        final databasePath =
+            join((await databaseDirectory()).path, "dictionary_$dictId.sqlite");
         final file = File(databasePath);
         await file.delete();
 
@@ -278,8 +277,8 @@ class Mdict {
 
   Future<void> removeDictionary() async {
     await db.close();
-    final databasePath = join((await databaseDirectory()).path,
-        "dictionary_$id.sqlite");
+    final databasePath =
+        join((await databaseDirectory()).path, "dictionary_$id.sqlite");
     final file = File(databasePath);
     await file.delete();
 
