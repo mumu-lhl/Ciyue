@@ -54,5 +54,6 @@
   "secureScreen": "Безопасный экран",
   "searchBarLocation": "Расположение панели поиска",
   "top": "Топ",
-  "bottom": "Низ"
+  "bottom": "Низ",
+  "sidebarIcon": "Иконка боковой панели"
 }

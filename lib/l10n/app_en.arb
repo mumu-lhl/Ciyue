@@ -109,5 +109,7 @@
   "top": "Top",
   "@top": {},
   "bottom": "Bottom",
-  "@bottom": {}
+  "@bottom": {},
+  "sidebarIcon": "Sidebar Icon",
+  "@sidebarIcon": {}
 }

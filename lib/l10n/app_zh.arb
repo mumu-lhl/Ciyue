@@ -54,5 +54,6 @@
   "secureScreen": "防截屏",
   "searchBarLocation": "搜索栏位置",
   "top": "顶部",
-  "bottom": "底部"
+  "bottom": "底部",
+  "sidebarIcon": "侧边栏图标"
 }

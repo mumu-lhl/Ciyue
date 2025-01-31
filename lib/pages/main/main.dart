@@ -66,6 +66,7 @@ class _HomeState extends State<Home> {
           settings.searchBarInAppBar ? buildSearchBar(context) : null;
       return AppBar(
         title: searchBar,
+        automaticallyImplyLeading: settings.showSidebarIcon,
         actions: [
           buildMoreButton(context),
         ],

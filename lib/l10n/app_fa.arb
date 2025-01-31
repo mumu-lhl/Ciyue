@@ -54,5 +54,6 @@
   "secureScreen": "جلوگیری از اسکرین شات",
   "searchBarLocation": "محل نوار جستجو",
   "top": "بالا",
-  "bottom": "پایین"
+  "bottom": "پایین",
+  "sidebarIcon": "آیکون نوار کناری"
 }
