@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file. See [conven
 - **(ci)** fix release - ([a919852](https://github.com/mumu-lhl/Ciyue/commit/a9198528564fd8bcaed785ffd0c021f92f92feb6)) - Mumulhl
 - **(ci)** add release permissions - ([cd9335d](https://github.com/mumu-lhl/Ciyue/commit/cd9335de0271730339275c45a9b42d5d1791f72a)) - Mumulhl
 - **(ci)** update artifact paths in release workflow - ([f7e174f](https://github.com/mumu-lhl/Ciyue/commit/f7e174fbf5fb5da55c115927c74e2343151092ef)) - Mumulhl
+- **(ci)** update artifact paths in release workflow - ([7dad755](https://github.com/mumu-lhl/Ciyue/commit/7dad755a80b0688dd78a5655ad173f137b8a647a)) - Mumulhl
 - **(deps)** update - ([7b069cf](https://github.com/mumu-lhl/Ciyue/commit/7b069cfcf2fecf9d37e61b5eb6243595ab8041b4)) - Mumulhl
 
 ### Refactoring
