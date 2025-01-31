@@ -42,9 +42,10 @@ jobs:
           java-version: 21
           distribution: "temurin"
 
-      - run: sudo apt install -y libsqlite3-dev
-
-      - run: flutter pub get
+      - name: Install dependencies
+        run: |
+          sudo apt install -y libsqlite3-dev
+          flutter pub get
 
       - name: Decode Keystore
         env:
@@ -60,9 +61,11 @@ jobs:
         run: |
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 
-      - run: flutter build apk
+      - name: Build APK
+        run: flutter build apk
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload
+        uses: actions/upload-artifact@v4
         with:
           name: Apk
           path: |
@@ -77,7 +80,23 @@ jobs:
         with:
           cache: true
 
-      - run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Build exe
         run: flutter build windows
+
+      - name: Copy DLLs
+        run: |
+          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.42.34433\x64\Microsoft.VC143.CRT\vcruntime140.dll" build/windows/x64/runner/Release/
+          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.42.34433\x64\Microsoft.VC143.CRT\vcruntime140_1.dll" build/windows/x64/runner/Release/
+          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.42.34433\x64\Microsoft.VC143.CRT\msvcp140.dll" build/windows/x64/runner/Release/
+
+      - name: Compression
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath Ciyue.zip
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows
+          path: Ciyue.zip
