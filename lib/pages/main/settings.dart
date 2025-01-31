@@ -387,8 +387,8 @@ class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
           ),
           initialValue: settings.searchBarInAppBar,
           items: [
-            PopupMenuItem(value: true, child: Text(locale.appbar)),
-            PopupMenuItem(value: false, child: Text(locale.belowResults)),
+            PopupMenuItem(value: true, child: Text(locale.top)),
+            PopupMenuItem(value: false, child: Text(locale.bottom)),
           ],
         );
 

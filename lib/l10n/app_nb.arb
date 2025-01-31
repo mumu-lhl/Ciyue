@@ -58,6 +58,6 @@
   "enterApiKey": "Skriv inn API-nøkkelen din",
   "aiModel": "AI-modell",
   "searchBarLocation": "Søkefeltplassering",
-  "appbar": "Applinje",
-  "belowResults": "Under resultater"
+  "top": "Topp",
+  "bottom": "Bunn"
 }

@@ -58,6 +58,6 @@
   "enterApiKey": "Введите свой ключ API",
   "aiModel": "Модель ИИ",
   "searchBarLocation": "Расположение панели поиска",
-  "appbar": "Панель приложения",
-  "belowResults": "Под результатами"
+  "top": "Топ",
+  "bottom": "Низ"
 }

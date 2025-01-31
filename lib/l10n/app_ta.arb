@@ -58,6 +58,6 @@
   "enterApiKey": "உங்கள் API சாவியை உள்ளிடவும்",
   "aiModel": "AI மாதிரி",
   "searchBarLocation": "தேடல் பட்டை இடம்",
-  "appbar": "செயலி பட்டை",
-  "belowResults": "முடிவுகளுக்கு கீழே"
+  "top": "மேல்",
+  "bottom": "கீழ்"
 }

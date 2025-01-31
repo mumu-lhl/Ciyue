@@ -116,8 +116,8 @@
   "@secureScreen": {},
   "searchBarLocation": "Search Bar Location",
   "@searchBarLocation": {},
-  "appbar": "Appbar",
-  "@appbar": {},
-  "belowResults": "Below Results",
-  "@belowResults": {}
+  "top": "Top",
+  "@top": {},
+  "bottom": "Bottom",
+  "@bottom": {}
 }
