@@ -79,7 +79,8 @@ class HomeScreen extends StatelessWidget {
                     },
                     confirmDismiss: (direction) async {
                       if (direction == DismissDirection.endToStart) {
-                        final result = await buildRemoveHistoryConfirmDialog(context, item);
+                        final result = await buildRemoveHistoryConfirmDialog(
+                            context, item);
                         return result;
                       } else {
                         if (await wordbookDao.wordExist(item.word)) {
