@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.2.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.1.0..v1.2.0-beta.1) - 2025-01-31
+
+### Bug Fixes
+
+- Anti-Screenshots become ineffective every time Ciyue is reopened - ([b138ac1](https://github.com/mumu-lhl/Ciyue/commit/b138ac1d9726741579612bdfe92c566ca18be781)) - Mumulhl
+- fix name - ([977e3e4](https://github.com/mumu-lhl/Ciyue/commit/977e3e480e9df5dc4a9b9114db3b7d5fea10cd79)) - Mumulhl
+
+### Features
+
+- **(localization)** update German localization strings and remove unused metadata - ([865cf93](https://github.com/mumu-lhl/Ciyue/commit/865cf93f64255914498d66e9c8abe48b2e158561)) - Mumulhl
+- support windows - ([ba7a931](https://github.com/mumu-lhl/Ciyue/commit/ba7a93134081b985ab0076022504d337068c7f61)) - Mumulhl
+- implement HTTP server for Windows and update webview handling - ([8ddae57](https://github.com/mumu-lhl/Ciyue/commit/8ddae57eecbc316bb4c1c1b7272324d787f9c5ac)) - Mumulhl
+- update Flutter workflows for windows and remove deprecated PR workflow - ([b1b6526](https://github.com/mumu-lhl/Ciyue/commit/b1b6526eda37bfcf42f68cf084c75466b922cf3d)) - Mumulhl
+- update flutter_tts dependency to use git source - ([f2aa173](https://github.com/mumu-lhl/Ciyue/commit/f2aa1735b5b29778f9d5f131202045814d760b42)) - Mumulhl
+- add search bar location setting - ([a89da00](https://github.com/mumu-lhl/Ciyue/commit/a89da00602b9bf9f5c4b25eeab94e4d298d9ad60)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** upload windows zip - ([c466158](https://github.com/mumu-lhl/Ciyue/commit/c466158272070187f41fb0c9ef5f687d74a31888)) - Mumulhl
+- **(ci)** add Windows build to release workflow - ([54bfba2](https://github.com/mumu-lhl/Ciyue/commit/54bfba26da5d118bbeac5ff9384e5642ec0d658e)) - Mumulhl
+- **(ci)** include Ciyue.zip in release artifacts - ([95406fc](https://github.com/mumu-lhl/Ciyue/commit/95406fc826fa37aa1d3d58dfbbcf1949209d6f5e)) - Mumulhl
+- **(deps)** update - ([7b069cf](https://github.com/mumu-lhl/Ciyue/commit/7b069cfcf2fecf9d37e61b5eb6243595ab8041b4)) - Mumulhl
+
+### Refactoring
+
+- **(wordbook)** improve layout - ([63dc42f](https://github.com/mumu-lhl/Ciyue/commit/63dc42fd8627e868bc53482d1b3ce1eedbc3cd9c)) - Mumulhl
+- remove useless code - ([189f5db](https://github.com/mumu-lhl/Ciyue/commit/189f5db1f7f2e03f59f7d3e8df769245576c65a8)) - Mumulhl
+- update search bar location labels in multiple languages - ([3c4000a](https://github.com/mumu-lhl/Ciyue/commit/3c4000a2c5483ac2145929c81766d71e5077b2e9)) - Mumulhl
+
+### Style
+
+- format code - ([fe471af](https://github.com/mumu-lhl/Ciyue/commit/fe471af3f099a42ecc3cdc83388280fbad6dc1ed)) - Mumulhl
+- format code - ([e954746](https://github.com/mumu-lhl/Ciyue/commit/e9547467125e279ec96d765419611496d511a56a)) - Mumulhl
+
+---
 ## [1.1.0](https://github.com/mumu-lhl/Ciyue/compare/v1.1.0-beta.1..v1.1.0) - 2025-01-29
 
 ### Features
