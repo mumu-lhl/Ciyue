@@ -128,5 +128,5 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/flutter-apk/ciyue-*-release.apk"
+          artifacts: "build/app/outputs/flutter-apk/ciyue-*-release.apk,Ciyue.zip"
           tag: ${{ github.ref_name }}
