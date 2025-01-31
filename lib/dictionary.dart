@@ -1,8 +1,10 @@
 import "dart:io";
+import 'dart:convert';
 
 import "package:ciyue/database/app.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
+import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 
@@ -95,6 +97,9 @@ class Mdict {
   late final String title;
   late final int entriesTotal;
 
+  late HttpServer? server;
+  late int port;
+
   Mdict({required this.path});
 
   Future<bool> add() async {
@@ -164,6 +169,89 @@ class Mdict {
     customFont(fontPath);
 
     title = reader.header["Title"] ?? basename(path);
+
+    if (Platform.isWindows) {
+      await _startServer();
+    }
+  }
+
+  Future<void> _startServer() async {
+    try {
+      server = await HttpServer.bind("localhost", 0);
+      port = server!.port;
+
+      server!.listen((HttpRequest request) async {
+        print("${request.method} ${request.uri}");
+        if (request.method == "POST" && request.uri.path == "/") {
+          final body = await utf8.decoder.bind(request).join();
+          final jsonData = json.decode(body);
+          final content = jsonData["content"];
+          try {
+            request.response
+              ..headers.contentType = ContentType.html
+              ..write(content)
+              ..close();
+            return;
+          } catch (e) {
+            request.response
+              ..statusCode = HttpStatus.notFound
+              ..close();
+            return;
+          }
+        } else if (request.method == "GET" && request.uri.path != "/") {
+          final filename = request.uri.path.substring(1);
+          final resource = await readResource(filename);
+          if (resource == null) {
+            request.response
+              ..statusCode = HttpStatus.notFound
+              ..close();
+            return;
+          }
+          request.response
+            ..headers.contentType = ContentType.parse(lookupMimeType(filename)!)
+            ..add(resource)
+            ..close();
+          return;
+        }
+      });
+    } catch (e) {
+      server?.close();
+    }
+  }
+
+  Future<List<int>?> readResource(String filename) async {
+    if (filename == "favicon.ico") {
+      return null;
+    }
+
+    if (filename == fontName) {
+      final file = File(dictManager.dicts[id]!.fontPath!);
+      final data = await file.readAsBytes();
+      return data;
+    }
+
+    try {
+      Uint8List? data;
+
+      if (readerResource == null) {
+        // Find resource under directory if no mdd
+        final file = File("${dirname(path)}/$filename");
+        data = await file.readAsBytes();
+      } else {
+        try {
+          final result = await db.readResource(filename);
+          data = await readerResource!.readOne(result.blockOffset,
+              result.startOffset, result.endOffset, result.compressedSize);
+        } catch (e) {
+          // Find resource under directory if resource is not in mdd
+          final file = File("${dirname(path)}/$filename");
+          data = await file.readAsBytes();
+        }
+      }
+      return data;
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<String> readWord(String word) async {

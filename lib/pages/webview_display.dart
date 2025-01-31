@@ -16,6 +16,25 @@ import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 
+class WebviewWindow extends StatelessWidget {
+  final String content;
+  final int dictId;
+
+  const WebviewWindow({super.key, required this.content, required this.dictId});
+
+  @override
+  Widget build(BuildContext context) {
+    final port = dictManager.dicts[dictId]!.port;
+    final url = "http://localhost:$port/";
+
+    final Uint8List postData = Uint8List.fromList(utf8.encode(json.encode({"content": content})));
+    return InAppWebView(
+      initialUrlRequest: URLRequest(url: WebUri(url), method: "POST", body: postData),
+      initialData: InAppWebViewInitialData(data: content, baseUrl: WebUri(url)),
+    );
+  }
+}
+
 class Button extends StatefulWidget {
   final String word;
 
@@ -88,11 +107,12 @@ class TagsList extends StatefulWidget {
   State<StatefulWidget> createState() => _TagsListState();
 }
 
-class WebView extends StatelessWidget {
+class WebviewAndroid extends StatelessWidget {
   final String content;
   final int dictId;
 
-  const WebView({super.key, required this.content, required this.dictId});
+  const WebviewAndroid(
+      {super.key, required this.content, required this.dictId});
 
   @override
   Widget build(BuildContext context) {
@@ -218,10 +238,13 @@ class WebviewDisplay extends StatelessWidget {
                     future: dictManager.dicts[id]!.readWord(word),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
-                        return WebView(
-                          content: snapshot.data!,
-                          dictId: id,
-                        );
+                        if (Platform.isAndroid) {
+                          return WebviewAndroid(
+                              content: snapshot.data!, dictId: id);
+                        } else {
+                          return WebviewWindow(
+                              content: snapshot.data!, dictId: id);
+                        }
                       } else if (snapshot.hasError) {
                         return Center(
                             child: Text(AppLocalizations.of(context)!.notFound,
@@ -252,7 +275,7 @@ class WebviewDisplayDescription extends StatelessWidget {
               context.pop();
             },
           )),
-          body: WebView(content: html, dictId: dictId));
+          body: WebviewAndroid(content: html, dictId: dictId));
     } else {
       final html = getDescriptionFromInactiveDict();
       return FutureBuilder(
@@ -265,7 +288,8 @@ class WebviewDisplayDescription extends StatelessWidget {
                       context.pop();
                     },
                   )),
-                  body: WebView(content: snapshot.data!, dictId: dictId));
+                  body:
+                      WebviewAndroid(content: snapshot.data!, dictId: dictId));
             } else {
               return const Center(child: CircularProgressIndicator());
             }
