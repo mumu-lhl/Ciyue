@@ -51,5 +51,8 @@
   "empty": "Leer...",
   "updateAnnouncement": "Die Ankündigung der Aktualisierung auf %s",
   "exportDirectory": "Export Verzeichnis",
-  "secureScreen": "Sicherer Bildschirm"
+  "secureScreen": "Sicherer Bildschirm",
+  "searchBarLocation": "Suchleistenposition",
+  "appbar": "Appbar",
+  "belowResults": "Unterhalb der Ergebnisse"
 }

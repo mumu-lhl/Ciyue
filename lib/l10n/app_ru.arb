@@ -51,5 +51,8 @@
   "sponsor": "Спонсор",
   "more": "Больше",
   "autoRemoveSearchWord": "Автоматически удалять поисковое слово",
-  "secureScreen": "Безопасный экран"
+  "secureScreen": "Безопасный экран",
+  "searchBarLocation": "Расположение панели поиска",
+  "appbar": "Панель приложения",
+  "belowResults": "Под результатами"
 }

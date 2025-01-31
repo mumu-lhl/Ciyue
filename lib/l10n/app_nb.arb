@@ -51,5 +51,8 @@
   "sponsor": "Sponsor",
   "more": "Mer",
   "autoRemoveSearchWord": "Fjern søkeord automatisk",
-  "secureScreen": "Sikker skjerm"
+  "secureScreen": "Sikker skjerm",
+  "searchBarLocation": "Søkefeltplassering",
+  "appbar": "Applinje",
+  "belowResults": "Under resultater"
 }

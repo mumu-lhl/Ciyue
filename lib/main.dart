@@ -44,6 +44,7 @@ void main() async {
     "themeMode",
     "tagsOrder",
     "secureScreen",
+    "searchBarInAppBar",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
