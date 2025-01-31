@@ -4,6 +4,7 @@ on:
   push:
     paths-ignore:
       - "**.md"
+  pull_request:
 
 jobs:
   check:
@@ -28,6 +29,7 @@ jobs:
         run: flutter test
 
   build-android:
+    name: Build Android
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,5 +79,5 @@ jobs:
 
       - run: flutter pub get
 
-      - name: Build apk
+      - name: Build exe
         run: flutter build windows
