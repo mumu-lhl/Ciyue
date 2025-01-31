@@ -2,15 +2,34 @@ name: Flutter
 
 on:
   push:
-    branches:
     paths-ignore:
       - "**.md"
   pull_request:
-    branches-ignore:
-      - "*"
 
 jobs:
-  build:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Format
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+  build-android:
+    name: Build Android
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,15 +45,18 @@ jobs:
       - run: sudo apt install -y libsqlite3-dev
 
       - run: flutter pub get
-      - run: dart format --output=none --set-exit-if-changed .
-      - run: flutter analyze
-      - run: flutter test
 
       - name: Decode Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
 
       - name: Create key.properties
+        env:
+          KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
+        if: ${{ env.KEY_PROPERTIES != '' }}
         run: |
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 
@@ -45,3 +67,17 @@ jobs:
           name: Apk
           path: |
             build/app/outputs/flutter-apk/app-release.apk
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build exe
+        run: flutter build windows
