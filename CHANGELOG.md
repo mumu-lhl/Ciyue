@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file. See [conven
 - **(ci)** add Windows build to release workflow - ([54bfba2](https://github.com/mumu-lhl/Ciyue/commit/54bfba26da5d118bbeac5ff9384e5642ec0d658e)) - Mumulhl
 - **(ci)** include Ciyue.zip in release artifacts - ([95406fc](https://github.com/mumu-lhl/Ciyue/commit/95406fc826fa37aa1d3d58dfbbcf1949209d6f5e)) - Mumulhl
 - **(ci)** fix release - ([a919852](https://github.com/mumu-lhl/Ciyue/commit/a9198528564fd8bcaed785ffd0c021f92f92feb6)) - Mumulhl
+- **(ci)** add release permissions - ([cd9335d](https://github.com/mumu-lhl/Ciyue/commit/cd9335de0271730339275c45a9b42d5d1791f72a)) - Mumulhl
 - **(deps)** update - ([7b069cf](https://github.com/mumu-lhl/Ciyue/commit/7b069cfcf2fecf9d37e61b5eb6243595ab8041b4)) - Mumulhl
 
 ### Refactoring
