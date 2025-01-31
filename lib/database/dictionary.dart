@@ -1,3 +1,4 @@
+import "package:ciyue/utils.dart";
 import "package:drift/drift.dart" as drift;
 import "package:drift/drift.dart";
 import "package:drift_flutter/drift_flutter.dart";
@@ -7,7 +8,9 @@ import "dictionary.steps.dart";
 part "dictionary.g.dart";
 
 DictionaryDatabase dictionaryDatabase(int id) {
-  final connection = driftDatabase(name: "dictionary_$id");
+  final connection = driftDatabase(
+      name: "dictionary_$id",
+      native: DriftNativeOptions(databaseDirectory: databaseDirectory));
   return DictionaryDatabase(connection);
 }
 
