@@ -17,7 +17,6 @@ import "package:go_router/go_router.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
-import "package:shared_preferences_platform_interface/types.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
