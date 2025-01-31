@@ -56,5 +56,8 @@
   "aiProvider": "Provididore AI",
   "apiKey": "Chiave API",
   "enterApiKey": "Inserta sa crae API tua",
-  "aiModel": "Modellu AI"
+  "aiModel": "Modellu AI",
+  "searchBarLocation": "Positzione barra de chirca",
+  "appbar": "Barra de s'app",
+  "belowResults": "A suta de sos resurtados"
 }

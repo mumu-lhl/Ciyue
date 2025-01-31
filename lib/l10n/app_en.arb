@@ -113,5 +113,11 @@
   "aiModel": "AI Model",
   "@aiModel": {},
   "secureScreen": "Anti-Screenshot",
-  "@secureScreen": {}
+  "@secureScreen": {},
+  "searchBarLocation": "Search Bar Location",
+  "@searchBarLocation": {},
+  "appbar": "Appbar",
+  "@appbar": {},
+  "belowResults": "Below Results",
+  "@belowResults": {}
 }

@@ -56,5 +56,8 @@
   "aiProvider": "AI-leverandør",
   "apiKey": "API-nøkkel",
   "enterApiKey": "Skriv inn API-nøkkelen din",
-  "aiModel": "AI-modell"
+  "aiModel": "AI-modell",
+  "searchBarLocation": "Søkefeltplassering",
+  "appbar": "Applinje",
+  "belowResults": "Under resultater"
 }

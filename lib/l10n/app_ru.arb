@@ -56,5 +56,8 @@
   "aiProvider": "Провайдер ИИ",
   "apiKey": "Ключ API",
   "enterApiKey": "Введите свой ключ API",
-  "aiModel": "Модель ИИ"
+  "aiModel": "Модель ИИ",
+  "searchBarLocation": "Расположение панели поиска",
+  "appbar": "Панель приложения",
+  "belowResults": "Под результатами"
 }

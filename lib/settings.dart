@@ -57,7 +57,7 @@ class _Settings {
     exportPath = prefs.getString("exportPath");
     autoRemoveSearchWord = prefs.getBool("autoRemoveSearchWord") ?? false;
     secureScreen = prefs.getBool("secureScreen") ?? false;
-    searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
+    searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;    searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
     skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;

@@ -56,6 +56,9 @@
   "aiProvider": "ارائه دهنده هوش مصنوعی",
   "apiKey": "کلید API",
   "enterApiKey": "کلید API خود را وارد کنید",
-  "aiModel": "مدل هوش مصنوعی"
+  "aiModel": "مدل هوش مصنوعی",
+  "searchBarLocation": "محل نوار جستجو",
+  "appbar": "نوار برنامه",
+  "belowResults": "پایین نتایج"
 }
 
