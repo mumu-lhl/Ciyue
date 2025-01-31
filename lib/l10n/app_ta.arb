@@ -59,5 +59,6 @@
   "aiModel": "AI மாதிரி",
   "searchBarLocation": "தேடல் பட்டை இடம்",
   "top": "மேல்",
-  "bottom": "கீழ்"
+  "bottom": "கீழ்",
+  "sidebarIcon": "பக்க பட்டி ஐகான்"
 }

@@ -59,5 +59,6 @@
   "aiModel": "AI-modell",
   "searchBarLocation": "Søkefeltplassering",
   "top": "Topp",
-  "bottom": "Bunn"
+  "bottom": "Bunn",
+  "sidebarIcon": "Sidepanelikon"
 }

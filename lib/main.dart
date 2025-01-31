@@ -47,6 +47,7 @@ void main() async {
     "aiProviderConfigs",
     "secureScreen",
     "searchBarInAppBar",
+    "showSidebarIcon",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");

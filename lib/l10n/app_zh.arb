@@ -55,6 +55,7 @@
   "searchBarLocation": "搜索栏位置",
   "top": "顶部",
   "bottom": "底部",
+  "sidebarIcon": "侧边栏图标",
   "aiSettings": "AI 设置",
   "aiProvider": "AI 提供商",
   "apiKey": "API 密钥",

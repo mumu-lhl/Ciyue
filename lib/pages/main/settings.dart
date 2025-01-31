@@ -244,6 +244,7 @@ class SettingsScreen extends StatelessWidget {
         SecureScreenSwitch(),
         Divider(),
         SearchbarLocationSelector(),
+        DrawerIconSwitch(),
         Divider(),
         AutoExport(),
         Export(),
@@ -404,6 +405,31 @@ class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
         title: Text(locale!.searchBarLocation),
         trailing: const Icon(Icons.keyboard_arrow_down),
       ),
+    );
+  }
+}
+
+class DrawerIconSwitch extends StatefulWidget {
+  const DrawerIconSwitch({super.key});
+
+  @override
+  State<DrawerIconSwitch> createState() => _DrawerIconSwitchState();
+}
+
+class _DrawerIconSwitchState extends State<DrawerIconSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.sidebarIcon),
+      value: settings.showSidebarIcon,
+      onChanged: (value) async {
+        await prefs.setBool("showSidebarIcon", value);
+        setState(() {
+          settings.showSidebarIcon = value;
+        });
+      },
+      secondary: const Icon(Icons.menu),
     );
   }
 }

@@ -55,6 +55,7 @@
   "searchBarLocation": "搜尋欄位置",
   "top": "頂部",
   "bottom": "底部",
+  "sidebarIcon": "側邊欄圖示",
   "aiSettings": "AI 設定",
   "aiProvider": "AI 提供者",
   "apiKey": "API 密鑰",

@@ -59,5 +59,6 @@
   "aiModel": "Modellu AI",
   "searchBarLocation": "Positzione barra de chirca",
   "top": "In artu",
-  "bottom": "In bàsciu"
+  "bottom": "In bàsciu",
+  "sidebarIcon": "Icona barra laterale"
 }
