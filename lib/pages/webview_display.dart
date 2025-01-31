@@ -27,9 +27,11 @@ class WebviewWindow extends StatelessWidget {
     final port = dictManager.dicts[dictId]!.port;
     final url = "http://localhost:$port/";
 
-    final Uint8List postData = Uint8List.fromList(utf8.encode(json.encode({"content": content})));
+    final Uint8List postData =
+        Uint8List.fromList(utf8.encode(json.encode({"content": content})));
     return InAppWebView(
-      initialUrlRequest: URLRequest(url: WebUri(url), method: "POST", body: postData),
+      initialUrlRequest:
+          URLRequest(url: WebUri(url), method: "POST", body: postData),
       initialData: InAppWebViewInitialData(data: content, baseUrl: WebUri(url)),
     );
   }
