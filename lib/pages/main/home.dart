@@ -70,34 +70,40 @@ class HomeScreen extends StatelessWidget {
             return ListView(
               children: [
                 for (final item in history)
-                  ListTile(
-                    title: Text(item.word),
-                    onTap: () {
-                      context.push("/word", extra: {"word": item.word});
-                    },
-                    onLongPress: () async {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(locale!.removeOneHistory),
-                          content: Text(locale.removeOneHistoryConfirm
-                              .replaceFirst("%s", item.word)),
-                          actions: [
-                            TextButton(
-                              onPressed: () => context.pop(false),
-                              child: Text(locale.close),
-                            ),
-                            TextButton(
-                              onPressed: () => context.pop(true),
-                              child: Text(locale.remove),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirmed == true) {
-                        await historyDao.removeHistory(item.word);
+                  Dismissible(
+                    key: ValueKey(item.id),
+                    onDismissed: (direction) async {
+                      if (direction == DismissDirection.endToStart) {
+                        await buildRemoveHistoryConfirmDialog(context, item);
                       }
                     },
+                    confirmDismiss: (direction) async {
+                      if (direction == DismissDirection.endToStart) {
+                        final result = await buildRemoveHistoryConfirmDialog(
+                            context, item);
+                        return result;
+                      } else {
+                        if (await wordbookDao.wordExist(item.word)) {
+                          await wordbookDao.removeWord(item.word);
+                        } else {
+                          await wordbookDao.addWord(item.word);
+                        }
+                        return false;
+                      }
+                    },
+                    background: Container(
+                        color: Colors.blue, child: const Icon(Icons.book)),
+                    secondaryBackground: Container(
+                        color: Colors.red, child: const Icon(Icons.delete)),
+                    child: ListTile(
+                      title: Text(item.word),
+                      onTap: () {
+                        context.push("/word", extra: {"word": item.word});
+                      },
+                      onLongPress: () async {
+                        await buildRemoveHistoryConfirmDialog(context, item);
+                      },
+                    ),
                   )
               ],
             );
@@ -105,6 +111,33 @@ class HomeScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
         });
+  }
+
+  Future<bool> buildRemoveHistoryConfirmDialog(
+      BuildContext context, HistoryData item) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.removeOneHistory),
+        content: Text(AppLocalizations.of(context)!
+            .removeOneHistoryConfirm
+            .replaceFirst("%s", item.word)),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(false),
+            child: Text(AppLocalizations.of(context)!.close),
+          ),
+          TextButton(
+            onPressed: () => context.pop(true),
+            child: Text(AppLocalizations.of(context)!.remove),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await historyDao.removeHistory(item.word);
+    }
+    return confirmed ?? false;
   }
 
   FutureBuilder<List<List<DictionaryData>>> buildSearchResult(
