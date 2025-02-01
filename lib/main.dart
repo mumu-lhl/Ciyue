@@ -110,6 +110,10 @@ final router = GoRouter(
       builder: (context, state) => const AISettingsPage(),
     ),
     GoRoute(
+      path: "/settings/autoExport",
+      builder: (context, state) => const AutoExport(),
+    ),
+    GoRoute(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),
     GoRoute(
@@ -117,10 +121,6 @@ final router = GoRouter(
         builder: (context, state) => SettingsDictionary(
               dictId: int.parse(state.pathParameters["dictId"]!),
             )),
-    GoRoute(
-      path: "/settings/autoExport",
-      builder: (context, state) => const AutoExport(),
-    ),
     GoRoute(
         path: "/properties",
         builder: (context, state) => PropertiesDictionary(
