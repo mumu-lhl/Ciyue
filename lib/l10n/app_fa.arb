@@ -60,6 +60,7 @@
   "searchBarLocation": "محل نوار جستجو",
   "top": "بالا",
   "bottom": "پایین",
-  "sidebarIcon": "آیکون نوار کناری"
+  "sidebarIcon": "آیکون نوار کناری",
+  "exportPath": "مسیر خروجی"
 }
 

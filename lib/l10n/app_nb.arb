@@ -60,5 +60,6 @@
   "searchBarLocation": "Søkefeltplassering",
   "top": "Topp",
   "bottom": "Bunn",
-  "sidebarIcon": "Sidepanelikon"
+  "sidebarIcon": "Sidepanelikon",
+  "exportPath": "Eksporter sti"
 }

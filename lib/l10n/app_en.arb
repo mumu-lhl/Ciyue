@@ -121,5 +121,7 @@
   "bottom": "Bottom",
   "@bottom": {},
   "sidebarIcon": "Sidebar Icon",
-  "@sidebarIcon": {}
+  "@sidebarIcon": {},
+  "exportPath": "Export Path",
+  "@exportPath": {}
 }

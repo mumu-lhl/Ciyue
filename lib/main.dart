@@ -51,6 +51,7 @@ void main() async {
     "searchBarInAppBar",
     "showSidebarIcon",
     "dictionariesDirectory",
+    "exportPath",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");

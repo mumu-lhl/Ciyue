@@ -60,5 +60,6 @@
   "searchBarLocation": "Positzione barra de chirca",
   "top": "In artu",
   "bottom": "In bàsciu",
-  "sidebarIcon": "Icona barra laterale"
+  "sidebarIcon": "Icona barra laterale",
+  "exportPath": "Caminu de esportatzione"
 }

@@ -60,5 +60,6 @@
   "searchBarLocation": "தேடல் பட்டை இடம்",
   "top": "மேல்",
   "bottom": "கீழ்",
-  "sidebarIcon": "பக்க பட்டி ஐகான்"
+  "sidebarIcon": "பக்க பட்டி ஐகான்",
+  "exportPath": "ஏற்றுமதி பாதை"
 }

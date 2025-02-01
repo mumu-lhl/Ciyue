@@ -55,5 +55,6 @@
   "searchBarLocation": "Suchleistenposition",
   "top": "Top",
   "bottom": "Unten",
-  "sidebarIcon": "Seitenleisten-Symbol"
+  "sidebarIcon": "Seitenleisten-Symbol",
+  "exportPath": "Export Pfad"
 }
