@@ -143,6 +143,10 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
     return (update(dictionaryList)..where((t) => t.id.isValue(id)))
         .write(DictionaryListCompanion(fontPath: Value(fontPath)));
   }
+
+  Future<bool> dictionaryExist(String path) async {
+    return (await (select(dictionaryList)..where((t) => t.path.isValue(path))).get()).isNotEmpty;
+  }
 }
 
 class History extends Table {
