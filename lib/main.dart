@@ -45,6 +45,7 @@ void main() async {
     "secureScreen",
     "searchBarInAppBar",
     "showSidebarIcon",
+    "dictionariesDirectory",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
