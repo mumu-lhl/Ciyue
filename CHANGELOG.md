@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.2.0](https://github.com/mumu-lhl/Ciyue/compare/v1.2.0-beta.1..v1.2.0) - 2025-02-01
+
+### Bug Fixes
+
+- fix update button in manage dictionaries page - ([e2d8570](https://github.com/mumu-lhl/Ciyue/commit/e2d85705615c63a103ee70f2898dd42c067c3f29)) - Mumulhl
+- disable scroll on TabBarView in WebviewDisplay - ([6787fa1](https://github.com/mumu-lhl/Ciyue/commit/6787fa1ba343b92a919994b1f51ee84afd74df22)) - Mumulhl
+
+### Features
+
+- add sidebar icon toggle - ([20930e3](https://github.com/mumu-lhl/Ciyue/commit/20930e3ed838b7950e679e65dbebe6e6c87af499)) - Mumulhl
+- implement dismissible history items - ([05d2d16](https://github.com/mumu-lhl/Ciyue/commit/05d2d16287f3b20845f399e92ce1a96c1d26ac3d)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** fix windows upload - ([5b3ecfb](https://github.com/mumu-lhl/Ciyue/commit/5b3ecfb8eafa616e764d13835142f0434e8af5f2)) - Mumulhl
+
+### Refactoring
+
+- change database directory on Desktop - ([a16b12b](https://github.com/mumu-lhl/Ciyue/commit/a16b12b9b4296835f5531ea9c818bd13c282d61c)) - Mumulhl
+
+### Style
+
+- format code - ([ba90cd2](https://github.com/mumu-lhl/Ciyue/commit/ba90cd2cd467671ae67e9fe3cc67e780709e78ba)) - Mumulhl
+- format code - ([8930dae](https://github.com/mumu-lhl/Ciyue/commit/8930dae0466d9e580bbfcf77e275a5569b375242)) - Mumulhl
+- format code - ([1b3b4cd](https://github.com/mumu-lhl/Ciyue/commit/1b3b4cdd60e7278a74860a3e9d04b77e4a75c9e3)) - Mumulhl
+
+---
 ## [1.2.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.1.0..v1.2.0-beta.1) - 2025-01-31
 
 ### Bug Fixes
