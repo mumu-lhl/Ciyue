@@ -55,5 +55,6 @@
   "searchBarLocation": "搜索栏位置",
   "top": "顶部",
   "bottom": "底部",
-  "sidebarIcon": "侧边栏图标"
+  "sidebarIcon": "侧边栏图标",
+  "exportPath": "导出路径"
 }
