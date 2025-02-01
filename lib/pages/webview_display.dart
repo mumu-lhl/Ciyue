@@ -313,7 +313,8 @@ class _ButtonState extends State<Button> {
   Future<bool>? stared;
 
   Future<void> autoExport() async {
-    if (settings.autoExport && (settings.exportDirectory != null || settings.exportPath != null)) {
+    if (settings.autoExport &&
+        (settings.exportDirectory != null || settings.exportPath != null)) {
       final words = await wordbookDao.getAllWords(),
           tags = await wordbookTagsDao.getAllTags();
 

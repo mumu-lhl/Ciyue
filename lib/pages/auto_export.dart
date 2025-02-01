@@ -41,9 +41,7 @@ class _ExportPathState extends State<ExportPath> {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(AppLocalizations.of(context)!.exportPath),
-      subtitle: settings.exportPath == null
-          ? null
-          : Text(settings.exportPath!),
+      subtitle: settings.exportPath == null ? null : Text(settings.exportPath!),
       leading: Icon(Icons.folder),
       onTap: () async {
         final path = await getSaveLocation(suggestedName: "ciyue.json");
