@@ -145,7 +145,9 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<bool> dictionaryExist(String path) async {
-    return (await (select(dictionaryList)..where((t) => t.path.isValue(path))).get()).isNotEmpty;
+    return (await (select(dictionaryList)..where((t) => t.path.isValue(path)))
+            .get())
+        .isNotEmpty;
   }
 }
 
