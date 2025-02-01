@@ -168,47 +168,48 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
   IconButton buildAddButton(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.add),
-      onPressed: () async {
-        String? path;
-
+      onPressed: () {
         if (Platform.isAndroid) {
           PlatformMethod.openDirectory();
-          return;
         } else {
-          const XTypeGroup typeGroup = XTypeGroup(
-            label: "custom",
-            extensions: <String>["mdx"],
-          );
-
-          final file = await openFile(acceptedTypeGroups: [typeGroup]);
-          path = file?.path;
-        }
-
-        if (path != null) {
-          if (context.mounted) showLoadingDialog(context);
-
-          late final Mdict tmpDict;
-          try {
-            path = setExtension(path, "");
-            tmpDict = Mdict(path: path);
-            if (await tmpDict.add()) {
-              await tmpDict.close();
-            }
-          } catch (e) {
-            await tmpDict.close();
-            if (context.mounted) {
-              final snackBar = SnackBar(
-                  content: Text(AppLocalizations.of(context)!.notSupport));
-              ScaffoldMessenger.of(context).showSnackBar(snackBar);
-            }
-          }
-
-          if (context.mounted) context.pop();
-
-          updateDictionaries();
+          selectMdxFile(context);
         }
       },
     );
+  }
+
+  Future<void> selectMdxFile(BuildContext context) async {
+    const XTypeGroup typeGroup = XTypeGroup(
+      label: "MDX File",
+      extensions: <String>["mdx"],
+    );
+
+    final file = await openFile(acceptedTypeGroups: [typeGroup]);
+    var path = file?.path;
+
+    if (path != null) {
+      if (context.mounted) showLoadingDialog(context);
+
+      late final Mdict tmpDict;
+      try {
+        path = setExtension(path, "");
+        tmpDict = Mdict(path: path);
+        if (await tmpDict.add()) {
+          await tmpDict.close();
+        }
+      } catch (e) {
+        await tmpDict.close();
+        if (context.mounted) {
+          final snackBar =
+              SnackBar(content: Text(AppLocalizations.of(context)!.notSupport));
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      }
+
+      updateDictionaries();
+
+      if (context.mounted) context.pop();
+    }
   }
 
   FutureBuilder<List<DictionaryListData>> buildBody(BuildContext context) {
@@ -295,20 +296,21 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                     SimpleDialogOption(
                       onPressed: () async {
                         if (dictManager.contain(dictionary.id)) {
-                          dictManager.remove(dictionary.id);
+                          await dictManager.close(dictionary.id);
 
                           final dictIds = [
                             for (final dict in dictManager.dicts.values) dict.id
                           ];
 
-                          dictGroupDao.updateDictIds(
+                          await dictGroupDao.updateDictIds(
                               dictManager.groupId, dictIds);
-                        } else {
-                          final tmpDict = Mdict(path: dictionary.path);
-                          await tmpDict.init();
-                          await tmpDict.removeDictionary();
-                          await tmpDict.close();
+                          await dictManager.updateDictIds();
                         }
+
+                        final tmpDict = Mdict(path: dictionary.path);
+                        await tmpDict.init();
+                        await tmpDict.removeDictionary();
+                        await tmpDict.close();
 
                         updateDictionaries();
 
