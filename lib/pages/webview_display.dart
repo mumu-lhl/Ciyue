@@ -234,7 +234,8 @@ class WebviewDisplay extends StatelessWidget {
                   ],
                 )),
             floatingActionButton: Button(word: word),
-            body: TabBarView(children: [
+            body:
+                TabBarView(physics: NeverScrollableScrollPhysics(), children: [
               for (final id in dictManager.dictIds)
                 FutureBuilder(
                     future: dictManager.dicts[id]!.readWord(word),
