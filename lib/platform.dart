@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:flutter/services.dart";
@@ -10,7 +11,7 @@ import "package:path_provider/path_provider.dart";
 
 const _platform = MethodChannel("org.eu.mumulhl.ciyue");
 
-Future<void> updateAllDictionaries() async {
+Future<void> _updateAllDictionaries() async {
   final cacheDir = Directory(
       join((await getApplicationCacheDirectory()).path, "dictionaries_cache"));
   final entities = await cacheDir.list().toList();
@@ -21,6 +22,7 @@ Future<void> _addDictionaries(List<FileSystemEntity> entities) async {
   for (final entity in entities) {
     if (entity is File) {
       if (!entity.path.endsWith(".mdx")) continue;
+      if (await dictionaryListDao.dictionaryExist(entity.path)) continue;
 
       try {
         final path = setExtension(entity.path, "");
@@ -57,7 +59,10 @@ class PlatformMethod {
           break;
 
         case "inputDirectory":
-          await updateAllDictionaries();
+          await prefs.setString(
+              "dictionariesDirectory", call.arguments as String);
+          await _updateAllDictionaries();
+          updateManageDictionariesPage();
           router.pop();
           break;
 
@@ -80,6 +85,14 @@ class PlatformMethod {
 
   static Future<void> setSecureFlag(bool value) async {
     await _platform.invokeMethod("setSecureFlag", value);
+  }
+
+  static Future<void> updateDictionaries() async {
+    final directory = prefs.getString("dictionariesDirectory");
+    if (directory == null) {
+      return;
+    }
+    await _platform.invokeMethod("updateDictionaries", directory);
   }
 
   static Future<void> writeFile(Map<String, String?> info) async {

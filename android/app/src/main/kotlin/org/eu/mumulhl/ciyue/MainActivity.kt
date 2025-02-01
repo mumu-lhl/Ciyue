@@ -116,53 +116,56 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    private fun copyDictionariesDirectory(uri: Uri) {
+        methodChannel!!.invokeMethod("showLoadingDialog", null)
+
+        val documents = DocumentFile.fromTreeUri(applicationContext, uri)!!
+
+        val cacheDir = File(applicationContext.cacheDir, "dictionaries_cache")
+        if (!cacheDir.exists()) {
+            cacheDir.mkdir()
+        }
+        val targetFolder = DocumentFileCompat.fromFile(applicationContext, cacheDir)!!
+
+        ioScope.launch {
+            documents.copyFolderTo(applicationContext,
+                targetFolder,
+                onConflict = object : SingleFolderConflictCallback(uiScope) {
+                    override fun onParentConflict(
+                        destinationFolder: DocumentFile,
+                        action: ParentFolderConflictAction,
+                        canMerge: Boolean
+                    ) {
+                        action.confirmResolution(ConflictResolution.MERGE)
+                    }
+
+                    override fun onContentConflict(
+                        destinationFolder: DocumentFile,
+                        conflictedFiles: MutableList<FileConflict>,
+                        action: FolderContentConflictAction
+                    ) {
+                        val newSolution = ArrayList<FileConflict>(conflictedFiles.size)
+                        conflictedFiles.forEach {
+                            it.solution = SingleFileConflictCallback.ConflictResolution.REPLACE
+                        }
+                        newSolution.addAll(conflictedFiles)
+                        action.confirmResolution(newSolution)
+                    }
+                }).onCompletion {
+                withContext(Dispatchers.Main) {
+                    methodChannel!!.invokeMethod("inputDirectory", uri.toString())
+                }
+            }.collect { _ -> }
+        }
+    }
+
     private fun openDocumentTree(data: Intent?) {
         data?.data?.also { uri ->
-            methodChannel!!.invokeMethod("showLoadingDialog", null)
-
             val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
             contentResolver.takePersistableUriPermission(
                 uri, takeFlags
             )
-
-            val documents = DocumentFile.fromTreeUri(applicationContext, uri)!!
-
-            val cacheDir = File(applicationContext.cacheDir, "dictionaries_cache")
-            if (!cacheDir.exists()) {
-                cacheDir.mkdir()
-            }
-            val targetFolder = DocumentFileCompat.fromFile(applicationContext, cacheDir)!!
-
-            ioScope.launch {
-                documents.copyFolderTo(applicationContext,
-                    targetFolder,
-                    onConflict = object : SingleFolderConflictCallback(uiScope) {
-                        override fun onParentConflict(
-                            destinationFolder: DocumentFile,
-                            action: ParentFolderConflictAction,
-                            canMerge: Boolean
-                        ) {
-                            action.confirmResolution(ConflictResolution.SKIP)
-                        }
-
-                        override fun onContentConflict(
-                            destinationFolder: DocumentFile,
-                            conflictedFiles: MutableList<FileConflict>,
-                            action: FolderContentConflictAction
-                        ) {
-                            val newSolution = ArrayList<FileConflict>(conflictedFiles.size)
-                            conflictedFiles.forEach {
-                                it.solution = SingleFileConflictCallback.ConflictResolution.SKIP
-                            }
-                            newSolution.addAll(conflictedFiles)
-                            action.confirmResolution(newSolution)
-                        }
-                    }).onCompletion {
-                    withContext(Dispatchers.Main) {
-                        methodChannel!!.invokeMethod("inputDirectory", null)
-                    }
-                }.collect { _ -> }
-            }
+            copyDictionariesDirectory(uri)
         }
     }
 
@@ -196,6 +199,11 @@ class MainActivity : FlutterActivity() {
 
                     "setSecureFlag" -> {
                         setSecureFlag(call.arguments as Boolean)
+                    }
+
+                    "updateDictionaries" -> {
+                        val uri = Uri.parse(call.arguments as String)
+                        copyDictionariesDirectory(uri)
                     }
 
                     else -> result.notImplemented()
