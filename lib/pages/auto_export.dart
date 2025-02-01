@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:ciyue/main.dart';
 import 'package:ciyue/platform.dart';
 import 'package:ciyue/settings.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import 'package:go_router/go_router.dart';
@@ -13,15 +16,43 @@ class AutoExport extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           leading: BackButton(onPressed: () => context.pop()),
-          title: const Text('Auto Export'),
+          title: Text(AppLocalizations.of(context)!.autoExport),
         ),
         body: ListView(
           children: [
             Enable(),
-            FileName(),
-            ExportDirectory(),
+            if (Platform.isAndroid) FileName(),
+            if (Platform.isAndroid) ExportDirectory(),
+            if (!Platform.isAndroid) ExportPath(),
           ],
         ));
+  }
+}
+
+class ExportPath extends StatefulWidget {
+  const ExportPath({super.key});
+
+  @override
+  State<ExportPath> createState() => _ExportPathState();
+}
+
+class _ExportPathState extends State<ExportPath> {
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(AppLocalizations.of(context)!.exportPath),
+      subtitle: settings.exportPath == null ? null : Text(settings.exportPath!),
+      leading: Icon(Icons.folder),
+      onTap: () async {
+        final path = await getSaveLocation(suggestedName: "ciyue.json");
+        if (path != null) {
+          setState(() {
+            settings.exportPath = path.path;
+            prefs.setString("exportPath", path.path);
+          });
+        }
+      },
+    );
   }
 }
 

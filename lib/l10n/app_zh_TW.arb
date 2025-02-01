@@ -55,5 +55,6 @@
   "searchBarLocation": "搜尋欄位置",
   "top": "頂部",
   "bottom": "底部",
-  "sidebarIcon": "側邊欄圖示"
+  "sidebarIcon": "側邊欄圖示",
+  "exportPath": "導出路徑"
 }

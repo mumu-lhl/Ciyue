@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/pages/auto_export.dart";
@@ -46,6 +48,7 @@ void main() async {
     "searchBarInAppBar",
     "showSidebarIcon",
     "dictionariesDirectory",
+    "exportPath",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
@@ -62,7 +65,7 @@ void main() async {
 
   await wordbookTagsDao.loadTagsOrder();
 
-  if (settings.secureScreen) {
+  if (Platform.isAndroid && settings.secureScreen) {
     PlatformMethod.setSecureFlag(true);
   }
 
@@ -78,12 +81,10 @@ final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
 late final FlutterTts flutterTts;
 final HistoryDao historyDao = HistoryDao(mainDatabase);
 final AppDatabase mainDatabase = appDatabase();
+final navigatorKey = GlobalKey<NavigatorState>();
 late final PackageInfo packageInfo;
 late final SharedPreferencesWithCache prefs;
 late final VoidCallback refreshAll;
-final WordbookDao wordbookDao = WordbookDao(mainDatabase);
-final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
-final navigatorKey = GlobalKey<NavigatorState>();
 final router = GoRouter(
   navigatorKey: navigatorKey,
   routes: [
@@ -103,6 +104,10 @@ final router = GoRouter(
               dictId: int.parse(state.pathParameters["dictId"]!),
             )),
     GoRoute(
+      path: "/settings/autoExport",
+      builder: (context, state) => const AutoExport(),
+    ),
+    GoRoute(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),
     GoRoute(
@@ -111,16 +116,14 @@ final router = GoRouter(
               dictId: int.parse(state.pathParameters["dictId"]!),
             )),
     GoRoute(
-      path: "/settings/autoExport",
-      builder: (context, state) => const AutoExport(),
-    ),
-    GoRoute(
         path: "/properties",
         builder: (context, state) => PropertiesDictionary(
               path: (state.extra as Map<String, dynamic>)["path"],
             )),
   ],
 );
+final WordbookDao wordbookDao = WordbookDao(mainDatabase);
+final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
 
 class Dictionary extends StatefulWidget {
   const Dictionary({super.key});

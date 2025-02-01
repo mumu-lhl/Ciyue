@@ -7,6 +7,7 @@ class _Settings {
   late bool autoExport;
   late String exportFileName;
   late String? exportDirectory;
+  late String? exportPath;
   late ThemeMode themeMode;
   late bool autoRemoveSearchWord;
   late bool secureScreen;
@@ -18,6 +19,7 @@ class _Settings {
     autoExport = prefs.getBool("autoExport") ?? false;
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
     exportDirectory = prefs.getString("exportDirectory");
+    exportPath = prefs.getString("exportPath");
     autoRemoveSearchWord = prefs.getBool("autoRemoveSearchWord") ?? false;
     secureScreen = prefs.getBool("secureScreen") ?? false;
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;

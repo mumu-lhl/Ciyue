@@ -1,4 +1,5 @@
 import "dart:convert";
+import "dart:io";
 
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
@@ -40,13 +41,17 @@ class About extends StatelessWidget {
   }
 }
 
-class AutoExport extends StatefulWidget {
-  const AutoExport({
-    super.key,
-  });
+class AutoExport extends StatelessWidget {
+  const AutoExport({super.key});
 
   @override
-  State<AutoExport> createState() => _AutoExportState();
+  Widget build(BuildContext context) {
+    return ListTile(
+        leading: Icon(Icons.backup),
+        title: Text(AppLocalizations.of(context)!.autoExport),
+        trailing: Icon(Icons.arrow_forward),
+        onTap: () => context.push("/settings/autoExport"));
+  }
 }
 
 class ClearHistory extends StatelessWidget {
@@ -85,6 +90,13 @@ class ClearHistory extends StatelessWidget {
   }
 }
 
+class DrawerIconSwitch extends StatefulWidget {
+  const DrawerIconSwitch({super.key});
+
+  @override
+  State<DrawerIconSwitch> createState() => _DrawerIconSwitchState();
+}
+
 class Export extends StatelessWidget {
   const Export({super.key});
 
@@ -99,7 +111,16 @@ class Export extends StatelessWidget {
 
         if (words.isNotEmpty) {
           final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
-          PlatformMethod.createFile("$wordsOutput\n$tagsOutput");
+
+          if (Platform.isAndroid) {
+            await PlatformMethod.createFile("$wordsOutput\n$tagsOutput");
+          } else {
+            final result = await getSaveLocation(suggestedName: "ciyue.json");
+            if (result != null) {
+              final file = File(result.path);
+              await file.writeAsString("$wordsOutput\n$tagsOutput");
+            }
+          }
         }
       },
     );
@@ -139,9 +160,7 @@ class GithubUrl extends StatelessWidget {
 }
 
 class Import extends StatelessWidget {
-  const Import({
-    super.key,
-  });
+  const Import({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -207,6 +226,14 @@ class ManageDictionariesWidget extends StatelessWidget {
   }
 }
 
+class SearchbarLocationSelector extends StatefulWidget {
+  const SearchbarLocationSelector({super.key});
+
+  @override
+  State<SearchbarLocationSelector> createState() =>
+      _SearchbarLocationSelectorState();
+}
+
 class SecureScreenSwitch extends StatefulWidget {
   const SecureScreenSwitch({super.key});
 
@@ -220,27 +247,26 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: const [
-        ManageDictionariesWidget(),
-        Divider(),
-        ThemeSelector(),
-        LanguageSelector(),
-        Divider(),
-        SecureScreenSwitch(),
-        Divider(),
-        SearchbarLocationSelector(),
-        DrawerIconSwitch(),
-        Divider(),
-        AutoExport(),
-        Export(),
-        Import(),
-        Divider(),
-        ClearHistory(),
-        Divider(),
-        Feedback(),
-        GithubUrl(),
-        SponsorUrl(),
-        About(),
+      children: [
+        const ManageDictionariesWidget(),
+        const Divider(),
+        const ThemeSelector(),
+        const LanguageSelector(),
+        const Divider(),
+        if (Platform.isAndroid) ...[SecureScreenSwitch(), Divider()],
+        const SearchbarLocationSelector(),
+        const DrawerIconSwitch(),
+        const Divider(),
+        const AutoExport(),
+        const Export(),
+        const Import(),
+        const Divider(),
+        const ClearHistory(),
+        const Divider(),
+        const Feedback(),
+        const GithubUrl(),
+        const SponsorUrl(),
+        const About(),
       ],
     );
   }
@@ -269,14 +295,21 @@ class ThemeSelector extends StatefulWidget {
   State<ThemeSelector> createState() => _ThemeSelectorState();
 }
 
-class _AutoExportState extends State<AutoExport> {
+class _DrawerIconSwitchState extends State<DrawerIconSwitch> {
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-        leading: Icon(Icons.backup),
-        title: Text(AppLocalizations.of(context)!.autoExport),
-        trailing: Icon(Icons.arrow_forward),
-        onTap: () => context.push("/settings/autoExport"));
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.sidebarIcon),
+      value: settings.showSidebarIcon,
+      onChanged: (value) async {
+        await prefs.setBool("showSidebarIcon", value);
+        setState(() {
+          settings.showSidebarIcon = value;
+        });
+      },
+      secondary: const Icon(Icons.menu),
+    );
   }
 }
 
@@ -329,33 +362,6 @@ class _LanguageSelectorState extends State<LanguageSelector> {
   }
 }
 
-class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.secureScreen),
-      value: settings.secureScreen,
-      onChanged: (value) async {
-        PlatformMethod.setSecureFlag(value);
-        await prefs.setBool("secureScreen", value);
-        setState(() {
-          settings.secureScreen = value;
-        });
-      },
-      secondary: const Icon(Icons.security),
-    );
-  }
-}
-
-class SearchbarLocationSelector extends StatefulWidget {
-  const SearchbarLocationSelector({super.key});
-
-  @override
-  State<SearchbarLocationSelector> createState() =>
-      _SearchbarLocationSelectorState();
-}
-
 class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
   @override
   Widget build(BuildContext context) {
@@ -394,27 +400,21 @@ class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
   }
 }
 
-class DrawerIconSwitch extends StatefulWidget {
-  const DrawerIconSwitch({super.key});
-
-  @override
-  State<DrawerIconSwitch> createState() => _DrawerIconSwitchState();
-}
-
-class _DrawerIconSwitchState extends State<DrawerIconSwitch> {
+class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
     return SwitchListTile(
-      title: Text(locale!.sidebarIcon),
-      value: settings.showSidebarIcon,
+      title: Text(locale!.secureScreen),
+      value: settings.secureScreen,
       onChanged: (value) async {
-        await prefs.setBool("showSidebarIcon", value);
+        PlatformMethod.setSecureFlag(value);
+        await prefs.setBool("secureScreen", value);
         setState(() {
-          settings.showSidebarIcon = value;
+          settings.secureScreen = value;
         });
       },
-      secondary: const Icon(Icons.menu),
+      secondary: const Icon(Icons.security),
     );
   }
 }
