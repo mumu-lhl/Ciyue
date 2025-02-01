@@ -1,4 +1,5 @@
 import "dart:convert";
+import "dart:io";
 
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
@@ -234,28 +235,27 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: const [
-        ManageDictionariesWidget(),
-        AISettingsListTile(),
-        Divider(),
-        ThemeSelector(),
-        LanguageSelector(),
-        Divider(),
-        SecureScreenSwitch(),
-        Divider(),
-        SearchbarLocationSelector(),
-        DrawerIconSwitch(),
-        Divider(),
-        AutoExport(),
-        Export(),
-        Import(),
-        Divider(),
-        ClearHistory(),
-        Divider(),
-        Feedback(),
-        GithubUrl(),
-        SponsorUrl(),
-        About(),
+      children: [
+        const ManageDictionariesWidget(),
+        const AISettingsListTile(),
+        const Divider(),
+        const ThemeSelector(),
+        const LanguageSelector(),
+        const Divider(),
+        if (Platform.isAndroid) ...[SecureScreenSwitch(), Divider()],
+        const SearchbarLocationSelector(),
+        const DrawerIconSwitch(),
+        const Divider(),
+        const AutoExport(),
+        const Export(),
+        const Import(),
+        const Divider(),
+        const ClearHistory(),
+        const Divider(),
+        const Feedback(),
+        const GithubUrl(),
+        const SponsorUrl(),
+        const About(),
       ],
     );
   }
