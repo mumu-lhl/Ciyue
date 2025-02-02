@@ -252,21 +252,22 @@ class WebviewDisplay extends StatelessWidget {
                         final fromProcessText = !context.canPop();
                         return Center(
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(AppLocalizations.of(context)!.notFound,
-                                    style: Theme.of(context).textTheme.titleLarge),
-                                Visibility(
-                                  visible: fromProcessText,
-                                  child: TextButton(
-                                    onPressed: () {
-                                      context.go("/", extra: {"searchWord": word});
-                                    },
-                                    child: Text(AppLocalizations.of(context)!.editWord),
-                                  ),
-                                ),
-                              ],
-                            ));
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(AppLocalizations.of(context)!.notFound,
+                                style: Theme.of(context).textTheme.titleLarge),
+                            Visibility(
+                              visible: fromProcessText,
+                              child: TextButton(
+                                onPressed: () {
+                                  context.go("/", extra: {"searchWord": word});
+                                },
+                                child: Text(
+                                    AppLocalizations.of(context)!.editWord),
+                              ),
+                            ),
+                          ],
+                        ));
                       } else {
                         return const Center(child: CircularProgressIndicator());
                       }

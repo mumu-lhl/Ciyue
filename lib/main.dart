@@ -94,7 +94,8 @@ final router = GoRouter(
     GoRoute(
         path: "/",
         builder: (context, state) {
-          final extra = (state.extra as Map<String, String>?) ?? {"searchWord": ""};
+          final extra =
+              (state.extra as Map<String, String>?) ?? {"searchWord": ""};
           return Home(searchWord: extra["searchWord"]!);
         }),
     GoRoute(
