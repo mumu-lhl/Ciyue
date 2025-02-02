@@ -56,5 +56,6 @@
   "top": "顶部",
   "bottom": "底部",
   "sidebarIcon": "侧边栏图标",
-  "exportPath": "导出路径"
+  "exportPath": "导出路径",
+  "editWord": "编辑单词"
 }

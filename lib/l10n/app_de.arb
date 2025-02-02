@@ -56,5 +56,6 @@
   "top": "Top",
   "bottom": "Unten",
   "sidebarIcon": "Seitenleisten-Symbol",
-  "exportPath": "Export Pfad"
+  "exportPath": "Export Pfad",
+  "editWord": "Wort bearbeiten"
 }

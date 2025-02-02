@@ -89,9 +89,11 @@ final router = GoRouter(
   navigatorKey: navigatorKey,
   routes: [
     GoRoute(
-      path: "/",
-      builder: (context, state) => const Home(),
-    ),
+        path: "/",
+        builder: (context, state) {
+          final extra = (state.extra as Map<String, String>?) ?? {"searchWord": ""};
+          return Home(searchWord: extra["searchWord"]!);
+        }),
     GoRoute(
         path: "/word",
         builder: (context, state) {
