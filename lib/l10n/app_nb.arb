@@ -61,5 +61,6 @@
   "top": "Topp",
   "bottom": "Bunn",
   "sidebarIcon": "Sidepanelikon",
-  "exportPath": "Eksporter sti"
+  "exportPath": "Eksporter sti",
+  "editWord": "Rediger ord"
 }

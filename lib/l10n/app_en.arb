@@ -123,5 +123,7 @@
   "sidebarIcon": "Sidebar Icon",
   "@sidebarIcon": {},
   "exportPath": "Export Path",
-  "@exportPath": {}
+  "@exportPath": {},
+  "editWord": "Edit Word",
+  "@editWord": {}
 }
