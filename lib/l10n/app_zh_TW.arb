@@ -56,5 +56,6 @@
   "top": "頂部",
   "bottom": "底部",
   "sidebarIcon": "側邊欄圖示",
-  "exportPath": "導出路徑"
+  "exportPath": "導出路徑",
+  "editWord": "編輯字詞"
 }

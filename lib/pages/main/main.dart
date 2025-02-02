@@ -11,7 +11,9 @@ import "package:go_router/go_router.dart";
 late VoidCallback clearSearchWord;
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  final String searchWord;
+
+  const Home({super.key, required this.searchWord});
 
   @override
   State<Home> createState() => _HomeState();
@@ -25,8 +27,7 @@ class MoreOptionsDialog extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  var searchWord = "";
-
+  late String searchWord;
   var _currentIndex = 0;
 
   final textFieldController = TextEditingController();
@@ -146,6 +147,7 @@ class _HomeState extends State<Home> {
       child: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
         child: TextField(
+          autofocus: widget.searchWord != "",
           onTapOutside: (pointerDownEvent) {
             FocusScope.of(context).unfocus();
           },
@@ -166,6 +168,10 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+
+    searchWord = widget.searchWord;
+    textFieldController.text = widget.searchWord;
+
     clearSearchWord = () {
       textFieldController.clear();
       setState(() {
