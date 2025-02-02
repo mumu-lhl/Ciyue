@@ -147,6 +147,7 @@ class _HomeState extends State<Home> {
       child: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
         child: TextField(
+          autofocus: widget.searchWord != "",
           onTapOutside: (pointerDownEvent) {
             FocusScope.of(context).unfocus();
           },
