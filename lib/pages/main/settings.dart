@@ -262,6 +262,7 @@ class SettingsScreen extends StatelessWidget {
         ],
         const SearchbarLocationSelector(),
         const DrawerIconSwitch(),
+        const MoreOptionsButtonSwitch(),
         const Divider(),
         const AutoExport(),
         const Export(),
@@ -345,6 +346,31 @@ class _DrawerIconSwitchState extends State<DrawerIconSwitch> {
         });
       },
       secondary: const Icon(Icons.menu),
+    );
+  }
+}
+
+class MoreOptionsButtonSwitch extends StatefulWidget {
+  const MoreOptionsButtonSwitch({super.key});
+
+  @override
+  State<MoreOptionsButtonSwitch> createState() => _MoreOptionsButtonSwitchState();
+}
+
+class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.moreOptionsButton),
+      value: settings.showMoreOptionsButton,
+      onChanged: (value) async {
+        await prefs.setBool("showMoreOptionsButton", value);
+        setState(() {
+          settings.showMoreOptionsButton = value;
+        });
+      },
+      secondary: const Icon(Icons.more_vert),
     );
   }
 }

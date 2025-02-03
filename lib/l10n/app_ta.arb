@@ -58,5 +58,6 @@
   "sidebarIcon": "பக்க பட்டி ஐகான்",
   "exportPath": "ஏற்றுமதி பாதை",
   "editWord": "சொல் திருத்து",
-  "notification": "அறிவிப்பு"
+  "notification": "அறிவிப்பு",
+  "moreOptionsButton": "மேலும் விருப்பங்கள் பொத்தான்"
 }

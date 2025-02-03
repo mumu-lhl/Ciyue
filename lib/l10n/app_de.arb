@@ -58,5 +58,6 @@
   "sidebarIcon": "Seitenleisten-Symbol",
   "exportPath": "Export Pfad",
   "editWord": "Wort bearbeiten",
-  "notification": "Benachrichtigung"
+  "notification": "Benachrichtigung",
+  "moreOptionsButton": "Mehr Optionen Schaltfläche"
 }
