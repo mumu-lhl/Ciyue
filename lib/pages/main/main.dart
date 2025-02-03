@@ -88,7 +88,7 @@ class _HomeState extends State<Home> {
         title: searchBar,
         automaticallyImplyLeading: settings.showSidebarIcon,
         actions: [
-          buildMoreButton(context),
+          if (settings.showMoreOptionsButton) buildMoreButton(context),
         ],
       );
     }

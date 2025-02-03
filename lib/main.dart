@@ -50,6 +50,7 @@ void main() async {
     "dictionariesDirectory",
     "exportPath",
     "notification",
+    "showMoreOptionsButton",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");

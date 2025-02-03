@@ -14,6 +14,7 @@ class _Settings {
   String? language;
   late bool searchBarInAppBar;
   late bool showSidebarIcon;
+  late bool showMoreOptionsButton;
   late bool notification;
 
   _Settings() {
@@ -26,6 +27,7 @@ class _Settings {
     secureScreen = prefs.getBool("secureScreen") ?? false;
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
+    showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
 
     language = prefs.getString("language");
     language ??= "system";
