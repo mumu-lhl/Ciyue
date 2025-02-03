@@ -59,6 +59,7 @@
   "exportPath": "導出路徑",
   "editWord": "編輯字詞",
   "notification": "通知",
+  "moreOptionsButton": "更多選項按鈕",
   "aiSettings": "AI 設定",
   "aiProvider": "AI 提供者",
   "apiKey": "API 金鑰",

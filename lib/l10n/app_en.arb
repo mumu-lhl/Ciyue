@@ -127,5 +127,7 @@
   "editWord": "Edit Word",
   "@editWord": {},
   "notification": "Notification",
-  "@notification": {}
+  "@notification": {},
+  "moreOptionsButton": "More Options Button",
+  "@moreOptionsButton": {}
 }

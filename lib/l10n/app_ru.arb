@@ -63,5 +63,6 @@
   "sidebarIcon": "Иконка боковой панели",
   "exportPath": "Путь экспорта",
   "editWord": "Редактировать слово",
-  "notification": "Уведомление"
+  "notification": "Уведомление",
+  "moreOptionsButton": "Кнопка дополнительных параметров"
 }

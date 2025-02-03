@@ -72,5 +72,6 @@
   "sidebarIcon": "側邊欄圖示",
   "exportPath": "導出路徑",
   "editWord": "編輯字詞",
-  "notification": "通知"
+  "notification": "通知",
+  "moreOptionsButton": "更多選項按鈕"
 }

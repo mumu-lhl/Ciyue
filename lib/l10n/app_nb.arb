@@ -63,5 +63,6 @@
   "sidebarIcon": "Sidepanelikon",
   "exportPath": "Eksporter sti",
   "editWord": "Rediger ord",
-  "notification": "Varsling"
+  "notification": "Varsling",
+  "moreOptionsButton": "Flere alternativer-knapp"
 }
