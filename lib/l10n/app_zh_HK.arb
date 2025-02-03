@@ -64,5 +64,13 @@
   "aiModel": "AI 模型",
   "sidebarIcon": "側邊欄圖示",
   "exportPath": "導出路徑",
-  "editWord": "編輯字詞"
+  "aiSettings": "AI 設定",
+  "aiProvider": "AI 提供者",
+  "apiKey": "API 密鑰",
+  "enterApiKey": "輸入你的 API 密鑰",
+  "aiModel": "AI 模型",
+  "sidebarIcon": "側邊欄圖示",
+  "exportPath": "導出路徑",
+  "editWord": "編輯字詞",
+  "notification": "通知"
 }

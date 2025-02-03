@@ -52,6 +52,7 @@ void main() async {
     "showSidebarIcon",
     "dictionariesDirectory",
     "exportPath",
+    "notification",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
@@ -68,11 +69,19 @@ void main() async {
 
   await wordbookTagsDao.loadTagsOrder();
 
-  if (Platform.isAndroid && settings.secureScreen) {
-    PlatformMethod.setSecureFlag(true);
+  if (Platform.isAndroid) {
+    PlatformMethod.initHandler();
+    PlatformMethod.initNotifications();
+
+    if (settings.secureScreen) {
+      PlatformMethod.setSecureFlag(true);
+    }
+    if (settings.notification) {
+      PlatformMethod.createPersistentNotification(true);
+    }
   }
 
-  PlatformMethod.initHandler();
+  if (Platform.isAndroid) {}
 
   runApp(const Dictionary());
 }
@@ -92,12 +101,13 @@ final router = GoRouter(
   navigatorKey: navigatorKey,
   routes: [
     GoRoute(
-        path: "/",
-        builder: (context, state) {
-          final extra =
-              (state.extra as Map<String, String>?) ?? {"searchWord": ""};
-          return Home(searchWord: extra["searchWord"]!);
-        }),
+      path: "/",
+      builder: (context, state) {
+        final extra =
+            (state.extra as Map<String, dynamic>?) ?? {"searchWord": ""};
+        return Home(searchWord: extra["searchWord"]);
+      },
+    ),
     GoRoute(
         path: "/word",
         builder: (context, state) {

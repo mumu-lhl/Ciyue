@@ -125,5 +125,7 @@
   "exportPath": "Export Path",
   "@exportPath": {},
   "editWord": "Edit Word",
-  "@editWord": {}
+  "@editWord": {},
+  "notification": "Notification",
+  "@notification": {}
 }

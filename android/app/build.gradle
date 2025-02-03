@@ -35,6 +35,7 @@ android {
     ndkVersion = "27.0.12077973"
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
@@ -81,6 +82,7 @@ flutter {
 ext.abiCodes = ["x86_64": 1, "armeabi-v7a": 2, "arm64-v8a": 3]
 
 dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
     implementation 'androidx.documentfile:documentfile:1.0.1'
     implementation 'com.anggrayudi:storage:2.0.0'
     implementation 'com.jakewharton.timber:timber:5.0.1'

@@ -62,5 +62,6 @@
   "bottom": "Bunn",
   "sidebarIcon": "Sidepanelikon",
   "exportPath": "Eksporter sti",
-  "editWord": "Rediger ord"
+  "editWord": "Rediger ord",
+  "notification": "Varsling"
 }
