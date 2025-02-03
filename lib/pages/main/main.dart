@@ -45,7 +45,8 @@ class _HomeState extends State<Home> {
       body: Column(
         children: [
           Expanded(child: page[_currentIndex]),
-          if (!settings.searchBarInAppBar) buildSearchBar(context),
+          if (_currentIndex == 0 && !settings.searchBarInAppBar)
+            buildSearchBar(context),
         ],
       ),
       bottomNavigationBar: NavigationBar(
