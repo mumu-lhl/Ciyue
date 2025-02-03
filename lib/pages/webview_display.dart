@@ -4,6 +4,7 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/widget/text_buttons.dart";
@@ -261,6 +262,7 @@ class WebviewDisplay extends StatelessWidget {
                               child: TextButton(
                                 onPressed: () {
                                   context.go("/", extra: {"searchWord": word});
+                                  MainPage.callEnableAutofocusOnce = true;
                                 },
                                 child: Text(
                                     AppLocalizations.of(context)!.editWord),

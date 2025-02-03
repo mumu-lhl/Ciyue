@@ -57,5 +57,6 @@
   "bottom": "پایین",
   "sidebarIcon": "آیکون نوار کناری",
   "exportPath": "مسیر خروجی",
-  "editWord": "ویرایش کلمه"
+  "editWord": "ویرایش کلمه",
+  "notification": "اعلان"
 }

@@ -164,7 +164,7 @@ class HomeScreen extends StatelessWidget {
                     context.push("/word", extra: {"word": word.key});
                     await historyDao.addHistory(word.key);
                     if (settings.autoRemoveSearchWord) {
-                      clearSearchWord();
+                      MainPage.clearSearchWord();
                     }
                   }));
             }

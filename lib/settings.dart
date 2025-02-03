@@ -14,9 +14,11 @@ class _Settings {
   String? language;
   late bool searchBarInAppBar;
   late bool showSidebarIcon;
+  late bool notification;
 
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
+    notification = prefs.getBool("notification") ?? false;
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
     exportDirectory = prefs.getString("exportDirectory");
     exportPath = prefs.getString("exportPath");
