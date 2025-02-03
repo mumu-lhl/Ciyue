@@ -8,7 +8,24 @@ import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 
-late VoidCallback clearSearchWord;
+class MainPage {
+  static VoidCallback? _clearSearchWord;
+  static VoidCallback? _enableAutofocusOnce;
+  static void Function(int)? _setScreenIndex;
+  static bool callEnableAutofocusOnce = false;
+
+  static VoidCallback get clearSearchWord => _clearSearchWord!;
+  static set clearSearchWord(VoidCallback callback) =>
+      _clearSearchWord = callback;
+
+  static VoidCallback get enableAutofocusOnce => _enableAutofocusOnce!;
+  static set enableAutofocusOnce(VoidCallback callback) =>
+      _enableAutofocusOnce = callback;
+
+  static void Function(int) get setScreenIndex => _setScreenIndex!;
+  static set setScreenIndex(void Function(int) callback) =>
+      _setScreenIndex = callback;
+}
 
 class Home extends StatefulWidget {
   final String searchWord;
@@ -29,6 +46,7 @@ class MoreOptionsDialog extends StatefulWidget {
 class _HomeState extends State<Home> {
   late String searchWord;
   var _currentIndex = 0;
+  var _autofocus = false;
 
   final textFieldController = TextEditingController();
 
@@ -144,11 +162,14 @@ class _HomeState extends State<Home> {
   }
 
   Widget buildSearchBar(BuildContext context) {
+    final autofocus = _autofocus;
+    _autofocus = false;
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
         child: TextField(
-          autofocus: widget.searchWord != "",
+          autofocus: autofocus,
           onTapOutside: (pointerDownEvent) {
             FocusScope.of(context).unfocus();
           },
@@ -173,12 +194,26 @@ class _HomeState extends State<Home> {
     searchWord = widget.searchWord;
     textFieldController.text = widget.searchWord;
 
-    clearSearchWord = () {
+    MainPage.clearSearchWord = () {
       textFieldController.clear();
       setState(() {
         searchWord = "";
       });
     };
+    MainPage.setScreenIndex = (int index) {
+      setState(() {
+        _currentIndex = index;
+      });
+    };
+    MainPage.enableAutofocusOnce = () {
+      setState(() {
+        _autofocus = true;
+      });
+    };
+    if (MainPage.callEnableAutofocusOnce) {
+      MainPage.enableAutofocusOnce();
+      MainPage.callEnableAutofocusOnce = false;
+    }
   }
 }
 

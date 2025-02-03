@@ -10,6 +10,7 @@ import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
+import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:go_router/go_router.dart";
 import "package:url_launcher/url_launcher.dart";
 
@@ -253,7 +254,12 @@ class SettingsScreen extends StatelessWidget {
         const ThemeSelector(),
         const LanguageSelector(),
         const Divider(),
-        if (Platform.isAndroid) ...[SecureScreenSwitch(), Divider()],
+        if (Platform.isAndroid) ...[
+          const SecureScreenSwitch(),
+          const Divider(),
+          const NotificationSwitch(),
+          const Divider()
+        ],
         const SearchbarLocationSelector(),
         const DrawerIconSwitch(),
         const Divider(),
@@ -293,6 +299,36 @@ class ThemeSelector extends StatefulWidget {
 
   @override
   State<ThemeSelector> createState() => _ThemeSelectorState();
+}
+
+class NotificationSwitch extends StatefulWidget {
+  const NotificationSwitch({super.key});
+
+  @override
+  State<NotificationSwitch> createState() => _NotificationSwitchState();
+}
+
+class _NotificationSwitchState extends State<NotificationSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.notification),
+      value: settings.notification,
+      onChanged: (value) async {
+        await prefs.setBool("notification", value);
+        setState(() {
+          settings.notification = value;
+        });
+        await PlatformMethod.flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.requestNotificationsPermission();
+        PlatformMethod.createPersistentNotification(value);
+      },
+      secondary: const Icon(Icons.notifications),
+    );
+  }
 }
 
 class _DrawerIconSwitchState extends State<DrawerIconSwitch> {
