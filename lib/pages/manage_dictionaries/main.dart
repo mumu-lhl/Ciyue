@@ -351,8 +351,8 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                             return AlertDialog(
                               title: Text(
                                   AppLocalizations.of(context)!.titleAlias),
-                              content: TextField(
-                                controller: controller,
+                                content: TextField(
+                                controller: controller..text = dictManager.dicts[dictionary.id]!.title,
                                 autofocus: true,
                                 onSubmitted: (value) async {
                                   if (value.isNotEmpty) {
@@ -368,6 +368,14 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                                 },
                               ),
                               actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    dictManager.dicts[dictionary.id]!.setDefaultTitle();
+                                    controller.text = dictManager.dicts[dictionary.id]!.title;
+                                    setState(() {});
+                                  },
+                                  child: Text(AppLocalizations.of(context)!.default_),
+                                ),
                                 TextButton(
                                   onPressed: () => context.pop(),
                                   child:

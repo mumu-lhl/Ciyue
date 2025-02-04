@@ -231,7 +231,7 @@ class WebviewDisplay extends StatelessWidget {
                 bottom: TabBar(
                   tabs: [
                     for (final id in dictManager.dictIds)
-                      Tab(text: basename(dictManager.dicts[id]!.path))
+                      Tab(text: dictManager.dicts[id]!.title)
                   ],
                 )),
             floatingActionButton: Button(word: word),
