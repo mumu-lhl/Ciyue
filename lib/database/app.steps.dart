@@ -354,12 +354,115 @@ i1.GeneratedColumn<String> _column_8(String aliasedName) =>
     i1.GeneratedColumn<String>('name', aliasedName, false,
         type: i1.DriftSqlType.string,
         defaultConstraints: i1.GeneratedColumn.constraintIsAlways('UNIQUE'));
+
+final class Schema7 extends i0.VersionedSchema {
+  Schema7({required super.database}) : super(version: 7);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    dictionaryList,
+    wordbook,
+    wordbookTags,
+    history,
+    dictGroup,
+    idxWordbook,
+    idxWordbookTags,
+  ];
+  late final Shape6 dictionaryList = Shape6(
+      source: i0.VersionedTable(
+        entityName: 'dictionary_list',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_9,
+          _column_2,
+          _column_0,
+          _column_1,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape2 wordbook = Shape2(
+      source: i0.VersionedTable(
+        entityName: 'wordbook',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_4,
+          _column_5,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape3 wordbookTags = Shape3(
+      source: i0.VersionedTable(
+        entityName: 'wordbook_tags',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_0,
+          _column_6,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape4 history = Shape4(
+      source: i0.VersionedTable(
+        entityName: 'history',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_0,
+          _column_5,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape5 dictGroup = Shape5(
+      source: i0.VersionedTable(
+        entityName: 'dict_group',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_7,
+          _column_0,
+          _column_8,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  final i1.Index idxWordbook =
+      i1.Index('idx_wordbook', 'CREATE INDEX idx_wordbook ON wordbook (word)');
+  final i1.Index idxWordbookTags = i1.Index('idx_wordbook_tags',
+      'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)');
+}
+
+class Shape6 extends i0.VersionedTable {
+  Shape6({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get alias =>
+      columnsByName['alias']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get fontPath =>
+      columnsByName['font_path']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get path =>
+      columnsByName['path']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<String> _column_9(String aliasedName) =>
+    i1.GeneratedColumn<String>('alias', aliasedName, true,
+        type: i1.DriftSqlType.string);
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
   required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
   required Future<void> Function(i1.Migrator m, Schema6 schema) from5To6,
+  required Future<void> Function(i1.Migrator m, Schema7 schema) from6To7,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -388,6 +491,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from5To6(migrator, schema);
         return 6;
+      case 6:
+        final schema = Schema7(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from6To7(migrator, schema);
+        return 7;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -400,6 +508,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
   required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
   required Future<void> Function(i1.Migrator m, Schema6 schema) from5To6,
+  required Future<void> Function(i1.Migrator m, Schema7 schema) from6To7,
 }) =>
     i0.VersionedSchema.stepByStepHelper(
         step: migrationSteps(
@@ -408,4 +517,5 @@ i1.OnUpgrade stepByStep({
       from3To4: from3To4,
       from4To5: from4To5,
       from5To6: from5To6,
+      from6To7: from6To7,
     ));

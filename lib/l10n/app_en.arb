@@ -129,5 +129,7 @@
   "notification": "Notification",
   "@notification": {},
   "moreOptionsButton": "More Options Button",
-  "@moreOptionsButton": {}
+  "@moreOptionsButton": {},
+  "titleAlias": "Title Alias",
+  "@titleAlias": {}
 }

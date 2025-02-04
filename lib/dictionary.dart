@@ -166,8 +166,9 @@ class Mdict {
 
     final fontPath = await dictionaryListDao.getFontPath(id);
     customFont(fontPath);
-
-    title = reader.header["Title"] ?? basename(path);
+    
+    final alias = await dictionaryListDao.getAlias(id);
+    title = alias ?? reader.header["Title"] ?? basename(path);
 
     if (Platform.isWindows) {
       await _startServer();

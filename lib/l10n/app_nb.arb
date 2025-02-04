@@ -64,5 +64,6 @@
   "exportPath": "Eksporter sti",
   "editWord": "Rediger ord",
   "notification": "Varsling",
-  "moreOptionsButton": "Flere alternativer-knapp"
+  "moreOptionsButton": "Flere alternativer-knapp",
+  "titleAlias": "Tittel Alias"
 }
