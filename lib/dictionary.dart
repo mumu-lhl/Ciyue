@@ -1,5 +1,5 @@
-import "dart:io";
 import 'dart:convert';
+import "dart:io";
 
 import "package:ciyue/database/app.dart";
 import "package:ciyue/utils.dart";
@@ -93,7 +93,7 @@ class Mdict {
   late final DictionaryDatabase db;
   late final DictReader reader;
   DictReader? readerResource;
-  late final String title;
+  late String title;
   late final int entriesTotal;
 
   late HttpServer? server;
@@ -141,14 +141,6 @@ class Mdict {
     await dictionaryListDao.updateFont(id, path);
   }
 
-  Future<void> initOnlyMetadata() async {
-    reader = DictReader("$path.mdx");
-    await reader.init();
-
-    title = reader.header["Title"] ?? basename(path);
-    entriesTotal = reader.numEntries;
-  }
-
   Future<void> init() async {
     id = await dictionaryListDao.getId(path);
 
@@ -175,47 +167,13 @@ class Mdict {
     }
   }
 
-  Future<void> _startServer() async {
-    try {
-      server = await HttpServer.bind("localhost", 0);
-      port = server!.port;
+  Future<void> initOnlyMetadata() async {
+    reader = DictReader("$path.mdx");
+    await reader.init();
 
-      server!.listen((HttpRequest request) async {
-        if (request.method == "POST" && request.uri.path == "/") {
-          final body = await utf8.decoder.bind(request).join();
-          final jsonData = json.decode(body);
-          final content = jsonData["content"];
-          try {
-            request.response
-              ..headers.contentType = ContentType.html
-              ..write(content)
-              ..close();
-            return;
-          } catch (e) {
-            request.response
-              ..statusCode = HttpStatus.notFound
-              ..close();
-            return;
-          }
-        } else if (request.method == "GET" && request.uri.path != "/") {
-          final filename = request.uri.path.substring(1);
-          final resource = await readResource(filename);
-          if (resource == null) {
-            request.response
-              ..statusCode = HttpStatus.notFound
-              ..close();
-            return;
-          }
-          request.response
-            ..headers.contentType = ContentType.parse(lookupMimeType(filename)!)
-            ..add(resource)
-            ..close();
-          return;
-        }
-      });
-    } catch (e) {
-      server?.close();
-    }
+    final alias = await dictionaryListDao.getAlias(id);
+    title = reader.header["Title"] ?? alias ?? basename(path);
+    entriesTotal = reader.numEntries;
   }
 
   Future<List<int>?> readResource(String filename) async {
@@ -286,6 +244,10 @@ class Mdict {
     await dictionaryListDao.remove(path);
   }
 
+  void setDefaultTitle() {
+    title = reader.header["Title"] ?? basename(path);
+  }
+
   Future<void> _addResource() async {
     final resourceList = <ResourceCompanion>[];
     var number = 0;
@@ -353,6 +315,49 @@ class Mdict {
       await readerResource!.init(readKey);
     } catch (e) {
       readerResource = null;
+    }
+  }
+
+  Future<void> _startServer() async {
+    try {
+      server = await HttpServer.bind("localhost", 0);
+      port = server!.port;
+
+      server!.listen((HttpRequest request) async {
+        if (request.method == "POST" && request.uri.path == "/") {
+          final body = await utf8.decoder.bind(request).join();
+          final jsonData = json.decode(body);
+          final content = jsonData["content"];
+          try {
+            request.response
+              ..headers.contentType = ContentType.html
+              ..write(content)
+              ..close();
+            return;
+          } catch (e) {
+            request.response
+              ..statusCode = HttpStatus.notFound
+              ..close();
+            return;
+          }
+        } else if (request.method == "GET" && request.uri.path != "/") {
+          final filename = request.uri.path.substring(1);
+          final resource = await readResource(filename);
+          if (resource == null) {
+            request.response
+              ..statusCode = HttpStatus.notFound
+              ..close();
+            return;
+          }
+          request.response
+            ..headers.contentType = ContentType.parse(lookupMimeType(filename)!)
+            ..add(resource)
+            ..close();
+          return;
+        }
+      });
+    } catch (e) {
+      server?.close();
     }
   }
 }
