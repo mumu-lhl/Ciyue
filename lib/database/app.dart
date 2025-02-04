@@ -45,12 +45,15 @@ class AppDatabase extends _$AppDatabase {
           await m.dropColumn(schema.dictionaryList, "backup_path");
           await m.create(schema.dictGroup);
         },
+        from6To7: (m, schema) async {
+          await m.addColumn(schema.dictionaryList, schema.dictionaryList.alias);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 }
 
 class DictGroup extends Table {
@@ -98,6 +101,7 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
 }
 
 class DictionaryList extends Table {
+  TextColumn get alias => text().nullable()();
   TextColumn get fontPath => text().nullable()();
   IntColumn get id => integer().autoIncrement()();
   TextColumn get path => text()();
@@ -115,6 +119,19 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<DictionaryListData>> all() {
     return (select(dictionaryList)).get();
+  }
+
+  Future<bool> dictionaryExist(String path) async {
+    return (await (select(dictionaryList)..where((t) => t.path.isValue(path)))
+            .get())
+        .isNotEmpty;
+  }
+
+  Future<String?> getAlias(int id) async {
+    final result = await (select(dictionaryList)
+          ..where((t) => t.id.isValue(id)))
+        .getSingleOrNull();
+    return result?.alias;
   }
 
   Future<String?> getFontPath(int id) async {
@@ -139,15 +156,14 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
     return (delete(dictionaryList)..where((t) => t.path.isValue(path))).go();
   }
 
+  Future<int> updateAlias(int id, String? alias) {
+    return (update(dictionaryList)..where((t) => t.id.isValue(id)))
+        .write(DictionaryListCompanion(alias: Value(alias)));
+  }
+
   Future<int> updateFont(int id, String? fontPath) {
     return (update(dictionaryList)..where((t) => t.id.isValue(id)))
         .write(DictionaryListCompanion(fontPath: Value(fontPath)));
-  }
-
-  Future<bool> dictionaryExist(String path) async {
-    return (await (select(dictionaryList)..where((t) => t.path.isValue(path)))
-            .get())
-        .isNotEmpty;
   }
 }
 
