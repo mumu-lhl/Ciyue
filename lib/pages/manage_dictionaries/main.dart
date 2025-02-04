@@ -279,7 +279,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               context: context,
               builder: (BuildContext context) {
                 return SimpleDialog(
-                  title: Text(basename(dictionary.path)),
+                  title: Text(dictManager.dicts[dictionary.id]!.title),
                   children: <Widget>[
                     SimpleDialogOption(
                       onPressed: () {
@@ -341,13 +341,70 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                         title: Text(AppLocalizations.of(context)!.settings),
                       ),
                     ),
+                    SimpleDialogOption(
+                      onPressed: () {
+                        context.pop();
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            final controller = TextEditingController();
+                            return AlertDialog(
+                              title: Text(
+                                  AppLocalizations.of(context)!.titleAlias),
+                              content: TextField(
+                                controller: controller,
+                                autofocus: true,
+                                onSubmitted: (value) async {
+                                  if (value.isNotEmpty) {
+                                    dictManager.dicts[dictionary.id]!.title =
+                                        value;
+                                    await dictionaryListDao.updateAlias(
+                                        dictionary.id, value);
+                                    updateDictionaries();
+                                    if (context.mounted) {
+                                      context.pop();
+                                    }
+                                  }
+                                },
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => context.pop(),
+                                  child:
+                                      Text(AppLocalizations.of(context)!.close),
+                                ),
+                                TextButton(
+                                    onPressed: () async {
+                                      if (controller.text != "") {
+                                        dictManager.dicts[dictionary.id]!
+                                            .title = controller.text;
+                                        await dictionaryListDao.updateAlias(
+                                            dictionary.id, controller.text);
+                                        updateDictionaries();
+                                        if (context.mounted) {
+                                          context.pop();
+                                        }
+                                      }
+                                    },
+                                    child: Text(
+                                        AppLocalizations.of(context)!.confirm)),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      child: ListTile(
+                        leading: Icon(Icons.title),
+                        title: Text(AppLocalizations.of(context)!.titleAlias),
+                      ),
+                    ),
                   ],
                 );
               },
             );
           },
           child: CheckboxListTile(
-            title: Text(basename(dictionary.path)),
+            title: Text(dictManager.dicts[dictionary.id]!.title),
             value: dictManager.contain(dictionary.id),
             secondary: ReorderableDragStartListener(
                 index: index,

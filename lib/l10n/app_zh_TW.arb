@@ -59,5 +59,6 @@
   "exportPath": "導出路徑",
   "editWord": "編輯字詞",
   "notification": "通知",
-   "moreOptionsButton": "更多選項按鈕"
+  "moreOptionsButton": "更多選項按鈕",
+  "titleAlias": "標題別名"
 }
