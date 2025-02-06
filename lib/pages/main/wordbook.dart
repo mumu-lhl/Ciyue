@@ -318,9 +318,10 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
                     onSelected: (selected) {
                       setState(() {
                         selectedTag = selected ? tag.id : null;
-                        final skipTaggedWord = selectedTag == null && settings.skipTaggedWord;
-                        allWords =
-                            wordbookDao.getAllWordsWithTag(tag: selectedTag, skipTagged: skipTaggedWord);
+                        final skipTaggedWord =
+                            selectedTag == null && settings.skipTaggedWord;
+                        allWords = wordbookDao.getAllWordsWithTag(
+                            tag: selectedTag, skipTagged: skipTaggedWord);
                       });
                     },
                   ));
@@ -340,7 +341,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   void initState() {
     super.initState();
 
-    allWords = wordbookDao.getAllWordsWithTag(skipTagged: settings.skipTaggedWord);
+    allWords =
+        wordbookDao.getAllWordsWithTag(skipTagged: settings.skipTaggedWord);
     tags = wordbookTagsDao.getAllTags();
 
     _refreshTagsAndWords = refresh;
@@ -348,7 +350,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
   void refresh() {
     setState(() {
-      allWords = wordbookDao.getAllWordsWithTag(skipTagged: settings.skipTaggedWord);
+      allWords =
+          wordbookDao.getAllWordsWithTag(skipTagged: settings.skipTaggedWord);
       tags = wordbookTagsDao.getAllTags();
     });
   }
