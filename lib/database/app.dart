@@ -226,7 +226,8 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<WordbookData>> getAllWordsWithTag(
       // ignore: avoid_init_to_null
-      {int? tag = null, bool skipTagged = false}) {
+      {int? tag = null,
+      bool skipTagged = false}) {
     if (tag == null) {
       if (skipTagged) {
         final subquery = selectOnly(wordbook)
