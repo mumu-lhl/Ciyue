@@ -121,5 +121,7 @@
   "moreOptionsButton": "More Options Button",
   "@moreOptionsButton": {},
   "titleAlias": "Title Alias",
-  "@titleAlias": {}
+  "@titleAlias": {},
+  "skipTaggedWord": "Skip Tagged Word",
+  "@skipTaggedWord": {}
 }

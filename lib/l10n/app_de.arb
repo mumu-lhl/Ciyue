@@ -60,5 +60,6 @@
   "editWord": "Wort bearbeiten",
   "notification": "Benachrichtigung",
   "moreOptionsButton": "Mehr Optionen Schaltfläche",
-  "titleAlias": "Titel Alias"
+  "titleAlias": "Titel Alias",
+  "skipTaggedWord": "Markiertes Wort überspringen"
 }

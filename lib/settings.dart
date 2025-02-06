@@ -16,6 +16,7 @@ class _Settings {
   late bool showSidebarIcon;
   late bool showMoreOptionsButton;
   late bool notification;
+  late bool skipTaggedWord;
 
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
@@ -28,9 +29,8 @@ class _Settings {
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
-
-    language = prefs.getString("language");
-    language ??= "system";
+    skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
+    language = prefs.getString("language") ?? "system";
 
     final themeModeString = prefs.getString("themeMode");
     switch (themeModeString) {

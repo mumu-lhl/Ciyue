@@ -224,15 +224,31 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     return (select(wordbook)).get();
   }
 
-  // ignore: avoid_init_to_null
-  Future<List<WordbookData>> getAllWordsWithTag({int? tag = null}) {
+  Future<List<WordbookData>> getAllWordsWithTag(
+      // ignore: avoid_init_to_null
+      {int? tag = null,
+      bool skipTagged = false}) {
     if (tag == null) {
-      return (select(wordbook)
-            ..where((t) => t.tag.isNull())
-            ..orderBy([
-              (t) => OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)
-            ]))
-          .get();
+      if (skipTagged) {
+        final subquery = selectOnly(wordbook)
+          ..addColumns([wordbook.word])
+          ..where(wordbook.tag.isNotNull());
+        return (select(wordbook)
+              ..where((t) => t.tag.isNull() & t.word.isNotInQuery(subquery))
+              ..orderBy([
+                (t) =>
+                    OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)
+              ]))
+            .get();
+      } else {
+        return (select(wordbook)
+              ..where((t) => t.tag.isNull())
+              ..orderBy([
+                (t) =>
+                    OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)
+              ]))
+            .get();
+      }
     } else {
       return (select(wordbook)
             ..where((t) => t.tag.isValue(tag))
