@@ -60,5 +60,6 @@
   "editWord": "編輯字詞",
   "notification": "通知",
   "moreOptionsButton": "更多選項按鈕",
-  "titleAlias": "標題別名"
+  "titleAlias": "標題別名",
+  "skipTaggedWord": "跳過有標籤的字詞"
 }

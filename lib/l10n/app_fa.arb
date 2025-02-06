@@ -60,5 +60,6 @@
   "editWord": "ویرایش کلمه",
   "notification": "اعلان",
   "moreOptionsButton": "دکمه گزینه‌های بیشتر",
-  "titleAlias": "عنوان مستعار"
+  "titleAlias": "عنوان مستعار",
+  "skipTaggedWord": "رد شدن از کلمه تگ شده"
 }

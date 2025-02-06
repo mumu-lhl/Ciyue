@@ -1,11 +1,19 @@
 import "package:ciyue/database/app.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/settings.dart";
 import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 
 VoidCallback? _refreshTagsAndWords;
+
+class MoreOptionsDialog extends StatefulWidget {
+  const MoreOptionsDialog({super.key});
+
+  @override
+  State<MoreOptionsDialog> createState() => _MoreOptionsDialogState();
+}
 
 class TagListDialog extends StatefulWidget {
   final List<WordbookTag> tagsDisplay;
@@ -84,7 +92,18 @@ class WordBookScreen extends StatelessWidget {
               await buildTagsList(context, tags);
             }
           },
-        )
+        ),
+        IconButton(
+          icon: Icon(Icons.more_vert),
+          onPressed: () async {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return const MoreOptionsDialog();
+              },
+            );
+          },
+        ),
       ],
     );
   }
@@ -178,6 +197,31 @@ class WordViewWithTagsClips extends StatefulWidget {
 
   @override
   State<WordViewWithTagsClips> createState() => _WordViewWithTagsClipsState();
+}
+
+class _MoreOptionsDialogState extends State<MoreOptionsDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return SimpleDialog(
+      title: Text(AppLocalizations.of(context)!.more),
+      children: [
+        SimpleDialogOption(
+          child: CheckboxListTile(
+            value: settings.skipTaggedWord,
+            onChanged: (value) async {
+              if (value != null) {
+                settings.skipTaggedWord = value;
+                await prefs.setBool("skipTaggedWord", value);
+                setState(() {});
+                _refreshTagsAndWords!();
+              }
+            },
+            title: Text(AppLocalizations.of(context)!.skipTaggedWord),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _TagListDialogState extends State<TagListDialog> {
@@ -274,8 +318,9 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
                     onSelected: (selected) {
                       setState(() {
                         selectedTag = selected ? tag.id : null;
+                        final skipTaggedWord = selectedTag == null && settings.skipTaggedWord;
                         allWords =
-                            wordbookDao.getAllWordsWithTag(tag: selectedTag);
+                            wordbookDao.getAllWordsWithTag(tag: selectedTag, skipTagged: skipTaggedWord);
                       });
                     },
                   ));
@@ -295,7 +340,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   void initState() {
     super.initState();
 
-    allWords = wordbookDao.getAllWordsWithTag();
+    allWords = wordbookDao.getAllWordsWithTag(skipTagged: settings.skipTaggedWord);
     tags = wordbookTagsDao.getAllTags();
 
     _refreshTagsAndWords = refresh;
@@ -303,7 +348,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
   void refresh() {
     setState(() {
-      allWords = wordbookDao.getAllWordsWithTag();
+      allWords = wordbookDao.getAllWordsWithTag(skipTagged: settings.skipTaggedWord);
       tags = wordbookTagsDao.getAllTags();
     });
   }
