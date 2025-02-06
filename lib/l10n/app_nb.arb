@@ -65,5 +65,6 @@
   "editWord": "Rediger ord",
   "notification": "Varsling",
   "moreOptionsButton": "Flere alternativer-knapp",
-  "titleAlias": "Tittel Alias"
+  "titleAlias": "Tittel Alias",
+  "skipTaggedWord": "Hopp over merket ord"
 }

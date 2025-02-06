@@ -66,5 +66,12 @@
   "enterApiKey": "輸入你的 API 金鑰",
   "aiModel": "AI 模型",
   "moreOptionsButton": "更多選項按鈕",
-  "titleAlias": "標題別名"
+  "aiSettings": "AI 設定",
+  "aiProvider": "AI 提供者",
+  "apiKey": "API 金鑰",
+  "enterApiKey": "輸入你的 API 金鑰",
+  "aiModel": "AI 模型",
+  "moreOptionsButton": "更多選項按鈕",
+  "titleAlias": "標題別名",
+  "skipTaggedWord": "跳過有標籤的字詞"
 }

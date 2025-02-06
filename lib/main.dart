@@ -54,6 +54,7 @@ void main() async {
     "exportPath",
     "notification",
     "showMoreOptionsButton",
+    "skipTaggedWord",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
