@@ -61,5 +61,6 @@
   "notification": "Benachrichtigung",
   "moreOptionsButton": "Mehr Optionen Schaltfläche",
   "titleAlias": "Titel Alias",
-  "skipTaggedWord": "Markiertes Wort überspringen"
+  "skipTaggedWord": "Markiertes Wort überspringen",
+  "showNotFoundWord": "Nicht gefundene Wörter anzeigen"
 }

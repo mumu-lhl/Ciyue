@@ -81,6 +81,12 @@ class DictionaryDatabase extends _$DictionaryDatabase {
           ..limit(20))
         .get();
   }
+
+  Future<bool> wordExist(String word) async {
+    final result =
+        await (select(dictionary)..where((u) => u.key.isValue(word))).get();
+    return result.isNotEmpty;
+  }
 }
 
 @TableIndex(name: "idx_data", columns: {#key})

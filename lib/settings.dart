@@ -17,6 +17,7 @@ class _Settings {
   late bool showMoreOptionsButton;
   late bool notification;
   late bool skipTaggedWord;
+  late bool showNotFound;
 
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
@@ -30,6 +31,7 @@ class _Settings {
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
     skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
+    showNotFound = prefs.getBool("showNotFound") ?? true;
     language = prefs.getString("language") ?? "system";
 
     final themeModeString = prefs.getString("themeMode");

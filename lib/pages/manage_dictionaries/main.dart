@@ -417,7 +417,10 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
             );
           },
           child: CheckboxListTile(
-            title: Text(dictManager.dicts[dictionary.id]!.title),
+            title: Text(dictionary.alias ??
+                (dictManager.contain(dictionary.id)
+                    ? dictManager.dicts[dictionary.id]!.title
+                    : basename(dictionary.path))),
             value: dictManager.contain(dictionary.id),
             secondary: ReorderableDragStartListener(
                 index: index,
