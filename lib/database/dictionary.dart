@@ -83,7 +83,8 @@ class DictionaryDatabase extends _$DictionaryDatabase {
   }
 
   Future<bool> wordExist(String word) async {
-    final result = await (select(dictionary)..where((u) => u.key.isValue(word))).get();
+    final result =
+        await (select(dictionary)..where((u) => u.key.isValue(word))).get();
     return result.isNotEmpty;
   }
 }
