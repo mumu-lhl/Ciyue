@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.3.0](https://github.com/mumu-lhl/Ciyue/compare/v1.2.0..v1.3.0) - 2025-02-07
+
+### Bug Fixes
+
+- fix deleting dictionary - ([ed277a0](https://github.com/mumu-lhl/Ciyue/commit/ed277a0e12d9b12e63f2e460738a0ee55c6fa22f)) - Mumulhl
+- fix export feature on Windows - ([faef218](https://github.com/mumu-lhl/Ciyue/commit/faef218f58c879e19f631c30856f8bdd1f433138)) - Mumulhl
+- fix auto export feature on Windows - ([424c968](https://github.com/mumu-lhl/Ciyue/commit/424c968a3928baab0d3ac8a022b667e653ff14f5)) - Mumulhl
+- show bottom search bar on wrongly screens - ([900c8fd](https://github.com/mumu-lhl/Ciyue/commit/900c8fdcb6a0f10ed9f8e6c2c9cbc093c712a5c1)) - Mumulhl
+- show more options button - ([4194f64](https://github.com/mumu-lhl/Ciyue/commit/4194f64491c2f653575fbf7302f76bd5bd66bbc0)) - Mumulhl
+
+### Features
+
+- disable SecureScreen on Windows - ([ce385bc](https://github.com/mumu-lhl/Ciyue/commit/ce385bc5d66f8bbdf548fe90cc0c6a74c06cca46)) - Mumulhl
+- allow edit word when views word from process text - ([8e6c697](https://github.com/mumu-lhl/Ciyue/commit/8e6c69727ae65ae424316ae31cd6653517e0a847)) - Mumulhl
+- enable autofocus on search field when a word is provided - ([81e67cd](https://github.com/mumu-lhl/Ciyue/commit/81e67cd671c941971a288f5f44cb66c4678d8292)) - Mumulhl
+- add German and Sardinian language options to settings - ([5ce23d8](https://github.com/mumu-lhl/Ciyue/commit/5ce23d86fc2e66ae7cbc2891aa0f6f8d524aa2a0)) - Mumulhl
+- add notification for searching fastly - ([717f2e4](https://github.com/mumu-lhl/Ciyue/commit/717f2e4d086ed2f2e1a893ab82e3e2faa7231d44)) - Mumulhl
+- add more options button switch - ([d5e8c9a](https://github.com/mumu-lhl/Ciyue/commit/d5e8c9a9037157de00e9cb3326fea0e0d55a51ee)) - Mumulhl
+- add title alias - ([214e01d](https://github.com/mumu-lhl/Ciyue/commit/214e01d94ed9f0ff5e26604e7ee8bb7acd222204)) - Mumulhl
+- add option to skip tagged words in word book - ([cd0fd41](https://github.com/mumu-lhl/Ciyue/commit/cd0fd4157ebb0ddd2c934d1f13371858e0266c9d)) - Mumulhl
+- add option to switch show not found words - ([75e33ca](https://github.com/mumu-lhl/Ciyue/commit/75e33ca81b9a21c8ed7db35c7fe92927da6ec5c7)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** update flutter version - ([fb47435](https://github.com/mumu-lhl/Ciyue/commit/fb4743532a130667fd706ed8cf9170dfd37f0b5d)) - Mumulhl
+
+### Refactoring
+
+- improve title alias handling - ([f6804cf](https://github.com/mumu-lhl/Ciyue/commit/f6804cf63c2c71f7e8eaf04204c81ebd23943b9c)) - Mumulhl
+
+### Style
+
+- format code - ([2540667](https://github.com/mumu-lhl/Ciyue/commit/25406679e16f1d62859e30ec35c932eb0fddf6e4)) - Mumulhl
+- format code - ([bdeae82](https://github.com/mumu-lhl/Ciyue/commit/bdeae82d1e38347680f620ddee8af4a4e05ac871)) - Mumulhl
+- format code - ([c2214a5](https://github.com/mumu-lhl/Ciyue/commit/c2214a59fd4f99ea9110b5219c3d5eb589db7d5a)) - Mumulhl
+- format code - ([baccc83](https://github.com/mumu-lhl/Ciyue/commit/baccc83b5893d172c1bb26ba0d42facc77011db7)) - Mumulhl
+- format code - ([f71d157](https://github.com/mumu-lhl/Ciyue/commit/f71d157a01a115c561dfc4d1b2074cc279f2c7fc)) - Mumulhl
+- format code - ([acb84f5](https://github.com/mumu-lhl/Ciyue/commit/acb84f5b6ed01b685cb86b568d1a08befd33c0b2)) - Mumulhl
+- format code - ([4624fa4](https://github.com/mumu-lhl/Ciyue/commit/4624fa49b4ad6bf0074b824229f98745dc4dfd35)) - Mumulhl
+
+---
 ## [1.2.0](https://github.com/mumu-lhl/Ciyue/compare/v1.2.0-beta.1..v1.2.0) - 2025-02-01
 
 ### Bug Fixes
