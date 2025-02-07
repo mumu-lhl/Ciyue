@@ -73,5 +73,6 @@
   "aiModel": "AI 模型",
   "moreOptionsButton": "更多選項按鈕",
   "titleAlias": "標題別名",
-  "skipTaggedWord": "跳過有標籤的字詞"
+  "skipTaggedWord": "跳過有標籤的字詞",
+  "showNotFoundWord": "顯示未找到的字詞"
 }

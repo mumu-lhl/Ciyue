@@ -17,27 +17,6 @@ import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 
-class WebviewWindow extends StatelessWidget {
-  final String content;
-  final int dictId;
-
-  const WebviewWindow({super.key, required this.content, required this.dictId});
-
-  @override
-  Widget build(BuildContext context) {
-    final port = dictManager.dicts[dictId]!.port;
-    final url = "http://localhost:$port/";
-
-    final Uint8List postData =
-        Uint8List.fromList(utf8.encode(json.encode({"content": content})));
-    return InAppWebView(
-      initialUrlRequest:
-          URLRequest(url: WebUri(url), method: "POST", body: postData),
-      initialData: InAppWebViewInitialData(data: content, baseUrl: WebUri(url)),
-    );
-  }
-}
-
 class Button extends StatefulWidget {
   final String word;
 
@@ -212,69 +191,151 @@ class WebviewDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-        initialIndex: 0,
-        length: dictManager.dicts.length,
-        child: Scaffold(
-            appBar: AppBar(
-                leading: BackButton(
-                  onPressed: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      // When opened from context menu
-                      SystemChannels.platform
-                          .invokeMethod('SystemNavigator.pop');
-                    }
-                  },
-                ),
-                bottom: TabBar(
-                  tabs: [
-                    for (final id in dictManager.dictIds)
-                      Tab(text: dictManager.dicts[id]!.title)
-                  ],
-                )),
-            floatingActionButton: Button(word: word),
-            body:
-                TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-              for (final id in dictManager.dictIds)
-                FutureBuilder(
-                    future: dictManager.dicts[id]!.readWord(word),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        if (Platform.isAndroid) {
-                          return WebviewAndroid(
-                              content: snapshot.data!, dictId: id);
-                        } else {
-                          return WebviewWindow(
-                              content: snapshot.data!, dictId: id);
-                        }
-                      } else if (snapshot.hasError) {
-                        final fromProcessText = !context.canPop();
-                        return Center(
-                            child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(AppLocalizations.of(context)!.notFound,
-                                style: Theme.of(context).textTheme.titleLarge),
-                            Visibility(
-                              visible: fromProcessText,
-                              child: TextButton(
-                                onPressed: () {
-                                  context.go("/", extra: {"searchWord": word});
-                                  MainPage.callEnableAutofocusOnce = true;
-                                },
-                                child: Text(
-                                    AppLocalizations.of(context)!.editWord),
-                              ),
-                            ),
-                          ],
-                        ));
+    if (!settings.showNotFound && context.canPop()) {
+      return FutureBuilder(
+          future: validDictionaryIds(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return DefaultTabController(
+                  initialIndex: 0,
+                  length: snapshot.data!.length,
+                  child: Scaffold(
+                      appBar: AppBar(
+                          leading: BackButton(
+                            onPressed: () {
+                              context.pop();
+                            },
+                          ),
+                          bottom: buildTabBar(context)),
+                      floatingActionButton: Button(word: word),
+                      body:
+                          buildTabView(context, validDictIds: snapshot.data!)));
+            } else {
+              return const SizedBox.shrink();
+            }
+          });
+    } else {
+      return DefaultTabController(
+          initialIndex: 0,
+          length: dictManager.dicts.length,
+          child: Scaffold(
+              appBar: AppBar(
+                  leading: BackButton(
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
                       } else {
-                        return const Center(child: CircularProgressIndicator());
+                        // When opened from context menu
+                        SystemChannels.platform
+                            .invokeMethod('SystemNavigator.pop');
                       }
-                    })
-            ])));
+                    },
+                  ),
+                  bottom: buildTabBar(context)),
+              floatingActionButton: Button(word: word),
+              body: buildTabView(context)));
+    }
+  }
+
+  Widget buildTabView(BuildContext context,
+      {List<int> validDictIds = const []}) {
+    if (!settings.showNotFound && context.canPop()) {
+      return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
+        for (final id in validDictIds)
+          FutureBuilder(
+              future: dictManager.dicts[id]!.readWord(word),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  if (Platform.isAndroid) {
+                    return WebviewAndroid(content: snapshot.data!, dictId: id);
+                  } else {
+                    return WebviewWindows(content: snapshot.data!, dictId: id);
+                  }
+                } else {
+                  return const SizedBox.shrink();
+                }
+              })
+      ]);
+    } else {
+      return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
+        for (final id in dictManager.dictIds)
+          FutureBuilder(
+              future: dictManager.dicts[id]!.readWord(word),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  if (Platform.isAndroid) {
+                    return WebviewAndroid(content: snapshot.data!, dictId: id);
+                  } else {
+                    return WebviewWindows(content: snapshot.data!, dictId: id);
+                  }
+                } else if (snapshot.hasError) {
+                  final fromProcessText = !context.canPop();
+                  return Center(
+                      child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(AppLocalizations.of(context)!.notFound,
+                          style: Theme.of(context).textTheme.titleLarge),
+                      Visibility(
+                        visible: fromProcessText,
+                        child: TextButton(
+                          onPressed: () {
+                            context.go("/", extra: {"searchWord": word});
+                            MainPage.callEnableAutofocusOnce = true;
+                          },
+                          child: Text(AppLocalizations.of(context)!.editWord),
+                        ),
+                      ),
+                    ],
+                  ));
+                } else {
+                  return const Center(child: CircularProgressIndicator());
+                }
+              })
+      ]);
+    }
+  }
+
+  PreferredSizeWidget buildTabBar(BuildContext context) {
+    if (!settings.showNotFound && context.canPop()) {
+      return PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: FutureBuilder(
+              future: Future.wait([
+                for (final id in dictManager.dictIds)
+                  dictManager.dicts[id]!.db.wordExist(word)
+              ]),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return TabBar(tabs: [
+                    for (int i = 0; i < snapshot.data!.length; i++)
+                      if (snapshot.data![i])
+                        Tab(
+                            text: dictManager
+                                .dicts[dictManager.dictIds[i]]!.title)
+                  ]);
+                } else {
+                  return const SizedBox.shrink();
+                }
+              }));
+    } else {
+      return TabBar(
+        tabs: [
+          for (final id in dictManager.dictIds)
+            Tab(text: dictManager.dicts[id]!.title)
+        ],
+      );
+    }
+  }
+
+  Future<List<int>> validDictionaryIds() async {
+    final validIds = <int>[];
+    for (final id in dictManager.dictIds) {
+      if (await dictManager.dicts[id]!.db.wordExist(word)) {
+        validIds.add(id);
+      }
+    }
+    return validIds;
   }
 }
 
@@ -324,6 +385,28 @@ class WebviewDisplayDescription extends StatelessWidget {
     final html = dict.reader.header["Description"]!;
     await dict.close();
     return HtmlUnescape().convert(html);
+  }
+}
+
+class WebviewWindows extends StatelessWidget {
+  final String content;
+  final int dictId;
+
+  const WebviewWindows(
+      {super.key, required this.content, required this.dictId});
+
+  @override
+  Widget build(BuildContext context) {
+    final port = dictManager.dicts[dictId]!.port;
+    final url = "http://localhost:$port/";
+
+    final Uint8List postData =
+        Uint8List.fromList(utf8.encode(json.encode({"content": content})));
+    return InAppWebView(
+      initialUrlRequest:
+          URLRequest(url: WebUri(url), method: "POST", body: postData),
+      initialData: InAppWebViewInitialData(data: content, baseUrl: WebUri(url)),
+    );
   }
 }
 

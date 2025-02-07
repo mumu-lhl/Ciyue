@@ -55,6 +55,7 @@ void main() async {
     "notification",
     "showMoreOptionsButton",
     "skipTaggedWord",
+    "showNotFound",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");

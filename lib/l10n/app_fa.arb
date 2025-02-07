@@ -66,6 +66,7 @@
   "notification": "اعلان",
   "moreOptionsButton": "دکمه گزینه‌های بیشتر",
   "titleAlias": "عنوان مستعار",
-  "skipTaggedWord": "رد شدن از کلمه تگ شده"
+  "skipTaggedWord": "رد شدن از کلمه تگ شده",
+  "showNotFoundWord": "نمایش کلمات پیدا نشده"
 }
 
