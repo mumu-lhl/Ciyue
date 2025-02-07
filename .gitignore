@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 .aider*
+
+# Cline
+memory-bank/
