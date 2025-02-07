@@ -123,5 +123,7 @@
   "titleAlias": "Title Alias",
   "@titleAlias": {},
   "skipTaggedWord": "Skip Tagged Word",
-  "@skipTaggedWord": {}
+  "@skipTaggedWord": {},
+  "showNotFoundWord": "Show Not Found Word",
+  "@showNotFoundWord": {}
 }

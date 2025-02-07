@@ -161,6 +161,9 @@ class Mdict {
 
     final alias = await dictionaryListDao.getAlias(id);
     title = alias ?? reader.header["Title"] ?? basename(path);
+    if (title.isEmpty) {
+      title = basename(path);
+    }
 
     if (Platform.isWindows) {
       await _startServer();
