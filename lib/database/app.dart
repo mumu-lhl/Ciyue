@@ -327,7 +327,11 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
     if (order == null) {
       tagsOrder = [];
     } else {
-      tagsOrder = order.split(',').map((e) => int.parse(e)).toList();
+      tagsOrder = order
+          .split(',')
+          .where((e) => e.isNotEmpty)
+          .map((e) => int.parse(e))
+          .toList();
     }
   }
 
