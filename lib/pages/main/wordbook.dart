@@ -155,10 +155,12 @@ class WordBookScreen extends StatelessWidget {
 
 class WordView extends StatelessWidget {
   final Future<List<WordbookData>> allWords;
+  final Future<List<WordbookTag>> tags;
 
   const WordView({
     super.key,
     required this.allWords,
+    required this.tags,
   });
 
   @override
@@ -182,9 +184,17 @@ class WordView extends StatelessWidget {
           }
 
           if (list.isEmpty) {
-            return Expanded(
-                child:
-                    Center(child: Text(AppLocalizations.of(context)!.empty)));
+            return FutureBuilder(
+              future: tags,
+              builder: (context, tagSnapshot) {
+                if (tagSnapshot.hasData && tagSnapshot.data!.isNotEmpty) {
+                  return const Expanded(child: SizedBox());
+                }
+                return Expanded(
+                    child: Center(
+                        child: Text(AppLocalizations.of(context)!.empty)));
+              },
+            );
           } else {
             return Expanded(child: ListView(children: list));
           }
@@ -332,7 +342,7 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
               return Wrap();
             }),
-        WordView(allWords: allWords),
+        WordView(allWords: allWords, tags: tags),
       ],
     );
   }
