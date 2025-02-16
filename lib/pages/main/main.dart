@@ -166,22 +166,37 @@ class _HomeState extends State<Home> {
     _autofocus = false;
 
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
-        child: TextField(
-          autofocus: autofocus,
+      child: Center(
+        // padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
+
+        child: SearchBar(
+          // autofocus: autofocus,
           onTapOutside: (pointerDownEvent) {
             FocusScope.of(context).unfocus();
           },
-          decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.search,
-              suffixIcon: buildRemoveButton()),
+          hintText: AppLocalizations.of(context)!.search,
           controller: textFieldController,
+          elevation: WidgetStateProperty.all(0), // 去除阴影
+          backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.secondaryContainer),
+          constraints: const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
           onChanged: (text) async {
             setState(() {
               searchWord = text;
             });
           },
+          leading: const Icon(Icons.search),
+          trailing: [
+            if (searchWord.isNotEmpty)
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  textFieldController.clear();
+                  setState(() {
+                    searchWord = "";
+                  });
+                },
+              ),
+          ],
         ),
       ),
     );

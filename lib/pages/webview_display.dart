@@ -231,7 +231,7 @@ class WebviewDisplay extends StatelessWidget {
                       }
                     },
                   ),
-                  bottom: buildTabBar(context)),
+                  title: buildTabBar(context)),
               floatingActionButton: Button(word: word),
               body: buildTabView(context)));
     }
