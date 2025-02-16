@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.3.1](https://github.com/mumu-lhl/Ciyue/compare/v1.3.0..v1.3.1) - 2025-02-16
+
+### Bug Fixes
+
+- handle empty values in tags order parsing - ([78be19c](https://github.com/mumu-lhl/Ciyue/commit/78be19c3908d7fa9cc66566206997f943e96a33e)) - Mumulhl
+- optimize word addition logic - ([6c6f035](https://github.com/mumu-lhl/Ciyue/commit/6c6f035eae7965e92551f4e080e4901e582197c4)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(deps)** update package_info_plus and timezone versions - ([fd2b7a2](https://github.com/mumu-lhl/Ciyue/commit/fd2b7a26a6d4d7f99ab60622abed5740ee862543)) - Mumulhl
+- **(deps)** bump drift from 2.24.0 to 2.25.0 - ([430f69b](https://github.com/mumu-lhl/Ciyue/commit/430f69bd99e249bc06269a4700945e7694247ad8)) - dependabot[bot]
+- **(deps)** bump package_info_plus from 8.2.0 to 8.2.1 - ([c17d963](https://github.com/mumu-lhl/Ciyue/commit/c17d96325b96f2b22c0bbb123cc5a117ed2b50aa)) - dependabot[bot]
+- **(deps)** bump go_router from 14.7.2 to 14.8.0 - ([6187b96](https://github.com/mumu-lhl/Ciyue/commit/6187b96234a3c5c6b9c0a983e97eb202eb778bd1)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.25.0 to 2.25.2 - ([1bb0d5c](https://github.com/mumu-lhl/Ciyue/commit/1bb0d5c52147f9fd35dabfc56024b64a0ffd24dd)) - dependabot[bot]
+- add memory-bank directory to .gitignore - ([9238c54](https://github.com/mumu-lhl/Ciyue/commit/9238c540df9454288104bc2332a6c4709af24cd6)) - Mumulhl
+
+### Refactoring
+
+- don't show empty text when tags is valid - ([fe8b904](https://github.com/mumu-lhl/Ciyue/commit/fe8b9042de82996e2292ef70306c8c896293ea3a)) - Mumulhl
+
+---
 ## [1.3.0](https://github.com/mumu-lhl/Ciyue/compare/v1.2.0..v1.3.0) - 2025-02-07
 
 ### Bug Fixes
