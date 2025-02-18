@@ -111,37 +111,54 @@ class _HomeState extends State<Home> {
 
   Drawer buildDrawer() {
     return Drawer(
-      child: ListView(
-        children: [
-          for (final group in dictManager.groups)
-            ListTile(
-              leading: group.id == dictManager.groupId
-                  ? const Icon(Icons.circle, size: 10)
-                  : const Icon(Icons.circle_outlined, size: 10),
-              title: Text(group.name == "Default"
-                  ? AppLocalizations.of(context)!.default_
-                  : group.name),
-              onTap: () async {
-                context.pop();
-                await dictManager.setCurrentGroup(group.id);
-              },
+      elevation: 10,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: ListView(
+          children: [
+            DrawerHeader(
+              child: Text(
+                "Dictionary Groups",
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
             ),
-        ],
+            for (final group in dictManager.groups)
+              Card(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                elevation: 0,
+                child: ListTile(
+                  leading: group.id == dictManager.groupId
+                      ? const Icon(Icons.radio_button_checked, size: 20)
+                      : const Icon(Icons.radio_button_unchecked, size: 20),
+                  title: Text(group.name == "Default"
+                      ? AppLocalizations.of(context)!.default_
+                      : group.name),
+                  onTap: () async {
+                    context.pop();
+                    await dictManager.setCurrentGroup(group.id);
+                  },
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 
-  IconButton buildMoreButton(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.more_vert),
-      onPressed: () async {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return const MoreOptionsDialog();
-          },
-        );
-      },
+  Padding buildMoreButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: IconButton(
+        icon: const Icon(Icons.more_vert),
+        onPressed: () async {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return const MoreOptionsDialog();
+            },
+          );
+        },
+      ),
     );
   }
 
