@@ -64,7 +64,10 @@ class _HomeState extends State<Home> {
         children: [
           Expanded(child: page[_currentIndex]),
           if (_currentIndex == 0 && !settings.searchBarInAppBar)
-            buildSearchBar(context),
+            Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10, top: 10),
+                child: buildSearchBar(context)
+            ),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -184,8 +187,6 @@ class _HomeState extends State<Home> {
 
     return SafeArea(
       child: Center(
-        // padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
-
         child: SearchBar(
           autoFocus: autofocus,
           onTapOutside: (pointerDownEvent) {
