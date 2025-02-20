@@ -9,11 +9,16 @@ import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:url_launcher/url_launcher.dart";
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final String searchWord;
 
   const HomeScreen({super.key, required this.searchWord});
 
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
@@ -21,27 +26,27 @@ class HomeScreen extends StatelessWidget {
     if (dictManager.isEmpty) {
       return Center(
           child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(locale!.addDictionary),
-          ElevatedButton(
-            child: Text(locale.recommendedDictionaries),
-            onPressed: () async {
-              await launchUrl(Uri.parse(
-                  "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
-            },
-          )
-        ],
-      ));
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(locale!.addDictionary),
+              ElevatedButton(
+                child: Text(locale.recommendedDictionaries),
+                onPressed: () async {
+                  await launchUrl(Uri.parse(
+                      "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
+                },
+              )
+            ],
+          ));
     } else {
-      if (searchWord == "") {
+      if (widget.searchWord == "") {
         final future = historyDao.getAllHistory();
         return buildHistory(context, future);
       } else {
         final searchers = <Future<List<DictionaryData>>>[];
         for (final dict in dictManager.dicts.values) {
-          searchers.add(dict.db.searchWord(searchWord));
+          searchers.add(dict.db.searchWord(widget.searchWord));
         }
         final future = Future.wait(searchers);
 
@@ -62,10 +67,10 @@ class HomeScreen extends StatelessWidget {
             if (history.isEmpty) {
               return Center(
                   child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [Text(locale!.startToSearch)],
-              ));
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [Text(locale!.startToSearch)],
+                  ));
             }
             return ListView(
               children: [
@@ -153,8 +158,28 @@ class HomeScreen extends StatelessWidget {
 
             for (final word in searchResult) {
               resultWidgets.add(ListTile(
-                trailing: Icon(Icons.arrow_circle_right_outlined),
                   title: Text(word.key),
+                  trailing: FutureBuilder<bool>(
+                    future: wordbookDao.wordExist(word.key),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        final isStarred = snapshot.data!;
+                        return IconButton(
+                          icon: Icon(isStarred ? Icons.star : Icons.star_border),
+                          onPressed: () async {
+                            if (isStarred) {
+                              await wordbookDao.removeWord(word.key);
+                            } else {
+                              await wordbookDao.addWord(word.key);
+                            }
+                            setState(() {});
+                          },
+                        );
+                      } else {
+                        return const CircularProgressIndicator();
+                      }
+                    },
+                  ),
                   leading: IconButton(
                     icon: const Icon(Icons.volume_up),
                     onPressed: () async {
