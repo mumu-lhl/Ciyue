@@ -116,7 +116,7 @@ class _HomeState extends State<Home> {
     return Drawer(
       elevation: 10,
       child: Padding(
-        padding: const EdgeInsets.only(right: 20),
+        padding: const EdgeInsets.all(20),
         child: ListView(
           children: [
             DrawerHeader(
@@ -150,7 +150,7 @@ class _HomeState extends State<Home> {
 
   Padding buildMoreButton(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.only(right: 10),
       child: IconButton(
         icon: const Icon(Icons.more_vert),
         onPressed: () async {
@@ -194,8 +194,8 @@ class _HomeState extends State<Home> {
           },
           hintText: AppLocalizations.of(context)!.search,
           controller: textFieldController,
-          elevation: WidgetStateProperty.all(0), // 去除阴影
-          backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.secondaryContainer),
+          elevation: WidgetStateProperty.all(1),
+          // backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.secondaryContainer),
           constraints: const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
           onChanged: (text) async {
             setState(() {
