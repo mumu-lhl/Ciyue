@@ -153,8 +153,9 @@ class HomeScreen extends StatelessWidget {
 
             for (final word in searchResult) {
               resultWidgets.add(ListTile(
+                trailing: Icon(Icons.arrow_circle_right_outlined),
                   title: Text(word.key),
-                  trailing: IconButton(
+                  leading: IconButton(
                     icon: const Icon(Icons.volume_up),
                     onPressed: () async {
                       await flutterTts.speak(word.key);
