@@ -17,6 +17,7 @@ import "package:url_launcher/url_launcher.dart";
 const feedbackUri = "https://github.com/mumu-lhl/Ciyue/issues";
 const githubUri = "https://github.com/mumu-lhl/Ciyue";
 const sponsorUri = "https://afdian.com/a/mumulhl";
+const discordUri = "https://discord.gg/BazBZuvKZG";
 
 void _copy(BuildContext context, String text) {
   Clipboard.setData(ClipboardData(text: text));
@@ -88,6 +89,22 @@ class ClearHistory extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class DiscordUrl extends StatelessWidget {
+  const DiscordUrl({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+        title: const Text("Discord"),
+        subtitle: const Text(discordUri),
+        leading: const Icon(Icons.discord),
+        onTap: () => launchUrl(Uri.parse(discordUri)),
+        onLongPress: () => _copy(context, discordUri));
   }
 }
 
@@ -273,6 +290,7 @@ class SettingsScreen extends StatelessWidget {
         const Divider(),
         const Feedback(),
         const GithubUrl(),
+        const DiscordUrl(),
         const SponsorUrl(),
         const About(),
       ],
