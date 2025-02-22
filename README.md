@@ -51,7 +51,7 @@ You can visit [Weblate](https://hosted.weblate.org/engage/ciyue/) to add languag
 
 [![Translation status](https://hosted.weblate.org/widget/ciyue/multi-auto.svg)](https://hosted.weblate.org/engage/ciyue/)
 
-## Contributor
+## Contributors
 
 [![Contributor](https://contrib.rocks/image?repo=mumu-lhl/Ciyue)](https://github.com/mumu-lhl/Ciyue/graphs/contributors)
 
