@@ -121,7 +121,7 @@ class _HomeState extends State<Home> {
           children: [
             DrawerHeader(
               child: Text(
-                "Dictionary Groups",
+                AppLocalizations.of(context)!.dictionaryGroups,
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
             ),

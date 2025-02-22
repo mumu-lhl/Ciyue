@@ -62,5 +62,6 @@
   "moreOptionsButton": "Flere alternativer-knapp",
   "titleAlias": "Tittel Alias",
   "skipTaggedWord": "Hopp over merket ord",
-  "showNotFoundWord": "Vis ord som ikke ble funnet"
+  "showNotFoundWord": "Vis ord som ikke ble funnet",
+  "dictionaryGroups": "Ordbokgrupper"
 }

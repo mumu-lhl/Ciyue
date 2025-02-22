@@ -62,5 +62,6 @@
   "moreOptionsButton": "Mehr Optionen Schaltfläche",
   "titleAlias": "Titel Alias",
   "skipTaggedWord": "Markiertes Wort überspringen",
-  "showNotFoundWord": "Nicht gefundene Wörter anzeigen"
+  "showNotFoundWord": "Nicht gefundene Wörter anzeigen",
+  "dictionaryGroups": "Wörterbuchgruppen"
 }

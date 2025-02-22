@@ -62,5 +62,6 @@
   "moreOptionsButton": "Кнопка дополнительных параметров",
   "titleAlias": "Псевдоним заголовка",
   "skipTaggedWord": "Пропускать помеченное слово",
-  "showNotFoundWord": "Показывать ненайденные слова"
+  "showNotFoundWord": "Показывать ненайденные слова",
+  "dictionaryGroups": "Группы словарей"
 }

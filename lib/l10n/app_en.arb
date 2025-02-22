@@ -125,5 +125,7 @@
   "skipTaggedWord": "Skip Tagged Word",
   "@skipTaggedWord": {},
   "showNotFoundWord": "Show Not Found Word",
-  "@showNotFoundWord": {}
+  "@showNotFoundWord": {},
+  "dictionaryGroups": "Dictionary Groups",
+  "@dictionaryGroups": {}
 }
