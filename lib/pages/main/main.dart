@@ -195,7 +195,6 @@ class _HomeState extends State<Home> {
           hintText: AppLocalizations.of(context)!.search,
           controller: textFieldController,
           elevation: WidgetStateProperty.all(1),
-          // backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.secondaryContainer),
           constraints: const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
           onChanged: (text) async {
             setState(() {
