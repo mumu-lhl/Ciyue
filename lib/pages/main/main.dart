@@ -65,9 +65,9 @@ class _HomeState extends State<Home> {
           Expanded(child: page[_currentIndex]),
           if (_currentIndex == 0 && !settings.searchBarInAppBar)
             Padding(
-                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10, top: 10),
-                child: buildSearchBar(context)
-            ),
+                padding: const EdgeInsets.only(
+                    left: 20, right: 20, bottom: 10, top: 10),
+                child: buildSearchBar(context)),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -195,7 +195,8 @@ class _HomeState extends State<Home> {
           hintText: AppLocalizations.of(context)!.search,
           controller: textFieldController,
           elevation: WidgetStateProperty.all(1),
-          constraints: const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
+          constraints:
+              const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
           onChanged: (text) async {
             setState(() {
               searchWord = text;

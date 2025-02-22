@@ -175,7 +175,6 @@ class _DictionaryState extends State<Dictionary> {
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
         debugShowCheckedModeBanner: false,
-
       ),
     );
   }
