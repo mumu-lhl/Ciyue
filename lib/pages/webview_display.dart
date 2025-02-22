@@ -214,7 +214,7 @@ class WebviewDisplay extends StatelessWidget {
                       }
                     },
                   ),
-                  bottom: buildTabBar(context)),
+                  title: buildTabBar(context)),
               floatingActionButton: Button(word: word),
               body: buildTabView(context)));
     }
@@ -425,7 +425,10 @@ class _ButtonState extends State<Button> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         buildReadLoudlyButton(context, widget.word),
-        buildStarButton(context)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: buildStarButton(context),
+        ),
       ],
     );
   }
@@ -435,7 +438,7 @@ class _ButtonState extends State<Button> {
 
     return FloatingActionButton.small(
       foregroundColor: colorScheme.primary,
-      backgroundColor: colorScheme.surface,
+      backgroundColor: colorScheme.primaryContainer,
       child: const Icon(Icons.volume_up),
       onPressed: () async {
         await flutterTts.speak(word);
@@ -461,7 +464,7 @@ class _ButtonState extends State<Button> {
 
           return FloatingActionButton.small(
             foregroundColor: colorScheme.primary,
-            backgroundColor: colorScheme.surface,
+            backgroundColor: colorScheme.primaryContainer,
             child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),
             onPressed: () async {
               Future<void> star() async {

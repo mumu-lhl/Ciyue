@@ -64,7 +64,10 @@ class _HomeState extends State<Home> {
         children: [
           Expanded(child: page[_currentIndex]),
           if (_currentIndex == 0 && !settings.searchBarInAppBar)
-            buildSearchBar(context),
+            Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10, top: 10),
+                child: buildSearchBar(context)
+            ),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -111,37 +114,54 @@ class _HomeState extends State<Home> {
 
   Drawer buildDrawer() {
     return Drawer(
-      child: ListView(
-        children: [
-          for (final group in dictManager.groups)
-            ListTile(
-              leading: group.id == dictManager.groupId
-                  ? const Icon(Icons.circle, size: 10)
-                  : const Icon(Icons.circle_outlined, size: 10),
-              title: Text(group.name == "Default"
-                  ? AppLocalizations.of(context)!.default_
-                  : group.name),
-              onTap: () async {
-                context.pop();
-                await dictManager.setCurrentGroup(group.id);
-              },
+      elevation: 10,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: ListView(
+          children: [
+            DrawerHeader(
+              child: Text(
+                "Dictionary Groups",
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
             ),
-        ],
+            for (final group in dictManager.groups)
+              Card(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                elevation: 0,
+                child: ListTile(
+                  leading: group.id == dictManager.groupId
+                      ? const Icon(Icons.radio_button_checked, size: 20)
+                      : const Icon(Icons.radio_button_unchecked, size: 20),
+                  title: Text(group.name == "Default"
+                      ? AppLocalizations.of(context)!.default_
+                      : group.name),
+                  onTap: () async {
+                    context.pop();
+                    await dictManager.setCurrentGroup(group.id);
+                  },
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 
-  IconButton buildMoreButton(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.more_vert),
-      onPressed: () async {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return const MoreOptionsDialog();
-          },
-        );
-      },
+  Padding buildMoreButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: IconButton(
+        icon: const Icon(Icons.more_vert),
+        onPressed: () async {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return const MoreOptionsDialog();
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -166,22 +186,34 @@ class _HomeState extends State<Home> {
     _autofocus = false;
 
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
-        child: TextField(
-          autofocus: autofocus,
+      child: Center(
+        child: SearchBar(
+          autoFocus: autofocus,
           onTapOutside: (pointerDownEvent) {
             FocusScope.of(context).unfocus();
           },
-          decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.search,
-              suffixIcon: buildRemoveButton()),
+          hintText: AppLocalizations.of(context)!.search,
           controller: textFieldController,
+          elevation: WidgetStateProperty.all(1),
+          constraints: const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
           onChanged: (text) async {
             setState(() {
               searchWord = text;
             });
           },
+          leading: const Icon(Icons.search),
+          trailing: [
+            if (searchWord.isNotEmpty)
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  textFieldController.clear();
+                  setState(() {
+                    searchWord = "";
+                  });
+                },
+              ),
+          ],
         ),
       ),
     );
