@@ -280,7 +280,10 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               context: context,
               builder: (BuildContext context) {
                 return SimpleDialog(
-                  title: Text(dictManager.dicts[dictionary.id]!.title),
+                  title: Text(dictionary.alias ??
+                      (dictManager.contain(dictionary.id)
+                          ? dictManager.dicts[dictionary.id]!.title
+                          : basename(dictionary.path))),
                   children: <Widget>[
                     SimpleDialogOption(
                       onPressed: () {
