@@ -268,6 +268,10 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
   Card buildDictionaryCard(
       BuildContext context, DictionaryListData dictionary, int index) {
     final colorScheme = Theme.of(context).colorScheme;
+    final title = dictionary.alias ??
+        (dictManager.contain(dictionary.id)
+            ? dictManager.dicts[dictionary.id]!.title
+            : basename(dictionary.path));
 
     return Card(
       key: ValueKey(dictionary.id),
@@ -280,7 +284,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               context: context,
               builder: (BuildContext context) {
                 return SimpleDialog(
-                  title: Text(dictManager.dicts[dictionary.id]!.title),
+                  title: Text(title),
                   children: <Widget>[
                     SimpleDialogOption(
                       onPressed: () {
@@ -418,10 +422,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
             );
           },
           child: CheckboxListTile(
-            title: Text(dictionary.alias ??
-                (dictManager.contain(dictionary.id)
-                    ? dictManager.dicts[dictionary.id]!.title
-                    : basename(dictionary.path))),
+            title: Text(title),
             value: dictManager.contain(dictionary.id),
             secondary: ReorderableDragStartListener(
                 index: index,
