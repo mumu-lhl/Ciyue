@@ -533,20 +533,18 @@ class _ButtonState extends State<Button> {
                           TextButton(
                             child: Text(locale.confirm),
                             onPressed: () async {
-                              if (toAdd.isEmpty && toDel.isEmpty) {
-                                if (!snapshot.data!) {
-                                  await wordbookDao.addWord(widget.word);
-                                }
-                              } else {
-                                for (final tag in toAdd) {
-                                  await wordbookDao.addWord(widget.word,
-                                      tag: tag);
-                                }
+                              if (!snapshot.data!) {
+                                await wordbookDao.addWord(widget.word);
+                              }
 
-                                for (final tag in toDel) {
-                                  await wordbookDao.removeWord(widget.word,
-                                      tag: tag);
-                                }
+                              for (final tag in toAdd) {
+                                await wordbookDao.addWord(widget.word,
+                                    tag: tag);
+                              }
+
+                              for (final tag in toDel) {
+                                await wordbookDao.removeWord(widget.word,
+                                    tag: tag);
                               }
 
                               if (context.mounted) context.pop();
