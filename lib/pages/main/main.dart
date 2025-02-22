@@ -129,6 +129,7 @@ class _HomeState extends State<Home> {
               Card(
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 elevation: 0,
+                clipBehavior: Clip.antiAlias,
                 child: ListTile(
                   leading: group.id == dictManager.groupId
                       ? const Icon(Icons.radio_button_checked, size: 20)

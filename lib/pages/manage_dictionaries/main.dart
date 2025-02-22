@@ -272,6 +272,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     return Card(
       key: ValueKey(dictionary.id),
       elevation: 0,
+      clipBehavior: Clip.antiAlias,
       color: colorScheme.onInverseSurface,
       child: GestureDetector(
           onLongPress: () {
