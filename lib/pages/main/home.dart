@@ -85,7 +85,8 @@ class HomeScreen extends StatelessWidget {
                         return result;
                       } else {
                         if (wordbookTagsDao.tagExist) {
-                          final tagsOfWord = await wordbookDao.tagsOfWord(item.word),
+                          final tagsOfWord =
+                                  await wordbookDao.tagsOfWord(item.word),
                               tags = await wordbookTagsDao.getAllTags();
                           final toAdd = <int>[], toDel = <int>[];
 
@@ -109,33 +110,40 @@ class HomeScreen extends StatelessWidget {
                                 ),
                                 actions: [
                                   TextButton(
-                                    child: Text(AppLocalizations.of(context)!.close),
+                                    child: Text(
+                                        AppLocalizations.of(context)!.close),
                                     onPressed: () {
                                       context.pop(false);
                                     },
                                   ),
                                   TextButton(
-                                    child: Text(AppLocalizations.of(context)!.remove),
+                                    child: Text(
+                                        AppLocalizations.of(context)!.remove),
                                     onPressed: () async {
-                                      await wordbookDao.removeWordWithAllTags(item.word);
+                                      await wordbookDao
+                                          .removeWordWithAllTags(item.word);
                                       if (context.mounted) context.pop(true);
                                     },
                                   ),
                                   TextButton(
-                                    child: Text(AppLocalizations.of(context)!.confirm),
+                                    child: Text(
+                                        AppLocalizations.of(context)!.confirm),
                                     onPressed: () async {
-                                      if (!await wordbookDao.wordExist(item.word)) {
+                                      if (!await wordbookDao
+                                          .wordExist(item.word)) {
                                         await wordbookDao.addWord(item.word);
                                       }
 
                                       for (final tag in toAdd) {
-                                        await wordbookDao.addWord(item.word, tag: tag);
+                                        await wordbookDao.addWord(item.word,
+                                            tag: tag);
                                       }
 
                                       for (final tag in toDel) {
-                                        await wordbookDao.removeWord(item.word, tag: tag);
+                                        await wordbookDao.removeWord(item.word,
+                                            tag: tag);
                                       }
-                                      
+
                                       if (context.mounted) context.pop(true);
                                     },
                                   ),
