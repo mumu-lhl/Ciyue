@@ -41,6 +41,10 @@ See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries).
 
 Ciyue uses WebView to display words in a dictionary, and WebView needs INTERNET permission to work, even if when displaying local data.
 
+## Discord
+
+[Join our Discord server](https://discord.gg/BazBZuvKZG) to connect with the community!
+
 ## Translation
 
 You can visit [Weblate](https://hosted.weblate.org/engage/ciyue/) to add languages or fill in translations.
