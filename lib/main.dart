@@ -68,6 +68,7 @@ void main() async {
   packageInfo = await PackageInfo.fromPlatform();
 
   await wordbookTagsDao.loadTagsOrder();
+  await wordbookTagsDao.existTag();
 
   if (Platform.isAndroid) {
     PlatformMethod.initHandler();
