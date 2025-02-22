@@ -5,6 +5,7 @@ import "package:ciyue/database/app.dart";
 import "package:ciyue/utils.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
+import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 
@@ -121,7 +122,7 @@ class Mdict {
 
     customFont(null);
 
-    title = reader.header["Title"] ?? basename(path);
+    title = HtmlUnescape().convert(reader.header["Title"] ?? basename(path));
 
     return true;
   }
@@ -160,10 +161,7 @@ class Mdict {
     customFont(fontPath);
 
     final alias = await dictionaryListDao.getAlias(id);
-    title = alias ?? reader.header["Title"] ?? basename(path);
-    if (title.isEmpty) {
-      title = basename(path);
-    }
+    title = HtmlUnescape().convert(alias ?? reader.header["Title"] ?? basename(path));
 
     if (Platform.isWindows) {
       await _startServer();
@@ -175,7 +173,7 @@ class Mdict {
     await reader.init();
 
     final alias = await dictionaryListDao.getAlias(id);
-    title = reader.header["Title"] ?? alias ?? basename(path);
+    title = HtmlUnescape().convert(reader.header["Title"] ?? alias ?? basename(path));
     entriesTotal = reader.numEntries;
   }
 
@@ -248,7 +246,7 @@ class Mdict {
   }
 
   void setDefaultTitle() {
-    title = reader.header["Title"] ?? basename(path);
+    title = HtmlUnescape().convert(reader.header["Title"] ?? basename(path));
   }
 
   Future<void> _addResource() async {
