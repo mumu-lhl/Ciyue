@@ -1,12 +1,12 @@
 import "dart:convert";
 import "dart:io";
 
-import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
+import "package:ciyue/widget/tags_list.dart";
 import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -70,23 +70,6 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       return WebResourceResponse(data: null);
     }
   }
-}
-
-class TagsList extends StatefulWidget {
-  final List<WordbookTag> tags;
-  final List<int> tagsOfWord;
-  final List<int> toAdd;
-  final List<int> toDel;
-
-  const TagsList(
-      {super.key,
-      required this.tags,
-      required this.tagsOfWord,
-      required this.toAdd,
-      required this.toDel});
-
-  @override
-  State<StatefulWidget> createState() => _TagsListState();
 }
 
 class WebviewAndroid extends StatelessWidget {
@@ -575,46 +558,5 @@ class _ButtonState extends State<Button> {
     super.initState();
 
     stared = wordbookDao.wordExist(widget.word);
-  }
-}
-
-class _TagsListState extends State<TagsList> {
-  List<int>? oldTagsOfWord;
-
-  @override
-  Widget build(BuildContext context) {
-    final checkboxListTile = <Widget>[];
-
-    oldTagsOfWord ??= List<int>.from(widget.tagsOfWord);
-
-    for (final tag in widget.tags) {
-      checkboxListTile.add(CheckboxListTile(
-        title: Text(tag.tag),
-        value: widget.tagsOfWord.contains(tag.id),
-        onChanged: (value) {
-          setState(() {
-            if (value == true) {
-              if (!oldTagsOfWord!.contains(tag.id)) {
-                widget.toAdd.add(tag.id);
-              }
-
-              widget.toDel.remove(tag.id);
-
-              widget.tagsOfWord.add(tag.id);
-            } else {
-              if (oldTagsOfWord!.contains(tag.id)) {
-                widget.toDel.add(tag.id);
-              }
-
-              widget.toAdd.remove(tag.id);
-
-              widget.tagsOfWord.remove(tag.id);
-            }
-          });
-        },
-      ));
-    }
-
-    return Column(children: checkboxListTile);
   }
 }

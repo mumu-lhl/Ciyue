@@ -4,6 +4,7 @@ import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/settings.dart";
+import "package:ciyue/widget/tags_list.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
@@ -83,18 +84,94 @@ class HomeScreen extends StatelessWidget {
                             context, item);
                         return result;
                       } else {
-                        if (await wordbookDao.wordExist(item.word)) {
-                          await wordbookDao.removeWord(item.word);
+                        if (wordbookTagsDao.tagExist) {
+                          final tagsOfWord =
+                                  await wordbookDao.tagsOfWord(item.word),
+                              tags = await wordbookTagsDao.getAllTags();
+                          final toAdd = <int>[], toDel = <int>[];
+
+                          if (!context.mounted) return false;
+
+                          await showDialog<bool>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text(AppLocalizations.of(context)!.tags),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TagsList(
+                                      tags: tags,
+                                      tagsOfWord: tagsOfWord,
+                                      toAdd: toAdd,
+                                      toDel: toDel,
+                                    ),
+                                  ],
+                                ),
+                                actions: [
+                                  TextButton(
+                                    child: Text(
+                                        AppLocalizations.of(context)!.close),
+                                    onPressed: () {
+                                      context.pop(false);
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: Text(
+                                        AppLocalizations.of(context)!.remove),
+                                    onPressed: () async {
+                                      await wordbookDao
+                                          .removeWordWithAllTags(item.word);
+                                      if (context.mounted) context.pop(true);
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: Text(
+                                        AppLocalizations.of(context)!.confirm),
+                                    onPressed: () async {
+                                      if (!await wordbookDao
+                                          .wordExist(item.word)) {
+                                        await wordbookDao.addWord(item.word);
+                                      }
+
+                                      for (final tag in toAdd) {
+                                        await wordbookDao.addWord(item.word,
+                                            tag: tag);
+                                      }
+
+                                      for (final tag in toDel) {
+                                        await wordbookDao.removeWord(item.word,
+                                            tag: tag);
+                                      }
+
+                                      if (context.mounted) context.pop(true);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          return false;
                         } else {
-                          await wordbookDao.addWord(item.word);
+                          if (await wordbookDao.wordExist(item.word)) {
+                            await wordbookDao.removeWord(item.word);
+                          } else {
+                            await wordbookDao.addWord(item.word);
+                          }
+                          return false;
                         }
-                        return false;
                       }
                     },
                     background: Container(
-                        color: Colors.blue, child: const Icon(Icons.book)),
+                        color: Colors.blue,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: const Icon(Icons.label)),
                     secondaryBackground: Container(
-                        color: Colors.red, child: const Icon(Icons.delete)),
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 16.0),
+                        child: const Icon(Icons.delete)),
                     child: ListTile(
                       title: Text(item.word),
                       onTap: () {
