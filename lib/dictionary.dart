@@ -162,6 +162,7 @@ class Mdict {
 
     final alias = await dictionaryListDao.getAlias(id);
     title = HtmlUnescape().convert(alias ?? reader.header["Title"] ?? "");
+    // If title in header is empty, use basename(path)
     if (title == "") {
       title = basename(path);
     }
