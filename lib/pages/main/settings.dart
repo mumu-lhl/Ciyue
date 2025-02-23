@@ -280,7 +280,6 @@ class SettingsScreen extends StatelessWidget {
         const SearchbarLocationSelector(),
         const DrawerIconSwitch(),
         const MoreOptionsButtonSwitch(),
-        const NotFoundSwitch(),
         const Divider(),
         const AutoExport(),
         const Export(),
@@ -377,13 +376,6 @@ class MoreOptionsButtonSwitch extends StatefulWidget {
       _MoreOptionsButtonSwitchState();
 }
 
-class NotFoundSwitch extends StatefulWidget {
-  const NotFoundSwitch({super.key});
-
-  @override
-  State<NotFoundSwitch> createState() => _NotFoundSwitchState();
-}
-
 class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
   @override
   Widget build(BuildContext context) {
@@ -398,23 +390,6 @@ class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
         });
       },
       secondary: const Icon(Icons.more_vert),
-    );
-  }
-}
-
-class _NotFoundSwitchState extends State<NotFoundSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    return SwitchListTile(
-      title: Text(AppLocalizations.of(context)!.showNotFoundWord),
-      value: settings.showNotFound,
-      onChanged: (value) async {
-        await prefs.setBool("showNotFound", value);
-        setState(() {
-          settings.showNotFound = value;
-        });
-      },
-      secondary: const Icon(Icons.book),
     );
   }
 }
