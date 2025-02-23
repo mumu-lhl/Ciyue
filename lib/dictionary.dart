@@ -161,8 +161,10 @@ class Mdict {
     customFont(fontPath);
 
     final alias = await dictionaryListDao.getAlias(id);
-    title = HtmlUnescape()
-        .convert(alias ?? reader.header["Title"] ?? basename(path));
+    title = HtmlUnescape().convert(alias ?? reader.header["Title"] ?? "");
+    if (title == "") {
+      title = basename(path);
+    }
 
     if (Platform.isWindows) {
       await _startServer();
