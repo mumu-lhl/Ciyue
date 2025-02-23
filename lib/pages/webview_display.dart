@@ -174,11 +174,11 @@ class WebviewDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!settings.showNotFound && context.canPop()) {
-      return FutureBuilder(
-          future: validDictionaryIds(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
+    return FutureBuilder(
+        future: validDictionaryIds(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            if (snapshot.data!.isNotEmpty) {
               return DefaultTabController(
                   initialIndex: 0,
                   length: snapshot.data!.length,
@@ -186,7 +186,13 @@ class WebviewDisplay extends StatelessWidget {
                       appBar: AppBar(
                           leading: BackButton(
                             onPressed: () {
-                              context.pop();
+                              if (context.canPop()) {
+                                context.pop();
+                              } else {
+                                // When opened from context menu
+                                SystemChannels.platform
+                                    .invokeMethod('SystemNavigator.pop');
+                              }
                             },
                           ),
                           bottom: buildTabBar(context)),
@@ -194,121 +200,86 @@ class WebviewDisplay extends StatelessWidget {
                       body:
                           buildTabView(context, validDictIds: snapshot.data!)));
             } else {
-              return const SizedBox.shrink();
+              final fromProcessText = !context.canPop();
+              return Scaffold(
+                appBar: AppBar(leading: BackButton(
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      // When opened from context menu
+                      SystemChannels.platform
+                          .invokeMethod('SystemNavigator.pop');
+                    }
+                  },
+                )),
+                body: Center(
+                    child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(AppLocalizations.of(context)!.notFound,
+                        style: Theme.of(context).textTheme.titleLarge),
+                    Visibility(
+                      visible: fromProcessText,
+                      child: TextButton(
+                        onPressed: () {
+                          context.go("/", extra: {"searchWord": word});
+                          MainPage.callEnableAutofocusOnce = true;
+                        },
+                        child: Text(AppLocalizations.of(context)!.editWord),
+                      ),
+                    ),
+                  ],
+                )),
+              );
             }
-          });
-    } else {
-      return DefaultTabController(
-          initialIndex: 0,
-          length: dictManager.dicts.length,
-          child: Scaffold(
-              appBar: AppBar(
-                  leading: BackButton(
-                    onPressed: () {
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        // When opened from context menu
-                        SystemChannels.platform
-                            .invokeMethod('SystemNavigator.pop');
-                      }
-                    },
-                  ),
-                  title: buildTabBar(context)),
-              floatingActionButton: Button(word: word),
-              body: buildTabView(context)));
-    }
+          } else {
+            return const SizedBox.shrink();
+          }
+        });
   }
 
   Widget buildTabView(BuildContext context,
       {List<int> validDictIds = const []}) {
-    if (!settings.showNotFound && context.canPop()) {
-      return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-        for (final id in validDictIds)
-          FutureBuilder(
-              future: dictManager.dicts[id]!.readWord(word),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  if (Platform.isAndroid) {
-                    return WebviewAndroid(content: snapshot.data!, dictId: id);
-                  } else {
-                    return WebviewWindows(content: snapshot.data!, dictId: id);
-                  }
+    return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
+      for (final id in validDictIds)
+        FutureBuilder(
+            future: dictManager.dicts[id]!.readWord(word),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                if (Platform.isAndroid) {
+                  return WebviewAndroid(content: snapshot.data!, dictId: id);
                 } else {
-                  return const SizedBox.shrink();
+                  return WebviewWindows(content: snapshot.data!, dictId: id);
                 }
-              })
-      ]);
-    } else {
-      return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-        for (final id in dictManager.dictIds)
-          FutureBuilder(
-              future: dictManager.dicts[id]!.readWord(word),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  if (Platform.isAndroid) {
-                    return WebviewAndroid(content: snapshot.data!, dictId: id);
-                  } else {
-                    return WebviewWindows(content: snapshot.data!, dictId: id);
-                  }
-                } else if (snapshot.hasError) {
-                  final fromProcessText = !context.canPop();
-                  return Center(
-                      child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(AppLocalizations.of(context)!.notFound,
-                          style: Theme.of(context).textTheme.titleLarge),
-                      Visibility(
-                        visible: fromProcessText,
-                        child: TextButton(
-                          onPressed: () {
-                            context.go("/", extra: {"searchWord": word});
-                            MainPage.callEnableAutofocusOnce = true;
-                          },
-                          child: Text(AppLocalizations.of(context)!.editWord),
-                        ),
-                      ),
-                    ],
-                  ));
-                } else {
-                  return const Center(child: CircularProgressIndicator());
-                }
-              })
-      ]);
-    }
+              } else {
+                return const SizedBox.shrink();
+              }
+            })
+    ]);
   }
 
   PreferredSizeWidget buildTabBar(BuildContext context) {
-    if (!settings.showNotFound && context.canPop()) {
-      return PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: FutureBuilder(
-              future: Future.wait([
-                for (final id in dictManager.dictIds)
-                  dictManager.dicts[id]!.db.wordExist(word)
-              ]),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return TabBar(tabs: [
-                    for (int i = 0; i < snapshot.data!.length; i++)
-                      if (snapshot.data![i])
-                        Tab(
-                            text: dictManager
-                                .dicts[dictManager.dictIds[i]]!.title)
-                  ]);
-                } else {
-                  return const SizedBox.shrink();
-                }
-              }));
-    } else {
-      return TabBar(
-        tabs: [
-          for (final id in dictManager.dictIds)
-            Tab(text: dictManager.dicts[id]!.title)
-        ],
-      );
-    }
+    return PreferredSize(
+        preferredSize: const Size.fromHeight(48),
+        child: FutureBuilder(
+            future: Future.wait([
+              for (final id in dictManager.dictIds)
+                dictManager.dicts[id]!.db.wordExist(word)
+            ]),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return TabBar(tabs: [
+                  for (int i = 0; i < snapshot.data!.length; i++)
+                    if (snapshot.data![i])
+                      Tab(
+                          text:
+                              dictManager.dicts[dictManager.dictIds[i]]!.title)
+                ]);
+              } else {
+                return const SizedBox.shrink();
+              }
+            }));
   }
 
   Future<List<int>> validDictionaryIds() async {
