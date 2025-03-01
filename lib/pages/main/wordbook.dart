@@ -172,35 +172,32 @@ class WordView extends StatelessWidget {
             (BuildContext context, AsyncSnapshot<List<WordbookData>> snapshot) {
           final list = <Widget>[];
           if (snapshot.hasData) {
-            final groupedWords = <DateTime, List<WordbookData>>{};
+            final firstWord = snapshot.data![0];
+            var lastDate = DateTime(firstWord.createdAt.year,
+                firstWord.createdAt.month, firstWord.createdAt.day);
+            list.add(DateDivider(
+              date: lastDate,
+            ));
 
-            // Group words by date
             for (final data in snapshot.data!) {
               final date = DateTime(data.createdAt.year, data.createdAt.month,
                   data.createdAt.day);
-              groupedWords.putIfAbsent(date, () => []).add(data);
-            }
 
-            // Sort dates in descending order
-            final sortedDates = groupedWords.keys.toList()
-              ..sort((a, b) => b.compareTo(a));
-
-            // Build the list with date headers
-            for (final date in sortedDates) {
-              list.add(DateDivider(
-                date: date,
-              ));
-
-              for (final data in groupedWords[date]!) {
-                list.add(ListTile(
-                  title: Text(data.word),
-                  onTap: () async {
-                    if (context.mounted) {
-                      context.push("/word", extra: {"word": data.word});
-                    }
-                  },
+              if (date != lastDate) {
+                lastDate = date;
+                list.add(DateDivider(
+                  date: date,
                 ));
               }
+
+              list.add(ListTile(
+                title: Text(data.word),
+                onTap: () async {
+                  if (context.mounted) {
+                    context.push("/word", extra: {"word": data.word});
+                  }
+                },
+              ));
             }
           }
 
