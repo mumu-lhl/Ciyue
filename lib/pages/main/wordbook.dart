@@ -2,7 +2,7 @@ import "package:ciyue/database/app.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/widget/text_buttons.dart";
-import "package:ciyue/widget/title_divider.dart";
+import "package:ciyue/widget/date_divider.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
@@ -173,10 +173,11 @@ class WordView extends StatelessWidget {
           final list = <Widget>[];
           if (snapshot.hasData) {
             final groupedWords = <DateTime, List<WordbookData>>{};
-            
+
             // Group words by date
             for (final data in snapshot.data!) {
-              final date = DateTime(data.createdAt.year, data.createdAt.month, data.createdAt.day);
+              final date = DateTime(data.createdAt.year, data.createdAt.month,
+                  data.createdAt.day);
               groupedWords.putIfAbsent(date, () => []).add(data);
             }
 
@@ -186,10 +187,10 @@ class WordView extends StatelessWidget {
 
             // Build the list with date headers
             for (final date in sortedDates) {
-              list.add(TitleDivider(
+              list.add(DateDivider(
                 date: date,
               ));
-              
+
               for (final data in groupedWords[date]!) {
                 list.add(ListTile(
                   title: Text(data.word),

@@ -206,7 +206,8 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
 class Wordbook extends Table {
   IntColumn get tag => integer().nullable()();
   TextColumn get word => text()();
-  DateTimeColumn get createdAt => dateTime().withDefault(Constant(DateTime.now()))();
+  DateTimeColumn get createdAt =>
+      dateTime().withDefault(Constant(DateTime.now()))();
 }
 
 @DriftAccessor(tables: [Wordbook])
