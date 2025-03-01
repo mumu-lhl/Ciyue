@@ -242,8 +242,7 @@ class Wordbook extends Table with TableInfo<Wordbook, WordbookData> {
       'created_at', aliasedName, false,
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
-      defaultValue: const CustomExpression(
-          'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)'));
+      defaultValue: const CustomExpression('1740826637'));
   @override
   List<GeneratedColumn> get $columns => [tag, word, createdAt];
   @override

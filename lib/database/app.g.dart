@@ -292,7 +292,7 @@ class $WordbookTable extends Wordbook
       drift.GeneratedColumn<DateTime>('created_at', aliasedName, false,
           type: DriftSqlType.dateTime,
           requiredDuringInsert: false,
-          defaultValue: drift.currentDateAndTime);
+          defaultValue: drift.Constant(DateTime.now()));
   @override
   List<drift.GeneratedColumn> get $columns => [tag, word, createdAt];
   @override
