@@ -48,12 +48,17 @@ class AppDatabase extends _$AppDatabase {
         from6To7: (m, schema) async {
           await m.addColumn(schema.dictionaryList, schema.dictionaryList.alias);
         },
+        from7To8: (m, schema) async {
+          await m.addColumn(schema.wordbook, schema.wordbook.createdAt);
+          await m.drop(schema.idxWordbook);
+          await m.createIndex(schema.idxWordbook);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 }
 
 class DictGroup extends Table {
@@ -197,10 +202,11 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
   }
 }
 
-@TableIndex(name: "idx_wordbook", columns: {#word})
+@TableIndex(name: "idx_wordbook", columns: {#word, #createdAt})
 class Wordbook extends Table {
   IntColumn get tag => integer().nullable()();
   TextColumn get word => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 @DriftAccessor(tables: [Wordbook])
