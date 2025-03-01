@@ -236,9 +236,8 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
       ..where((t) =>
           t.createdAt.isBetweenValues(startDate, endDate) &
           (tag == null ? t.tag.isNull() : t.tag.isValue(tag)))
-      ..orderBy([
-        (t) => OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)
-      ]);
+      ..orderBy(
+          [(t) => OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)]);
 
     return query.get();
   }
