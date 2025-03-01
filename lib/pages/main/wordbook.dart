@@ -502,7 +502,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
                 return Padding(
                   padding: const EdgeInsets.only(left: 16.0),
-                  child: Wrap(spacing: 8.0, runSpacing: 4.0, children: choiceChips),
+                  child: Wrap(
+                      spacing: 8.0, runSpacing: 4.0, children: choiceChips),
                 );
               }
 
