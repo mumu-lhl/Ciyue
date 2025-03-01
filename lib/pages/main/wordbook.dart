@@ -2,10 +2,12 @@ import "package:ciyue/database/app.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/widget/text_buttons.dart";
+import "package:ciyue/widget/date_divider.dart";
 import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 
+VoidCallback? _refreshScreen;
 VoidCallback? _refreshTagsAndWords;
 
 class MoreOptionsDialog extends StatefulWidget {
@@ -29,15 +31,54 @@ class TagListDialog extends StatefulWidget {
   State<TagListDialog> createState() => _TagListDialogState();
 }
 
-class WordBookScreen extends StatelessWidget {
+class WordBookScreen extends StatefulWidget {
   const WordBookScreen({super.key});
+
+  @override
+  State<WordBookScreen> createState() => _WordBookScreenState();
+}
+
+class _WordBookScreenState extends State<WordBookScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _refreshScreen = () {
+      setState(() {});
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(context),
-      body: WordViewWithTagsClips(),
-    );
+        appBar: buildAppBar(context),
+        body: WordViewWithTagsClips(),
+        floatingActionButton:
+            Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+          if (_WordViewWithTagsClipsState._selectedDate != null)
+            FloatingActionButton(
+              onPressed: () {
+                _WordViewWithTagsClipsState._selectedDate = null;
+                _refreshTagsAndWords!();
+              },
+              child: const Icon(Icons.clear),
+            ),
+          SizedBox(height: 8),
+          FloatingActionButton(
+            onPressed: () async {
+              final DateTime? picked = await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return MonthPickerDialog();
+                },
+              );
+              if (picked != null) {
+                _WordViewWithTagsClipsState._selectedDate = picked;
+                _refreshTagsAndWords!();
+              }
+            },
+            child: const Icon(Icons.calendar_month),
+          ),
+        ]));
   }
 
   Future<void> buildAddTag(BuildContext context) async {
@@ -170,8 +211,25 @@ class WordView extends StatelessWidget {
         builder:
             (BuildContext context, AsyncSnapshot<List<WordbookData>> snapshot) {
           final list = <Widget>[];
-          if (snapshot.hasData) {
+          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            final firstWord = snapshot.data![0];
+            var lastDate = DateTime(firstWord.createdAt.year,
+                firstWord.createdAt.month, firstWord.createdAt.day);
+            list.add(DateDivider(
+              date: lastDate,
+            ));
+
             for (final data in snapshot.data!) {
+              final date = DateTime(data.createdAt.year, data.createdAt.month,
+                  data.createdAt.day);
+
+              if (date != lastDate) {
+                lastDate = date;
+                list.add(DateDivider(
+                  date: date,
+                ));
+              }
+
               list.add(ListTile(
                 title: Text(data.word),
                 onTap: () async {
@@ -297,9 +355,114 @@ class _TagListDialogState extends State<TagListDialog> {
   }
 }
 
+class MonthPickerDialog extends StatefulWidget {
+  const MonthPickerDialog({super.key});
+
+  @override
+  State<MonthPickerDialog> createState() => _MonthPickerDialogState();
+}
+
+class _MonthPickerDialogState extends State<MonthPickerDialog> {
+  late int selectedYear;
+  late int selectedMonth;
+  late final int initialYear;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialDate =
+        _WordViewWithTagsClipsState._selectedDate ?? DateTime.now();
+    selectedYear = initialDate.year;
+    selectedMonth = initialDate.month;
+    initialYear = initialDate.year;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      content: SizedBox(
+        width: 300,
+        height: 300,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_left),
+                  onPressed: () {
+                    setState(() {
+                      selectedYear--;
+                    });
+                  },
+                ),
+                Text(
+                  selectedYear.toString(),
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                IconButton(
+                  icon: Icon(Icons.arrow_right),
+                  onPressed: () {
+                    setState(() {
+                      selectedYear++;
+                    });
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 1.5,
+                ),
+                itemCount: 12,
+                itemBuilder: (context, index) {
+                  final month = index + 1;
+                  return InkWell(
+                    onTap: () {
+                      Navigator.of(context).pop(
+                        DateTime(selectedYear, month),
+                      );
+                    },
+                    child: Container(
+                      margin: EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: initialYear == selectedYear &&
+                                month == selectedMonth
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          month.toString(),
+                          style: TextStyle(
+                            color: initialYear == selectedYear &&
+                                    month == selectedMonth
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : null,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   late Future<List<WordbookData>> allWords;
   late Future<List<WordbookTag>> tags;
+  static DateTime? _selectedDate;
 
   int? selectedTag;
 
@@ -351,18 +514,32 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   void initState() {
     super.initState();
 
-    allWords =
-        wordbookDao.getAllWordsWithTag(skipTagged: settings.skipTaggedWord);
+    updateWordList();
     tags = wordbookTagsDao.getAllTags();
 
     _refreshTagsAndWords = refresh;
   }
 
+  void updateWordList() {
+    if (_selectedDate != null) {
+      allWords = wordbookDao.getWordsByYearMonth(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        tag: selectedTag,
+      );
+    } else {
+      allWords = wordbookDao.getAllWordsWithTag(
+        tag: selectedTag,
+        skipTagged: settings.skipTaggedWord,
+      );
+    }
+  }
+
   void refresh() {
     setState(() {
-      allWords =
-          wordbookDao.getAllWordsWithTag(skipTagged: settings.skipTaggedWord);
+      updateWordList();
       tags = wordbookTagsDao.getAllTags();
+      _refreshScreen!();
     });
   }
 }
