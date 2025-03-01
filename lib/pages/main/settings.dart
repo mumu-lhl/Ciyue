@@ -14,10 +14,10 @@ import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:go_router/go_router.dart";
 import "package:url_launcher/url_launcher.dart";
 
+const discordUri = "https://discord.gg/BazBZuvKZG";
 const feedbackUri = "https://github.com/mumu-lhl/Ciyue/issues";
 const githubUri = "https://github.com/mumu-lhl/Ciyue";
 const sponsorUri = "https://afdian.com/a/mumulhl";
-const discordUri = "https://discord.gg/BazBZuvKZG";
 
 void _copy(BuildContext context, String text) {
   Clipboard.setData(ClipboardData(text: text));
@@ -244,6 +244,21 @@ class ManageDictionariesWidget extends StatelessWidget {
   }
 }
 
+class MoreOptionsButtonSwitch extends StatefulWidget {
+  const MoreOptionsButtonSwitch({super.key});
+
+  @override
+  State<MoreOptionsButtonSwitch> createState() =>
+      _MoreOptionsButtonSwitchState();
+}
+
+class NotificationSwitch extends StatefulWidget {
+  const NotificationSwitch({super.key});
+
+  @override
+  State<NotificationSwitch> createState() => _NotificationSwitchState();
+}
+
 class SearchbarLocationSelector extends StatefulWidget {
   const SearchbarLocationSelector({super.key});
 
@@ -267,26 +282,25 @@ class SettingsScreen extends StatelessWidget {
     return ListView(
       children: [
         const ManageDictionariesWidget(),
-        const Divider(),
+        TitleDivider(title: AppLocalizations.of(context)!.appearance),
         const ThemeSelector(),
         const LanguageSelector(),
-        const Divider(),
-        if (Platform.isAndroid) ...[
-          const SecureScreenSwitch(),
-          const Divider(),
-          const NotificationSwitch(),
-          const Divider()
-        ],
         const SearchbarLocationSelector(),
         const DrawerIconSwitch(),
         const MoreOptionsButtonSwitch(),
-        const Divider(),
+        if (Platform.isAndroid) ...[
+          TitleDivider(title: AppLocalizations.of(context)!.privacy),
+          const SecureScreenSwitch(),
+          const Divider(indent: 16, endIndent: 16),
+          const NotificationSwitch(),
+        ],
+        TitleDivider(title: AppLocalizations.of(context)!.wordBook),
         const AutoExport(),
         const Export(),
         const Import(),
-        const Divider(),
+        TitleDivider(title: AppLocalizations.of(context)!.history),
         const ClearHistory(),
-        const Divider(),
+        const Divider(indent: 16, endIndent: 16),
         const Feedback(),
         const GithubUrl(),
         const DiscordUrl(),
@@ -320,32 +334,30 @@ class ThemeSelector extends StatefulWidget {
   State<ThemeSelector> createState() => _ThemeSelectorState();
 }
 
-class NotificationSwitch extends StatefulWidget {
-  const NotificationSwitch({super.key});
+class TitleDivider extends StatelessWidget {
+  final String title;
 
-  @override
-  State<NotificationSwitch> createState() => _NotificationSwitchState();
-}
+  const TitleDivider({
+    super.key,
+    required this.title,
+  });
 
-class _NotificationSwitchState extends State<NotificationSwitch> {
   @override
   Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.notification),
-      value: settings.notification,
-      onChanged: (value) async {
-        await prefs.setBool("notification", value);
-        setState(() {
-          settings.notification = value;
-        });
-        await PlatformMethod.flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>()
-            ?.requestNotificationsPermission();
-        PlatformMethod.createPersistentNotification(value);
-      },
-      secondary: const Icon(Icons.notifications),
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+        Expanded(child: Divider(endIndent: 16)),
+      ],
     );
   }
 }
@@ -364,32 +376,6 @@ class _DrawerIconSwitchState extends State<DrawerIconSwitch> {
         });
       },
       secondary: const Icon(Icons.menu),
-    );
-  }
-}
-
-class MoreOptionsButtonSwitch extends StatefulWidget {
-  const MoreOptionsButtonSwitch({super.key});
-
-  @override
-  State<MoreOptionsButtonSwitch> createState() =>
-      _MoreOptionsButtonSwitchState();
-}
-
-class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.moreOptionsButton),
-      value: settings.showMoreOptionsButton,
-      onChanged: (value) async {
-        await prefs.setBool("showMoreOptionsButton", value);
-        setState(() {
-          settings.showMoreOptionsButton = value;
-        });
-      },
-      secondary: const Icon(Icons.more_vert),
     );
   }
 }
@@ -441,6 +427,47 @@ class _LanguageSelectorState extends State<LanguageSelector> {
         title: Text(locale!.language),
         trailing: const Icon(Icons.keyboard_arrow_down),
       ),
+    );
+  }
+}
+
+class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.moreOptionsButton),
+      value: settings.showMoreOptionsButton,
+      onChanged: (value) async {
+        await prefs.setBool("showMoreOptionsButton", value);
+        setState(() {
+          settings.showMoreOptionsButton = value;
+        });
+      },
+      secondary: const Icon(Icons.more_vert),
+    );
+  }
+}
+
+class _NotificationSwitchState extends State<NotificationSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.notification),
+      value: settings.notification,
+      onChanged: (value) async {
+        await prefs.setBool("notification", value);
+        setState(() {
+          settings.notification = value;
+        });
+        await PlatformMethod.flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.requestNotificationsPermission();
+        PlatformMethod.createPersistentNotification(value);
+      },
+      secondary: const Icon(Icons.notifications),
     );
   }
 }

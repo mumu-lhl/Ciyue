@@ -62,6 +62,8 @@
   "moreOptionsButton": "更多选项按钮",
   "titleAlias": "标题别名",
   "skipTaggedWord": "跳过有标签的单词",
-  "showNotFoundWord": "显示未找到的单词",
-  "dictionaryGroups": "词典分组"
+  "dictionaryGroups": "词典分组",
+  "history": "历史记录",
+  "appearance": "外观",
+  "privacy": "隐私"
 }
