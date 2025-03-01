@@ -227,6 +227,22 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
         .insert(WordbookCompanion(tag: Value(tag), word: Value(word)));
   }
 
+  Future<List<WordbookData>> getWordsByYearMonth(int year, int month,
+      {int? tag}) {
+    final startDate = DateTime(year, month, 1);
+    final endDate = DateTime(year, month + 1, 1);
+
+    final query = select(wordbook)
+      ..where((t) =>
+          t.createdAt.isBetweenValues(startDate, endDate) &
+          (tag == null ? t.tag.isNull() : t.tag.isValue(tag)))
+      ..orderBy([
+        (t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc)
+      ]);
+
+    return query.get();
+  }
+
   Future<List<WordbookData>> getAllWords() {
     return (select(wordbook)).get();
   }
