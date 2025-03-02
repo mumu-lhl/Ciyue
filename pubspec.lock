@@ -90,18 +90,18 @@ packages:
     dependency: transitive
     description:
       name: build_resolvers
-      sha256: "99d3980049739a985cf9b21f30881f46db3ebc62c5b8d5e60e27440876b1ba1e"
+      sha256: b9e4fda21d846e192628e7a4f6deda6888c36b5b69ba02ff291a01fd529140f0
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.3"
+    version: "2.4.4"
   build_runner:
     dependency: "direct dev"
     description:
       name: build_runner
-      sha256: "74691599a5bc750dc96a6b4bfd48f7d9d66453eab04c7f4063134800d6a5c573"
+      sha256: "058fe9dce1de7d69c4b84fada934df3e0153dd000758c4d65964d0166779aa99"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.14"
+    version: "2.4.15"
   build_runner_core:
     dependency: transitive
     description:
@@ -250,10 +250,10 @@ packages:
     dependency: "direct main"
     description:
       name: drift
-      sha256: ab4d0e7aa1793829b1dd8e72d71bbf0b53bf4ff84b184045d1ab71b0832e632e
+      sha256: "97d5832657d49f26e7a8e07de397ddc63790b039372878d5117af816d0fdb5cb"
       url: "https://pub.dev"
     source: hosted
-    version: "2.25.0"
+    version: "2.25.1"
   drift_dev:
     dependency: "direct dev"
     description:
@@ -847,10 +847,10 @@ packages:
     dependency: "direct main"
     description:
       name: shared_preferences
-      sha256: "688ee90fbfb6989c980254a56cb26ebe9bb30a3a2dff439a78894211f73de67a"
+      sha256: "846849e3e9b68f3ef4b60c60cf4b3e02e9321bc7f4d8c4692cf87ffa82fc8a3a"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.1"
+    version: "2.5.2"
   shared_preferences_android:
     dependency: transitive
     description:

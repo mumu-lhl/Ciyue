@@ -9,6 +9,12 @@ class $DictionaryListTable extends DictionaryList
   final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $DictionaryListTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _aliasMeta =
+      const drift.VerificationMeta('alias');
+  @override
+  late final drift.GeneratedColumn<String> alias =
+      drift.GeneratedColumn<String>('alias', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
   static const drift.VerificationMeta _fontPathMeta =
       const drift.VerificationMeta('fontPath');
   @override
@@ -31,14 +37,8 @@ class $DictionaryListTable extends DictionaryList
   late final drift.GeneratedColumn<String> path = drift.GeneratedColumn<String>(
       'path', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const drift.VerificationMeta _aliasMeta =
-      const drift.VerificationMeta('alias');
   @override
-  late final drift.GeneratedColumn<String> alias =
-      drift.GeneratedColumn<String>('alias', aliasedName, true,
-          type: DriftSqlType.string, requiredDuringInsert: false);
-  @override
-  List<drift.GeneratedColumn> get $columns => [fontPath, id, path, alias];
+  List<drift.GeneratedColumn> get $columns => [alias, fontPath, id, path];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -50,6 +50,10 @@ class $DictionaryListTable extends DictionaryList
       {bool isInserting = false}) {
     final context = drift.VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('alias')) {
+      context.handle(
+          _aliasMeta, alias.isAcceptableOrUnknown(data['alias']!, _aliasMeta));
+    }
     if (data.containsKey('font_path')) {
       context.handle(_fontPathMeta,
           fontPath.isAcceptableOrUnknown(data['font_path']!, _fontPathMeta));
@@ -63,10 +67,6 @@ class $DictionaryListTable extends DictionaryList
     } else if (isInserting) {
       context.missing(_pathMeta);
     }
-    if (data.containsKey('alias')) {
-      context.handle(
-          _aliasMeta, alias.isAcceptableOrUnknown(data['alias']!, _aliasMeta));
-    }
     return context;
   }
 
@@ -76,14 +76,14 @@ class $DictionaryListTable extends DictionaryList
   DictionaryListData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictionaryListData(
+      alias: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}alias']),
       fontPath: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}font_path']),
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
-      alias: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}alias']),
     );
   }
 
@@ -95,36 +95,36 @@ class $DictionaryListTable extends DictionaryList
 
 class DictionaryListData extends drift.DataClass
     implements drift.Insertable<DictionaryListData> {
+  final String? alias;
   final String? fontPath;
   final int id;
   final String path;
-  final String? alias;
   const DictionaryListData(
-      {this.fontPath, required this.id, required this.path, this.alias});
+      {this.alias, this.fontPath, required this.id, required this.path});
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
+    if (!nullToAbsent || alias != null) {
+      map['alias'] = drift.Variable<String>(alias);
+    }
     if (!nullToAbsent || fontPath != null) {
       map['font_path'] = drift.Variable<String>(fontPath);
     }
     map['id'] = drift.Variable<int>(id);
     map['path'] = drift.Variable<String>(path);
-    if (!nullToAbsent || alias != null) {
-      map['alias'] = drift.Variable<String>(alias);
-    }
     return map;
   }
 
   DictionaryListCompanion toCompanion(bool nullToAbsent) {
     return DictionaryListCompanion(
+      alias: alias == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(alias),
       fontPath: fontPath == null && nullToAbsent
           ? const drift.Value.absent()
           : drift.Value(fontPath),
       id: drift.Value(id),
       path: drift.Value(path),
-      alias: alias == null && nullToAbsent
-          ? const drift.Value.absent()
-          : drift.Value(alias),
     );
   }
 
@@ -132,114 +132,117 @@ class DictionaryListData extends drift.DataClass
       {ValueSerializer? serializer}) {
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return DictionaryListData(
+      alias: serializer.fromJson<String?>(json['alias']),
       fontPath: serializer.fromJson<String?>(json['fontPath']),
       id: serializer.fromJson<int>(json['id']),
       path: serializer.fromJson<String>(json['path']),
-      alias: serializer.fromJson<String?>(json['alias']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'alias': serializer.toJson<String?>(alias),
       'fontPath': serializer.toJson<String?>(fontPath),
       'id': serializer.toJson<int>(id),
       'path': serializer.toJson<String>(path),
-      'alias': serializer.toJson<String?>(alias),
     };
   }
 
   DictionaryListData copyWith(
-          {drift.Value<String?> fontPath = const drift.Value.absent(),
+          {drift.Value<String?> alias = const drift.Value.absent(),
+          drift.Value<String?> fontPath = const drift.Value.absent(),
           int? id,
-          String? path,
-          drift.Value<String?> alias = const drift.Value.absent()}) =>
+          String? path}) =>
       DictionaryListData(
+        alias: alias.present ? alias.value : this.alias,
         fontPath: fontPath.present ? fontPath.value : this.fontPath,
         id: id ?? this.id,
         path: path ?? this.path,
-        alias: alias.present ? alias.value : this.alias,
       );
   DictionaryListData copyWithCompanion(DictionaryListCompanion data) {
     return DictionaryListData(
+      alias: data.alias.present ? data.alias.value : this.alias,
       fontPath: data.fontPath.present ? data.fontPath.value : this.fontPath,
       id: data.id.present ? data.id.value : this.id,
       path: data.path.present ? data.path.value : this.path,
-      alias: data.alias.present ? data.alias.value : this.alias,
     );
   }
 
   @override
   String toString() {
     return (StringBuffer('DictionaryListData(')
+          ..write('alias: $alias, ')
           ..write('fontPath: $fontPath, ')
           ..write('id: $id, ')
-          ..write('path: $path, ')
-          ..write('alias: $alias')
+          ..write('path: $path')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(fontPath, id, path, alias);
+  int get hashCode => Object.hash(alias, fontPath, id, path);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is DictionaryListData &&
+          other.alias == this.alias &&
           other.fontPath == this.fontPath &&
           other.id == this.id &&
-          other.path == this.path &&
-          other.alias == this.alias);
+          other.path == this.path);
 }
 
 class DictionaryListCompanion
     extends drift.UpdateCompanion<DictionaryListData> {
+  final drift.Value<String?> alias;
   final drift.Value<String?> fontPath;
   final drift.Value<int> id;
   final drift.Value<String> path;
-  final drift.Value<String?> alias;
   const DictionaryListCompanion({
+    this.alias = const drift.Value.absent(),
     this.fontPath = const drift.Value.absent(),
     this.id = const drift.Value.absent(),
     this.path = const drift.Value.absent(),
-    this.alias = const drift.Value.absent(),
   });
   DictionaryListCompanion.insert({
+    this.alias = const drift.Value.absent(),
     this.fontPath = const drift.Value.absent(),
     this.id = const drift.Value.absent(),
     required String path,
-    this.alias = const drift.Value.absent(),
   }) : path = drift.Value(path);
   static drift.Insertable<DictionaryListData> custom({
+    drift.Expression<String>? alias,
     drift.Expression<String>? fontPath,
     drift.Expression<int>? id,
     drift.Expression<String>? path,
-    drift.Expression<String>? alias,
   }) {
     return drift.RawValuesInsertable({
+      if (alias != null) 'alias': alias,
       if (fontPath != null) 'font_path': fontPath,
       if (id != null) 'id': id,
       if (path != null) 'path': path,
-      if (alias != null) 'alias': alias,
     });
   }
 
   DictionaryListCompanion copyWith(
-      {drift.Value<String?>? fontPath,
+      {drift.Value<String?>? alias,
+      drift.Value<String?>? fontPath,
       drift.Value<int>? id,
-      drift.Value<String>? path,
-      drift.Value<String?>? alias}) {
+      drift.Value<String>? path}) {
     return DictionaryListCompanion(
+      alias: alias ?? this.alias,
       fontPath: fontPath ?? this.fontPath,
       id: id ?? this.id,
       path: path ?? this.path,
-      alias: alias ?? this.alias,
     );
   }
 
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
+    if (alias.present) {
+      map['alias'] = drift.Variable<String>(alias.value);
+    }
     if (fontPath.present) {
       map['font_path'] = drift.Variable<String>(fontPath.value);
     }
@@ -249,19 +252,16 @@ class DictionaryListCompanion
     if (path.present) {
       map['path'] = drift.Variable<String>(path.value);
     }
-    if (alias.present) {
-      map['alias'] = drift.Variable<String>(alias.value);
-    }
     return map;
   }
 
   @override
   String toString() {
     return (StringBuffer('DictionaryListCompanion(')
+          ..write('alias: $alias, ')
           ..write('fontPath: $fontPath, ')
           ..write('id: $id, ')
-          ..write('path: $path, ')
-          ..write('alias: $alias')
+          ..write('path: $path')
           ..write(')'))
         .toString();
   }
@@ -285,8 +285,16 @@ class $WordbookTable extends Wordbook
   late final drift.GeneratedColumn<String> word = drift.GeneratedColumn<String>(
       'word', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const drift.VerificationMeta _createdAtMeta =
+      const drift.VerificationMeta('createdAt');
   @override
-  List<drift.GeneratedColumn> get $columns => [tag, word];
+  late final drift.GeneratedColumn<DateTime> createdAt =
+      drift.GeneratedColumn<DateTime>('created_at', aliasedName, false,
+          type: DriftSqlType.dateTime,
+          requiredDuringInsert: false,
+          defaultValue: drift.Constant(DateTime.now()));
+  @override
+  List<drift.GeneratedColumn> get $columns => [tag, word, createdAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -308,6 +316,10 @@ class $WordbookTable extends Wordbook
     } else if (isInserting) {
       context.missing(_wordMeta);
     }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
     return context;
   }
 
@@ -321,6 +333,8 @@ class $WordbookTable extends Wordbook
           .read(DriftSqlType.int, data['${effectivePrefix}tag']),
       word: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
   }
 
@@ -334,7 +348,8 @@ class WordbookData extends drift.DataClass
     implements drift.Insertable<WordbookData> {
   final int? tag;
   final String word;
-  const WordbookData({this.tag, required this.word});
+  final DateTime createdAt;
+  const WordbookData({this.tag, required this.word, required this.createdAt});
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
@@ -342,6 +357,7 @@ class WordbookData extends drift.DataClass
       map['tag'] = drift.Variable<int>(tag);
     }
     map['word'] = drift.Variable<String>(word);
+    map['created_at'] = drift.Variable<DateTime>(createdAt);
     return map;
   }
 
@@ -351,6 +367,7 @@ class WordbookData extends drift.DataClass
           ? const drift.Value.absent()
           : drift.Value(tag),
       word: drift.Value(word),
+      createdAt: drift.Value(createdAt),
     );
   }
 
@@ -360,6 +377,7 @@ class WordbookData extends drift.DataClass
     return WordbookData(
       tag: serializer.fromJson<int?>(json['tag']),
       word: serializer.fromJson<String>(json['word']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -368,19 +386,24 @@ class WordbookData extends drift.DataClass
     return <String, dynamic>{
       'tag': serializer.toJson<int?>(tag),
       'word': serializer.toJson<String>(word),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
   WordbookData copyWith(
-          {drift.Value<int?> tag = const drift.Value.absent(), String? word}) =>
+          {drift.Value<int?> tag = const drift.Value.absent(),
+          String? word,
+          DateTime? createdAt}) =>
       WordbookData(
         tag: tag.present ? tag.value : this.tag,
         word: word ?? this.word,
+        createdAt: createdAt ?? this.createdAt,
       );
   WordbookData copyWithCompanion(WordbookCompanion data) {
     return WordbookData(
       tag: data.tag.present ? data.tag.value : this.tag,
       word: data.word.present ? data.word.value : this.word,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -388,43 +411,50 @@ class WordbookData extends drift.DataClass
   String toString() {
     return (StringBuffer('WordbookData(')
           ..write('tag: $tag, ')
-          ..write('word: $word')
+          ..write('word: $word, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(tag, word);
+  int get hashCode => Object.hash(tag, word, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WordbookData &&
           other.tag == this.tag &&
-          other.word == this.word);
+          other.word == this.word &&
+          other.createdAt == this.createdAt);
 }
 
 class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
   final drift.Value<int?> tag;
   final drift.Value<String> word;
+  final drift.Value<DateTime> createdAt;
   final drift.Value<int> rowid;
   const WordbookCompanion({
     this.tag = const drift.Value.absent(),
     this.word = const drift.Value.absent(),
+    this.createdAt = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   });
   WordbookCompanion.insert({
     this.tag = const drift.Value.absent(),
     required String word,
+    this.createdAt = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   }) : word = drift.Value(word);
   static drift.Insertable<WordbookData> custom({
     drift.Expression<int>? tag,
     drift.Expression<String>? word,
+    drift.Expression<DateTime>? createdAt,
     drift.Expression<int>? rowid,
   }) {
     return drift.RawValuesInsertable({
       if (tag != null) 'tag': tag,
       if (word != null) 'word': word,
+      if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -432,10 +462,12 @@ class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
   WordbookCompanion copyWith(
       {drift.Value<int?>? tag,
       drift.Value<String>? word,
+      drift.Value<DateTime>? createdAt,
       drift.Value<int>? rowid}) {
     return WordbookCompanion(
       tag: tag ?? this.tag,
       word: word ?? this.word,
+      createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -449,6 +481,9 @@ class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
     if (word.present) {
       map['word'] = drift.Variable<String>(word.value);
     }
+    if (createdAt.present) {
+      map['created_at'] = drift.Variable<DateTime>(createdAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = drift.Variable<int>(rowid.value);
     }
@@ -460,6 +495,7 @@ class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
     return (StringBuffer('WordbookCompanion(')
           ..write('tag: $tag, ')
           ..write('word: $word, ')
+          ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1063,8 +1099,8 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final $WordbookTagsTable wordbookTags = $WordbookTagsTable(this);
   late final $HistoryTable history = $HistoryTable(this);
   late final $DictGroupTable dictGroup = $DictGroupTable(this);
-  late final drift.Index idxWordbook = drift.Index(
-      'idx_wordbook', 'CREATE INDEX idx_wordbook ON wordbook (word)');
+  late final drift.Index idxWordbook = drift.Index('idx_wordbook',
+      'CREATE INDEX idx_wordbook ON wordbook (word, created_at)');
   late final drift.Index idxWordbookTags = drift.Index('idx_wordbook_tags',
       'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)');
   @override
@@ -1084,17 +1120,17 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
 
 typedef $$DictionaryListTableCreateCompanionBuilder = DictionaryListCompanion
     Function({
+  drift.Value<String?> alias,
   drift.Value<String?> fontPath,
   drift.Value<int> id,
   required String path,
-  drift.Value<String?> alias,
 });
 typedef $$DictionaryListTableUpdateCompanionBuilder = DictionaryListCompanion
     Function({
+  drift.Value<String?> alias,
   drift.Value<String?> fontPath,
   drift.Value<int> id,
   drift.Value<String> path,
-  drift.Value<String?> alias,
 });
 
 class $$DictionaryListTableFilterComposer
@@ -1106,6 +1142,9 @@ class $$DictionaryListTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  drift.ColumnFilters<String> get alias => $composableBuilder(
+      column: $table.alias, builder: (column) => drift.ColumnFilters(column));
+
   drift.ColumnFilters<String> get fontPath => $composableBuilder(
       column: $table.fontPath,
       builder: (column) => drift.ColumnFilters(column));
@@ -1115,9 +1154,6 @@ class $$DictionaryListTableFilterComposer
 
   drift.ColumnFilters<String> get path => $composableBuilder(
       column: $table.path, builder: (column) => drift.ColumnFilters(column));
-
-  drift.ColumnFilters<String> get alias => $composableBuilder(
-      column: $table.alias, builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$DictionaryListTableOrderingComposer
@@ -1129,6 +1165,9 @@ class $$DictionaryListTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  drift.ColumnOrderings<String> get alias => $composableBuilder(
+      column: $table.alias, builder: (column) => drift.ColumnOrderings(column));
+
   drift.ColumnOrderings<String> get fontPath => $composableBuilder(
       column: $table.fontPath,
       builder: (column) => drift.ColumnOrderings(column));
@@ -1138,9 +1177,6 @@ class $$DictionaryListTableOrderingComposer
 
   drift.ColumnOrderings<String> get path => $composableBuilder(
       column: $table.path, builder: (column) => drift.ColumnOrderings(column));
-
-  drift.ColumnOrderings<String> get alias => $composableBuilder(
-      column: $table.alias, builder: (column) => drift.ColumnOrderings(column));
 }
 
 class $$DictionaryListTableAnnotationComposer
@@ -1152,6 +1188,9 @@ class $$DictionaryListTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  drift.GeneratedColumn<String> get alias =>
+      $composableBuilder(column: $table.alias, builder: (column) => column);
+
   drift.GeneratedColumn<String> get fontPath =>
       $composableBuilder(column: $table.fontPath, builder: (column) => column);
 
@@ -1160,9 +1199,6 @@ class $$DictionaryListTableAnnotationComposer
 
   drift.GeneratedColumn<String> get path =>
       $composableBuilder(column: $table.path, builder: (column) => column);
-
-  drift.GeneratedColumn<String> get alias =>
-      $composableBuilder(column: $table.alias, builder: (column) => column);
 }
 
 class $$DictionaryListTableTableManager extends drift.RootTableManager<
@@ -1193,28 +1229,28 @@ class $$DictionaryListTableTableManager extends drift.RootTableManager<
           createComputedFieldComposer: () =>
               $$DictionaryListTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
+            drift.Value<String?> alias = const drift.Value.absent(),
             drift.Value<String?> fontPath = const drift.Value.absent(),
             drift.Value<int> id = const drift.Value.absent(),
             drift.Value<String> path = const drift.Value.absent(),
-            drift.Value<String?> alias = const drift.Value.absent(),
           }) =>
               DictionaryListCompanion(
+            alias: alias,
             fontPath: fontPath,
             id: id,
             path: path,
-            alias: alias,
           ),
           createCompanionCallback: ({
+            drift.Value<String?> alias = const drift.Value.absent(),
             drift.Value<String?> fontPath = const drift.Value.absent(),
             drift.Value<int> id = const drift.Value.absent(),
             required String path,
-            drift.Value<String?> alias = const drift.Value.absent(),
           }) =>
               DictionaryListCompanion.insert(
+            alias: alias,
             fontPath: fontPath,
             id: id,
             path: path,
-            alias: alias,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>
@@ -1244,11 +1280,13 @@ typedef $$DictionaryListTableProcessedTableManager
 typedef $$WordbookTableCreateCompanionBuilder = WordbookCompanion Function({
   drift.Value<int?> tag,
   required String word,
+  drift.Value<DateTime> createdAt,
   drift.Value<int> rowid,
 });
 typedef $$WordbookTableUpdateCompanionBuilder = WordbookCompanion Function({
   drift.Value<int?> tag,
   drift.Value<String> word,
+  drift.Value<DateTime> createdAt,
   drift.Value<int> rowid,
 });
 
@@ -1266,6 +1304,10 @@ class $$WordbookTableFilterComposer
 
   drift.ColumnFilters<String> get word => $composableBuilder(
       column: $table.word, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt,
+      builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$WordbookTableOrderingComposer
@@ -1282,6 +1324,10 @@ class $$WordbookTableOrderingComposer
 
   drift.ColumnOrderings<String> get word => $composableBuilder(
       column: $table.word, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt,
+      builder: (column) => drift.ColumnOrderings(column));
 }
 
 class $$WordbookTableAnnotationComposer
@@ -1298,6 +1344,9 @@ class $$WordbookTableAnnotationComposer
 
   drift.GeneratedColumn<String> get word =>
       $composableBuilder(column: $table.word, builder: (column) => column);
+
+  drift.GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 }
 
 class $$WordbookTableTableManager extends drift.RootTableManager<
@@ -1328,21 +1377,25 @@ class $$WordbookTableTableManager extends drift.RootTableManager<
           updateCompanionCallback: ({
             drift.Value<int?> tag = const drift.Value.absent(),
             drift.Value<String> word = const drift.Value.absent(),
+            drift.Value<DateTime> createdAt = const drift.Value.absent(),
             drift.Value<int> rowid = const drift.Value.absent(),
           }) =>
               WordbookCompanion(
             tag: tag,
             word: word,
+            createdAt: createdAt,
             rowid: rowid,
           ),
           createCompanionCallback: ({
             drift.Value<int?> tag = const drift.Value.absent(),
             required String word,
+            drift.Value<DateTime> createdAt = const drift.Value.absent(),
             drift.Value<int> rowid = const drift.Value.absent(),
           }) =>
               WordbookCompanion.insert(
             tag: tag,
             word: word,
+            createdAt: createdAt,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

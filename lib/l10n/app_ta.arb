@@ -62,5 +62,8 @@
   "moreOptionsButton": "மேலும் விருப்பங்கள் பொத்தான்",
   "titleAlias": "தலைப்பு மாற்றுப்பெயர்",
   "skipTaggedWord": "குறிச்சொல்லிடப்பட்ட வார்த்தையைத் தவிர்க்கவும்",
-  "showNotFoundWord": "காணப்படாத வார்த்தைகளைக் காட்டு"
+  "dictionaryGroups": "அகராதி குழுக்கள்",
+  "history": "வரலாறு",
+  "appearance": "தோற்றம்",
+  "privacy": "தனியுரிமை"
 }

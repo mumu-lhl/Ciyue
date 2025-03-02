@@ -1,12 +1,12 @@
 import "dart:convert";
 import "dart:io";
 
-import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
+import "package:ciyue/widget/tags_list.dart";
 import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -70,23 +70,6 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       return WebResourceResponse(data: null);
     }
   }
-}
-
-class TagsList extends StatefulWidget {
-  final List<WordbookTag> tags;
-  final List<int> tagsOfWord;
-  final List<int> toAdd;
-  final List<int> toDel;
-
-  const TagsList(
-      {super.key,
-      required this.tags,
-      required this.tagsOfWord,
-      required this.toAdd,
-      required this.toDel});
-
-  @override
-  State<StatefulWidget> createState() => _TagsListState();
 }
 
 class WebviewAndroid extends StatelessWidget {
@@ -191,11 +174,11 @@ class WebviewDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!settings.showNotFound && context.canPop()) {
-      return FutureBuilder(
-          future: validDictionaryIds(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
+    return FutureBuilder(
+        future: validDictionaryIds(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            if (snapshot.data!.isNotEmpty) {
               return DefaultTabController(
                   initialIndex: 0,
                   length: snapshot.data!.length,
@@ -203,7 +186,13 @@ class WebviewDisplay extends StatelessWidget {
                       appBar: AppBar(
                           leading: BackButton(
                             onPressed: () {
-                              context.pop();
+                              if (context.canPop()) {
+                                context.pop();
+                              } else {
+                                // When opened from context menu
+                                SystemChannels.platform
+                                    .invokeMethod('SystemNavigator.pop');
+                              }
                             },
                           ),
                           bottom: buildTabBar(context)),
@@ -211,121 +200,86 @@ class WebviewDisplay extends StatelessWidget {
                       body:
                           buildTabView(context, validDictIds: snapshot.data!)));
             } else {
-              return const SizedBox.shrink();
+              final fromProcessText = !context.canPop();
+              return Scaffold(
+                appBar: AppBar(leading: BackButton(
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      // When opened from context menu
+                      SystemChannels.platform
+                          .invokeMethod('SystemNavigator.pop');
+                    }
+                  },
+                )),
+                body: Center(
+                    child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(AppLocalizations.of(context)!.notFound,
+                        style: Theme.of(context).textTheme.titleLarge),
+                    Visibility(
+                      visible: fromProcessText,
+                      child: TextButton(
+                        onPressed: () {
+                          context.go("/", extra: {"searchWord": word});
+                          MainPage.callEnableAutofocusOnce = true;
+                        },
+                        child: Text(AppLocalizations.of(context)!.editWord),
+                      ),
+                    ),
+                  ],
+                )),
+              );
             }
-          });
-    } else {
-      return DefaultTabController(
-          initialIndex: 0,
-          length: dictManager.dicts.length,
-          child: Scaffold(
-              appBar: AppBar(
-                  leading: BackButton(
-                    onPressed: () {
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        // When opened from context menu
-                        SystemChannels.platform
-                            .invokeMethod('SystemNavigator.pop');
-                      }
-                    },
-                  ),
-                  title: buildTabBar(context)),
-              floatingActionButton: Button(word: word),
-              body: buildTabView(context)));
-    }
+          } else {
+            return const SizedBox.shrink();
+          }
+        });
   }
 
   Widget buildTabView(BuildContext context,
       {List<int> validDictIds = const []}) {
-    if (!settings.showNotFound && context.canPop()) {
-      return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-        for (final id in validDictIds)
-          FutureBuilder(
-              future: dictManager.dicts[id]!.readWord(word),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  if (Platform.isAndroid) {
-                    return WebviewAndroid(content: snapshot.data!, dictId: id);
-                  } else {
-                    return WebviewWindows(content: snapshot.data!, dictId: id);
-                  }
+    return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
+      for (final id in validDictIds)
+        FutureBuilder(
+            future: dictManager.dicts[id]!.readWord(word),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                if (Platform.isAndroid) {
+                  return WebviewAndroid(content: snapshot.data!, dictId: id);
                 } else {
-                  return const SizedBox.shrink();
+                  return WebviewWindows(content: snapshot.data!, dictId: id);
                 }
-              })
-      ]);
-    } else {
-      return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-        for (final id in dictManager.dictIds)
-          FutureBuilder(
-              future: dictManager.dicts[id]!.readWord(word),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  if (Platform.isAndroid) {
-                    return WebviewAndroid(content: snapshot.data!, dictId: id);
-                  } else {
-                    return WebviewWindows(content: snapshot.data!, dictId: id);
-                  }
-                } else if (snapshot.hasError) {
-                  final fromProcessText = !context.canPop();
-                  return Center(
-                      child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(AppLocalizations.of(context)!.notFound,
-                          style: Theme.of(context).textTheme.titleLarge),
-                      Visibility(
-                        visible: fromProcessText,
-                        child: TextButton(
-                          onPressed: () {
-                            context.go("/", extra: {"searchWord": word});
-                            MainPage.callEnableAutofocusOnce = true;
-                          },
-                          child: Text(AppLocalizations.of(context)!.editWord),
-                        ),
-                      ),
-                    ],
-                  ));
-                } else {
-                  return const Center(child: CircularProgressIndicator());
-                }
-              })
-      ]);
-    }
+              } else {
+                return const SizedBox.shrink();
+              }
+            })
+    ]);
   }
 
   PreferredSizeWidget buildTabBar(BuildContext context) {
-    if (!settings.showNotFound && context.canPop()) {
-      return PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: FutureBuilder(
-              future: Future.wait([
-                for (final id in dictManager.dictIds)
-                  dictManager.dicts[id]!.db.wordExist(word)
-              ]),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return TabBar(tabs: [
-                    for (int i = 0; i < snapshot.data!.length; i++)
-                      if (snapshot.data![i])
-                        Tab(
-                            text: dictManager
-                                .dicts[dictManager.dictIds[i]]!.title)
-                  ]);
-                } else {
-                  return const SizedBox.shrink();
-                }
-              }));
-    } else {
-      return TabBar(
-        tabs: [
-          for (final id in dictManager.dictIds)
-            Tab(text: dictManager.dicts[id]!.title)
-        ],
-      );
-    }
+    return PreferredSize(
+        preferredSize: const Size.fromHeight(48),
+        child: FutureBuilder(
+            future: Future.wait([
+              for (final id in dictManager.dictIds)
+                dictManager.dicts[id]!.db.wordExist(word)
+            ]),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return TabBar(tabs: [
+                  for (int i = 0; i < snapshot.data!.length; i++)
+                    if (snapshot.data![i])
+                      Tab(
+                          text:
+                              dictManager.dicts[dictManager.dictIds[i]]!.title)
+                ]);
+              } else {
+                return const SizedBox.shrink();
+              }
+            }));
   }
 
   Future<List<int>> validDictionaryIds() async {
@@ -536,20 +490,18 @@ class _ButtonState extends State<Button> {
                           TextButton(
                             child: Text(locale.confirm),
                             onPressed: () async {
-                              if (toAdd.isEmpty && toDel.isEmpty) {
-                                if (!snapshot.data!) {
-                                  await wordbookDao.addWord(widget.word);
-                                }
-                              } else {
-                                for (final tag in toAdd) {
-                                  await wordbookDao.addWord(widget.word,
-                                      tag: tag);
-                                }
+                              if (!snapshot.data!) {
+                                await wordbookDao.addWord(widget.word);
+                              }
 
-                                for (final tag in toDel) {
-                                  await wordbookDao.removeWord(widget.word,
-                                      tag: tag);
-                                }
+                              for (final tag in toAdd) {
+                                await wordbookDao.addWord(widget.word,
+                                    tag: tag);
+                              }
+
+                              for (final tag in toDel) {
+                                await wordbookDao.removeWord(widget.word,
+                                    tag: tag);
                               }
 
                               if (context.mounted) context.pop();
@@ -580,46 +532,5 @@ class _ButtonState extends State<Button> {
     super.initState();
 
     stared = wordbookDao.wordExist(widget.word);
-  }
-}
-
-class _TagsListState extends State<TagsList> {
-  List<int>? oldTagsOfWord;
-
-  @override
-  Widget build(BuildContext context) {
-    final checkboxListTile = <Widget>[];
-
-    oldTagsOfWord ??= List<int>.from(widget.tagsOfWord);
-
-    for (final tag in widget.tags) {
-      checkboxListTile.add(CheckboxListTile(
-        title: Text(tag.tag),
-        value: widget.tagsOfWord.contains(tag.id),
-        onChanged: (value) {
-          setState(() {
-            if (value == true) {
-              if (!oldTagsOfWord!.contains(tag.id)) {
-                widget.toAdd.add(tag.id);
-              }
-
-              widget.toDel.remove(tag.id);
-
-              widget.tagsOfWord.add(tag.id);
-            } else {
-              if (oldTagsOfWord!.contains(tag.id)) {
-                widget.toDel.add(tag.id);
-              }
-
-              widget.toAdd.remove(tag.id);
-
-              widget.tagsOfWord.remove(tag.id);
-            }
-          });
-        },
-      ));
-    }
-
-    return Column(children: checkboxListTile);
   }
 }

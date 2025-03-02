@@ -124,6 +124,12 @@
   "@titleAlias": {},
   "skipTaggedWord": "Skip Tagged Word",
   "@skipTaggedWord": {},
-  "showNotFoundWord": "Show Not Found Word",
-  "@showNotFoundWord": {}
+  "dictionaryGroups": "Dictionary Groups",
+  "@dictionaryGroups": {},
+  "history": "History",
+  "@history": {},
+  "appearance": "Appearance",
+  "@appearance": {},
+  "privacy": "Privacy",
+  "@privacy": {}
 }

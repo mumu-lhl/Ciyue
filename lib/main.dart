@@ -52,7 +52,6 @@ void main() async {
     "notification",
     "showMoreOptionsButton",
     "skipTaggedWord",
-    "showNotFound",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
@@ -68,6 +67,7 @@ void main() async {
   packageInfo = await PackageInfo.fromPlatform();
 
   await wordbookTagsDao.loadTagsOrder();
+  await wordbookTagsDao.existTag();
 
   if (Platform.isAndroid) {
     PlatformMethod.initHandler();
@@ -174,7 +174,6 @@ class _DictionaryState extends State<Dictionary> {
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
         debugShowCheckedModeBanner: false,
-
       ),
     );
   }

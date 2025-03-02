@@ -48,12 +48,17 @@ class AppDatabase extends _$AppDatabase {
         from6To7: (m, schema) async {
           await m.addColumn(schema.dictionaryList, schema.dictionaryList.alias);
         },
+        from7To8: (m, schema) async {
+          await m.addColumn(schema.wordbook, schema.wordbook.createdAt);
+          await m.drop(schema.idxWordbook);
+          await m.createIndex(schema.idxWordbook);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 }
 
 class DictGroup extends Table {
@@ -197,10 +202,12 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
   }
 }
 
-@TableIndex(name: "idx_wordbook", columns: {#word})
+@TableIndex(name: "idx_wordbook", columns: {#word, #createdAt})
 class Wordbook extends Table {
   IntColumn get tag => integer().nullable()();
   TextColumn get word => text()();
+  DateTimeColumn get createdAt =>
+      dateTime().withDefault(Constant(DateTime.now()))();
 }
 
 @DriftAccessor(tables: [Wordbook])
@@ -218,6 +225,21 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   Future<int> addWord(String word, {int? tag = null}) {
     return into(wordbook)
         .insert(WordbookCompanion(tag: Value(tag), word: Value(word)));
+  }
+
+  Future<List<WordbookData>> getWordsByYearMonth(int year, int month,
+      {int? tag}) {
+    final startDate = DateTime(year, month, 1);
+    final endDate = DateTime(year, month + 1, 1);
+
+    final query = select(wordbook)
+      ..where((t) =>
+          t.createdAt.isBetweenValues(startDate, endDate) &
+          (tag == null ? t.tag.isNull() : t.tag.isValue(tag)))
+      ..orderBy(
+          [(t) => OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)]);
+
+    return query.get();
   }
 
   Future<List<WordbookData>> getAllWords() {

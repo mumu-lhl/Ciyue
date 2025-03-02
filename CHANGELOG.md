@@ -3,6 +3,86 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.5.0](https://github.com/mumu-lhl/Ciyue/compare/v1.4.0..v1.5.0) - 2025-03-02
+
+### Bug Fixes
+
+- context menu search doesn't work with capitalized word - ([bb8bb55](https://github.com/mumu-lhl/Ciyue/commit/bb8bb5569adbc27b167a07a701a35d1e820cd9ba)) - Mumulhl
+- fix sort with date filtering - ([7b813c1](https://github.com/mumu-lhl/Ciyue/commit/7b813c149a7da4050868ae626ece76ddbf76314e)) - Mumulhl
+
+### Features
+
+- **(i10n)** finish i10n - ([d6562c0](https://github.com/mumu-lhl/Ciyue/commit/d6562c0ede691f46d03d60959226a76f20f2331b)) - Mumulhl
+- **(ui)** group settings - ([d8e7399](https://github.com/mumu-lhl/Ciyue/commit/d8e7399696e4122c9eb15ef0b678dfacd1e3ceea)) - Mumulhl
+- add words to the wordbook with the date - ([56bbd0b](https://github.com/mumu-lhl/Ciyue/commit/56bbd0bb025b322575088d9d9568ff303a3115f0)) - Mumulhl
+- show date of words - ([732e277](https://github.com/mumu-lhl/Ciyue/commit/732e277f2eabf96e064a6273799ce46ef6deecba)) - Mumulhl
+- allow selecting date for filtering words - ([d2d4679](https://github.com/mumu-lhl/Ciyue/commit/d2d46795757822d412cc90d75f70f02e30620cb3)) - Mumulhl
+
+### Miscellaneous Chores
+
+- add shared_preferences to devtools - ([3ea4827](https://github.com/mumu-lhl/Ciyue/commit/3ea4827501200caeb634634bf6f6f798895f708c)) - Mumulhl
+
+### Refactoring
+
+- **(ui)** improve ui - ([3ae0548](https://github.com/mumu-lhl/Ciyue/commit/3ae05483a936d894c32359c89d63a8a85099d772)) - Mumulhl
+- rename file and class - ([becc956](https://github.com/mumu-lhl/Ciyue/commit/becc95692f49fcd880f54cd6b1982f7c6a8b337b)) - Mumulhl
+- improve performance - ([c49bac8](https://github.com/mumu-lhl/Ciyue/commit/c49bac87a48088da8269a3951e84997865c9aea2)) - Mumulhl
+
+### Style
+
+- format code - ([432cdd4](https://github.com/mumu-lhl/Ciyue/commit/432cdd40452c16bc5c09f41230a07029d7a36b6e)) - Mumulhl
+
+---
+## [1.4.0](https://github.com/mumu-lhl/Ciyue/compare/v1.3.1..v1.4.0) - 2025-02-23
+
+### Bug Fixes
+
+- handle empty values in tagsOrder parsing - ([8ba2c8e](https://github.com/mumu-lhl/Ciyue/commit/8ba2c8ede1deb3ca16cfb04eabfcff7ef254e698)) - Mumulhl
+- check for existing tags during initialization - ([d7d0af3](https://github.com/mumu-lhl/Ciyue/commit/d7d0af3488fa48b8343f91535c3fb22f387f434b)) - Mumulhl
+- fix long press on dictionary card non-selected - ([b62c911](https://github.com/mumu-lhl/Ciyue/commit/b62c911cf75e726d0d82c4702148a8aacfc50e6a)) - Mumulhl
+- fix escape string in dictionary title - ([abbd274](https://github.com/mumu-lhl/Ciyue/commit/abbd2745484a8d4a0e5cf2d53919092c7c067a0b)) - Mumulhl
+- display title when title in header is empty string - ([18f6692](https://github.com/mumu-lhl/Ciyue/commit/18f6692adcf5891e1e3f8aa4e61c777cc22345c7)) - Mumulhl
+
+### Documentation
+
+- **(README)** add Discord server link to README - ([2013cdf](https://github.com/mumu-lhl/Ciyue/commit/2013cdfdc4aa2210c96cbf7459c02b9f876ccec8)) - Mumulhl
+- **(README)** fix typo - ([7efa873](https://github.com/mumu-lhl/Ciyue/commit/7efa873e56ef29614f89e70481a5837acae8607b)) - Mumulhl
+
+### Features
+
+- support selecting tags for adding words to wordbook at home page - ([3af1a3b](https://github.com/mumu-lhl/Ciyue/commit/3af1a3b058ab85c45006080585fda5432f649b4c)) - Mumulhl
+- add dictionary groups localization for multiple languages - ([e664960](https://github.com/mumu-lhl/Ciyue/commit/e6649606d18769eb0d510ab16f4e1ccfb635c9e8)) - Mumulhl
+- add Discord link - ([91ed205](https://github.com/mumu-lhl/Ciyue/commit/91ed20531ac5cf036a02a5ead03bf386ad078676)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(deps)** bump path from 1.9.0 to 1.9.1 - ([c6beb76](https://github.com/mumu-lhl/Ciyue/commit/c6beb7602606e3fef87c6558d839f60f7703a648)) - dependabot[bot]
+- **(deps)** bump shared_preferences from 2.5.1 to 2.5.2 - ([b8c1ac6](https://github.com/mumu-lhl/Ciyue/commit/b8c1ac6ceb7e0a34b0e9d7de1998d910dc3aaf3e)) - dependabot[bot]
+- **(deps)** bump test from 1.25.8 to 1.25.15 - ([097f481](https://github.com/mumu-lhl/Ciyue/commit/097f481ba5f28806d6708d52b4355cc65deba26b)) - dependabot[bot]
+- **(deps)** bump drift from 2.25.0 to 2.25.1 - ([e58e811](https://github.com/mumu-lhl/Ciyue/commit/e58e8119ad55a07d40a8622a91fb98008bc8c6c0)) - dependabot[bot]
+- **(deps)** bump build_runner from 2.4.14 to 2.4.15 - ([25a91ca](https://github.com/mumu-lhl/Ciyue/commit/25a91caee4c2a9c24d98b88a935cf666c858de70)) - dependabot[bot]
+- **(deps)** downgrade dependencies in pubspec.lock and pubspec.yaml - ([32ceecf](https://github.com/mumu-lhl/Ciyue/commit/32ceecf9e4d92fd5a9a931fdb1ff3f929fa80378)) - Mumulhl
+
+### Refactoring
+
+- **(ui)** Ink Well animation with rounded corners - ([3d11791](https://github.com/mumu-lhl/Ciyue/commit/3d11791e149ff96d5c10a705e688f37b1866f0e8)) - Mumulhl
+- remove useless comment - ([fee2c57](https://github.com/mumu-lhl/Ciyue/commit/fee2c57ec414aa4f89605ebb6f163b5398d3b9dd)) - Mumulhl
+- simplify code - ([d58a760](https://github.com/mumu-lhl/Ciyue/commit/d58a7604d8592195978b677d4aa31616dbeaa655)) - Mumulhl
+- don't show not found dictionaries defaultly - ([9e3421e](https://github.com/mumu-lhl/Ciyue/commit/9e3421eabf406826030199577832bb615f77361b)) - Mumulhl
+
+### Revert
+
+- "Merge pull request #178 from mumu-lhl/fix-171" - ([cc4e4db](https://github.com/mumu-lhl/Ciyue/commit/cc4e4dbf1942dc8df8d170cceb1892da6d1378d5)) - Mumulhl
+
+### Style
+
+- format code - ([589161e](https://github.com/mumu-lhl/Ciyue/commit/589161e580908a492ff12bcccf95b457b684d46a)) - Mumulhl
+- improve search bar padding and update home page list item layout - ([3482f5a](https://github.com/mumu-lhl/Ciyue/commit/3482f5a4a77e99a3c956bd592b7dce360bc989eb)) - Mirpri
+- format code - ([86ff393](https://github.com/mumu-lhl/Ciyue/commit/86ff393a62a206781711357dc4e53f97afaa2f9f)) - Mumulhl
+- format code - ([14cb465](https://github.com/mumu-lhl/Ciyue/commit/14cb465be4a1ff7ef225af196c167c1842a0e746)) - Mumulhl
+- add comment - ([216332e](https://github.com/mumu-lhl/Ciyue/commit/216332e7b0e55169daa99e9df627c7d9ee7a3e58)) - Mumulhl
+
+---
 ## [1.3.1](https://github.com/mumu-lhl/Ciyue/compare/v1.3.0..v1.3.1) - 2025-02-16
 
 ### Bug Fixes

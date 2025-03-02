@@ -41,6 +41,10 @@
 
 词悦使用 WebView 显示单词，WebView 即使显示本地数据也需要 INTERNET 权限才能正常工作。
 
+## Discord
+
+[加入我们的 Discord 服务器](https://discord.gg/BazBZuvKZG) 来与社区联系！
+
 ## 翻译
 
 您可以到 [Weblate](https://hosted.weblate.org/engage/ciyue/) 添加语言或补齐翻译。
