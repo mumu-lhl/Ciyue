@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.5.0](https://github.com/mumu-lhl/Ciyue/compare/v1.4.0..v1.5.0) - 2025-03-02
+
+### Bug Fixes
+
+- context menu search doesn't work with capitalized word - ([bb8bb55](https://github.com/mumu-lhl/Ciyue/commit/bb8bb5569adbc27b167a07a701a35d1e820cd9ba)) - Mumulhl
+- fix sort with date filtering - ([7b813c1](https://github.com/mumu-lhl/Ciyue/commit/7b813c149a7da4050868ae626ece76ddbf76314e)) - Mumulhl
+
+### Features
+
+- **(i10n)** finish i10n - ([d6562c0](https://github.com/mumu-lhl/Ciyue/commit/d6562c0ede691f46d03d60959226a76f20f2331b)) - Mumulhl
+- **(ui)** group settings - ([d8e7399](https://github.com/mumu-lhl/Ciyue/commit/d8e7399696e4122c9eb15ef0b678dfacd1e3ceea)) - Mumulhl
+- add words to the wordbook with the date - ([56bbd0b](https://github.com/mumu-lhl/Ciyue/commit/56bbd0bb025b322575088d9d9568ff303a3115f0)) - Mumulhl
+- show date of words - ([732e277](https://github.com/mumu-lhl/Ciyue/commit/732e277f2eabf96e064a6273799ce46ef6deecba)) - Mumulhl
+- allow selecting date for filtering words - ([d2d4679](https://github.com/mumu-lhl/Ciyue/commit/d2d46795757822d412cc90d75f70f02e30620cb3)) - Mumulhl
+
+### Miscellaneous Chores
+
+- add shared_preferences to devtools - ([3ea4827](https://github.com/mumu-lhl/Ciyue/commit/3ea4827501200caeb634634bf6f6f798895f708c)) - Mumulhl
+
+### Refactoring
+
+- **(ui)** improve ui - ([3ae0548](https://github.com/mumu-lhl/Ciyue/commit/3ae05483a936d894c32359c89d63a8a85099d772)) - Mumulhl
+- rename file and class - ([becc956](https://github.com/mumu-lhl/Ciyue/commit/becc95692f49fcd880f54cd6b1982f7c6a8b337b)) - Mumulhl
+- improve performance - ([c49bac8](https://github.com/mumu-lhl/Ciyue/commit/c49bac87a48088da8269a3951e84997865c9aea2)) - Mumulhl
+
+### Style
+
+- format code - ([432cdd4](https://github.com/mumu-lhl/Ciyue/commit/432cdd40452c16bc5c09f41230a07029d7a36b6e)) - Mumulhl
+
+---
 ## [1.4.0](https://github.com/mumu-lhl/Ciyue/compare/v1.3.1..v1.4.0) - 2025-02-23
 
 ### Bug Fixes
