@@ -83,7 +83,7 @@ void main() async {
 
   if (Platform.isAndroid) {}
 
-  runApp(const Dictionary());
+  runApp(const Ciyue());
 }
 
 final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
@@ -141,14 +141,14 @@ final router = GoRouter(
 final WordbookDao wordbookDao = WordbookDao(mainDatabase);
 final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
 
-class Dictionary extends StatefulWidget {
-  const Dictionary({super.key});
+class Ciyue extends StatefulWidget {
+  const Ciyue({super.key});
 
   @override
-  State<Dictionary> createState() => _DictionaryState();
+  State<Ciyue> createState() => _CiyueState();
 }
 
-class _DictionaryState extends State<Dictionary> {
+class _CiyueState extends State<Ciyue> {
   @override
   Widget build(BuildContext context) {
     Locale? locale;
@@ -165,7 +165,7 @@ class _DictionaryState extends State<Dictionary> {
 
     return DynamicColorBuilder(
       builder: (lightColorScheme, darkColorScheme) => MaterialApp.router(
-        title: "Dictionary",
+        title: "Ciyue",
         theme: ThemeData(colorScheme: lightColorScheme),
         darkTheme: ThemeData(colorScheme: darkColorScheme),
         themeMode: settings.themeMode,
