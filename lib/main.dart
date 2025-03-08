@@ -82,15 +82,16 @@ void main() async {
     }
   }
 
-  if (Platform.isAndroid) {}
+  if (Platform.isWindows) {
+    accentColor = await DynamicColorPlugin.getAccentColor();
+  }
 
   runApp(const Ciyue());
 }
 
+late final Color? accentColor;
 final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
-
 final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
-
 late final FlutterTts flutterTts;
 final HistoryDao historyDao = HistoryDao(mainDatabase);
 final AppDatabase mainDatabase = appDatabase();
@@ -164,22 +165,48 @@ class _CiyueState extends State<Ciyue> {
       }
     }
 
-    return DynamicColorBuilder(
-      builder: (lightColorScheme, darkColorScheme) => MaterialApp.router(
-        title: "Ciyue",
-        theme: ThemeData(colorScheme: lightColorScheme),
-        darkTheme: ThemeData(colorScheme: darkColorScheme),
-        themeMode: settings.themeMode,
-        locale: locale,
-        localizationsDelegates: [
-          ...AppLocalizations.localizationsDelegates,
-          // Add custom delegate for Sardinian locale
-          const SardinianlLocalizationDelegate(),
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        routerConfig: router,
-        debugShowCheckedModeBanner: false,
-      ),
+    if (!Platform.isWindows) {
+      return DynamicColorBuilder(
+        builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+          ColorScheme? lightColorScheme;
+          ColorScheme? darkColorScheme;
+
+          if (lightDynamic != null && darkDynamic != null) {
+            lightColorScheme = lightDynamic.harmonized();
+            darkColorScheme = darkDynamic.harmonized();
+          }
+
+          return buildMaterialApp(lightColorScheme, darkColorScheme, locale);
+        },
+      );
+    } else {
+      final lightColorScheme = accentColor != null
+          ? ColorScheme.fromSeed(seedColor: accentColor!)
+          : null;
+      final darkColorScheme = accentColor != null
+          ? ColorScheme.fromSeed(
+              seedColor: accentColor!, brightness: Brightness.dark)
+          : null;
+
+      return buildMaterialApp(lightColorScheme, darkColorScheme, locale);
+    }
+  }
+
+  MaterialApp buildMaterialApp(ColorScheme? lightColorScheme,
+      ColorScheme? darkColorScheme, Locale? locale) {
+    return MaterialApp.router(
+      title: "Ciyue",
+      theme: ThemeData(colorScheme: lightColorScheme),
+      darkTheme: ThemeData(colorScheme: darkColorScheme),
+      themeMode: settings.themeMode,
+      locale: locale,
+      localizationsDelegates: [
+        ...AppLocalizations.localizationsDelegates,
+        const SardinianlLocalizationDelegate(),
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: router,
+      debugShowCheckedModeBanner: false,
     );
   }
 
