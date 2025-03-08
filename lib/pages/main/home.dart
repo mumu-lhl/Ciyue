@@ -225,6 +225,9 @@ class HomeScreen extends StatelessWidget {
           if (snapshot.hasData) {
             final searchResult = [for (final i in snapshot.data!) ...i];
             searchResult.sort((a, b) => a.key.compareTo(b.key));
+            searchResult.removeWhere((element) =>
+                searchResult.indexOf(element) !=
+                searchResult.lastIndexWhere((e) => e.key == element.key));
 
             final resultWidgets = <Widget>[];
 
