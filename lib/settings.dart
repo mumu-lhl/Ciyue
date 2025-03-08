@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
 
@@ -17,6 +19,8 @@ class _Settings {
   late bool showMoreOptionsButton;
   late bool notification;
   late bool skipTaggedWord;
+  late String aiProvider;
+  Map<String, Map<String, dynamic>> aiProviderConfigs = {};
 
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
@@ -31,6 +35,12 @@ class _Settings {
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
     skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
     language = prefs.getString("language") ?? "system";
+    aiProvider = prefs.getString("aiProvider") ?? "openai";
+
+    var aiProviderConfigsString = prefs.getString('aiProviderConfigs');
+    if (aiProviderConfigsString != null) {
+      aiProviderConfigs = Map.castFrom<dynamic, dynamic, String, Map<String, dynamic>>(jsonDecode(aiProviderConfigsString));
+    }
 
     final themeModeString = prefs.getString("themeMode");
     switch (themeModeString) {
@@ -41,5 +51,14 @@ class _Settings {
       case "system" || null:
         themeMode = ThemeMode.system;
     }
+  }
+
+  Map<String, dynamic> getAiProviderConfig(String provider) {
+    return aiProviderConfigs[provider] ?? {'model': '', 'apiKey': ''};
+  }
+
+  Future<void> saveAiProviderConfig(String provider, String model, String apiKey) async {
+    aiProviderConfigs[provider] = {'model': model, 'apiKey': apiKey};
+    await prefs.setString('aiProviderConfigs', jsonEncode(aiProviderConfigs));
   }
 }

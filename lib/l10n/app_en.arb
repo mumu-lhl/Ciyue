@@ -133,5 +133,11 @@
   "privacy": "Privacy",
   "@privacy": {},
   "aiSettings": "AI Settings",
-  "@aiSettings": {}
+  "@aiSettings": {},
+  "aiProvider": "AI Provider",
+  "@aiProvider": {},
+  "aiModel": "AI Model",
+  "@aiModel": {},
+  "apiKey": "API Key",
+  "@apiKey": {}
 }
