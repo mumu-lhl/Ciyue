@@ -131,5 +131,7 @@
   "appearance": "Appearance",
   "@appearance": {},
   "privacy": "Privacy",
-  "@privacy": {}
+  "@privacy": {},
+  "aiSettings": "AI Settings",
+  "@aiSettings": {}
 }
