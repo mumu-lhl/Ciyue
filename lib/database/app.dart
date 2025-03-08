@@ -54,7 +54,7 @@ class AppDatabase extends _$AppDatabase {
           await m.createIndex(schema.idxWordbook);
         },
         from8To9: (m, schema) async {
-          // No schema changes needed for version 9
+          await m.alterTable(TableMigration(schema.wordbook));
         },
       ),
     );
