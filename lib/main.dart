@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
+import "package:ciyue/localization_delegates.dart";
 import "package:ciyue/pages/auto_export.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
@@ -170,7 +171,11 @@ class _CiyueState extends State<Ciyue> {
         darkTheme: ThemeData(colorScheme: darkColorScheme),
         themeMode: settings.themeMode,
         locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: [
+          ...AppLocalizations.localizationsDelegates,
+          // Add custom delegate for Sardinian locale
+          const SardinianlLocalizationDelegate(),
+        ],
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
         debugShowCheckedModeBanner: false,
