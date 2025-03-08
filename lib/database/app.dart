@@ -53,12 +53,15 @@ class AppDatabase extends _$AppDatabase {
           await m.drop(schema.idxWordbook);
           await m.createIndex(schema.idxWordbook);
         },
+        from8To9: (m, schema) async {
+          // No schema changes needed for version 9
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 }
 
 class DictGroup extends Table {
@@ -206,8 +209,7 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
 class Wordbook extends Table {
   IntColumn get tag => integer().nullable()();
   TextColumn get word => text()();
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(Constant(DateTime.now()))();
+  DateTimeColumn get createdAt => dateTime()();
 }
 
 @DriftAccessor(tables: [Wordbook])
@@ -223,8 +225,8 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
 
   // ignore: avoid_init_to_null
   Future<int> addWord(String word, {int? tag = null}) {
-    return into(wordbook)
-        .insert(WordbookCompanion(tag: Value(tag), word: Value(word)));
+    return into(wordbook).insert(WordbookCompanion(
+        tag: Value(tag), word: Value(word), createdAt: Value(DateTime.now())));
   }
 
   Future<List<WordbookData>> getWordsByYearMonth(int year, int month,

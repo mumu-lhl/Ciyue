@@ -205,7 +205,11 @@ class Import extends StatelessWidget {
 
         final wordsData = <WordbookData>[];
         for (final i in wordsJson) {
-          wordsData.add(WordbookData.fromJson(i));
+          final json = Map<String, dynamic>.from(i);
+          if (!json.containsKey('createdAt')) {
+            json['createdAt'] = DateTime.now().toIso8601String();
+          }
+          wordsData.add(WordbookData.fromJson(json));
         }
 
         final tagsData = <WordbookTag>[];
