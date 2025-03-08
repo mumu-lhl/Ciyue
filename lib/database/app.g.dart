@@ -290,9 +290,7 @@ class $WordbookTable extends Wordbook
   @override
   late final drift.GeneratedColumn<DateTime> createdAt =
       drift.GeneratedColumn<DateTime>('created_at', aliasedName, false,
-          type: DriftSqlType.dateTime,
-          requiredDuringInsert: false,
-          defaultValue: drift.Constant(DateTime.now()));
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<drift.GeneratedColumn> get $columns => [tag, word, createdAt];
   @override
@@ -319,6 +317,8 @@ class $WordbookTable extends Wordbook
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
     }
     return context;
   }
@@ -442,9 +442,10 @@ class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
   WordbookCompanion.insert({
     this.tag = const drift.Value.absent(),
     required String word,
-    this.createdAt = const drift.Value.absent(),
+    required DateTime createdAt,
     this.rowid = const drift.Value.absent(),
-  }) : word = drift.Value(word);
+  })  : word = drift.Value(word),
+        createdAt = drift.Value(createdAt);
   static drift.Insertable<WordbookData> custom({
     drift.Expression<int>? tag,
     drift.Expression<String>? word,
@@ -1280,7 +1281,7 @@ typedef $$DictionaryListTableProcessedTableManager
 typedef $$WordbookTableCreateCompanionBuilder = WordbookCompanion Function({
   drift.Value<int?> tag,
   required String word,
-  drift.Value<DateTime> createdAt,
+  required DateTime createdAt,
   drift.Value<int> rowid,
 });
 typedef $$WordbookTableUpdateCompanionBuilder = WordbookCompanion Function({
@@ -1389,7 +1390,7 @@ class $$WordbookTableTableManager extends drift.RootTableManager<
           createCompanionCallback: ({
             drift.Value<int?> tag = const drift.Value.absent(),
             required String word,
-            drift.Value<DateTime> createdAt = const drift.Value.absent(),
+            required DateTime createdAt,
             drift.Value<int> rowid = const drift.Value.absent(),
           }) =>
               WordbookCompanion.insert(
