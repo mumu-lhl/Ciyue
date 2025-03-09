@@ -10,6 +10,13 @@ class AiSettings extends StatefulWidget {
   State<AiSettings> createState() => _AiSettingsState();
 }
 
+class ModelInfo {
+  final String originName;
+  final String shownName;
+
+  const ModelInfo(this.originName, this.shownName);
+}
+
 class _AiSettingsState extends State<AiSettings> {
   String _provider = "";
   String _model = "";
@@ -20,8 +27,23 @@ class _AiSettingsState extends State<AiSettings> {
     "gemini": "Gemini",
   };
   static const _models = {
-    "openai": ["gpt-3.5-turbo", "gpt-4"],
-    "gemini": ["gemini-pro"]
+    "openai": [
+      ModelInfo("gpt-4o-mini", "GPT-4o mini"),
+      ModelInfo("gpt-4o", "GPT-4o"),
+      ModelInfo("gpt-4.5-preview", "GPT-4.5 Preview"),
+      ModelInfo("o1", "o1"),
+      ModelInfo("o1-mini", "o1-mini"),
+      ModelInfo("o3-mini", "o3-mini"),
+    ],
+    "gemini": [
+      ModelInfo("gemini-2.0-flash", "Gemini 2.0 Flash"), 
+      ModelInfo("gemini-2.0-flash-lite", "Gemini 2.0 Flash Thinking Lite"),
+      ModelInfo("gemini-2.0-flash-thinking-exp-01-21", "Gemini 2.0 Flash Thinking"),
+      ModelInfo("gemini-2.0-pro-exp-02-05", "Gemini 2.0 Pro"),
+      ModelInfo("gemini-1.5-pro", "Gemini 1.5 Pro"),
+      ModelInfo("gemini-1.5-flash", "Gemini 1.5 Flash"),
+      ModelInfo("gemini-1.5-flash-8b", "Gemini 1.5 Flash-8B"),
+    ]
   };
 
   @override
@@ -81,7 +103,9 @@ class _AiSettingsState extends State<AiSettings> {
             ),
             SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _model == "" ? _models[_provider]![0] : _model,
+                value: _models[_provider]!.any((m) => m.originName == _model)
+                  ? _model 
+                  : _models[_provider]![0].originName,
               hint: Text(AppLocalizations.of(context)!.aiModel),
               padding: EdgeInsets.only(left: 8, right: 8),
               onChanged: (String? newValue) {
@@ -91,10 +115,10 @@ class _AiSettingsState extends State<AiSettings> {
                 });
               },
               items: _models[_provider]!
-                  .map<DropdownMenuItem<String>>((String value) {
+                  .map<DropdownMenuItem<String>>((ModelInfo value) {
                 return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
+                  value: value.originName,
+                  child: Text(value.shownName),
                 );
               }).toList(),
             ),
