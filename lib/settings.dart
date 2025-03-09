@@ -20,6 +20,7 @@ class _Settings {
   late bool notification;
   late bool skipTaggedWord;
   late String aiProvider;
+  late bool aiExplainWord;
   Map<String, Map<String, dynamic>> aiProviderConfigs = {};
 
   _Settings() {
@@ -36,6 +37,7 @@ class _Settings {
     skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
     language = prefs.getString("language") ?? "system";
     aiProvider = prefs.getString("aiProvider") ?? "openai";
+    aiExplainWord = prefs.getBool("aiExplainWord") ?? true;
 
     var aiProviderConfigsString = prefs.getString('aiProviderConfigs');
     if (aiProviderConfigsString != null) {

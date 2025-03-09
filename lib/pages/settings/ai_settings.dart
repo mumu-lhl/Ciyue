@@ -17,11 +17,21 @@ class ModelInfo {
   const ModelInfo(this.originName, this.shownName);
 }
 
-class _AiSettingsState extends State<AiSettings> {
-  String _provider = "";
-  String _model = "";
-  String _apiKey = "";
+class TitleText extends StatelessWidget {
+  final String text;
 
+  const TitleText(this.text, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    );
+  }
+}
+
+class _AiSettingsState extends State<AiSettings> {
   static const _providers = {
     "openai": "OpenAI",
     "gemini": "Gemini",
@@ -36,26 +46,20 @@ class _AiSettingsState extends State<AiSettings> {
       ModelInfo("o3-mini", "o3-mini"),
     ],
     "gemini": [
-      ModelInfo("gemini-2.0-flash", "Gemini 2.0 Flash"), 
+      ModelInfo("gemini-2.0-flash", "Gemini 2.0 Flash"),
       ModelInfo("gemini-2.0-flash-lite", "Gemini 2.0 Flash Thinking Lite"),
-      ModelInfo("gemini-2.0-flash-thinking-exp-01-21", "Gemini 2.0 Flash Thinking"),
+      ModelInfo(
+          "gemini-2.0-flash-thinking-exp-01-21", "Gemini 2.0 Flash Thinking"),
       ModelInfo("gemini-2.0-pro-exp-02-05", "Gemini 2.0 Pro"),
       ModelInfo("gemini-1.5-pro", "Gemini 1.5 Pro"),
       ModelInfo("gemini-1.5-flash", "Gemini 1.5 Flash"),
       ModelInfo("gemini-1.5-flash-8b", "Gemini 1.5 Flash-8B"),
     ]
   };
+  String _provider = "";
 
-  @override
-  void initState() {
-    super.initState();
-
-    _provider = settings.aiProvider;
-
-    final config = settings.getAiProviderConfig(_provider);
-    _model = config['model']!;
-    _apiKey = config['apiKey']!;
-  }
+  String _model = "";
+  String _apiKey = "";
 
   @override
   Widget build(BuildContext context) {
@@ -68,85 +72,127 @@ class _AiSettingsState extends State<AiSettings> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              AppLocalizations.of(context)!.aiProvider,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            TitleText(
+              AppLocalizations.of(context)!.aiSettings,
             ),
-            SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: _provider,
-              hint: Text(AppLocalizations.of(context)!.aiProvider),
-              padding: EdgeInsets.only(left: 8, right: 8),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _provider = newValue!;
-                  settings.aiProvider = newValue;
-                  prefs.setString('aiProvider', newValue);
-
-                  final config = settings.getAiProviderConfig(_provider);
-                  _model = config['model']!;
-                  _apiKey = config['apiKey']!;
-                });
-              },
-              items: _providers.keys.toList()
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(_providers[value]!),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 24),
-            Text(
+            const SizedBox(height: 12),
+            buildProvider(context),
+            const SizedBox(height: 24),
+            TitleText(
               AppLocalizations.of(context)!.aiModel,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-                value: _models[_provider]!.any((m) => m.originName == _model)
-                  ? _model 
-                  : _models[_provider]![0].originName,
-              hint: Text(AppLocalizations.of(context)!.aiModel),
-              padding: EdgeInsets.only(left: 8, right: 8),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _model = newValue ?? "";
-                  _saveAiProviderConfig();
-                });
-              },
-              items: _models[_provider]!
-                  .map<DropdownMenuItem<String>>((ModelInfo value) {
-                return DropdownMenuItem<String>(
-                  value: value.originName,
-                  child: Text(value.shownName),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 24),
-            Text(
+            const SizedBox(height: 12),
+            buildModel(context),
+            const SizedBox(height: 24),
+            TitleText(
               AppLocalizations.of(context)!.apiKey,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 12),
-            TextFormField(
-              key: ValueKey(_apiKey),
-              initialValue: _apiKey,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: AppLocalizations.of(context)!.apiKey,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              ),
-              onChanged: (value) {
-                _apiKey = value;
-                _saveAiProviderConfig();
-              },
-              obscureText: true,
-            )
+            const SizedBox(height: 12),
+            buildAPIKey(context),
+            const SizedBox(height: 24),
+            buildExplainWord(context),
           ],
         ),
       ),
     );
+  }
+
+  TextFormField buildAPIKey(BuildContext context) {
+    return TextFormField(
+      key: ValueKey(_apiKey),
+      initialValue: _apiKey,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(),
+        hintText: AppLocalizations.of(context)!.apiKey,
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      ),
+      onChanged: (value) {
+        _apiKey = value;
+        _saveAiProviderConfig();
+      },
+      obscureText: true,
+    );
+  }
+
+  Widget buildExplainWord(BuildContext context) {
+    return Row(
+      children: [
+        TitleText(
+          AppLocalizations.of(context)!.aiExplainWord,
+        ),
+        const Spacer(),
+        Switch(
+          value: settings.aiExplainWord,
+          onChanged: (value) {
+            setState(() {
+              settings.aiExplainWord = value;
+              prefs.setBool('aiExplainWord', value);
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  DropdownButtonFormField<String> buildModel(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      value: _models[_provider]!.any((m) => m.originName == _model)
+          ? _model
+          : _models[_provider]![0].originName,
+      hint: Text(AppLocalizations.of(context)!.aiModel),
+      padding: EdgeInsets.only(left: 8, right: 8),
+      onChanged: (String? newValue) {
+        setState(() {
+          _model = newValue ?? "";
+          _saveAiProviderConfig();
+        });
+      },
+      items:
+          _models[_provider]!.map<DropdownMenuItem<String>>((ModelInfo value) {
+        return DropdownMenuItem<String>(
+          value: value.originName,
+          child: Text(value.shownName),
+        );
+      }).toList(),
+    );
+  }
+
+  DropdownButtonFormField<String> buildProvider(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      value: _provider,
+      hint: Text(AppLocalizations.of(context)!.aiProvider),
+      padding: EdgeInsets.only(left: 8, right: 8),
+      onChanged: (String? newValue) {
+        setState(() {
+          _provider = newValue!;
+          settings.aiProvider = newValue;
+          prefs.setString('aiProvider', newValue);
+
+          final config = settings.getAiProviderConfig(_provider);
+          _model = config['model']!;
+          _apiKey = config['apiKey']!;
+        });
+      },
+      items: _providers.keys
+          .toList()
+          .map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(_providers[value]!),
+        );
+      }).toList(),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _provider = settings.aiProvider;
+
+    final config = settings.getAiProviderConfig(_provider);
+    _model = config['model']!;
+    _apiKey = config['apiKey']!;
   }
 
   void _saveAiProviderConfig() {

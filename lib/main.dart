@@ -56,6 +56,7 @@ void main() async {
     "skipTaggedWord",
     "aiProvider",
     "aiProviderConfigs",
+    "aiExplainWord",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");

@@ -139,5 +139,7 @@
   "aiModel": "AI Model",
   "@aiModel": {},
   "apiKey": "API Key",
-  "@apiKey": {}
+  "@apiKey": {},
+  "aiExplainWord": "AI Explain Word",
+  "@aiExplainWord": {}
 }
