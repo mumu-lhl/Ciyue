@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.6.0](https://github.com/mumu-lhl/Ciyue/compare/v1.5.0..v1.6.0) - 2025-03-09
+
+### Bug Fixes
+
+- fix word's date in wordbook - ([382d01d](https://github.com/mumu-lhl/Ciyue/commit/382d01d3bf2192e7946a49e18f3af73b8dcf5a55)) - Mumulhl
+- filter duplicate search results - ([dcb6a1c](https://github.com/mumu-lhl/Ciyue/commit/dcb6a1ceead81de7a012cab001df8b4ee70cf460)) - Mumulhl
+- fix Sardinian - ([6595f51](https://github.com/mumu-lhl/Ciyue/commit/6595f51dbd490f9e89a45193c7e8c8ec00c47f48)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(deps)** bump path from 1.9.0 to 1.9.1 - ([2c63401](https://github.com/mumu-lhl/Ciyue/commit/2c63401124852ba1cd869e24238ebeaac14e1ff3)) - dependabot[bot]
+- **(deps)** bump package_info_plus from 8.2.1 to 8.3.0 - ([367e739](https://github.com/mumu-lhl/Ciyue/commit/367e7390bfdf682740730a7f016caa51cdab46b3)) - dependabot[bot]
+- **(deps)** bump go_router from 14.8.0 to 14.8.1 - ([b0aa59c](https://github.com/mumu-lhl/Ciyue/commit/b0aa59c5e7c064ba9837d760743664c64bfcdf62)) - dependabot[bot]
+- **(deps)** downgrade path package - ([7e07a16](https://github.com/mumu-lhl/Ciyue/commit/7e07a16e52e52cf286700055ee2f3ddfbd1e95a7)) - Mumulhl
+
+### Refactoring
+
+- **(ui)** refactor dynamic color - ([3f11fa8](https://github.com/mumu-lhl/Ciyue/commit/3f11fa88a7ced05dd0588054c6ae0b41f32cea19)) - Mumulhl
+- update class name - ([1ec4d3a](https://github.com/mumu-lhl/Ciyue/commit/1ec4d3acae876a5efe8cb38cbaa71067c6ef67a7)) - Mumulhl
+- show more recommended dictionaries - ([b2278da](https://github.com/mumu-lhl/Ciyue/commit/b2278daaf2db71241ce11978b0c59fbba9aac5f0)) - Mumulhl
+
+### Tests
+
+- fix schema test - ([ed7c681](https://github.com/mumu-lhl/Ciyue/commit/ed7c681bda08e30151a95cbd0fa5f103ba3cea2d)) - Mumulhl
+
+---
 ## [1.5.0](https://github.com/mumu-lhl/Ciyue/compare/v1.4.0..v1.5.0) - 2025-03-02
 
 ### Bug Fixes

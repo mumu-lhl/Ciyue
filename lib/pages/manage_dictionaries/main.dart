@@ -10,6 +10,7 @@ import "package:flutter/material.dart";
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
+import "package:url_launcher/url_launcher.dart";
 
 late VoidCallback updateManageDictionariesPage;
 
@@ -30,11 +31,50 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     updateManageDictionariesPage = updateDictionaries;
   }
 
+  IconButton buildInfoButton(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.info),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(AppLocalizations.of(context)!.recommendedDictionaries),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text(
+                      AppLocalizations.of(context)!.recommendedDictionaries),
+                  trailing: const Icon(Icons.open_in_new),
+                  onTap: () => launchUrl(Uri.parse(
+                      "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries")),
+                ),
+                ListTile(
+                  title: const Text("FreeMDict Cloud"),
+                  trailing: const Icon(Icons.open_in_new),
+                  onTap: () => launchUrl(Uri.parse(
+                      "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs")),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => context.pop(),
+                child: Text(AppLocalizations.of(context)!.close),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(leading: buildReturnButton(context), actions: [
         if (Platform.isAndroid) buildUpdateButton(),
+        buildInfoButton(context),
         buildAddButton(context)
       ]),
       body: buildBody(context),

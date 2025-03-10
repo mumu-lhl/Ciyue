@@ -26,13 +26,22 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(locale!.addDictionary),
+          SizedBox(height: 16),
           ElevatedButton(
             child: Text(locale.recommendedDictionaries),
             onPressed: () async {
               await launchUrl(Uri.parse(
                   "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
             },
-          )
+          ),
+          SizedBox(height: 8),
+          ElevatedButton(
+            child: const Text("FreeMDict Cloud"),
+            onPressed: () async {
+              await launchUrl(Uri.parse(
+                  "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs"));
+            },
+          ),
         ],
       ));
     } else {
@@ -225,6 +234,9 @@ class HomeScreen extends StatelessWidget {
           if (snapshot.hasData) {
             final searchResult = [for (final i in snapshot.data!) ...i];
             searchResult.sort((a, b) => a.key.compareTo(b.key));
+            searchResult.removeWhere((element) =>
+                searchResult.indexOf(element) !=
+                searchResult.lastIndexWhere((e) => e.key == element.key));
 
             final resultWidgets = <Widget>[];
 

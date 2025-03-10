@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
+import "package:ciyue/localization_delegates.dart";
 import "package:ciyue/pages/auto_export.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
@@ -81,15 +82,16 @@ void main() async {
     }
   }
 
-  if (Platform.isAndroid) {}
+  if (Platform.isWindows) {
+    accentColor = await DynamicColorPlugin.getAccentColor();
+  }
 
-  runApp(const Dictionary());
+  runApp(const Ciyue());
 }
 
+late final Color? accentColor;
 final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
-
 final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
-
 late final FlutterTts flutterTts;
 final HistoryDao historyDao = HistoryDao(mainDatabase);
 final AppDatabase mainDatabase = appDatabase();
@@ -141,14 +143,14 @@ final router = GoRouter(
 final WordbookDao wordbookDao = WordbookDao(mainDatabase);
 final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
 
-class Dictionary extends StatefulWidget {
-  const Dictionary({super.key});
+class Ciyue extends StatefulWidget {
+  const Ciyue({super.key});
 
   @override
-  State<Dictionary> createState() => _DictionaryState();
+  State<Ciyue> createState() => _CiyueState();
 }
 
-class _DictionaryState extends State<Dictionary> {
+class _CiyueState extends State<Ciyue> {
   @override
   Widget build(BuildContext context) {
     Locale? locale;
@@ -163,18 +165,48 @@ class _DictionaryState extends State<Dictionary> {
       }
     }
 
-    return DynamicColorBuilder(
-      builder: (lightColorScheme, darkColorScheme) => MaterialApp.router(
-        title: "Dictionary",
-        theme: ThemeData(colorScheme: lightColorScheme),
-        darkTheme: ThemeData(colorScheme: darkColorScheme),
-        themeMode: settings.themeMode,
-        locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        routerConfig: router,
-        debugShowCheckedModeBanner: false,
-      ),
+    if (!Platform.isWindows) {
+      return DynamicColorBuilder(
+        builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+          ColorScheme? lightColorScheme;
+          ColorScheme? darkColorScheme;
+
+          if (lightDynamic != null && darkDynamic != null) {
+            lightColorScheme = lightDynamic.harmonized();
+            darkColorScheme = darkDynamic.harmonized();
+          }
+
+          return buildMaterialApp(lightColorScheme, darkColorScheme, locale);
+        },
+      );
+    } else {
+      final lightColorScheme = accentColor != null
+          ? ColorScheme.fromSeed(seedColor: accentColor!)
+          : null;
+      final darkColorScheme = accentColor != null
+          ? ColorScheme.fromSeed(
+              seedColor: accentColor!, brightness: Brightness.dark)
+          : null;
+
+      return buildMaterialApp(lightColorScheme, darkColorScheme, locale);
+    }
+  }
+
+  MaterialApp buildMaterialApp(ColorScheme? lightColorScheme,
+      ColorScheme? darkColorScheme, Locale? locale) {
+    return MaterialApp.router(
+      title: "Ciyue",
+      theme: ThemeData(colorScheme: lightColorScheme),
+      darkTheme: ThemeData(colorScheme: darkColorScheme),
+      themeMode: settings.themeMode,
+      locale: locale,
+      localizationsDelegates: [
+        ...AppLocalizations.localizationsDelegates,
+        const SardinianlLocalizationDelegate(),
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: router,
+      debugShowCheckedModeBanner: false,
     );
   }
 
