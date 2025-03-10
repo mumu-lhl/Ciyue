@@ -151,7 +151,7 @@ class _HomeState extends State<Home> {
 
   Padding buildMoreButton(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 10),
+      padding: const EdgeInsets.only(right: 8),
       child: IconButton(
         icon: const Icon(Icons.more_vert),
         onPressed: () async {
