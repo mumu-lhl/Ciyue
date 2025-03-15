@@ -100,3 +100,29 @@ jobs:
         with:
           name: Windows
           path: Ciyue.zip
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt install -y libgtk-3-dev
+          flutter pub get
+
+      - name: Build
+        run: flutter build linux
+
+      - name: Compression
+        run: tar -cJvf Ciyue.tar.xz build/linux/x64/release/bundle/*
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux
+          path: Ciyue.tar.xz
