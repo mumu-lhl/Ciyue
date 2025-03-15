@@ -20,10 +20,7 @@ jobs:
         run: flutter pub get
 
       - name: Format
-        run: dart format --output=none --set-exit-if-changed .
-
-      - name: Generate localization
-        run: flutter gen-l10n
+        run: find . -name '*.dart' -not -path './lib/src/generated/i18n/*' | xargs dart format --output=none --set-exit-if-changed
 
       - name: Analyze
         run: flutter analyze
@@ -49,9 +46,6 @@ jobs:
         run: |
           sudo apt install -y libsqlite3-dev
           flutter pub get
-
-      - name: Generate localization
-        run: flutter gen-l10n
 
       - name: Decode Keystore
         env:
@@ -89,9 +83,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate localization
-        run: flutter gen-l10n
-
       - name: Build exe
         run: flutter build windows
 
@@ -123,9 +114,6 @@ jobs:
         run: |
           sudo apt install -y libgtk-3-dev
           flutter pub get
-
-      - name: Generate localization
-        run: flutter gen-l10n
 
       - name: Build
         run: flutter build linux
