@@ -141,5 +141,19 @@
   "apiKey": "API Key",
   "@apiKey": {},
   "aiExplainWord": "AI Explain Word",
-  "@aiExplainWord": {}
+  "@aiExplainWord": {},
+  "outputType": "Output Type",
+  "@outputType": {},
+  "richOutput": "Rich Output",
+  "@richOutput": {},
+  "simpleOutput": "Simple Output",
+  "@simpleOutput": {},
+  "enterTextToTranslate": "Enter text to translate",
+  "@enterTextToTranslate": {},
+  "translate": "Translate",
+  "@translate": {},
+  "sourceLanguage": "Source Language",
+  "@sourceLanguage": {},
+  "targetLanguage": "Target Language",
+  "@targetLanguage": {}
 }

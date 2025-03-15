@@ -1,5 +1,6 @@
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/main/ai_translate_page.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/settings.dart";
 import "package:ciyue/pages/main/wordbook.dart";
@@ -54,6 +55,10 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     final page = [
       HomeScreen(searchWord: searchWord),
+      Center(
+          child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: const AiTranslatePage())),
       const WordBookScreen(),
       const SettingsScreen()
     ];
@@ -103,6 +108,9 @@ class _HomeState extends State<Home> {
       NavigationDestination(
           icon: const Icon(Icons.home),
           label: AppLocalizations.of(context)!.home),
+      NavigationDestination(
+          icon: const Icon(Icons.translate), // Add translate icon
+          label: 'Translate'), // Add translate label
       NavigationDestination(
           icon: const Icon(Icons.book),
           label: AppLocalizations.of(context)!.wordBook),
