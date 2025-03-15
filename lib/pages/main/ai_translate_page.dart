@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:ciyue/ai.dart';
 import 'package:ciyue/settings.dart';
 import 'package:flutter/material.dart';
@@ -14,10 +16,30 @@ class AiTranslatePage extends StatefulWidget {
 class _AiTranslatePageState extends State<AiTranslatePage> {
   String _inputText = '';
   String _translatedText = '';
-  String _sourceLanguage = 'English';
-  String _targetLanguage = 'Chinese';
+  String _sourceLanguage = 'auto';
+  String _targetLanguage = settings.language! == "system"
+      ? ui.PlatformDispatcher.instance.locale.languageCode
+      : settings.language!;
   bool _isRichOutput = true;
   bool _isLoading = false;
+
+  static const Map<String, String> _languageMap = {
+    'auto': 'Auto Detect',
+    'en': 'English',
+    'zh': '简体中文',
+    'zh_HK': '繁體中文（香港）',
+    'zh_TW': '正體中文（臺灣）',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'fr': 'French',
+    'de': 'German',
+    'es': 'Spanish',
+    'ru': 'Russian',
+  };
+
+  String _getLanguageName(String code) {
+    return _languageMap[code] ?? code;
+  }
 
   void _showMoreDialog() {
     showDialog<void>(
@@ -70,8 +92,8 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
       );
 
       final prompt = _isRichOutput
-          ? 'Translate the following text from $_sourceLanguage to $_targetLanguage. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in $_targetLanguage: $_inputText'
-          : 'Translate this $_sourceLanguage sentence to $_targetLanguage, only return the translated text: "$_inputText"';
+          ? 'Translate the following text from ${_languageMap[_sourceLanguage]} to ${_languageMap[_targetLanguage]}. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in ${_languageMap[_targetLanguage]}: $_inputText'
+          : 'Translate this ${_languageMap[_sourceLanguage]} sentence to ${_languageMap[_targetLanguage]}, only return the translated text: "$_inputText"';
       final translationResult = await ai.request(prompt);
 
       setState(() {
@@ -174,11 +196,11 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
               border: const OutlineInputBorder(),
             ),
             value: _sourceLanguage,
-            items: <String>['English', 'Chinese']
-                .map<DropdownMenuItem<String>>((String value) {
+            items: ['auto', 'en', 'zh', 'ja', 'ko', 'fr', 'de', 'es', 'ru']
+                .map<DropdownMenuItem<String>>((String code) {
               return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
+                value: code,
+                child: Text(_getLanguageName(code)),
               );
             }).toList(),
             onChanged: (String? newValue) {
@@ -196,11 +218,11 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
               border: const OutlineInputBorder(),
             ),
             value: _targetLanguage,
-            items: <String>['English', 'Chinese']
-                .map<DropdownMenuItem<String>>((String value) {
+            items: ['en', 'zh', 'zh_HK', 'zh_TW', 'ja', 'ko', 'fr', 'de', 'es', 'ru']
+                .map<DropdownMenuItem<String>>((String code) {
               return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
+                value: code,
+                child: Text(_getLanguageName(code)),
               );
             }).toList(),
             onChanged: (String? newValue) {
