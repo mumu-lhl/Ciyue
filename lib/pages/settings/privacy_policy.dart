@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:ciyue/src/generated/i18n/app_localizations.dart';
 
 class PrivacyPolicy extends StatelessWidget {
   const PrivacyPolicy({super.key});
@@ -8,7 +9,7 @@ class PrivacyPolicy extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Privacy Policy'),
+          title: Text(AppLocalizations.of(context)!.privacyPolicy),
           leading: BackButton(
             onPressed: () {
               Navigator.of(context).pop();
