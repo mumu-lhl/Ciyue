@@ -7,19 +7,22 @@ class PrivacyPolicy extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Privacy Policy'),
-        leading: BackButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+        appBar: AppBar(
+          title: const Text('Privacy Policy'),
+          leading: BackButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Markdown(
-          selectable: true,
-          data: '''## Definition
+        body: Center(
+            child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Markdown(
+              selectable: true,
+              data: '''## Definition
 
 In this agreement, "we" defined as the maintainers and contributors of Ciyue.
 
@@ -39,8 +42,8 @@ By using any third-party services Ciyue connects to, you agree to the respective
 
 We are not responsible for the data practices of these third-party services.
 ''',
-        ),
-      ),
-    );
+            ),
+          ),
+        )));
   }
 }
