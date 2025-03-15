@@ -9,6 +9,7 @@ import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/pages/manage_dictionaries/properties.dart";
 import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
 import "package:ciyue/pages/settings/ai_settings.dart";
+import "package:ciyue/pages/settings/terms_of_service.dart";
 import "package:ciyue/pages/settings/privacy_policy.dart";
 import "package:ciyue/pages/webview_display.dart";
 import "package:ciyue/platform.dart";
@@ -136,6 +137,9 @@ final router = GoRouter(
     GoRoute(
         path: "/settings/ai_settings",
         builder: (context, state) => const AiSettings()),
+    GoRoute(
+        path: "/settings/terms_of_service",
+        builder: (context, state) => const TermsOfService()),
     GoRoute(
         path: "/settings/privacy_policy",
         builder: (context, state) => const PrivacyPolicy()),

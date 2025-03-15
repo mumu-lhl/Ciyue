@@ -43,6 +43,19 @@ class About extends StatelessWidget {
   }
 }
 
+class TermsOfService extends StatelessWidget {
+  const TermsOfService({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.article),
+      title: Text(AppLocalizations.of(context)!.termsOfService),
+      onTap: () => context.push("/settings/terms_of_service"),
+    );
+  }
+}
+
 class PrivacyPolicy extends StatelessWidget {
   const PrivacyPolicy({super.key});
 
@@ -337,6 +350,7 @@ class SettingsScreen extends StatelessWidget {
         const GithubUrl(),
         const DiscordUrl(),
         const SponsorUrl(),
+        const TermsOfService(),
         const PrivacyPolicy(),
         const About(),
       ],
