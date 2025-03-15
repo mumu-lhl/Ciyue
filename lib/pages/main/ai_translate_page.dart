@@ -2,7 +2,7 @@ import 'package:ciyue/ai.dart';
 import 'package:ciyue/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import "package:flutter_gen/gen_l10n/app_localizations.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 
 class AiTranslatePage extends StatefulWidget {
   const AiTranslatePage({super.key});

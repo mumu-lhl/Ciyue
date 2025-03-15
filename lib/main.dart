@@ -15,7 +15,7 @@ import "package:ciyue/settings.dart";
 import "package:drift/drift.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
-import "package:flutter_gen/gen_l10n/app_localizations.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:go_router/go_router.dart";
 import "package:package_info_plus/package_info_plus.dart";
