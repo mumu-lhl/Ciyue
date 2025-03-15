@@ -9,7 +9,8 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get addDictionary => 'Пожалуйста, сначала добавьте MDX-словарь в настройках';
+  String get addDictionary =>
+      'Пожалуйста, сначала добавьте MDX-словарь в настройках';
 
   @override
   String get startToSearch => 'Начни искать слова :)';
@@ -126,7 +127,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get removeOneHistory => 'Удалить из истории';
 
   @override
-  String get removeOneHistoryConfirm => 'Вы уверены, что хотите удалить \'%s\' из истории?';
+  String get removeOneHistoryConfirm =>
+      'Вы уверены, что хотите удалить \'%s\' из истории?';
 
   @override
   String get clearHistory => 'Очистить историю';

@@ -9,7 +9,8 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get addDictionary => 'Bitte öffne zuerst ein MDX Wörterbuch in den Einstellungen';
+  String get addDictionary =>
+      'Bitte öffne zuerst ein MDX Wörterbuch in den Einstellungen';
 
   @override
   String get startToSearch => 'Beginne mit einer Wortsuche :)';
@@ -126,13 +127,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get removeOneHistory => 'Verlauf entfernen';
 
   @override
-  String get removeOneHistoryConfirm => 'Sind Sie sicher, dass Sie \'%s\' aus dem Verlauf entfernen wollen?';
+  String get removeOneHistoryConfirm =>
+      'Sind Sie sicher, dass Sie \'%s\' aus dem Verlauf entfernen wollen?';
 
   @override
   String get clearHistory => 'Verlauf leeren';
 
   @override
-  String get clearHistoryConfirm => 'Sind Sie sicher, dass Sie den Verlauf leeren wollen?';
+  String get clearHistoryConfirm =>
+      'Sind Sie sicher, dass Sie den Verlauf leeren wollen?';
 
   @override
   String get default_ => 'Default';

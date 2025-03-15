@@ -9,7 +9,8 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get addDictionary => 'Please add a MDX dictionary in the Settings first';
+  String get addDictionary =>
+      'Please add a MDX dictionary in the Settings first';
 
   @override
   String get startToSearch => 'Start going on a word search :)';
@@ -126,7 +127,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get removeOneHistory => 'Remove History';
 
   @override
-  String get removeOneHistoryConfirm => 'Are you sure you want to remove \'%s\' from history?';
+  String get removeOneHistoryConfirm =>
+      'Are you sure you want to remove \'%s\' from history?';
 
   @override
   String get clearHistory => 'Clear History';

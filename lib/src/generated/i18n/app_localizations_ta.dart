@@ -9,7 +9,8 @@ class AppLocalizationsTa extends AppLocalizations {
   AppLocalizationsTa([String locale = 'ta']) : super(locale);
 
   @override
-  String get addDictionary => 'முதலில் அமைப்புகளில் ஒரு MDX அகராதியைச் சேர்க்கவும்';
+  String get addDictionary =>
+      'முதலில் அமைப்புகளில் ஒரு MDX அகராதியைச் சேர்க்கவும்';
 
   @override
   String get startToSearch => 'ஒரு சொல் தேடலில் செல்லத் தொடங்குங்கள் :)';
@@ -126,7 +127,8 @@ class AppLocalizationsTa extends AppLocalizations {
   String get removeOneHistory => 'வரலாற்றை அகற்று';
 
   @override
-  String get removeOneHistoryConfirm => 'வரலாற்றிலிருந்து \'%s\' ஐ அகற்ற விரும்புகிறீர்களா?';
+  String get removeOneHistoryConfirm =>
+      'வரலாற்றிலிருந்து \'%s\' ஐ அகற்ற விரும்புகிறீர்களா?';
 
   @override
   String get clearHistory => 'வரலாற்றை அழி';

@@ -126,13 +126,15 @@ class AppLocalizationsNb extends AppLocalizations {
   String get removeOneHistory => 'Fjern historikk';
 
   @override
-  String get removeOneHistoryConfirm => 'Er du sikker på at du vil fjerne \'%s\' fra historikken?';
+  String get removeOneHistoryConfirm =>
+      'Er du sikker på at du vil fjerne \'%s\' fra historikken?';
 
   @override
   String get clearHistory => 'Tøm historikk';
 
   @override
-  String get clearHistoryConfirm => 'Er du sikker på at du vil tømme historikken?';
+  String get clearHistoryConfirm =>
+      'Er du sikker på at du vil tømme historikken?';
 
   @override
   String get default_ => 'Standard';

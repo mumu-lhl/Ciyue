@@ -9,7 +9,8 @@ class AppLocalizationsSc extends AppLocalizations {
   AppLocalizationsSc([String locale = 'sc']) : super(locale);
 
   @override
-  String get addDictionary => 'In antis annanghe unu ditzionàriu MDX in sas Impostatziones';
+  String get addDictionary =>
+      'In antis annanghe unu ditzionàriu MDX in sas Impostatziones';
 
   @override
   String get startToSearch => 'Incumintza a fàghere una chirca de paràulas :)';
@@ -126,7 +127,8 @@ class AppLocalizationsSc extends AppLocalizations {
   String get removeOneHistory => 'Boga s\'istòria';
 
   @override
-  String get removeOneHistoryConfirm => 'Ses seguru de bòlere bogare \'%s\' dae s\'istòria?';
+  String get removeOneHistoryConfirm =>
+      'Ses seguru de bòlere bogare \'%s\' dae s\'istòria?';
 
   @override
   String get clearHistory => 'Neta s\'istòria';

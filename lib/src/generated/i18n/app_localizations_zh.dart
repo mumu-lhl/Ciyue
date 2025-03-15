@@ -245,7 +245,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
 /// The translations for Chinese, as used in Hong Kong (`zh_HK`).
 class AppLocalizationsZhHk extends AppLocalizationsZh {
-  AppLocalizationsZhHk(): super('zh_HK');
+  AppLocalizationsZhHk() : super('zh_HK');
 
   @override
   String get addDictionary => '請先在設置中添加 MDX 詞典';
@@ -448,7 +448,7 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
 class AppLocalizationsZhTw extends AppLocalizationsZh {
-  AppLocalizationsZhTw(): super('zh_TW');
+  AppLocalizationsZhTw() : super('zh_TW');
 
   @override
   String get addDictionary => '請先在設定中新增 MDX 詞典';

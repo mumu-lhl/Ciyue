@@ -126,7 +126,8 @@ class AppLocalizationsFa extends AppLocalizations {
   String get removeOneHistory => 'حذف سابقه';
 
   @override
-  String get removeOneHistoryConfirm => 'آیا از حذف «%s» از سابقه اطمینان دارید؟';
+  String get removeOneHistoryConfirm =>
+      'آیا از حذف «%s» از سابقه اطمینان دارید؟';
 
   @override
   String get clearHistory => 'حذف سوابق';
