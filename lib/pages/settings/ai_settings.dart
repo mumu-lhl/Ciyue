@@ -47,7 +47,7 @@ class _AiSettingsState extends State<AiSettings> {
     ],
     "gemini": [
       ModelInfo("gemini-2.0-flash", "Gemini 2.0 Flash"),
-      ModelInfo("gemini-2.0-flash-lite", "Gemini 2.0 Flash Thinking Lite"),
+      ModelInfo("gemini-2.0-flash-lite", "Gemini 2.0 Flash Lite"),
       ModelInfo(
           "gemini-2.0-flash-thinking-exp-01-21", "Gemini 2.0 Flash Thinking"),
       ModelInfo("gemini-2.0-pro-exp-02-05", "Gemini 2.0 Pro"),
