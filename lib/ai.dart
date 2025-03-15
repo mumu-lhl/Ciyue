@@ -14,13 +14,17 @@ class AI {
     required this.apikey,
   }) {
     if (provider == 'openai') {
-      aiProvider = OpenAIProvider(apikey: apikey, model: model);
+      aiProvider = OpenAICompatibleProvider(
+        apikey: apikey,
+        model: model,
+        apiUrl: OpenAICompatibleProvider.defaultApiUrl,
+      );
     } else if (provider == 'gemini') {
       aiProvider = GeminiProvider(apikey: apikey, model: model);
     }
   }
 
-  Future<String> _request(String prompt) async {
+  Future<String> request(String prompt) async {
     return aiProvider.request(prompt);
   }
 }
@@ -79,13 +83,18 @@ class GeminiProvider extends AIProvider {
   }
 }
 
-class OpenAIProvider extends AIProvider {
-  static const String apiUrl = "https://api.openai.com/v1/chat/completions";
+class OpenAICompatibleProvider extends AIProvider {
+  static const String defaultApiUrl = "https://api.openai.com/v1/chat/completions";
 
   final String apikey;
   final String model;
+  final String apiUrl;
 
-  OpenAIProvider({required this.apikey, required this.model});
+  OpenAICompatibleProvider({
+    required this.apikey,
+    required this.model,
+    required this.apiUrl,
+  });
 
   @override
   Future<String> request(String prompt) async {
