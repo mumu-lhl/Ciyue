@@ -132,6 +132,8 @@
   "@appearance": {},
   "privacy": "Privacy",
   "@privacy": {},
+  "privacyPolicy": "Privacy Policy",
+  "@privacyPolicy": {},
   "aiSettings": "AI Settings",
   "@aiSettings": {},
   "aiProvider": "AI Provider",
