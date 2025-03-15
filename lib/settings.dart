@@ -41,7 +41,9 @@ class _Settings {
 
     var aiProviderConfigsString = prefs.getString('aiProviderConfigs');
     if (aiProviderConfigsString != null) {
-      aiProviderConfigs = Map.castFrom<dynamic, dynamic, String, Map<String, dynamic>>(jsonDecode(aiProviderConfigsString));
+      aiProviderConfigs =
+          Map.castFrom<dynamic, dynamic, String, Map<String, dynamic>>(
+              jsonDecode(aiProviderConfigsString));
     }
 
     final themeModeString = prefs.getString("themeMode");
@@ -59,7 +61,8 @@ class _Settings {
     return aiProviderConfigs[provider] ?? {'model': '', 'apiKey': ''};
   }
 
-  Future<void> saveAiProviderConfig(String provider, String model, String apiKey) async {
+  Future<void> saveAiProviderConfig(
+      String provider, String model, String apiKey) async {
     aiProviderConfigs[provider] = {'model': model, 'apiKey': apiKey};
     await prefs.setString('aiProviderConfigs', jsonEncode(aiProviderConfigs));
   }

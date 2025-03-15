@@ -133,8 +133,8 @@ final router = GoRouter(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),
     GoRoute(
-      path: "/settings/ai_settings",
-      builder: (context, state) => const AiSettings()),
+        path: "/settings/ai_settings",
+        builder: (context, state) => const AiSettings()),
     GoRoute(
         path: "/settings/:dictId",
         builder: (context, state) => SettingsDictionary(

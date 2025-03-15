@@ -84,7 +84,8 @@ class GeminiProvider extends AIProvider {
 }
 
 class OpenAICompatibleProvider extends AIProvider {
-  static const String defaultApiUrl = "https://api.openai.com/v1/chat/completions";
+  static const String defaultApiUrl =
+      "https://api.openai.com/v1/chat/completions";
 
   final String apikey;
   final String model;

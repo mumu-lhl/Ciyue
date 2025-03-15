@@ -266,7 +266,8 @@ class MoreOptionsButtonSwitch extends StatefulWidget {
   const MoreOptionsButtonSwitch({super.key});
 
   @override
-  State<MoreOptionsButtonSwitch> createState() => _MoreOptionsButtonSwitchState();
+  State<MoreOptionsButtonSwitch> createState() =>
+      _MoreOptionsButtonSwitchState();
 }
 
 class NotificationSwitch extends StatefulWidget {
