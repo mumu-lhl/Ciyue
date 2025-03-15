@@ -98,21 +98,26 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            buildInput(),
-            buildLanguageSelection(),
-            buildTranslateButton(),
-            if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 16.0),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            buildTranslatedText(),
-          ],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                buildInput(),
+                buildLanguageSelection(),
+                buildTranslateButton(),
+                if (_isLoading)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                buildTranslatedText(),
+              ],
+            ),
+          ),
         ),
       ),
     );

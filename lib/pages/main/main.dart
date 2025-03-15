@@ -55,10 +55,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     final page = [
       HomeScreen(searchWord: searchWord),
-      Center(
-          child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: const AiTranslatePage())),
+      const AiTranslatePage(),
       const WordBookScreen(),
       const SettingsScreen()
     ];
