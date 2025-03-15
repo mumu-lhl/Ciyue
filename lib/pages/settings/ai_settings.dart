@@ -36,6 +36,7 @@ class _AiSettingsState extends State<AiSettings> {
     "openai": "OpenAI",
     "gemini": "Gemini",
     "deepseek": "DeepSeek",
+    "anthropic": "Anthropic",
   };
   static const _models = {
     "openai": [
@@ -59,6 +60,14 @@ class _AiSettingsState extends State<AiSettings> {
     "deepseek": [
       ModelInfo("deepseek-chat", "DeepSeek Chat"),
       ModelInfo("deepseek-reasoner", "DeepSeek Reasoner"),
+    ],
+    "anthropic": [
+      ModelInfo("claude-3-7-sonnet-latest", "Claude 3.7 Sonnet"),
+      ModelInfo("claude-3-5-sonnet-latest", "Claude 3.5 Sonnet"),
+      ModelInfo("claude-3-sonnet-20240229", "Claude 3 Sonnet"),
+      ModelInfo("claude-3-5-haiku-latest", "Claude 3.5 Haiku"),
+      ModelInfo("claude-3-haiku-20240307", "Claude 3 Haiku"),
+      ModelInfo("claude-3-opus-latest", "Claude 3 Opus"),
     ]
   };
   String _provider = "";
