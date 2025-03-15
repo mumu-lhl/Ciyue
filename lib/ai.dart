@@ -21,6 +21,12 @@ class AI {
       );
     } else if (provider == 'gemini') {
       aiProvider = GeminiProvider(apikey: apikey, model: model);
+    } else if (provider == 'deepseek') {
+      aiProvider = OpenAICompatibleProvider(
+        apikey: apikey,
+        model: model,
+        apiUrl: 'https://api.deepseek.com/chat/completions',
+      );
     }
   }
 

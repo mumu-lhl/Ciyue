@@ -35,6 +35,7 @@ class _AiSettingsState extends State<AiSettings> {
   static const _providers = {
     "openai": "OpenAI",
     "gemini": "Gemini",
+    "deepseek": "DeepSeek",
   };
   static const _models = {
     "openai": [
@@ -54,6 +55,10 @@ class _AiSettingsState extends State<AiSettings> {
       ModelInfo("gemini-1.5-pro", "Gemini 1.5 Pro"),
       ModelInfo("gemini-1.5-flash", "Gemini 1.5 Flash"),
       ModelInfo("gemini-1.5-flash-8b", "Gemini 1.5 Flash-8B"),
+    ],
+    "deepseek": [
+      ModelInfo("deepseek-chat", "DeepSeek Chat"),
+      ModelInfo("deepseek-reasoner", "DeepSeek Reasoner"),
     ]
   };
   String _provider = "";
