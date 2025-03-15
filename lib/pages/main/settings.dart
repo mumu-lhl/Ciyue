@@ -43,6 +43,19 @@ class About extends StatelessWidget {
   }
 }
 
+class PrivacyPolicy extends StatelessWidget {
+  const PrivacyPolicy({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.security),
+      title: Text(AppLocalizations.of(context)!.privacyPolicy),
+      onTap: () => context.push("/settings/privacy_policy_page"),
+    );
+  }
+}
+
 class AiSettingsWidget extends StatelessWidget {
   const AiSettingsWidget({super.key});
 
@@ -324,6 +337,7 @@ class SettingsScreen extends StatelessWidget {
         const GithubUrl(),
         const DiscordUrl(),
         const SponsorUrl(),
+        const PrivacyPolicy(),
         const About(),
       ],
     );
