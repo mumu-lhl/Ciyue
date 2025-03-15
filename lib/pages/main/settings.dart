@@ -51,7 +51,7 @@ class PrivacyPolicy extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.security),
       title: Text(AppLocalizations.of(context)!.privacyPolicy),
-      onTap: () => context.push("/settings/privacy_policy_page"),
+      onTap: () => context.push("/settings/privacy_policy"),
     );
   }
 }
