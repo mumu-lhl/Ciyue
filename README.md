@@ -7,7 +7,7 @@
 
 English | [中文](./README_CN.md)
 
-A mdict dictionary with Android support
+A mdict dictionary with Android/Windows/Linux support
 
 ## Features
 

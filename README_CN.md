@@ -7,7 +7,7 @@
 
 [English](./README.md) | 中文
 
-支持 Android 的 mdict 词典。
+支持 Android/Windows/Linux 的 mdict 词典。
 
 ## 特点
 
