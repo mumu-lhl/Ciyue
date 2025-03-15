@@ -58,7 +58,7 @@ class _Settings {
   }
 
   Map<String, dynamic> getAiProviderConfig(String provider) {
-    return aiProviderConfigs[provider] ?? {'model': '', 'apiKey': ''};
+    return aiProviderConfigs[provider] ?? {'model': provider, 'apiKey': ''};
   }
 
   Future<void> saveAiProviderConfig(
