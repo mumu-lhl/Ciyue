@@ -15,12 +15,27 @@ class AI {
   }) {
     if (provider == 'openai') {
       aiProvider = OpenAICompatibleProvider(
+        provider: provider,
         apikey: apikey,
         model: model,
         apiUrl: OpenAICompatibleProvider.defaultApiUrl,
       );
+    } else if (provider == 'anthropic') {
+      aiProvider = OpenAICompatibleProvider(
+        provider: provider,
+        apikey: apikey,
+        model: model,
+        apiUrl: 'https://api.anthropic.com/v1/messages',
+      );
     } else if (provider == 'gemini') {
       aiProvider = GeminiProvider(apikey: apikey, model: model);
+    } else if (provider == 'deepseek') {
+      aiProvider = OpenAICompatibleProvider(
+        provider: provider,
+        apikey: apikey,
+        model: model,
+        apiUrl: 'https://api.deepseek.com/chat/completions',
+      );
     }
   }
 
@@ -87,11 +102,13 @@ class OpenAICompatibleProvider extends AIProvider {
   static const String defaultApiUrl =
       "https://api.openai.com/v1/chat/completions";
 
+  final String provider;
   final String apikey;
   final String model;
   final String apiUrl;
 
   OpenAICompatibleProvider({
+    required this.provider,
     required this.apikey,
     required this.model,
     required this.apiUrl,
@@ -102,8 +119,14 @@ class OpenAICompatibleProvider extends AIProvider {
     final dio = Dio();
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $apikey',
     };
+
+    if (provider == 'anthropic') {
+      headers['x-api-key'] = apikey;
+    } else {
+      headers['Authorization'] = 'Bearer $apikey';
+    }
+
     final data = {
       "model": model,
       "messages": [
