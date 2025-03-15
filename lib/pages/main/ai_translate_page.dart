@@ -200,7 +200,9 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
                 .map<DropdownMenuItem<String>>((String code) {
               return DropdownMenuItem<String>(
                 value: code,
-                child: Text(_getLanguageName(code)),
+                child: Text(_getLanguageName(code) == "Auto Detect"
+                    ? AppLocalizations.of(context)!.autoDetect
+                    : _getLanguageName(code)),
               );
             }).toList(),
             onChanged: (String? newValue) {

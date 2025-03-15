@@ -159,5 +159,7 @@
   "targetLanguage": "Target Language",
   "@targetLanguage": {},
   "termsOfService": "Terms of Service",
-  "@termsOfService": {}
+  "@termsOfService": {},
+  "autoDetect": "Auto Detect",
+  "@autoDetect": {}
 }
