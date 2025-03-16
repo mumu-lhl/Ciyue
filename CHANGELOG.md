@@ -3,6 +3,73 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.7.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.6.0..v1.7.0-beta.1) - 2025-03-16
+
+### Bug Fixes
+
+- open privacy policy - ([f8b488f](https://github.com/mumu-lhl/Ciyue/commit/f8b488f89827111f8dc2899ff8aa9674c2f8f77b)) - Mumulhl
+- fix model name - ([0f0cc48](https://github.com/mumu-lhl/Ciyue/commit/0f0cc481477971ec8a00a4154d885113e92365a1)) - Mumulhl
+
+### Documentation
+
+- update multi-platform support to README - ([89c6b38](https://github.com/mumu-lhl/Ciyue/commit/89c6b38ac23ee6ea2556200868a5931c0372f913)) - Mumulhl
+
+### Features
+
+- **(l10n)** add auto detect - ([a015c4c](https://github.com/mumu-lhl/Ciyue/commit/a015c4c73aa98fc44e1ce1462fbd1d28d6bb03c1)) - Mumulhl
+- **(l10n)** add new translation - ([26bfa79](https://github.com/mumu-lhl/Ciyue/commit/26bfa796384fb3f90d4d39c6032b3dff739ec69b)) - Mumulhl
+- **(translation)** translated using Weblate (Chinese (Traditional Han script)) - ([5a51678](https://github.com/mumu-lhl/Ciyue/commit/5a51678e51757bfc1396bd7d495c257a60d0ed6d)) - plum7x
+- **(translation)** translated using Weblate (English) - ([d93a5f0](https://github.com/mumu-lhl/Ciyue/commit/d93a5f0bc90dc8c01398162ebd88f1f355047080)) - Integral
+- **(translation)** translated using Weblate (Chinese (Simplified Han script)) - ([b3e7706](https://github.com/mumu-lhl/Ciyue/commit/b3e770675d3f508dd57a0737728fbb5d2cd2a312)) - Integral
+- **(translation)** translated using Weblate (Chinese (Traditional Han script, Hong Kong)) - ([d0f5042](https://github.com/mumu-lhl/Ciyue/commit/d0f50420adf8fb1aa448157f91baf42290c38818)) - Integral
+- **(translation)** translated using Weblate (Norwegian Bokmål) - ([6b3044f](https://github.com/mumu-lhl/Ciyue/commit/6b3044fd1ff4f3dc26bc403b974d407154467c8a)) - Integral
+- **(translation)** translated using Weblate (Russian) - ([7bdfde2](https://github.com/mumu-lhl/Ciyue/commit/7bdfde2819f2c362b2bf6dccfc54e9cf722e689d)) - Integral
+- **(translation)** translated using Weblate (Sardinian) - ([835dbca](https://github.com/mumu-lhl/Ciyue/commit/835dbcab468527280b53ecba9fba6c99d9afd5c1)) - Integral
+- **(translation)** translated using Weblate (Tamil) - ([741f7ea](https://github.com/mumu-lhl/Ciyue/commit/741f7ea0dceb5389372b5ce8041fe4e1360aafbf)) - Integral
+- **(translation)** translated using Weblate (Persian) - ([2ddabc4](https://github.com/mumu-lhl/Ciyue/commit/2ddabc4c11a8b4e44f366d0ada8da5a48ba1d533)) - Integral
+- **(translation)** translated using Weblate (German) - ([48eb51d](https://github.com/mumu-lhl/Ciyue/commit/48eb51d86215ca9c1b259672dbdde58a90c48968)) - Integral
+- add AI Settings page - ([971c6ea](https://github.com/mumu-lhl/Ciyue/commit/971c6ea375e4d6fa56ef1736b8d7d09ceb5885af)) - Mumulhl
+- implement AI configuration - ([2d00106](https://github.com/mumu-lhl/Ciyue/commit/2d0010653417d777a482e9916a05c758ee498544)) - Mumulhl
+- enhance AI model selection with detailed model information - ([e74f3ac](https://github.com/mumu-lhl/Ciyue/commit/e74f3ac4b72cb40e253ac67df708348b80f5c356)) - Mumulhl
+- add AI Explain Word settings - ([605497a](https://github.com/mumu-lhl/Ciyue/commit/605497a5f0701140cdafe1f305ab6d8650d170df)) - Mumulhl
+- implement AI provider classes for OpenAI and Gemini APIs - ([ff31cf5](https://github.com/mumu-lhl/Ciyue/commit/ff31cf529889e7b538e9feead2cd3b43b1d2efe1)) - Mumulhl
+- update OpenAI provider to support compatible API URL and rename class - ([36ddcc3](https://github.com/mumu-lhl/Ciyue/commit/36ddcc32a8ca7636e170c072653d10d413e54353)) - Mumulhl
+- add AI translate feature - ([908b767](https://github.com/mumu-lhl/Ciyue/commit/908b767b4b7d2b1a72ff2dcb80df6287dbc13d54)) - Mumulhl
+- add Privacy Policy - ([6e7e3fa](https://github.com/mumu-lhl/Ciyue/commit/6e7e3fa9cddb69caec1842944ef442881b3784b9)) - Mumulhl
+- add synthetic-package configuration to l10n.yaml - ([5c5dd50](https://github.com/mumu-lhl/Ciyue/commit/5c5dd50f2440059e1ec454d5a5cd11669bcc1c80)) - Mumulhl
+- add Terms of Service - ([5e4b282](https://github.com/mumu-lhl/Ciyue/commit/5e4b28217fcf5827318f4f000c71864d1de7ec49)) - Mumulhl
+- add more languages in Translate - ([35189a1](https://github.com/mumu-lhl/Ciyue/commit/35189a19b7443f408cb4a6e6bdd616df405ae049)) - Mumulhl
+- support Deepseek - ([52984b2](https://github.com/mumu-lhl/Ciyue/commit/52984b280a2d072d9fd740d791f970b9369979c2)) - Mumulhl
+- support Authropic - ([c3f5419](https://github.com/mumu-lhl/Ciyue/commit/c3f5419dc5326490794ef5eadb255d4559caaea0)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** add Linux build to workflow - ([a7754e6](https://github.com/mumu-lhl/Ciyue/commit/a7754e69f4cc075c27db4632a768b8ec9677028d)) - Integral
+- **(ci)** update flutter version - ([b51d946](https://github.com/mumu-lhl/Ciyue/commit/b51d946ef5ffb77f20958e555a6df99ed7bfc9d3)) - Mumulhl
+- **(ci)** fix ci - ([b9bff36](https://github.com/mumu-lhl/Ciyue/commit/b9bff36790ab6b416fe8afa44f4e6df8c15ef54e)) - Mumulhl
+- **(ci)** remove redundant localization generation steps from workflows - ([cad997d](https://github.com/mumu-lhl/Ciyue/commit/cad997dc7bd0b461f0a428348de4f0cba8e601bf)) - Mumulhl
+- **(ci)** fix ci - ([e7bf648](https://github.com/mumu-lhl/Ciyue/commit/e7bf648a0e74f5c62e115a8af636219c7bdc6c65)) - Mumulhl
+- **(deps)** bump drift from 2.25.1 to 2.26.0 - ([0616e0d](https://github.com/mumu-lhl/Ciyue/commit/0616e0d537b9b7b6d90ccb74db89ce5c4b0b12d5)) - dependabot[bot]
+- update package versions and sha256 checksums in pubspec.lock - ([5f7b305](https://github.com/mumu-lhl/Ciyue/commit/5f7b305f1da4e9e20a8f2b0d80d6499cc43283de)) - Mumulhl
+- update pubspec.lock and l10n - ([d3a1c69](https://github.com/mumu-lhl/Ciyue/commit/d3a1c69d33d2cc1096f5e4cd568c3a2078e3de95)) - Mumulhl
+- add generated files .gitignore - ([b67670b](https://github.com/mumu-lhl/Ciyue/commit/b67670b6e66c398f31bbfd958c7380c3df3efcc7)) - Mumulhl
+
+### Refactoring
+
+- **(ui)** improve layout of privacy policy page for better readability - ([ad1b4a9](https://github.com/mumu-lhl/Ciyue/commit/ad1b4a9ed71183df8b3ff4a14b0b2c37e0f1d90b)) - Mumulhl
+- **(ui)** center and constrain layout of AI Translate page for improved presentation - ([02d40b0](https://github.com/mumu-lhl/Ciyue/commit/02d40b0478fe84a21418b7d855d88f88f2fc662c)) - Mumulhl
+- move files to settings directory - ([c862c7d](https://github.com/mumu-lhl/Ciyue/commit/c862c7d66130daedb6b803ff4aa6770025cc9d2c)) - Mumulhl
+- update default model in AI provider config - ([cb1eb04](https://github.com/mumu-lhl/Ciyue/commit/cb1eb045dfa0bfbe10caa6018a01b01ea8497ff4)) - Mumulhl
+- refactor AI provider initialization and translate languages - ([c8d5216](https://github.com/mumu-lhl/Ciyue/commit/c8d5216a448a933bc44b8f544b66951838a6724b)) - Mumulhl
+- disable ai explain word switch - ([b548366](https://github.com/mumu-lhl/Ciyue/commit/b54836622888411716c85176bba7f185ad99c31a)) - Mumulhl
+
+### Style
+
+- format code - ([f672327](https://github.com/mumu-lhl/Ciyue/commit/f672327356f6130e31a7a30a36346872263ff2bc)) - Mumulhl
+- format code - ([f0ef90e](https://github.com/mumu-lhl/Ciyue/commit/f0ef90ecd0340de70e454a6ece789d0fcd56a31f)) - Mumulhl
+- format code - ([e16b801](https://github.com/mumu-lhl/Ciyue/commit/e16b801090e9a05813d62552b7660860957b2d07)) - Mumulhl
+
+---
 ## [1.6.0](https://github.com/mumu-lhl/Ciyue/compare/v1.5.0..v1.6.0) - 2025-03-09
 
 ### Bug Fixes
