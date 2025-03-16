@@ -104,7 +104,8 @@ class _AiSettingsState extends State<AiSettings> {
             const SizedBox(height: 12),
             buildAPIKey(context),
             const SizedBox(height: 24),
-            buildExplainWord(context),
+            // TODO: Enable in the future
+            // buildExplainWord(context),
           ],
         ),
       ),
