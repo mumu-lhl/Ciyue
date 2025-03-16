@@ -196,8 +196,8 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
               border: const OutlineInputBorder(),
             ),
             value: _sourceLanguage,
-            items: ['auto', 'en', 'zh', 'ja', 'ko', 'fr', 'de', 'es', 'ru']
-                .map<DropdownMenuItem<String>>((String code) {
+            items:
+                _languageMap.keys.map<DropdownMenuItem<String>>((String code) {
               return DropdownMenuItem<String>(
                 value: code,
                 child: Text(_getLanguageName(code) == "Auto Detect"
@@ -220,18 +220,9 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
               border: const OutlineInputBorder(),
             ),
             value: _targetLanguage,
-            items: [
-              'en',
-              'zh',
-              'zh_HK',
-              'zh_TW',
-              'ja',
-              'ko',
-              'fr',
-              'de',
-              'es',
-              'ru'
-            ].map<DropdownMenuItem<String>>((String code) {
+            items: _languageMap.keys
+                .where((code) => code != 'auto')
+                .map<DropdownMenuItem<String>>((String code) {
               return DropdownMenuItem<String>(
                 value: code,
                 child: Text(_getLanguageName(code)),

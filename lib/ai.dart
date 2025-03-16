@@ -13,28 +13,13 @@ class AI {
     required this.model,
     required this.apikey,
   }) {
-    if (provider == 'openai') {
-      aiProvider = OpenAICompatibleProvider(
-        provider: provider,
-        apikey: apikey,
-        model: model,
-        apiUrl: OpenAICompatibleProvider.defaultApiUrl,
-      );
-    } else if (provider == 'anthropic') {
-      aiProvider = OpenAICompatibleProvider(
-        provider: provider,
-        apikey: apikey,
-        model: model,
-        apiUrl: 'https://api.anthropic.com/v1/messages',
-      );
-    } else if (provider == 'gemini') {
+    if (provider == 'gemini') {
       aiProvider = GeminiProvider(apikey: apikey, model: model);
-    } else if (provider == 'deepseek') {
+    } else {
       aiProvider = OpenAICompatibleProvider(
         provider: provider,
         apikey: apikey,
         model: model,
-        apiUrl: 'https://api.deepseek.com/chat/completions',
       );
     }
   }
@@ -99,20 +84,24 @@ class GeminiProvider extends AIProvider {
 }
 
 class OpenAICompatibleProvider extends AIProvider {
-  static const String defaultApiUrl =
-      "https://api.openai.com/v1/chat/completions";
-
   final String provider;
   final String apikey;
   final String model;
-  final String apiUrl;
+  late final String apiUrl;
 
   OpenAICompatibleProvider({
     required this.provider,
     required this.apikey,
     required this.model,
-    required this.apiUrl,
-  });
+  }) {
+    if (provider == 'anthropic') {
+      apiUrl = 'https://api.anthropic.com/v1/complete';
+    } else if (provider == 'deepseek') {
+      apiUrl = 'https://api.deepseek.com/chat/completions';
+    } else {
+      apiUrl = 'https://api.openai.com/v1/chat/completions';
+    }
+  }
 
   @override
   Future<String> request(String prompt) async {
