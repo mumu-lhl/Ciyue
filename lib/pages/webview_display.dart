@@ -26,6 +26,9 @@ class AIExplainView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _targetLanguage = settings.language! == "system"
+        ? ui.PlatformDispatcher.instance.locale.languageCode
+        : settings.language!;
     final prompt =
         """You are a AI explain word tool called Ciyue(词悦). Generate a detailed explanation of the word "$word", including the following sections:
 
@@ -37,7 +40,7 @@ Synonyms: List at least three synonyms.
 Antonyms: List at least three antonyms.
 
 Format the response using Markdown to ensure each section is clearly organized with appropriate headings.
-The output is entirely and exclusively in Chinese.""";
+The output is entirely and exclusively in $_targetLanguage.""";
     final ai = AI(
       provider: settings.aiProvider,
       model: settings.getAiProviderConfig(settings.aiProvider)['model'] ?? '',
