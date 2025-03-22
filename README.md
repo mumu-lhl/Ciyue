@@ -11,7 +11,7 @@ A mdict dictionary with Android/Windows/Linux support.
 
 ## Features
 
-* 📄 Support MDX/MDD
+* 📄 Support MDX/MDD (not on Linux yet)
 * 🔍 Support multiple dictionaries search and display
 * 🎨 Support Material You
 * 🌐 AI Translate (Support OpenAI, Gemini, Deepseek...)
@@ -21,6 +21,7 @@ A mdict dictionary with Android/Windows/Linux support.
 ## Screenshots
 
 | <img alt="Home" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="Settings" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="Manage dictionaries" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="Display Word" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
+|-|-|-|-|
 
 ## Install
 

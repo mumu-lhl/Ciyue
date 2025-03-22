@@ -10,8 +10,7 @@
 支持 Android/Windows/Linux 的 mdict 词典。
 
 ## 特点
-
-* 📄 支持 MDX/MDD
+* 📄 支持 MDX/MDD (Linux 暂不支持)
 * 🔍 支持多词典搜索和显示
 * 🎨 支持 Material You
 * 🌐 AI 翻译 (支持 OpenAI, Gemini, Deepseek...)
@@ -21,6 +20,7 @@
 ## 截图
 
 | <img alt="主页" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="设置" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="管理词典" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="单词显示" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
+|-|-|-|-|
 
 ## 安装
 
