@@ -2,9 +2,17 @@ import 'dart:ui' as ui;
 
 import 'package:ciyue/ai.dart';
 import 'package:ciyue/settings.dart';
+import 'package:ciyue/src/generated/i18n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
-import 'package:ciyue/src/generated/i18n/app_localizations.dart';
+
+final TextEditingController _inputController = TextEditingController();
+String _inputText = '';
+String _sourceLanguage = 'auto';
+String _targetLanguage = settings.language! == "system"
+    ? ui.PlatformDispatcher.instance.locale.languageCode
+    : settings.language!;
+String _translatedText = '';
 
 class AiTranslatePage extends StatefulWidget {
   const AiTranslatePage({super.key});
@@ -14,15 +22,6 @@ class AiTranslatePage extends StatefulWidget {
 }
 
 class _AiTranslatePageState extends State<AiTranslatePage> {
-  String _inputText = '';
-  String _translatedText = '';
-  String _sourceLanguage = 'auto';
-  String _targetLanguage = settings.language! == "system"
-      ? ui.PlatformDispatcher.instance.locale.languageCode
-      : settings.language!;
-  bool _isRichOutput = true;
-  bool _isLoading = false;
-
   static const Map<String, String> _languageMap = {
     'auto': 'Auto Detect',
     'en': 'English',
@@ -36,6 +35,145 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     'es': 'Spanish',
     'ru': 'Russian',
   };
+  bool _isRichOutput = true;
+
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            tooltip: AppLocalizations.of(context)!.more,
+            onPressed: _showMoreDialog,
+          ),
+        ],
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                buildInput(),
+                buildLanguageSelection(),
+                buildTranslateButton(),
+                if (_isLoading)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                buildTranslatedText(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Padding buildInput() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextField(
+        controller: _inputController,
+        decoration: InputDecoration(
+          labelText: AppLocalizations.of(context)!.enterTextToTranslate,
+          border: const OutlineInputBorder(),
+        ),
+        maxLines: null, // Allow multiple lines
+        onChanged: (text) {
+          setState(() {
+            _inputText = text;
+          });
+        },
+      ),
+    );
+  }
+
+  Row buildLanguageSelection() {
+    return Row(
+      children: [
+        Expanded(
+          child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.sourceLanguage,
+              border: const OutlineInputBorder(),
+            ),
+            value: _sourceLanguage,
+            items:
+                _languageMap.keys.map<DropdownMenuItem<String>>((String code) {
+              return DropdownMenuItem<String>(
+                value: code,
+                child: Text(_getLanguageName(code) == "Auto Detect"
+                    ? AppLocalizations.of(context)!.autoDetect
+                    : _getLanguageName(code)),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _sourceLanguage = newValue!;
+              });
+            },
+          ),
+        ),
+        const SizedBox(width: 16.0),
+        Expanded(
+          child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.targetLanguage,
+              border: const OutlineInputBorder(),
+            ),
+            value: _targetLanguage,
+            items: _languageMap.keys
+                .where((code) => code != 'auto')
+                .map<DropdownMenuItem<String>>((String code) {
+              return DropdownMenuItem<String>(
+                value: code,
+                child: Text(_getLanguageName(code)),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _targetLanguage = newValue!;
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Padding buildTranslateButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: ElevatedButton(
+        onPressed: _inputText.isEmpty
+            ? null
+            : _translateText, // Disable button if input is empty
+        child: Text(AppLocalizations.of(context)!.translate),
+      ),
+    );
+  }
+
+  Expanded buildTranslatedText() {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 16.0),
+        child: SingleChildScrollView(
+          child: SelectionArea(
+            child: GptMarkdown(
+              _translatedText,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   String _getLanguageName(String code) {
     return _languageMap[code] ?? code;
@@ -106,140 +244,5 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
         _isLoading = false;
       });
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            tooltip: AppLocalizations.of(context)!.more,
-            onPressed: _showMoreDialog,
-          ),
-        ],
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                buildInput(),
-                buildLanguageSelection(),
-                buildTranslateButton(),
-                if (_isLoading)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                buildTranslatedText(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Padding buildInput() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: TextField(
-        decoration: InputDecoration(
-          labelText: AppLocalizations.of(context)!.enterTextToTranslate,
-          border: const OutlineInputBorder(),
-        ),
-        maxLines: null, // Allow multiple lines
-        onChanged: (text) {
-          setState(() {
-            _inputText = text;
-          });
-        },
-      ),
-    );
-  }
-
-  Expanded buildTranslatedText() {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 16.0),
-        child: SingleChildScrollView(
-          child: SelectionArea(
-            child: GptMarkdown(
-              _translatedText,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Padding buildTranslateButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: ElevatedButton(
-        onPressed: _inputText.isEmpty
-            ? null
-            : _translateText, // Disable button if input is empty
-        child: Text(AppLocalizations.of(context)!.translate),
-      ),
-    );
-  }
-
-  Row buildLanguageSelection() {
-    return Row(
-      children: [
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.sourceLanguage,
-              border: const OutlineInputBorder(),
-            ),
-            value: _sourceLanguage,
-            items:
-                _languageMap.keys.map<DropdownMenuItem<String>>((String code) {
-              return DropdownMenuItem<String>(
-                value: code,
-                child: Text(_getLanguageName(code) == "Auto Detect"
-                    ? AppLocalizations.of(context)!.autoDetect
-                    : _getLanguageName(code)),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _sourceLanguage = newValue!;
-              });
-            },
-          ),
-        ),
-        const SizedBox(width: 16.0),
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.targetLanguage,
-              border: const OutlineInputBorder(),
-            ),
-            value: _targetLanguage,
-            items: _languageMap.keys
-                .where((code) => code != 'auto')
-                .map<DropdownMenuItem<String>>((String code) {
-              return DropdownMenuItem<String>(
-                value: code,
-                child: Text(_getLanguageName(code)),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _targetLanguage = newValue!;
-              });
-            },
-          ),
-        ),
-      ],
-    );
   }
 }
