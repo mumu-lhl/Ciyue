@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
 
 final TextEditingController _inputController = TextEditingController();
-String _inputText = '';
 String _sourceLanguage = 'auto';
 String _targetLanguage = settings.language! == "system"
     ? ui.PlatformDispatcher.instance.locale.languageCode
@@ -86,10 +85,8 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
           border: const OutlineInputBorder(),
         ),
         maxLines: null, // Allow multiple lines
-        onChanged: (text) {
-          setState(() {
-            _inputText = text;
-          });
+        onChanged: (String value) {
+          setState(() {});
         },
       ),
     );
@@ -152,9 +149,7 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: ElevatedButton(
-        onPressed: _inputText.isEmpty
-            ? null
-            : _translateText, // Disable button if input is empty
+        onPressed: _inputController.text.isEmpty ? null : _translateText,
         child: Text(AppLocalizations.of(context)!.translate),
       ),
     );
@@ -230,8 +225,8 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
       );
 
       final prompt = _isRichOutput
-          ? 'Translate the following text from ${_languageMap[_sourceLanguage]} to ${_languageMap[_targetLanguage]}. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in ${_languageMap[_targetLanguage]}: $_inputText'
-          : 'Translate this ${_languageMap[_sourceLanguage]} sentence to ${_languageMap[_targetLanguage]}, only return the translated text: "$_inputText"';
+          ? 'Translate the following text from ${_languageMap[_sourceLanguage]} to ${_languageMap[_targetLanguage]}. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in ${_languageMap[_targetLanguage]}: ${_inputController.text}'
+          : 'Translate this ${_languageMap[_sourceLanguage]} sentence to ${_languageMap[_targetLanguage]}, only return the translated text: "${_inputController.text}"';
       final translationResult = await ai.request(prompt);
 
       setState(() {
