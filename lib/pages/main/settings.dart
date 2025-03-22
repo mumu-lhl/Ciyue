@@ -346,7 +346,8 @@ class SettingsScreen extends StatelessWidget {
         const Import(),
         TitleDivider(title: AppLocalizations.of(context)!.history),
         const ClearHistory(),
-        const Divider(indent: 16, endIndent: 16),
+        TitleDivider(title: AppLocalizations.of(context)!.update),
+        const PrereleaseUpdatesSwitch(),
         const CheckForUpdates(),
         const Divider(indent: 16, endIndent: 16),
         const Feedback(),
@@ -499,6 +500,32 @@ class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
   }
 }
 
+class PrereleaseUpdatesSwitch extends StatefulWidget {
+  const PrereleaseUpdatesSwitch({super.key});
+
+  @override
+  State<PrereleaseUpdatesSwitch> createState() =>
+      _PrereleaseUpdatesSwitchState();
+}
+
+class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.includePrerelease),
+      value: settings.includePrereleaseUpdates,
+      onChanged: (value) async {
+        await prefs.setBool('includePrereleaseUpdates', value);
+        setState(() {
+          settings.includePrereleaseUpdates = value;
+        });
+      },
+      secondary: const Icon(Icons.settings_suggest_outlined),
+    );
+  }
+}
+
 class CheckForUpdates extends StatelessWidget {
   const CheckForUpdates({super.key});
 
@@ -508,12 +535,22 @@ class CheckForUpdates extends StatelessWidget {
         leading: const Icon(Icons.update),
         title: Text(AppLocalizations.of(context)!.checkForUpdates),
         onTap: () async {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.checkingForUpdates),
+            ),
+          );
           try {
             final response = await Dio().get(
-              'https://api.github.com/repos/mumu-lhl/Ciyue/releases/latest',
+              settings.includePrereleaseUpdates
+                  ? 'https://api.github.com/repos/mumu-lhl/Ciyue/releases'
+                  : 'https://api.github.com/repos/mumu-lhl/Ciyue/releases/latest',
             );
             if (response.statusCode == 200) {
-              final latestVersion = response.data['tag_name']
+              final latestRelease = settings.includePrereleaseUpdates
+                  ? response.data[0]
+                  : response.data;
+              final latestVersion = latestRelease['tag_name']
                   .toString()
                   .substring(1); // Remove 'v' prefix
               if (latestVersion != packageInfo.version) {

@@ -18,6 +18,7 @@ class _Settings {
   late bool showSidebarIcon;
   late bool showMoreOptionsButton;
   late bool notification;
+  late bool includePrereleaseUpdates;
   late bool skipTaggedWord;
   late String aiProvider;
   late bool aiExplainWord;
@@ -34,6 +35,7 @@ class _Settings {
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
+    includePrereleaseUpdates = prefs.getBool('includePrereleaseUpdates') ?? false;
     skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
     language = prefs.getString("language") ?? "system";
     aiProvider = prefs.getString("aiProvider") ?? "openai";
