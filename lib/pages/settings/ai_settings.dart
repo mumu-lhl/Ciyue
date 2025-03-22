@@ -86,26 +86,32 @@ class _AiSettingsState extends State<AiSettings> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // AI Provider
             TitleText(
               AppLocalizations.of(context)!.aiSettings,
             ),
             const SizedBox(height: 12),
             buildProvider(context),
             const SizedBox(height: 24),
+
+            // AI Model
             TitleText(
               AppLocalizations.of(context)!.aiModel,
             ),
             const SizedBox(height: 12),
             buildModel(context),
             const SizedBox(height: 24),
+
+            // API Key
             TitleText(
               AppLocalizations.of(context)!.apiKey,
             ),
             const SizedBox(height: 12),
             buildAPIKey(context),
             const SizedBox(height: 24),
-            // TODO: Enable in the future
-            // buildExplainWord(context),
+
+            // Explain Word
+            buildExplainWord(context),
           ],
         ),
       ),
