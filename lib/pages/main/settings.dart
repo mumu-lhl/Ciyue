@@ -6,6 +6,7 @@ import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
+import "package:dio/dio.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -346,6 +347,8 @@ class SettingsScreen extends StatelessWidget {
         TitleDivider(title: AppLocalizations.of(context)!.history),
         const ClearHistory(),
         const Divider(indent: 16, endIndent: 16),
+        const CheckForUpdates(),
+        const Divider(indent: 16, endIndent: 16),
         const Feedback(),
         const GithubUrl(),
         const DiscordUrl(),
@@ -493,6 +496,80 @@ class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
       },
       secondary: const Icon(Icons.more_vert),
     );
+  }
+}
+
+class CheckForUpdates extends StatelessWidget {
+  const CheckForUpdates({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+        leading: const Icon(Icons.update),
+        title: Text(AppLocalizations.of(context)!.checkForUpdates),
+        onTap: () async {
+          try {
+            final response = await Dio().get(
+              'https://api.github.com/repos/mumu-lhl/Ciyue/releases/latest',
+            );
+            if (response.statusCode == 200) {
+              final latestVersion = response.data['tag_name']
+                  .toString()
+                  .substring(1); // Remove 'v' prefix
+              if (latestVersion != packageInfo.version) {
+                if (context.mounted) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title:
+                          Text(AppLocalizations.of(context)!.updateAvailable),
+                      content: Text(
+                        AppLocalizations.of(context)!
+                            .updateAvailableContent
+                            .replaceFirst("%s", latestVersion),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          child: Text(AppLocalizations.of(context)!.close),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            final url =
+                                'https://github.com/mumu-lhl/Ciyue/releases/latest';
+                            if (await canLaunchUrl(Uri.parse(url))) {
+                              launchUrl(Uri.parse(url));
+                            }
+                            if (context.mounted) context.pop();
+                          },
+                          child: Text(AppLocalizations.of(context)!.update),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text(AppLocalizations.of(context)!.noUpdateAvailable),
+                    ),
+                  );
+                }
+              }
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content:
+                      Text(AppLocalizations.of(context)!.updateCheckFailed),
+                ),
+              );
+            }
+          }
+        });
   }
 }
 
