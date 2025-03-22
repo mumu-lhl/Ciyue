@@ -106,8 +106,8 @@ class _HomeState extends State<Home> {
           icon: const Icon(Icons.home),
           label: AppLocalizations.of(context)!.home),
       NavigationDestination(
-          icon: const Icon(Icons.translate), // Add translate icon
-          label: 'Translate'), // Add translate label
+          icon: const Icon(Icons.translate),
+          label: AppLocalizations.of(context)!.translate),
       NavigationDestination(
           icon: const Icon(Icons.book),
           label: AppLocalizations.of(context)!.wordBook),
