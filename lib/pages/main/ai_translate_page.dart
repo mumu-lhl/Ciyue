@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
 
 final TextEditingController _inputController = TextEditingController();
+bool _isRichOutput = true;
 String _sourceLanguage = 'auto';
 String _targetLanguage = settings.language! == "system"
     ? ui.PlatformDispatcher.instance.locale.languageCode
@@ -34,7 +35,6 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     'es': 'Spanish',
     'ru': 'Russian',
   };
-  bool _isRichOutput = true;
 
   bool _isLoading = false;
 
