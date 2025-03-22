@@ -161,5 +161,21 @@
   "termsOfService": "Условия использования",
   "@termsOfService": {},
   "autoDetect": "Автоматическое определение",
-  "@autoDetect": {}
+  "@autoDetect": {},
+  "checkForUpdates": "Проверить обновления",
+  "@checkForUpdates": {},
+  "updateAvailable": "Доступно обновление",
+  "@updateAvailable": {},
+  "updateAvailableContent": "Доступна новая версия %s. Хотите обновить?",
+  "@updateAvailableContent": {},
+  "update": "Обновить",
+  "@update": {},
+  "noUpdateAvailable": "Нет доступных обновлений",
+  "@noUpdateAvailable": {},
+  "updateCheckFailed": "Проверка обновлений не удалась",
+  "@updateCheckFailed": {},
+  "includePrerelease": "Включить предварительные версии",
+  "@includePrerelease": {},
+  "checkingForUpdates": "Проверка обновлений...",
+  "@checkingForUpdates": {}
 }

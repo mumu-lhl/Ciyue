@@ -59,6 +59,7 @@ void main() async {
     "aiProvider",
     "aiProviderConfigs",
     "aiExplainWord",
+    "includePrereleaseUpdates",
   }));
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");

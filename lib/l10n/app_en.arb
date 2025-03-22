@@ -161,5 +161,21 @@
   "termsOfService": "Terms of Service",
   "@termsOfService": {},
   "autoDetect": "Auto Detect",
-  "@autoDetect": {}
+  "@autoDetect": {},
+  "checkForUpdates": "Check for Updates",
+  "@checkForUpdates": {},
+  "updateAvailable": "Update Available",
+  "@updateAvailable": {},
+  "updateAvailableContent": "New version %s is available. Do you want to update?",
+  "@updateAvailableContent": {},
+  "update": "Update",
+  "@update": {},
+  "noUpdateAvailable": "No update available",
+  "@noUpdateAvailable": {},
+  "updateCheckFailed": "Check update failed",
+  "@updateCheckFailed": {},
+  "includePrerelease": "Include Prerelease Updates",
+  "@includePrerelease": {},
+  "checkingForUpdates": "Checking for updates...",
+  "@checkingForUpdates": {}
 }

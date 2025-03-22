@@ -161,5 +161,21 @@
   "termsOfService": "Vilkår for bruk",
   "@termsOfService": {},
   "autoDetect": "Automatisk gjenkjenning",
-  "@autoDetect": {}
+  "@autoDetect": {},
+  "checkForUpdates": "Se etter oppdateringer",
+  "@checkForUpdates": {},
+  "updateAvailable": "Oppdatering tilgjengelig",
+  "@updateAvailable": {},
+  "updateAvailableContent": "Ny versjon %s er tilgjengelig. Vil du oppdatere?",
+  "@updateAvailableContent": {},
+  "update": "Oppdater",
+  "@update": {},
+  "noUpdateAvailable": "Ingen oppdatering tilgjengelig",
+  "@noUpdateAvailable": {},
+  "updateCheckFailed": "Sjekk av oppdatering mislyktes",
+  "@updateCheckFailed": {},
+  "includePrerelease": "Inkluder forhåndsutgivelser",
+  "@includePrerelease": {},
+  "checkingForUpdates": "Ser etter oppdateringer...",
+  "@checkingForUpdates": {}
 }
