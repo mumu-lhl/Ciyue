@@ -7,20 +7,19 @@
 
 English | [中文](./README_CN.md)
 
-A mdict dictionary with Android/Windows/Linux support
+A mdict dictionary with Android/Windows/Linux support.
 
 ## Features
 
 * 📄 Support MDX/MDD
 * 🔍 Support multiple dictionaries search and display
 * 🎨 Support Material You
+* 🌐 AI Translate (Support OpenAI, Gemini, Deepseek...)
 * 🔈 Support reading aloud
 * 🔖 Bookmarking words to the word book
 
 ## Screenshots
 
-|||||
-|--|--|--|--|
 | <img alt="Home" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="Settings" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="Manage dictionaries" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="Display Word" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
 
 ## Install

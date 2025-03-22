@@ -5,5 +5,6 @@
 * 📄 支持 MDX/MDD
 * 🔍 支持多词典搜索和显示
 * 🎨 支持 Material You
+* 🌐 AI 翻译 (支持 OpenAI, Gemini, Deepseek...)
 * 🔈 支持朗读
 * 🔖 收藏单词到单词本
