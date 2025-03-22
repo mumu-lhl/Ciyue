@@ -153,6 +153,7 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
           labelText: AppLocalizations.of(context)!.enterTextToTranslate,
           border: const OutlineInputBorder(),
         ),
+        maxLines: null, // Allow multiple lines
         onChanged: (text) {
           setState(() {
             _inputText = text;
