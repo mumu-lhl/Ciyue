@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
 
-    if (dictManager.isEmpty) {
+    if (dictManager.isEmpty && !settings.aiExplainWord) {
       return Center(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -240,26 +240,15 @@ class HomeScreen extends StatelessWidget {
 
             final resultWidgets = <Widget>[];
 
+            if (settings.aiExplainWord &&
+                (searchResult.isEmpty || searchResult[0].key != searchWord)) {
+              resultWidgets.add(buildOneResult(searchWord, context));
+            }
             for (final word in searchResult) {
-              resultWidgets.add(ListTile(
-                  trailing: Icon(Icons.arrow_circle_right_outlined),
-                  title: Text(word.key),
-                  leading: IconButton(
-                    icon: const Icon(Icons.volume_up),
-                    onPressed: () async {
-                      await flutterTts.speak(word.key);
-                    },
-                  ),
-                  onTap: () async {
-                    context.push("/word", extra: {"word": word.key});
-                    await historyDao.addHistory(word.key);
-                    if (settings.autoRemoveSearchWord) {
-                      MainPage.clearSearchWord();
-                    }
-                  }));
+              resultWidgets.add(buildOneResult(word.key, context));
             }
 
-            if (searchResult.isEmpty) {
+            if (resultWidgets.isEmpty) {
               return Center(
                   child: Text(AppLocalizations.of(context)!.noResult,
                       style: Theme.of(context).textTheme.titleLarge));
@@ -268,6 +257,25 @@ class HomeScreen extends StatelessWidget {
             }
           } else {
             return const Center(child: CircularProgressIndicator());
+          }
+        });
+  }
+
+  ListTile buildOneResult(String word, BuildContext context) {
+    return ListTile(
+        trailing: Icon(Icons.arrow_circle_right_outlined),
+        title: Text(word),
+        leading: IconButton(
+          icon: const Icon(Icons.volume_up),
+          onPressed: () async {
+            await flutterTts.speak(word);
+          },
+        ),
+        onTap: () async {
+          context.push("/word", extra: {"word": word});
+          await historyDao.addHistory(word);
+          if (settings.autoRemoveSearchWord) {
+            MainPage.clearSearchWord();
           }
         });
   }

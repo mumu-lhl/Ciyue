@@ -11,11 +11,62 @@ import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:gpt_markdown/gpt_markdown.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
+import "package:ciyue/ai.dart";
+
+class AIExplainView extends StatelessWidget {
+  final String word;
+
+  const AIExplainView({super.key, required this.word});
+
+  @override
+  Widget build(BuildContext context) {
+    final prompt =
+        """You are a AI explain word tool called Ciyue(词悦). Generate a detailed explanation of the word "$word", including the following sections:
+
+Pronunciation: Provide the pronunciation using the International Phonetic Alphabet (IPA).
+Part of Speech: Specify the part of speech (e.g., noun, verb, adjective).
+Meaning: Explain the meaning of the word.
+Example Sentences: Include at least three example sentences that demonstrate the word's usage.
+Synonyms: List at least three synonyms.
+Antonyms: List at least three antonyms.
+
+Format the response using Markdown to ensure each section is clearly organized with appropriate headings.
+The output is entirely and exclusively in Chinese.""";
+    final ai = AI(
+      provider: settings.aiProvider,
+      model: settings.getAiProviderConfig(settings.aiProvider)['model'] ?? '',
+      apikey: settings.getAiProviderConfig(settings.aiProvider)['apiKey'] ?? '',
+    );
+
+    return FutureBuilder(
+      future: ai.request(prompt),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                  child: SelectionArea(child: GptMarkdown(snapshot.data!))),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(snapshot.error.toString()),
+          );
+        }
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+}
 
 class Button extends StatefulWidget {
   final String word;
@@ -178,12 +229,14 @@ class WebviewDisplay extends StatelessWidget {
         future: validDictionaryIds(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            if (snapshot.data!.isNotEmpty) {
-              final showTab =
-                  snapshot.data!.length > 1 || settings.aiExplainWord;
+            if (snapshot.data!.isNotEmpty || settings.aiExplainWord) {
+              final dictsLength = settings.aiExplainWord
+                  ? snapshot.data!.length + 1
+                  : snapshot.data!.length;
+              final showTab = dictsLength > 1;
               return DefaultTabController(
                   initialIndex: 0,
-                  length: showTab ? snapshot.data!.length : 0,
+                  length: showTab ? dictsLength : 0,
                   child: Scaffold(
                       appBar: AppBar(
                           leading: BackButton(
@@ -244,6 +297,7 @@ class WebviewDisplay extends StatelessWidget {
   Widget buildTabView(BuildContext context,
       {List<int> validDictIds = const []}) {
     return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
+      if (settings.aiExplainWord) AIExplainView(word: word),
       for (final id in validDictIds)
         FutureBuilder(
             future: dictManager.dicts[id]!.readWord(word),
@@ -272,6 +326,7 @@ class WebviewDisplay extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return TabBar(tabs: [
+                  if (settings.aiExplainWord) Tab(text: "AI"),
                   for (int i = 0; i < snapshot.data!.length; i++)
                     if (snapshot.data![i])
                       Tab(
