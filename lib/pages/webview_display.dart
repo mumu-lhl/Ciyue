@@ -1,23 +1,24 @@
 import "dart:convert";
 import "dart:io";
+import "dart:ui" as ui;
 
+import "package:ciyue/ai.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/tags_list.dart";
 import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
-import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:gpt_markdown/gpt_markdown.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
+import "package:gpt_markdown/gpt_markdown.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
-import "package:ciyue/ai.dart";
 
 class AIExplainView extends StatelessWidget {
   final String word;
@@ -26,7 +27,7 @@ class AIExplainView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _targetLanguage = settings.language! == "system"
+    final targetLanguage = settings.language! == "system"
         ? ui.PlatformDispatcher.instance.locale.languageCode
         : settings.language!;
     final prompt =
@@ -40,7 +41,7 @@ Synonyms: List at least three synonyms.
 Antonyms: List at least three antonyms.
 
 Format the response using Markdown to ensure each section is clearly organized with appropriate headings.
-The output is entirely and exclusively in $_targetLanguage.""";
+The output is entirely and exclusively in $targetLanguage.""";
     final ai = AI(
       provider: settings.aiProvider,
       model: settings.getAiProviderConfig(settings.aiProvider)['model'] ?? '',
@@ -297,27 +298,6 @@ class WebviewDisplay extends StatelessWidget {
         });
   }
 
-  Widget buildTabView(BuildContext context,
-      {List<int> validDictIds = const []}) {
-    return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-      if (settings.aiExplainWord) AIExplainView(word: word),
-      for (final id in validDictIds)
-        FutureBuilder(
-            future: dictManager.dicts[id]!.readWord(word),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                if (Platform.isAndroid) {
-                  return WebviewAndroid(content: snapshot.data!, dictId: id);
-                } else {
-                  return WebviewWindows(content: snapshot.data!, dictId: id);
-                }
-              } else {
-                return const SizedBox.shrink();
-              }
-            })
-    ]);
-  }
-
   PreferredSizeWidget buildTabBar(BuildContext context) {
     return PreferredSize(
         preferredSize: const Size.fromHeight(48),
@@ -340,6 +320,27 @@ class WebviewDisplay extends StatelessWidget {
                 return const SizedBox.shrink();
               }
             }));
+  }
+
+  Widget buildTabView(BuildContext context,
+      {List<int> validDictIds = const []}) {
+    return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
+      if (settings.aiExplainWord) AIExplainView(word: word),
+      for (final id in validDictIds)
+        FutureBuilder(
+            future: dictManager.dicts[id]!.readWord(word),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                if (Platform.isAndroid) {
+                  return WebviewAndroid(content: snapshot.data!, dictId: id);
+                } else {
+                  return WebviewWindows(content: snapshot.data!, dictId: id);
+                }
+              } else {
+                return const SizedBox.shrink();
+              }
+            })
+    ]);
   }
 
   Future<List<int>> validDictionaryIds() async {
