@@ -58,7 +58,7 @@ dependencies:
   html_unescape: ^2.0.0
   flutter_local_notifications: ^19.0.0
   dio: ^5.8.0+1
-  flutter_markdown: ^0.7.6+2
+  gpt_markdown: ^1.0.16
 
 dev_dependencies:
   flutter_test:
