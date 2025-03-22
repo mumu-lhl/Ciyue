@@ -24,7 +24,10 @@ class PrivacyPolicy extends StatelessWidget {
             child: SingleChildScrollView(
               child: SelectionArea(
                 child: GptMarkdown(
-                  '''## Definition
+                  '''
+            # Privacy Policy
+
+            ## Definition
             
             In this agreement, "we" defined as the maintainers and contributors of Ciyue.
             

@@ -18,6 +18,8 @@ class TermsOfService extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: SingleChildScrollView(
                 child: SelectionArea(child: GptMarkdown('''
+              # Terms of Service
+
               ## Acceptance of Terms
               
               By using Ciyue, you agree to these Terms of Service.
