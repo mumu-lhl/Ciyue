@@ -167,9 +167,11 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
-        child: SelectionArea(
-          child: GptMarkdown(
-            _translatedText,
+        child: SingleChildScrollView(
+          child: SelectionArea(
+            child: GptMarkdown(
+              _translatedText,
+            ),
           ),
         ),
       ),

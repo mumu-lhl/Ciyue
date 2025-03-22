@@ -21,9 +21,10 @@ class PrivacyPolicy extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 500),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: SelectionArea(
-              child: GptMarkdown(
-                '''## Definition
+            child: SingleChildScrollView(
+              child: SelectionArea(
+                child: GptMarkdown(
+                  '''## Definition
             
             In this agreement, "we" defined as the maintainers and contributors of Ciyue.
             
@@ -43,6 +44,7 @@ class PrivacyPolicy extends StatelessWidget {
             
             We are not responsible for the data practices of these third-party services.
             ''',
+                ),
               ),
             ),
           ),
