@@ -161,5 +161,21 @@
   "termsOfService": "Tèrmines de servìtziu",
   "@termsOfService": {},
   "autoDetect": "Auto-atzapadura",
-  "@autoDetect": {}
+  "@autoDetect": {},
+  "checkForUpdates": "Chirca atualizatziones",
+  "@checkForUpdates": {},
+  "updateAvailable": "Atualizatzione disponìbile",
+  "@updateAvailable": {},
+  "updateAvailableContent": "Versione noa %s est disponìbile. Boles atualizare?",
+  "@updateAvailableContent": {},
+  "update": "Atualiza",
+  "@update": {},
+  "noUpdateAvailable": "Peruna atualizatzione disponìbile",
+  "@noUpdateAvailable": {},
+  "updateCheckFailed": "Faddina in sa verìfica de s'atualizatzione",
+  "@updateCheckFailed": {},
+  "includePrerelease": "Inclui versiones preliminares",
+  "@includePrerelease": {},
+  "checkingForUpdates": "Chircande atualizatziones...",
+  "@checkingForUpdates": {}
 }

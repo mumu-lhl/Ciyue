@@ -35,7 +35,8 @@ class _Settings {
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
-    includePrereleaseUpdates = prefs.getBool('includePrereleaseUpdates') ?? false;
+    includePrereleaseUpdates =
+        prefs.getBool('includePrereleaseUpdates') ?? false;
     skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
     language = prefs.getString("language") ?? "system";
     aiProvider = prefs.getString("aiProvider") ?? "openai";

@@ -161,5 +161,21 @@
   "termsOfService": "சேவை விதிமுறைகள்",
   "@termsOfService": {},
   "autoDetect": "தானாக கண்டறியும்",
-  "@autoDetect": {}
+  "@autoDetect": {},
+  "checkForUpdates": "புதுப்பிப்புகளைச் சரிபார்க்கவும்",
+  "@checkForUpdates": {},
+  "updateAvailable": "புதுப்பிப்பு கிடைக்கிறது",
+  "@updateAvailable": {},
+  "updateAvailableContent": "புதிய பதிப்பு %s கிடைக்கிறது. புதுப்பிக்க விரும்புகிறீர்களா?",
+  "@updateAvailableContent": {},
+  "update": "புதுப்பி",
+  "@update": {},
+  "noUpdateAvailable": "புதுப்பிப்பு எதுவும் இல்லை",
+  "@noUpdateAvailable": {},
+  "updateCheckFailed": "புதுப்பிப்பு சரிபார்ப்பு தோல்வியடைந்தது",
+  "@updateCheckFailed": {},
+  "includePrerelease": "முன்வெளியீட்டு புதுப்பிப்புகளைச் சேர்க்கவும்",
+  "@includePrerelease": {},
+  "checkingForUpdates": "புதுப்பிப்புகளைச் சரிபார்க்கிறது...",
+  "@checkingForUpdates": {}
 }

@@ -161,5 +161,21 @@
   "termsOfService": "Nutzungsbedingungen",
   "@termsOfService": {},
   "autoDetect": "Automatische Erkennung",
-  "@autoDetect": {}
+  "@autoDetect": {},
+  "checkForUpdates": "Nach Updates suchen",
+  "@checkForUpdates": {},
+  "updateAvailable": "Update verfügbar",
+  "@updateAvailable": {},
+  "updateAvailableContent": "Neue Version %s ist verfügbar. Möchten Sie aktualisieren?",
+  "@updateAvailableContent": {},
+  "update": "Aktualisieren",
+  "@update": {},
+  "noUpdateAvailable": "Kein Update verfügbar",
+  "@noUpdateAvailable": {},
+  "updateCheckFailed": "Update-Prüfung fehlgeschlagen",
+  "@updateCheckFailed": {},
+  "includePrerelease": "Vorabversion-Updates einschließen",
+  "@includePrerelease": {},
+  "checkingForUpdates": "Suche nach Updates...",
+  "@checkingForUpdates": {}
 }

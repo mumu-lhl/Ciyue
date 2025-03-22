@@ -161,5 +161,21 @@
   "termsOfService": "服務條款",
   "@termsOfService": {},
   "autoDetect": "自動偵測",
-  "@autoDetect": {}
+  "@autoDetect": {},
+  "checkForUpdates": "檢查更新",
+  "@checkForUpdates": {},
+  "updateAvailable": "有可用更新",
+  "@updateAvailable": {},
+  "updateAvailableContent": "新版本 %s 已可用。是否要更新？",
+  "@updateAvailableContent": {},
+  "update": "更新",
+  "@update": {},
+  "noUpdateAvailable": "暫無可用更新",
+  "@noUpdateAvailable": {},
+  "updateCheckFailed": "檢查更新失敗",
+  "@updateCheckFailed": {},
+  "includePrerelease": "包含預發布版本",
+  "@includePrerelease": {},
+  "checkingForUpdates": "正在檢查更新...",
+  "@checkingForUpdates": {}
 }

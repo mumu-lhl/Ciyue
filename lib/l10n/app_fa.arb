@@ -161,5 +161,21 @@
   "termsOfService": "شرایط خدمات",
   "@termsOfService": {},
   "autoDetect": "تشخیص خودکار",
-  "@autoDetect": {}
+  "@autoDetect": {},
+  "checkForUpdates": "بررسی به‌روزرسانی‌ها",
+  "@checkForUpdates": {},
+  "updateAvailable": "به‌روزرسانی موجود است",
+  "@updateAvailable": {},
+  "updateAvailableContent": "نسخه جدید %s موجود است. آیا می‌خواهید به‌روزرسانی کنید؟",
+  "@updateAvailableContent": {},
+  "update": "به‌روزرسانی",
+  "@update": {},
+  "noUpdateAvailable": "به‌روزرسانی موجود نیست",
+  "@noUpdateAvailable": {},
+  "updateCheckFailed": "بررسی به‌روزرسانی ناموفق بود",
+  "@updateCheckFailed": {},
+  "includePrerelease": "شامل به‌روزرسانی‌های پیش‌انتشار",
+  "@includePrerelease": {},
+  "checkingForUpdates": "در حال بررسی به‌روزرسانی‌ها...",
+  "@checkingForUpdates": {}
 }
