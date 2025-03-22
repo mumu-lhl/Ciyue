@@ -179,9 +179,11 @@ class WebviewDisplay extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data!.isNotEmpty) {
+              final showTab =
+                  snapshot.data!.length > 1 || settings.aiExplainWord;
               return DefaultTabController(
                   initialIndex: 0,
-                  length: snapshot.data!.length,
+                  length: showTab ? snapshot.data!.length : 0,
                   child: Scaffold(
                       appBar: AppBar(
                           leading: BackButton(
@@ -195,7 +197,7 @@ class WebviewDisplay extends StatelessWidget {
                               }
                             },
                           ),
-                          bottom: buildTabBar(context)),
+                          bottom: showTab ? buildTabBar(context) : null),
                       floatingActionButton: Button(word: word),
                       body:
                           buildTabView(context, validDictIds: snapshot.data!)));
