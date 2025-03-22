@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:gpt_markdown/gpt_markdown.dart';
 import 'package:ciyue/src/generated/i18n/app_localizations.dart';
 
 class TermsOfService extends StatelessWidget {
@@ -12,13 +12,11 @@ class TermsOfService extends StatelessWidget {
           title: Text(AppLocalizations.of(context)!.termsOfService),
         ),
         body: Center(
-            child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Markdown(
-              selectable: true,
-              data: '''
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SelectionArea(child: GptMarkdown('''
 ## Acceptance of Terms
 
 By using Ciyue, you agree to these Terms of Service.
@@ -34,10 +32,9 @@ You are solely responsible for your use of Ciyue, including any consequences ari
 ## Modification of Terms
 
 We reserve the right to update these Terms of Service at any time. Continued use of Ciyue after changes constitutes your acceptance of the updated terms.
-''',
-              styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+''')),
             ),
           ),
-        )));
+        ));
   }
 }

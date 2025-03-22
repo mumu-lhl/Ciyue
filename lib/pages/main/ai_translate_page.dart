@@ -3,8 +3,8 @@ import 'dart:ui' as ui;
 import 'package:ciyue/ai.dart';
 import 'package:ciyue/settings.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
-import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import 'package:gpt_markdown/gpt_markdown.dart';
+import 'package:ciyue/src/generated/i18n/app_localizations.dart';
 
 class AiTranslatePage extends StatefulWidget {
   const AiTranslatePage({super.key});
@@ -166,9 +166,10 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
-        child: Markdown(
-          selectable: true,
-          data: _translatedText,
+        child: SelectionArea(
+          child: GptMarkdown(
+            _translatedText,
+          ),
         ),
       ),
     );
