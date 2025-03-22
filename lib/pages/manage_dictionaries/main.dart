@@ -397,9 +397,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                               title: Text(
                                   AppLocalizations.of(context)!.titleAlias),
                               content: TextField(
-                                controller: controller
-                                  ..text =
-                                      dictManager.dicts[dictionary.id]!.title,
+                                controller: controller..text = title,
                                 autofocus: true,
                                 onSubmitted: (value) async {
                                   if (value.isNotEmpty) {
