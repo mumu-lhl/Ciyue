@@ -3,6 +3,55 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.7.0](https://github.com/mumu-lhl/Ciyue/compare/v1.7.0-beta.1..v1.7.0) - 2025-03-23
+
+### Bug Fixes
+
+- update translate label to use localization - ([09ee403](https://github.com/mumu-lhl/Ciyue/commit/09ee403dc3a497e27cb6dc22548bbd5f15255d9c)) - Mumulhl
+- blank screen when editing title alias of a disabled dict - ([95f41b0](https://github.com/mumu-lhl/Ciyue/commit/95f41b01493d96e55211a9f459ceac65a1079543)) - Mumulhl
+- fix importing - ([f002509](https://github.com/mumu-lhl/Ciyue/commit/f0025095466ec864a65bf452c5aae76300dbce4d)) - Mumulhl
+- update language labels and adjust AI explain settings - ([324383b](https://github.com/mumu-lhl/Ciyue/commit/324383bdae2e2e3296c648079de77e10c605b965)) - Mumulhl
+
+### Documentation
+
+- add GitHub badge to installation section in README files - ([5f713f7](https://github.com/mumu-lhl/Ciyue/commit/5f713f71a9d9dba6e609e0a0ab285837aebb7ee5)) - Mumulhl
+- add AI translate feature to README - ([d833b18](https://github.com/mumu-lhl/Ciyue/commit/d833b1818088f535ed0553929ef231c55451aa27)) - Mumulhl
+- update README to clarify MDX/MDD support on Linux - ([f91bf20](https://github.com/mumu-lhl/Ciyue/commit/f91bf20aba54661159fc0dc076c2c483bd3cb14e)) - Mumulhl
+- add Privacy Policy, Terms and Disclaimer of Service to documentation - ([520b896](https://github.com/mumu-lhl/Ciyue/commit/520b8963a502d9c9883b91db7303758c93b94bf9)) - Mumulhl
+- update screenshots - ([3940bcb](https://github.com/mumu-lhl/Ciyue/commit/3940bcb469d08405bde9f355f435c5187edc7a98)) - Mumulhl
+
+### Features
+
+- **(AIExplain)** dynamically set output language based on user settings - ([af088e5](https://github.com/mumu-lhl/Ciyue/commit/af088e5c61b8559cc479881adbb61c4bae424711)) - Mumulhl
+- **(l10n)** add update-related translations for multiple languages - ([bc1c281](https://github.com/mumu-lhl/Ciyue/commit/bc1c281ba8288e06bc5489747f3432d8acb2c87e)) - Mumulhl
+- **(translation)** translated using Weblate (English) - ([cc79d77](https://github.com/mumu-lhl/Ciyue/commit/cc79d773b3117fc6fd2bbe09fb50eb75ce371047)) - Allan Nordhøy
+- allow multi-line input for text translation - ([d561011](https://github.com/mumu-lhl/Ciyue/commit/d5610113a1e9513d9a5d0d50f97e062a4216a875)) - Mumulhl
+- make markdown widget scrollable - ([45e3184](https://github.com/mumu-lhl/Ciyue/commit/45e31846e5b23f8cd4125c330950ebc6596330dd)) - Mumulhl
+- add titles to Privacy Policy and Terms of Service pages - ([0c5bcae](https://github.com/mumu-lhl/Ciyue/commit/0c5bcaebb37289a311c7aaea0acda761a2d92b55)) - Mumulhl
+- enable explain word - ([8e455bd](https://github.com/mumu-lhl/Ciyue/commit/8e455bdf1e0005bce96846f7ffe6c58b96b4c30c)) - Mumulhl
+- hide the tab when only one dictionary is available - ([e4cd0e0](https://github.com/mumu-lhl/Ciyue/commit/e4cd0e0602c8d4298f22d3ef3320669b0e545a1f)) - Mumulhl
+- add AI Explain Word feature - ([90d9416](https://github.com/mumu-lhl/Ciyue/commit/90d9416bc1296714333fbb40e61bb9c5605c4609)) - Mumulhl
+- add check for updates functionality in settings - ([f0a0183](https://github.com/mumu-lhl/Ciyue/commit/f0a0183975e85f6648efa8d52320ce6b06648b85)) - Mumulhl
+- add option to include prerelease updates in settings - ([2c25149](https://github.com/mumu-lhl/Ciyue/commit/2c25149ee577af574371339902bc82c289334dc7)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(deps)** bump flutter_local_notifications from 18.0.1 to 19.0.0 - ([e6a9364](https://github.com/mumu-lhl/Ciyue/commit/e6a936466d95f01cbb3e9b1a8ffd9ededa191ca0)) - dependabot[bot]
+- **(deps)** replace flutter_markdown with gpt_markdown - ([717feef](https://github.com/mumu-lhl/Ciyue/commit/717feef68e970994a7473910fe556141814acdf2)) - Mumulhl
+- add flutter_local_notifications_windows to FFI plugin list - ([0a62e7c](https://github.com/mumu-lhl/Ciyue/commit/0a62e7c6674f28046a16a4186be34d3b95c11fe5)) - Mumulhl
+- update package description to include Windows/Linux support - ([b0ecb0b](https://github.com/mumu-lhl/Ciyue/commit/b0ecb0b85cf102343ff423814e6a124db753e816)) - Mumulhl
+
+### Refactoring
+
+- keep AiTranslatePage state - ([cfee517](https://github.com/mumu-lhl/Ciyue/commit/cfee517abedb193ebebfd881523ba7c757d0e43e)) - Mumulhl
+- update input handling to use TextEditingController for translation - ([321ef49](https://github.com/mumu-lhl/Ciyue/commit/321ef49dcf472247e540058716b09cc477a48e4c)) - Mumulhl
+- move _isRichOutput variable declaration to the top level - ([23b44b1](https://github.com/mumu-lhl/Ciyue/commit/23b44b1272153a44989c1a22b58d7398064d5069)) - Mumulhl
+
+### Style
+
+- format code - ([c1d93e0](https://github.com/mumu-lhl/Ciyue/commit/c1d93e0c2f1ad8f3befa1aea6a228ef1f8523688)) - Mumulhl
+
+---
 ## [1.7.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.6.0..v1.7.0-beta.1) - 2025-03-16
 
 ### Bug Fixes
