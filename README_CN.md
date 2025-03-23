@@ -41,6 +41,8 @@
 
 词悦使用 WebView 显示单词，WebView 即使显示本地数据也需要 INTERNET 权限才能正常工作。
 
+检查更新或请求第三方服务（如 AI Provider）时，词悦会使用该权限。词悦不会自主发起请求。
+
 ## Discord
 
 [加入我们的 Discord 服务器](https://discord.gg/BazBZuvKZG) 来与社区联系！
@@ -56,6 +58,18 @@
 <a href="https://github.com/mumu-lhl/Ciyue/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=mumu-lhl/Ciyue" />
 </a>
+
+## 服务条款
+
+[Terms of Services](./TERMS_OF_SERVICE.md)
+
+## 隐私协议
+
+[Privacy Policy](./PRIVACY_POLICY.md)
+
+## 免责声明
+
+使用词悦意味着您承认并同意词悦的维护者和贡献者不对因使用词悦而造成的任何直接或间接的损失、问题或不良后果承担任何责任。 本软件按“原样”提供，用户承担与其使用相关的所有风险。
 
 ## 开源许可证
 

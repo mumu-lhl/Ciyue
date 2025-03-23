@@ -42,6 +42,8 @@ See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries).
 
 Ciyue uses WebView to display words in a dictionary, and WebView needs INTERNET permission to work, even if when displaying local data.
 
+When checking for updates or requesting third-party services (such as AI Provider), Ciyue will use this permission. Ciyue will not independently initiate requests. 
+
 ## Discord
 
 [Join our Discord server](https://discord.gg/BazBZuvKZG) to connect with the community!
@@ -55,6 +57,18 @@ You can visit [Weblate](https://hosted.weblate.org/engage/ciyue/) to add languag
 ## Contributors
 
 [![Contributor](https://contrib.rocks/image?repo=mumu-lhl/Ciyue)](https://github.com/mumu-lhl/Ciyue/graphs/contributors)
+
+## Terms of Services
+
+[Terms of Services](./TERMS_OF_SERVICE.md)
+
+## Privacy Policy
+
+[Privacy Policy](./PRIVACY_POLICY.md)
+
+## Disclaimer
+
+Using Ciyue means you acknowledge and agree that the maintainers and contributors of Ciyue are not responsible for any direct or indirect losses, problems, or adverse consequences arising from the use of Ciyue. This software is provided "as is," and users assume all risks associated with its use. 
 
 ## License
 
