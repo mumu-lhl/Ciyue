@@ -40,7 +40,7 @@ class _Settings {
     skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
     language = prefs.getString("language") ?? "system";
     aiProvider = prefs.getString("aiProvider") ?? "openai";
-    aiExplainWord = prefs.getBool("aiExplainWord") ?? true;
+    aiExplainWord = prefs.getBool("aiExplainWord") ?? false;
 
     var aiProviderConfigsString = prefs.getString('aiProviderConfigs');
     if (aiProviderConfigsString != null) {

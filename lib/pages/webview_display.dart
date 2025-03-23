@@ -10,7 +10,6 @@ import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/tags_list.dart";
-import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
@@ -535,7 +534,6 @@ class _ButtonState extends State<Button> {
                           ],
                         ),
                         actions: [
-                          TextCloseButton(),
                           TextButton(
                             child: Text(locale.remove),
                             onPressed: () async {
