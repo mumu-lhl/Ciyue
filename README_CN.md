@@ -19,8 +19,9 @@
 
 ## 截图
 
-| <img alt="主页" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="设置" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="管理词典" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="单词显示" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
+| <img alt="主页" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="切换词典分组" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="设置" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="管理词典" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
 |-|-|-|-|
+| <img alt="搜索单词" src="./metadata/en-US/images/phoneScreenshots/5.png"> | <img alt="显示单词释义" src="./metadata/en-US/images/phoneScreenshots/6.png"> | <img alt="单词本" src="./metadata/en-US/images/phoneScreenshots/7.png"> | <img alt="AI 翻译" src="./metadata/en-US/images/phoneScreenshots/8.png"> |
 
 ## 安装
 
