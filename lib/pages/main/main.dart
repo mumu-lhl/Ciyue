@@ -86,7 +86,8 @@ class _HomeState extends State<Home> {
   }
 
   AppBar? buildAppBar(BuildContext context) {
-    if (_currentIndex == 0 && (!dictManager.isEmpty || settings.aiExplainWord)) {
+    if (_currentIndex == 0 &&
+        (!dictManager.isEmpty || settings.aiExplainWord)) {
       final searchBar =
           settings.searchBarInAppBar ? buildSearchBar(context) : null;
       return AppBar(
