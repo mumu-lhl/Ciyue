@@ -179,11 +179,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 for (final item in history)
                   Dismissible(
                     key: ValueKey(item.id),
-                    onDismissed: (direction) async {
-                      if (direction == DismissDirection.endToStart) {
-                        await buildRemoveHistoryConfirmDialog(context, item);
-                      }
-                    },
                     confirmDismiss: (direction) async {
                       if (direction == DismissDirection.endToStart) {
                         final result = await buildRemoveHistoryConfirmDialog(
