@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/settings.dart";
@@ -114,9 +115,10 @@ class PlatformMethod {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse:
             (NotificationResponse notificationResponse) {
-      router.go("/", extra: {"searchWord": ""});
+      router.go("/");
       MainPage.setScreenIndex(0);
-      MainPage.enableAutofocusOnce();
+      HomePage.callEnableAutofocusOnce = true;
+      HomePage.enableAutofocusOnce();
     });
   }
 

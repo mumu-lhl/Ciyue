@@ -112,9 +112,7 @@ final router = GoRouter(
     GoRoute(
       path: "/",
       builder: (context, state) {
-        final extra =
-            (state.extra as Map<String, dynamic>?) ?? {"searchWord": ""};
-        return Home(searchWord: extra["searchWord"]);
+        return const Home();
       },
     ),
     GoRoute(

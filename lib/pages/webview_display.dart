@@ -5,7 +5,7 @@ import "dart:ui" as ui;
 import "package:ciyue/ai.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/pages/main/main.dart";
+import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -281,8 +281,9 @@ class WebviewDisplay extends StatelessWidget {
                       visible: fromProcessText,
                       child: TextButton(
                         onPressed: () {
-                          context.go("/", extra: {"searchWord": word});
-                          MainPage.callEnableAutofocusOnce = true;
+                          context.go("/");
+                          HomePage.callEnableAutofocusOnce = true;
+                          HomePage.setSearchWord(word);
                         },
                         child: Text(AppLocalizations.of(context)!.editWord),
                       ),
