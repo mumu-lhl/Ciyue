@@ -40,7 +40,6 @@ class MoreOptionsDialog extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   var _autofocus = false;
 
   @override
@@ -81,30 +80,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (dictManager.isEmpty && !settings.aiExplainWord) {
       return Center(
-              child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(locale!.addDictionary),
-        SizedBox(height: 16),
-        ElevatedButton(
-          child: Text(locale.recommendedDictionaries),
-          onPressed: () async {
-            await launchUrl(Uri.parse(
-                "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
-          },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(locale!.addDictionary),
+            SizedBox(height: 16),
+            ElevatedButton(
+              child: Text(locale.recommendedDictionaries),
+              onPressed: () async {
+                await launchUrl(Uri.parse(
+                    "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
+              },
+            ),
+            SizedBox(height: 8),
+            ElevatedButton(
+              child: const Text("FreeMDict Cloud"),
+              onPressed: () async {
+                await launchUrl(Uri.parse(
+                    "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs"));
+              },
+            ),
+          ],
         ),
-        SizedBox(height: 8),
-        ElevatedButton(
-          child: const Text("FreeMDict Cloud"),
-          onPressed: () async {
-            await launchUrl(Uri.parse(
-                "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs"));
-          },
-        ),
-      ],
-              ),
-            );
+      );
     } else {
       if (_textFieldController.text.isEmpty) {
         final future = historyDao.getAllHistory();
@@ -334,14 +333,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   IconButton buildRemoveButton() {
-      return IconButton(
-        icon: const Icon(Icons.close),
-        onPressed: () {
-          setState(() {
-            _textFieldController.clear();
-          });
-        },
-      );
+    return IconButton(
+      icon: const Icon(Icons.close),
+      onPressed: () {
+        setState(() {
+          _textFieldController.clear();
+        });
+      },
+    );
   }
 
   Future<bool> buildRemoveHistoryConfirmDialog(
@@ -389,12 +388,10 @@ class _HomeScreenState extends State<HomeScreen> {
               const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
           leading: const Icon(Icons.search),
           onChanged: (value) {
-            setState(() {
-            });
+            setState(() {});
           },
           trailing: [
-            if (_textFieldController.text.isNotEmpty)
-              buildRemoveButton()
+            if (_textFieldController.text.isNotEmpty) buildRemoveButton()
           ],
         ),
       ),
