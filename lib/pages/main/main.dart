@@ -23,21 +23,20 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late String searchWord;
   var _currentIndex = 0;
+  final _pages = [
+    const HomeScreen(),
+    const AiTranslatePage(),
+    const WordBookScreen(),
+    const SettingsScreen()
+  ];
+
 
   @override
   Widget build(BuildContext context) {
-    final page = [
-      const HomeScreen(),
-      const AiTranslatePage(),
-      const WordBookScreen(),
-      const SettingsScreen()
-    ];
-
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(child: page[_currentIndex]),
-        ],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
       ),
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
