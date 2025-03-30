@@ -6,6 +6,7 @@ import "package:ciyue/ai.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
+import "package:ciyue/pages/main/wordbook.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -18,6 +19,7 @@ import "package:gpt_markdown/gpt_markdown.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
+import "package:provider/provider.dart";
 
 class AIExplainView extends StatelessWidget {
   final String word;
@@ -507,6 +509,9 @@ class _ButtonState extends State<Button> {
                 }
 
                 await autoExport();
+                if (context.mounted) {
+                  context.read<WordbookModel>().updateWordList();
+                }
                 checkStared();
               }
 
@@ -544,6 +549,9 @@ class _ButtonState extends State<Button> {
                               if (context.mounted) context.pop();
 
                               await autoExport();
+                              if (context.mounted) {
+                                context.read<WordbookModel>().updateWordList();
+                              }
                               checkStared();
                             },
                           ),
@@ -567,6 +575,9 @@ class _ButtonState extends State<Button> {
                               if (context.mounted) context.pop();
 
                               await autoExport();
+                              if (context.mounted) {
+                                context.read<WordbookModel>().updateWordList();
+                              }
                               checkStared();
                             },
                           ),

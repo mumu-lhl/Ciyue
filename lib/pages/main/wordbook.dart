@@ -6,9 +6,49 @@ import "package:ciyue/widget/date_divider.dart";
 import "package:flutter/material.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:go_router/go_router.dart";
+import "package:provider/provider.dart";
 
-VoidCallback? _refreshScreen;
-VoidCallback? _refreshTagsAndWords;
+class WordbookModel extends ChangeNotifier {
+  late Future<List<WordbookData>> allWords;
+  late Future<List<WordbookTag>> tags;
+  DateTime? selectedDate;
+  int? selectedTag;
+
+  void updateScreen() {
+    notifyListeners();
+  }
+
+  void updateWordList() {
+    if (selectedDate != null) {
+      allWords = wordbookDao.getWordsByYearMonth(
+        selectedDate!.year,
+        selectedDate!.month,
+        tag: selectedTag,
+      );
+    } else {
+      allWords = wordbookDao.getAllWordsWithTag(
+        tag: selectedTag,
+        skipTagged: selectedTag == null && settings.skipTaggedWord,
+      );
+    }
+    notifyListeners();
+  }
+
+  void updateTags() {
+    tags = wordbookTagsDao.getAllTags();
+    notifyListeners();
+  }
+
+  void updateSelectedTag(int? tag) {
+    selectedTag = tag;
+    notifyListeners();
+  }
+
+  void updateSelectedDate(DateTime? date) {
+    selectedDate = date;
+    notifyListeners();
+  }
+}
 
 class MoreOptionsDialog extends StatefulWidget {
   const MoreOptionsDialog({super.key});
@@ -40,25 +80,19 @@ class WordBookScreen extends StatefulWidget {
 
 class _WordBookScreenState extends State<WordBookScreen> {
   @override
-  void initState() {
-    super.initState();
-    _refreshScreen = () {
-      setState(() {});
-    };
-  }
-
-  @override
   Widget build(BuildContext context) {
+    context.watch<WordbookModel>();
     return Scaffold(
         appBar: buildAppBar(context),
         body: WordViewWithTagsClips(),
         floatingActionButton:
             Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-          if (_WordViewWithTagsClipsState._selectedDate != null)
+          if (context.read<WordbookModel>().selectedDate != null)
             FloatingActionButton(
               onPressed: () {
-                _WordViewWithTagsClipsState._selectedDate = null;
-                _refreshTagsAndWords!();
+                context.read<WordbookModel>().selectedDate = null;
+                context.read<WordbookModel>().updateWordList();
+                context.read<WordbookModel>().updateScreen();
               },
               child: const Icon(Icons.clear),
             ),
@@ -72,8 +106,11 @@ class _WordBookScreenState extends State<WordBookScreen> {
                 },
               );
               if (picked != null) {
-                _WordViewWithTagsClipsState._selectedDate = picked;
-                _refreshTagsAndWords!();
+                if (context.mounted) {
+                  context.read<WordbookModel>().selectedDate = picked;
+                  context.read<WordbookModel>().updateWordList();
+                  context.read<WordbookModel>().updateScreen();
+                }
               }
             },
             child: const Icon(Icons.calendar_month),
@@ -105,7 +142,10 @@ class _WordBookScreenState extends State<WordBookScreen> {
                   await wordbookTagsDao.addTag(textController.text);
                   await wordbookTagsDao.existTag();
 
-                  _refreshTagsAndWords!();
+                  if (context.mounted) {
+                    context.read<WordbookModel>().updateTags();
+                    context.read<WordbookModel>().updateScreen();
+                  }
 
                   if (context.mounted) {
                     context.pop();
@@ -180,9 +220,13 @@ class _WordBookScreenState extends State<WordBookScreen> {
                   await wordbookTagsDao.removeTag(tag.id);
                   await wordbookTagsDao.existTag();
 
-                  _refreshTagsAndWords!();
+                  if (context.mounted) {
+                    final wordbookModel = context.read<WordbookModel>();
+                    wordbookModel.updateTags();
+                    wordbookModel.updateScreen();
 
-                  if (context.mounted) context.pop();
+                    context.pop();
+                  }
                 },
               ),
             ));
@@ -281,7 +325,11 @@ class _MoreOptionsDialogState extends State<MoreOptionsDialog> {
                 settings.skipTaggedWord = value;
                 await prefs.setBool("skipTaggedWord", value);
                 setState(() {});
-                _refreshTagsAndWords!();
+                if (context.mounted) {
+                  final wordbookModel = context.read<WordbookModel>();
+                  wordbookModel.updateWordList();
+                  wordbookModel.updateScreen();
+                }
               }
             },
             title: Text(AppLocalizations.of(context)!.skipTaggedWord),
@@ -315,7 +363,11 @@ class _TagListDialogState extends State<TagListDialog> {
                 widget.tagsDisplay.map((e) => e.id).toList();
             await wordbookTagsDao.updateTagsOrder();
 
-            _refreshTagsAndWords!();
+            if (context.mounted) {
+              final wordbookModel = context.read<WordbookModel>();
+              wordbookModel.updateTags();
+              wordbookModel.updateScreen();
+            }
             setState(() {});
           },
           children: widget.tagsDisplay
@@ -332,7 +384,11 @@ class _TagListDialogState extends State<TagListDialog> {
                         await wordbookTagsDao.removeTag(tag.id);
                         await wordbookTagsDao.existTag();
 
-                        _refreshTagsAndWords!();
+                        if (context.mounted) {                    
+                          final wordbookModel = context.read<WordbookModel>();
+                          wordbookModel.updateTags();
+                          wordbookModel.updateScreen();
+                        }
 
                         if (context.mounted) context.pop();
                       },
@@ -371,7 +427,7 @@ class _MonthPickerDialogState extends State<MonthPickerDialog> {
   void initState() {
     super.initState();
     final initialDate =
-        _WordViewWithTagsClipsState._selectedDate ?? DateTime.now();
+        context.read<WordbookModel>().selectedDate ?? DateTime.now();
     selectedYear = initialDate.year;
     selectedMonth = initialDate.month;
     initialYear = initialDate.year;
@@ -460,19 +516,13 @@ class _MonthPickerDialogState extends State<MonthPickerDialog> {
 }
 
 class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
-  late Future<List<WordbookData>> allWords;
-  late Future<List<WordbookTag>> tags;
-  static DateTime? _selectedDate;
-
-  int? selectedTag;
-
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         FutureBuilder(
-            future: tags,
+            future: context.read<WordbookModel>().tags,
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                 final choiceChips = <Widget>[];
@@ -487,14 +537,13 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
                   choiceChips.add(ChoiceChip(
                     label: Text(tag.tag),
-                    selected: selectedTag == tag.id,
+                    selected:
+                        context.read<WordbookModel>().selectedTag == tag.id,
                     onSelected: (selected) {
                       setState(() {
-                        selectedTag = selected ? tag.id : null;
-                        final skipTaggedWord =
-                            selectedTag == null && settings.skipTaggedWord;
-                        allWords = wordbookDao.getAllWordsWithTag(
-                            tag: selectedTag, skipTagged: skipTaggedWord);
+                        final wordbookModel = context.read<WordbookModel>();
+                        wordbookModel.updateSelectedTag(selected ? tag.id : null);
+                        wordbookModel.updateWordList();
                       });
                     },
                   ));
@@ -509,7 +558,9 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
               return Wrap();
             }),
-        WordView(allWords: allWords, tags: tags),
+        WordView(
+            allWords: context.read<WordbookModel>().allWords,
+            tags: context.read<WordbookModel>().tags),
       ],
     );
   }
@@ -518,32 +569,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   void initState() {
     super.initState();
 
-    updateWordList();
-    tags = wordbookTagsDao.getAllTags();
-
-    _refreshTagsAndWords = refresh;
-  }
-
-  void updateWordList() {
-    if (_selectedDate != null) {
-      allWords = wordbookDao.getWordsByYearMonth(
-        _selectedDate!.year,
-        _selectedDate!.month,
-        tag: selectedTag,
-      );
-    } else {
-      allWords = wordbookDao.getAllWordsWithTag(
-        tag: selectedTag,
-        skipTagged: settings.skipTaggedWord,
-      );
-    }
-  }
-
-  void refresh() {
-    setState(() {
-      updateWordList();
-      tags = wordbookTagsDao.getAllTags();
-      _refreshScreen!();
-    });
+    final wordbookModel = context.read<WordbookModel>();
+    wordbookModel.updateWordList();
+    wordbookModel.updateTags();
   }
 }
