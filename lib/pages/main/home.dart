@@ -319,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: Text(group.name == "Default"
                       ? AppLocalizations.of(context)!.default_
                       : group.name),
-                  onTap: ()  {
+                  onTap: () {
                     context.pop();
                     dictManager.setCurrentGroup(group.id);
                     context.read<HomeModel>().update();
@@ -331,7 +331,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 
   Padding buildMoreButton(BuildContext context) {
     return Padding(

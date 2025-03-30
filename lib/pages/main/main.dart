@@ -30,7 +30,6 @@ class _HomeState extends State<Home> {
     const SettingsScreen()
   ];
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
