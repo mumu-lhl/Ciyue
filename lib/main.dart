@@ -3,6 +3,7 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/localization_delegates.dart";
+import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/wordbook.dart";
 import "package:ciyue/pages/settings/auto_export.dart";
 import "package:ciyue/pages/main/main.dart";
@@ -95,9 +96,10 @@ void main() async {
     accentColor = await DynamicColorPlugin.getAccentColor();
   }
 
-  runApp(MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => WordbookModel())],
-      child: const Ciyue()));
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (_) => WordbookModel()),
+    ChangeNotifierProvider(create: (_) => HomeModel())
+  ], child: const Ciyue()));
 }
 
 late final Color? accentColor;

@@ -7,9 +7,16 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/tags_list.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
 final _textFieldController = TextEditingController();
+
+class HomeModel extends ChangeNotifier {
+  void update() {
+    notifyListeners();
+  }
+}
 
 class HomePage {
   static VoidCallback? _enableAutofocusOnce;
@@ -210,6 +217,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<HomeModel>();
+
     return Scaffold(
       appBar: buildAppBar(context),
       body: Column(
@@ -310,9 +319,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: Text(group.name == "Default"
                       ? AppLocalizations.of(context)!.default_
                       : group.name),
-                  onTap: () async {
+                  onTap: ()  {
                     context.pop();
-                    await dictManager.setCurrentGroup(group.id);
+                    dictManager.setCurrentGroup(group.id);
+                    context.read<HomeModel>().update();
                   },
                 ),
               ),

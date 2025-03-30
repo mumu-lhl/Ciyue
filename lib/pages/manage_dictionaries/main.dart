@@ -3,6 +3,7 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:file_selector/file_selector.dart";
@@ -10,6 +11,7 @@ import "package:flutter/material.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
+import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
 late VoidCallback updateManageDictionariesPage;
@@ -477,6 +479,7 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               await dictManager.updateDictIds();
 
               setState(() {});
+              if (context.mounted) context.read<HomeModel>().update();
             },
           )),
     );
