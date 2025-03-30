@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.8.0](https://github.com/mumu-lhl/Ciyue/compare/v1.7.0..v1.8.0) - 2025-03-30
+
+### Bug Fixes
+
+- fix remove single history twice - ([b69c342](https://github.com/mumu-lhl/Ciyue/commit/b69c3420120d2aa4e5d7feecfddfd5437409c098)) - Mumulhl
+
+### Features
+
+- **(model)** add Gemini 2.5 Pro - ([5a3638f](https://github.com/mumu-lhl/Ciyue/commit/5a3638f8bc1baf02e8d415482d981a8bcaef1090)) - Mumulhl
+- **(translation)** added translation using Weblate (Spanish) - ([809dfca](https://github.com/mumu-lhl/Ciyue/commit/809dfcae38a93b598030f60d5bfe02889cabd897)) - Elías Fuentes
+- **(translation)** translated using Weblate (Spanish) - ([b68b2b9](https://github.com/mumu-lhl/Ciyue/commit/b68b2b95d0de18048d4c7ca97fb5678e165dec3b)) - Elías Fuentes
+- **(translation)** translated using Weblate (Russian) - ([57e5e43](https://github.com/mumu-lhl/Ciyue/commit/57e5e4366b7b2cf92a465e224d31de09f6914381)) - Xapitonov
+- **(translation)** translated using Weblate (Russian) - ([4db47c5](https://github.com/mumu-lhl/Ciyue/commit/4db47c5c8cfb243ad903e37f161f0e33485ed830)) - Xapitonov
+- **(translation)** update Spanish localization with new strings - ([379e3e2](https://github.com/mumu-lhl/Ciyue/commit/379e3e249ad45cd81034743510ef0839ec73fa15)) - Mumulhl
+- support Spanish - ([aa16dbd](https://github.com/mumu-lhl/Ciyue/commit/aa16dbdb507e69790ee9d7d84836b6e55b5578e6)) - Mumulhl
+
+### Refactoring
+
+- refactor the code of home - ([eaeb141](https://github.com/mumu-lhl/Ciyue/commit/eaeb141c8cd4932380bea84482744e5ef710e7ad)) - Mumulhl
+- refactor main page and history list - ([a332152](https://github.com/mumu-lhl/Ciyue/commit/a3321524b1bc52693604303e8f66bb321f9cd612)) - Mumulhl
+- refactor wordbook state management - ([05327ec](https://github.com/mumu-lhl/Ciyue/commit/05327ec6177f983d168fb0dfc044a76458ec8f8e)) - Mumulhl
+- streamline variable declarations in AiTranslatePage - ([fea31a7](https://github.com/mumu-lhl/Ciyue/commit/fea31a72d846875b8c311c7493179e6c29a2709b)) - Mumulhl
+- improve performance - ([6dd2237](https://github.com/mumu-lhl/Ciyue/commit/6dd2237e350c5a88e0e0be2cefe9dd9ee02454f5)) - Mumulhl
+- refactor home state management - ([cdf19d0](https://github.com/mumu-lhl/Ciyue/commit/cdf19d051531a7039c09db3386e1b93b290f1358)) - Mumulhl
+
+### Style
+
+- format code - ([76fdf44](https://github.com/mumu-lhl/Ciyue/commit/76fdf44ec11ace4e473a8b9e722110156dcef19c)) - Mumulhl
+- format code - ([b880de1](https://github.com/mumu-lhl/Ciyue/commit/b880de161fc1f3a742eb0bffcc1941812aa83666)) - Mumulhl
+
+---
 ## [1.7.0](https://github.com/mumu-lhl/Ciyue/compare/v1.7.0-beta.1..v1.7.0) - 2025-03-23
 
 ### Bug Fixes
