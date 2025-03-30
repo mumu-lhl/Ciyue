@@ -1,7 +1,9 @@
 import 'package:ciyue/main.dart';
+import 'package:ciyue/pages/main/home.dart';
 import 'package:ciyue/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:ciyue/src/generated/i18n/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 class AiSettings extends StatefulWidget {
   const AiSettings({super.key});
@@ -149,6 +151,7 @@ class _AiSettingsState extends State<AiSettings> {
             setState(() {
               settings.aiExplainWord = value;
               prefs.setBool('aiExplainWord', value);
+              context.read<HomeModel>().update();
             });
           },
         ),

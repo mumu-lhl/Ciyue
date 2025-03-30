@@ -3,6 +3,8 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/localization_delegates.dart";
+import "package:ciyue/pages/main/home.dart";
+import "package:ciyue/pages/main/wordbook.dart";
 import "package:ciyue/pages/settings/auto_export.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
@@ -21,6 +23,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:go_router/go_router.dart";
 import "package:package_info_plus/package_info_plus.dart";
+import "package:provider/provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
 
@@ -93,7 +96,10 @@ void main() async {
     accentColor = await DynamicColorPlugin.getAccentColor();
   }
 
-  runApp(const Ciyue());
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (_) => WordbookModel()),
+    ChangeNotifierProvider(create: (_) => HomeModel())
+  ], child: const Ciyue()));
 }
 
 late final Color? accentColor;

@@ -6,14 +6,6 @@ import 'package:ciyue/src/generated/i18n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
 
-final TextEditingController _inputController = TextEditingController();
-bool _isRichOutput = true;
-String _sourceLanguage = 'auto';
-String _targetLanguage = settings.language! == "system"
-    ? ui.PlatformDispatcher.instance.locale.languageCode
-    : settings.language!;
-String _translatedText = '';
-
 class AiTranslatePage extends StatefulWidget {
   const AiTranslatePage({super.key});
 
@@ -35,6 +27,14 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     'es': 'Spanish',
     'ru': 'Russian',
   };
+  final TextEditingController _inputController = TextEditingController();
+  bool _isRichOutput = true;
+  String _sourceLanguage = 'auto';
+  String _targetLanguage = settings.language! == "system"
+      ? ui.PlatformDispatcher.instance.locale.languageCode
+      : settings.language!;
+
+  String _translatedText = '';
 
   bool _isLoading = false;
 
