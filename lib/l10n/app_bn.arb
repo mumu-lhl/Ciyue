@@ -1,1 +1,14 @@
-{}
+{
+  "addDictionary": "অনুগ্রহপূর্বক সেটিংস থেকে প্রথমে একটি MDX অভিধান যুক্ত করুন",
+  "@addDictionary": {},
+  "startToSearch": "শব্দ খুঁজতে শুরু করুন",
+  "@startToSearch": {},
+  "manageDictionaries": "অভিধান পরিচালনা করুন",
+  "@manageDictionaries": {},
+  "home": "হোমপেজ",
+  "@home": {},
+  "wordBook": "শব্দকোষ",
+  "@wordBook": {},
+  "settings": "সেটিংস",
+  "@settings": {}
+}
