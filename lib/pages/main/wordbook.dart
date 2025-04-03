@@ -504,9 +504,9 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FutureBuilder(
-            future: context.select<WordbookModel, Future<List<WordbookTag>>>(
-                (model) => model.tags),
+        Consumer<WordbookModel>(builder: (context, model, child) {
+          return FutureBuilder(
+            future: model.tags,
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                 final choiceChips = <Widget>[];
@@ -542,11 +542,13 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
               }
 
               return Wrap();
-            }),
-        WordView(
-          allWords: context.select<WordbookModel, Future<List<WordbookData>>>(
-              (model) => model.allWords),
-        ),
+            },
+          );
+        }),
+        Consumer<WordbookModel>(
+            builder: (context, model, child) => WordView(
+                  allWords: model.allWords,
+                ))
       ],
     );
   }
