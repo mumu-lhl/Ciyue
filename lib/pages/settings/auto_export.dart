@@ -18,13 +18,18 @@ class AutoExport extends StatelessWidget {
           leading: BackButton(onPressed: () => context.pop()),
           title: Text(AppLocalizations.of(context)!.autoExport),
         ),
-        body: ListView(
-          children: [
-            Enable(),
-            if (Platform.isAndroid) FileName(),
-            if (Platform.isAndroid) ExportDirectory(),
-            if (!Platform.isAndroid) ExportPath(),
-          ],
+        body: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: ListView(
+              children: [
+                Enable(),
+                if (Platform.isAndroid) FileName(),
+                if (Platform.isAndroid) ExportDirectory(),
+                if (!Platform.isAndroid) ExportPath(),
+              ],
+            ),
+          ),
         ));
   }
 }

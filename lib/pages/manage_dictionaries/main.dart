@@ -79,7 +79,12 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         buildInfoButton(context),
         buildAddButton(context)
       ]),
-      body: buildBody(context),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: buildBody(context),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(

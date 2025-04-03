@@ -84,38 +84,43 @@ class _AiSettingsState extends State<AiSettings> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.aiSettings),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // AI Provider
-            TitleText(
-              AppLocalizations.of(context)!.aiSettings,
-            ),
-            const SizedBox(height: 12),
-            buildProvider(context),
-            const SizedBox(height: 24),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500.0),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // AI Provider
+                TitleText(
+                  AppLocalizations.of(context)!.aiSettings,
+                ),
+                const SizedBox(height: 12),
+                buildProvider(context),
+                const SizedBox(height: 24),
 
-            // AI Model
-            TitleText(
-              AppLocalizations.of(context)!.aiModel,
-            ),
-            const SizedBox(height: 12),
-            buildModel(context),
-            const SizedBox(height: 24),
+                // AI Model
+                TitleText(
+                  AppLocalizations.of(context)!.aiModel,
+                ),
+                const SizedBox(height: 12),
+                buildModel(context),
+                const SizedBox(height: 24),
 
-            // API Key
-            TitleText(
-              AppLocalizations.of(context)!.apiKey,
-            ),
-            const SizedBox(height: 12),
-            buildAPIKey(context),
-            const SizedBox(height: 24),
+                // API Key
+                TitleText(
+                  AppLocalizations.of(context)!.apiKey,
+                ),
+                const SizedBox(height: 12),
+                buildAPIKey(context),
+                const SizedBox(height: 24),
 
-            // Explain Word
-            buildExplainWord(context),
-          ],
+                // Explain Word
+                buildExplainWord(context),
+              ],
+            ),
+          ),
         ),
       ),
     );
