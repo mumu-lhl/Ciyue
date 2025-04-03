@@ -4,15 +4,17 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:dio/dio.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
-import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:go_router/go_router.dart";
+import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
 const discordUri = "https://discord.gg/BazBZuvKZG";
@@ -44,32 +46,6 @@ class About extends StatelessWidget {
   }
 }
 
-class TermsOfService extends StatelessWidget {
-  const TermsOfService({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.article),
-      title: Text(AppLocalizations.of(context)!.termsOfService),
-      onTap: () => context.push("/settings/terms_of_service"),
-    );
-  }
-}
-
-class PrivacyPolicy extends StatelessWidget {
-  const PrivacyPolicy({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.security),
-      title: Text(AppLocalizations.of(context)!.privacyPolicy),
-      onTap: () => context.push("/settings/privacy_policy"),
-    );
-  }
-}
-
 class AiSettingsWidget extends StatelessWidget {
   const AiSettingsWidget({super.key});
 
@@ -97,6 +73,90 @@ class AutoExport extends StatelessWidget {
   }
 }
 
+class CheckForUpdates extends StatelessWidget {
+  const CheckForUpdates({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+        leading: const Icon(Icons.update),
+        title: Text(AppLocalizations.of(context)!.checkForUpdates),
+        onTap: () async {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.checkingForUpdates),
+            ),
+          );
+          try {
+            final response = await Dio().get(
+              settings.includePrereleaseUpdates
+                  ? 'https://api.github.com/repos/mumu-lhl/Ciyue/releases'
+                  : 'https://api.github.com/repos/mumu-lhl/Ciyue/releases/latest',
+            );
+            if (response.statusCode == 200) {
+              final latestRelease = settings.includePrereleaseUpdates
+                  ? response.data[0]
+                  : response.data;
+              final latestVersion = latestRelease['tag_name']
+                  .toString()
+                  .substring(1); // Remove 'v' prefix
+              if (latestVersion != packageInfo.version) {
+                if (context.mounted) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title:
+                          Text(AppLocalizations.of(context)!.updateAvailable),
+                      content: Text(
+                        AppLocalizations.of(context)!
+                            .updateAvailableContent
+                            .replaceFirst("%s", latestVersion),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          child: Text(AppLocalizations.of(context)!.close),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            final url =
+                                'https://github.com/mumu-lhl/Ciyue/releases/latest';
+                            if (await canLaunchUrl(Uri.parse(url))) {
+                              launchUrl(Uri.parse(url));
+                            }
+                            if (context.mounted) context.pop();
+                          },
+                          child: Text(AppLocalizations.of(context)!.update),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text(AppLocalizations.of(context)!.noUpdateAvailable),
+                    ),
+                  );
+                }
+              }
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content:
+                      Text(AppLocalizations.of(context)!.updateCheckFailed),
+                ),
+              );
+            }
+          }
+        });
+  }
+}
+
 class ClearHistory extends StatelessWidget {
   const ClearHistory({super.key});
 
@@ -121,6 +181,7 @@ class ClearHistory extends StatelessWidget {
               onPressed: () async {
                 await historyDao.clearHistory();
                 if (context.mounted) {
+                  context.read<HomeModel>().update();
                   context.pop(context);
                 }
               },
@@ -304,6 +365,27 @@ class NotificationSwitch extends StatefulWidget {
   State<NotificationSwitch> createState() => _NotificationSwitchState();
 }
 
+class PrereleaseUpdatesSwitch extends StatefulWidget {
+  const PrereleaseUpdatesSwitch({super.key});
+
+  @override
+  State<PrereleaseUpdatesSwitch> createState() =>
+      _PrereleaseUpdatesSwitchState();
+}
+
+class PrivacyPolicy extends StatelessWidget {
+  const PrivacyPolicy({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.security),
+      title: Text(AppLocalizations.of(context)!.privacyPolicy),
+      onTap: () => context.push("/settings/privacy_policy"),
+    );
+  }
+}
+
 class SearchbarLocationSelector extends StatefulWidget {
   const SearchbarLocationSelector({super.key});
 
@@ -375,6 +457,19 @@ class SponsorUrl extends StatelessWidget {
         leading: const Icon(Icons.favorite),
         onTap: () => launchUrl(Uri.parse(sponsorUri)),
         onLongPress: () => _copy(context, sponsorUri));
+  }
+}
+
+class TermsOfService extends StatelessWidget {
+  const TermsOfService({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.article),
+      title: Text(AppLocalizations.of(context)!.termsOfService),
+      onTap: () => context.push("/settings/terms_of_service"),
+    );
   }
 }
 
@@ -501,116 +596,6 @@ class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
   }
 }
 
-class PrereleaseUpdatesSwitch extends StatefulWidget {
-  const PrereleaseUpdatesSwitch({super.key});
-
-  @override
-  State<PrereleaseUpdatesSwitch> createState() =>
-      _PrereleaseUpdatesSwitchState();
-}
-
-class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.includePrerelease),
-      value: settings.includePrereleaseUpdates,
-      onChanged: (value) async {
-        await prefs.setBool('includePrereleaseUpdates', value);
-        setState(() {
-          settings.includePrereleaseUpdates = value;
-        });
-      },
-      secondary: const Icon(Icons.settings_suggest_outlined),
-    );
-  }
-}
-
-class CheckForUpdates extends StatelessWidget {
-  const CheckForUpdates({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-        leading: const Icon(Icons.update),
-        title: Text(AppLocalizations.of(context)!.checkForUpdates),
-        onTap: () async {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.checkingForUpdates),
-            ),
-          );
-          try {
-            final response = await Dio().get(
-              settings.includePrereleaseUpdates
-                  ? 'https://api.github.com/repos/mumu-lhl/Ciyue/releases'
-                  : 'https://api.github.com/repos/mumu-lhl/Ciyue/releases/latest',
-            );
-            if (response.statusCode == 200) {
-              final latestRelease = settings.includePrereleaseUpdates
-                  ? response.data[0]
-                  : response.data;
-              final latestVersion = latestRelease['tag_name']
-                  .toString()
-                  .substring(1); // Remove 'v' prefix
-              if (latestVersion != packageInfo.version) {
-                if (context.mounted) {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title:
-                          Text(AppLocalizations.of(context)!.updateAvailable),
-                      content: Text(
-                        AppLocalizations.of(context)!
-                            .updateAvailableContent
-                            .replaceFirst("%s", latestVersion),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => context.pop(),
-                          child: Text(AppLocalizations.of(context)!.close),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            final url =
-                                'https://github.com/mumu-lhl/Ciyue/releases/latest';
-                            if (await canLaunchUrl(Uri.parse(url))) {
-                              launchUrl(Uri.parse(url));
-                            }
-                            if (context.mounted) context.pop();
-                          },
-                          child: Text(AppLocalizations.of(context)!.update),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              } else {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content:
-                          Text(AppLocalizations.of(context)!.noUpdateAvailable),
-                    ),
-                  );
-                }
-              }
-            }
-          } catch (e) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content:
-                      Text(AppLocalizations.of(context)!.updateCheckFailed),
-                ),
-              );
-            }
-          }
-        });
-  }
-}
-
 class _NotificationSwitchState extends State<NotificationSwitch> {
   @override
   Widget build(BuildContext context) {
@@ -630,6 +615,24 @@ class _NotificationSwitchState extends State<NotificationSwitch> {
         PlatformMethod.createPersistentNotification(value);
       },
       secondary: const Icon(Icons.notifications),
+    );
+  }
+}
+
+class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.includePrerelease),
+      value: settings.includePrereleaseUpdates,
+      onChanged: (value) async {
+        await prefs.setBool('includePrereleaseUpdates', value);
+        setState(() {
+          settings.includePrereleaseUpdates = value;
+        });
+      },
+      secondary: const Icon(Icons.settings_suggest_outlined),
     );
   }
 }
