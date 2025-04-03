@@ -55,6 +55,16 @@ You can visit [Weblate](https://hosted.weblate.org/engage/ciyue/) to add languag
 
 [![Translation status](https://hosted.weblate.org/widget/ciyue/multi-auto.svg)](https://hosted.weblate.org/engage/ciyue/)
 
+## Sponsors
+
+Thanks to their sponsorship for supporting the development of Ciyue!
+
+||
+|-|
+|蕬縌玢沰|
+|爱发电用户_1b0db|
+|爱发电用户_nW9j|
+
 ## Contributors
 
 [![Contributor](https://contrib.rocks/image?repo=mumu-lhl/Ciyue)](https://github.com/mumu-lhl/Ciyue/graphs/contributors)

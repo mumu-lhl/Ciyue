@@ -54,6 +54,16 @@
 
 [![翻译状态](https://hosted.weblate.org/widget/ciyue/multi-auto.svg)](https://hosted.weblate.org/engage/ciyue/)
 
+## 赞助者
+
+感谢他们的赞助支持了词悦的开发！
+
+||
+|-|
+|蕬縌玢沰|
+|爱发电用户_1b0db|
+|爱发电用户_nW9j|
+
 ## 贡献者
 
 <a href="https://github.com/mumu-lhl/Ciyue/graphs/contributors">
