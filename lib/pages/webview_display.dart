@@ -239,26 +239,21 @@ class WebviewDisplay extends StatelessWidget {
                   ? snapshot.data!.length + 1
                   : snapshot.data!.length;
               final showTab = dictsLength > 1;
-              return DefaultTabController(
-                  initialIndex: 0,
-                  length: showTab ? dictsLength : 0,
-                  child: Scaffold(
-                      appBar: AppBar(
-                          leading: BackButton(
-                            onPressed: () {
-                              if (context.canPop()) {
-                                context.pop();
-                              } else {
-                                // When opened from context menu
-                                SystemChannels.platform
-                                    .invokeMethod('SystemNavigator.pop');
-                              }
-                            },
-                          ),
-                          bottom: showTab ? buildTabBar(context) : null),
+              return showTab
+                  ? DefaultTabController(
+                      initialIndex: 0,
+                      length: dictsLength,
+                      child: Scaffold(
+                          appBar: buildAppBar(context, showTab),
+                          floatingActionButton: Button(word: word),
+                          body: buildTabView(context,
+                              validDictIds: snapshot.data!)))
+                  : Scaffold(
+                      appBar: AppBar(),
                       floatingActionButton: Button(word: word),
-                      body:
-                          buildTabView(context, validDictIds: snapshot.data!)));
+                      body: settings.aiExplainWord
+                          ? AIExplainView(word: word)
+                          : buildWebView(snapshot.data![0]));
             } else {
               final fromProcessText = !context.canPop();
               return Scaffold(
@@ -300,6 +295,21 @@ class WebviewDisplay extends StatelessWidget {
         });
   }
 
+  AppBar buildAppBar(BuildContext context, bool showTab) {
+    return AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              // When opened from context menu
+              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+            }
+          },
+        ),
+        bottom: showTab ? buildTabBar(context) : null);
+  }
+
   PreferredSizeWidget buildTabBar(BuildContext context) {
     return PreferredSize(
         preferredSize: const Size.fromHeight(48),
@@ -328,21 +338,24 @@ class WebviewDisplay extends StatelessWidget {
       {List<int> validDictIds = const []}) {
     return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
       if (settings.aiExplainWord) AIExplainView(word: word),
-      for (final id in validDictIds)
-        FutureBuilder(
-            future: dictManager.dicts[id]!.readWord(word),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                if (Platform.isAndroid) {
-                  return WebviewAndroid(content: snapshot.data!, dictId: id);
-                } else {
-                  return WebviewWindows(content: snapshot.data!, dictId: id);
-                }
-              } else {
-                return const SizedBox.shrink();
-              }
-            })
+      for (final id in validDictIds) buildWebView(id)
     ]);
+  }
+
+  Widget buildWebView(int id) {
+    return FutureBuilder(
+        future: dictManager.dicts[id]!.readWord(word),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            if (Platform.isAndroid) {
+              return WebviewAndroid(content: snapshot.data!, dictId: id);
+            } else {
+              return WebviewWindows(content: snapshot.data!, dictId: id);
+            }
+          } else {
+            return const SizedBox.shrink();
+          }
+        });
   }
 
   Future<List<int>> validDictionaryIds() async {
