@@ -517,6 +517,7 @@ class _DrawerIconSwitchState extends State<DrawerIconSwitch> {
       value: settings.showSidebarIcon,
       onChanged: (value) async {
         await prefs.setBool("showSidebarIcon", value);
+        if (context.mounted) context.read<HomeModel>().update();
         setState(() {
           settings.showSidebarIcon = value;
         });
@@ -587,6 +588,7 @@ class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
       value: settings.showMoreOptionsButton,
       onChanged: (value) async {
         await prefs.setBool("showMoreOptionsButton", value);
+        if (context.mounted) context.read<HomeModel>().update();
         setState(() {
           settings.showMoreOptionsButton = value;
         });
@@ -663,6 +665,7 @@ class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
           settings.searchBarInAppBar = searchBarLocationSelected;
           await prefs.setBool("searchBarInAppBar", searchBarLocationSelected);
 
+          if (context.mounted) context.read<HomeModel>().update();
           setState(() {});
         }
       },
