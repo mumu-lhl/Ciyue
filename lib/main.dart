@@ -98,14 +98,14 @@ void main() async {
     if (Platform.isWindows) {
       accentColor = await DynamicColorPlugin.getAccentColor();
     }
-  } catch (e) {
-    runApp(CiyueError(error: e));
-  }
 
-  runApp(MultiProvider(providers: [
-    ChangeNotifierProvider(create: (_) => WordbookModel()),
-    ChangeNotifierProvider(create: (_) => HomeModel())
-  ], child: const Ciyue()));
+    runApp(MultiProvider(providers: [
+      ChangeNotifierProvider(create: (_) => WordbookModel()),
+      ChangeNotifierProvider(create: (_) => HomeModel())
+    ], child: const Ciyue()));
+  } catch (e) {
+    runApp(MaterialApp(home: CiyueError(error: e)));
+  }
 }
 
 late final Color? accentColor;
