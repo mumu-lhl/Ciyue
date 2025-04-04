@@ -172,5 +172,5 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "APKs/ciyue-*-release.apk,Windows/ciyue-windows.zip,Linux/ciyue-linux.tar.xz"
+          artifacts: "APKs/ciyue-*-release.apk,Windows/ciyue-windows.zip,ciyue-installer.exe,Linux/ciyue-linux.tar.xz"
           tag: ${{ github.ref_name }}
