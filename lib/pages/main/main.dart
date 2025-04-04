@@ -23,11 +23,21 @@ class MainPage {
 class _HomeState extends State<Home> {
   late String searchWord;
   var _currentIndex = 0;
+
+  // Using FocusScope for each page within the IndexedStack.
+  // Why?
+  // IndexedStack keeps all child pages' states (including their FocusNodes) alive, even when invisible.
+  // When returning from a pushed route (popping back to a page within the IndexedStack),
+  // Flutter's focus restoration logic might incorrectly grant focus to a FocusNode
+  // on an *inactive* (but still existing in the tree) page within the IndexedStack.
+  // Wrapping each page in its own FocusScope creates distinct focus boundaries. This ensures
+  // that focus restoration correctly targets the scope of the *currently visible* page after a pop,
+  // preventing focus from unexpectedly jumping to an element on an invisible page.
   final _pages = [
-    const HomeScreen(),
-    const AiTranslatePage(),
-    const WordBookScreen(),
-    const SettingsScreen()
+    FocusScope(child: const HomeScreen()),
+    FocusScope(child: const AiTranslatePage()),
+    FocusScope(child: const WordBookScreen()),
+    FocusScope(child: const SettingsScreen()),
   ];
 
   @override
