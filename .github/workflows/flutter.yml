@@ -92,14 +92,11 @@ jobs:
           Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.42.34433\x64\Microsoft.VC143.CRT\vcruntime140_1.dll" build/windows/x64/runner/Release/
           Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.42.34433\x64\Microsoft.VC143.CRT\msvcp140.dll" build/windows/x64/runner/Release/
 
-      - name: Compression
-        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath Ciyue.zip
-
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: Windows
-          path: Ciyue.zip
+          path: build/windows/x64/runner/Release/
 
   build-linux:
     name: Build Linux
@@ -118,11 +115,8 @@ jobs:
       - name: Build
         run: flutter build linux
 
-      - name: Compression
-        run: tar -cJvf Ciyue.tar.xz build/linux/x64/release/bundle/*
-
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: Linux
-          path: Ciyue.tar.xz
+          path: build/linux/x64/release/bundle/
