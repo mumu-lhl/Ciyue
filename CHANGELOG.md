@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.9.0](https://github.com/mumu-lhl/Ciyue/compare/v1.8.0..v1.9.0) - 2025-04-05
+
+### Bug Fixes
+
+- **(focus)** wrap IndexedStack pages with FocusScope to fix restoration - ([67eb625](https://github.com/mumu-lhl/Ciyue/commit/67eb625560fda5fffc64c9ed05c2c55d93267686)) - Mumulhl
+- clear history - ([21983fe](https://github.com/mumu-lhl/Ciyue/commit/21983fe785c8ce1fb73b63af25bf8a4735f56bbc)) - Mumulhl
+- search bar location, sidebar icon and more options button - ([cb70fac](https://github.com/mumu-lhl/Ciyue/commit/cb70fac156e8fa1015e130eab980c461ca79e32b)) - Mumulhl
+- TabBarView - ([76a07c4](https://github.com/mumu-lhl/Ciyue/commit/76a07c439e4095f1b7249c426cdb6ca5e19ca8f8)) - Mumulhl
+- catch error before running - ([9989e0f](https://github.com/mumu-lhl/Ciyue/commit/9989e0f11bddde8d3f1d2c34b9adbfe346607fbf)) - Mumulhl
+- cannot running app after removing cache - ([4fa7458](https://github.com/mumu-lhl/Ciyue/commit/4fa7458377f62d82fc631ce6909b6c7f46f671df)) - Mumulhl
+
+### Documentation
+
+- add sponsors section to README files - ([c705273](https://github.com/mumu-lhl/Ciyue/commit/c705273938557d2319f2371eb2926f6cb9cc979f)) - Mumulhl
+
+### Features
+
+- **(l10n)** add AI prompt-related localization entries - ([ca62b2e](https://github.com/mumu-lhl/Ciyue/commit/ca62b2e6b0c6b3357a6f92cc0445bf8ed04d982f)) - Mumulhl
+- **(language)** support Bengali language (Thanks to Ekramul Reza) - ([5e6f783](https://github.com/mumu-lhl/Ciyue/commit/5e6f783d95fe64fae0ef36067911c0d3c8090064)) - Mumulhl
+- **(translation)** translated using Weblate (Sardinian) - ([9793191](https://github.com/mumu-lhl/Ciyue/commit/9793191866bd25431474cb109f2964b041755f33)) - Ajeje Brazorf
+- **(translation)** added translation using Weblate (Bengali) - ([41cfd16](https://github.com/mumu-lhl/Ciyue/commit/41cfd1689b863a2ba6143f86e51911fffed85315)) - Ekramul Reza
+- **(translation)** translated using Weblate (Bengali) - ([de3311e](https://github.com/mumu-lhl/Ciyue/commit/de3311e942eddcfb633206262728d7b1a8d70bb1)) - Ekramul Reza
+- **(translation)** translated using Weblate (Bengali) - ([4741f4e](https://github.com/mumu-lhl/Ciyue/commit/4741f4e403ee74392c50b0729fb95f8387696a86)) - Ekramul Reza
+- **(translation)** translated using Weblate (Bengali) - ([3d5e080](https://github.com/mumu-lhl/Ciyue/commit/3d5e0808ded778c5eec8b84e09d26dae224759fa)) - Ekramul Reza
+- support navigation rail - ([b2818bb](https://github.com/mumu-lhl/Ciyue/commit/b2818bb8ff0351f11fc6693de46a82aed92c8838)) - Mumulhl
+- add error handling and reporting UI before running - ([6629664](https://github.com/mumu-lhl/Ciyue/commit/6629664495c5ea99a6d845ec060b490f83e7a338)) - Mumulhl
+- support custom prompts - ([871bfca](https://github.com/mumu-lhl/Ciyue/commit/871bfcae3f6540a2eceec0427d642876cd9b3950)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** prevent double zipping of Windows build artifact - ([eaaaaac](https://github.com/mumu-lhl/Ciyue/commit/eaaaaac71e1d05869d46dbc8cec049698fc07011)) - Mumulhl
+- **(ci)** prevent double zipping of Linux build artifact - ([e6d6b7a](https://github.com/mumu-lhl/Ciyue/commit/e6d6b7a57046f94cc3d25b6efb2ade017dd8d8f7)) - Mumulhl
+- **(ci)** fix linux build - ([b8a3ac0](https://github.com/mumu-lhl/Ciyue/commit/b8a3ac0483d42b993b76b0b19f89831120d5369b)) - Mumulhl
+- **(deps)** bump shared_preferences from 2.5.2 to 2.5.3 - ([aff9641](https://github.com/mumu-lhl/Ciyue/commit/aff96410ae50c4c3012d55a61ed997056c97c0ef)) - dependabot[bot]
+- **(release)** add windows installer - ([b1545a4](https://github.com/mumu-lhl/Ciyue/commit/b1545a4cf3f3e743c34a1bdbc722688d86b578be)) - Mumulhl
+- **(release)** include installer executable in release artifacts - ([6cb7304](https://github.com/mumu-lhl/Ciyue/commit/6cb73040e98d97ab8befaa0c0cea881941a623b3)) - Mumulhl
+
+### Refactoring
+
+- replace context.select with Consumer - ([5173ef5](https://github.com/mumu-lhl/Ciyue/commit/5173ef5bb91cca89c468fcb4c24f4007eb6a7c35)) - Mumulhl
+- constrain maximum width in settings, auto export and dictionary management pages - ([e2ad4b3](https://github.com/mumu-lhl/Ciyue/commit/e2ad4b3e58b336ea3a8336341e3ce1b718eaba73)) - Mumulhl
+- add DictManagerModel for managing dictionary groups and integrate with HomeModel - ([a00d707](https://github.com/mumu-lhl/Ciyue/commit/a00d707c78a3266e8c8728230ce4f352768ee4b3)) - Mumulhl
+- refactor TextField - ([59aeff0](https://github.com/mumu-lhl/Ciyue/commit/59aeff0e6dc7d7f2e8bf07f35a3e16a5070ebe40)) - Mumulhl
+
+---
 ## [1.8.0](https://github.com/mumu-lhl/Ciyue/compare/v1.7.0..v1.8.0) - 2025-03-30
 
 ### Bug Fixes
