@@ -66,6 +66,10 @@ void main() async {
       "aiProviderConfigs",
       "aiExplainWord",
       "includePrereleaseUpdates",
+      "explainPromptMode",
+      "customExplainPrompt",
+      "translatePromptMode",
+      "customTranslatePrompt",
     }));
 
     int? groupId = prefs.getInt("currentDictionaryGroupId");

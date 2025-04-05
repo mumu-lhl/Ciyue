@@ -1,8 +1,8 @@
 import 'package:ciyue/main.dart';
 import 'package:ciyue/pages/main/home.dart';
 import 'package:ciyue/settings.dart';
-import 'package:flutter/material.dart';
 import 'package:ciyue/src/generated/i18n/app_localizations.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class AiSettings extends StatefulWidget {
@@ -86,42 +86,118 @@ class _AiSettingsState extends State<AiSettings> {
       ),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500.0),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // AI Provider
-                TitleText(
-                  AppLocalizations.of(context)!.aiSettings,
-                ),
-                const SizedBox(height: 12),
-                buildProvider(context),
-                const SizedBox(height: 24),
+            constraints: const BoxConstraints(maxWidth: 500.0),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // AI Provider
+                    TitleText(
+                      AppLocalizations.of(context)!.aiSettings,
+                    ),
+                    const SizedBox(height: 12),
+                    buildProvider(context),
+                    const SizedBox(height: 24),
 
-                // AI Model
-                TitleText(
-                  AppLocalizations.of(context)!.aiModel,
-                ),
-                const SizedBox(height: 12),
-                buildModel(context),
-                const SizedBox(height: 24),
+                    // AI Model
+                    TitleText(
+                      AppLocalizations.of(context)!.aiModel,
+                    ),
+                    const SizedBox(height: 12),
+                    buildModel(context),
+                    const SizedBox(height: 24),
 
-                // API Key
-                TitleText(
-                  AppLocalizations.of(context)!.apiKey,
-                ),
-                const SizedBox(height: 12),
-                buildAPIKey(context),
-                const SizedBox(height: 24),
+                    // API Key
+                    TitleText(
+                      AppLocalizations.of(context)!.apiKey,
+                    ),
+                    const SizedBox(height: 12),
+                    buildAPIKey(context),
+                    const SizedBox(height: 24),
 
-                // Explain Word
-                buildExplainWord(context),
-              ],
-            ),
-          ),
-        ),
+                    // Explain Word
+                    buildExplainWord(context),
+                    const SizedBox(height: 24),
+
+                    // Explain Word Prompt Setting
+                    TitleText("Explain Word Prompt"),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: settings.explainPromptMode,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Prompt Mode",
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                            value: "default", child: Text("Default")),
+                        DropdownMenuItem(
+                            value: "custom", child: Text("Custom")),
+                      ],
+                      onChanged: (value) async {
+                        if (value == null) return;
+                        await settings.setExplainPromptMode(value);
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    if (settings.explainPromptMode == "custom")
+                      TextFormField(
+                        initialValue: settings.customExplainPrompt,
+                        maxLines: null,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: "Custom Explain Prompt",
+                          helperText: "You can use \$word and \$targetLanguage",
+                        ),
+                        onChanged: (value) async {
+                          await settings.setCustomExplainPrompt(value);
+                        },
+                      ),
+                    const SizedBox(height: 24),
+
+                    // AI Translate Prompt Setting
+                    TitleText("AI Translate Prompt"),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: settings.translatePromptMode,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Prompt Mode",
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                            value: "default", child: Text("Default")),
+                        DropdownMenuItem(
+                            value: "custom", child: Text("Custom")),
+                      ],
+                      onChanged: (value) async {
+                        if (value == null) return;
+                        await settings.setTranslatePromptMode(value);
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    if (settings.translatePromptMode == "custom")
+                      TextFormField(
+                        initialValue: settings.customTranslatePrompt,
+                        maxLines: null,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: "Custom Translate Prompt",
+                          helperText:
+                              "You can use \$sourceLanguage, \$targetLanguage, and \$text in your prompt.",
+                        ),
+                        onChanged: (value) async {
+                          await settings.setCustomTranslatePrompt(value);
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            )),
       ),
     );
   }

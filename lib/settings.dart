@@ -24,6 +24,11 @@ class _Settings {
   late bool aiExplainWord;
   Map<String, Map<String, dynamic>> aiProviderConfigs = {};
 
+  late String explainPromptMode;
+  late String customExplainPrompt;
+  late String translatePromptMode;
+  late String customTranslatePrompt;
+
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
     notification = prefs.getBool("notification") ?? false;
@@ -41,6 +46,11 @@ class _Settings {
     language = prefs.getString("language") ?? "system";
     aiProvider = prefs.getString("aiProvider") ?? "openai";
     aiExplainWord = prefs.getBool("aiExplainWord") ?? false;
+
+    explainPromptMode = prefs.getString("explainPromptMode") ?? "default";
+    customExplainPrompt = prefs.getString("customExplainPrompt") ?? "";
+    translatePromptMode = prefs.getString("translatePromptMode") ?? "default";
+    customTranslatePrompt = prefs.getString("customTranslatePrompt") ?? "";
 
     var aiProviderConfigsString = prefs.getString('aiProviderConfigs');
     if (aiProviderConfigsString != null) {
@@ -68,5 +78,25 @@ class _Settings {
       String provider, String model, String apiKey) async {
     aiProviderConfigs[provider] = {'model': model, 'apiKey': apiKey};
     await prefs.setString('aiProviderConfigs', jsonEncode(aiProviderConfigs));
+  }
+
+  Future<void> setExplainPromptMode(String mode) async {
+    explainPromptMode = mode;
+    await prefs.setString("explainPromptMode", mode);
+  }
+
+  Future<void> setCustomExplainPrompt(String prompt) async {
+    customExplainPrompt = prompt;
+    await prefs.setString("customExplainPrompt", prompt);
+  }
+
+  Future<void> setTranslatePromptMode(String mode) async {
+    translatePromptMode = mode;
+    await prefs.setString("translatePromptMode", mode);
+  }
+
+  Future<void> setCustomTranslatePrompt(String prompt) async {
+    customTranslatePrompt = prompt;
+    await prefs.setString("customTranslatePrompt", prompt);
   }
 }

@@ -224,9 +224,28 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
             settings.getAiProviderConfig(settings.aiProvider)['apiKey'] ?? '',
       );
 
-      final prompt = _isRichOutput
-          ? 'Translate the following text from ${_languageMap[_sourceLanguage]} to ${_languageMap[_targetLanguage]}. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in ${_languageMap[_targetLanguage]}: ${_inputController.text}'
-          : 'Translate this ${_languageMap[_sourceLanguage]} sentence to ${_languageMap[_targetLanguage]}, only return the translated text: "${_inputController.text}"';
+      final sourceLangName = _languageMap[_sourceLanguage] ?? _sourceLanguage;
+      final targetLangName = _languageMap[_targetLanguage] ?? _targetLanguage;
+      final inputText = _inputController.text.trim();
+
+      String template;
+      if (settings.translatePromptMode == 'custom' &&
+          settings.customTranslatePrompt.isNotEmpty) {
+        template = settings.customTranslatePrompt;
+      } else if (_isRichOutput) {
+        template = '''
+Translate the following text from \$sourceLanguage to \$targetLanguage. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in \$targetLanguage: \$text
+''';
+      } else {
+        template =
+            'Translate this \$sourceLanguage sentence to \$targetLanguage, only return the translated text: "\$text"';
+      }
+
+      final prompt = template
+          .replaceAll(r'$sourceLanguage', sourceLangName)
+          .replaceAll(r'$targetLanguage', targetLangName)
+          .replaceAll(r'$text', inputText);
+
       final translationResult = await ai.request(prompt);
 
       setState(() {
