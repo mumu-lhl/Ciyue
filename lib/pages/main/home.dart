@@ -429,7 +429,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 searchResult.lastIndexWhere((e) => e.key == element.key));
 
             final resultWidgets = <Widget>[];
-            final textFieldController = context.read<HomeModel>().textFieldController;
+            final textFieldController =
+                context.read<HomeModel>().textFieldController;
 
             if (settings.aiExplainWord &&
                 (searchResult.isEmpty ||
