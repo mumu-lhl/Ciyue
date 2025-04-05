@@ -31,8 +31,13 @@ class AIExplainView extends StatelessWidget {
     final targetLanguage = settings.language! == "system"
         ? ui.PlatformDispatcher.instance.locale.languageCode
         : settings.language!;
-    final prompt =
-        """You are a AI explain word tool called Ciyue(词悦). Generate a detailed explanation of the word "$word", including the following sections:
+    String template;
+    if (settings.explainPromptMode == 'custom' &&
+        settings.customExplainPrompt.isNotEmpty) {
+      template = settings.customExplainPrompt;
+    } else {
+      template =
+          """You are a AI explain word tool called Ciyue(词悦). Generate a detailed explanation of the word "\$word", including the following sections:
 
 Pronunciation: Provide the pronunciation using the International Phonetic Alphabet (IPA).
 Part of Speech: Specify the part of speech (e.g., noun, verb, adjective).
@@ -42,7 +47,11 @@ Synonyms: List at least three synonyms.
 Antonyms: List at least three antonyms.
 
 Format the response using Markdown to ensure each section is clearly organized with appropriate headings.
-The output is entirely and exclusively in $targetLanguage.""";
+The output is entirely and exclusively in \$targetLanguage.""";
+    }
+    final prompt = template
+        .replaceAll(r'$word', word)
+        .replaceAll(r'$targetLanguage', targetLanguage);
     final ai = AI(
       provider: settings.aiProvider,
       model: settings.getAiProviderConfig(settings.aiProvider)['model'] ?? '',
