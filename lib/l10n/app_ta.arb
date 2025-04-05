@@ -177,5 +177,21 @@
   "includePrerelease": "முன்வெளியீட்டு புதுப்பிப்புகளைச் சேர்க்கவும்",
   "@includePrerelease": {},
   "checkingForUpdates": "புதுப்பிப்புகளைச் சரிபார்க்கிறது...",
-  "@checkingForUpdates": {}
+  "@checkingForUpdates": {},
+  "aiExplainWordPrompt": "சொல் விளக்குவதற்கான தூண்டுதல்",
+  "@aiExplainWordPrompt": {},
+  "promptMode": "தூண்டுதல் பயன்முறை",
+  "@promptMode": {},
+  "customOption": "தனிப்பயன்",
+  "@customOption": {},
+  "customExplainPrompt": "தனிப்பயன் விளக்க தூண்டுதல்",
+  "@customExplainPrompt": {},
+  "customExplainPromptHelper": "நீங்கள் உங்கள் தூண்டுதலில் $word மற்றும் $targetLanguage ஐ பயன்படுத்தலாம்.",
+  "@customExplainPromptHelper": {},
+  "aiTranslatePrompt": "AI மொழிபெயர்ப்பு தூண்டுதல்",
+  "@aiTranslatePrompt": {},
+  "customTranslatePrompt": "தனிப்பயன் மொழிபெயர்ப்பு தூண்டுதல்",
+  "@customTranslatePrompt": {},
+  "customTranslatePromptHelper": "நீங்கள் உங்கள் தூண்டுதலில் $sourceLanguage, $targetLanguage மற்றும் $text ஐ பயன்படுத்தலாம்.",
+  "@customTranslatePromptHelper": {}
 }

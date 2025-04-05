@@ -177,5 +177,21 @@
   "includePrerelease": "Inkluder forhåndsutgivelser",
   "@includePrerelease": {},
   "checkingForUpdates": "Ser etter oppdateringer...",
-  "@checkingForUpdates": {}
+  "@checkingForUpdates": {},
+  "aiExplainWordPrompt": "Forklar ord prompt",
+  "@aiExplainWordPrompt": {},
+  "promptMode": "Prompt-modus",
+  "@promptMode": {},
+  "customOption": "Egendefinert",
+  "@customOption": {},
+  "customExplainPrompt": "Egendefinert forklaringsprompt",
+  "@customExplainPrompt": {},
+  "customExplainPromptHelper": "Du kan bruke $word og $targetLanguage i prompten din.",
+  "@customExplainPromptHelper": {},
+  "aiTranslatePrompt": "AI oversettelsesprompt",
+  "@aiTranslatePrompt": {},
+  "customTranslatePrompt": "Egendefinert oversettelsesprompt",
+  "@customTranslatePrompt": {},
+  "customTranslatePromptHelper": "Du kan bruke $sourceLanguage, $targetLanguage og $text i prompten din.",
+  "@customTranslatePromptHelper": {}
 }

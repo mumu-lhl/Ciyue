@@ -177,5 +177,21 @@
   "includePrerelease": "包含預發行版本",
   "@includePrerelease": {},
   "checkingForUpdates": "正在檢查更新",
-  "@checkingForUpdates": {}
+  "@checkingForUpdates": {},
+  "aiExplainWordPrompt": "解釋字詞提示詞",
+  "@aiExplainWordPrompt": {},
+  "promptMode": "提示詞模式",
+  "@promptMode": {},
+  "customOption": "自訂",
+  "@customOption": {},
+  "customExplainPrompt": "自訂解釋提示詞",
+  "@customExplainPrompt": {},
+  "customExplainPromptHelper": "你可以在提示詞中使用 $word 和 $targetLanguage。",
+  "@customExplainPromptHelper": {},
+  "aiTranslatePrompt": "AI 翻譯提示詞",
+  "@aiTranslatePrompt": {},
+  "customTranslatePrompt": "自訂翻譯提示詞",
+  "@customTranslatePrompt": {},
+  "customTranslatePromptHelper": "你可以在提示詞中使用 $sourceLanguage、$targetLanguage 和 $text。",
+  "@customTranslatePromptHelper": {}
 }

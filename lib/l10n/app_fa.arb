@@ -177,5 +177,21 @@
   "includePrerelease": "شامل به‌روزرسانی‌های پیش‌انتشار",
   "@includePrerelease": {},
   "checkingForUpdates": "در حال بررسی به‌روزرسانی‌ها...",
-  "@checkingForUpdates": {}
+  "@checkingForUpdates": {},
+  "aiExplainWordPrompt": "درخواست توضیح کلمه",
+  "@aiExplainWordPrompt": {},
+  "promptMode": "حالت درخواست",
+  "@promptMode": {},
+  "customOption": "سفارشی",
+  "@customOption": {},
+  "customExplainPrompt": "درخواست سفارشی توضیح",
+  "@customExplainPrompt": {},
+  "customExplainPromptHelper": "می‌توانید از $word و $targetLanguage در درخواست خود استفاده کنید.",
+  "@customExplainPromptHelper": {},
+  "aiTranslatePrompt": "درخواست ترجمه هوش مصنوعی",
+  "@aiTranslatePrompt": {},
+  "customTranslatePrompt": "درخواست ترجمه سفارشی",
+  "@customTranslatePrompt": {},
+  "customTranslatePromptHelper": "می‌توانید از $sourceLanguage، $targetLanguage و $text در درخواست خود استفاده کنید.",
+  "@customTranslatePromptHelper": {}
 }

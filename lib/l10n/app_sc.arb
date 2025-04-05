@@ -177,5 +177,21 @@
   "includePrerelease": "Inclui versiones preliminares",
   "@includePrerelease": {},
   "checkingForUpdates": "Chirchende atualizatziones...",
-  "@checkingForUpdates": {}
+  "@checkingForUpdates": {},
+  "aiExplainWordPrompt": "Prompt de isplicatzione de paràula",
+  "@aiExplainWordPrompt": {},
+  "promptMode": "Modu prompt",
+  "@promptMode": {},
+  "customOption": "Personalizadu",
+  "@customOption": {},
+  "customExplainPrompt": "Prompt personalizadu de isplicatzione",
+  "@customExplainPrompt": {},
+  "customExplainPromptHelper": "Podes impreare $word e $targetLanguage in su prompt.",
+  "@customExplainPromptHelper": {},
+  "aiTranslatePrompt": "Prompt de tradutzione AI",
+  "@aiTranslatePrompt": {},
+  "customTranslatePrompt": "Prompt personalizadu de tradutzione",
+  "@customTranslatePrompt": {},
+  "customTranslatePromptHelper": "Podes impreare $sourceLanguage, $targetLanguage e $text in su prompt.",
+  "@customTranslatePromptHelper": {}
 }

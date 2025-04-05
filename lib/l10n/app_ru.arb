@@ -177,5 +177,21 @@
   "includePrerelease": "Включить предварительные версии",
   "@includePrerelease": {},
   "checkingForUpdates": "Проверка обновлений...",
-  "@checkingForUpdates": {}
+  "@checkingForUpdates": {},
+  "aiExplainWordPrompt": "Поясняющий запрос для слова",
+  "@aiExplainWordPrompt": {},
+  "promptMode": "Режим запроса",
+  "@promptMode": {},
+  "customOption": "Пользовательский",
+  "@customOption": {},
+  "customExplainPrompt": "Пользовательский поясняющий запрос",
+  "@customExplainPrompt": {},
+  "customExplainPromptHelper": "Вы можете использовать $word и $targetLanguage в вашем запросе.",
+  "@customExplainPromptHelper": {},
+  "aiTranslatePrompt": "Запрос на перевод с помощью ИИ",
+  "@aiTranslatePrompt": {},
+  "customTranslatePrompt": "Пользовательский запрос на перевод",
+  "@customTranslatePrompt": {},
+  "customTranslatePromptHelper": "Вы можете использовать $sourceLanguage, $targetLanguage и $text в вашем запросе.",
+  "@customTranslatePromptHelper": {}
 }

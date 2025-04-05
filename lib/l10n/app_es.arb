@@ -177,5 +177,21 @@
   "checkingForUpdates": "Buscando actualizaciones...",
   "@checkingForUpdates": {},
   "notSupport": "No soportado",
-  "@notSupport": {}
+  "@notSupport": {},
+  "aiExplainWordPrompt": "Explicar indicación de palabra",
+  "@aiExplainWordPrompt": {},
+  "promptMode": "Modo de indicación",
+  "@promptMode": {},
+  "customOption": "Personalizado",
+  "@customOption": {},
+  "customExplainPrompt": "Indicación personalizada para explicar",
+  "@customExplainPrompt": {},
+  "customExplainPromptHelper": "Puedes usar $word y $targetLanguage en tu indicación.",
+  "@customExplainPromptHelper": {},
+  "aiTranslatePrompt": "Indicación de traducción de IA",
+  "@aiTranslatePrompt": {},
+  "customTranslatePrompt": "Indicación personalizada de traducción",
+  "@customTranslatePrompt": {},
+  "customTranslatePromptHelper": "Puedes usar $sourceLanguage, $targetLanguage y $text en tu indicación.",
+  "@customTranslatePromptHelper": {}
 }

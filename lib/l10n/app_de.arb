@@ -177,5 +177,21 @@
   "includePrerelease": "Vorabversion-Updates einschließen",
   "@includePrerelease": {},
   "checkingForUpdates": "Suche nach Updates...",
-  "@checkingForUpdates": {}
+  "@checkingForUpdates": {},
+  "aiExplainWordPrompt": "Worterklärung-Aufforderung",
+  "@aiExplainWordPrompt": {},
+  "promptMode": "Aufforderungsmodus",
+  "@promptMode": {},
+  "customOption": "Benutzerdefiniert",
+  "@customOption": {},
+  "customExplainPrompt": "Benutzerdefinierte Erklärungseingabe",
+  "@customExplainPrompt": {},
+  "customExplainPromptHelper": "Sie können $word und $targetLanguage in Ihrer Eingabe verwenden.",
+  "@customExplainPromptHelper": {},
+  "aiTranslatePrompt": "KI-Übersetzungsaufforderung",
+  "@aiTranslatePrompt": {},
+  "customTranslatePrompt": "Benutzerdefinierte Übersetzungsaufforderung",
+  "@customTranslatePrompt": {},
+  "customTranslatePromptHelper": "Sie können $sourceLanguage, $targetLanguage und $text in Ihrer Eingabe verwenden.",
+  "@customTranslatePromptHelper": {}
 }

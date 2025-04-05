@@ -176,5 +176,21 @@
   "enterTextToTranslate": "অনুবাদ করতে লিখুন",
   "@enterTextToTranslate": {},
   "termsOfService": "পরিষেবার শর্তাবলী",
-  "@termsOfService": {}
+  "@termsOfService": {},
+  "aiExplainWordPrompt": "শব্দ ব্যাখ্যার অনুরোধ",
+  "@aiExplainWordPrompt": {},
+  "promptMode": "অনুরোধ মোড",
+  "@promptMode": {},
+  "customOption": "স্বনির্বাচিত",
+  "@customOption": {},
+  "customExplainPrompt": "স্বনির্বাচিত ব্যাখ্যার অনুরোধ",
+  "@customExplainPrompt": {},
+  "customExplainPromptHelper": "আপনি আপনার অনুরোধে $word এবং $targetLanguage ব্যবহার করতে পারেন।",
+  "@customExplainPromptHelper": {},
+  "aiTranslatePrompt": "এআই অনুবাদ অনুরোধ",
+  "@aiTranslatePrompt": {},
+  "customTranslatePrompt": "স্বনির্বাচিত অনুবাদ অনুরোধ",
+  "@customTranslatePrompt": {},
+  "customTranslatePromptHelper": "আপনি আপনার অনুরোধে $sourceLanguage, $targetLanguage এবং $text ব্যবহার করতে পারেন।",
+  "@customTranslatePromptHelper": {}
 }

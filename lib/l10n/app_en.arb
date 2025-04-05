@@ -177,5 +177,21 @@
   "includePrerelease": "Include Prerelease Updates",
   "@includePrerelease": {},
   "checkingForUpdates": "Checking for updates...",
-  "@checkingForUpdates": {}
+  "@checkingForUpdates": {},
+  "aiExplainWordPrompt": "Explain Word Prompt",
+  "@aiExplainWordPrompt": {},
+  "promptMode": "Prompt Mode",
+  "@promptMode": {},
+  "customOption": "Custom",
+  "@customOption": {},
+  "customExplainPrompt": "Custom Explain Prompt",
+  "@customExplainPrompt": {},
+  "customExplainPromptHelper": "You can use $word and $targetLanguage in your prompt.",
+  "@customExplainPromptHelper": {},
+  "aiTranslatePrompt": "AI Translate Prompt",
+  "@aiTranslatePrompt": {},
+  "customTranslatePrompt": "Custom Translate Prompt",
+  "@customTranslatePrompt": {},
+  "customTranslatePromptHelper": "You can use $sourceLanguage, $targetLanguage, and $text in your prompt.",
+  "@customTranslatePromptHelper": {}
 }

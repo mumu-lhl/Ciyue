@@ -122,19 +122,21 @@ class _AiSettingsState extends State<AiSettings> {
                     const SizedBox(height: 24),
 
                     // Explain Word Prompt Setting
-                    TitleText("Explain Word Prompt"),
+                    TitleText(AppLocalizations.of(context)!.aiExplainWordPrompt),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       value: settings.explainPromptMode,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Prompt Mode",
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        labelText: AppLocalizations.of(context)!.promptMode,
                       ),
-                      items: const [
+                      items: [
                         DropdownMenuItem(
-                            value: "default", child: Text("Default")),
+                            value: "default",
+                            child: Text(AppLocalizations.of(context)!.default_)),
                         DropdownMenuItem(
-                            value: "custom", child: Text("Custom")),
+                            value: "custom",
+                            child: Text(AppLocalizations.of(context)!.customOption)),
                       ],
                       onChanged: (value) async {
                         if (value == null) return;
@@ -147,10 +149,10 @@ class _AiSettingsState extends State<AiSettings> {
                       TextFormField(
                         initialValue: settings.customExplainPrompt,
                         maxLines: null,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: "Custom Explain Prompt",
-                          helperText: "You can use \$word and \$targetLanguage",
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: AppLocalizations.of(context)!.customExplainPrompt,
+                          helperText: AppLocalizations.of(context)!.customExplainPromptHelper,
                         ),
                         onChanged: (value) async {
                           await settings.setCustomExplainPrompt(value);
@@ -159,19 +161,21 @@ class _AiSettingsState extends State<AiSettings> {
                     const SizedBox(height: 24),
 
                     // AI Translate Prompt Setting
-                    TitleText("AI Translate Prompt"),
+                    TitleText(AppLocalizations.of(context)!.aiTranslatePrompt),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       value: settings.translatePromptMode,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Prompt Mode",
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        labelText: AppLocalizations.of(context)!.promptMode,
                       ),
-                      items: const [
+                      items: [
                         DropdownMenuItem(
-                            value: "default", child: Text("Default")),
+                            value: "default",
+                            child: Text(AppLocalizations.of(context)!.default_)),
                         DropdownMenuItem(
-                            value: "custom", child: Text("Custom")),
+                            value: "custom",
+                            child: Text(AppLocalizations.of(context)!.customOption)),
                       ],
                       onChanged: (value) async {
                         if (value == null) return;
@@ -184,11 +188,10 @@ class _AiSettingsState extends State<AiSettings> {
                       TextFormField(
                         initialValue: settings.customTranslatePrompt,
                         maxLines: null,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: "Custom Translate Prompt",
-                          helperText:
-                              "You can use \$sourceLanguage, \$targetLanguage, and \$text in your prompt.",
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: AppLocalizations.of(context)!.customTranslatePrompt,
+                          helperText: AppLocalizations.of(context)!.customTranslatePromptHelper,
                         ),
                         onChanged: (value) async {
                           await settings.setCustomTranslatePrompt(value);
