@@ -10,9 +10,14 @@ import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
-final _textFieldController = TextEditingController();
-
 class HomeModel extends ChangeNotifier {
+  final textFieldController = TextEditingController();
+
+  void clearSearchWord() {
+    textFieldController.clear();
+    notifyListeners();
+  }
+
   void update() {
     notifyListeners();
   }
@@ -28,7 +33,9 @@ class HomePage {
       _enableAutofocusOnce = callback;
 
   static void setSearchWord(String word) {
-    _textFieldController.text = word;
+    Provider.of<HomeModel>(navigatorKey.currentContext!, listen: false)
+        .textFieldController
+        .text = word;
   }
 }
 
@@ -218,6 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     context.watch<HomeModel>();
+    context.watch<DictManagerModel>();
 
     return Scaffold(
       appBar: buildAppBar(context),
@@ -280,12 +288,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     } else {
-      if (_textFieldController.text.isEmpty) {
+      final textFieldController = context.read<HomeModel>().textFieldController;
+      if (textFieldController.text.isEmpty) {
         return HistoryList();
       } else {
         final searchers = <Future<List<DictionaryData>>>[];
         for (final dict in dictManager.dicts.values) {
-          searchers.add(dict.db.searchWord(_textFieldController.text));
+          searchers.add(dict.db.searchWord(textFieldController.text));
         }
         final future = Future.wait(searchers);
 
@@ -319,10 +328,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: Text(group.name == "Default"
                       ? AppLocalizations.of(context)!.default_
                       : group.name),
-                  onTap: () {
+                  onTap: () async {
                     context.pop();
-                    dictManager.setCurrentGroup(group.id);
-                    context.read<HomeModel>().update();
+                    await context
+                        .read<DictManagerModel>()
+                        .setCurrentGroup(group.id);
                   },
                 ),
               ),
@@ -362,8 +372,8 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: () async {
           context.push("/word", extra: {"word": word});
           await historyDao.addHistory(word);
-          if (settings.autoRemoveSearchWord) {
-            _textFieldController.clear();
+          if (settings.autoRemoveSearchWord && context.mounted) {
+            context.read<HomeModel>().clearSearchWord();
           }
         });
   }
@@ -372,14 +382,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return IconButton(
       icon: const Icon(Icons.close),
       onPressed: () {
-        setState(() {
-          _textFieldController.clear();
-        });
+        context.read<HomeModel>().clearSearchWord();
       },
     );
   }
 
   Widget buildSearchBar(BuildContext context) {
+    final textFieldController = context.read<HomeModel>().textFieldController;
     final autofocus = _autofocus;
     _autofocus = false;
 
@@ -391,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
             FocusScope.of(context).unfocus();
           },
           hintText: AppLocalizations.of(context)!.search,
-          controller: _textFieldController,
+          controller: textFieldController,
           elevation: WidgetStateProperty.all(1),
           constraints:
               const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
@@ -400,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {});
           },
           trailing: [
-            if (_textFieldController.text.isNotEmpty) buildRemoveButton()
+            if (textFieldController.text.isNotEmpty) buildRemoveButton()
           ],
         ),
       ),
@@ -420,12 +429,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 searchResult.lastIndexWhere((e) => e.key == element.key));
 
             final resultWidgets = <Widget>[];
+            final textFieldController = context.read<HomeModel>().textFieldController;
 
             if (settings.aiExplainWord &&
                 (searchResult.isEmpty ||
-                    searchResult[0].key != _textFieldController.text)) {
+                    searchResult[0].key != textFieldController.text)) {
               resultWidgets
-                  .add(buildOneResult(_textFieldController.text, context));
+                  .add(buildOneResult(textFieldController.text, context));
             }
             for (final word in searchResult) {
               resultWidgets.add(buildOneResult(word.key, context));

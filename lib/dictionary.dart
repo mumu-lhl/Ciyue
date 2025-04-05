@@ -5,6 +5,7 @@ import "package:ciyue/database/app.dart";
 import "package:ciyue/utils.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
+import "package:flutter/foundation.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
@@ -13,6 +14,13 @@ import "database/dictionary.dart";
 import "main.dart";
 
 final dictManager = DictManager();
+
+class DictManagerModel extends ChangeNotifier {
+  Future<void> setCurrentGroup(int id) async {
+    await dictManager.setCurrentGroup(id);
+    notifyListeners();
+  }
+}
 
 class DictManager {
   final Map<int, Mdict> dicts = {};
