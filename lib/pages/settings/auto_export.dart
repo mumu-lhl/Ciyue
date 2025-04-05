@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:ciyue/main.dart';
 import 'package:ciyue/platform.dart';
 import 'package:ciyue/settings.dart';
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import 'package:go_router/go_router.dart';
 
 class AutoExport extends StatelessWidget {
@@ -34,33 +34,6 @@ class AutoExport extends StatelessWidget {
   }
 }
 
-class ExportPath extends StatefulWidget {
-  const ExportPath({super.key});
-
-  @override
-  State<ExportPath> createState() => _ExportPathState();
-}
-
-class _ExportPathState extends State<ExportPath> {
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(AppLocalizations.of(context)!.exportPath),
-      subtitle: settings.exportPath == null ? null : Text(settings.exportPath!),
-      leading: Icon(Icons.folder),
-      onTap: () async {
-        final path = await getSaveLocation(suggestedName: "ciyue.json");
-        if (path != null) {
-          setState(() {
-            settings.exportPath = path.path;
-            prefs.setString("exportPath", path.path);
-          });
-        }
-      },
-    );
-  }
-}
-
 class Enable extends StatefulWidget {
   const Enable({
     super.key,
@@ -75,6 +48,13 @@ class ExportDirectory extends StatefulWidget {
 
   @override
   State<ExportDirectory> createState() => _ExportDirectoryState();
+}
+
+class ExportPath extends StatefulWidget {
+  const ExportPath({super.key});
+
+  @override
+  State<ExportPath> createState() => _ExportPathState();
 }
 
 class FileName extends StatefulWidget {
@@ -118,6 +98,26 @@ class _ExportDirectoryState extends State<ExportDirectory> {
   }
 }
 
+class _ExportPathState extends State<ExportPath> {
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(AppLocalizations.of(context)!.exportPath),
+      subtitle: settings.exportPath == null ? null : Text(settings.exportPath!),
+      leading: Icon(Icons.folder),
+      onTap: () async {
+        final path = await getSaveLocation(suggestedName: "ciyue.json");
+        if (path != null) {
+          setState(() {
+            settings.exportPath = path.path;
+            prefs.setString("exportPath", path.path);
+          });
+        }
+      },
+    );
+  }
+}
+
 class _FileNameState extends State<FileName> {
   @override
   Widget build(BuildContext context) {
@@ -132,10 +132,14 @@ class _FileNameState extends State<FileName> {
           builder: (context) => AlertDialog(
             title: Text(AppLocalizations.of(context)!.exportFileName),
             content: TextField(
+              autofocus: true,
               controller: controller,
               decoration: InputDecoration(
                 hintText: "ciyue",
               ),
+              onSubmitted: (String fileName) {
+                Navigator.pop(context, fileName);
+              },
             ),
             actions: [
               TextButton(

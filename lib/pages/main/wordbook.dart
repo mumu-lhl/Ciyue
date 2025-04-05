@@ -344,6 +344,16 @@ class _TagListDialogState extends State<TagListDialog> {
 }
 
 class _WordBookScreenState extends State<WordBookScreen> {
+  Future<void> addTag(BuildContext context, String tagName) async {
+    await wordbookTagsDao.addTag(tagName);
+    await wordbookTagsDao.existTag();
+
+    if (context.mounted) {
+      context.read<WordbookModel>().updateTags();
+      context.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     context.select<WordbookModel, DateTime?>((model) => model.selectedDate);
@@ -394,23 +404,21 @@ class _WordBookScreenState extends State<WordBookScreen> {
           return AlertDialog(
             title: Text(locale.addTag),
             content: TextField(
+              autofocus: true,
               decoration: InputDecoration(
                 labelText: locale.tagName,
               ),
               controller: textController,
+              onSubmitted: (String tagName) async {
+                await addTag(context, tagName);
+              },
             ),
             actions: [
               TextCloseButton(),
               TextButton(
                 child: Text(locale.add),
                 onPressed: () async {
-                  await wordbookTagsDao.addTag(textController.text);
-                  await wordbookTagsDao.existTag();
-
-                  if (context.mounted) {
-                    context.read<WordbookModel>().updateTags();
-                    context.pop();
-                  }
+                  await addTag(context, textController.text);
                 },
               )
             ],
