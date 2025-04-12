@@ -122,7 +122,8 @@ class _AiSettingsState extends State<AiSettings> {
                     const SizedBox(height: 24),
 
                     // Explain Word Prompt Setting
-                    TitleText(AppLocalizations.of(context)!.aiExplainWordPrompt),
+                    TitleText(
+                        AppLocalizations.of(context)!.aiExplainWordPrompt),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       value: settings.explainPromptMode,
@@ -133,10 +134,12 @@ class _AiSettingsState extends State<AiSettings> {
                       items: [
                         DropdownMenuItem(
                             value: "default",
-                            child: Text(AppLocalizations.of(context)!.default_)),
+                            child:
+                                Text(AppLocalizations.of(context)!.default_)),
                         DropdownMenuItem(
                             value: "custom",
-                            child: Text(AppLocalizations.of(context)!.customOption)),
+                            child: Text(
+                                AppLocalizations.of(context)!.customOption)),
                       ],
                       onChanged: (value) async {
                         if (value == null) return;
@@ -151,8 +154,10 @@ class _AiSettingsState extends State<AiSettings> {
                         maxLines: null,
                         decoration: InputDecoration(
                           border: const OutlineInputBorder(),
-                          labelText: AppLocalizations.of(context)!.customExplainPrompt,
-                          helperText: AppLocalizations.of(context)!.customExplainPromptHelper,
+                          labelText:
+                              AppLocalizations.of(context)!.customExplainPrompt,
+                          helperText: AppLocalizations.of(context)!
+                              .customExplainPromptHelper,
                         ),
                         onChanged: (value) async {
                           await settings.setCustomExplainPrompt(value);
@@ -172,10 +177,12 @@ class _AiSettingsState extends State<AiSettings> {
                       items: [
                         DropdownMenuItem(
                             value: "default",
-                            child: Text(AppLocalizations.of(context)!.default_)),
+                            child:
+                                Text(AppLocalizations.of(context)!.default_)),
                         DropdownMenuItem(
                             value: "custom",
-                            child: Text(AppLocalizations.of(context)!.customOption)),
+                            child: Text(
+                                AppLocalizations.of(context)!.customOption)),
                       ],
                       onChanged: (value) async {
                         if (value == null) return;
@@ -190,8 +197,10 @@ class _AiSettingsState extends State<AiSettings> {
                         maxLines: null,
                         decoration: InputDecoration(
                           border: const OutlineInputBorder(),
-                          labelText: AppLocalizations.of(context)!.customTranslatePrompt,
-                          helperText: AppLocalizations.of(context)!.customTranslatePromptHelper,
+                          labelText: AppLocalizations.of(context)!
+                              .customTranslatePrompt,
+                          helperText: AppLocalizations.of(context)!
+                              .customTranslatePromptHelper,
                         ),
                         onChanged: (value) async {
                           await settings.setCustomTranslatePrompt(value);
