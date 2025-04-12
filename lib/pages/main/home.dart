@@ -200,6 +200,7 @@ class _HistoryListState extends State<HistoryList> {
     );
     if (confirmed == true) {
       await historyDao.removeHistory(item.word);
+      setState(() {});
     }
     return confirmed ?? false;
   }
@@ -484,6 +485,7 @@ class _MoreOptionsDialogState extends State<MoreOptionsDialog> {
               if (value != null) {
                 settings.autoRemoveSearchWord = value;
                 await prefs.setBool("autoRemoveSearchWord", value);
+                if (context.mounted) context.read<HomeModel>().update();
                 setState(() {});
               }
             },
