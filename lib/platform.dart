@@ -15,9 +15,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 const _platform = MethodChannel("org.eu.mumulhl.ciyue");
 
 Future<void> _updateAllDictionaries() async {
-  final cacheDir = Directory(
-      join((await getApplicationCacheDirectory()).path, "dictionaries_cache"));
-  final entities = await cacheDir.list().toList();
+  final documentsDir = Directory(
+      join((await getApplicationSupportDirectory()).path, "dictionaries"));
+  final entities = await documentsDir.list(followLinks: false).toList();
   await _addDictionaries(entities);
 }
 
