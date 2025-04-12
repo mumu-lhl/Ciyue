@@ -329,7 +329,7 @@ class WebviewDisplay extends StatelessWidget {
             ]),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return TabBar(tabs: [
+                return TabBar(isScrollable: true, tabs: [
                   if (settings.aiExplainWord) Tab(text: "AI"),
                   for (int i = 0; i < snapshot.data!.length; i++)
                     if (snapshot.data![i])
