@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file. See [conven
 
 - **(ui)** instantly update UI when deleting or auto-removing search terms - ([44f0275](https://github.com/mumu-lhl/Ciyue/commit/44f027574753486e6638eb52a1c039099c1a4c3d)) - Mumulhl
 
+### Documentation
+
+- **(README)** add contributing guidelines - ([ad785db](https://github.com/mumu-lhl/Ciyue/commit/ad785db144cfbdcc7541d10643bf67cd989fa706)) - Mumulhl
+
 ### Features
 
 - **(translation)** translated using Weblate (Bengali) - ([a2f043b](https://github.com/mumu-lhl/Ciyue/commit/a2f043bb9a3133d72ff3f2aeb4ab0b68c133f357)) - Ekramul Reza
