@@ -193,5 +193,7 @@
   "customTranslatePrompt": "தனிப்பயன் மொழிபெயர்ப்பு தூண்டுதல்",
   "@customTranslatePrompt": {},
   "customTranslatePromptHelper": "நீங்கள் உங்கள் தூண்டுதலில் $sourceLanguage, $targetLanguage மற்றும் $text ஐ பயன்படுத்தலாம்.",
-  "@customTranslatePromptHelper": {}
+  "@customTranslatePromptHelper": {},
+  "tabBarPosition": "சொல் காட்டலில் தாவல் பட்டை இருப்பிடம்",
+  "@tabBarPosition": {}
 }

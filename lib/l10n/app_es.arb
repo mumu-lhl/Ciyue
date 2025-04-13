@@ -193,5 +193,7 @@
   "customTranslatePrompt": "Indicación personalizada de traducción",
   "@customTranslatePrompt": {},
   "customTranslatePromptHelper": "Puedes usar $sourceLanguage, $targetLanguage y $text en tu indicación.",
-  "@customTranslatePromptHelper": {}
+  "@customTranslatePromptHelper": {},
+  "tabBarPosition": "Posición de la barra de pestañas en la visualización de palabras",
+  "@tabBarPosition": {}
 }

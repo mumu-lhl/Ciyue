@@ -193,5 +193,7 @@
   "customTranslatePrompt": "درخواست ترجمه سفارشی",
   "@customTranslatePrompt": {},
   "customTranslatePromptHelper": "می‌توانید از $sourceLanguage، $targetLanguage و $text در درخواست خود استفاده کنید.",
-  "@customTranslatePromptHelper": {}
+  "@customTranslatePromptHelper": {},
+  "tabBarPosition": "موقعیت نوار زبانه در نمایش واژه",
+  "@tabBarPosition": {}
 }

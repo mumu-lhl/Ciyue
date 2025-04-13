@@ -253,10 +253,21 @@ class WebviewDisplay extends StatelessWidget {
                       initialIndex: 0,
                       length: dictsLength,
                       child: Scaffold(
-                          appBar: buildAppBar(context, showTab),
-                          floatingActionButton: Button(word: word),
-                          body: buildTabView(context,
-                              validDictIds: snapshot.data!)))
+                        appBar: buildAppBar(context, showTab),
+                        floatingActionButton: Button(word: word),
+                        body: Column(
+                          children: [
+                            Expanded(
+                              child: buildTabView(context,
+                                  validDictIds: snapshot.data!),
+                            ),
+                            if (settings.tabBarPosition ==
+                                    TabBarPosition.bottom &&
+                                showTab)
+                              buildTabBar(context),
+                          ],
+                        ),
+                      ))
                   : Scaffold(
                       appBar: AppBar(),
                       floatingActionButton: Button(word: word),
@@ -316,7 +327,9 @@ class WebviewDisplay extends StatelessWidget {
             }
           },
         ),
-        bottom: showTab ? buildTabBar(context) : null);
+        bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
+            ? buildTabBar(context)
+            : null);
   }
 
   PreferredSizeWidget buildTabBar(BuildContext context) {

@@ -394,6 +394,55 @@ class SearchbarLocationSelector extends StatefulWidget {
       _SearchbarLocationSelectorState();
 }
 
+class TabBarPositionSelector extends StatefulWidget {
+  const TabBarPositionSelector({super.key});
+
+  @override
+  State<TabBarPositionSelector> createState() => _TabBarPositionSelectorState();
+}
+
+class _TabBarPositionSelectorState extends State<TabBarPositionSelector> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+
+    return InkWell(
+      onTapUp: (tapUpDetails) async {
+        final selected = await showMenu<TabBarPosition>(
+          context: context,
+          position: RelativeRect.fromLTRB(
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+          ),
+          initialValue: settings.tabBarPosition,
+          items: [
+            PopupMenuItem(
+              value: TabBarPosition.top,
+              child: Text(locale.top),
+            ),
+            PopupMenuItem(
+              value: TabBarPosition.bottom,
+              child: Text(locale.bottom),
+            ),
+          ],
+        );
+
+        if (selected != null && selected != settings.tabBarPosition) {
+          await settings.setTabBarPosition(selected);
+          setState(() {});
+        }
+      },
+      child: ListTile(
+        leading: const Icon(Icons.tab),
+        title: Text(locale.tabBarPosition),
+        trailing: const Icon(Icons.keyboard_arrow_down),
+      ),
+    );
+  }
+}
+
 class SecureScreenSwitch extends StatefulWidget {
   const SecureScreenSwitch({super.key});
 
@@ -414,6 +463,7 @@ class SettingsScreen extends StatelessWidget {
         const ThemeSelector(),
         const LanguageSelector(),
         const SearchbarLocationSelector(),
+        const TabBarPositionSelector(),
         const DrawerIconSwitch(),
         const MoreOptionsButtonSwitch(),
         if (Platform.isAndroid) ...[
