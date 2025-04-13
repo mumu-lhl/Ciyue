@@ -42,46 +42,62 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final ratio = MediaQuery.sizeOf(context).aspectRatio;
     return Scaffold(
-      body: buildBody(),
-      bottomNavigationBar: buildNavigationBar(),
-    );
-  }
-
-  Widget buildBody() {
-    return MediaQuery.of(context).size.width > 600
-        ? Row(
-            children: [
-              NavigationRail(
-                labelType: NavigationRailLabelType.all,
-                destinations: [
-                  for (final destination in buildCommonDestinations())
-                    NavigationRailDestination(
-                      icon: destination.$1,
-                      label: Text(destination.$2),
-                    )
-                ],
-                selectedIndex: _currentIndex,
-                onDestinationSelected: (int index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-                leading: const SizedBox(),
-              ),
-              const VerticalDivider(thickness: 1, width: 1),
-              Expanded(
-                child: IndexedStack(
-                  index: _currentIndex,
-                  children: _pages,
+      body: ratio > 1.0
+          ? Row(
+              children: [
+                NavigationRail(
+                  extended: ratio > 1.5,
+                  labelType: ratio > 1.5
+                      ? NavigationRailLabelType.none
+                      : NavigationRailLabelType.all,
+                  destinations: [
+                    for (final destination in buildCommonDestinations())
+                      NavigationRailDestination(
+                        icon: destination.$1,
+                        label: Text(destination.$2),
+                      )
+                  ],
+                  selectedIndex: _currentIndex,
+                  onDestinationSelected: (int index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                  },
+                  leading: const SizedBox(),
                 ),
-              ),
-            ],
-          )
-        : IndexedStack(
-            index: _currentIndex,
-            children: _pages,
-          );
+                const VerticalDivider(thickness: 1, width: 1),
+                Expanded(
+                  child: IndexedStack(
+                    index: _currentIndex,
+                    children: _pages,
+                  ),
+                ),
+              ],
+            )
+          : IndexedStack(
+              index: _currentIndex,
+              children: _pages,
+            ),
+      bottomNavigationBar: ratio <= 1.0
+          ? NavigationBar(
+              onDestinationSelected: (int index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              selectedIndex: _currentIndex,
+              destinations: [
+                for (final destination in buildCommonDestinations())
+                  NavigationDestination(
+                    icon: destination.$1,
+                    label: destination.$2,
+                  )
+              ],
+            )
+          : null,
+    );
   }
 
   List<(Icon, String)> buildCommonDestinations() {
@@ -91,26 +107,6 @@ class _HomeState extends State<Home> {
       (const Icon(Icons.book), AppLocalizations.of(context)!.wordBook),
       (const Icon(Icons.settings), AppLocalizations.of(context)!.settings)
     ];
-  }
-
-  NavigationBar? buildNavigationBar() {
-    return MediaQuery.of(context).size.width < 600
-        ? NavigationBar(
-            onDestinationSelected: (int index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            selectedIndex: _currentIndex,
-            destinations: [
-              for (final destination in buildCommonDestinations())
-                NavigationDestination(
-                  icon: destination.$1,
-                  label: destination.$2,
-                )
-            ],
-          )
-        : null;
   }
 
   @override
