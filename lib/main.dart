@@ -70,6 +70,7 @@ void main() async {
       "customExplainPrompt",
       "translatePromptMode",
       "customTranslatePrompt",
+      "tabBarPosition",
     }));
 
     int? groupId = prefs.getInt("currentDictionaryGroupId");

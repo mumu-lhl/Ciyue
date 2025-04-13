@@ -193,5 +193,7 @@
   "customTranslatePrompt": "Benutzerdefinierte Übersetzungsaufforderung",
   "@customTranslatePrompt": {},
   "customTranslatePromptHelper": "Sie können $sourceLanguage, $targetLanguage und $text in Ihrer Eingabe verwenden.",
-  "@customTranslatePromptHelper": {}
+  "@customTranslatePromptHelper": {},
+  "tabBarPosition": "TabBar-Position in der Wortanzeige",
+  "@tabBarPosition": {}
 }

@@ -193,5 +193,7 @@
   "customTranslatePrompt": "Egendefinert oversettelsesprompt",
   "@customTranslatePrompt": {},
   "customTranslatePromptHelper": "Du kan bruke $sourceLanguage, $targetLanguage og $text i prompten din.",
-  "@customTranslatePromptHelper": {}
+  "@customTranslatePromptHelper": {},
+  "tabBarPosition": "TabBar-posisjon i ordvisning",
+  "@tabBarPosition": {}
 }

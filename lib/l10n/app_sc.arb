@@ -193,5 +193,7 @@
   "customTranslatePrompt": "Prompt personalizadu de tradutzione",
   "@customTranslatePrompt": {},
   "customTranslatePromptHelper": "Podes impreare $sourceLanguage, $targetLanguage e $text in su prompt.",
-  "@customTranslatePromptHelper": {}
+  "@customTranslatePromptHelper": {},
+  "tabBarPosition": "Positzione de sa TabBar in s’ammustramentu de sa paràula",
+  "@tabBarPosition": {}
 }

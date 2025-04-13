@@ -193,5 +193,7 @@
   "customTranslatePrompt": "Custom Translate Prompt",
   "@customTranslatePrompt": {},
   "customTranslatePromptHelper": "You can use $sourceLanguage, $targetLanguage, and $text in your prompt.",
-  "@customTranslatePromptHelper": {}
+  "@customTranslatePromptHelper": {},
+  "tabBarPosition": "TabBar Position in Word Display",
+  "@tabBarPosition": {}
 }

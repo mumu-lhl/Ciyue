@@ -193,5 +193,7 @@
   "customTranslatePrompt": "Пользовательский запрос на перевод",
   "@customTranslatePrompt": {},
   "customTranslatePromptHelper": "Вы можете использовать $sourceLanguage, $targetLanguage и $text в вашем запросе.",
-  "@customTranslatePromptHelper": {}
+  "@customTranslatePromptHelper": {},
+  "tabBarPosition": "Положение панели вкладок в отображении слова",
+  "@tabBarPosition": {}
 }

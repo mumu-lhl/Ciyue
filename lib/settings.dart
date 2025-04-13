@@ -3,6 +3,8 @@ import 'dart:convert';
 import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
 
+enum TabBarPosition { top, bottom }
+
 final settings = _Settings();
 
 class _Settings {
@@ -28,6 +30,8 @@ class _Settings {
   late String customExplainPrompt;
   late String translatePromptMode;
   late String customTranslatePrompt;
+
+  late TabBarPosition tabBarPosition;
 
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
@@ -59,6 +63,13 @@ class _Settings {
               jsonDecode(aiProviderConfigsString));
     }
 
+    final tabBarPositionString = prefs.getString("tabBarPosition");
+    if (tabBarPositionString == null) {
+      tabBarPosition = TabBarPosition.top;
+    } else {
+      tabBarPosition = TabBarPosition.values.byName(tabBarPositionString);
+    }
+
     final themeModeString = prefs.getString("themeMode");
     switch (themeModeString) {
       case "light":
@@ -68,6 +79,11 @@ class _Settings {
       case "system" || null:
         themeMode = ThemeMode.system;
     }
+  }
+
+  Future<void> setTabBarPosition(TabBarPosition position) async {
+    tabBarPosition = position;
+    await prefs.setString("tabBarPosition", position.name);
   }
 
   Map<String, dynamic> getAiProviderConfig(String provider) {

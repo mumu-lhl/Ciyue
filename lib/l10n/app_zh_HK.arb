@@ -193,5 +193,7 @@
   "customTranslatePrompt": "自訂翻譯提示词",
   "@customTranslatePrompt": {},
   "customTranslatePromptHelper": "你可以在提示词中使用 $sourceLanguage、$targetLanguage 和 $text。",
-  "@customTranslatePromptHelper": {}
+  "@customTranslatePromptHelper": {},
+  "tabBarPosition": "單詞顯示中的標籤欄位置",
+  "@tabBarPosition": {}
 }
