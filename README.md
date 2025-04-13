@@ -65,6 +65,10 @@ Thanks to their sponsorship for supporting the development of Ciyue!
 |爱发电用户_1b0db|
 |爱发电用户_nW9j|
 
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on how to contribute to this project.
+
 ## Contributors
 
 [![Contributor](https://contrib.rocks/image?repo=mumu-lhl/Ciyue)](https://github.com/mumu-lhl/Ciyue/graphs/contributors)

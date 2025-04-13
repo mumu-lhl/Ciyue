@@ -64,6 +64,10 @@
 |爱发电用户_1b0db|
 |爱发电用户_nW9j|
 
+## 贡献指南
+
+请参阅 [CONTRIBUTING.md](./CONTRIBUTING.md) 以了解如何为本项目做出贡献。
+
 ## 贡献者
 
 <a href="https://github.com/mumu-lhl/Ciyue/graphs/contributors">
