@@ -118,7 +118,7 @@ jobs:
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
-          name: Windows
+          name: Windows-Installer
           path: ciyue-installer.exe
 
       - name: Compression
@@ -173,5 +173,5 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "APKs/ciyue-*-release.apk,Windows/ciyue-windows.zip,Windows/ciyue-installer.exe,Linux/ciyue-linux.tar.xz"
+          artifacts: "APKs/ciyue-*-release.apk,Windows/ciyue-windows.zip,Windows-Installer/ciyue-installer.exe,Linux/ciyue-linux.tar.xz"
           tag: ${{ github.ref_name }}
