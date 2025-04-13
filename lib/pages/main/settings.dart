@@ -460,10 +460,10 @@ class SettingsScreen extends StatelessWidget {
         const ManageDictionariesWidget(),
         const AiSettingsWidget(),
         TitleDivider(title: AppLocalizations.of(context)!.appearance),
-        const TabBarPositionSelector(),
         const ThemeSelector(),
         const LanguageSelector(),
         const SearchbarLocationSelector(),
+        const TabBarPositionSelector(),
         const DrawerIconSwitch(),
         const MoreOptionsButtonSwitch(),
         if (Platform.isAndroid) ...[
