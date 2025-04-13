@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Miscellaneous Chores
 
+- **(ci)** fix release - ([685ef82](https://github.com/mumu-lhl/Ciyue/commit/685ef820061b2368debdf5a9a7645f4bc4476e2e)) - Mumulhl
 - **(release)** fix installer path in release workflow - ([360630c](https://github.com/mumu-lhl/Ciyue/commit/360630c93fb1a75052837c93c395f3d3acc2e10a)) - Mumulhl
 
 ### Refactoring
