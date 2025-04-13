@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.10.0](https://github.com/mumu-lhl/Ciyue/compare/v1.9.0..v1.10.0) - 2025-04-13
+
+### Bug Fixes
+
+- **(ui)** instantly update UI when deleting or auto-removing search terms - ([44f0275](https://github.com/mumu-lhl/Ciyue/commit/44f027574753486e6638eb52a1c039099c1a4c3d)) - Mumulhl
+
+### Features
+
+- **(translation)** translated using Weblate (Bengali) - ([a2f043b](https://github.com/mumu-lhl/Ciyue/commit/a2f043bb9a3133d72ff3f2aeb4ab0b68c133f357)) - Ekramul Reza
+- add TabBar position setting - ([5b3936a](https://github.com/mumu-lhl/Ciyue/commit/5b3936a2b077e3834852cb89e11b9a795b4da80d)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(release)** fix installer path in release workflow - ([360630c](https://github.com/mumu-lhl/Ciyue/commit/360630c93fb1a75052837c93c395f3d3acc2e10a)) - Mumulhl
+
+### Refactoring
+
+- **(ui)** make TabBar horizontally scrollable to prevent tab overflow when there are many dictionaries - ([09ba69d](https://github.com/mumu-lhl/Ciyue/commit/09ba69dfa6198859f14c848b2bd046b936111620)) - Mumulhl
+- **(ui)** center align tabs in WebviewDisplay TabBar - ([be6147d](https://github.com/mumu-lhl/Ciyue/commit/be6147d05f396199ffd47a36838f4433076a4655)) - Mumulhl
+- **(ui)** reorder TabBarPositionSelector in SettingsScreen - ([9b63e42](https://github.com/mumu-lhl/Ciyue/commit/9b63e4267be7e17c651a685240c7b8f72fc48bbc)) - Mumulhl
+- copy files to support path on Android - ([839042e](https://github.com/mumu-lhl/Ciyue/commit/839042e98613bd407cb2b0637f3a28eccd845265)) - Mumulhl
+
+### Style
+
+- format code - ([24cca87](https://github.com/mumu-lhl/Ciyue/commit/24cca874c74b868b85f091dee956869b1811570e)) - Mumulhl
+
+---
 ## [1.9.0](https://github.com/mumu-lhl/Ciyue/compare/v1.8.0..v1.9.0) - 2025-04-05
 
 ### Bug Fixes
