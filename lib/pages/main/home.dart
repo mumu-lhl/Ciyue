@@ -29,6 +29,7 @@ class HomePage {
   static bool callEnableAutofocusOnce = false;
 
   static VoidCallback get enableAutofocusOnce => _enableAutofocusOnce!;
+
   static set enableAutofocusOnce(VoidCallback callback) =>
       _enableAutofocusOnce = callback;
 
@@ -150,15 +151,17 @@ class _HistoryListState extends State<HistoryList> {
                       }
                     },
                     background: Container(
-                        color: Colors.blue,
+                        color: Theme.of(context).colorScheme.primary,
                         alignment: Alignment.centerLeft,
                         padding: const EdgeInsets.only(left: 16.0),
-                        child: const Icon(Icons.label)),
+                        child: Icon(Icons.label_outline,
+                            color: Theme.of(context).colorScheme.onPrimary)),
                     secondaryBackground: Container(
-                        color: Colors.red,
+                        color: Theme.of(context).colorScheme.error,
                         alignment: Alignment.centerRight,
                         padding: const EdgeInsets.only(right: 16.0),
-                        child: const Icon(Icons.delete)),
+                        child: Icon(Icons.delete_outline,
+                            color: Theme.of(context).colorScheme.onError)),
                     child: ListTile(
                       title: Text(item.word),
                       onTap: () {
@@ -362,10 +365,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   ListTile buildOneResult(String word, BuildContext context) {
     return ListTile(
-        trailing: Icon(Icons.arrow_circle_right_outlined),
+        trailing: Icon(Icons.arrow_forward),
         title: Text(word),
         leading: IconButton(
-          icon: const Icon(Icons.volume_up),
+          icon: const Icon(Icons.volume_up_outlined),
           onPressed: () async {
             await flutterTts.speak(word);
           },
