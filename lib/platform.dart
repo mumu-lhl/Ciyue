@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/settings.dart";
@@ -14,9 +15,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 const _platform = MethodChannel("org.eu.mumulhl.ciyue");
 
 Future<void> _updateAllDictionaries() async {
-  final cacheDir = Directory(
-      join((await getApplicationCacheDirectory()).path, "dictionaries_cache"));
-  final entities = await cacheDir.list().toList();
+  final documentsDir = Directory(
+      join((await getApplicationSupportDirectory()).path, "dictionaries"));
+  final entities = await documentsDir.list(followLinks: false).toList();
   await _addDictionaries(entities);
 }
 
@@ -114,9 +115,10 @@ class PlatformMethod {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse:
             (NotificationResponse notificationResponse) {
-      router.go("/", extra: {"searchWord": ""});
+      router.go("/");
       MainPage.setScreenIndex(0);
-      MainPage.enableAutofocusOnce();
+      HomePage.callEnableAutofocusOnce = true;
+      HomePage.enableAutofocusOnce();
     });
   }
 

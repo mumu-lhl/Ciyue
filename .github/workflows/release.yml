@@ -45,7 +45,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.27.4
+          flutter-version: 3.29.2
           cache: true
 
       - uses: actions/setup-java@v4
@@ -61,11 +61,15 @@ jobs:
         run: |
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 
-      - run: flutter pub get
-      - run: flutter build apk
-      - run: flutter build apk --split-per-abi --target-platform=android-arm64
-      - run: flutter build apk --split-per-abi --target-platform=android-arm
-      - run: flutter build apk --split-per-abi --target-platform=android-x64
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Android
+        run: |
+          flutter build apk
+          flutter build apk --split-per-abi --target-platform=android-arm64
+          flutter build apk --split-per-abi --target-platform=android-arm
+          flutter build apk --split-per-abi --target-platform=android-x64
 
       - name: Rename .apk
         run: |
@@ -89,17 +93,33 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.27.4
+          flutter-version: 3.29.2
           cache: true
 
-      - run: flutter pub get
-      - run: flutter build windows
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows
+        run: flutter build windows
 
       - name: Copy DLLs
         run: |
           Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.42.34433\x64\Microsoft.VC143.CRT\vcruntime140.dll" build/windows/x64/runner/Release/
           Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.42.34433\x64\Microsoft.VC143.CRT\vcruntime140_1.dll" build/windows/x64/runner/Release/
           Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.42.34433\x64\Microsoft.VC143.CRT\msvcp140.dll" build/windows/x64/runner/Release/
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build Installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ciyue.iss
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-Installer
+          path: ciyue-installer.exe
 
       - name: Compression
         run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath ciyue-windows.zip
@@ -110,10 +130,40 @@ jobs:
           name: Windows
           path: ciyue-windows.zip
 
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.29.2
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y libgtk-3-dev
+          flutter pub get
+
+      - name: Build Linux
+        run: flutter build linux
+
+      - name: Compression
+        run: tar -cJvf ciyue-linux.tar.xz build/linux/x64/release/bundle/*
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux
+          path: ciyue-linux.tar.xz
+
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [build-android, build-windows]
+    needs: [build-android, build-windows, build-linux]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -123,5 +173,5 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "APKs/ciyue-*-release.apk,Windows/ciyue-windows.zip"
+          artifacts: "APKs/ciyue-*-release.apk,Windows/ciyue-windows.zip,Windows-Installer/ciyue-installer.exe,Linux/ciyue-linux.tar.xz"
           tag: ${{ github.ref_name }}

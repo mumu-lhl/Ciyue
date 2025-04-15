@@ -1,14 +1,19 @@
 import "package:ciyue/database/app.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/settings.dart";
-import "package:ciyue/widget/text_buttons.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/date_divider.dart";
+import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
-import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
+import "package:provider/provider.dart";
 
-VoidCallback? _refreshScreen;
-VoidCallback? _refreshTagsAndWords;
+class MonthPickerDialog extends StatefulWidget {
+  const MonthPickerDialog({super.key});
+
+  @override
+  State<MonthPickerDialog> createState() => _MonthPickerDialogState();
+}
 
 class MoreOptionsDialog extends StatefulWidget {
   const MoreOptionsDialog({super.key});
@@ -31,6 +36,44 @@ class TagListDialog extends StatefulWidget {
   State<TagListDialog> createState() => _TagListDialogState();
 }
 
+class WordbookModel extends ChangeNotifier {
+  late Future<List<WordbookData>> allWords;
+  late Future<List<WordbookTag>> tags;
+  DateTime? selectedDate;
+  int? selectedTag;
+
+  void updateSelectedDate(DateTime? date) {
+    selectedDate = date;
+    notifyListeners();
+  }
+
+  void updateSelectedTag(int? tag) {
+    selectedTag = tag;
+    notifyListeners();
+  }
+
+  void updateTags() {
+    tags = wordbookTagsDao.getAllTags();
+    notifyListeners();
+  }
+
+  void updateWordList() {
+    if (selectedDate != null) {
+      allWords = wordbookDao.getWordsByYearMonth(
+        selectedDate!.year,
+        selectedDate!.month,
+        tag: selectedTag,
+      );
+    } else {
+      allWords = wordbookDao.getAllWordsWithTag(
+        tag: selectedTag,
+        skipTagged: selectedTag == null && settings.skipTaggedWord,
+      );
+    }
+    notifyListeners();
+  }
+}
+
 class WordBookScreen extends StatefulWidget {
   const WordBookScreen({super.key});
 
@@ -38,171 +81,10 @@ class WordBookScreen extends StatefulWidget {
   State<WordBookScreen> createState() => _WordBookScreenState();
 }
 
-class _WordBookScreenState extends State<WordBookScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _refreshScreen = () {
-      setState(() {});
-    };
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: buildAppBar(context),
-        body: WordViewWithTagsClips(),
-        floatingActionButton:
-            Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-          if (_WordViewWithTagsClipsState._selectedDate != null)
-            FloatingActionButton(
-              onPressed: () {
-                _WordViewWithTagsClipsState._selectedDate = null;
-                _refreshTagsAndWords!();
-              },
-              child: const Icon(Icons.clear),
-            ),
-          SizedBox(height: 8),
-          FloatingActionButton(
-            onPressed: () async {
-              final DateTime? picked = await showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return MonthPickerDialog();
-                },
-              );
-              if (picked != null) {
-                _WordViewWithTagsClipsState._selectedDate = picked;
-                _refreshTagsAndWords!();
-              }
-            },
-            child: const Icon(Icons.calendar_month),
-          ),
-        ]));
-  }
-
-  Future<void> buildAddTag(BuildContext context) async {
-    final locale = AppLocalizations.of(context)!;
-
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          final textController = TextEditingController();
-
-          return AlertDialog(
-            title: Text(locale.addTag),
-            content: TextField(
-              decoration: InputDecoration(
-                labelText: locale.tagName,
-              ),
-              controller: textController,
-            ),
-            actions: [
-              TextCloseButton(),
-              TextButton(
-                child: Text(locale.add),
-                onPressed: () async {
-                  await wordbookTagsDao.addTag(textController.text);
-                  await wordbookTagsDao.existTag();
-
-                  _refreshTagsAndWords!();
-
-                  if (context.mounted) {
-                    context.pop();
-                  }
-                },
-              )
-            ],
-          );
-        });
-  }
-
-  AppBar buildAppBar(BuildContext context) {
-    return AppBar(
-      actions: [
-        IconButton(
-          icon: Icon(Icons.bookmark),
-          onPressed: () async {
-            final tags = await wordbookTagsDao.getAllTags();
-
-            if (!context.mounted) return;
-
-            if (tags.isEmpty) {
-              await buildAddTag(context);
-            } else {
-              await buildTagsList(context, tags);
-            }
-          },
-        ),
-        IconButton(
-          icon: Icon(Icons.more_vert),
-          onPressed: () async {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return const MoreOptionsDialog();
-              },
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Future<void> buildTagsList(
-      BuildContext context, List<WordbookTag> tags) async {
-    if (!context.mounted) return;
-
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          final tagsMap = <int, WordbookTag>{};
-          for (final tag in tags) {
-            tagsMap[tag.id] = tag;
-          }
-          final tagListTile = <Widget>[];
-
-          final tagsDisplay = wordbookTagsDao.tagsOrder.isEmpty
-              ? tags
-              : wordbookTagsDao.tagsOrder.map((e) => tagsMap[e]!).toList();
-
-          for (final tag in tagsDisplay) {
-            tagListTile.add(ListTile(
-              key: ValueKey(tag.id),
-              title: Text(tag.tag),
-              leading: ReorderableDragStartListener(
-                index: tagsDisplay.indexOf(tag),
-                child: Icon(Icons.drag_handle),
-              ),
-              trailing: IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () async {
-                  await wordbookTagsDao.removeTag(tag.id);
-                  await wordbookTagsDao.existTag();
-
-                  _refreshTagsAndWords!();
-
-                  if (context.mounted) context.pop();
-                },
-              ),
-            ));
-          }
-
-          return TagListDialog(
-              tagsDisplay: tagsDisplay, buildAddTag: buildAddTag);
-        });
-  }
-}
-
 class WordView extends StatelessWidget {
   final Future<List<WordbookData>> allWords;
-  final Future<List<WordbookTag>> tags;
 
-  const WordView({
-    super.key,
-    required this.allWords,
-    required this.tags,
-  });
+  const WordView({super.key, required this.allWords});
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +125,7 @@ class WordView extends StatelessWidget {
 
           if (list.isEmpty) {
             return FutureBuilder(
-              future: tags,
+              future: context.read<WordbookModel>().tags,
               builder: (context, tagSnapshot) {
                 if (tagSnapshot.hasData && tagSnapshot.data!.isNotEmpty) {
                   return const Expanded(child: SizedBox());
@@ -267,115 +149,10 @@ class WordViewWithTagsClips extends StatefulWidget {
   State<WordViewWithTagsClips> createState() => _WordViewWithTagsClipsState();
 }
 
-class _MoreOptionsDialogState extends State<MoreOptionsDialog> {
-  @override
-  Widget build(BuildContext context) {
-    return SimpleDialog(
-      title: Text(AppLocalizations.of(context)!.more),
-      children: [
-        SimpleDialogOption(
-          child: CheckboxListTile(
-            value: settings.skipTaggedWord,
-            onChanged: (value) async {
-              if (value != null) {
-                settings.skipTaggedWord = value;
-                await prefs.setBool("skipTaggedWord", value);
-                setState(() {});
-                _refreshTagsAndWords!();
-              }
-            },
-            title: Text(AppLocalizations.of(context)!.skipTaggedWord),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _TagListDialogState extends State<TagListDialog> {
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.tagList),
-      content: SizedBox(
-        height: 300,
-        width: 300,
-        child: ReorderableListView(
-          buildDefaultDragHandles: false,
-          shrinkWrap: true,
-          onReorder: (oldIndex, newIndex) async {
-            if (oldIndex < newIndex) {
-              newIndex -= 1;
-            }
-
-            final tag = widget.tagsDisplay.removeAt(oldIndex);
-            widget.tagsDisplay.insert(newIndex, tag);
-
-            wordbookTagsDao.tagsOrder =
-                widget.tagsDisplay.map((e) => e.id).toList();
-            await wordbookTagsDao.updateTagsOrder();
-
-            _refreshTagsAndWords!();
-            setState(() {});
-          },
-          children: widget.tagsDisplay
-              .map((tag) => ListTile(
-                    key: ValueKey(tag.id),
-                    title: Text(tag.tag),
-                    leading: ReorderableDragStartListener(
-                      index: widget.tagsDisplay.indexOf(tag),
-                      child: Icon(Icons.drag_handle),
-                    ),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () async {
-                        await wordbookTagsDao.removeTag(tag.id);
-                        await wordbookTagsDao.existTag();
-
-                        _refreshTagsAndWords!();
-
-                        if (context.mounted) context.pop();
-                      },
-                    ),
-                  ))
-              .toList(),
-        ),
-      ),
-      actions: [
-        TextCloseButton(),
-        TextButton(
-          child: Text(AppLocalizations.of(context)!.add),
-          onPressed: () async {
-            context.pop();
-            await widget.buildAddTag(context);
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class MonthPickerDialog extends StatefulWidget {
-  const MonthPickerDialog({super.key});
-
-  @override
-  State<MonthPickerDialog> createState() => _MonthPickerDialogState();
-}
-
 class _MonthPickerDialogState extends State<MonthPickerDialog> {
   late int selectedYear;
   late int selectedMonth;
   late final int initialYear;
-
-  @override
-  void initState() {
-    super.initState();
-    final initialDate =
-        _WordViewWithTagsClipsState._selectedDate ?? DateTime.now();
-    selectedYear = initialDate.year;
-    selectedMonth = initialDate.month;
-    initialYear = initialDate.year;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -457,22 +234,287 @@ class _MonthPickerDialogState extends State<MonthPickerDialog> {
       ),
     );
   }
+
+  @override
+  void initState() {
+    super.initState();
+    final initialDate =
+        context.read<WordbookModel>().selectedDate ?? DateTime.now();
+    selectedYear = initialDate.year;
+    selectedMonth = initialDate.month;
+    initialYear = initialDate.year;
+  }
+}
+
+class _MoreOptionsDialogState extends State<MoreOptionsDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return SimpleDialog(
+      title: Text(AppLocalizations.of(context)!.more),
+      children: [
+        SimpleDialogOption(
+          child: CheckboxListTile(
+            value: settings.skipTaggedWord,
+            onChanged: (value) async {
+              if (value != null) {
+                settings.skipTaggedWord = value;
+                await prefs.setBool("skipTaggedWord", value);
+                setState(() {});
+                if (context.mounted) {
+                  final wordbookModel = context.read<WordbookModel>();
+                  wordbookModel.updateWordList();
+                }
+              }
+            },
+            title: Text(AppLocalizations.of(context)!.skipTaggedWord),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TagListDialogState extends State<TagListDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(AppLocalizations.of(context)!.tagList),
+      content: SizedBox(
+        height: 300,
+        width: 300,
+        child: ReorderableListView(
+          buildDefaultDragHandles: false,
+          shrinkWrap: true,
+          onReorder: (oldIndex, newIndex) async {
+            if (oldIndex < newIndex) {
+              newIndex -= 1;
+            }
+
+            final tag = widget.tagsDisplay.removeAt(oldIndex);
+            widget.tagsDisplay.insert(newIndex, tag);
+
+            wordbookTagsDao.tagsOrder =
+                widget.tagsDisplay.map((e) => e.id).toList();
+            await wordbookTagsDao.updateTagsOrder();
+
+            if (context.mounted) {
+              final wordbookModel = context.read<WordbookModel>();
+              wordbookModel.updateTags();
+            }
+            setState(() {});
+          },
+          children: widget.tagsDisplay
+              .map((tag) => ListTile(
+                    key: ValueKey(tag.id),
+                    title: Text(tag.tag),
+                    leading: ReorderableDragStartListener(
+                      index: widget.tagsDisplay.indexOf(tag),
+                      child: Icon(Icons.drag_handle),
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () async {
+                        await wordbookTagsDao.removeTag(tag.id);
+                        await wordbookTagsDao.existTag();
+
+                        if (context.mounted) {
+                          final wordbookModel = context.read<WordbookModel>();
+                          wordbookModel.updateTags();
+                        }
+
+                        if (context.mounted) context.pop();
+                      },
+                    ),
+                  ))
+              .toList(),
+        ),
+      ),
+      actions: [
+        TextCloseButton(),
+        TextButton(
+          child: Text(AppLocalizations.of(context)!.add),
+          onPressed: () async {
+            context.pop();
+            await widget.buildAddTag(context);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _WordBookScreenState extends State<WordBookScreen> {
+  Future<void> addTag(BuildContext context, String tagName) async {
+    await wordbookTagsDao.addTag(tagName);
+    await wordbookTagsDao.existTag();
+
+    if (context.mounted) {
+      context.read<WordbookModel>().updateTags();
+      context.pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    context.select<WordbookModel, DateTime?>((model) => model.selectedDate);
+    final wordbookModel = context.read<WordbookModel>();
+
+    return Scaffold(
+        appBar: buildAppBar(context),
+        body: WordViewWithTagsClips(),
+        floatingActionButton:
+            Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+          if (wordbookModel.selectedDate != null)
+            FloatingActionButton(
+              onPressed: () {
+                wordbookModel.selectedDate = null;
+                wordbookModel.updateWordList();
+              },
+              child: const Icon(Icons.clear),
+            ),
+          SizedBox(height: 8),
+          FloatingActionButton(
+            onPressed: () async {
+              final DateTime? picked = await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return MonthPickerDialog();
+                },
+              );
+              if (picked != null) {
+                if (context.mounted) {
+                  wordbookModel.selectedDate = picked;
+                  wordbookModel.updateWordList();
+                }
+              }
+            },
+            child: const Icon(Icons.calendar_month),
+          ),
+        ]));
+  }
+
+  Future<void> buildAddTag(BuildContext context) async {
+    final locale = AppLocalizations.of(context)!;
+
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          final textController = TextEditingController();
+
+          return AlertDialog(
+            title: Text(locale.addTag),
+            content: TextField(
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: locale.tagName,
+              ),
+              controller: textController,
+              onSubmitted: (String tagName) async {
+                await addTag(context, tagName);
+              },
+            ),
+            actions: [
+              TextCloseButton(),
+              TextButton(
+                child: Text(locale.add),
+                onPressed: () async {
+                  await addTag(context, textController.text);
+                },
+              )
+            ],
+          );
+        });
+  }
+
+  AppBar buildAppBar(BuildContext context) {
+    return AppBar(
+      actions: [
+        IconButton(
+          icon: Icon(Icons.bookmark),
+          onPressed: () async {
+            final tags = await context.read<WordbookModel>().tags;
+
+            if (!context.mounted) return;
+
+            if (tags.isEmpty) {
+              await buildAddTag(context);
+            } else {
+              await buildTagsList(context, tags);
+            }
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.more_vert),
+          onPressed: () async {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return const MoreOptionsDialog();
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Future<void> buildTagsList(
+      BuildContext context, List<WordbookTag> tags) async {
+    if (!context.mounted) return;
+
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          final tagsMap = <int, WordbookTag>{};
+          for (final tag in tags) {
+            tagsMap[tag.id] = tag;
+          }
+          final tagListTile = <Widget>[];
+
+          final tagsDisplay = wordbookTagsDao.tagsOrder.isEmpty
+              ? tags
+              : wordbookTagsDao.tagsOrder.map((e) => tagsMap[e]!).toList();
+
+          for (final tag in tagsDisplay) {
+            tagListTile.add(ListTile(
+              key: ValueKey(tag.id),
+              title: Text(tag.tag),
+              leading: ReorderableDragStartListener(
+                index: tagsDisplay.indexOf(tag),
+                child: Icon(Icons.drag_handle),
+              ),
+              trailing: IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () async {
+                  await wordbookTagsDao.removeTag(tag.id);
+                  await wordbookTagsDao.existTag();
+
+                  if (context.mounted) {
+                    final wordbookModel = context.read<WordbookModel>();
+                    wordbookModel.updateTags();
+
+                    context.pop();
+                  }
+                },
+              ),
+            ));
+          }
+
+          return TagListDialog(
+              tagsDisplay: tagsDisplay, buildAddTag: buildAddTag);
+        });
+  }
 }
 
 class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
-  late Future<List<WordbookData>> allWords;
-  late Future<List<WordbookTag>> tags;
-  static DateTime? _selectedDate;
-
-  int? selectedTag;
-
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FutureBuilder(
-            future: tags,
+        Consumer<WordbookModel>(builder: (context, model, child) {
+          return FutureBuilder(
+            future: model.tags,
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                 final choiceChips = <Widget>[];
@@ -487,14 +529,14 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
 
                   choiceChips.add(ChoiceChip(
                     label: Text(tag.tag),
-                    selected: selectedTag == tag.id,
+                    selected:
+                        context.read<WordbookModel>().selectedTag == tag.id,
                     onSelected: (selected) {
                       setState(() {
-                        selectedTag = selected ? tag.id : null;
-                        final skipTaggedWord =
-                            selectedTag == null && settings.skipTaggedWord;
-                        allWords = wordbookDao.getAllWordsWithTag(
-                            tag: selectedTag, skipTagged: skipTaggedWord);
+                        final wordbookModel = context.read<WordbookModel>();
+                        wordbookModel
+                            .updateSelectedTag(selected ? tag.id : null);
+                        wordbookModel.updateWordList();
                       });
                     },
                   ));
@@ -508,8 +550,13 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
               }
 
               return Wrap();
-            }),
-        WordView(allWords: allWords, tags: tags),
+            },
+          );
+        }),
+        Consumer<WordbookModel>(
+            builder: (context, model, child) => WordView(
+                  allWords: model.allWords,
+                ))
       ],
     );
   }
@@ -518,32 +565,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
   void initState() {
     super.initState();
 
-    updateWordList();
-    tags = wordbookTagsDao.getAllTags();
-
-    _refreshTagsAndWords = refresh;
-  }
-
-  void updateWordList() {
-    if (_selectedDate != null) {
-      allWords = wordbookDao.getWordsByYearMonth(
-        _selectedDate!.year,
-        _selectedDate!.month,
-        tag: selectedTag,
-      );
-    } else {
-      allWords = wordbookDao.getAllWordsWithTag(
-        tag: selectedTag,
-        skipTagged: settings.skipTaggedWord,
-      );
-    }
-  }
-
-  void refresh() {
-    setState(() {
-      updateWordList();
-      tags = wordbookTagsDao.getAllTags();
-      _refreshScreen!();
-    });
+    final wordbookModel = context.read<WordbookModel>();
+    wordbookModel.allWords = wordbookDao.getAllWordsWithTag();
+    wordbookModel.tags = wordbookTagsDao.getAllTags();
   }
 }

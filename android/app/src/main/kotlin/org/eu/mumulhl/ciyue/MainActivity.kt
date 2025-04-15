@@ -6,20 +6,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.documentfile.provider.DocumentFile
-import com.anggrayudi.storage.callback.SingleFileConflictCallback
-import com.anggrayudi.storage.callback.SingleFolderConflictCallback
-import com.anggrayudi.storage.file.DocumentFileCompat
-import com.anggrayudi.storage.file.copyFolderTo
-import com.anggrayudi.storage.file.openOutputStream
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.launch
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
 
 class MainActivity : FlutterActivity() {
@@ -31,9 +22,6 @@ class MainActivity : FlutterActivity() {
     private val CREATE_FILE = 1
     private val GET_DIRECTORY = 2
 
-    private val job = Job()
-    private val ioScope = CoroutineScope(Dispatchers.IO + job)
-    private val uiScope = CoroutineScope(Dispatchers.IO + job)
 
     var exportContent = ""
 
@@ -60,14 +48,14 @@ class MainActivity : FlutterActivity() {
         val file = directoryFile!!.findFile(filename)
         if (file == null) {
             val newFile = directoryFile.createFile("application/json", filename)
-            newFile!!.openOutputStream(context, append = false).use { outputStream ->
+            newFile!!.uri.let { context.contentResolver.openOutputStream(it) }.use { outputStream ->
                 outputStream!!.write(content.toByteArray())
             }
 
         } else {
             file.delete()
             val newFile = directoryFile.createFile("application/json", filename)
-            newFile!!.openOutputStream(context, append = false).use { outputStream ->
+            newFile!!.uri.let { context.contentResolver.openOutputStream(it) }.use { outputStream ->
                 outputStream!!.write(content.toByteArray())
             }
         }
@@ -116,47 +104,30 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    private fun copy(source: DocumentFile, target: File) {
+        if (!target.exists()) {
+            target.mkdirs()
+        }
+        source.listFiles().forEach { file ->
+            if (file.isFile) {
+                BufferedInputStream(contentResolver.openInputStream(file.uri)).use { input ->
+                    BufferedOutputStream(File(target, file.name ?: "").outputStream()).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+            } else {
+                copy(file, File(target, file.name ?: ""))
+            }
+        }
+    }
+
     private fun copyDictionariesDirectory(uri: Uri) {
         methodChannel!!.invokeMethod("showLoadingDialog", null)
 
         val documents = DocumentFile.fromTreeUri(applicationContext, uri)!!
+        copy(documents, File(filesDir, "dictionaries"))
 
-        val cacheDir = File(applicationContext.cacheDir, "dictionaries_cache")
-        if (!cacheDir.exists()) {
-            cacheDir.mkdir()
-        }
-        val targetFolder = DocumentFileCompat.fromFile(applicationContext, cacheDir)!!
-
-        ioScope.launch {
-            documents.copyFolderTo(applicationContext,
-                targetFolder,
-                onConflict = object : SingleFolderConflictCallback(uiScope) {
-                    override fun onParentConflict(
-                        destinationFolder: DocumentFile,
-                        action: ParentFolderConflictAction,
-                        canMerge: Boolean
-                    ) {
-                        action.confirmResolution(ConflictResolution.MERGE)
-                    }
-
-                    override fun onContentConflict(
-                        destinationFolder: DocumentFile,
-                        conflictedFiles: MutableList<FileConflict>,
-                        action: FolderContentConflictAction
-                    ) {
-                        val newSolution = ArrayList<FileConflict>(conflictedFiles.size)
-                        conflictedFiles.forEach {
-                            it.solution = SingleFileConflictCallback.ConflictResolution.REPLACE
-                        }
-                        newSolution.addAll(conflictedFiles)
-                        action.confirmResolution(newSolution)
-                    }
-                }).onCompletion {
-                withContext(Dispatchers.Main) {
-                    methodChannel!!.invokeMethod("inputDirectory", uri.toString())
-                }
-            }.collect { _ -> }
-        }
+        methodChannel!!.invokeMethod("inputDirectory", uri.toString())
     }
 
     private fun openDocumentTree(data: Intent?) {

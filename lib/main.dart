@@ -3,93 +3,119 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/localization_delegates.dart";
-import "package:ciyue/pages/auto_export.dart";
+import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/main.dart";
+import "package:ciyue/pages/main/wordbook.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/pages/manage_dictionaries/properties.dart";
 import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
+import "package:ciyue/pages/settings/ai_settings.dart";
+import "package:ciyue/pages/settings/auto_export.dart";
+import "package:ciyue/pages/settings/privacy_policy.dart";
+import "package:ciyue/pages/settings/terms_of_service.dart";
 import "package:ciyue/pages/webview_display.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
-import "package:drift/drift.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
-import "package:flutter_gen/gen_l10n/app_localizations.dart";
+import "package:flutter/services.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:go_router/go_router.dart";
 import "package:package_info_plus/package_info_plus.dart";
+import "package:provider/provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
+import "package:url_launcher/url_launcher.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  try {
+    drift.driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
-  const SharedPreferencesOptions sharedPreferencesOptions =
-      SharedPreferencesOptions();
-  final SharedPreferences legacyPrefs = await SharedPreferences.getInstance();
-  await migrateLegacySharedPreferencesToSharedPreferencesAsyncIfNecessary(
-    legacySharedPreferencesInstance: legacyPrefs,
-    sharedPreferencesAsyncOptions: sharedPreferencesOptions,
-    migrationCompletedKey: "migrationCompleted",
-  );
+    const SharedPreferencesOptions sharedPreferencesOptions =
+        SharedPreferencesOptions();
+    final SharedPreferences legacyPrefs = await SharedPreferences.getInstance();
+    await migrateLegacySharedPreferencesToSharedPreferencesAsyncIfNecessary(
+      legacySharedPreferencesInstance: legacyPrefs,
+      sharedPreferencesAsyncOptions: sharedPreferencesOptions,
+      migrationCompletedKey: "migrationCompleted",
+    );
 
-  prefs = await SharedPreferencesWithCache.create(
-      cacheOptions: const SharedPreferencesWithCacheOptions(allowList: {
-    "currentDictionaryGroupId",
-    "exportDirectory",
-    "autoExport",
-    "exportFileName",
-    "autoRemoveSearchWord",
-    "language",
-    "themeMode",
-    "tagsOrder",
-    "secureScreen",
-    "searchBarInAppBar",
-    "showSidebarIcon",
-    "dictionariesDirectory",
-    "exportPath",
-    "notification",
-    "showMoreOptionsButton",
-    "skipTaggedWord",
-  }));
+    prefs = await SharedPreferencesWithCache.create(
+        cacheOptions: const SharedPreferencesWithCacheOptions(allowList: {
+      "currentDictionaryGroupId",
+      "exportDirectory",
+      "autoExport",
+      "exportFileName",
+      "autoRemoveSearchWord",
+      "language",
+      "themeMode",
+      "tagsOrder",
+      "secureScreen",
+      "searchBarInAppBar",
+      "showSidebarIcon",
+      "dictionariesDirectory",
+      "exportPath",
+      "notification",
+      "showMoreOptionsButton",
+      "skipTaggedWord",
+      "aiProvider",
+      "aiProviderConfigs",
+      "aiExplainWord",
+      "includePrereleaseUpdates",
+      "explainPromptMode",
+      "customExplainPrompt",
+      "translatePromptMode",
+      "customTranslatePrompt",
+      "tabBarPosition",
+    }));
 
-  int? groupId = prefs.getInt("currentDictionaryGroupId");
-  if (groupId == null) {
-    groupId = await dictGroupDao.addGroup("Default", []);
-    await prefs.setInt("currentDictionaryGroupId", groupId);
-  }
-  await dictManager.setCurrentGroup(groupId);
-  await dictManager.updateGroupList();
-
-  flutterTts = FlutterTts();
-
-  packageInfo = await PackageInfo.fromPlatform();
-
-  await wordbookTagsDao.loadTagsOrder();
-  await wordbookTagsDao.existTag();
-
-  if (Platform.isAndroid) {
-    PlatformMethod.initHandler();
-    PlatformMethod.initNotifications();
-
-    if (settings.secureScreen) {
-      PlatformMethod.setSecureFlag(true);
+    int? groupId = prefs.getInt("currentDictionaryGroupId");
+    if (groupId == null) {
+      groupId = await dictGroupDao.addGroup("Default", []);
+      await prefs.setInt("currentDictionaryGroupId", groupId);
     }
-    if (settings.notification) {
-      PlatformMethod.createPersistentNotification(true);
+    await dictManager.setCurrentGroup(groupId);
+    await dictManager.updateGroupList();
+
+    flutterTts = FlutterTts();
+
+    packageInfo = await PackageInfo.fromPlatform();
+
+    await wordbookTagsDao.loadTagsOrder();
+    await wordbookTagsDao.existTag();
+
+    if (Platform.isAndroid) {
+      PlatformMethod.initHandler();
+      PlatformMethod.initNotifications();
+
+      if (settings.secureScreen) {
+        PlatformMethod.setSecureFlag(true);
+      }
+      if (settings.notification) {
+        PlatformMethod.createPersistentNotification(true);
+      }
     }
-  }
 
-  if (Platform.isWindows) {
-    accentColor = await DynamicColorPlugin.getAccentColor();
-  }
+    if (Platform.isWindows) {
+      accentColor = await DynamicColorPlugin.getAccentColor();
+    }
 
-  runApp(const Ciyue());
+    runApp(MultiProvider(providers: [
+      ChangeNotifierProvider(create: (_) => WordbookModel()),
+      ChangeNotifierProvider(create: (_) => HomeModel()),
+      ChangeNotifierProvider(create: (_) => DictManagerModel())
+    ], child: const Ciyue()));
+  } catch (e) {
+    runApp(MaterialApp(home: CiyueError(error: e)));
+  }
 }
 
 late final Color? accentColor;
+
 final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
 final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
 late final FlutterTts flutterTts;
@@ -105,9 +131,7 @@ final router = GoRouter(
     GoRoute(
       path: "/",
       builder: (context, state) {
-        final extra =
-            (state.extra as Map<String, dynamic>?) ?? {"searchWord": ""};
-        return Home(searchWord: extra["searchWord"]);
+        return const Home();
       },
     ),
     GoRoute(
@@ -129,6 +153,15 @@ final router = GoRouter(
         path: "/settings/dictionaries",
         builder: (context, state) => const ManageDictionaries()),
     GoRoute(
+        path: "/settings/ai_settings",
+        builder: (context, state) => const AiSettings()),
+    GoRoute(
+        path: "/settings/terms_of_service",
+        builder: (context, state) => const TermsOfService()),
+    GoRoute(
+        path: "/settings/privacy_policy",
+        builder: (context, state) => const PrivacyPolicy()),
+    GoRoute(
         path: "/settings/:dictId",
         builder: (context, state) => SettingsDictionary(
               dictId: int.parse(state.pathParameters["dictId"]!),
@@ -148,6 +181,47 @@ class Ciyue extends StatefulWidget {
 
   @override
   State<Ciyue> createState() => _CiyueState();
+}
+
+class CiyueError extends StatelessWidget {
+  final Object error;
+
+  const CiyueError({super.key, required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Error"),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(error.toString()),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                launchUrl(
+                    Uri.parse('https://github.com/mumu-lhl/ciyue/issues'));
+              },
+              child: const Text('Report Issue'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: error.toString()));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Error copied to clipboard')),
+                );
+              },
+              child: const Text('Copy Error'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _CiyueState extends State<Ciyue> {

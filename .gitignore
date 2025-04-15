@@ -46,3 +46,6 @@ app.*.map.json
 
 # Cline
 memory-bank/
+
+# Generated files
+lib/src/generated/i18n/*

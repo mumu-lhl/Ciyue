@@ -4,14 +4,17 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:dio/dio.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
-import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:go_router/go_router.dart";
+import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
 const discordUri = "https://discord.gg/BazBZuvKZG";
@@ -43,6 +46,20 @@ class About extends StatelessWidget {
   }
 }
 
+class AiSettingsWidget extends StatelessWidget {
+  const AiSettingsWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.settings),
+      trailing: const Icon(Icons.arrow_forward),
+      title: Text(AppLocalizations.of(context)!.aiSettings),
+      onTap: () => context.push("/settings/ai_settings"),
+    );
+  }
+}
+
 class AutoExport extends StatelessWidget {
   const AutoExport({super.key});
 
@@ -53,6 +70,90 @@ class AutoExport extends StatelessWidget {
         title: Text(AppLocalizations.of(context)!.autoExport),
         trailing: Icon(Icons.arrow_forward),
         onTap: () => context.push("/settings/autoExport"));
+  }
+}
+
+class CheckForUpdates extends StatelessWidget {
+  const CheckForUpdates({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+        leading: const Icon(Icons.update),
+        title: Text(AppLocalizations.of(context)!.checkForUpdates),
+        onTap: () async {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.checkingForUpdates),
+            ),
+          );
+          try {
+            final response = await Dio().get(
+              settings.includePrereleaseUpdates
+                  ? 'https://api.github.com/repos/mumu-lhl/Ciyue/releases'
+                  : 'https://api.github.com/repos/mumu-lhl/Ciyue/releases/latest',
+            );
+            if (response.statusCode == 200) {
+              final latestRelease = settings.includePrereleaseUpdates
+                  ? response.data[0]
+                  : response.data;
+              final latestVersion = latestRelease['tag_name']
+                  .toString()
+                  .substring(1); // Remove 'v' prefix
+              if (latestVersion != packageInfo.version) {
+                if (context.mounted) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title:
+                          Text(AppLocalizations.of(context)!.updateAvailable),
+                      content: Text(
+                        AppLocalizations.of(context)!
+                            .updateAvailableContent
+                            .replaceFirst("%s", latestVersion),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          child: Text(AppLocalizations.of(context)!.close),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            final url =
+                                'https://github.com/mumu-lhl/Ciyue/releases/latest';
+                            if (await canLaunchUrl(Uri.parse(url))) {
+                              launchUrl(Uri.parse(url));
+                            }
+                            if (context.mounted) context.pop();
+                          },
+                          child: Text(AppLocalizations.of(context)!.update),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text(AppLocalizations.of(context)!.noUpdateAvailable),
+                    ),
+                  );
+                }
+              }
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content:
+                      Text(AppLocalizations.of(context)!.updateCheckFailed),
+                ),
+              );
+            }
+          }
+        });
   }
 }
 
@@ -80,6 +181,7 @@ class ClearHistory extends StatelessWidget {
               onPressed: () async {
                 await historyDao.clearHistory();
                 if (context.mounted) {
+                  context.read<HomeModel>().update();
                   context.pop(context);
                 }
               },
@@ -263,12 +365,82 @@ class NotificationSwitch extends StatefulWidget {
   State<NotificationSwitch> createState() => _NotificationSwitchState();
 }
 
+class PrereleaseUpdatesSwitch extends StatefulWidget {
+  const PrereleaseUpdatesSwitch({super.key});
+
+  @override
+  State<PrereleaseUpdatesSwitch> createState() =>
+      _PrereleaseUpdatesSwitchState();
+}
+
+class PrivacyPolicy extends StatelessWidget {
+  const PrivacyPolicy({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.security),
+      title: Text(AppLocalizations.of(context)!.privacyPolicy),
+      onTap: () => context.push("/settings/privacy_policy"),
+    );
+  }
+}
+
 class SearchbarLocationSelector extends StatefulWidget {
   const SearchbarLocationSelector({super.key});
 
   @override
   State<SearchbarLocationSelector> createState() =>
       _SearchbarLocationSelectorState();
+}
+
+class TabBarPositionSelector extends StatefulWidget {
+  const TabBarPositionSelector({super.key});
+
+  @override
+  State<TabBarPositionSelector> createState() => _TabBarPositionSelectorState();
+}
+
+class _TabBarPositionSelectorState extends State<TabBarPositionSelector> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+
+    return InkWell(
+      onTapUp: (tapUpDetails) async {
+        final selected = await showMenu<TabBarPosition>(
+          context: context,
+          position: RelativeRect.fromLTRB(
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+          ),
+          initialValue: settings.tabBarPosition,
+          items: [
+            PopupMenuItem(
+              value: TabBarPosition.top,
+              child: Text(locale.top),
+            ),
+            PopupMenuItem(
+              value: TabBarPosition.bottom,
+              child: Text(locale.bottom),
+            ),
+          ],
+        );
+
+        if (selected != null && selected != settings.tabBarPosition) {
+          await settings.setTabBarPosition(selected);
+          setState(() {});
+        }
+      },
+      child: ListTile(
+        leading: const Icon(Icons.tab),
+        title: Text(locale.tabBarPosition),
+        trailing: const Icon(Icons.keyboard_arrow_down),
+      ),
+    );
+  }
 }
 
 class SecureScreenSwitch extends StatefulWidget {
@@ -286,10 +458,12 @@ class SettingsScreen extends StatelessWidget {
     return ListView(
       children: [
         const ManageDictionariesWidget(),
+        const AiSettingsWidget(),
         TitleDivider(title: AppLocalizations.of(context)!.appearance),
         const ThemeSelector(),
         const LanguageSelector(),
         const SearchbarLocationSelector(),
+        const TabBarPositionSelector(),
         const DrawerIconSwitch(),
         const MoreOptionsButtonSwitch(),
         if (Platform.isAndroid) ...[
@@ -304,11 +478,16 @@ class SettingsScreen extends StatelessWidget {
         const Import(),
         TitleDivider(title: AppLocalizations.of(context)!.history),
         const ClearHistory(),
+        TitleDivider(title: AppLocalizations.of(context)!.update),
+        const PrereleaseUpdatesSwitch(),
+        const CheckForUpdates(),
         const Divider(indent: 16, endIndent: 16),
         const Feedback(),
         const GithubUrl(),
         const DiscordUrl(),
         const SponsorUrl(),
+        const TermsOfService(),
+        const PrivacyPolicy(),
         const About(),
       ],
     );
@@ -328,6 +507,19 @@ class SponsorUrl extends StatelessWidget {
         leading: const Icon(Icons.favorite),
         onTap: () => launchUrl(Uri.parse(sponsorUri)),
         onLongPress: () => _copy(context, sponsorUri));
+  }
+}
+
+class TermsOfService extends StatelessWidget {
+  const TermsOfService({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.article),
+      title: Text(AppLocalizations.of(context)!.termsOfService),
+      onTap: () => context.push("/settings/terms_of_service"),
+    );
   }
 }
 
@@ -375,6 +567,7 @@ class _DrawerIconSwitchState extends State<DrawerIconSwitch> {
       value: settings.showSidebarIcon,
       onChanged: (value) async {
         await prefs.setBool("showSidebarIcon", value);
+        if (context.mounted) context.read<HomeModel>().update();
         setState(() {
           settings.showSidebarIcon = value;
         });
@@ -404,7 +597,9 @@ class _LanguageSelectorState extends State<LanguageSelector> {
             PopupMenuItem(
                 value: "system",
                 child: Text(AppLocalizations.of(context)!.system)),
+            const PopupMenuItem(value: "bn", child: Text("Bengali")),
             const PopupMenuItem(value: "de", child: Text("Deutsch")),
+            const PopupMenuItem(value: "es", child: Text("Español")),
             const PopupMenuItem(value: "en", child: Text("English")),
             const PopupMenuItem(value: "ru", child: Text("Русский")),
             const PopupMenuItem(value: "nb", child: Text("Bokmål")),
@@ -444,6 +639,7 @@ class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
       value: settings.showMoreOptionsButton,
       onChanged: (value) async {
         await prefs.setBool("showMoreOptionsButton", value);
+        if (context.mounted) context.read<HomeModel>().update();
         setState(() {
           settings.showMoreOptionsButton = value;
         });
@@ -476,6 +672,24 @@ class _NotificationSwitchState extends State<NotificationSwitch> {
   }
 }
 
+class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.includePrerelease),
+      value: settings.includePrereleaseUpdates,
+      onChanged: (value) async {
+        await prefs.setBool('includePrereleaseUpdates', value);
+        setState(() {
+          settings.includePrereleaseUpdates = value;
+        });
+      },
+      secondary: const Icon(Icons.settings_suggest_outlined),
+    );
+  }
+}
+
 class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
   @override
   Widget build(BuildContext context) {
@@ -502,6 +716,7 @@ class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
           settings.searchBarInAppBar = searchBarLocationSelected;
           await prefs.setBool("searchBarInAppBar", searchBarLocationSelected);
 
+          if (context.mounted) context.read<HomeModel>().update();
           setState(() {});
         }
       },

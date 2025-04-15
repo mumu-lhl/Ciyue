@@ -3,13 +3,15 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/platform.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
-import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
+import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
 late VoidCallback updateManageDictionariesPage;
@@ -24,49 +26,14 @@ class ManageDictionaries extends StatefulWidget {
 class _ManageDictionariesState extends State<ManageDictionaries> {
   var dictionaries = dictionaryListDao.all();
 
-  @override
-  void initState() {
-    super.initState();
-
-    updateManageDictionariesPage = updateDictionaries;
-  }
-
-  IconButton buildInfoButton(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.info),
-      onPressed: () {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.recommendedDictionaries),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  title: Text(
-                      AppLocalizations.of(context)!.recommendedDictionaries),
-                  trailing: const Icon(Icons.open_in_new),
-                  onTap: () => launchUrl(Uri.parse(
-                      "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries")),
-                ),
-                ListTile(
-                  title: const Text("FreeMDict Cloud"),
-                  trailing: const Icon(Icons.open_in_new),
-                  onTap: () => launchUrl(Uri.parse(
-                      "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs")),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => context.pop(),
-                child: Text(AppLocalizations.of(context)!.close),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+  Future<void> addGroup(String value, BuildContext context) async {
+    if (value.isNotEmpty) {
+      await dictGroupDao.addGroup(value, []);
+      await dictManager.updateGroupList();
+      if (context.mounted) {
+        context.pop();
+      }
+    }
   }
 
   @override
@@ -77,7 +44,12 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         buildInfoButton(context),
         buildAddButton(context)
       ]),
-      body: buildBody(context),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: buildBody(context),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(
@@ -87,121 +59,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         },
         child: const Icon(Icons.group),
       ),
-    );
-  }
-
-  IconButton buildUpdateButton() {
-    return IconButton(
-      icon: Icon(Icons.refresh),
-      onPressed: () {
-        PlatformMethod.updateDictionaries();
-      },
-    );
-  }
-
-  Widget _buildGroupDialog(BuildContext context) {
-    return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.manageGroups),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final group in dictManager.groups)
-            RadioListTile(
-              title: Text(group.name == "Default"
-                  ? AppLocalizations.of(context)!.default_
-                  : group.name),
-              value: group.id,
-              groupValue: dictManager.groupId,
-              secondary: buildGroupDeleteButton(context, group),
-              onChanged: (int? groupId) async {
-                if (groupId != dictManager.groupId) {
-                  await dictManager.setCurrentGroup(groupId!);
-                  setState(() {});
-                }
-                if (context.mounted) context.pop();
-              },
-            ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => context.pop(),
-          child: Text(AppLocalizations.of(context)!.close),
-        ),
-        TextButton(
-          onPressed: () {
-            context.pop();
-            showDialog(
-              context: context,
-              builder: (context) {
-                final controller = TextEditingController();
-                return AlertDialog(
-                  title: Text(AppLocalizations.of(context)!.add),
-                  content: TextField(
-                    controller: controller,
-                    autofocus: true,
-                    onSubmitted: (value) async {
-                      if (value.isNotEmpty) {
-                        await dictGroupDao.addGroup(value, []);
-                        await dictManager.updateGroupList();
-                        if (context.mounted) {
-                          context.pop();
-                        }
-                      }
-                    },
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => context.pop(),
-                      child: Text(AppLocalizations.of(context)!.close),
-                    ),
-                    TextButton(
-                        onPressed: () async {
-                          if (controller.text != "") {
-                            await dictGroupDao.addGroup(controller.text, []);
-                            await dictManager.updateGroupList();
-                            if (context.mounted) {
-                              context.pop();
-                            }
-                          }
-                        },
-                        child: Text(AppLocalizations.of(context)!.add)),
-                  ],
-                );
-              },
-            );
-          },
-          child: Text(AppLocalizations.of(context)!.add),
-        ),
-      ],
-    );
-  }
-
-  IconButton? buildGroupDeleteButton(
-      BuildContext context, DictGroupData group) {
-    if (group.name == "Default") {
-      return null;
-    }
-
-    return IconButton(
-      icon: const Icon(Icons.delete),
-      onPressed: () async {
-        if (group.id == dictManager.groupId) {
-          if (group.id == dictManager.groups.last.id) {
-            await dictManager.setCurrentGroup(
-                dictManager.groups[dictManager.groups.length - 2].id);
-          } else {
-            final index =
-                dictManager.groups.indexWhere((g) => g.id == group.id);
-            await dictManager.setCurrentGroup(dictManager.groups[index + 1].id);
-          }
-        }
-
-        await dictGroupDao.removeGroup(group.id);
-        await dictManager.updateGroupList();
-
-        if (context.mounted) context.pop();
-      },
     );
   }
 
@@ -216,40 +73,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         }
       },
     );
-  }
-
-  Future<void> selectMdxFile(BuildContext context) async {
-    const XTypeGroup typeGroup = XTypeGroup(
-      label: "MDX File",
-      extensions: <String>["mdx"],
-    );
-
-    final file = await openFile(acceptedTypeGroups: [typeGroup]);
-    var path = file?.path;
-
-    if (path != null) {
-      if (context.mounted) showLoadingDialog(context);
-
-      late final Mdict tmpDict;
-      try {
-        path = setExtension(path, "");
-        tmpDict = Mdict(path: path);
-        if (await tmpDict.add()) {
-          await tmpDict.close();
-        }
-      } catch (e) {
-        await tmpDict.close();
-        if (context.mounted) {
-          final snackBar =
-              SnackBar(content: Text(AppLocalizations.of(context)!.notSupport));
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        }
-      }
-
-      updateDictionaries();
-
-      if (context.mounted) context.pop();
-    }
   }
 
   FutureBuilder<List<DictionaryListData>> buildBody(BuildContext context) {
@@ -397,21 +220,10 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                               title: Text(
                                   AppLocalizations.of(context)!.titleAlias),
                               content: TextField(
-                                controller: controller
-                                  ..text =
-                                      dictManager.dicts[dictionary.id]!.title,
+                                controller: controller..text = title,
                                 autofocus: true,
                                 onSubmitted: (value) async {
-                                  if (value.isNotEmpty) {
-                                    dictManager.dicts[dictionary.id]!.title =
-                                        value;
-                                    await dictionaryListDao.updateAlias(
-                                        dictionary.id, value);
-                                    updateDictionaries();
-                                    if (context.mounted) {
-                                      context.pop();
-                                    }
-                                  }
+                                  await updateAlias(value, dictionary, context);
                                 },
                               ),
                               actions: [
@@ -433,16 +245,8 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
                                 ),
                                 TextButton(
                                     onPressed: () async {
-                                      if (controller.text != "") {
-                                        dictManager.dicts[dictionary.id]!
-                                            .title = controller.text;
-                                        await dictionaryListDao.updateAlias(
-                                            dictionary.id, controller.text);
-                                        updateDictionaries();
-                                        if (context.mounted) {
-                                          context.pop();
-                                        }
-                                      }
+                                      await updateAlias(
+                                          controller.text, dictionary, context);
                                     },
                                     child: Text(
                                         AppLocalizations.of(context)!.confirm)),
@@ -479,8 +283,87 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
               await dictManager.updateDictIds();
 
               setState(() {});
+              if (context.mounted) context.read<HomeModel>().update();
             },
           )),
+    );
+  }
+
+  Future<void> updateAlias(
+      String value, DictionaryListData dictionary, BuildContext context) async {
+    if (value.isNotEmpty) {
+      dictManager.dicts[dictionary.id]!.title = value;
+      await dictionaryListDao.updateAlias(dictionary.id, value);
+      updateDictionaries();
+      if (context.mounted) {
+        context.pop();
+      }
+    }
+  }
+
+  IconButton? buildGroupDeleteButton(
+      BuildContext context, DictGroupData group) {
+    if (group.name == "Default") {
+      return null;
+    }
+
+    return IconButton(
+      icon: const Icon(Icons.delete),
+      onPressed: () async {
+        if (group.id == dictManager.groupId) {
+          if (group.id == dictManager.groups.last.id) {
+            await dictManager.setCurrentGroup(
+                dictManager.groups[dictManager.groups.length - 2].id);
+          } else {
+            final index =
+                dictManager.groups.indexWhere((g) => g.id == group.id);
+            await dictManager.setCurrentGroup(dictManager.groups[index + 1].id);
+          }
+        }
+
+        await dictGroupDao.removeGroup(group.id);
+        await dictManager.updateGroupList();
+
+        if (context.mounted) context.pop();
+      },
+    );
+  }
+
+  IconButton buildInfoButton(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.info),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(AppLocalizations.of(context)!.recommendedDictionaries),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text(
+                      AppLocalizations.of(context)!.recommendedDictionaries),
+                  trailing: const Icon(Icons.open_in_new),
+                  onTap: () => launchUrl(Uri.parse(
+                      "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries")),
+                ),
+                ListTile(
+                  title: const Text("FreeMDict Cloud"),
+                  trailing: const Icon(Icons.open_in_new),
+                  onTap: () => launchUrl(Uri.parse(
+                      "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs")),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => context.pop(),
+                child: Text(AppLocalizations.of(context)!.close),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -491,6 +374,56 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
         context.pop();
       },
     );
+  }
+
+  IconButton buildUpdateButton() {
+    return IconButton(
+      icon: Icon(Icons.refresh),
+      onPressed: () {
+        PlatformMethod.updateDictionaries();
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    updateManageDictionariesPage = updateDictionaries;
+  }
+
+  Future<void> selectMdxFile(BuildContext context) async {
+    const XTypeGroup typeGroup = XTypeGroup(
+      label: "MDX File",
+      extensions: <String>["mdx"],
+    );
+
+    final file = await openFile(acceptedTypeGroups: [typeGroup]);
+    var path = file?.path;
+
+    if (path != null) {
+      if (context.mounted) showLoadingDialog(context);
+
+      late final Mdict tmpDict;
+      try {
+        path = setExtension(path, "");
+        tmpDict = Mdict(path: path);
+        if (await tmpDict.add()) {
+          await tmpDict.close();
+        }
+      } catch (e) {
+        await tmpDict.close();
+        if (context.mounted) {
+          final snackBar =
+              SnackBar(content: Text(AppLocalizations.of(context)!.notSupport));
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      }
+
+      updateDictionaries();
+
+      if (context.mounted) context.pop();
+    }
   }
 
   void showPermissionDenied(BuildContext context) {
@@ -505,5 +438,71 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     setState(() {
       dictionaries = dictionaryListDao.all();
     });
+  }
+
+  Widget _buildGroupDialog(BuildContext context) {
+    return AlertDialog(
+      title: Text(AppLocalizations.of(context)!.manageGroups),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final group in dictManager.groups)
+            RadioListTile(
+              title: Text(group.name == "Default"
+                  ? AppLocalizations.of(context)!.default_
+                  : group.name),
+              value: group.id,
+              groupValue: dictManager.groupId,
+              secondary: buildGroupDeleteButton(context, group),
+              onChanged: (int? groupId) async {
+                if (groupId != dictManager.groupId) {
+                  await dictManager.setCurrentGroup(groupId!);
+                  setState(() {});
+                }
+                if (context.mounted) context.pop();
+              },
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: Text(AppLocalizations.of(context)!.close),
+        ),
+        TextButton(
+          onPressed: () {
+            context.pop();
+            showDialog(
+              context: context,
+              builder: (context) {
+                final controller = TextEditingController();
+                return AlertDialog(
+                  title: Text(AppLocalizations.of(context)!.add),
+                  content: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    onSubmitted: (String groupName) async {
+                      await addGroup(groupName, context);
+                    },
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => context.pop(),
+                      child: Text(AppLocalizations.of(context)!.close),
+                    ),
+                    TextButton(
+                        onPressed: () async {
+                          await addGroup(controller.text, context);
+                        },
+                        child: Text(AppLocalizations.of(context)!.add)),
+                  ],
+                );
+              },
+            );
+          },
+          child: Text(AppLocalizations.of(context)!.add),
+        ),
+      ],
+    );
   }
 }

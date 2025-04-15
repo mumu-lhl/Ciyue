@@ -2,7 +2,7 @@ import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
-import "package:flutter_gen/gen_l10n/app_localizations.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 
 class SettingsDictionary extends StatelessWidget {

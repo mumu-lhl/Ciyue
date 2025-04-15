@@ -1,21 +1,86 @@
 import "dart:convert";
 import "dart:io";
+import "dart:ui" as ui;
 
+import "package:ciyue/ai.dart";
 import "package:ciyue/dictionary.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/pages/main/main.dart";
+import "package:ciyue/pages/main/home.dart";
+import "package:ciyue/pages/main/wordbook.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/tags_list.dart";
-import "package:ciyue/widget/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
-import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
+import "package:gpt_markdown/gpt_markdown.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
+import "package:provider/provider.dart";
+
+class AIExplainView extends StatelessWidget {
+  final String word;
+
+  const AIExplainView({super.key, required this.word});
+
+  @override
+  Widget build(BuildContext context) {
+    final targetLanguage = settings.language! == "system"
+        ? ui.PlatformDispatcher.instance.locale.languageCode
+        : settings.language!;
+    String template;
+    if (settings.explainPromptMode == 'custom' &&
+        settings.customExplainPrompt.isNotEmpty) {
+      template = settings.customExplainPrompt;
+    } else {
+      template =
+          """You are a AI explain word tool called Ciyue(词悦). Generate a detailed explanation of the word "\$word", including the following sections:
+
+Pronunciation: Provide the pronunciation using the International Phonetic Alphabet (IPA).
+Part of Speech: Specify the part of speech (e.g., noun, verb, adjective).
+Meaning: Explain the meaning of the word.
+Example Sentences: Include at least three example sentences that demonstrate the word's usage.
+Synonyms: List at least three synonyms.
+Antonyms: List at least three antonyms.
+
+Format the response using Markdown to ensure each section is clearly organized with appropriate headings.
+The output is entirely and exclusively in \$targetLanguage.""";
+    }
+    final prompt = template
+        .replaceAll(r'$word', word)
+        .replaceAll(r'$targetLanguage', targetLanguage);
+    final ai = AI(
+      provider: settings.aiProvider,
+      model: settings.getAiProviderConfig(settings.aiProvider)['model'] ?? '',
+      apikey: settings.getAiProviderConfig(settings.aiProvider)['apiKey'] ?? '',
+    );
+
+    return FutureBuilder(
+      future: ai.request(prompt),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                  child: SelectionArea(child: GptMarkdown(snapshot.data!))),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(snapshot.error.toString()),
+          );
+        }
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+}
 
 class Button extends StatefulWidget {
   final String word;
@@ -178,27 +243,37 @@ class WebviewDisplay extends StatelessWidget {
         future: validDictionaryIds(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            if (snapshot.data!.isNotEmpty) {
-              return DefaultTabController(
-                  initialIndex: 0,
-                  length: snapshot.data!.length,
-                  child: Scaffold(
-                      appBar: AppBar(
-                          leading: BackButton(
-                            onPressed: () {
-                              if (context.canPop()) {
-                                context.pop();
-                              } else {
-                                // When opened from context menu
-                                SystemChannels.platform
-                                    .invokeMethod('SystemNavigator.pop');
-                              }
-                            },
-                          ),
-                          title: buildTabBar(context)),
+            if (snapshot.data!.isNotEmpty || settings.aiExplainWord) {
+              final dictsLength = settings.aiExplainWord
+                  ? snapshot.data!.length + 1
+                  : snapshot.data!.length;
+              final showTab = dictsLength > 1;
+              return showTab
+                  ? DefaultTabController(
+                      initialIndex: 0,
+                      length: dictsLength,
+                      child: Scaffold(
+                        appBar: buildAppBar(context, showTab),
+                        floatingActionButton: Button(word: word),
+                        body: Column(
+                          children: [
+                            Expanded(
+                              child: buildTabView(context,
+                                  validDictIds: snapshot.data!),
+                            ),
+                            if (settings.tabBarPosition ==
+                                    TabBarPosition.bottom &&
+                                showTab)
+                              buildTabBar(context),
+                          ],
+                        ),
+                      ))
+                  : Scaffold(
+                      appBar: AppBar(),
                       floatingActionButton: Button(word: word),
-                      body:
-                          buildTabView(context, validDictIds: snapshot.data!)));
+                      body: settings.aiExplainWord
+                          ? AIExplainView(word: word)
+                          : buildWebView(snapshot.data![0]));
             } else {
               final fromProcessText = !context.canPop();
               return Scaffold(
@@ -223,8 +298,9 @@ class WebviewDisplay extends StatelessWidget {
                       visible: fromProcessText,
                       child: TextButton(
                         onPressed: () {
-                          context.go("/", extra: {"searchWord": word});
-                          MainPage.callEnableAutofocusOnce = true;
+                          context.go("/");
+                          HomePage.callEnableAutofocusOnce = true;
+                          HomePage.setSearchWord(word);
                         },
                         child: Text(AppLocalizations.of(context)!.editWord),
                       ),
@@ -239,24 +315,21 @@ class WebviewDisplay extends StatelessWidget {
         });
   }
 
-  Widget buildTabView(BuildContext context,
-      {List<int> validDictIds = const []}) {
-    return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-      for (final id in validDictIds)
-        FutureBuilder(
-            future: dictManager.dicts[id]!.readWord(word),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                if (Platform.isAndroid) {
-                  return WebviewAndroid(content: snapshot.data!, dictId: id);
-                } else {
-                  return WebviewWindows(content: snapshot.data!, dictId: id);
-                }
-              } else {
-                return const SizedBox.shrink();
-              }
-            })
-    ]);
+  AppBar buildAppBar(BuildContext context, bool showTab) {
+    return AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              // When opened from context menu
+              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+            }
+          },
+        ),
+        bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
+            ? buildTabBar(context)
+            : null);
   }
 
   PreferredSizeWidget buildTabBar(BuildContext context) {
@@ -269,17 +342,45 @@ class WebviewDisplay extends StatelessWidget {
             ]),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return TabBar(tabs: [
-                  for (int i = 0; i < snapshot.data!.length; i++)
-                    if (snapshot.data![i])
-                      Tab(
-                          text:
-                              dictManager.dicts[dictManager.dictIds[i]]!.title)
-                ]);
+                return TabBar(
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.center,
+                    tabs: [
+                      if (settings.aiExplainWord) Tab(text: "AI"),
+                      for (int i = 0; i < snapshot.data!.length; i++)
+                        if (snapshot.data![i])
+                          Tab(
+                              text: dictManager
+                                  .dicts[dictManager.dictIds[i]]!.title)
+                    ]);
               } else {
                 return const SizedBox.shrink();
               }
             }));
+  }
+
+  Widget buildTabView(BuildContext context,
+      {List<int> validDictIds = const []}) {
+    return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
+      if (settings.aiExplainWord) AIExplainView(word: word),
+      for (final id in validDictIds) buildWebView(id)
+    ]);
+  }
+
+  Widget buildWebView(int id) {
+    return FutureBuilder(
+        future: dictManager.dicts[id]!.readWord(word),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            if (Platform.isAndroid) {
+              return WebviewAndroid(content: snapshot.data!, dictId: id);
+            } else {
+              return WebviewWindows(content: snapshot.data!, dictId: id);
+            }
+          } else {
+            return const SizedBox.shrink();
+          }
+        });
   }
 
   Future<List<int>> validDictionaryIds() async {
@@ -446,6 +547,9 @@ class _ButtonState extends State<Button> {
                 }
 
                 await autoExport();
+                if (context.mounted) {
+                  context.read<WordbookModel>().updateWordList();
+                }
                 checkStared();
               }
 
@@ -474,7 +578,6 @@ class _ButtonState extends State<Button> {
                           ],
                         ),
                         actions: [
-                          TextCloseButton(),
                           TextButton(
                             child: Text(locale.remove),
                             onPressed: () async {
@@ -484,6 +587,9 @@ class _ButtonState extends State<Button> {
                               if (context.mounted) context.pop();
 
                               await autoExport();
+                              if (context.mounted) {
+                                context.read<WordbookModel>().updateWordList();
+                              }
                               checkStared();
                             },
                           ),
@@ -507,6 +613,9 @@ class _ButtonState extends State<Button> {
                               if (context.mounted) context.pop();
 
                               await autoExport();
+                              if (context.mounted) {
+                                context.read<WordbookModel>().updateWordList();
+                              }
                               checkStared();
                             },
                           ),

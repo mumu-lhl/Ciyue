@@ -5,6 +5,7 @@ import "package:ciyue/database/app.dart";
 import "package:ciyue/utils.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
+import "package:flutter/foundation.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
@@ -13,6 +14,13 @@ import "database/dictionary.dart";
 import "main.dart";
 
 final dictManager = DictManager();
+
+class DictManagerModel extends ChangeNotifier {
+  Future<void> setCurrentGroup(int id) async {
+    await dictManager.setCurrentGroup(id);
+    notifyListeners();
+  }
+}
 
 class DictManager {
   final Map<int, Mdict> dicts = {};
@@ -56,24 +64,27 @@ class DictManager {
       for (final id in dictIds) await dictionaryListDao.getPath(id)
     ];
 
-    int index = 0;
-    for (final path in paths) {
+    final toRemove = <int>[];
+    for (int i = 0; i < paths.length; i++) {
       // Avoid the mdict that has been removed
       try {
-        await add(path);
+        await add(paths[i]);
       } catch (_) {
-        await dictionaryListDao.remove(path);
-
-        final dictId = dictIds.removeAt(index);
-        final databasePath =
-            join((await databaseDirectory()).path, "dictionary_$dictId.sqlite");
-        final file = File(databasePath);
-        await file.delete();
-
-        await dictGroupDao.updateDictIds(groupId, dictIds);
+        await dictionaryListDao.remove(paths[i]);
+        toRemove.add(i);
       }
+    }
 
-      index += 1;
+    for (final i in toRemove.reversed) {
+      final dictId = dictIds.removeAt(i);
+      final databasePath =
+          join((await databaseDirectory()).path, "dictionary_$dictId.sqlite");
+      final file = File(databasePath);
+      await file.delete();
+    }
+
+    if (toRemove.isNotEmpty) {
+      await dictGroupDao.updateDictIds(groupId, dictIds);
     }
   }
 

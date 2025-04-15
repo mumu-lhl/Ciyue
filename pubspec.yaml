@@ -1,5 +1,5 @@
 name: ciyue
-description: "A mdict dictionary with Android support"
+description: "A mdict dictionary with Android/Windows/Linux support"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -17,7 +17,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 
-version: 1.6.0+51
+version: 1.10.0+56
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -36,10 +36,10 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   # cupertino_icons: ^1.0.8
-  drift: ^2.25.1
+  drift: ^2.26.0
   drift_flutter: ^0.2.4
   dict_reader: ^1.1.4
-  shared_preferences: ^2.5.2
+  shared_preferences: ^2.5.3
   go_router: ^14.8.1
   flutter_inappwebview: ^6.1.5
   path: ^1.9.0
@@ -56,7 +56,10 @@ dependencies:
   url_launcher: ^6.3.1
   file_selector: ^1.0.3
   html_unescape: ^2.0.0
-  flutter_local_notifications: ^18.0.1
+  flutter_local_notifications: ^19.0.0
+  dio: ^5.8.0+1
+  gpt_markdown: ^1.0.16
+  provider: ^6.1.4
 
 dev_dependencies:
   flutter_test:
