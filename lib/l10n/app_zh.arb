@@ -12,7 +12,7 @@
   "@wordBook": {},
   "settings": "设置",
   "@settings": {},
-  "permissionDenied": "你必须授权权限",
+  "permissionDenied": "你必须授予权限",
   "@permissionDenied": {},
   "close": "关闭",
   "@close": {},
