@@ -154,7 +154,7 @@ class _HistoryListState extends State<HistoryList> {
                         color: Theme.of(context).colorScheme.primary,
                         alignment: Alignment.centerLeft,
                         padding: const EdgeInsets.only(left: 16.0),
-                        child: Icon(Icons.label_outline,
+                        child: Icon(Icons.book_outlined,
                             color: Theme.of(context).colorScheme.onPrimary)),
                     secondaryBackground: Container(
                         color: Theme.of(context).colorScheme.error,

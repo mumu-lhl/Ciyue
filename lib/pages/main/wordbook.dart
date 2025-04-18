@@ -26,6 +26,7 @@ class TagListDialog extends StatefulWidget {
   final List<WordbookTag> tagsDisplay;
 
   final Future<void> Function(BuildContext context) buildAddTag;
+
   const TagListDialog({
     super.key,
     required this.tagsDisplay,
@@ -430,7 +431,7 @@ class _WordBookScreenState extends State<WordBookScreen> {
     return AppBar(
       actions: [
         IconButton(
-          icon: Icon(Icons.bookmark),
+          icon: Icon(Icons.label_outline),
           onPressed: () async {
             final tags = await context.read<WordbookModel>().tags;
 
