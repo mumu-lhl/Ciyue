@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.11.0](https://github.com/mumu-lhl/Ciyue/compare/v1.10.0..v1.11.0) - 2025-04-19
+
+### Bug Fixes
+
+- **(config)** correct base path in VitePress configuration - ([d0cd1f0](https://github.com/mumu-lhl/Ciyue/commit/d0cd1f051b1abd8050e7faabe246ac26bc28abd3)) - Mumulhl
+
+### Documentation
+
+- **(web)** add web docs - ([771eed7](https://github.com/mumu-lhl/Ciyue/commit/771eed7d0e9181e5227f9d8a1fbda4b59669a3ab)) - Mumulhl
+
+### Features
+
+- **(model)** add SiliconFlow and SiliconFlow China - ([0ee9fc0](https://github.com/mumu-lhl/Ciyue/commit/0ee9fc0b95fe429c2951b9456dac6e90a5704d0f)) - Mumulhl
+- **(model)** add Zhipu - ([01be78e](https://github.com/mumu-lhl/Ciyue/commit/01be78e2f42528ede1a0f9788e0c4aaf31d14ea3)) - Mumulhl
+- **(model)** add xAI - ([dcf9c60](https://github.com/mumu-lhl/Ciyue/commit/dcf9c6022445769c3847536af0134f48461430b7)) - Mumulhl
+- **(translation)** translated using Weblate (Chinese (Simplified Han script)) - ([6c0b955](https://github.com/mumu-lhl/Ciyue/commit/6c0b955d395a491608f0724422e8534a9d3ceffb)) - 何意挽秋風
+- **(translation)** translated using Weblate (Chinese (Traditional Han script)) - ([fcbe4a9](https://github.com/mumu-lhl/Ciyue/commit/fcbe4a9bb952ff2b08cc6a6c4e78aabf6f275055)) - 何意挽秋風
+- **(ui)** set navigation rail to extended state in wide landscape - ([e043bc8](https://github.com/mumu-lhl/Ciyue/commit/e043bc81f17da238830240367fee00362531054b)) - Integral
+- add new AI models to the settings configuration - ([10dcb6f](https://github.com/mumu-lhl/Ciyue/commit/10dcb6f642da4be6e64c0bd80418017607964dda)) - Mumulhl
+- delete associated .mdx and .mdd files on dictionary removal for Android - ([2c1e275](https://github.com/mumu-lhl/Ciyue/commit/2c1e275952d1acdb4922d10794c033c30a956d45)) - Mumulhl
+- enhance loading dialog with dynamic text updates and refactor state management - ([a95fba1](https://github.com/mumu-lhl/Ciyue/commit/a95fba107dbd15f262ae14f1c042c5a16a0d87c5)) - Mumulhl
+- add search bar functionality in word display - ([b499ff8](https://github.com/mumu-lhl/Ciyue/commit/b499ff8584bb3c7af9e38f5740810f7e043c7e42)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** update workflows and ignore files for VitePress deployment - ([76432e4](https://github.com/mumu-lhl/Ciyue/commit/76432e44e14fdaf9ea02210e3ecf1087b930f410)) - Mumulhl
+- **(ci)** install pnpm - ([4288967](https://github.com/mumu-lhl/Ciyue/commit/4288967a6736a6c93cb34ef0a45c8d9c1b4837d8)) - Mumulhl
+- **(ci)** add permissions for workflow - ([760c264](https://github.com/mumu-lhl/Ciyue/commit/760c2643c01b05dd52523c815975fa87608b9413)) - Mumulhl
+- **(dependabot)** update configuration for npm package ecosystem - ([7757007](https://github.com/mumu-lhl/Ciyue/commit/7757007869ff52735059e2a7fbee9f5bb26e33d3)) - Mumulhl
+- **(deps)** bump flutter_local_notifications from 19.0.0 to 19.1.0 - ([4d13b42](https://github.com/mumu-lhl/Ciyue/commit/4d13b428079a9244aa135dc5901e741bc35f6ffc)) - dependabot[bot]
+- **(deps)** bump go_router from 14.8.1 to 15.0.0 - ([576f717](https://github.com/mumu-lhl/Ciyue/commit/576f717984cd6c4d152db00ef570c63c3d36edd4)) - dependabot[bot]
+- **(deps-dev)** bump esbuild - ([acba5b3](https://github.com/mumu-lhl/Ciyue/commit/acba5b3905a17af9fc83fa65977869ea5b5fd8ed)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.25.0 to 0.25.2 in /docs - ([c32bb8d](https://github.com/mumu-lhl/Ciyue/commit/c32bb8d8ce339002a0c428cffc32cd5e07a441bf)) - dependabot[bot]
+- **(vitepress)** add esbuild as a devDependency in package.json - ([8689308](https://github.com/mumu-lhl/Ciyue/commit/868930801ce52fa545bb33da42b52afe18abda22)) - Mumulhl
+- exclude directories from analyzer - ([09f055c](https://github.com/mumu-lhl/Ciyue/commit/09f055c52e2feaebaace89ee7ac74537c35089dc)) - Mumulhl
+- add .gitignore to exclude node_modules and cache directories - ([b30ab8d](https://github.com/mumu-lhl/Ciyue/commit/b30ab8dc0c06812f4d2a2e21c41c9f44316157b8)) - Mumulhl
+
+### Refactoring
+
+- restructure model provider logic for better clarity and maintainability - ([ba8e6b4](https://github.com/mumu-lhl/Ciyue/commit/ba8e6b4dbf5dee9087e161f3f8a3cf5252c3d528)) - Mumulhl
+- enhance AI model management with dynamic provider configuration - ([a9b1eb9](https://github.com/mumu-lhl/Ciyue/commit/a9b1eb9723accf4dc09881a12d5443c2845a1833)) - Mumulhl
+- update GeminiProvider API URL handling and improve model selection logic in settings - ([a4352c8](https://github.com/mumu-lhl/Ciyue/commit/a4352c890d4ef4ad9e5c5532078c269874ddbeae)) - Mumulhl
+- replace WebviewDisplay with WordDisplay for word detail view - ([12f108e](https://github.com/mumu-lhl/Ciyue/commit/12f108e2374217e01c5068d3c8fbae39052dfc71)) - Mumulhl
+
+---
 ## [1.10.0](https://github.com/mumu-lhl/Ciyue/compare/v1.9.0..v1.10.0) - 2025-04-13
 
 ### Bug Fixes
