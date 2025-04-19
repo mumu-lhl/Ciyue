@@ -182,6 +182,22 @@ class ModelProviderManager {
         apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
         models: [],
         allowCustomModel: true),
+    "zhipu": ModelProvider(
+      name: "zhipu",
+      displayedName: "智谱",
+      apiUrl: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+      models: [
+        ModelInfo("glm-4-plus", "GLM-4 Plus"),
+        ModelInfo("glm-4-air-250414", "GLM-4 Air 250414"),
+        ModelInfo("glm-4-airx", "GLM-4 AirX"),
+        ModelInfo("glm-4-long", "GLM-4 Long"),
+        ModelInfo("glm-4-flashx", "GLM-4 FlashX"),
+        ModelInfo("glm-4-flash-250414", "GLM-4 Flash 250414"),
+        ModelInfo("glm-z1-air", "GLM-Z1 Air"),
+        ModelInfo("glm-z1-airx", "GLM-Z1 AirX"),
+        ModelInfo("glm-z1-flash", "GLM-Z1 Flash"),
+      ],
+    )
   };
 }
 
