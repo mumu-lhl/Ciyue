@@ -3,6 +3,7 @@ import "dart:io";
 
 import "package:ciyue/database/app.dart";
 import "package:ciyue/utils.dart";
+import "package:ciyue/widget/loading_dialog.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
 import "package:flutter/foundation.dart";
@@ -295,6 +296,8 @@ class Mdict {
         number = 0;
         await db.insertResource(resourceList);
         resourceList.clear();
+
+        LoadingDialogContentState.updateText("Adding resource: $key");
       }
     }
 
@@ -323,6 +326,8 @@ class Mdict {
         number = 0;
         await db.insertWords(wordList);
         wordList.clear();
+
+        LoadingDialogContentState.updateText("Adding word: $key");
       }
     }
 
