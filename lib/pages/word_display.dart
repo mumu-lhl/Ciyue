@@ -232,12 +232,12 @@ document.body.style.fontFamily = 'Custom Font';
   }
 }
 
-class WebviewDisplay extends StatelessWidget {
+class WordDisplay extends StatelessWidget {
   final String word;
 
   final SearchController controller = SearchController();
 
-  WebviewDisplay({super.key, required this.word});
+  WordDisplay({super.key, required this.word});
 
   @override
   Widget build(BuildContext context) {

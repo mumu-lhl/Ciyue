@@ -13,7 +13,7 @@ import "package:ciyue/pages/settings/ai_settings.dart";
 import "package:ciyue/pages/settings/auto_export.dart";
 import "package:ciyue/pages/settings/privacy_policy.dart";
 import "package:ciyue/pages/settings/terms_of_service.dart";
-import "package:ciyue/pages/webview_display.dart";
+import "package:ciyue/pages/word_display.dart";
 import "package:ciyue/platform.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -139,7 +139,7 @@ final router = GoRouter(
         path: "/word",
         builder: (context, state) {
           final extra = state.extra as Map<String, String>;
-          return WebviewDisplay(word: extra["word"]!);
+          return WordDisplay(word: extra["word"]!);
         }),
     GoRoute(
         path: "/description/:dictId",
