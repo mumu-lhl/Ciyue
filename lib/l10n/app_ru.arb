@@ -195,5 +195,7 @@
   "customTranslatePromptHelper": "Вы можете использовать $sourceLanguage, $targetLanguage и $text в вашем запросе.",
   "@customTranslatePromptHelper": {},
   "tabBarPosition": "Положение панели вкладок в отображении слова",
-  "@tabBarPosition": {}
+  "@tabBarPosition": {},
+  "showSearchBarInWordDisplayPage": "Показывать панель поиска в отображении слова",
+  "@showSearchBarInWordDisplayPage": {}
 }

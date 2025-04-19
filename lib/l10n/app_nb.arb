@@ -195,5 +195,7 @@
   "customTranslatePromptHelper": "Du kan bruke $sourceLanguage, $targetLanguage og $text i prompten din.",
   "@customTranslatePromptHelper": {},
   "tabBarPosition": "TabBar-posisjon i ordvisning",
-  "@tabBarPosition": {}
+  "@tabBarPosition": {},
+  "showSearchBarInWordDisplayPage": "Vis søkefelt i ordvisning",
+  "@showSearchBarInWordDisplayPage": {}
 }

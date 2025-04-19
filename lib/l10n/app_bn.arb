@@ -195,5 +195,7 @@
   "customTranslatePromptHelper": "আপনি আপনার অনুরোধে $sourceLanguage, $targetLanguage এবং $text ব্যবহার করতে পারেন।",
   "@customTranslatePromptHelper": {},
   "tabBarPosition": "শব্দ প্রদর্শনে ট্যাববার অবস্থান",
-  "@tabBarPosition": {}
+  "@tabBarPosition": {},
+  "showSearchBarInWordDisplayPage": "শব্দ প্রদর্শনে সার্চ বার দেখান",
+  "@showSearchBarInWordDisplayPage": {}
 }

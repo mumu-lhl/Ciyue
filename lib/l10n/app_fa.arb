@@ -195,5 +195,7 @@
   "customTranslatePromptHelper": "می‌توانید از $sourceLanguage، $targetLanguage و $text در درخواست خود استفاده کنید.",
   "@customTranslatePromptHelper": {},
   "tabBarPosition": "موقعیت نوار زبانه در نمایش واژه",
-  "@tabBarPosition": {}
+  "@tabBarPosition": {},
+  "showSearchBarInWordDisplayPage": "نمایش نوار جستجو در نمایش کلمه",
+  "@showSearchBarInWordDisplayPage": {}
 }
