@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Ciyue",
   description: "A simple mdict dictionary with Android/Windows/Linux support",
+  base: '/Ciyue/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
