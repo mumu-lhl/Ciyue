@@ -26,3 +26,18 @@ linter:
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+
+analyzer:
+  exclude:
+    - "android/**"
+    - "windows/**"
+    - "linux/**"
+    - "lib/src/generated/**"
+    - "drift_schemas/**"
+    - "metadata/**"
+    - ".github/**"
+    - ".dart_tool/**"
+    - ".idea/**"
+    - ".vscode/**"
+    - "assets/**"
+    - "build/**"
