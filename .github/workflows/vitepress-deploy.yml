@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: 'latest'
 
+      - name: Install pnpm
+        run: corepack enable pnpm
+
       - name: Install dependencies (docs)
         run: cd docs && pnpm install
 
