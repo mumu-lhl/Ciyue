@@ -27,7 +27,7 @@
 
 [<img src="https://github.com/NeoApplications/Neo-Backup/raw/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
     alt="Get it on GitHub"
-    height="80">]([https://github.com/ImranR98/Obtainium/releases](https://github.com/mumu-lhl/Ciyue/releases/latest))
+    height="80">](https://github.com/mumu-lhl/Ciyue/releases/latest)
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/org.eu.mumulhl.ciyue/)
