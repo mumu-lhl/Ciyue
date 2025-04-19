@@ -20,10 +20,10 @@ class ManageDictionaries extends StatefulWidget {
   const ManageDictionaries({super.key});
 
   @override
-  State<ManageDictionaries> createState() => _ManageDictionariesState();
+  State<ManageDictionaries> createState() => ManageDictionariesState();
 }
 
-class _ManageDictionariesState extends State<ManageDictionaries> {
+class ManageDictionariesState extends State<ManageDictionaries> {
   var dictionaries = dictionaryListDao.all();
 
   Future<void> addGroup(String value, BuildContext context) async {
@@ -289,18 +289,6 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     );
   }
 
-  Future<void> updateAlias(
-      String value, DictionaryListData dictionary, BuildContext context) async {
-    if (value.isNotEmpty) {
-      dictManager.dicts[dictionary.id]!.title = value;
-      await dictionaryListDao.updateAlias(dictionary.id, value);
-      updateDictionaries();
-      if (context.mounted) {
-        context.pop();
-      }
-    }
-  }
-
   IconButton? buildGroupDeleteButton(
       BuildContext context, DictGroupData group) {
     if (group.name == "Default") {
@@ -402,7 +390,9 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
     var path = file?.path;
 
     if (path != null) {
-      if (context.mounted) showLoadingDialog(context);
+      if (context.mounted) {
+        showLoadingDialog(context, text: "Copying files...");
+      }
 
       late final Mdict tmpDict;
       try {
@@ -432,6 +422,18 @@ class _ManageDictionariesState extends State<ManageDictionaries> {
       action: SnackBarAction(
           label: AppLocalizations.of(context)!.close, onPressed: () {}),
     ));
+  }
+
+  Future<void> updateAlias(
+      String value, DictionaryListData dictionary, BuildContext context) async {
+    if (value.isNotEmpty) {
+      dictManager.dicts[dictionary.id]!.title = value;
+      await dictionaryListDao.updateAlias(dictionary.id, value);
+      updateDictionaries();
+      if (context.mounted) {
+        context.pop();
+      }
+    }
   }
 
   void updateDictionaries() {
