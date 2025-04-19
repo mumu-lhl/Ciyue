@@ -259,6 +259,16 @@ class Mdict {
     await file.delete();
 
     await dictionaryListDao.remove(path);
+
+    if (Platform.isAndroid) {
+      final mdxFile = File("$path.mdx");
+      await mdxFile.delete();
+
+      final mddFile = File("$path.mdd");
+      if (await mddFile.exists()) {
+        await mddFile.delete();
+      }
+    }
   }
 
   void setDefaultTitle() {
