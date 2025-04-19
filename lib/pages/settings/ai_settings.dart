@@ -1,3 +1,4 @@
+import 'package:ciyue/ai.dart';
 import 'package:ciyue/main.dart';
 import 'package:ciyue/pages/main/home.dart';
 import 'package:ciyue/settings.dart';
@@ -10,21 +11,6 @@ class AiSettings extends StatefulWidget {
 
   @override
   State<AiSettings> createState() => _AiSettingsState();
-}
-
-class ModelInfo {
-  final String originName;
-  final String shownName;
-
-  const ModelInfo(this.originName, this.shownName);
-}
-
-class ModelProvider {
-  final String name;
-  final String displayedName;
-  final List<ModelInfo> models;
-
-  const ModelProvider(this.name, this.displayedName, this.models);
 }
 
 class TitleText extends StatelessWidget {
@@ -42,49 +28,7 @@ class TitleText extends StatelessWidget {
 }
 
 class _AiSettingsState extends State<AiSettings> {
-  static const _modelProviders = [
-    ModelProvider("openai", "OpenAI", [
-      ModelInfo("gpt-4o-mini", "GPT-4o mini"),
-      ModelInfo("gpt-4.1-mini", "GPT-4.1 mini"),
-      ModelInfo("gpt-4.1-nano", "GPT-4.1 nano"),
-      ModelInfo("gpt-4.1", "GPT-4.1"),
-      ModelInfo("gpt-4o", "GPT-4o"),
-      ModelInfo("gpt-4.5-preview", "GPT-4.5 Preview"),
-      ModelInfo("o1-pro", "o1-pro"),
-      ModelInfo("o3", "o3"),
-      ModelInfo("o1", "o1"),
-      ModelInfo("o4-mini", "o4-mini"),
-      ModelInfo("o3-mini", "o3-mini"),
-      ModelInfo("o1-mini", "o1-mini"),
-    ]),
-    ModelProvider("gemini", "Gemini", [
-      ModelInfo("gemini-2.5-flash-preview-04-17", "Gemini 2.5 Flash Preview"),
-      ModelInfo("gemini-2.5-pro-preview-03-25", "Gemini 2.5 Pro Preview"),
-      ModelInfo("gemini-2.5-pro-exp-03-25", "Gemini 2.5 Pro"),
-      ModelInfo("gemini-2.0-flash", "Gemini 2.0 Flash"),
-      ModelInfo("gemini-2.0-flash-lite", "Gemini 2.0 Flash Lite"),
-      ModelInfo(
-          "gemini-2.0-flash-thinking-exp-01-21", "Gemini 2.0 Flash Thinking"),
-      ModelInfo("gemini-2.0-pro-exp-02-05", "Gemini 2.0 Pro"),
-      ModelInfo("gemini-1.5-pro", "Gemini 1.5 Pro"),
-      ModelInfo("gemini-1.5-flash", "Gemini 1.5 Flash"),
-      ModelInfo("gemini-1.5-flash-8b", "Gemini 1.5 Flash-8B"),
-    ]),
-    ModelProvider("deepseek", "DeepSeek", [
-      ModelInfo("deepseek-chat", "DeepSeek Chat"),
-      ModelInfo("deepseek-reasoner", "DeepSeek Reasoner"),
-    ]),
-    ModelProvider("anthropic", "Anthropic", [
-      ModelInfo("claude-3-7-sonnet-latest", "Claude 3.7 Sonnet"),
-      ModelInfo("claude-3-5-sonnet-latest", "Claude 3.5 Sonnet"),
-      ModelInfo("claude-3-sonnet-20240229", "Claude 3 Sonnet"),
-      ModelInfo("claude-3-5-haiku-latest", "Claude 3.5 Haiku"),
-      ModelInfo("claude-3-haiku-20240307", "Claude 3 Haiku"),
-      ModelInfo("claude-3-opus-latest", "Claude 3 Opus"),
-    ]),
-  ];
   String _provider = "";
-
   String _model = "";
   String _apiKey = "";
 
@@ -263,8 +207,8 @@ class _AiSettingsState extends State<AiSettings> {
   }
 
   DropdownButtonFormField<String> buildModel(BuildContext context) {
-    final currentProvider =
-        _modelProviders.firstWhere((p) => p.name == _provider);
+    final currentProvider = ModelProviderManager.modelProviders[_provider] ??
+        ModelProviderManager.modelProviders.values.first;
     final currentModels = currentProvider.models;
 
     return DropdownButtonFormField<String>(
@@ -303,14 +247,16 @@ class _AiSettingsState extends State<AiSettings> {
           _model = config['model']!;
           // Ensure the selected model is valid for the new provider
           final currentProvider =
-              _modelProviders.firstWhere((p) => p.name == _provider);
+              ModelProviderManager.modelProviders[_provider] ??
+                  ModelProviderManager.modelProviders.values.first;
           if (!currentProvider.models.any((m) => m.originName == _model)) {
             _model = currentProvider.models[0].originName;
           }
           _apiKey = config['apiKey']!;
         });
       },
-      items: _modelProviders.map<DropdownMenuItem<String>>((ModelProvider p) {
+      items: ModelProviderManager.modelProviders.values
+          .map<DropdownMenuItem<String>>((ModelProvider p) {
         return DropdownMenuItem<String>(
           value: p.name,
           child: Text(p.displayedName),
@@ -325,8 +271,8 @@ class _AiSettingsState extends State<AiSettings> {
 
     _provider = settings.aiProvider;
     // Ensure provider exists
-    if (!_modelProviders.any((p) => p.name == _provider)) {
-      _provider = _modelProviders[0].name;
+    if (ModelProviderManager.modelProviders[_provider] == null) {
+      _provider = ModelProviderManager.modelProviders.values.first.name;
       settings.aiProvider = _provider;
       prefs.setString('aiProvider', _provider);
     }
@@ -336,8 +282,7 @@ class _AiSettingsState extends State<AiSettings> {
     _apiKey = config['apiKey']!;
 
     // Ensure model exists for the provider
-    final currentProvider =
-        _modelProviders.firstWhere((p) => p.name == _provider);
+    final currentProvider = ModelProviderManager.modelProviders[_provider]!;
     if (!currentProvider.models.any((m) => m.originName == _model)) {
       _model = currentProvider.models[0].originName;
       _saveAiProviderConfig(); // Save the default model if the saved one was invalid
