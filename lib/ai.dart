@@ -34,9 +34,6 @@ abstract class AIProvider {
 }
 
 class GeminiProvider extends AIProvider {
-  static const String apiUrl =
-      "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
-
   final String apikey;
   final String model;
 
@@ -45,7 +42,9 @@ class GeminiProvider extends AIProvider {
   @override
   Future<String> request(String prompt) async {
     final dio = Dio();
-    final formattedApiUrl = apiUrl.replaceFirst('{model}', model);
+    final formattedApiUrl = ModelProviderManager
+        .modelProviders['gemini']!.apiUrl
+        .replaceFirst('{model}', model);
 
     final params = {'key': apikey};
 
@@ -226,8 +225,8 @@ class OpenAICompatibleProvider extends AIProvider {
         throw Exception(
             'Failed to fetch response from OpenAI API. Status code: ${response.statusCode}, body: ${response.data}');
       }
-    } catch (e) {
-      throw Exception('Error requesting OpenAI API: $e');
+    } on DioException catch (e) {
+      throw Exception('Error requesting OpenAI API: $e\nBody: ${e.response}');
     }
   }
 }

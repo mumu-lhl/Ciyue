@@ -206,30 +206,46 @@ class _AiSettingsState extends State<AiSettings> {
     );
   }
 
-  DropdownButtonFormField<String> buildModel(BuildContext context) {
+  Widget buildModel(BuildContext context) {
     final currentProvider = ModelProviderManager.modelProviders[_provider] ??
         ModelProviderManager.modelProviders.values.first;
-    final currentModels = currentProvider.models;
 
-    return DropdownButtonFormField<String>(
-      value: currentModels.any((m) => m.originName == _model)
-          ? _model
-          : currentModels[0].originName,
-      hint: Text(AppLocalizations.of(context)!.aiModel),
-      padding: EdgeInsets.only(left: 8, right: 8),
-      onChanged: (String? newValue) {
-        setState(() {
-          _model = newValue ?? "";
+    if (currentProvider.allowCustomModel) {
+      return TextFormField(
+        key: ValueKey(_model),
+        initialValue: _model,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(),
+          hintText: AppLocalizations.of(context)!.aiModel,
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        ),
+        onChanged: (value) {
+          _model = value;
           _saveAiProviderConfig();
-        });
-      },
-      items: currentModels.map<DropdownMenuItem<String>>((ModelInfo value) {
-        return DropdownMenuItem<String>(
-          value: value.originName,
-          child: Text(value.shownName),
-        );
-      }).toList(),
-    );
+        },
+      );
+    } else {
+      final currentModels = currentProvider.models;
+      return DropdownButtonFormField<String>(
+        value: currentModels.any((m) => m.originName == _model)
+            ? _model
+            : currentModels[0].originName,
+        hint: Text(AppLocalizations.of(context)!.aiModel),
+        padding: EdgeInsets.only(left: 8, right: 8),
+        onChanged: (String? newValue) {
+          setState(() {
+            _model = newValue ?? "";
+            _saveAiProviderConfig();
+          });
+        },
+        items: currentModels.map<DropdownMenuItem<String>>((ModelInfo value) {
+          return DropdownMenuItem<String>(
+            value: value.originName,
+            child: Text(value.shownName),
+          );
+        }).toList(),
+      );
+    }
   }
 
   DropdownButtonFormField<String> buildProvider(BuildContext context) {
@@ -283,7 +299,8 @@ class _AiSettingsState extends State<AiSettings> {
 
     // Ensure model exists for the provider
     final currentProvider = ModelProviderManager.modelProviders[_provider]!;
-    if (!currentProvider.models.any((m) => m.originName == _model)) {
+    if (!currentProvider.models.any((m) => m.originName == _model) &&
+        !currentProvider.allowCustomModel) {
       _model = currentProvider.models[0].originName;
       _saveAiProviderConfig(); // Save the default model if the saved one was invalid
     }
