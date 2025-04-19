@@ -4,6 +4,7 @@ on:
   push:
     paths-ignore:
       - "**.md"
+      - "docs/**"
   pull_request:
 
 jobs:
