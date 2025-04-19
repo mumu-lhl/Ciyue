@@ -386,61 +386,20 @@ class PrivacyPolicy extends StatelessWidget {
   }
 }
 
+class SearchbarInWordDisplaySwitch extends StatefulWidget {
+  const SearchbarInWordDisplaySwitch({super.key});
+
+  @override
+  State<SearchbarInWordDisplaySwitch> createState() =>
+      _SearchbarInWordDisplaySwitchState();
+}
+
 class SearchbarLocationSelector extends StatefulWidget {
   const SearchbarLocationSelector({super.key});
 
   @override
   State<SearchbarLocationSelector> createState() =>
       _SearchbarLocationSelectorState();
-}
-
-class TabBarPositionSelector extends StatefulWidget {
-  const TabBarPositionSelector({super.key});
-
-  @override
-  State<TabBarPositionSelector> createState() => _TabBarPositionSelectorState();
-}
-
-class _TabBarPositionSelectorState extends State<TabBarPositionSelector> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context)!;
-
-    return InkWell(
-      onTapUp: (tapUpDetails) async {
-        final selected = await showMenu<TabBarPosition>(
-          context: context,
-          position: RelativeRect.fromLTRB(
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-          ),
-          initialValue: settings.tabBarPosition,
-          items: [
-            PopupMenuItem(
-              value: TabBarPosition.top,
-              child: Text(locale.top),
-            ),
-            PopupMenuItem(
-              value: TabBarPosition.bottom,
-              child: Text(locale.bottom),
-            ),
-          ],
-        );
-
-        if (selected != null && selected != settings.tabBarPosition) {
-          await settings.setTabBarPosition(selected);
-          setState(() {});
-        }
-      },
-      child: ListTile(
-        leading: const Icon(Icons.tab),
-        title: Text(locale.tabBarPosition),
-        trailing: const Icon(Icons.keyboard_arrow_down),
-      ),
-    );
-  }
 }
 
 class SecureScreenSwitch extends StatefulWidget {
@@ -464,6 +423,7 @@ class SettingsScreen extends StatelessWidget {
         const LanguageSelector(),
         const SearchbarLocationSelector(),
         const TabBarPositionSelector(),
+        const SearchbarInWordDisplaySwitch(),
         const DrawerIconSwitch(),
         const MoreOptionsButtonSwitch(),
         if (Platform.isAndroid) ...[
@@ -508,6 +468,13 @@ class SponsorUrl extends StatelessWidget {
         onTap: () => launchUrl(Uri.parse(sponsorUri)),
         onLongPress: () => _copy(context, sponsorUri));
   }
+}
+
+class TabBarPositionSelector extends StatefulWidget {
+  const TabBarPositionSelector({super.key});
+
+  @override
+  State<TabBarPositionSelector> createState() => _TabBarPositionSelectorState();
 }
 
 class TermsOfService extends StatelessWidget {
@@ -690,6 +657,25 @@ class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
   }
 }
 
+class _SearchbarInWordDisplaySwitchState
+    extends State<SearchbarInWordDisplaySwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.showSearchBarInWordDisplayPage),
+      value: settings.showSearchBarInWordDisplay,
+      onChanged: (value) async {
+        await prefs.setBool("showSearchBarInWordDisplay", value);
+        setState(() {
+          settings.showSearchBarInWordDisplay = value;
+        });
+      },
+      secondary: const Icon(Icons.search),
+    );
+  }
+}
+
 class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
   @override
   Widget build(BuildContext context) {
@@ -744,6 +730,48 @@ class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
         });
       },
       secondary: const Icon(Icons.security),
+    );
+  }
+}
+
+class _TabBarPositionSelectorState extends State<TabBarPositionSelector> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+
+    return InkWell(
+      onTapUp: (tapUpDetails) async {
+        final selected = await showMenu<TabBarPosition>(
+          context: context,
+          position: RelativeRect.fromLTRB(
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+          ),
+          initialValue: settings.tabBarPosition,
+          items: [
+            PopupMenuItem(
+              value: TabBarPosition.top,
+              child: Text(locale.top),
+            ),
+            PopupMenuItem(
+              value: TabBarPosition.bottom,
+              child: Text(locale.bottom),
+            ),
+          ],
+        );
+
+        if (selected != null && selected != settings.tabBarPosition) {
+          await settings.setTabBarPosition(selected);
+          setState(() {});
+        }
+      },
+      child: ListTile(
+        leading: const Icon(Icons.tab),
+        title: Text(locale.tabBarPosition),
+        trailing: const Icon(Icons.keyboard_arrow_down),
+      ),
     );
   }
 }

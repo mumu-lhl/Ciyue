@@ -195,5 +195,7 @@
   "customTranslatePromptHelper": "你可以在提示詞中使用 $sourceLanguage、$targetLanguage 和 $text。",
   "@customTranslatePromptHelper": {},
   "tabBarPosition": "單詞顯示中的標籤列位置",
-  "@tabBarPosition": {}
+  "@tabBarPosition": {},
+  "showSearchBarInWordDisplayPage": "在字詞顯示中顯示搜尋列",
+  "@showSearchBarInWordDisplayPage": {}
 }

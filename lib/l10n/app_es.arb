@@ -195,5 +195,7 @@
   "customTranslatePromptHelper": "Puedes usar $sourceLanguage, $targetLanguage y $text en tu indicación.",
   "@customTranslatePromptHelper": {},
   "tabBarPosition": "Posición de la barra de pestañas en la visualización de palabras",
-  "@tabBarPosition": {}
+  "@tabBarPosition": {},
+  "showSearchBarInWordDisplayPage": "Mostrar barra de búsqueda en la visualización de palabras",
+  "@showSearchBarInWordDisplayPage": {}
 }

@@ -10,6 +10,25 @@ import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
+class Searcher {
+  final String text;
+
+  Searcher(this.text);
+
+  Future<List<DictionaryData>> getSearchResult() async {
+    final searchers = <Future<List<DictionaryData>>>[];
+    for (final dict in dictManager.dicts.values) {
+      searchers.add(dict.db.searchWord(text));
+    }
+    final searchResult = [for (final i in await Future.wait(searchers)) ...i];
+    searchResult.sort((a, b) => a.key.compareTo(b.key));
+    searchResult.removeWhere((element) =>
+        searchResult.indexOf(element) !=
+        searchResult.lastIndexWhere((e) => e.key == element.key));
+    return searchResult;
+  }
+}
+
 class HomeModel extends ChangeNotifier {
   final textFieldController = TextEditingController();
 
@@ -296,13 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (textFieldController.text.isEmpty) {
         return HistoryList();
       } else {
-        final searchers = <Future<List<DictionaryData>>>[];
-        for (final dict in dictManager.dicts.values) {
-          searchers.add(dict.db.searchWord(textFieldController.text));
-        }
-        final future = Future.wait(searchers);
-
-        return buildSearchResult(future);
+        return buildSearchResult(textFieldController.text);
       }
     }
   }
@@ -420,27 +433,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  FutureBuilder<List<List<DictionaryData>>> buildSearchResult(
-      Future<List<List<DictionaryData>>> future) {
+  FutureBuilder<List<DictionaryData>> buildSearchResult(String text) {
     return FutureBuilder(
-        future: future,
+        future: Searcher(text).getSearchResult(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            final searchResult = [for (final i in snapshot.data!) ...i];
-            searchResult.sort((a, b) => a.key.compareTo(b.key));
-            searchResult.removeWhere((element) =>
-                searchResult.indexOf(element) !=
-                searchResult.lastIndexWhere((e) => e.key == element.key));
-
+            final searchResult = snapshot.data as List<DictionaryData>;
             final resultWidgets = <Widget>[];
-            final textFieldController =
-                context.read<HomeModel>().textFieldController;
 
             if (settings.aiExplainWord &&
-                (searchResult.isEmpty ||
-                    searchResult[0].key != textFieldController.text)) {
-              resultWidgets
-                  .add(buildOneResult(textFieldController.text, context));
+                (searchResult.isEmpty || searchResult[0].key != text)) {
+              resultWidgets.add(buildOneResult(text, context));
             }
             for (final word in searchResult) {
               resultWidgets.add(buildOneResult(word.key, context));

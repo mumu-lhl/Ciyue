@@ -235,7 +235,9 @@ document.body.style.fontFamily = 'Custom Font';
 class WebviewDisplay extends StatelessWidget {
   final String word;
 
-  const WebviewDisplay({super.key, required this.word});
+  final SearchController controller = SearchController();
+
+  WebviewDisplay({super.key, required this.word});
 
   @override
   Widget build(BuildContext context) {
@@ -269,7 +271,11 @@ class WebviewDisplay extends StatelessWidget {
                         ),
                       ))
                   : Scaffold(
-                      appBar: AppBar(),
+                      appBar: AppBar(
+                        title: settings.showSearchBarInWordDisplay
+                            ? buildSearchBar(context)
+                            : null,
+                      ),
                       floatingActionButton: Button(word: word),
                       body: settings.aiExplainWord
                           ? AIExplainView(word: word)
@@ -327,9 +333,36 @@ class WebviewDisplay extends StatelessWidget {
             }
           },
         ),
+        title: settings.showSearchBarInWordDisplay
+            ? buildSearchBar(context)
+            : null,
         bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
             ? buildTabBar(context)
             : null);
+  }
+
+  Widget buildSearchBar(BuildContext context) {
+    return SafeArea(
+      child: Center(
+        child: SearchAnchor.bar(
+          barHintText: AppLocalizations.of(context)!.search,
+          constraints:
+              const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
+          searchController: controller..text = word,
+          suggestionsBuilder:
+              (BuildContext context, SearchController controller) async {
+            final searchResult =
+                await Searcher(controller.text).getSearchResult();
+            return searchResult.map((e) => ListTile(
+                  title: Text(e.key),
+                  onTap: () {
+                    context.push("/word", extra: {"word": e.key});
+                  },
+                ));
+          },
+        ),
+      ),
+    );
   }
 
   PreferredSizeWidget buildTabBar(BuildContext context) {

@@ -195,5 +195,7 @@
   "customTranslatePromptHelper": "Sie können $sourceLanguage, $targetLanguage und $text in Ihrer Eingabe verwenden.",
   "@customTranslatePromptHelper": {},
   "tabBarPosition": "TabBar-Position in der Wortanzeige",
-  "@tabBarPosition": {}
+  "@tabBarPosition": {},
+  "showSearchBarInWordDisplayPage": "Suchleiste in der Wortanzeige anzeigen",
+  "@showSearchBarInWordDisplayPage": {}
 }
