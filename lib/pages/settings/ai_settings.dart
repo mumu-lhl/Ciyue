@@ -43,13 +43,21 @@ class _AiSettingsState extends State<AiSettings> {
   static const _models = {
     "openai": [
       ModelInfo("gpt-4o-mini", "GPT-4o mini"),
+      ModelInfo("gpt-4.1-mini", "GPT-4.1 mini"),
+      ModelInfo("gpt-4.1-nano", "GPT-4.1 nano"),
+      ModelInfo("gpt-4.1", "GPT-4.1"),
       ModelInfo("gpt-4o", "GPT-4o"),
       ModelInfo("gpt-4.5-preview", "GPT-4.5 Preview"),
+      ModelInfo("o1-pro", "o1-pro"),
+      ModelInfo("o3", "o3"),
       ModelInfo("o1", "o1"),
-      ModelInfo("o1-mini", "o1-mini"),
+      ModelInfo("o4-mini", "o4-mini"),
       ModelInfo("o3-mini", "o3-mini"),
+      ModelInfo("o1-mini", "o1-mini"),
     ],
     "gemini": [
+      ModelInfo("gemini-2.5-flash-preview-04-17", "Gemini 2.5 Flash Preview"),
+      ModelInfo("gemini-2.5-pro-preview-03-25", "Gemini 2.5 Pro Preview"),
       ModelInfo("gemini-2.5-pro-exp-03-25", "Gemini 2.5 Pro"),
       ModelInfo("gemini-2.0-flash", "Gemini 2.0 Flash"),
       ModelInfo("gemini-2.0-flash-lite", "Gemini 2.0 Flash Lite"),
