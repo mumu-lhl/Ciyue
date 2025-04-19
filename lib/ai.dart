@@ -197,6 +197,17 @@ class ModelProviderManager {
         ModelInfo("glm-z1-airx", "GLM-Z1 AirX"),
         ModelInfo("glm-z1-flash", "GLM-Z1 Flash"),
       ],
+    ),
+    "xai": ModelProvider(
+      name: "xai",
+      displayedName: "xAI",
+      apiUrl: "https://api.x.ai/v1/chat/completions",
+      models: [
+        ModelInfo("grok-3-beta", "Grok 3"),
+        ModelInfo("grok-3-fast-beta", "Grok 3 Fast"),
+        ModelInfo("grok-3-mini-beta", "Grok 3 Mini"),
+        ModelInfo("grok-3-mini-fast-beta", "Grok 3 Mini Fast"),
+      ],
     )
   };
 }
