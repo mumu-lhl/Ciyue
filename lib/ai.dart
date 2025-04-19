@@ -169,7 +169,19 @@ class ModelProviderManager {
         displayedName: "OpenRouter",
         apiUrl: "https://openrouter.ai/api/v1/chat/completions",
         models: [],
-        allowCustomModel: true)
+        allowCustomModel: true),
+    "siliconflow": ModelProvider(
+        name: "siliconflow",
+        displayedName: "SiliconFlow",
+        apiUrl: "https://api.ap.siliconflow.com/v1/chat/completions",
+        models: [],
+        allowCustomModel: true),
+    "siliconflowcn": ModelProvider(
+        name: "siliconflowcn",
+        displayedName: "SiliconFlow China",
+        apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
+        models: [],
+        allowCustomModel: true),
   };
 }
 

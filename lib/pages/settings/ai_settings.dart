@@ -212,7 +212,7 @@ class _AiSettingsState extends State<AiSettings> {
 
     if (currentProvider.allowCustomModel) {
       return TextFormField(
-        key: ValueKey(_model),
+        key: ValueKey(_provider + _model),
         initialValue: _model,
         decoration: InputDecoration(
           border: OutlineInputBorder(),
@@ -265,7 +265,8 @@ class _AiSettingsState extends State<AiSettings> {
           final currentProvider =
               ModelProviderManager.modelProviders[_provider] ??
                   ModelProviderManager.modelProviders.values.first;
-          if (!currentProvider.models.any((m) => m.originName == _model)) {
+          if (!currentProvider.models.any((m) => m.originName == _model) &&
+              !currentProvider.allowCustomModel) {
             _model = currentProvider.models[0].originName;
           }
           _apiKey = config['apiKey']!;
