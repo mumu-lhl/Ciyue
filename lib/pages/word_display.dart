@@ -350,7 +350,7 @@ class WordDisplay extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.search),
       onPressed: () {
-        HomePage.setSearchWord(word);
+        HomePage.setSearchWord("");
         HomePage.enableAutofocusOnce(); // TODO: fix bug--can only focus once
         context.go("/");
       },
