@@ -357,30 +357,6 @@ class WordDisplay extends StatelessWidget {
     );
   }
 
-  // Widget buildSearchBar(BuildContext context) {
-  //   return SafeArea(
-  //     child: Center(
-  //       child: SearchAnchor.bar(
-  //         barHintText: AppLocalizations.of(context)!.search,
-  //         constraints:
-  //             const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
-  //         searchController: controller..text = word,
-  //         suggestionsBuilder:
-  //             (BuildContext context, SearchController controller) async {
-  //           final searchResult =
-  //               await Searcher(controller.text).getSearchResult();
-  //           return searchResult.map((e) => ListTile(
-  //                 title: Text(e.key),
-  //                 onTap: () {
-  //                   context.push("/word", extra: {"word": e.key});
-  //                 },
-  //               ));
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
-
   PreferredSizeWidget buildTabBar(BuildContext context) {
     return PreferredSize(
         preferredSize: const Size.fromHeight(48),
