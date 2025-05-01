@@ -2,12 +2,12 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/database/app.dart";
-import "package:ciyue/dictionary.dart";
+import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
-import "package:ciyue/platform.dart";
+import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/updater.dart";
-import "package:ciyue/settings.dart";
+import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/update_available.dart";
 import "package:file_selector/file_selector.dart";

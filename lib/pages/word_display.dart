@@ -2,13 +2,13 @@ import "dart:convert";
 import "dart:io";
 import "dart:ui" as ui;
 
-import "package:ciyue/ai.dart";
-import "package:ciyue/dictionary.dart";
+import "package:ciyue/services/ai.dart";
+import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/wordbook.dart";
-import "package:ciyue/platform.dart";
-import "package:ciyue/settings.dart";
+import "package:ciyue/services/platform.dart";
+import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/tags_list.dart";
 import "package:flutter/material.dart";

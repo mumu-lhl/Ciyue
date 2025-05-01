@@ -1,11 +1,11 @@
 import "dart:io";
 
-import "package:ciyue/dictionary.dart";
+import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
-import "package:ciyue/settings.dart";
+import "package:ciyue/services/settings.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:flutter/services.dart";
 import "package:path/path.dart";

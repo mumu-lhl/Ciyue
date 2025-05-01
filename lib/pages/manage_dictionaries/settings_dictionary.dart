@@ -1,4 +1,4 @@
-import "package:ciyue/dictionary.dart";
+import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";

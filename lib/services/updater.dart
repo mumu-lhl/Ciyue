@@ -1,6 +1,6 @@
 import "package:ciyue/main.dart";
 import "package:ciyue/models/updater.dart";
-import "package:ciyue/settings.dart";
+import "package:ciyue/services/settings.dart";
 import "package:ciyue/widget/update_available.dart";
 import "package:dio/dio.dart";
 import "package:flutter/material.dart";

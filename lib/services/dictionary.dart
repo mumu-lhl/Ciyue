@@ -11,8 +11,8 @@ import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 
-import "database/dictionary.dart";
-import "main.dart";
+import "../database/dictionary.dart";
+import "../main.dart";
 
 final dictManager = DictManager();
 
