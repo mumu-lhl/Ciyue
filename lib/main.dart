@@ -107,7 +107,9 @@ void main() async {
       accentColor = await DynamicColorPlugin.getAccentColor();
     }
 
-    Updater.autoUpdate();
+    if (settings.autoUpdate) {
+      Updater.autoUpdate();
+    }
 
     runApp(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WordbookModel()),
