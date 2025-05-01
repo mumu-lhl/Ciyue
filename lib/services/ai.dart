@@ -1,5 +1,6 @@
 import "dart:convert";
 
+import "package:ciyue/models/ai.dart";
 import "package:dio/dio.dart";
 
 class AI {
@@ -80,29 +81,6 @@ class GeminiProvider extends AIProvider {
       throw Exception("Error requesting Gemini API: $e");
     }
   }
-}
-
-class ModelInfo {
-  final String originName;
-  final String shownName;
-
-  const ModelInfo(this.originName, this.shownName);
-}
-
-class ModelProvider {
-  final String name;
-  final String displayedName;
-  final String apiUrl;
-  final List<ModelInfo> models;
-  final bool allowCustomModel;
-
-  const ModelProvider({
-    required this.name,
-    required this.displayedName,
-    required this.apiUrl,
-    required this.models,
-    this.allowCustomModel = false,
-  });
 }
 
 class ModelProviderManager {
