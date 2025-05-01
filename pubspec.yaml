@@ -60,6 +60,7 @@ dependencies:
   dio: ^5.8.0+1
   gpt_markdown: ^1.0.18
   provider: ^6.1.4
+  freezed_annotation: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +75,7 @@ dev_dependencies:
   drift_dev: ^2.26.0
   build_runner: ^2.4.15
   test: ^1.25.15
+  freezed: ^3.0.6
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
