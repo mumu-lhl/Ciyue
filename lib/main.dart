@@ -210,19 +210,19 @@ class CiyueError extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 launchUrl(
-                    Uri.parse('https://github.com/mumu-lhl/ciyue/issues'));
+                    Uri.parse("https://github.com/mumu-lhl/ciyue/issues"));
               },
-              child: const Text('Report Issue'),
+              child: const Text("Report Issue"),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: error.toString()));
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Error copied to clipboard')),
+                  const SnackBar(content: Text("Error copied to clipboard")),
                 );
               },
-              child: const Text('Copy Error'),
+              child: const Text("Copy Error"),
             ),
           ],
         ),

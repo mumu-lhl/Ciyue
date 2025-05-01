@@ -32,7 +32,7 @@ class AIExplainView extends StatelessWidget {
         ? ui.PlatformDispatcher.instance.locale.languageCode
         : settings.language!;
     String template;
-    if (settings.explainPromptMode == 'custom' &&
+    if (settings.explainPromptMode == "custom" &&
         settings.customExplainPrompt.isNotEmpty) {
       template = settings.customExplainPrompt;
     } else {
@@ -50,12 +50,12 @@ Format the response using Markdown to ensure each section is clearly organized w
 The output is entirely and exclusively in \$targetLanguage.""";
     }
     final prompt = template
-        .replaceAll(r'$word', word)
-        .replaceAll(r'$targetLanguage', targetLanguage);
+        .replaceAll(r"$word", word)
+        .replaceAll(r"$targetLanguage", targetLanguage);
     final ai = AI(
       provider: settings.aiProvider,
-      model: settings.getAiProviderConfig(settings.aiProvider)['model'] ?? '',
-      apikey: settings.getAiProviderConfig(settings.aiProvider)['apiKey'] ?? '',
+      model: settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
+      apikey: settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
     );
 
     return FutureBuilder(
@@ -290,7 +290,7 @@ class WordDisplay extends StatelessWidget {
                     } else {
                       // When opened from context menu
                       SystemChannels.platform
-                          .invokeMethod('SystemNavigator.pop');
+                          .invokeMethod("SystemNavigator.pop");
                     }
                   },
                 )),
@@ -329,7 +329,7 @@ class WordDisplay extends StatelessWidget {
               context.pop();
             } else {
               // When opened from context menu
-              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+              SystemChannels.platform.invokeMethod("SystemNavigator.pop");
             }
           },
         ),

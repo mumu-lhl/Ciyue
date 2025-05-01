@@ -1,6 +1,6 @@
-import 'dart:convert';
+import "dart:convert";
 
-import 'package:dio/dio.dart';
+import "package:dio/dio.dart";
 
 class AI {
   final String provider;
@@ -13,7 +13,7 @@ class AI {
     required this.model,
     required this.apikey,
   }) {
-    if (provider == 'gemini') {
+    if (provider == "gemini") {
       aiProvider = GeminiProvider(apikey: apikey, model: model);
     } else {
       aiProvider = OpenAICompatibleProvider(
@@ -43,13 +43,13 @@ class GeminiProvider extends AIProvider {
   Future<String> request(String prompt) async {
     final dio = Dio();
     final formattedApiUrl = ModelProviderManager
-        .modelProviders['gemini']!.apiUrl
-        .replaceFirst('{model}', model);
+        .modelProviders["gemini"]!.apiUrl
+        .replaceFirst("{model}", model);
 
-    final params = {'key': apikey};
+    final params = {"key": apikey};
 
     final headers = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
     final data = {
       "contents": [
@@ -71,13 +71,13 @@ class GeminiProvider extends AIProvider {
 
       if (response.statusCode == 200) {
         final decodedResponse = response.data;
-        return decodedResponse['candidates'][0]['content']['parts'][0]['text'];
+        return decodedResponse["candidates"][0]["content"]["parts"][0]["text"];
       } else {
         throw Exception(
-            'Failed to fetch response from Gemini API. Status code: ${response.statusCode}, body: ${response.data}');
+            "Failed to fetch response from Gemini API. Status code: ${response.statusCode}, body: ${response.data}");
       }
     } catch (e) {
-      throw Exception('Error requesting Gemini API: $e');
+      throw Exception("Error requesting Gemini API: $e");
     }
   }
 }
@@ -226,7 +226,7 @@ class OpenAICompatibleProvider extends AIProvider {
     if (ModelProviderManager.modelProviders.containsKey(provider)) {
       apiUrl = ModelProviderManager.modelProviders[provider]!.apiUrl;
     } else {
-      apiUrl = ModelProviderManager.modelProviders['openai']!.apiUrl;
+      apiUrl = ModelProviderManager.modelProviders["openai"]!.apiUrl;
     }
   }
 
@@ -234,13 +234,13 @@ class OpenAICompatibleProvider extends AIProvider {
   Future<String> request(String prompt) async {
     final dio = Dio();
     final headers = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
-    if (provider == 'anthropic') {
-      headers['x-api-key'] = apikey;
+    if (provider == "anthropic") {
+      headers["x-api-key"] = apikey;
     } else {
-      headers['Authorization'] = 'Bearer $apikey';
+      headers["Authorization"] = "Bearer $apikey";
     }
 
     final data = {
@@ -259,13 +259,13 @@ class OpenAICompatibleProvider extends AIProvider {
 
       if (response.statusCode == 200) {
         final decodedResponse = response.data;
-        return decodedResponse['choices'][0]['message']['content'];
+        return decodedResponse["choices"][0]["message"]["content"];
       } else {
         throw Exception(
-            'Failed to fetch response from OpenAI API. Status code: ${response.statusCode}, body: ${response.data}');
+            "Failed to fetch response from OpenAI API. Status code: ${response.statusCode}, body: ${response.data}");
       }
     } on DioException catch (e) {
-      throw Exception('Error requesting OpenAI API: $e\nBody: ${e.response}');
+      throw Exception("Error requesting OpenAI API: $e\nBody: ${e.response}");
     }
   }
 }

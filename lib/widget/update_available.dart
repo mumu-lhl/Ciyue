@@ -1,8 +1,8 @@
-import 'package:ciyue/models/updater.dart';
-import 'package:ciyue/src/generated/i18n/app_localizations.dart';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
+import "package:ciyue/models/updater.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:flutter/material.dart";
+import "package:go_router/go_router.dart";
+import "package:url_launcher/url_launcher.dart";
 
 class UpdateAvailable extends StatelessWidget {
   const UpdateAvailable({
@@ -28,7 +28,7 @@ class UpdateAvailable extends StatelessWidget {
         ),
         TextButton(
           onPressed: () async {
-            final url = 'https://github.com/mumu-lhl/Ciyue/releases/latest';
+            final url = "https://github.com/mumu-lhl/Ciyue/releases/latest";
             if (await canLaunchUrl(Uri.parse(url))) {
               launchUrl(Uri.parse(url));
             }

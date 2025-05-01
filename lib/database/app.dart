@@ -79,7 +79,7 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
     return into(dictGroup).insert(
       DictGroupCompanion(
         name: Value(name),
-        dictIds: Value(dictIds.join(',')),
+        dictIds: Value(dictIds.join(",")),
       ),
     );
   }
@@ -92,7 +92,7 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
     try {
       final group =
           await (select(dictGroup)..where((t) => t.id.isValue(id))).getSingle();
-      return group.dictIds.split(',').map((e) => int.parse(e)).toList();
+      return group.dictIds.split(",").map((e) => int.parse(e)).toList();
     } catch (e) {
       return [];
     }
@@ -104,7 +104,7 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> updateDictIds(int id, List<int> dictIds) {
     return (update(dictGroup)..where((t) => t.id.isValue(id)))
-        .write(DictGroupCompanion(dictIds: Value(dictIds.join(','))));
+        .write(DictGroupCompanion(dictIds: Value(dictIds.join(","))));
   }
 }
 
@@ -352,7 +352,7 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
       tagsOrder = [];
     } else {
       tagsOrder = order
-          .split(',')
+          .split(",")
           .where((e) => e.isNotEmpty)
           .map((e) => int.parse(e))
           .toList();
@@ -367,6 +367,6 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> updateTagsOrder() async {
-    await prefs.setString('tagsOrder', tagsOrder.join(','));
+    await prefs.setString("tagsOrder", tagsOrder.join(","));
   }
 }

@@ -1,10 +1,10 @@
-import 'package:ciyue/ai.dart';
-import 'package:ciyue/main.dart';
-import 'package:ciyue/pages/main/home.dart';
-import 'package:ciyue/settings.dart';
-import 'package:ciyue/src/generated/i18n/app_localizations.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import "package:ciyue/ai.dart";
+import "package:ciyue/main.dart";
+import "package:ciyue/pages/main/home.dart";
+import "package:ciyue/settings.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:flutter/material.dart";
+import "package:provider/provider.dart";
 
 class AiSettings extends StatefulWidget {
   const AiSettings({super.key});
@@ -197,7 +197,7 @@ class _AiSettingsState extends State<AiSettings> {
           onChanged: (value) {
             setState(() {
               settings.aiExplainWord = value;
-              prefs.setBool('aiExplainWord', value);
+              prefs.setBool("aiExplainWord", value);
               context.read<HomeModel>().update();
             });
           },
@@ -257,10 +257,10 @@ class _AiSettingsState extends State<AiSettings> {
         setState(() {
           _provider = newValue!;
           settings.aiProvider = newValue;
-          prefs.setString('aiProvider', newValue);
+          prefs.setString("aiProvider", newValue);
 
           final config = settings.getAiProviderConfig(_provider);
-          _model = config['model']!;
+          _model = config["model"]!;
           // Ensure the selected model is valid for the new provider
           final currentProvider =
               ModelProviderManager.modelProviders[_provider] ??
@@ -269,7 +269,7 @@ class _AiSettingsState extends State<AiSettings> {
               !currentProvider.allowCustomModel) {
             _model = currentProvider.models[0].originName;
           }
-          _apiKey = config['apiKey']!;
+          _apiKey = config["apiKey"]!;
         });
       },
       items: ModelProviderManager.modelProviders.values
@@ -291,12 +291,12 @@ class _AiSettingsState extends State<AiSettings> {
     if (ModelProviderManager.modelProviders[_provider] == null) {
       _provider = ModelProviderManager.modelProviders.values.first.name;
       settings.aiProvider = _provider;
-      prefs.setString('aiProvider', _provider);
+      prefs.setString("aiProvider", _provider);
     }
 
     final config = settings.getAiProviderConfig(_provider);
-    _model = config['model']!;
-    _apiKey = config['apiKey']!;
+    _model = config["model"]!;
+    _apiKey = config["apiKey"]!;
 
     // Ensure model exists for the provider
     final currentProvider = ModelProviderManager.modelProviders[_provider]!;

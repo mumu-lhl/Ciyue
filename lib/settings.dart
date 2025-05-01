@@ -1,4 +1,4 @@
-import 'dart:convert';
+import "dart:convert";
 
 import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
@@ -57,9 +57,9 @@ class _Settings {
     showSearchBarInWordDisplay =
         prefs.getBool("showSearchBarInWordDisplay") ?? true;
 
-    autoUpdate = prefs.getBool('autoUpdate') ?? false;
+    autoUpdate = prefs.getBool("autoUpdate") ?? false;
     includePrereleaseUpdates =
-        prefs.getBool('includePrereleaseUpdates') ?? false;
+        prefs.getBool("includePrereleaseUpdates") ?? false;
 
     notification = prefs.getBool("notification") ?? false;
 
@@ -73,7 +73,7 @@ class _Settings {
     translatePromptMode = prefs.getString("translatePromptMode") ?? "default";
     customTranslatePrompt = prefs.getString("customTranslatePrompt") ?? "";
 
-    var aiProviderConfigsString = prefs.getString('aiProviderConfigs');
+    var aiProviderConfigsString = prefs.getString("aiProviderConfigs");
     if (aiProviderConfigsString != null) {
       aiProviderConfigs =
           Map.castFrom<dynamic, dynamic, String, Map<String, dynamic>>(
@@ -99,13 +99,13 @@ class _Settings {
   }
 
   Map<String, dynamic> getAiProviderConfig(String provider) {
-    return aiProviderConfigs[provider] ?? {'model': '', 'apiKey': ''};
+    return aiProviderConfigs[provider] ?? {"model": "", "apiKey": ""};
   }
 
   Future<void> saveAiProviderConfig(
       String provider, String model, String apiKey) async {
-    aiProviderConfigs[provider] = {'model': model, 'apiKey': apiKey};
-    await prefs.setString('aiProviderConfigs', jsonEncode(aiProviderConfigs));
+    aiProviderConfigs[provider] = {"model": model, "apiKey": apiKey};
+    await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
   }
 
   Future<void> setCustomExplainPrompt(String prompt) async {

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:gpt_markdown/gpt_markdown.dart';
-import 'package:ciyue/src/generated/i18n/app_localizations.dart';
+import "package:flutter/material.dart";
+import "package:gpt_markdown/gpt_markdown.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 
 class TermsOfService extends StatelessWidget {
   const TermsOfService({super.key});
@@ -17,7 +17,7 @@ class TermsOfService extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: SingleChildScrollView(
-                child: SelectionArea(child: GptMarkdown('''
+                child: SelectionArea(child: GptMarkdown("""
               # Terms of Service
 
               ## Acceptance of Terms
@@ -35,7 +35,7 @@ class TermsOfService extends StatelessWidget {
               ## Modification of Terms
               
               We reserve the right to update these Terms of Service at any time. Continued use of Ciyue after changes constitutes your acceptance of the updated terms.
-              ''')),
+              """)),
               ),
             ),
           ),

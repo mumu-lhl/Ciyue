@@ -1,10 +1,10 @@
-import 'dart:ui' as ui;
+import "dart:ui" as ui;
 
-import 'package:ciyue/ai.dart';
-import 'package:ciyue/settings.dart';
-import 'package:ciyue/src/generated/i18n/app_localizations.dart';
-import 'package:flutter/material.dart';
-import 'package:gpt_markdown/gpt_markdown.dart';
+import "package:ciyue/ai.dart";
+import "package:ciyue/settings.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:flutter/material.dart";
+import "package:gpt_markdown/gpt_markdown.dart";
 
 class AiTranslatePage extends StatefulWidget {
   const AiTranslatePage({super.key});
@@ -15,26 +15,26 @@ class AiTranslatePage extends StatefulWidget {
 
 class _AiTranslatePageState extends State<AiTranslatePage> {
   static const Map<String, String> _languageMap = {
-    'auto': 'Auto Detect',
-    'en': 'English',
-    'zh': '简体中文',
-    'zh_HK': '繁體中文',
-    'zh_TW': '正體中文',
-    'ja': 'Japanese',
-    'ko': 'Korean',
-    'fr': 'French',
-    'de': 'German',
-    'es': 'Spanish',
-    'ru': 'Russian',
+    "auto": "Auto Detect",
+    "en": "English",
+    "zh": "简体中文",
+    "zh_HK": "繁體中文",
+    "zh_TW": "正體中文",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "fr": "French",
+    "de": "German",
+    "es": "Spanish",
+    "ru": "Russian",
   };
   final TextEditingController _inputController = TextEditingController();
   bool _isRichOutput = true;
-  String _sourceLanguage = 'auto';
+  String _sourceLanguage = "auto";
   String _targetLanguage = settings.language! == "system"
       ? ui.PlatformDispatcher.instance.locale.languageCode
       : settings.language!;
 
-  String _translatedText = '';
+  String _translatedText = "";
 
   bool _isLoading = false;
 
@@ -127,7 +127,7 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
             ),
             value: _targetLanguage,
             items: _languageMap.keys
-                .where((code) => code != 'auto')
+                .where((code) => code != "auto")
                 .map<DropdownMenuItem<String>>((String code) {
               return DropdownMenuItem<String>(
                 value: code,
@@ -213,15 +213,15 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
   Future<void> _translateText() async {
     setState(() {
       _isLoading = true;
-      _translatedText = '';
+      _translatedText = "";
     });
 
     try {
       final ai = AI(
         provider: settings.aiProvider,
-        model: settings.getAiProviderConfig(settings.aiProvider)['model'] ?? '',
+        model: settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
         apikey:
-            settings.getAiProviderConfig(settings.aiProvider)['apiKey'] ?? '',
+            settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
       );
 
       final sourceLangName = _languageMap[_sourceLanguage] ?? _sourceLanguage;
@@ -229,22 +229,22 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
       final inputText = _inputController.text.trim();
 
       String template;
-      if (settings.translatePromptMode == 'custom' &&
+      if (settings.translatePromptMode == "custom" &&
           settings.customTranslatePrompt.isNotEmpty) {
         template = settings.customTranslatePrompt;
       } else if (_isRichOutput) {
-        template = '''
+        template = """
 Translate the following text from \$sourceLanguage to \$targetLanguage. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in \$targetLanguage: \$text
-''';
+""";
       } else {
         template =
             'Translate this \$sourceLanguage sentence to \$targetLanguage, only return the translated text: "\$text"';
       }
 
       final prompt = template
-          .replaceAll(r'$sourceLanguage', sourceLangName)
-          .replaceAll(r'$targetLanguage', targetLangName)
-          .replaceAll(r'$text', inputText);
+          .replaceAll(r"$sourceLanguage", sourceLangName)
+          .replaceAll(r"$targetLanguage", targetLangName)
+          .replaceAll(r"$text", inputText);
 
       final translationResult = await ai.request(prompt);
 
@@ -254,7 +254,7 @@ Translate the following text from \$sourceLanguage to \$targetLanguage. Please p
       });
     } catch (e) {
       setState(() {
-        _translatedText = 'Error: Failed to translate. $e';
+        _translatedText = "Error: Failed to translate. $e";
         _isLoading = false;
       });
     }
