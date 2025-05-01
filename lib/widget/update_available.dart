@@ -1,4 +1,4 @@
-import "package:ciyue/models/updater.dart";
+import "package:ciyue/models/updater/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";

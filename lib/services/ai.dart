@@ -1,6 +1,6 @@
 import "dart:convert";
 
-import "package:ciyue/models/ai.dart";
+import "package:ciyue/models/ai/ai.dart";
 import "package:dio/dio.dart";
 
 class AI {

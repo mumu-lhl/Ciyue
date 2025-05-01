@@ -1,4 +1,4 @@
-import "package:ciyue/models/ai.dart";
+import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
