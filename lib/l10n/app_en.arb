@@ -197,5 +197,7 @@
   "tabBarPosition": "TabBar Position in Word Display",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "Show Search Bar in Word Display",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "autoUpdate": "Auto Update",
+  "@autoUpdate": {}
 }

@@ -27,6 +27,7 @@ class _Settings {
 
   late bool notification;
 
+  late bool autoUpdate;
   late bool includePrereleaseUpdates;
   late bool skipTaggedWord;
 
@@ -56,6 +57,7 @@ class _Settings {
     showSearchBarInWordDisplay =
         prefs.getBool("showSearchBarInWordDisplay") ?? true;
 
+    autoUpdate = prefs.getBool('autoUpdate') ?? false;
     includePrereleaseUpdates =
         prefs.getBool('includePrereleaseUpdates') ?? false;
 
@@ -129,5 +131,10 @@ class _Settings {
   Future<void> setTranslatePromptMode(String mode) async {
     translatePromptMode = mode;
     await prefs.setString("translatePromptMode", mode);
+  }
+
+  Future<void> setAutoUpdate(bool value) async {
+    autoUpdate = value;
+    await prefs.setBool("autoUpdate", value);
   }
 }
