@@ -197,5 +197,7 @@
   "tabBarPosition": "Положение панели вкладок в отображении слова",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "Показывать панель поиска в отображении слова",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "floatingWindow": "Плавающее окно",
+  "@floatingWindow": {}
 }

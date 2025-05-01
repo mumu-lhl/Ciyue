@@ -39,6 +39,8 @@ class _Settings {
   late String translatePromptMode;
   late String customTranslatePrompt;
 
+  late bool floatingWindow;
+
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
@@ -70,6 +72,8 @@ class _Settings {
     customExplainPrompt = prefs.getString("customExplainPrompt") ?? "";
     translatePromptMode = prefs.getString("translatePromptMode") ?? "default";
     customTranslatePrompt = prefs.getString("customTranslatePrompt") ?? "";
+
+    floatingWindow = prefs.getBool("floatingWindow") ?? false;
 
     var aiProviderConfigsString = prefs.getString('aiProviderConfigs');
     if (aiProviderConfigsString != null) {
@@ -129,5 +133,10 @@ class _Settings {
   Future<void> setTranslatePromptMode(String mode) async {
     translatePromptMode = mode;
     await prefs.setString("translatePromptMode", mode);
+  }
+
+  Future<void> setFloatingWindow(bool value) async {
+    floatingWindow = value;
+    await prefs.setBool("floatingWindow", value);
   }
 }

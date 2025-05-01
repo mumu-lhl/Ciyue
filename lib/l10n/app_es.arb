@@ -197,5 +197,7 @@
   "tabBarPosition": "Posición de la barra de pestañas en la visualización de palabras",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "Mostrar barra de búsqueda en la visualización de palabras",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "floatingWindow": "Ventana Flotante",
+  "@floatingWindow": {}
 }

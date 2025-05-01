@@ -72,6 +72,7 @@ void main() async {
       "customTranslatePrompt",
       "tabBarPosition",
       "showSearchBarInWordDisplay",
+      "floatingWindow",
     }));
 
     int? groupId = prefs.getInt("currentDictionaryGroupId");

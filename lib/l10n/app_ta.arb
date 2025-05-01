@@ -197,5 +197,7 @@
   "tabBarPosition": "சொல் காட்டலில் தாவல் பட்டை இருப்பிடம்",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "சொல் காட்டலில் தேடல் பட்டையைக் காட்டு",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "floatingWindow": "மிதக்கும் சாளரம்",
+  "@floatingWindow": {}
 }

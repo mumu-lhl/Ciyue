@@ -102,6 +102,12 @@ class PlatformMethod {
     await _platform.invokeMethod("writeFile", info);
   }
 
+  static Future<void> requestFloatingWindowPermission() async {
+    if (Platform.isAndroid) {
+      await _platform.invokeMethod("requestFloatingWindowPermission");
+    }
+  }
+
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 

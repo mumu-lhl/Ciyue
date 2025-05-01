@@ -197,5 +197,7 @@
   "tabBarPosition": "TabBar-posisjon i ordvisning",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "Vis søkefelt i ordvisning",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "floatingWindow": "Flytende vindu",
+  "@floatingWindow": {}
 }

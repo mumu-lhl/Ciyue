@@ -197,5 +197,7 @@
   "tabBarPosition": "TabBar-Position in der Wortanzeige",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "Suchleiste in der Wortanzeige anzeigen",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "floatingWindow": "Schwebendes Fenster",
+  "@floatingWindow": {}
 }

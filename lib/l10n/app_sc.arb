@@ -197,5 +197,7 @@
   "tabBarPosition": "Positzione de sa TabBar in s’ammustramentu de sa paràula",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "Ammustra s'istanga de chirca in s'ammustramentu de sa paràula",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "floatingWindow": "Ventana flutuante",
+  "@floatingWindow": {}
 }

@@ -197,5 +197,7 @@
   "tabBarPosition": "موقعیت نوار زبانه در نمایش واژه",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "نمایش نوار جستجو در نمایش کلمه",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "floatingWindow": "پنجره شناور",
+  "@floatingWindow": {}
 }

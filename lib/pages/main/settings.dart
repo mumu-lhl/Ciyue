@@ -409,6 +409,31 @@ class SecureScreenSwitch extends StatefulWidget {
   State<SecureScreenSwitch> createState() => _SecureScreenSwitchState();
 }
 
+class FloatingWindow extends StatefulWidget {
+  const FloatingWindow({super.key});
+
+  @override
+  State<FloatingWindow> createState() => _FloatingWindowState();
+}
+
+class _FloatingWindowState extends State<FloatingWindow> {
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      title: Text(AppLocalizations.of(context)!.floatingWindow),
+      value: settings.floatingWindow,
+      onChanged: (value) async {
+        if (value) {
+          await PlatformMethod.requestFloatingWindowPermission();
+        }
+        await settings.setFloatingWindow(value);
+        setState(() {});
+      },
+      secondary: const Icon(Icons.window),
+    );
+  }
+}
+
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -431,6 +456,7 @@ class SettingsScreen extends StatelessWidget {
           const SecureScreenSwitch(),
           const Divider(indent: 16, endIndent: 16),
           const NotificationSwitch(),
+          const FloatingWindow(),
         ],
         TitleDivider(title: AppLocalizations.of(context)!.wordBook),
         const AutoExport(),

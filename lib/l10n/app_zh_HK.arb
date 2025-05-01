@@ -197,5 +197,7 @@
   "tabBarPosition": "單詞顯示中的標籤欄位置",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "在字詞顯示中顯示搜尋欄",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "floatingWindow": "懸浮視窗",
+  "@floatingWindow": {}
 }
