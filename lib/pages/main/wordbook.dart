@@ -1,6 +1,6 @@
 import "package:ciyue/database/app.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/settings.dart";
+import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/date_divider.dart";
 import "package:ciyue/widget/text_buttons.dart";

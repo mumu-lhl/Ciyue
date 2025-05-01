@@ -1,7 +1,7 @@
 import "dart:io";
 
 import "package:ciyue/database/app.dart";
-import "package:ciyue/dictionary.dart";
+import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/localization_delegates.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/main.dart";
@@ -14,9 +14,9 @@ import "package:ciyue/pages/settings/auto_export.dart";
 import "package:ciyue/pages/settings/privacy_policy.dart";
 import "package:ciyue/pages/settings/terms_of_service.dart";
 import "package:ciyue/pages/word_display.dart";
-import "package:ciyue/platform.dart";
+import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/updater.dart";
-import "package:ciyue/settings.dart";
+import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";

@@ -1,7 +1,8 @@
-import "package:ciyue/ai.dart";
+import "package:ciyue/models/ai/ai.dart";
+import "package:ciyue/services/ai.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
-import "package:ciyue/settings.dart";
+import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
