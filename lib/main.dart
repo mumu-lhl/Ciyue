@@ -15,6 +15,7 @@ import "package:ciyue/pages/settings/privacy_policy.dart";
 import "package:ciyue/pages/settings/terms_of_service.dart";
 import "package:ciyue/pages/word_display.dart";
 import "package:ciyue/platform.dart";
+import "package:ciyue/services/updater.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:drift/drift.dart" as drift;
@@ -72,6 +73,7 @@ void main() async {
       "customTranslatePrompt",
       "tabBarPosition",
       "showSearchBarInWordDisplay",
+      "autoUpdate",
     }));
 
     int? groupId = prefs.getInt("currentDictionaryGroupId");
@@ -104,6 +106,8 @@ void main() async {
     if (Platform.isWindows) {
       accentColor = await DynamicColorPlugin.getAccentColor();
     }
+
+    Updater.autoUpdate();
 
     runApp(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WordbookModel()),

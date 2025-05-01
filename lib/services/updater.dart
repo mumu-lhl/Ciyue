@@ -1,9 +1,20 @@
 import 'package:ciyue/main.dart';
 import 'package:ciyue/models/updater.dart';
 import 'package:ciyue/settings.dart';
+import 'package:ciyue/widget/update_available.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 class Updater {
+  static Future<void> autoUpdate() async {
+    final update = await check();
+    if (update.success && update.isUpdateAvailable) {
+      showDialog(
+          context: navigatorKey.currentContext!,
+          builder: (context) => UpdateAvailable(update: update));
+    }
+  }
+
   static Future<Update> check() async {
     try {
       final response = await Dio().get(

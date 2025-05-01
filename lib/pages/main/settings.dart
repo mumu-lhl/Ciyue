@@ -9,6 +9,7 @@ import "package:ciyue/platform.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/widget/update_available.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -110,31 +111,7 @@ class CheckForUpdates extends StatelessWidget {
             if (context.mounted) {
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: Text(AppLocalizations.of(context)!.updateAvailable),
-                  content: Text(
-                    AppLocalizations.of(context)!
-                        .updateAvailableContent
-                        .replaceFirst("%s", update.version),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => context.pop(),
-                      child: Text(AppLocalizations.of(context)!.close),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        final url =
-                            'https://github.com/mumu-lhl/Ciyue/releases/latest';
-                        if (await canLaunchUrl(Uri.parse(url))) {
-                          launchUrl(Uri.parse(url));
-                        }
-                        if (context.mounted) context.pop();
-                      },
-                      child: Text(AppLocalizations.of(context)!.update),
-                    ),
-                  ],
-                ),
+                builder: (context) => UpdateAvailable(update: update),
               );
             }
           } else {
