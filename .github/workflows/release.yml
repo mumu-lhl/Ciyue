@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+vars:
+  flutter-version: 3.29.3
+  FLUTTER_VERSION: 3.29.3
+
 jobs:
   changelogFile:
     name: Generate changelog file
@@ -45,7 +49,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.29.2
+          flutter-version: ${{ vars.flutter-version }}
           cache: true
 
       - uses: actions/setup-java@v4
@@ -93,7 +97,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.29.2
+          flutter-version: ${{ vars.flutter-version }}
           cache: true
 
       - name: Install dependencies
@@ -139,7 +143,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.29.2
+          flutter-version: ${{ vars.flutter-version }}
           cache: true
 
       - name: Install dependencies
