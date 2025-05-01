@@ -1,12 +1,12 @@
-import 'dart:io';
+import "dart:io";
 
-import 'package:ciyue/main.dart';
-import 'package:ciyue/platform.dart';
-import 'package:ciyue/settings.dart';
+import "package:ciyue/main.dart";
+import "package:ciyue/platform.dart";
+import "package:ciyue/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import 'package:file_selector/file_selector.dart';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import "package:file_selector/file_selector.dart";
+import "package:flutter/material.dart";
+import "package:go_router/go_router.dart";
 
 class AutoExport extends StatelessWidget {
   const AutoExport({super.key});
@@ -156,7 +156,7 @@ class _FileNameState extends State<FileName> {
         if (fileName != null) {
           setState(() {
             settings.exportFileName = fileName;
-            prefs.setString('exportFileName', fileName);
+            prefs.setString("exportFileName", fileName);
           });
         }
       },

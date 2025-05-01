@@ -279,8 +279,8 @@ class Import extends StatelessWidget {
         final wordsData = <WordbookData>[];
         for (final i in wordsJson) {
           final json = Map<String, dynamic>.from(i);
-          if (!json.containsKey('createdAt')) {
-            json['createdAt'] = DateTime.now().toIso8601String();
+          if (!json.containsKey("createdAt")) {
+            json["createdAt"] = DateTime.now().toIso8601String();
           }
           wordsData.add(WordbookData.fromJson(json));
         }
@@ -635,7 +635,7 @@ class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
       title: Text(locale!.includePrerelease),
       value: settings.includePrereleaseUpdates,
       onChanged: (value) async {
-        await prefs.setBool('includePrereleaseUpdates', value);
+        await prefs.setBool("includePrereleaseUpdates", value);
         setState(() {
           settings.includePrereleaseUpdates = value;
         });

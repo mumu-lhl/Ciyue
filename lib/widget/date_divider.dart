@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import "package:flutter/material.dart";
+import "package:intl/intl.dart";
 
 class DateDivider extends StatelessWidget {
   final DateTime date;
@@ -16,7 +16,7 @@ class DateDivider extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                DateFormat('yyyy-MM-dd').format(date),
+                DateFormat("yyyy-MM-dd").format(date),
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context)

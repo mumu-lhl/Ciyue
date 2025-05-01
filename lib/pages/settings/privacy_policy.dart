@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:gpt_markdown/gpt_markdown.dart';
-import 'package:ciyue/src/generated/i18n/app_localizations.dart';
+import "package:flutter/material.dart";
+import "package:gpt_markdown/gpt_markdown.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 
 class PrivacyPolicy extends StatelessWidget {
   const PrivacyPolicy({super.key});

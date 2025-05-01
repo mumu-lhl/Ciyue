@@ -10,7 +10,7 @@ import "package:ciyue/widget/loading_dialog.dart";
 import "package:flutter/services.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import "package:flutter_local_notifications/flutter_local_notifications.dart";
 
 const _platform = MethodChannel("org.eu.mumulhl.ciyue");
 
@@ -76,7 +76,7 @@ class PlatformMethod {
         case "getDirectory":
           final directory = call.arguments as String;
           settings.exportDirectory = directory;
-          prefs.setString('exportDirectory', directory);
+          prefs.setString("exportDirectory", directory);
           break;
       }
     });
@@ -107,7 +107,7 @@ class PlatformMethod {
 
   static Future<void> initNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('ic_launcher_foreground');
+        AndroidInitializationSettings("ic_launcher_foreground");
 
     const InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);
@@ -126,9 +126,9 @@ class PlatformMethod {
     if (create) {
       const AndroidNotificationDetails androidNotificationDetails =
           AndroidNotificationDetails(
-        'persistent_notification',
-        'Persistent Notification',
-        channelDescription: 'Persistent notification for Ciyue',
+        "persistent_notification",
+        "Persistent Notification",
+        channelDescription: "Persistent notification for Ciyue",
         importance: Importance.min,
         priority: Priority.low,
         ongoing: true,
@@ -138,8 +138,8 @@ class PlatformMethod {
           NotificationDetails(android: androidNotificationDetails);
       await flutterLocalNotificationsPlugin.show(
         0,
-        'Ciyue',
-        'Ciyue is running in the background',
+        "Ciyue",
+        "Ciyue is running in the background",
         notificationDetails,
       );
     } else {

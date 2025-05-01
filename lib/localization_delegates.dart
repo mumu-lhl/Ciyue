@@ -5,7 +5,7 @@ class SardinianlLocalizationDelegate
   const SardinianlLocalizationDelegate();
 
   @override
-  bool isSupported(Locale locale) => locale.languageCode == 'sc';
+  bool isSupported(Locale locale) => locale.languageCode == "sc";
 
   @override
   Future<MaterialLocalizations> load(Locale locale) async {
