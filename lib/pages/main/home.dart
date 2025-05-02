@@ -1,32 +1,119 @@
 import "package:ciyue/database/app.dart";
 import "package:ciyue/database/dictionary.dart";
-import "package:ciyue/viewModels/dictionary.dart";
-import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/widget/tags_list.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
-class Searcher {
-  final String text;
+class HistoryList extends StatefulWidget {
+  const HistoryList({super.key});
 
-  Searcher(this.text);
+  @override
+  State<HistoryList> createState() => _HistoryListState();
+}
 
-  Future<List<DictionaryData>> getSearchResult() async {
-    final searchers = <Future<List<DictionaryData>>>[];
-    for (final dict in dictManager.dicts.values) {
-      searchers.add(dict.db.searchWord(text));
+class HomeBody extends StatelessWidget {
+  const HomeBody({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    context.select<DictManagerModel, Map<int, Mdict>>((value) => value.dicts);
+
+    final locale = AppLocalizations.of(context);
+
+    if (dictManager.isEmpty && !settings.aiExplainWord) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(locale!.addDictionary),
+            SizedBox(height: 16),
+            ElevatedButton(
+              child: Text(locale.recommendedDictionaries),
+              onPressed: () async {
+                await launchUrl(Uri.parse(
+                    "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
+              },
+            ),
+            SizedBox(height: 8),
+            ElevatedButton(
+              child: const Text("FreeMDict Cloud"),
+              onPressed: () async {
+                await launchUrl(Uri.parse(
+                    "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs"));
+              },
+            ),
+          ],
+        ),
+      );
+    } else {
+      final textFieldController = context.read<HomeModel>().textFieldController;
+      if (textFieldController.text.isEmpty) {
+        return HistoryList();
+      } else {
+        return SearchResults(text: textFieldController.text);
+      }
     }
-    final searchResult = [for (final i in await Future.wait(searchers)) ...i];
-    searchResult.sort((a, b) => a.key.compareTo(b.key));
-    searchResult.removeWhere((element) =>
-        searchResult.indexOf(element) !=
-        searchResult.lastIndexWhere((e) => e.key == element.key));
-    return searchResult;
+  }
+}
+
+class HomeDrawer extends StatelessWidget {
+  const HomeDrawer({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final groups = context
+        .select<DictManagerModel, List<DictGroupData>>((value) => value.groups);
+    final groupId = context
+        .select<DictManagerModel, int>((value) => value.groupId);
+
+    return Drawer(
+      elevation: 10,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: ListView(
+          children: [
+            DrawerHeader(
+              child: Text(
+                AppLocalizations.of(context)!.dictionaryGroups,
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+            ),
+            for (final group in groups)
+              Card(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                elevation: 0,
+                clipBehavior: Clip.antiAlias,
+                child: ListTile(
+                  leading: group.id == groupId
+                      ? const Icon(Icons.radio_button_checked, size: 20)
+                      : const Icon(Icons.radio_button_unchecked, size: 20),
+                  title: Text(group.name == "Default"
+                      ? AppLocalizations.of(context)!.default_
+                      : group.name),
+                  onTap: () async {
+                    context.pop();
+                    await context
+                        .read<DictManagerModel>()
+                        .setCurrentGroup(group.id);
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -60,11 +147,129 @@ class HomePage {
   }
 }
 
-class HistoryList extends StatefulWidget {
-  const HistoryList({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<HistoryList> createState() => _HistoryListState();
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class MoreButton extends StatelessWidget {
+  const MoreButton({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: IconButton(
+        icon: const Icon(Icons.more_vert),
+        onPressed: () async {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return const MoreOptionsDialog();
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class MoreOptionsDialog extends StatefulWidget {
+  const MoreOptionsDialog({super.key});
+
+  @override
+  State<MoreOptionsDialog> createState() => _MoreOptionsDialogState();
+}
+
+class OneSearchResult extends StatelessWidget {
+  final String word;
+
+  const OneSearchResult({
+    super.key,
+    required this.word,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+        trailing: Icon(Icons.arrow_forward),
+        title: Text(word),
+        leading: IconButton(
+          icon: const Icon(Icons.volume_up_outlined),
+          onPressed: () async {
+            await flutterTts.speak(word);
+          },
+        ),
+        onTap: () async {
+          context.push("/word", extra: {"word": word});
+          await historyDao.addHistory(word);
+          if (settings.autoRemoveSearchWord && context.mounted) {
+            context.read<HomeModel>().clearSearchWord();
+          }
+        });
+  }
+}
+
+class Searcher {
+  final String text;
+
+  Searcher(this.text);
+
+  Future<List<DictionaryData>> getSearchResult() async {
+    final searchers = <Future<List<DictionaryData>>>[];
+    for (final dict in dictManager.dicts.values) {
+      searchers.add(dict.db.searchWord(text));
+    }
+    final searchResult = [for (final i in await Future.wait(searchers)) ...i];
+    searchResult.sort((a, b) => a.key.compareTo(b.key));
+    searchResult.removeWhere((element) =>
+        searchResult.indexOf(element) !=
+        searchResult.lastIndexWhere((e) => e.key == element.key));
+    return searchResult;
+  }
+}
+
+class SearchResults extends StatelessWidget {
+  final String text;
+
+  const SearchResults({
+    super.key,
+    required this.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: Searcher(text).getSearchResult(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final searchResult = snapshot.data as List<DictionaryData>;
+            final resultWidgets = <Widget>[];
+
+            if (settings.aiExplainWord &&
+                (searchResult.isEmpty || searchResult[0].key != text)) {
+              resultWidgets.add(OneSearchResult(word: text));
+            }
+            for (final word in searchResult) {
+              resultWidgets.add(OneSearchResult(word: word.key));
+            }
+
+            if (resultWidgets.isEmpty) {
+              return Center(
+                  child: Text(AppLocalizations.of(context)!.noResult,
+                      style: Theme.of(context).textTheme.titleLarge));
+            } else {
+              return ListView(children: resultWidgets);
+            }
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        });
+  }
 }
 
 class _HistoryListState extends State<HistoryList> {
@@ -229,33 +434,18 @@ class _HistoryListState extends State<HistoryList> {
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class MoreOptionsDialog extends StatefulWidget {
-  const MoreOptionsDialog({super.key});
-
-  @override
-  State<MoreOptionsDialog> createState() => _MoreOptionsDialogState();
-}
-
 class _HomeScreenState extends State<HomeScreen> {
   var _autofocus = false;
 
   @override
   Widget build(BuildContext context) {
     context.watch<HomeModel>();
-    context.watch<DictManagerModel>();
 
     return Scaffold(
       appBar: buildAppBar(context),
       body: Column(
         children: [
-          Expanded(child: buildBody(context)),
+          Expanded(child: HomeBody()),
           if (!settings.searchBarInAppBar)
             Padding(
                 padding: const EdgeInsets.only(
@@ -263,7 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: buildSearchBar(context)),
         ],
       ),
-      drawer: buildDrawer(),
+      drawer: HomeDrawer(),
     );
   }
 
@@ -275,125 +465,11 @@ class _HomeScreenState extends State<HomeScreen> {
         title: searchBar,
         automaticallyImplyLeading: settings.showSidebarIcon,
         actions: [
-          if (settings.showMoreOptionsButton) buildMoreButton(context),
+          if (settings.showMoreOptionsButton) MoreButton(),
         ],
       );
     }
     return null;
-  }
-
-  Widget buildBody(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-
-    if (dictManager.isEmpty && !settings.aiExplainWord) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(locale!.addDictionary),
-            SizedBox(height: 16),
-            ElevatedButton(
-              child: Text(locale.recommendedDictionaries),
-              onPressed: () async {
-                await launchUrl(Uri.parse(
-                    "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
-              },
-            ),
-            SizedBox(height: 8),
-            ElevatedButton(
-              child: const Text("FreeMDict Cloud"),
-              onPressed: () async {
-                await launchUrl(Uri.parse(
-                    "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs"));
-              },
-            ),
-          ],
-        ),
-      );
-    } else {
-      final textFieldController = context.read<HomeModel>().textFieldController;
-      if (textFieldController.text.isEmpty) {
-        return HistoryList();
-      } else {
-        return buildSearchResult(textFieldController.text);
-      }
-    }
-  }
-
-  Drawer buildDrawer() {
-    return Drawer(
-      elevation: 10,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: ListView(
-          children: [
-            DrawerHeader(
-              child: Text(
-                AppLocalizations.of(context)!.dictionaryGroups,
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-            ),
-            for (final group in dictManager.groups)
-              Card(
-                color: Theme.of(context).colorScheme.secondaryContainer,
-                elevation: 0,
-                clipBehavior: Clip.antiAlias,
-                child: ListTile(
-                  leading: group.id == dictManager.groupId
-                      ? const Icon(Icons.radio_button_checked, size: 20)
-                      : const Icon(Icons.radio_button_unchecked, size: 20),
-                  title: Text(group.name == "Default"
-                      ? AppLocalizations.of(context)!.default_
-                      : group.name),
-                  onTap: () async {
-                    context.pop();
-                    await context
-                        .read<DictManagerModel>()
-                        .setCurrentGroup(group.id);
-                  },
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Padding buildMoreButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: IconButton(
-        icon: const Icon(Icons.more_vert),
-        onPressed: () async {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return const MoreOptionsDialog();
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  ListTile buildOneResult(String word, BuildContext context) {
-    return ListTile(
-        trailing: Icon(Icons.arrow_forward),
-        title: Text(word),
-        leading: IconButton(
-          icon: const Icon(Icons.volume_up_outlined),
-          onPressed: () async {
-            await flutterTts.speak(word);
-          },
-        ),
-        onTap: () async {
-          context.push("/word", extra: {"word": word});
-          await historyDao.addHistory(word);
-          if (settings.autoRemoveSearchWord && context.mounted) {
-            context.read<HomeModel>().clearSearchWord();
-          }
-        });
   }
 
   IconButton buildRemoveButton() {
@@ -432,35 +508,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-
-  FutureBuilder<List<DictionaryData>> buildSearchResult(String text) {
-    return FutureBuilder(
-        future: Searcher(text).getSearchResult(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final searchResult = snapshot.data as List<DictionaryData>;
-            final resultWidgets = <Widget>[];
-
-            if (settings.aiExplainWord &&
-                (searchResult.isEmpty || searchResult[0].key != text)) {
-              resultWidgets.add(buildOneResult(text, context));
-            }
-            for (final word in searchResult) {
-              resultWidgets.add(buildOneResult(word.key, context));
-            }
-
-            if (resultWidgets.isEmpty) {
-              return Center(
-                  child: Text(AppLocalizations.of(context)!.noResult,
-                      style: Theme.of(context).textTheme.titleLarge));
-            } else {
-              return ListView(children: resultWidgets);
-            }
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        });
   }
 
   @override
