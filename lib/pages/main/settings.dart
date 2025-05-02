@@ -2,12 +2,12 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/database/app.dart";
-import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
+import "package:ciyue/services/backup.dart";
 import "package:ciyue/services/platform.dart";
-import "package:ciyue/services/updater.dart";
 import "package:ciyue/services/settings.dart";
+import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/update_available.dart";
 import "package:file_selector/file_selector.dart";
@@ -196,24 +196,7 @@ class Export extends StatelessWidget {
     return ListTile(
       leading: Icon(Icons.file_upload),
       title: Text(AppLocalizations.of(context)!.export),
-      onTap: () async {
-        final words = await wordbookDao.getAllWords(),
-            tags = await wordbookTagsDao.getAllTags();
-
-        if (words.isNotEmpty) {
-          final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
-
-          if (Platform.isAndroid) {
-            await PlatformMethod.createFile("$wordsOutput\n$tagsOutput");
-          } else {
-            final result = await getSaveLocation(suggestedName: "ciyue.json");
-            if (result != null) {
-              final file = File(result.path);
-              await file.writeAsString("$wordsOutput\n$tagsOutput");
-            }
-          }
-        }
-      },
+      onTap: () => Backup.export(false),
     );
   }
 }
@@ -258,11 +241,27 @@ class Import extends StatelessWidget {
     return ListTile(
       leading: Icon(Icons.file_download),
       title: Text(AppLocalizations.of(context)!.import),
-      onTap: () async {
-        if (dictManager.isEmpty) {
-          return;
-        }
+      onTap: () => Backup.import(),
+    );
+  }
+}
 
+class LanguageSelector extends StatefulWidget {
+  const LanguageSelector({super.key});
+
+  @override
+  State<LanguageSelector> createState() => _LanguageSelectorState();
+}
+
+class LegacyImport extends StatelessWidget {
+  const LegacyImport({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(Icons.file_download),
+      title: Text(AppLocalizations.of(context)!.legacyImport),
+      onTap: () async {
         const XTypeGroup typeGroup = XTypeGroup(
           label: "json",
           extensions: <String>["json"],
@@ -295,13 +294,6 @@ class Import extends StatelessWidget {
       },
     );
   }
-}
-
-class LanguageSelector extends StatefulWidget {
-  const LanguageSelector({super.key});
-
-  @override
-  State<LanguageSelector> createState() => _LanguageSelectorState();
 }
 
 class ManageDictionariesWidget extends StatelessWidget {
@@ -403,10 +395,11 @@ class SettingsScreen extends StatelessWidget {
           const Divider(indent: 16, endIndent: 16),
           const NotificationSwitch(),
         ],
-        TitleDivider(title: AppLocalizations.of(context)!.wordBook),
+        TitleDivider(title: AppLocalizations.of(context)!.export),
         const AutoExport(),
         const Export(),
         const Import(),
+        const LegacyImport(),
         TitleDivider(title: AppLocalizations.of(context)!.history),
         const ClearHistory(),
         TitleDivider(title: AppLocalizations.of(context)!.update),

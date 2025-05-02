@@ -199,5 +199,7 @@
   "showSearchBarInWordDisplayPage": "Show Search Bar in Word Display",
   "@showSearchBarInWordDisplayPage": {},
   "autoUpdate": "Auto Update",
-  "@autoUpdate": {}
+  "@autoUpdate": {},
+  "legacyImport": "Import (Legacy, will be removed in future)",
+  "@legacyImport": {}
 }

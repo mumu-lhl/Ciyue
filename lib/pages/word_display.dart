@@ -3,11 +3,11 @@ import "dart:io";
 import "dart:ui" as ui;
 
 import "package:ciyue/services/ai.dart";
+import "package:ciyue/services/backup.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/wordbook.dart";
-import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/widget/tags_list.dart";
@@ -504,23 +504,7 @@ class _ButtonState extends State<Button> {
   Future<void> autoExport() async {
     if (settings.autoExport &&
         (settings.exportDirectory != null || settings.exportPath != null)) {
-      final words = await wordbookDao.getAllWords(),
-          tags = await wordbookTagsDao.getAllTags();
-
-      final wordsOutput = jsonEncode(words), tagsOutput = jsonEncode(tags);
-      final fileName = setExtension(settings.exportFileName, ".json");
-
-      if (Platform.isAndroid) {
-        await PlatformMethod.writeFile({
-          "path": join(settings.exportDirectory!, fileName),
-          "directory": settings.exportDirectory,
-          "filename": fileName,
-          "content": "$wordsOutput\n$tagsOutput"
-        });
-      } else {
-        final file = File(join(settings.exportPath!));
-        await file.writeAsString("$wordsOutput\n$tagsOutput");
-      }
+      Backup.export(true);
     }
   }
 
