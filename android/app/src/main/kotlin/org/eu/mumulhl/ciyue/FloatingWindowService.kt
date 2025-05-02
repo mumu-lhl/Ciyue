@@ -8,15 +8,17 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.TextView
-import android.widget.LinearLayout
+// Removed unused imports: TextView, LinearLayout
 
-// Use flutter to provide a view, the dart entry point is a function called floatingWindow. AI!
+import io.flutter.embedding.android.FlutterView
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.dart.DartExecutor
 
 class FloatingWindowService : Service() {
 
     private var mWindowManager: WindowManager? = null
-    private var mFloatingView: View? = null
+    private var mFloatingView: FlutterView? = null // Changed type to FlutterView
+    private var flutterEngine: FlutterEngine? = null // Added FlutterEngine reference
 
     override fun onBind(intent: Intent?): IBinder? {
         return null // This is a started service, not a bound service
@@ -25,21 +27,23 @@ class FloatingWindowService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        // Create the floating view
-        // Using a simple LinearLayout with a TextView inside
-        mFloatingView = LinearLayout(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+        // Create a new FlutterEngine
+        flutterEngine = FlutterEngine(this)
+
+        // Configure the Dart entry point
+        flutterEngine?.dartExecutor?.executeDartEntrypoint(
+            DartExecutor.DartEntrypoint(
+                this.assets,
+                "flutter_assets/lib/main.dart", // Assuming main.dart is the entry file
+                "floatingWindow" // The specified Dart function name
             )
-            // Add a TextView
-            addView(TextView(this@FloatingWindowService).apply {
-                text = "Floating Window"
-                setPadding(16, 8, 16, 8)
-                setBackgroundColor(0x80000000.toInt()) // Semi-transparent black background
-                setTextColor(0xFFFFFFFF.toInt()) // White text color
-            })
-        }
+        )
+
+        // Create the floating view using FlutterView
+        mFloatingView = FlutterView(this)
+
+        // Attach the Flutter engine to the FlutterView
+        flutterEngine?.attachToFlutterView(mFloatingView as FlutterView)
 
 
         // Get the window manager
@@ -47,8 +51,8 @@ class FloatingWindowService : Service() {
 
         // Define layout parameters for the floating window
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT, // Adjust size as needed for your Flutter content
+            WindowManager.LayoutParams.WRAP_CONTENT, // Adjust size as needed for your Flutter content
             // Use TYPE_APPLICATION_OVERLAY for Android O and above
             // Use TYPE_PHONE or TYPE_PRIORITY_PHONE for older versions
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
@@ -108,6 +112,10 @@ class FloatingWindowService : Service() {
         super.onDestroy()
         // Remove the floating view when the service is destroyed
         if (mFloatingView != null) {
+            // Detach and destroy the Flutter engine
+            flutterEngine?.destroy()
+            flutterEngine = null
+
             mWindowManager?.removeView(mFloatingView)
             mFloatingView = null
         }
