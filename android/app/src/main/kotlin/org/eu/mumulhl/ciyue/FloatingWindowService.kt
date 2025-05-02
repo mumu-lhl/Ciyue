@@ -5,13 +5,13 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.IBinder
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
 import android.widget.LinearLayout
-import android.content.Context
+
+// Use flutter to provide a view, the dart entry point is a function called floatingWindow. AI!
 
 class FloatingWindowService : Service() {
 
