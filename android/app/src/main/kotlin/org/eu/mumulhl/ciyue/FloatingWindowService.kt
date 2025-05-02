@@ -28,6 +28,7 @@ class FloatingWindowService : Service() {
     private var mWindowManager: WindowManager? = null
     private var mFloatingView: FlutterView? = null
     private var flutterEngine: FlutterEngine? = null
+    private var methodChannel: MethodChannel? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         return null // This is a started service, not a bound service
@@ -35,10 +36,12 @@ class FloatingWindowService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val text = intent?.getStringExtra(EXTRA_TEXT_TO_SHOW) ?: ""
-        val methodChannel = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
-        methodChannel.invokeMethod("process_text", text)
+        methodChannel = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL).apply {
+            setMethodCallHandler { _, result -> result.success(0) }
+            methodChannel!!.invokeMethod("process_text", text)
 
-        return super.onStartCommand(intent, flags, startId)
+            return super.onStartCommand(intent, flags, startId)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -88,6 +91,7 @@ class FloatingWindowService : Service() {
                         initialTouchY = event.rawY
                         return true
                     }
+
                     MotionEvent.ACTION_MOVE -> {
                         // Calculate the new position based on touch movement
                         params.x = initialX + (event.rawX - initialTouchX).toInt()
@@ -97,6 +101,7 @@ class FloatingWindowService : Service() {
                         mWindowManager?.updateViewLayout(mFloatingView, params)
                         return true
                     }
+
                     MotionEvent.ACTION_UP -> {
                         // Optional: Handle click event if needed (e.g., if movement was minimal)
                         // val deltaX = event.rawX - initialTouchX
@@ -121,6 +126,8 @@ class FloatingWindowService : Service() {
 
             mWindowManager?.removeView(mFloatingView)
             mFloatingView = null
+
+            methodChannel = null
         }
     }
 }
