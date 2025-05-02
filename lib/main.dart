@@ -29,6 +29,28 @@ import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
 import "package:url_launcher/url_launcher.dart";
 
+@pragma("vm:entry-point")
+void floatingWindow() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FloatingWindowViewModel())
+      ],
+      child: MaterialApp(
+        navigatorKey: floatingWindowNavigatorKey,
+        home:
+            Consumer<FloatingWindowViewModel>(builder: (context, model, child) {
+          if (!model.isReady) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return WordDisplay(word: model.text);
+        }),
+      )));
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -124,6 +146,7 @@ late final FlutterTts flutterTts;
 final HistoryDao historyDao = HistoryDao(mainDatabase);
 final AppDatabase mainDatabase = appDatabase();
 final navigatorKey = GlobalKey<NavigatorState>();
+final floatingWindowNavigatorKey = GlobalKey<NavigatorState>();
 late final PackageInfo packageInfo;
 late final SharedPreferencesWithCache prefs;
 late final VoidCallback refreshAll;

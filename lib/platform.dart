@@ -7,12 +7,12 @@ import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/settings.dart";
 import "package:ciyue/widget/loading_dialog.dart";
+import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-const _platform = MethodChannel("org.eu.mumulhl.ciyue");
+import "package:provider/provider.dart";
 
 Future<void> _updateAllDictionaries() async {
   final documentsDir = Directory(
@@ -42,7 +42,38 @@ Future<void> _addDictionaries(List<FileSystemEntity> entities) async {
   }
 }
 
+class FloatingWindowViewModel extends ChangeNotifier {
+  bool isReady = false;
+  String text = "";
+
+  void setText(String text) {
+    this.text = text;
+    isReady = true;
+    notifyListeners();
+  }
+}
+
+class PlatformFloatingWindow {
+  static const _platform = MethodChannel("org.eu.mumulhl.ciyue/floatingWindow");
+
+  static initHandler() {
+    _platform.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case "process_text":
+          final text = call.arguments as String;
+          Provider.of<FloatingWindowViewModel>(
+            floatingWindowNavigatorKey.currentContext!,
+            listen: false,
+          ).setText(text);
+          break;
+      }
+    });
+  }
+}
+
 class PlatformMethod {
+  static const _platform = MethodChannel("org.eu.mumulhl.ciyue");
+
   static Future<void> createFile(String content) async {
     await _platform.invokeMethod("createFile", content);
   }

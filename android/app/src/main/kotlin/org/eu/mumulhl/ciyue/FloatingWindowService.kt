@@ -3,11 +3,13 @@ package org.eu.mumulhl.ciyue
 import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import androidx.annotation.RequiresApi
 import io.flutter.FlutterInjector
 import io.flutter.embedding.android.FlutterSurfaceView
 // Removed unused imports: TextView, LinearLayout
@@ -15,56 +17,58 @@ import io.flutter.embedding.android.FlutterSurfaceView
 import io.flutter.embedding.android.FlutterView
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.plugin.common.MethodChannel
 
 class FloatingWindowService : Service() {
+    companion object {
+        const val CHANNEL = "org.eu.mumulhl.ciyue/floatingWindow"
+        const val EXTRA_TEXT_TO_SHOW = "extra_text_to_show"
+    }
 
     private var mWindowManager: WindowManager? = null
-    private var mFloatingView: FlutterView? = null // Changed type to FlutterView
-    private var flutterEngine: FlutterEngine? = null // Added FlutterEngine reference
+    private var mFloatingView: FlutterView? = null
+    private var flutterEngine: FlutterEngine? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         return null // This is a started service, not a bound service
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val text = intent?.getStringExtra(EXTRA_TEXT_TO_SHOW) ?: ""
+        val methodChannel = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
+        methodChannel.invokeMethod("process_text", text)
+
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
 
-        // Create a new FlutterEngine
         flutterEngine = FlutterEngine(this)
-
-        // Configure the Dart entry point
         flutterEngine?.dartExecutor?.executeDartEntrypoint(
             DartExecutor.DartEntrypoint(
                 FlutterInjector.instance().flutterLoader().findAppBundlePath(),
-                "floatingWindow" // The specified Dart function name
+                "floatingWindow",
             )
         )
 
-        // Create the floating view using FlutterView
         mFloatingView = FlutterView(this)
-
-        // Attach the FlutterView to the Flutter engine
         mFloatingView?.attachToFlutterEngine(flutterEngine!!)
 
-        // Get the window manager
-        mWindowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-
-        // Define layout parameters for the floating window
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT, // Adjust size as needed for your Flutter content
-            WindowManager.LayoutParams.WRAP_CONTENT, // Adjust size as needed for your Flutter content
-            // Use TYPE_APPLICATION_OVERLAY for Android O and above
-            // Use TYPE_PHONE or TYPE_PRIORITY_PHONE for older versions
+            600,
+            800,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, // Don't receive touch or keyboard events
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT // Allow transparency
         ).apply {
-            gravity = Gravity.TOP or Gravity.START // Position the window at top-left
-            x = 0 // Initial x position
-            y = 100 // Initial y position
+            gravity = Gravity.TOP or Gravity.START
+            x = 20
+            y = 100
         }
 
-        // Add the view to the window
+        mWindowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         mWindowManager?.addView(mFloatingView, params)
 
         // Add touch listener to the floating view to enable dragging
@@ -110,9 +114,8 @@ class FloatingWindowService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Remove the floating view when the service is destroyed
+
         if (mFloatingView != null) {
-            // Detach and destroy the Flutter engine
             flutterEngine?.destroy()
             flutterEngine = null
 
