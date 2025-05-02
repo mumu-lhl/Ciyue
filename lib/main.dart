@@ -1,6 +1,7 @@
 import "dart:io";
 
 import "package:ciyue/database/app.dart";
+import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/localization_delegates.dart";
 import "package:ciyue/pages/main/home.dart";
@@ -82,7 +83,7 @@ void main() async {
       await prefs.setInt("currentDictionaryGroupId", groupId);
     }
     await dictManager.setCurrentGroup(groupId);
-    await dictManager.updateGroupList();
+    dictManager.groups = await dictGroupDao.getAllGroups();
 
     flutterTts = FlutterTts();
 
