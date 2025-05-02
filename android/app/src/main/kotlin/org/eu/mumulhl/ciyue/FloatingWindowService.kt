@@ -8,6 +8,8 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import io.flutter.FlutterInjector
+import io.flutter.embedding.android.FlutterSurfaceView
 // Removed unused imports: TextView, LinearLayout
 
 import io.flutter.embedding.android.FlutterView
@@ -33,8 +35,7 @@ class FloatingWindowService : Service() {
         // Configure the Dart entry point
         flutterEngine?.dartExecutor?.executeDartEntrypoint(
             DartExecutor.DartEntrypoint(
-                this.assets,
-                "flutter_assets/lib/main.dart", // Assuming main.dart is the entry file
+                FlutterInjector.instance().flutterLoader().findAppBundlePath(),
                 "floatingWindow" // The specified Dart function name
             )
         )
@@ -42,9 +43,8 @@ class FloatingWindowService : Service() {
         // Create the floating view using FlutterView
         mFloatingView = FlutterView(this)
 
-        // Attach the Flutter engine to the FlutterView
-        flutterEngine?.attachToFlutterView(mFloatingView as FlutterView)
-
+        // Attach the FlutterView to the Flutter engine
+        mFloatingView?.attachToFlutterEngine(flutterEngine!!)
 
         // Get the window manager
         mWindowManager = getSystemService(WINDOW_SERVICE) as WindowManager
