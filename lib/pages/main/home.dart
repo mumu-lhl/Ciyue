@@ -1,74 +1,92 @@
 import "package:ciyue/database/app.dart";
 import "package:ciyue/database/dictionary.dart";
-import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/dictionary.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/widget/tags_list.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
-class Searcher {
-  final String text;
+class AddHistoryToWordbookDialog extends StatelessWidget {
+  final List<WordbookTag> tags;
 
-  Searcher(this.text);
+  final List<int> tagsOfWord;
+  final List<int> toAdd;
+  final List<int> toDel;
+  final HistoryData item;
+  const AddHistoryToWordbookDialog({
+    super.key,
+    required this.tags,
+    required this.tagsOfWord,
+    required this.toAdd,
+    required this.toDel,
+    required this.item,
+  });
 
-  Future<List<DictionaryData>> getSearchResult() async {
-    final searchers = <Future<List<DictionaryData>>>[];
-    for (final dict in dictManager.dicts.values) {
-      searchers.add(dict.db.searchWord(text));
-    }
-    final searchResult = [for (final i in await Future.wait(searchers)) ...i];
-    searchResult.sort((a, b) => a.key.compareTo(b.key));
-    searchResult.removeWhere((element) =>
-        searchResult.indexOf(element) !=
-        searchResult.lastIndexWhere((e) => e.key == element.key));
-    return searchResult;
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(AppLocalizations.of(context)!.tags),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TagsList(
+            tags: tags,
+            tagsOfWord: tagsOfWord,
+            toAdd: toAdd,
+            toDel: toDel,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          child: Text(AppLocalizations.of(context)!.close),
+          onPressed: () {
+            context.pop(false);
+          },
+        ),
+        TextButton(
+          child: Text(AppLocalizations.of(context)!.remove),
+          onPressed: () async {
+            await wordbookDao.removeWordWithAllTags(item.word);
+            if (context.mounted) context.pop(true);
+          },
+        ),
+        TextButton(
+          child: Text(AppLocalizations.of(context)!.confirm),
+          onPressed: () async {
+            if (!await wordbookDao.wordExist(item.word)) {
+              await wordbookDao.addWord(item.word);
+            }
+
+            for (final tag in toAdd) {
+              await wordbookDao.addWord(item.word, tag: tag);
+            }
+
+            for (final tag in toDel) {
+              await wordbookDao.removeWord(item.word, tag: tag);
+            }
+
+            if (context.mounted) context.pop(true);
+          },
+        ),
+      ],
+    );
   }
 }
 
-class HomeModel extends ChangeNotifier {
-  final textFieldController = TextEditingController();
-
-  void clearSearchWord() {
-    textFieldController.clear();
-    notifyListeners();
-  }
-
-  void update() {
-    notifyListeners();
-  }
-}
-
-class HomePage {
-  static VoidCallback? _enableAutofocusOnce;
-
-  static bool callEnableAutofocusOnce = false;
-
-  static VoidCallback get enableAutofocusOnce => _enableAutofocusOnce!;
-
-  static set enableAutofocusOnce(VoidCallback callback) =>
-      _enableAutofocusOnce = callback;
-
-  static void setSearchWord(String word) {
-    Provider.of<HomeModel>(navigatorKey.currentContext!, listen: false)
-        .textFieldController
-        .text = word;
-  }
-}
-
-class HistoryList extends StatefulWidget {
+class HistoryList extends StatelessWidget {
   const HistoryList({super.key});
 
   @override
-  State<HistoryList> createState() => _HistoryListState();
-}
-
-class _HistoryListState extends State<HistoryList> {
-  @override
   Widget build(BuildContext context) {
+    final model = context.watch<HistoryModel>();
+
     final locale = AppLocalizations.of(context);
     final future = historyDao.getAllHistory();
 
@@ -87,9 +105,8 @@ class _HistoryListState extends State<HistoryList> {
                     key: ValueKey(item.id),
                     confirmDismiss: (direction) async {
                       if (direction == DismissDirection.endToStart) {
-                        final result = await buildRemoveHistoryConfirmDialog(
-                            context, item);
-                        return result;
+                        return await buildRemoveHistoryConfirmDialog(
+                            context, item, model);
                       } else {
                         if (wordbookTagsDao.tagExist) {
                           final tagsOfWord =
@@ -102,60 +119,12 @@ class _HistoryListState extends State<HistoryList> {
                           await showDialog<bool>(
                             context: context,
                             builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text(AppLocalizations.of(context)!.tags),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TagsList(
-                                      tags: tags,
-                                      tagsOfWord: tagsOfWord,
-                                      toAdd: toAdd,
-                                      toDel: toDel,
-                                    ),
-                                  ],
-                                ),
-                                actions: [
-                                  TextButton(
-                                    child: Text(
-                                        AppLocalizations.of(context)!.close),
-                                    onPressed: () {
-                                      context.pop(false);
-                                    },
-                                  ),
-                                  TextButton(
-                                    child: Text(
-                                        AppLocalizations.of(context)!.remove),
-                                    onPressed: () async {
-                                      await wordbookDao
-                                          .removeWordWithAllTags(item.word);
-                                      if (context.mounted) context.pop(true);
-                                    },
-                                  ),
-                                  TextButton(
-                                    child: Text(
-                                        AppLocalizations.of(context)!.confirm),
-                                    onPressed: () async {
-                                      if (!await wordbookDao
-                                          .wordExist(item.word)) {
-                                        await wordbookDao.addWord(item.word);
-                                      }
-
-                                      for (final tag in toAdd) {
-                                        await wordbookDao.addWord(item.word,
-                                            tag: tag);
-                                      }
-
-                                      for (final tag in toDel) {
-                                        await wordbookDao.removeWord(item.word,
-                                            tag: tag);
-                                      }
-
-                                      if (context.mounted) context.pop(true);
-                                    },
-                                  ),
-                                ],
-                              );
+                              return AddHistoryToWordbookDialog(
+                                  tags: tags,
+                                  tagsOfWord: tagsOfWord,
+                                  toAdd: toAdd,
+                                  toDel: toDel,
+                                  item: item);
                             },
                           );
                           return false;
@@ -187,7 +156,8 @@ class _HistoryListState extends State<HistoryList> {
                         context.push("/word", extra: {"word": item.word});
                       },
                       onLongPress: () async {
-                        await buildRemoveHistoryConfirmDialog(context, item);
+                        await buildRemoveHistoryConfirmDialog(
+                            context, item, model);
                       },
                     ),
                   )
@@ -200,88 +170,49 @@ class _HistoryListState extends State<HistoryList> {
   }
 
   Future<bool> buildRemoveHistoryConfirmDialog(
-      BuildContext context, HistoryData item) async {
+      BuildContext context, HistoryData item, HistoryModel model) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.removeOneHistory),
-        content: Text(AppLocalizations.of(context)!
-            .removeOneHistoryConfirm
-            .replaceFirst("%s", item.word)),
-        actions: [
-          TextButton(
-            onPressed: () => context.pop(false),
-            child: Text(AppLocalizations.of(context)!.close),
-          ),
-          TextButton(
-            onPressed: () => context.pop(true),
-            child: Text(AppLocalizations.of(context)!.remove),
-          ),
-        ],
-      ),
+      builder: (context) => RemoveHistoryConfirmDialog(item: item),
     );
     if (confirmed == true) {
-      await historyDao.removeHistory(item.word);
-      setState(() {});
+      model.removeHistory(item.word);
     }
     return confirmed ?? false;
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const HomeAppBar({
+    super.key,
+  });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class MoreOptionsDialog extends StatefulWidget {
-  const MoreOptionsDialog({super.key});
-
-  @override
-  State<MoreOptionsDialog> createState() => _MoreOptionsDialogState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  var _autofocus = false;
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
-    context.watch<HomeModel>();
-    context.watch<DictManagerModel>();
-
-    return Scaffold(
-      appBar: buildAppBar(context),
-      body: Column(
-        children: [
-          Expanded(child: buildBody(context)),
-          if (!settings.searchBarInAppBar)
-            Padding(
-                padding: const EdgeInsets.only(
-                    left: 20, right: 20, bottom: 10, top: 10),
-                child: buildSearchBar(context)),
-        ],
-      ),
-      drawer: buildDrawer(),
+    final searchBar = settings.searchBarInAppBar ? HomeSearchBar() : null;
+    return AppBar(
+      title: searchBar,
+      automaticallyImplyLeading: settings.showSidebarIcon,
+      actions: [
+        if (settings.showMoreOptionsButton) MoreButton(),
+      ],
     );
   }
+}
 
-  AppBar? buildAppBar(BuildContext context) {
-    if (!dictManager.isEmpty || settings.aiExplainWord) {
-      final searchBar =
-          settings.searchBarInAppBar ? buildSearchBar(context) : null;
-      return AppBar(
-        title: searchBar,
-        automaticallyImplyLeading: settings.showSidebarIcon,
-        actions: [
-          if (settings.showMoreOptionsButton) buildMoreButton(context),
-        ],
-      );
-    }
-    return null;
-  }
+class HomeBody extends StatelessWidget {
+  const HomeBody({
+    super.key,
+  });
 
-  Widget buildBody(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    context.select<DictManagerModel, bool>((value) => value.isEmpty);
+    context.select<HomeModel, String>((value) => value.searchWord);
+
     final locale = AppLocalizations.of(context);
 
     if (dictManager.isEmpty && !settings.aiExplainWord) {
@@ -311,16 +242,26 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     } else {
-      final textFieldController = context.read<HomeModel>().textFieldController;
-      if (textFieldController.text.isEmpty) {
+      final searchWord = context.read<HomeModel>().searchWord;
+      if (searchWord.isEmpty) {
         return HistoryList();
       } else {
-        return buildSearchResult(textFieldController.text);
+        return SearchResults();
       }
     }
   }
+}
 
-  Drawer buildDrawer() {
+class HomeDrawer extends StatelessWidget {
+  const HomeDrawer({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final groupId =
+        context.select<DictManagerModel, int>((value) => value.groupId);
+
     return Drawer(
       elevation: 10,
       child: Padding(
@@ -339,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 elevation: 0,
                 clipBehavior: Clip.antiAlias,
                 child: ListTile(
-                  leading: group.id == dictManager.groupId
+                  leading: group.id == groupId
                       ? const Icon(Icons.radio_button_checked, size: 20)
                       : const Icon(Icons.radio_button_unchecked, size: 20),
                   title: Text(group.name == "Default"
@@ -358,8 +299,99 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 
-  Padding buildMoreButton(BuildContext context) {
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    context.select<HomeModel, int>((model) => model.state);
+
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Selector<DictManagerModel, bool>(
+          selector: (_, model) => model.isEmpty,
+          builder: (BuildContext context, value, Widget? child) {
+            return (!dictManager.isEmpty || settings.aiExplainWord)
+                ? HomeAppBar()
+                : const SizedBox.shrink();
+          },
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(child: HomeBody()),
+          if (!settings.searchBarInAppBar)
+            Selector<DictManagerModel, bool>(
+              selector: (_, model) => model.isEmpty,
+              builder: (_, isEmpty, ___) => isEmpty ? SizedBox.shrink() : Padding(
+                  padding: const EdgeInsets.only(
+                      left: 20, right: 20, bottom: 10, top: 10),
+                  child: HomeSearchBar()),
+            ),
+        ],
+      ),
+      drawer: HomeDrawer(),
+    );
+  }
+}
+
+class HomeSearchBar extends StatelessWidget {
+  const HomeSearchBar({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textFieldController =
+        context.select<HomeModel, TextEditingController>(
+            (model) => model.textFieldController);
+    final autofocus =
+        context.select<HomeModel, bool>((model) => model.autofocus);
+
+    context.select<HomeModel, String>((model) => model.searchWord);
+
+    final model = context.read<HomeModel>();
+    if (autofocus) {
+      model.autofocus = false;
+    }
+
+    return SafeArea(
+      child: Center(
+        child: SearchBar(
+          autoFocus: autofocus,
+          onTapOutside: (pointerDownEvent) {
+            FocusScope.of(context).unfocus();
+          },
+          hintText: AppLocalizations.of(context)!.search,
+          controller: textFieldController,
+          elevation: WidgetStateProperty.all(1),
+          constraints:
+              const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
+          leading: const Icon(Icons.search),
+          trailing: [
+            if (textFieldController.text.isNotEmpty)
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => model.clearSearchWord(),
+              )
+          ],
+          onChanged: (value) => model.searchWord = value,
+        ),
+      ),
+    );
+  }
+}
+
+class MoreButton extends StatelessWidget {
+  const MoreButton({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 10),
       child: IconButton(
@@ -375,8 +407,25 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 
-  ListTile buildOneResult(String word, BuildContext context) {
+class MoreOptionsDialog extends StatefulWidget {
+  const MoreOptionsDialog({super.key});
+
+  @override
+  State<MoreOptionsDialog> createState() => _MoreOptionsDialogState();
+}
+
+class OneSearchResult extends StatelessWidget {
+  final String word;
+
+  const OneSearchResult({
+    super.key,
+    required this.word,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return ListTile(
         trailing: Icon(Icons.arrow_forward),
         title: Text(word),
@@ -394,46 +443,65 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         });
   }
+}
 
-  IconButton buildRemoveButton() {
-    return IconButton(
-      icon: const Icon(Icons.close),
-      onPressed: () {
-        context.read<HomeModel>().clearSearchWord();
-      },
-    );
-  }
+class RemoveHistoryConfirmDialog extends StatelessWidget {
+  final HistoryData item;
 
-  Widget buildSearchBar(BuildContext context) {
-    final textFieldController = context.read<HomeModel>().textFieldController;
-    final autofocus = _autofocus;
-    _autofocus = false;
+  const RemoveHistoryConfirmDialog({
+    super.key,
+    required this.item,
+  });
 
-    return SafeArea(
-      child: Center(
-        child: SearchBar(
-          autoFocus: autofocus,
-          onTapOutside: (pointerDownEvent) {
-            FocusScope.of(context).unfocus();
-          },
-          hintText: AppLocalizations.of(context)!.search,
-          controller: textFieldController,
-          elevation: WidgetStateProperty.all(1),
-          constraints:
-              const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
-          leading: const Icon(Icons.search),
-          onChanged: (value) {
-            setState(() {});
-          },
-          trailing: [
-            if (textFieldController.text.isNotEmpty) buildRemoveButton()
-          ],
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(AppLocalizations.of(context)!.removeOneHistory),
+      content: Text(AppLocalizations.of(context)!
+          .removeOneHistoryConfirm
+          .replaceFirst("%s", item.word)),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(false),
+          child: Text(AppLocalizations.of(context)!.close),
         ),
-      ),
+        TextButton(
+          onPressed: () => context.pop(true),
+          child: Text(AppLocalizations.of(context)!.remove),
+        ),
+      ],
     );
   }
+}
 
-  FutureBuilder<List<DictionaryData>> buildSearchResult(String text) {
+class Searcher {
+  final String text;
+
+  Searcher(this.text);
+
+  Future<List<DictionaryData>> getSearchResult() async {
+    final searchers = <Future<List<DictionaryData>>>[];
+    for (final dict in dictManager.dicts.values) {
+      searchers.add(dict.db.searchWord(text));
+    }
+    final searchResult = [for (final i in await Future.wait(searchers)) ...i];
+    searchResult.sort((a, b) => a.key.compareTo(b.key));
+    searchResult.removeWhere((element) =>
+        searchResult.indexOf(element) !=
+        searchResult.lastIndexWhere((e) => e.key == element.key));
+    return searchResult;
+  }
+}
+
+class SearchResults extends StatelessWidget {
+  const SearchResults({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final text = context.select<HomeModel, String>((model) => model.searchWord);
+
     return FutureBuilder(
         future: Searcher(text).getSearchResult(),
         builder: (context, snapshot) {
@@ -443,10 +511,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
             if (settings.aiExplainWord &&
                 (searchResult.isEmpty || searchResult[0].key != text)) {
-              resultWidgets.add(buildOneResult(text, context));
+              resultWidgets.add(OneSearchResult(word: text));
             }
             for (final word in searchResult) {
-              resultWidgets.add(buildOneResult(word.key, context));
+              resultWidgets.add(OneSearchResult(word: word.key));
             }
 
             if (resultWidgets.isEmpty) {
@@ -460,21 +528,6 @@ class _HomeScreenState extends State<HomeScreen> {
             return Center(child: CircularProgressIndicator());
           }
         });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    HomePage.enableAutofocusOnce = () {
-      setState(() {
-        _autofocus = true;
-      });
-    };
-    if (HomePage.callEnableAutofocusOnce) {
-      HomePage.enableAutofocusOnce();
-      HomePage.callEnableAutofocusOnce = false;
-    }
   }
 }
 

@@ -6,7 +6,6 @@ import "package:ciyue/utils.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
-import "package:flutter/foundation.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
@@ -15,13 +14,6 @@ import "../database/dictionary.dart";
 import "../main.dart";
 
 final dictManager = DictManager();
-
-class DictManagerModel extends ChangeNotifier {
-  Future<void> setCurrentGroup(int id) async {
-    await dictManager.setCurrentGroup(id);
-    notifyListeners();
-  }
-}
 
 class DictManager {
   final Map<int, Mdict> dicts = {};
@@ -37,7 +29,7 @@ class DictManager {
     dicts[dict.id] = dict;
   }
 
-  Future<void> clear() async {
+  Future<void> _clear() async {
     for (final id in dictIds) {
       await close(id);
     }
@@ -50,14 +42,8 @@ class DictManager {
 
   bool contain(int id) => dicts.keys.contains(id);
 
-  Future<void> remove(int id) async {
-    await dicts[id]!.removeDictionary();
-    await dicts[id]!.close();
-    dicts.remove(id);
-  }
-
   Future<void> setCurrentGroup(int id) async {
-    await clear();
+    await _clear();
 
     groupId = id;
     dictIds = await dictGroupDao.getDictIds(id);
@@ -87,14 +73,6 @@ class DictManager {
     if (toRemove.isNotEmpty) {
       await dictGroupDao.updateDictIds(groupId, dictIds);
     }
-  }
-
-  Future<void> updateDictIds() async {
-    dictIds = await dictGroupDao.getDictIds(groupId);
-  }
-
-  Future<void> updateGroupList() async {
-    groups = await dictGroupDao.getAllGroups();
   }
 }
 

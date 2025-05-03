@@ -3,9 +3,9 @@ import "dart:io";
 import "package:ciyue/database/app.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
@@ -29,7 +29,11 @@ class ManageDictionariesState extends State<ManageDictionaries> {
   Future<void> addGroup(String value, BuildContext context) async {
     if (value.isNotEmpty) {
       await dictGroupDao.addGroup(value, []);
-      await dictManager.updateGroupList();
+
+      if (context.mounted) {
+        final model = context.read<DictManagerModel>();
+        await model.updateGroupList();
+      }
       if (context.mounted) {
         context.pop();
       }
@@ -116,7 +120,11 @@ class ManageDictionariesState extends State<ManageDictionaries> {
                   for (final dict in dicts)
                     if (dictManager.contain(dict.id)) dict.id
                 ]);
-                await dictManager.updateDictIds();
+
+                if (context.mounted) {
+                  final model = context.read<DictManagerModel>();
+                  await model.updateDictIds();
+                }
               }
 
               setState(() {});
@@ -164,7 +172,8 @@ class ManageDictionariesState extends State<ManageDictionaries> {
                     SimpleDialogOption(
                       onPressed: () async {
                         if (dictManager.contain(dictionary.id)) {
-                          await dictManager.close(dictionary.id);
+                          final model = context.read<DictManagerModel>();
+                          await model.close(dictionary.id);
 
                           final dictIds = [
                             for (final dict in dictManager.dicts.values) dict.id
@@ -172,7 +181,7 @@ class ManageDictionariesState extends State<ManageDictionaries> {
 
                           await dictGroupDao.updateDictIds(
                               dictManager.groupId, dictIds);
-                          await dictManager.updateDictIds();
+                          await model.updateDictIds();
                         }
 
                         final tmpDict = Mdict(path: dictionary.path);
@@ -273,17 +282,18 @@ class ManageDictionariesState extends State<ManageDictionaries> {
                 child:
                     IconButton(icon: Icon(Icons.reorder), onPressed: () => {})),
             onChanged: (bool? value) async {
+              final model = context.read<DictManagerModel>();
+
               if (value == true) {
                 await dictManager.add(dictionary.path);
               } else {
-                await dictManager.close(dictionary.id);
+                await model.close(dictionary.id);
               }
               await dictGroupDao.updateDictIds(dictManager.groupId,
                   [for (final dict in dictManager.dicts.values) dict.id]);
-              await dictManager.updateDictIds();
+              await model.updateDictIds();
 
               setState(() {});
-              if (context.mounted) context.read<HomeModel>().update();
             },
           )),
     );
@@ -298,19 +308,21 @@ class ManageDictionariesState extends State<ManageDictionaries> {
     return IconButton(
       icon: const Icon(Icons.delete),
       onPressed: () async {
+        final model = context.read<DictManagerModel>();
+
         if (group.id == dictManager.groupId) {
           if (group.id == dictManager.groups.last.id) {
-            await dictManager.setCurrentGroup(
+            await model.setCurrentGroup(
                 dictManager.groups[dictManager.groups.length - 2].id);
           } else {
             final index =
                 dictManager.groups.indexWhere((g) => g.id == group.id);
-            await dictManager.setCurrentGroup(dictManager.groups[index + 1].id);
+            await model.setCurrentGroup(dictManager.groups[index + 1].id);
           }
         }
 
         await dictGroupDao.removeGroup(group.id);
-        await dictManager.updateGroupList();
+        await model.updateGroupList();
 
         if (context.mounted) context.pop();
       },
@@ -458,7 +470,8 @@ class ManageDictionariesState extends State<ManageDictionaries> {
               secondary: buildGroupDeleteButton(context, group),
               onChanged: (int? groupId) async {
                 if (groupId != dictManager.groupId) {
-                  await dictManager.setCurrentGroup(groupId!);
+                  final model = context.read<DictManagerModel>();
+                  await model.setCurrentGroup(groupId!);
                   setState(() {});
                 }
                 if (context.mounted) context.pop();

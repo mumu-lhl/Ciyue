@@ -3,12 +3,12 @@ import "dart:io";
 
 import "package:ciyue/database/app.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/services/backup.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/widget/update_available.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
@@ -150,9 +150,8 @@ class ClearHistory extends StatelessWidget {
             ),
             TextButton(
               onPressed: () async {
-                await historyDao.clearHistory();
                 if (context.mounted) {
-                  context.read<HomeModel>().update();
+                  context.read<HistoryModel>().clearHistory();
                   context.pop(context);
                 }
               },

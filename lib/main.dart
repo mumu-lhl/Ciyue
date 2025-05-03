@@ -1,9 +1,9 @@
 import "dart:io";
 
 import "package:ciyue/database/app.dart";
+import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/localization_delegates.dart";
-import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/main/wordbook.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
@@ -18,6 +18,7 @@ import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
@@ -82,7 +83,7 @@ void main() async {
       await prefs.setInt("currentDictionaryGroupId", groupId);
     }
     await dictManager.setCurrentGroup(groupId);
-    await dictManager.updateGroupList();
+    dictManager.groups = await dictGroupDao.getAllGroups();
 
     flutterTts = FlutterTts();
 
@@ -114,7 +115,8 @@ void main() async {
     runApp(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WordbookModel()),
       ChangeNotifierProvider(create: (_) => HomeModel()),
-      ChangeNotifierProvider(create: (_) => DictManagerModel())
+      ChangeNotifierProvider(create: (_) => DictManagerModel()),
+      ChangeNotifierProvider(create: (_) => HistoryModel())
     ], child: const Ciyue()));
   } catch (e) {
     runApp(MaterialApp(home: CiyueError(error: e)));
