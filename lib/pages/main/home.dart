@@ -210,7 +210,7 @@ class HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.select<DictManagerModel, Map<int, Mdict>>((value) => value.dicts);
+    context.select<DictManagerModel, bool>((value) => value.isEmpty);
     context.select<HomeModel, String>((value) => value.searchWord);
 
     final locale = AppLocalizations.of(context);
@@ -259,8 +259,6 @@ class HomeDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final groups = context
-        .select<DictManagerModel, List<DictGroupData>>((value) => value.groups);
     final groupId =
         context.select<DictManagerModel, int>((value) => value.groupId);
 
@@ -276,7 +274,7 @@ class HomeDrawer extends StatelessWidget {
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
             ),
-            for (final group in groups)
+            for (final group in dictManager.groups)
               Card(
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 elevation: 0,
@@ -311,17 +309,28 @@ class HomeScreen extends StatelessWidget {
     context.select<HomeModel, int>((model) => model.state);
 
     return Scaffold(
-      appBar: (!dictManager.isEmpty || settings.aiExplainWord)
-          ? HomeAppBar()
-          : null,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Selector<DictManagerModel, bool>(
+          selector: (_, model) => model.isEmpty,
+          builder: (BuildContext context, value, Widget? child) {
+            return (!dictManager.isEmpty || settings.aiExplainWord)
+                ? HomeAppBar()
+                : const SizedBox.shrink();
+          },
+        ),
+      ),
       body: Column(
         children: [
           Expanded(child: HomeBody()),
           if (!settings.searchBarInAppBar)
-            Padding(
-                padding: const EdgeInsets.only(
-                    left: 20, right: 20, bottom: 10, top: 10),
-                child: HomeSearchBar()),
+            Selector<DictManagerModel, bool>(
+              selector: (_, model) => model.isEmpty,
+              builder: (_, isEmpty, ___) => isEmpty ? SizedBox.shrink() : Padding(
+                  padding: const EdgeInsets.only(
+                      left: 20, right: 20, bottom: 10, top: 10),
+                  child: HomeSearchBar()),
+            ),
         ],
       ),
       drawer: HomeDrawer(),
