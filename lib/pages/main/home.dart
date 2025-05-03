@@ -12,11 +12,174 @@ import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
-class HistoryList extends StatefulWidget {
+class AddHistoryToWordbookDialog extends StatelessWidget {
+  final List<WordbookTag> tags;
+
+  final List<int> tagsOfWord;
+  final List<int> toAdd;
+  final List<int> toDel;
+  final HistoryData item;
+  const AddHistoryToWordbookDialog({
+    super.key,
+    required this.tags,
+    required this.tagsOfWord,
+    required this.toAdd,
+    required this.toDel,
+    required this.item,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(AppLocalizations.of(context)!.tags),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TagsList(
+            tags: tags,
+            tagsOfWord: tagsOfWord,
+            toAdd: toAdd,
+            toDel: toDel,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          child: Text(AppLocalizations.of(context)!.close),
+          onPressed: () {
+            context.pop(false);
+          },
+        ),
+        TextButton(
+          child: Text(AppLocalizations.of(context)!.remove),
+          onPressed: () async {
+            await wordbookDao.removeWordWithAllTags(item.word);
+            if (context.mounted) context.pop(true);
+          },
+        ),
+        TextButton(
+          child: Text(AppLocalizations.of(context)!.confirm),
+          onPressed: () async {
+            if (!await wordbookDao.wordExist(item.word)) {
+              await wordbookDao.addWord(item.word);
+            }
+
+            for (final tag in toAdd) {
+              await wordbookDao.addWord(item.word, tag: tag);
+            }
+
+            for (final tag in toDel) {
+              await wordbookDao.removeWord(item.word, tag: tag);
+            }
+
+            if (context.mounted) context.pop(true);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class HistoryList extends StatelessWidget {
   const HistoryList({super.key});
 
   @override
-  State<HistoryList> createState() => _HistoryListState();
+  Widget build(BuildContext context) {
+    final model = context.watch<HistoryModel>();
+
+    final locale = AppLocalizations.of(context);
+    final future = historyDao.getAllHistory();
+
+    return FutureBuilder(
+        future: future,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final history = snapshot.data as List<HistoryData>;
+            if (history.isEmpty) {
+              return Center(child: Text(locale!.startToSearch));
+            }
+            return ListView(
+              children: [
+                for (final item in history)
+                  Dismissible(
+                    key: ValueKey(item.id),
+                    confirmDismiss: (direction) async {
+                      if (direction == DismissDirection.endToStart) {
+                        return await buildRemoveHistoryConfirmDialog(
+                            context, item, model);
+                      } else {
+                        if (wordbookTagsDao.tagExist) {
+                          final tagsOfWord =
+                                  await wordbookDao.tagsOfWord(item.word),
+                              tags = await wordbookTagsDao.getAllTags();
+                          final toAdd = <int>[], toDel = <int>[];
+
+                          if (!context.mounted) return false;
+
+                          await showDialog<bool>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AddHistoryToWordbookDialog(
+                                  tags: tags,
+                                  tagsOfWord: tagsOfWord,
+                                  toAdd: toAdd,
+                                  toDel: toDel,
+                                  item: item);
+                            },
+                          );
+                          return false;
+                        } else {
+                          if (await wordbookDao.wordExist(item.word)) {
+                            await wordbookDao.removeWord(item.word);
+                          } else {
+                            await wordbookDao.addWord(item.word);
+                          }
+                          return false;
+                        }
+                      }
+                    },
+                    background: Container(
+                        color: Theme.of(context).colorScheme.primary,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: Icon(Icons.book_outlined,
+                            color: Theme.of(context).colorScheme.onPrimary)),
+                    secondaryBackground: Container(
+                        color: Theme.of(context).colorScheme.error,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 16.0),
+                        child: Icon(Icons.delete_outline,
+                            color: Theme.of(context).colorScheme.onError)),
+                    child: ListTile(
+                      title: Text(item.word),
+                      onTap: () {
+                        context.push("/word", extra: {"word": item.word});
+                      },
+                      onLongPress: () async {
+                        await buildRemoveHistoryConfirmDialog(
+                            context, item, model);
+                      },
+                    ),
+                  )
+              ],
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        });
+  }
+
+  Future<bool> buildRemoveHistoryConfirmDialog(
+      BuildContext context, HistoryData item, HistoryModel model) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => RemoveHistoryConfirmDialog(item: item),
+    );
+    if (confirmed == true) {
+      model.removeHistory(item.word);
+    }
+    return confirmed ?? false;
+  }
 }
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -48,6 +211,7 @@ class HomeBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.select<DictManagerModel, Map<int, Mdict>>((value) => value.dicts);
+    context.select<HomeModel, String>((value) => value.searchWord);
 
     final locale = AppLocalizations.of(context);
 
@@ -144,7 +308,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<HomeModel>();
+    context.select<HomeModel, int>((model) => model.state);
 
     return Scaffold(
       appBar: (!dictManager.isEmpty || settings.aiExplainWord)
@@ -175,9 +339,10 @@ class HomeSearchBar extends StatelessWidget {
     final textFieldController =
         context.select<HomeModel, TextEditingController>(
             (model) => model.textFieldController);
-
     final autofocus =
         context.select<HomeModel, bool>((model) => model.autofocus);
+
+    context.select<HomeModel, String>((model) => model.searchWord);
 
     final model = context.read<HomeModel>();
     if (autofocus) {
@@ -271,6 +436,35 @@ class OneSearchResult extends StatelessWidget {
   }
 }
 
+class RemoveHistoryConfirmDialog extends StatelessWidget {
+  final HistoryData item;
+
+  const RemoveHistoryConfirmDialog({
+    super.key,
+    required this.item,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(AppLocalizations.of(context)!.removeOneHistory),
+      content: Text(AppLocalizations.of(context)!
+          .removeOneHistoryConfirm
+          .replaceFirst("%s", item.word)),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(false),
+          child: Text(AppLocalizations.of(context)!.close),
+        ),
+        TextButton(
+          onPressed: () => context.pop(true),
+          child: Text(AppLocalizations.of(context)!.remove),
+        ),
+      ],
+    );
+  }
+}
+
 class Searcher {
   final String text;
 
@@ -325,168 +519,6 @@ class SearchResults extends StatelessWidget {
             return Center(child: CircularProgressIndicator());
           }
         });
-  }
-}
-
-class _HistoryListState extends State<HistoryList> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    final future = historyDao.getAllHistory();
-
-    return FutureBuilder(
-        future: future,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final history = snapshot.data as List<HistoryData>;
-            if (history.isEmpty) {
-              return Center(child: Text(locale!.startToSearch));
-            }
-            return ListView(
-              children: [
-                for (final item in history)
-                  Dismissible(
-                    key: ValueKey(item.id),
-                    confirmDismiss: (direction) async {
-                      if (direction == DismissDirection.endToStart) {
-                        final result = await buildRemoveHistoryConfirmDialog(
-                            context, item);
-                        return result;
-                      } else {
-                        if (wordbookTagsDao.tagExist) {
-                          final tagsOfWord =
-                                  await wordbookDao.tagsOfWord(item.word),
-                              tags = await wordbookTagsDao.getAllTags();
-                          final toAdd = <int>[], toDel = <int>[];
-
-                          if (!context.mounted) return false;
-
-                          await showDialog<bool>(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text(AppLocalizations.of(context)!.tags),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TagsList(
-                                      tags: tags,
-                                      tagsOfWord: tagsOfWord,
-                                      toAdd: toAdd,
-                                      toDel: toDel,
-                                    ),
-                                  ],
-                                ),
-                                actions: [
-                                  TextButton(
-                                    child: Text(
-                                        AppLocalizations.of(context)!.close),
-                                    onPressed: () {
-                                      context.pop(false);
-                                    },
-                                  ),
-                                  TextButton(
-                                    child: Text(
-                                        AppLocalizations.of(context)!.remove),
-                                    onPressed: () async {
-                                      await wordbookDao
-                                          .removeWordWithAllTags(item.word);
-                                      if (context.mounted) context.pop(true);
-                                    },
-                                  ),
-                                  TextButton(
-                                    child: Text(
-                                        AppLocalizations.of(context)!.confirm),
-                                    onPressed: () async {
-                                      if (!await wordbookDao
-                                          .wordExist(item.word)) {
-                                        await wordbookDao.addWord(item.word);
-                                      }
-
-                                      for (final tag in toAdd) {
-                                        await wordbookDao.addWord(item.word,
-                                            tag: tag);
-                                      }
-
-                                      for (final tag in toDel) {
-                                        await wordbookDao.removeWord(item.word,
-                                            tag: tag);
-                                      }
-
-                                      if (context.mounted) context.pop(true);
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                          return false;
-                        } else {
-                          if (await wordbookDao.wordExist(item.word)) {
-                            await wordbookDao.removeWord(item.word);
-                          } else {
-                            await wordbookDao.addWord(item.word);
-                          }
-                          return false;
-                        }
-                      }
-                    },
-                    background: Container(
-                        color: Theme.of(context).colorScheme.primary,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: Icon(Icons.book_outlined,
-                            color: Theme.of(context).colorScheme.onPrimary)),
-                    secondaryBackground: Container(
-                        color: Theme.of(context).colorScheme.error,
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: Icon(Icons.delete_outline,
-                            color: Theme.of(context).colorScheme.onError)),
-                    child: ListTile(
-                      title: Text(item.word),
-                      onTap: () {
-                        context.push("/word", extra: {"word": item.word});
-                      },
-                      onLongPress: () async {
-                        await buildRemoveHistoryConfirmDialog(context, item);
-                      },
-                    ),
-                  )
-              ],
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        });
-  }
-
-  Future<bool> buildRemoveHistoryConfirmDialog(
-      BuildContext context, HistoryData item) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.removeOneHistory),
-        content: Text(AppLocalizations.of(context)!
-            .removeOneHistoryConfirm
-            .replaceFirst("%s", item.word)),
-        actions: [
-          TextButton(
-            onPressed: () => context.pop(false),
-            child: Text(AppLocalizations.of(context)!.close),
-          ),
-          TextButton(
-            onPressed: () => context.pop(true),
-            child: Text(AppLocalizations.of(context)!.remove),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      await historyDao.removeHistory(item.word);
-      setState(() {});
-    }
-    return confirmed ?? false;
   }
 }
 

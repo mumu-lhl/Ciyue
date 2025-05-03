@@ -1,8 +1,22 @@
+import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
+
+class HistoryModel extends ChangeNotifier {
+  void clearHistory() {
+    historyDao.clearHistory();
+    notifyListeners();
+  }
+
+  void removeHistory(String word) {
+    historyDao.removeHistory(word);
+    notifyListeners();
+  }
+}
 
 class HomeModel extends ChangeNotifier {
   bool autofocus = false;
   String _searchWord = "";
+  int state = 0;
 
   final textFieldController = TextEditingController();
 
@@ -33,6 +47,7 @@ class HomeModel extends ChangeNotifier {
   }
 
   void update() {
+    state++;
     notifyListeners();
   }
 }

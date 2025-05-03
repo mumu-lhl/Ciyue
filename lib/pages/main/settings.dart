@@ -150,9 +150,8 @@ class ClearHistory extends StatelessWidget {
             ),
             TextButton(
               onPressed: () async {
-                await historyDao.clearHistory();
                 if (context.mounted) {
-                  context.read<HomeModel>().update();
+                  context.read<HistoryModel>().clearHistory();
                   context.pop(context);
                 }
               },

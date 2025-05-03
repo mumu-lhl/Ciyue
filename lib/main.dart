@@ -115,7 +115,8 @@ void main() async {
     runApp(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WordbookModel()),
       ChangeNotifierProvider(create: (_) => HomeModel()),
-      ChangeNotifierProvider(create: (_) => DictManagerModel())
+      ChangeNotifierProvider(create: (_) => DictManagerModel()),
+      ChangeNotifierProvider(create: (_) => HistoryModel())
     ], child: const Ciyue()));
   } catch (e) {
     runApp(MaterialApp(home: CiyueError(error: e)));
