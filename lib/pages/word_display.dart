@@ -10,6 +10,7 @@ import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/wordbook.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/widget/tags_list.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -305,8 +306,10 @@ class WordDisplay extends StatelessWidget {
                       child: TextButton(
                         onPressed: () {
                           context.go("/");
-                          HomePage.callEnableAutofocusOnce = true;
-                          HomePage.setSearchWord(word);
+                          final model =
+                              Provider.of<HomeModel>(context, listen: false);
+                          model.setSearchWord(word);
+                          model.focusTextField();
                         },
                         child: Text(AppLocalizations.of(context)!.editWord),
                       ),

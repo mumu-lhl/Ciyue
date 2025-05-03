@@ -5,6 +5,7 @@ import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/dictionary.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/widget/tags_list.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
@@ -16,6 +17,27 @@ class HistoryList extends StatefulWidget {
 
   @override
   State<HistoryList> createState() => _HistoryListState();
+}
+
+class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const HomeAppBar({
+    super.key,
+  });
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    final searchBar = settings.searchBarInAppBar ? HomeSearchBar() : null;
+    return AppBar(
+      title: searchBar,
+      automaticallyImplyLeading: settings.showSidebarIcon,
+      actions: [
+        if (settings.showMoreOptionsButton) MoreButton(),
+      ],
+    );
+  }
 }
 
 class HomeBody extends StatelessWidget {
@@ -75,8 +97,8 @@ class HomeDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final groups = context
         .select<DictManagerModel, List<DictGroupData>>((value) => value.groups);
-    final groupId = context
-        .select<DictManagerModel, int>((value) => value.groupId);
+    final groupId =
+        context.select<DictManagerModel, int>((value) => value.groupId);
 
     return Drawer(
       elevation: 10,
@@ -117,41 +139,75 @@ class HomeDrawer extends StatelessWidget {
   }
 }
 
-class HomeModel extends ChangeNotifier {
-  final textFieldController = TextEditingController();
-
-  void clearSearchWord() {
-    textFieldController.clear();
-    notifyListeners();
-  }
-
-  void update() {
-    notifyListeners();
-  }
-}
-
-class HomePage {
-  static VoidCallback? _enableAutofocusOnce;
-
-  static bool callEnableAutofocusOnce = false;
-
-  static VoidCallback get enableAutofocusOnce => _enableAutofocusOnce!;
-
-  static set enableAutofocusOnce(VoidCallback callback) =>
-      _enableAutofocusOnce = callback;
-
-  static void setSearchWord(String word) {
-    Provider.of<HomeModel>(navigatorKey.currentContext!, listen: false)
-        .textFieldController
-        .text = word;
-  }
-}
-
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context) {
+    context.watch<HomeModel>();
+
+    return Scaffold(
+      appBar: (!dictManager.isEmpty || settings.aiExplainWord)
+          ? HomeAppBar()
+          : null,
+      body: Column(
+        children: [
+          Expanded(child: HomeBody()),
+          if (!settings.searchBarInAppBar)
+            Padding(
+                padding: const EdgeInsets.only(
+                    left: 20, right: 20, bottom: 10, top: 10),
+                child: HomeSearchBar()),
+        ],
+      ),
+      drawer: HomeDrawer(),
+    );
+  }
+}
+
+class HomeSearchBar extends StatelessWidget {
+  const HomeSearchBar({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textFieldController =
+        context.select<HomeModel, TextEditingController>(
+            (model) => model.textFieldController);
+
+    final autofocus =
+        context.select<HomeModel, bool>((model) => model.autofocus);
+    if (autofocus) {
+      context.read<HomeModel>().autofocus = false;
+    }
+
+    return SafeArea(
+      child: Center(
+        child: SearchBar(
+          autoFocus: autofocus,
+          onTapOutside: (pointerDownEvent) {
+            FocusScope.of(context).unfocus();
+          },
+          hintText: AppLocalizations.of(context)!.search,
+          controller: textFieldController,
+          elevation: WidgetStateProperty.all(1),
+          constraints:
+              const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
+          leading: const Icon(Icons.search),
+          trailing: [
+            if (textFieldController.text.isNotEmpty)
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  context.read<HomeModel>().clearSearchWord();
+                },
+              )
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class MoreButton extends StatelessWidget {
@@ -431,98 +487,6 @@ class _HistoryListState extends State<HistoryList> {
       setState(() {});
     }
     return confirmed ?? false;
-  }
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  var _autofocus = false;
-
-  @override
-  Widget build(BuildContext context) {
-    context.watch<HomeModel>();
-
-    return Scaffold(
-      appBar: buildAppBar(context),
-      body: Column(
-        children: [
-          Expanded(child: HomeBody()),
-          if (!settings.searchBarInAppBar)
-            Padding(
-                padding: const EdgeInsets.only(
-                    left: 20, right: 20, bottom: 10, top: 10),
-                child: buildSearchBar(context)),
-        ],
-      ),
-      drawer: HomeDrawer(),
-    );
-  }
-
-  AppBar? buildAppBar(BuildContext context) {
-    if (!dictManager.isEmpty || settings.aiExplainWord) {
-      final searchBar =
-          settings.searchBarInAppBar ? buildSearchBar(context) : null;
-      return AppBar(
-        title: searchBar,
-        automaticallyImplyLeading: settings.showSidebarIcon,
-        actions: [
-          if (settings.showMoreOptionsButton) MoreButton(),
-        ],
-      );
-    }
-    return null;
-  }
-
-  IconButton buildRemoveButton() {
-    return IconButton(
-      icon: const Icon(Icons.close),
-      onPressed: () {
-        context.read<HomeModel>().clearSearchWord();
-      },
-    );
-  }
-
-  Widget buildSearchBar(BuildContext context) {
-    final textFieldController = context.read<HomeModel>().textFieldController;
-    final autofocus = _autofocus;
-    _autofocus = false;
-
-    return SafeArea(
-      child: Center(
-        child: SearchBar(
-          autoFocus: autofocus,
-          onTapOutside: (pointerDownEvent) {
-            FocusScope.of(context).unfocus();
-          },
-          hintText: AppLocalizations.of(context)!.search,
-          controller: textFieldController,
-          elevation: WidgetStateProperty.all(1),
-          constraints:
-              const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
-          leading: const Icon(Icons.search),
-          onChanged: (value) {
-            setState(() {});
-          },
-          trailing: [
-            if (textFieldController.text.isNotEmpty) buildRemoveButton()
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    HomePage.enableAutofocusOnce = () {
-      setState(() {
-        _autofocus = true;
-      });
-    };
-    if (HomePage.callEnableAutofocusOnce) {
-      HomePage.enableAutofocusOnce();
-      HomePage.callEnableAutofocusOnce = false;
-    }
   }
 }
 

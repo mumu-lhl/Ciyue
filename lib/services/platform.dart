@@ -2,15 +2,16 @@ import "dart:io";
 
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/services/settings.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:flutter/services.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
+import "package:provider/provider.dart";
 
 const _platform = MethodChannel("org.eu.mumulhl.ciyue");
 
@@ -117,8 +118,10 @@ class PlatformMethod {
             (NotificationResponse notificationResponse) {
       router.go("/");
       MainPage.setScreenIndex(0);
-      HomePage.callEnableAutofocusOnce = true;
-      HomePage.enableAutofocusOnce();
+
+      final model =
+          Provider.of<HomeModel>(navigatorKey.currentContext!, listen: false);
+      model.clearSearchWord();
     });
   }
 
