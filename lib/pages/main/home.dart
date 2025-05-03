@@ -78,11 +78,11 @@ class HomeBody extends StatelessWidget {
         ),
       );
     } else {
-      final textFieldController = context.read<HomeModel>().textFieldController;
-      if (textFieldController.text.isEmpty) {
+      final searchWord = context.read<HomeModel>().searchWord;
+      if (searchWord.isEmpty) {
         return HistoryList();
       } else {
-        return SearchResults(text: textFieldController.text);
+        return SearchResults();
       }
     }
   }
@@ -178,8 +178,10 @@ class HomeSearchBar extends StatelessWidget {
 
     final autofocus =
         context.select<HomeModel, bool>((model) => model.autofocus);
+
+    final model = context.read<HomeModel>();
     if (autofocus) {
-      context.read<HomeModel>().autofocus = false;
+      model.autofocus = false;
     }
 
     return SafeArea(
@@ -199,11 +201,10 @@ class HomeSearchBar extends StatelessWidget {
             if (textFieldController.text.isNotEmpty)
               IconButton(
                 icon: const Icon(Icons.close),
-                onPressed: () {
-                  context.read<HomeModel>().clearSearchWord();
-                },
+                onPressed: () => model.clearSearchWord(),
               )
           ],
+          onChanged: (value) => model.searchWord = value,
         ),
       ),
     );
@@ -290,15 +291,14 @@ class Searcher {
 }
 
 class SearchResults extends StatelessWidget {
-  final String text;
-
   const SearchResults({
     super.key,
-    required this.text,
   });
 
   @override
   Widget build(BuildContext context) {
+    final text = context.select<HomeModel, String>((model) => model.searchWord);
+
     return FutureBuilder(
         future: Searcher(text).getSearchResult(),
         builder: (context, snapshot) {
