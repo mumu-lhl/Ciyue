@@ -8,9 +8,8 @@ on:
 permissions:
   contents: write
 
-vars:
+env:
   flutter-version: 3.29.3
-  FLUTTER_VERSION: 3.29.3
 
 jobs:
   changelogFile:
@@ -49,7 +48,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ vars.flutter-version }}
+          flutter-version: ${{ env.flutter-version }}
           cache: true
 
       - uses: actions/setup-java@v4
@@ -97,7 +96,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ vars.flutter-version }}
+          flutter-version: ${{ env.flutter-version }}
           cache: true
 
       - name: Install dependencies
@@ -143,7 +142,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ vars.flutter-version }}
+          flutter-version: ${{ env.flutter-version }}
           cache: true
 
       - name: Install dependencies
