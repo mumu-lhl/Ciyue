@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.12.1](https://github.com/mumu-lhl/Ciyue/compare/v1.12.0..v1.12.1) - 2025-05-05
+
+### Miscellaneous Chores
+
+- **(build)** fix version code - ([674e5fc](https://github.com/mumu-lhl/Ciyue/commit/674e5fccbde659eefffbc74571207fa4bac7616f)) - Mumulhl
+
+---
 ## [1.12.0](https://github.com/mumu-lhl/Ciyue/compare/v1.11.0..v1.12.0) - 2025-05-05
 
 ### Bug Fixes
