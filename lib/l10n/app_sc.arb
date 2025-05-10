@@ -197,5 +197,15 @@
   "tabBarPosition": "Positzione de sa TabBar in s’ammustramentu de sa paràula",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "Ammustra s'istanga de chirca in s'ammustramentu de sa paràula",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "autoUpdate": "Atualizatzione automàtica",
+  "@autoUpdate": {},
+  "legacyImport": "Importatzione èreda (at a èssere bogada in benidore)",
+  "@legacyImport": {},
+  "audioSettings": "Impostatziones àudio",
+  "@audioSettings": {},
+  "ttsEngines": "Motores TTS",
+  "@ttsEngines": {},
+  "ttsLanguages": "Limbas TTS",
+  "@ttsLanguages": {}
 }

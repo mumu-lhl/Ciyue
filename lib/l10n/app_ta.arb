@@ -197,5 +197,15 @@
   "tabBarPosition": "சொல் காட்டலில் தாவல் பட்டை இருப்பிடம்",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "சொல் காட்டலில் தேடல் பட்டையைக் காட்டு",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "autoUpdate": "தானியங்கு புதுப்பிப்பு",
+  "@autoUpdate": {},
+  "legacyImport": "மரபு இறக்குமதி (எதிர்காலத்தில் நீக்கப்படும்)",
+  "@legacyImport": {},
+  "audioSettings": "ஆடியோ அமைப்புகள்",
+  "@audioSettings": {},
+  "ttsEngines": "TTS இயந்திரங்கள்",
+  "@ttsEngines": {},
+  "ttsLanguages": "TTS மொழிகள்",
+  "@ttsLanguages": {}
 }

@@ -197,5 +197,15 @@
   "tabBarPosition": "موقعیت نوار زبانه در نمایش واژه",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "نمایش نوار جستجو در نمایش کلمه",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "autoUpdate": "به‌روزرسانی خودکار",
+  "@autoUpdate": {},
+  "legacyImport": "وارد کردن قدیمی (در آینده حذف خواهد شد)",
+  "@legacyImport": {},
+  "audioSettings": "تنظیمات صدا",
+  "@audioSettings": {},
+  "ttsEngines": "موتورهای TTS",
+  "@ttsEngines": {},
+  "ttsLanguages": "زبان‌های TTS",
+  "@ttsLanguages": {}
 }
