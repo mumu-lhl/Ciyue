@@ -104,6 +104,10 @@ class _Settings {
     }
   }
 
+  String get aiAPIUrl {
+    return aiProviderConfigs[aiProvider]?["apiUrl"] ?? "";
+  }
+
   Map<String, dynamic> getAiProviderConfig(String provider) {
     return aiProviderConfigs[provider] ?? {"model": "", "apiKey": ""};
   }
@@ -111,6 +115,11 @@ class _Settings {
   Future<void> saveAiProviderConfig(
       String provider, String model, String apiKey) async {
     aiProviderConfigs[provider] = {"model": model, "apiKey": apiKey};
+    await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
+  }
+
+  Future<void> setAiAPIUrl(String apiUrl) async {
+    aiProviderConfigs[aiProvider]!["apiUrl"] = apiUrl;
     await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
   }
 

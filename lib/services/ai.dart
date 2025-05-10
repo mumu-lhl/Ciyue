@@ -1,6 +1,7 @@
 import "dart:convert";
 
 import "package:ciyue/models/ai/ai.dart";
+import "package:ciyue/services/settings.dart";
 import "package:dio/dio.dart";
 
 class AI {
@@ -186,7 +187,15 @@ class ModelProviderManager {
         ModelInfo("grok-3-mini-beta", "Grok 3 Mini"),
         ModelInfo("grok-3-mini-fast-beta", "Grok 3 Mini Fast"),
       ],
-    )
+    ),
+    "openai_compatible": ModelProvider(
+      name: "openai_compatible",
+      displayedName: "OpenAI Compatible",
+      apiUrl: "",
+      models: [],
+      allowCustomModel: true,
+      allowCustomAPIUrl: true,
+    ),
   };
 }
 
@@ -203,6 +212,8 @@ class OpenAICompatibleProvider extends AIProvider {
   }) {
     if (ModelProviderManager.modelProviders.containsKey(provider)) {
       apiUrl = ModelProviderManager.modelProviders[provider]!.apiUrl;
+    } else if (provider == "openai_compatible") {
+      apiUrl = settings.aiAPIUrl;
     } else {
       apiUrl = ModelProviderManager.modelProviders["openai"]!.apiUrl;
     }

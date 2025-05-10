@@ -165,6 +165,7 @@ mixin _$ModelProvider {
   String get apiUrl;
   List<ModelInfo> get models;
   bool get allowCustomModel;
+  bool get allowCustomAPIUrl;
 
   /// Create a copy of ModelProvider
   /// with the given fields replaced by the non-null parameter values.
@@ -185,16 +186,24 @@ mixin _$ModelProvider {
             (identical(other.apiUrl, apiUrl) || other.apiUrl == apiUrl) &&
             const DeepCollectionEquality().equals(other.models, models) &&
             (identical(other.allowCustomModel, allowCustomModel) ||
-                other.allowCustomModel == allowCustomModel));
+                other.allowCustomModel == allowCustomModel) &&
+            (identical(other.allowCustomAPIUrl, allowCustomAPIUrl) ||
+                other.allowCustomAPIUrl == allowCustomAPIUrl));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, name, displayedName, apiUrl,
-      const DeepCollectionEquality().hash(models), allowCustomModel);
+  int get hashCode => Object.hash(
+      runtimeType,
+      name,
+      displayedName,
+      apiUrl,
+      const DeepCollectionEquality().hash(models),
+      allowCustomModel,
+      allowCustomAPIUrl);
 
   @override
   String toString() {
-    return 'ModelProvider(name: $name, displayedName: $displayedName, apiUrl: $apiUrl, models: $models, allowCustomModel: $allowCustomModel)';
+    return 'ModelProvider(name: $name, displayedName: $displayedName, apiUrl: $apiUrl, models: $models, allowCustomModel: $allowCustomModel, allowCustomAPIUrl: $allowCustomAPIUrl)';
   }
 }
 
@@ -209,7 +218,8 @@ abstract mixin class $ModelProviderCopyWith<$Res> {
       String displayedName,
       String apiUrl,
       List<ModelInfo> models,
-      bool allowCustomModel});
+      bool allowCustomModel,
+      bool allowCustomAPIUrl});
 }
 
 /// @nodoc
@@ -230,6 +240,7 @@ class _$ModelProviderCopyWithImpl<$Res>
     Object? apiUrl = null,
     Object? models = null,
     Object? allowCustomModel = null,
+    Object? allowCustomAPIUrl = null,
   }) {
     return _then(_self.copyWith(
       name: null == name
@@ -252,6 +263,10 @@ class _$ModelProviderCopyWithImpl<$Res>
           ? _self.allowCustomModel
           : allowCustomModel // ignore: cast_nullable_to_non_nullable
               as bool,
+      allowCustomAPIUrl: null == allowCustomAPIUrl
+          ? _self.allowCustomAPIUrl
+          : allowCustomAPIUrl // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -264,7 +279,8 @@ class _ModelProvider implements ModelProvider {
       required this.displayedName,
       required this.apiUrl,
       required final List<ModelInfo> models,
-      this.allowCustomModel = false})
+      this.allowCustomModel = false,
+      this.allowCustomAPIUrl = false})
       : _models = models;
 
   @override
@@ -284,6 +300,9 @@ class _ModelProvider implements ModelProvider {
   @override
   @JsonKey()
   final bool allowCustomModel;
+  @override
+  @JsonKey()
+  final bool allowCustomAPIUrl;
 
   /// Create a copy of ModelProvider
   /// with the given fields replaced by the non-null parameter values.
@@ -304,16 +323,24 @@ class _ModelProvider implements ModelProvider {
             (identical(other.apiUrl, apiUrl) || other.apiUrl == apiUrl) &&
             const DeepCollectionEquality().equals(other._models, _models) &&
             (identical(other.allowCustomModel, allowCustomModel) ||
-                other.allowCustomModel == allowCustomModel));
+                other.allowCustomModel == allowCustomModel) &&
+            (identical(other.allowCustomAPIUrl, allowCustomAPIUrl) ||
+                other.allowCustomAPIUrl == allowCustomAPIUrl));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, name, displayedName, apiUrl,
-      const DeepCollectionEquality().hash(_models), allowCustomModel);
+  int get hashCode => Object.hash(
+      runtimeType,
+      name,
+      displayedName,
+      apiUrl,
+      const DeepCollectionEquality().hash(_models),
+      allowCustomModel,
+      allowCustomAPIUrl);
 
   @override
   String toString() {
-    return 'ModelProvider(name: $name, displayedName: $displayedName, apiUrl: $apiUrl, models: $models, allowCustomModel: $allowCustomModel)';
+    return 'ModelProvider(name: $name, displayedName: $displayedName, apiUrl: $apiUrl, models: $models, allowCustomModel: $allowCustomModel, allowCustomAPIUrl: $allowCustomAPIUrl)';
   }
 }
 
@@ -330,7 +357,8 @@ abstract mixin class _$ModelProviderCopyWith<$Res>
       String displayedName,
       String apiUrl,
       List<ModelInfo> models,
-      bool allowCustomModel});
+      bool allowCustomModel,
+      bool allowCustomAPIUrl});
 }
 
 /// @nodoc
@@ -351,6 +379,7 @@ class __$ModelProviderCopyWithImpl<$Res>
     Object? apiUrl = null,
     Object? models = null,
     Object? allowCustomModel = null,
+    Object? allowCustomAPIUrl = null,
   }) {
     return _then(_ModelProvider(
       name: null == name
@@ -372,6 +401,10 @@ class __$ModelProviderCopyWithImpl<$Res>
       allowCustomModel: null == allowCustomModel
           ? _self.allowCustomModel
           : allowCustomModel // ignore: cast_nullable_to_non_nullable
+              as bool,
+      allowCustomAPIUrl: null == allowCustomAPIUrl
+          ? _self.allowCustomAPIUrl
+          : allowCustomAPIUrl // ignore: cast_nullable_to_non_nullable
               as bool,
     ));
   }
