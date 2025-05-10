@@ -197,5 +197,15 @@
   "tabBarPosition": "单词显示中的标签栏位置",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "在单词显示中显示搜索栏",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "autoUpdate": "自动更新",
+  "@autoUpdate": {},
+  "legacyImport": "旧版导入 (未来将移除)",
+  "@legacyImport": {},
+  "audioSettings": "音频设置",
+  "@audioSettings": {},
+  "ttsEngines": "TTS 引擎",
+  "@ttsEngines": {},
+  "ttsLanguages": "TTS 语言",
+  "@ttsLanguages": {}
 }

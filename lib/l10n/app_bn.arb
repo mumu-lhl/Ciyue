@@ -197,5 +197,15 @@
   "tabBarPosition": "শব্দ প্রদর্শনে ট্যাববার অবস্থান",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "শব্দ প্রদর্শনে সার্চ বার দেখান",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "autoUpdate": "স্বয়ংক্রিয় হালনাগাদ",
+  "@autoUpdate": {},
+  "legacyImport": "উত্তরাধিকার আমদানি (ভবিষ্যতে সরানো হবে)",
+  "@legacyImport": {},
+  "audioSettings": "অডিও সেটিংস",
+  "@audioSettings": {},
+  "ttsEngines": "টিটিএস ইঞ্জিন",
+  "@ttsEngines": {},
+  "ttsLanguages": "টিটিএস ভাষা",
+  "@ttsLanguages": {}
 }

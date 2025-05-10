@@ -1,4 +1,5 @@
 {
+  "@@locale": "ca",
   "aiSettings": "Paràmetres d’IA",
   "@aiSettings": {},
   "manageDictionaries": "Gestiona els diccionaris",
@@ -198,5 +199,13 @@
   "customOption": "Personalitzat",
   "@customOption": {},
   "customTranslatePromptHelper": "A la indicació podeu usar $sourceLanguage, $targetLanguage i $text.",
-  "@customTranslatePromptHelper": {}
+  "@customTranslatePromptHelper": {},
+  "legacyImport": "Importació heretada (es retirarà en el futur)",
+  "@legacyImport": {},
+  "audioSettings": "Paràmetres d’àudio",
+  "@audioSettings": {},
+  "ttsEngines": "Motors TTS",
+  "@ttsEngines": {},
+  "ttsLanguages": "Llengües TTS",
+  "@ttsLanguages": {}
 }

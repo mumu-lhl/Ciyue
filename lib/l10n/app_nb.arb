@@ -197,5 +197,15 @@
   "tabBarPosition": "TabBar-posisjon i ordvisning",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "Vis søkefelt i ordvisning",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "autoUpdate": "Automatisk oppdatering",
+  "@autoUpdate": {},
+  "legacyImport": "Gammel import (fjernes i fremtiden)",
+  "@legacyImport": {},
+  "audioSettings": "Lydinnstillinger",
+  "@audioSettings": {},
+  "ttsEngines": "TTS-motorer",
+  "@ttsEngines": {},
+  "ttsLanguages": "TTS-språk",
+  "@ttsLanguages": {}
 }

@@ -199,5 +199,13 @@
   "showSearchBarInWordDisplayPage": "Mostrar barra de búsqueda en la visualización de palabras",
   "@showSearchBarInWordDisplayPage": {},
   "autoUpdate": "Actualizar automáticamente",
-  "@autoUpdate": {}
+  "@autoUpdate": {},
+  "legacyImport": "Importación heredada (se eliminará en el futuro)",
+  "@legacyImport": {},
+  "audioSettings": "Configuración de audio",
+  "@audioSettings": {},
+  "ttsEngines": "Motores TTS",
+  "@ttsEngines": {},
+  "ttsLanguages": "Idiomas TTS",
+  "@ttsLanguages": {}
 }

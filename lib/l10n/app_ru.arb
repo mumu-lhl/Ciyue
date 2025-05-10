@@ -197,5 +197,15 @@
   "tabBarPosition": "Положение панели вкладок в отображении слова",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "Показывать панель поиска в отображении слова",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "autoUpdate": "Автоматическое обновление",
+  "@autoUpdate": {},
+  "legacyImport": "Устаревший импорт (будет удален в будущем)",
+  "@legacyImport": {},
+  "audioSettings": "Настройки аудио",
+  "@audioSettings": {},
+  "ttsEngines": "Движки TTS",
+  "@ttsEngines": {},
+  "ttsLanguages": "Языки TTS",
+  "@ttsLanguages": {}
 }

@@ -197,5 +197,15 @@
   "tabBarPosition": "TabBar-Position in der Wortanzeige",
   "@tabBarPosition": {},
   "showSearchBarInWordDisplayPage": "Suchleiste in der Wortanzeige anzeigen",
-  "@showSearchBarInWordDisplayPage": {}
+  "@showSearchBarInWordDisplayPage": {},
+  "autoUpdate": "Automatische Aktualisierung",
+  "@autoUpdate": {},
+  "legacyImport": "Import (Legacy, wird in Zukunft entfernt)",
+  "@legacyImport": {},
+  "audioSettings": "Audio-Einstellungen",
+  "@audioSettings": {},
+  "ttsEngines": "TTS-Engines",
+  "@ttsEngines": {},
+  "ttsLanguages": "TTS-Sprachen",
+  "@ttsLanguages": {}
 }
