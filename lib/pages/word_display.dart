@@ -2,14 +2,15 @@ import "dart:convert";
 import "dart:io";
 import "dart:ui" as ui;
 
-import "package:ciyue/services/ai.dart";
-import "package:ciyue/services/backup.dart";
-import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/wordbook.dart";
+import "package:ciyue/services/ai.dart";
+import "package:ciyue/services/backup.dart";
+import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/widget/tags_list.dart";
 import "package:flutter/material.dart";
@@ -233,203 +234,6 @@ document.body.style.fontFamily = 'Custom Font';
   }
 }
 
-class WordDisplay extends StatelessWidget {
-  final String word;
-
-  final SearchController controller = SearchController();
-
-  WordDisplay({super.key, required this.word});
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: validDictionaryIds(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            if (snapshot.data!.isNotEmpty || settings.aiExplainWord) {
-              final dictsLength = settings.aiExplainWord
-                  ? snapshot.data!.length + 1
-                  : snapshot.data!.length;
-              final showTab = dictsLength > 1;
-              return showTab
-                  ? DefaultTabController(
-                      initialIndex: 0,
-                      length: dictsLength,
-                      child: Scaffold(
-                        appBar: buildAppBar(context, showTab),
-                        floatingActionButton: Button(word: word),
-                        body: Column(
-                          children: [
-                            Expanded(
-                              child: buildTabView(context,
-                                  validDictIds: snapshot.data!),
-                            ),
-                            if (settings.tabBarPosition ==
-                                    TabBarPosition.bottom &&
-                                showTab)
-                              buildTabBar(context),
-                          ],
-                        ),
-                      ))
-                  : Scaffold(
-                      appBar: AppBar(
-                        title: settings.showSearchBarInWordDisplay
-                            ? buildSearchBar(context)
-                            : null,
-                      ),
-                      floatingActionButton: Button(word: word),
-                      body: settings.aiExplainWord
-                          ? AIExplainView(word: word)
-                          : buildWebView(snapshot.data![0]));
-            } else {
-              final fromProcessText = !context.canPop();
-              return Scaffold(
-                appBar: AppBar(leading: BackButton(
-                  onPressed: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      // When opened from context menu
-                      SystemChannels.platform
-                          .invokeMethod("SystemNavigator.pop");
-                    }
-                  },
-                )),
-                body: Center(
-                    child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(AppLocalizations.of(context)!.notFound,
-                        style: Theme.of(context).textTheme.titleLarge),
-                    Visibility(
-                      visible: fromProcessText,
-                      child: TextButton(
-                        onPressed: () {
-                          context.go("/");
-                          final model =
-                              Provider.of<HomeModel>(context, listen: false);
-                          model.setSearchWord(word);
-                          model.focusTextField();
-                        },
-                        child: Text(AppLocalizations.of(context)!.editWord),
-                      ),
-                    ),
-                  ],
-                )),
-              );
-            }
-          } else {
-            return const SizedBox.shrink();
-          }
-        });
-  }
-
-  AppBar buildAppBar(BuildContext context, bool showTab) {
-    return AppBar(
-        leading: BackButton(
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              // When opened from context menu
-              SystemChannels.platform.invokeMethod("SystemNavigator.pop");
-            }
-          },
-        ),
-        title: settings.showSearchBarInWordDisplay
-            ? buildSearchBar(context)
-            : null,
-        bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
-            ? buildTabBar(context)
-            : null);
-  }
-
-  Widget buildSearchBar(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: SearchAnchor.bar(
-          barHintText: AppLocalizations.of(context)!.search,
-          constraints:
-              const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
-          searchController: controller..text = word,
-          suggestionsBuilder:
-              (BuildContext context, SearchController controller) async {
-            final searchResult =
-                await Searcher(controller.text).getSearchResult();
-            return searchResult.map((e) => ListTile(
-                  title: Text(e.key),
-                  onTap: () {
-                    context.push("/word", extra: {"word": e.key});
-                  },
-                ));
-          },
-        ),
-      ),
-    );
-  }
-
-  PreferredSizeWidget buildTabBar(BuildContext context) {
-    return PreferredSize(
-        preferredSize: const Size.fromHeight(48),
-        child: FutureBuilder(
-            future: Future.wait([
-              for (final id in dictManager.dictIds)
-                dictManager.dicts[id]!.db.wordExist(word)
-            ]),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return TabBar(
-                    isScrollable: true,
-                    tabAlignment: TabAlignment.center,
-                    tabs: [
-                      if (settings.aiExplainWord) Tab(text: "AI"),
-                      for (int i = 0; i < snapshot.data!.length; i++)
-                        if (snapshot.data![i])
-                          Tab(
-                              text: dictManager
-                                  .dicts[dictManager.dictIds[i]]!.title)
-                    ]);
-              } else {
-                return const SizedBox.shrink();
-              }
-            }));
-  }
-
-  Widget buildTabView(BuildContext context,
-      {List<int> validDictIds = const []}) {
-    return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-      if (settings.aiExplainWord) AIExplainView(word: word),
-      for (final id in validDictIds) buildWebView(id)
-    ]);
-  }
-
-  Widget buildWebView(int id) {
-    return FutureBuilder(
-        future: dictManager.dicts[id]!.readWord(word),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            if (Platform.isAndroid) {
-              return WebviewAndroid(content: snapshot.data!, dictId: id);
-            } else {
-              return WebviewWindows(content: snapshot.data!, dictId: id);
-            }
-          } else {
-            return const SizedBox.shrink();
-          }
-        });
-  }
-
-  Future<List<int>> validDictionaryIds() async {
-    final validIds = <int>[];
-    for (final id in dictManager.dictIds) {
-      if (await dictManager.dicts[id]!.db.wordExist(word)) {
-        validIds.add(id);
-      }
-    }
-    return validIds;
-  }
-}
-
 class WebviewDisplayDescription extends StatelessWidget {
   final int dictId;
 
@@ -497,6 +301,242 @@ class WebviewWindows extends StatelessWidget {
       initialUrlRequest:
           URLRequest(url: WebUri(url), method: "POST", body: postData),
       initialData: InAppWebViewInitialData(data: content, baseUrl: WebUri(url)),
+    );
+  }
+}
+
+class WordDisplay extends StatelessWidget {
+  final String word;
+
+  const WordDisplay({super.key, required this.word});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: validDictionaryIds(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            if (snapshot.data!.isNotEmpty || settings.aiExplainWord) {
+              final dictsLength = settings.aiExplainWord
+                  ? snapshot.data!.length + 1
+                  : snapshot.data!.length;
+              final showTab = dictsLength > 1;
+              return showTab
+                  ? DefaultTabController(
+                      initialIndex: 0,
+                      length: dictsLength,
+                      child: Scaffold(
+                        appBar: buildAppBar(context, showTab),
+                        floatingActionButton: Button(word: word),
+                        body: Column(
+                          children: [
+                            Expanded(
+                              child: buildTabView(context,
+                                  validDictIds: snapshot.data!),
+                            ),
+                            if (settings.tabBarPosition ==
+                                    TabBarPosition.bottom &&
+                                showTab)
+                              buildTabBar(context),
+                          ],
+                        ),
+                      ))
+                  : Scaffold(
+                      appBar: AppBar(
+                        title: settings.showSearchBarInWordDisplay
+                            ? WordSearchBarWithSuggestions(
+                                word: word,
+                                controller: SearchController(),
+                              )
+                            : null,
+                      ),
+                      floatingActionButton: Button(word: word),
+                      body: settings.aiExplainWord
+                          ? AIExplainView(word: word)
+                          : buildWebView(snapshot.data![0]));
+            } else {
+              final fromProcessText = !context.canPop();
+              return Scaffold(
+                appBar: AppBar(leading: BackButton(
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      // When opened from context menu
+                      SystemChannels.platform
+                          .invokeMethod("SystemNavigator.pop");
+                    }
+                  },
+                )),
+                body: Center(
+                    child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(AppLocalizations.of(context)!.notFound,
+                        style: Theme.of(context).textTheme.titleLarge),
+                    Visibility(
+                      visible: fromProcessText,
+                      child: TextButton(
+                        onPressed: () {
+                          context.go("/");
+                          final model =
+                              Provider.of<HomeModel>(context, listen: false);
+                          model.searchWord = word;
+                          model.focusTextField();
+                        },
+                        child: Text(AppLocalizations.of(context)!.editWord),
+                      ),
+                    ),
+                  ],
+                )),
+              );
+            }
+          } else {
+            return const SizedBox.shrink();
+          }
+        });
+  }
+
+  AppBar buildAppBar(BuildContext context, bool showTab) {
+    return AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              // When opened from context menu
+              SystemChannels.platform.invokeMethod("SystemNavigator.pop");
+            }
+          },
+        ),
+        title: settings.showSearchBarInWordDisplay
+            ? WordSearchBarWithSuggestions(
+                word: word,
+                controller: SearchController(),
+              )
+            : null,
+        bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
+            ? buildTabBar(context)
+            : null);
+  }
+
+  PreferredSizeWidget buildTabBar(BuildContext context) {
+    return PreferredSize(
+        preferredSize: const Size.fromHeight(48),
+        child: FutureBuilder(
+            future: Future.wait([
+              for (final id in dictManager.dictIds)
+                dictManager.dicts[id]!.db.wordExist(word)
+            ]),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return TabBar(
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.center,
+                    tabs: [
+                      if (settings.aiExplainWord) Tab(text: "AI"),
+                      for (int i = 0; i < snapshot.data!.length; i++)
+                        if (snapshot.data![i])
+                          Tab(
+                              text: dictManager
+                                  .dicts[dictManager.dictIds[i]]!.title)
+                    ]);
+              } else {
+                return const SizedBox.shrink();
+              }
+            }));
+  }
+
+  Widget buildTabView(BuildContext context,
+      {List<int> validDictIds = const []}) {
+    return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
+      if (settings.aiExplainWord) AIExplainView(word: word),
+      for (final id in validDictIds) buildWebView(id)
+    ]);
+  }
+
+  Widget buildWebView(int id) {
+    return FutureBuilder(
+        future: dictManager.dicts[id]!.readWord(word),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            if (Platform.isAndroid) {
+              return WebviewAndroid(content: snapshot.data!, dictId: id);
+            } else {
+              return WebviewWindows(content: snapshot.data!, dictId: id);
+            }
+          } else {
+            return const SizedBox.shrink();
+          }
+        });
+  }
+
+  Future<List<int>> validDictionaryIds() async {
+    final validIds = <int>[];
+    for (final id in dictManager.dictIds) {
+      if (await dictManager.dicts[id]!.db.wordExist(word)) {
+        validIds.add(id);
+      }
+    }
+    return validIds;
+  }
+}
+
+class WordSearchBarWithSuggestions extends StatelessWidget {
+  final String word;
+  final SearchController controller;
+  final bool autoFocus;
+
+  const WordSearchBarWithSuggestions({
+    super.key,
+    required this.word,
+    required this.controller,
+    this.autoFocus = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Center(
+        child: SearchAnchor(
+          builder: (context, controller) => SearchBar(
+            hintText: AppLocalizations.of(context)!.search,
+            constraints: const BoxConstraints(
+                maxHeight: 42, minHeight: 42, maxWidth: 500),
+            autoFocus: autoFocus,
+            onTap: () {
+              controller.openView();
+            },
+            onChanged: (_) {
+              controller.openView();
+            },
+            leading: const Icon(Icons.search),
+          ),
+          searchController: controller..text = word,
+          isFullScreen: !isLargeScreen(context),
+          suggestionsBuilder:
+              (BuildContext context, SearchController controller) async {
+            if (controller.text.isEmpty) {
+              return [const SizedBox.shrink()];
+            }
+
+            final searchResult =
+                await Searcher(controller.text).getSearchResult();
+
+            if (settings.aiExplainWord) {
+              searchResult.insert(0, controller.text);
+            }
+
+            return searchResult.map((e) => ListTile(
+                  title: Text(e),
+                  trailing: Icon(Icons.arrow_forward),
+                  onTap: () {
+                    context.push("/word", extra: {"word": e});
+                  },
+                ));
+          },
+        ),
+      ),
     );
   }
 }
