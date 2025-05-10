@@ -201,5 +201,11 @@
   "autoUpdate": "Auto Update",
   "@autoUpdate": {},
   "legacyImport": "Import (Legacy, will be removed in future)",
-  "@legacyImport": {}
+  "@legacyImport": {},
+  "audioSettings": "Audio Settings",
+  "@audioSettings": {},
+  "ttsEngines": "TTS Engines",
+  "@ttsEngines": {},
+  "ttsLanguages": "TTS Languages",
+  "@ttsLanguages": {}
 }

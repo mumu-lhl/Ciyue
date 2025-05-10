@@ -40,6 +40,9 @@ class _Settings {
   late String translatePromptMode;
   late String customTranslatePrompt;
 
+  late String? ttsEngine;
+  late String? ttsLanguage;
+
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
@@ -72,6 +75,9 @@ class _Settings {
     customExplainPrompt = prefs.getString("customExplainPrompt") ?? "";
     translatePromptMode = prefs.getString("translatePromptMode") ?? "default";
     customTranslatePrompt = prefs.getString("customTranslatePrompt") ?? "";
+
+    ttsEngine = prefs.getString("ttsEngine");
+    ttsLanguage = prefs.getString("ttsLanguage");
 
     var aiProviderConfigsString = prefs.getString("aiProviderConfigs");
     if (aiProviderConfigsString != null) {
@@ -136,5 +142,15 @@ class _Settings {
   Future<void> setAutoUpdate(bool value) async {
     autoUpdate = value;
     await prefs.setBool("autoUpdate", value);
+  }
+
+  Future<void> setTTSEngine(String engine) async {
+    ttsEngine = engine;
+    await prefs.setString("ttsEngine", engine);
+  }
+
+  Future<void> setTTSLanguage(String lang) async {
+    ttsLanguage = lang;
+    await prefs.setString("ttsLanguage", lang);
   }
 }

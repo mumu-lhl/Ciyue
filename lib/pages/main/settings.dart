@@ -61,6 +61,13 @@ class AiSettingsWidget extends StatelessWidget {
   }
 }
 
+class AudioSettingsWidget extends StatefulWidget {
+  const AudioSettingsWidget({super.key});
+
+  @override
+  State<AudioSettingsWidget> createState() => _AudioSettingsWidgetState();
+}
+
 class AutoExport extends StatelessWidget {
   const AutoExport({super.key});
 
@@ -380,6 +387,7 @@ class SettingsScreen extends StatelessWidget {
       children: [
         const ManageDictionariesWidget(),
         const AiSettingsWidget(),
+        const AudioSettingsWidget(),
         TitleDivider(title: AppLocalizations.of(context)!.appearance),
         const ThemeSelector(),
         const LanguageSelector(),
@@ -485,6 +493,18 @@ class TitleDivider extends StatelessWidget {
         ),
         Expanded(child: Divider(endIndent: 16)),
       ],
+    );
+  }
+}
+
+class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.volume_up),
+      trailing: const Icon(Icons.arrow_forward),
+      title: Text(AppLocalizations.of(context)!.audioSettings),
+      onTap: () => context.push("/settings/audio"),
     );
   }
 }
