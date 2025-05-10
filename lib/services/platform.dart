@@ -122,6 +122,7 @@ class PlatformMethod {
       final model =
           Provider.of<HomeModel>(navigatorKey.currentContext!, listen: false);
       model.searchWord = "";
+      model.focusSearchBar();
     });
   }
 

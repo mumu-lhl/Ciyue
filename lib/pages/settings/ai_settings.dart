@@ -35,136 +35,140 @@ class _AiSettingsState extends State<AiSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.aiSettings),
-      ),
-      body: Center(
-        child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500.0),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // AI Provider
-                    TitleText(
-                      AppLocalizations.of(context)!.aiSettings,
-                    ),
-                    const SizedBox(height: 12),
-                    buildProvider(context),
-                    const SizedBox(height: 24),
-
-                    // AI Model
-                    TitleText(
-                      AppLocalizations.of(context)!.aiModel,
-                    ),
-                    const SizedBox(height: 12),
-                    buildModel(context),
-                    const SizedBox(height: 24),
-
-                    // API Key
-                    TitleText(
-                      AppLocalizations.of(context)!.apiKey,
-                    ),
-                    const SizedBox(height: 12),
-                    buildAPIKey(context),
-                    const SizedBox(height: 24),
-
-                    // Explain Word
-                    buildExplainWord(context),
-                    const SizedBox(height: 24),
-
-                    // Explain Word Prompt Setting
-                    TitleText(
-                        AppLocalizations.of(context)!.aiExplainWordPrompt),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: settings.explainPromptMode,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText: AppLocalizations.of(context)!.promptMode,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.aiSettings),
+        ),
+        body: Center(
+          child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500.0),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // AI Provider
+                      TitleText(
+                        AppLocalizations.of(context)!.aiSettings,
                       ),
-                      items: [
-                        DropdownMenuItem(
-                            value: "default",
-                            child:
-                                Text(AppLocalizations.of(context)!.default_)),
-                        DropdownMenuItem(
-                            value: "custom",
-                            child: Text(
-                                AppLocalizations.of(context)!.customOption)),
-                      ],
-                      onChanged: (value) async {
-                        if (value == null) return;
-                        await settings.setExplainPromptMode(value);
-                        setState(() {});
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    if (settings.explainPromptMode == "custom")
-                      TextFormField(
-                        initialValue: settings.customExplainPrompt,
-                        maxLines: null,
+                      const SizedBox(height: 12),
+                      buildProvider(context),
+                      const SizedBox(height: 24),
+
+                      // AI Model
+                      TitleText(
+                        AppLocalizations.of(context)!.aiModel,
+                      ),
+                      const SizedBox(height: 12),
+                      buildModel(context),
+                      const SizedBox(height: 24),
+
+                      // API Key
+                      TitleText(
+                        AppLocalizations.of(context)!.apiKey,
+                      ),
+                      const SizedBox(height: 12),
+                      buildAPIKey(context),
+                      const SizedBox(height: 24),
+
+                      // Explain Word
+                      buildExplainWord(context),
+                      const SizedBox(height: 24),
+
+                      // Explain Word Prompt Setting
+                      TitleText(
+                          AppLocalizations.of(context)!.aiExplainWordPrompt),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        value: settings.explainPromptMode,
                         decoration: InputDecoration(
                           border: const OutlineInputBorder(),
-                          labelText:
-                              AppLocalizations.of(context)!.customExplainPrompt,
-                          helperText: AppLocalizations.of(context)!
-                              .customExplainPromptHelper,
+                          labelText: AppLocalizations.of(context)!.promptMode,
                         ),
+                        items: [
+                          DropdownMenuItem(
+                              value: "default",
+                              child:
+                                  Text(AppLocalizations.of(context)!.default_)),
+                          DropdownMenuItem(
+                              value: "custom",
+                              child: Text(
+                                  AppLocalizations.of(context)!.customOption)),
+                        ],
                         onChanged: (value) async {
-                          await settings.setCustomExplainPrompt(value);
+                          if (value == null) return;
+                          await settings.setExplainPromptMode(value);
+                          setState(() {});
                         },
                       ),
-                    const SizedBox(height: 24),
+                      const SizedBox(height: 12),
+                      if (settings.explainPromptMode == "custom")
+                        TextFormField(
+                          initialValue: settings.customExplainPrompt,
+                          maxLines: null,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: AppLocalizations.of(context)!
+                                .customExplainPrompt,
+                            helperText: AppLocalizations.of(context)!
+                                .customExplainPromptHelper,
+                          ),
+                          onChanged: (value) async {
+                            await settings.setCustomExplainPrompt(value);
+                          },
+                        ),
+                      const SizedBox(height: 24),
 
-                    // AI Translate Prompt Setting
-                    TitleText(AppLocalizations.of(context)!.aiTranslatePrompt),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: settings.translatePromptMode,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText: AppLocalizations.of(context)!.promptMode,
-                      ),
-                      items: [
-                        DropdownMenuItem(
-                            value: "default",
-                            child:
-                                Text(AppLocalizations.of(context)!.default_)),
-                        DropdownMenuItem(
-                            value: "custom",
-                            child: Text(
-                                AppLocalizations.of(context)!.customOption)),
-                      ],
-                      onChanged: (value) async {
-                        if (value == null) return;
-                        await settings.setTranslatePromptMode(value);
-                        setState(() {});
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    if (settings.translatePromptMode == "custom")
-                      TextFormField(
-                        initialValue: settings.customTranslatePrompt,
-                        maxLines: null,
+                      // AI Translate Prompt Setting
+                      TitleText(
+                          AppLocalizations.of(context)!.aiTranslatePrompt),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        value: settings.translatePromptMode,
                         decoration: InputDecoration(
                           border: const OutlineInputBorder(),
-                          labelText: AppLocalizations.of(context)!
-                              .customTranslatePrompt,
-                          helperText: AppLocalizations.of(context)!
-                              .customTranslatePromptHelper,
+                          labelText: AppLocalizations.of(context)!.promptMode,
                         ),
+                        items: [
+                          DropdownMenuItem(
+                              value: "default",
+                              child:
+                                  Text(AppLocalizations.of(context)!.default_)),
+                          DropdownMenuItem(
+                              value: "custom",
+                              child: Text(
+                                  AppLocalizations.of(context)!.customOption)),
+                        ],
                         onChanged: (value) async {
-                          await settings.setCustomTranslatePrompt(value);
+                          if (value == null) return;
+                          await settings.setTranslatePromptMode(value);
+                          setState(() {});
                         },
                       ),
-                  ],
+                      const SizedBox(height: 12),
+                      if (settings.translatePromptMode == "custom")
+                        TextFormField(
+                          initialValue: settings.customTranslatePrompt,
+                          maxLines: null,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: AppLocalizations.of(context)!
+                                .customTranslatePrompt,
+                            helperText: AppLocalizations.of(context)!
+                                .customTranslatePromptHelper,
+                          ),
+                          onChanged: (value) async {
+                            await settings.setCustomTranslatePrompt(value);
+                          },
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            )),
+              )),
+        ),
       ),
     );
   }

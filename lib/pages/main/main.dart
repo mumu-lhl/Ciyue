@@ -3,7 +3,9 @@ import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/settings.dart";
 import "package:ciyue/pages/main/wordbook.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";
+import "package:provider/provider.dart";
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -43,60 +45,66 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final ratio = MediaQuery.sizeOf(context).aspectRatio;
-    return Scaffold(
-      body: ratio > 1.0
-          ? Row(
-              children: [
-                NavigationRail(
-                  extended: ratio > 1.5,
-                  labelType: ratio > 1.5
-                      ? NavigationRailLabelType.none
-                      : NavigationRailLabelType.all,
-                  destinations: [
-                    for (final destination in buildCommonDestinations())
-                      NavigationRailDestination(
-                        icon: destination.$1,
-                        label: Text(destination.$2),
-                      )
-                  ],
-                  selectedIndex: _currentIndex,
-                  onDestinationSelected: (int index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
-                  leading: const SizedBox(),
-                ),
-                const VerticalDivider(thickness: 1, width: 1),
-                Expanded(
-                  child: IndexedStack(
-                    index: _currentIndex,
-                    children: _pages,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        body: ratio > 1.0
+            ? Row(
+                children: [
+                  NavigationRail(
+                    extended: ratio > 1.5,
+                    labelType: ratio > 1.5
+                        ? NavigationRailLabelType.none
+                        : NavigationRailLabelType.all,
+                    destinations: [
+                      for (final destination in buildCommonDestinations())
+                        NavigationRailDestination(
+                          icon: destination.$1,
+                          label: Text(destination.$2),
+                        )
+                    ],
+                    selectedIndex: _currentIndex,
+                    onDestinationSelected: (int index) {
+                      FocusScope.of(context).unfocus();
+                      setState(() {
+                        _currentIndex = index;
+                      });
+                    },
+                    leading: const SizedBox(),
                   ),
-                ),
-              ],
-            )
-          : IndexedStack(
-              index: _currentIndex,
-              children: _pages,
-            ),
-      bottomNavigationBar: ratio <= 1.0
-          ? NavigationBar(
-              onDestinationSelected: (int index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              selectedIndex: _currentIndex,
-              destinations: [
-                for (final destination in buildCommonDestinations())
-                  NavigationDestination(
-                    icon: destination.$1,
-                    label: destination.$2,
-                  )
-              ],
-            )
-          : null,
+                  const VerticalDivider(thickness: 1, width: 1),
+                  Expanded(
+                    child: IndexedStack(
+                      index: _currentIndex,
+                      children: _pages,
+                    ),
+                  ),
+                ],
+              )
+            : IndexedStack(
+                index: _currentIndex,
+                children: _pages,
+              ),
+        bottomNavigationBar: ratio <= 1.0
+            ? NavigationBar(
+                onDestinationSelected: (int index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                  FocusScope.of(context).unfocus();
+                  context.read<HomeModel>().searchBarFocusNode.unfocus();
+                },
+                selectedIndex: _currentIndex,
+                destinations: [
+                  for (final destination in buildCommonDestinations())
+                    NavigationDestination(
+                      icon: destination.$1,
+                      label: destination.$2,
+                    )
+                ],
+              )
+            : null,
+      ),
     );
   }
 

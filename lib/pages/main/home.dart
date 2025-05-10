@@ -305,18 +305,14 @@ class HomeSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final searchWord =
         context.select<HomeModel, String>((model) => model.searchWord);
-    final autoFocus =
-        context.select<HomeModel, bool>((model) => model.autofocus);
     final model = context.read<HomeModel>();
 
-    if (autoFocus) {
-      model.focusTextField();
-    }
-
-    return WordSearchBarWithSuggestions(
-      word: searchWord,
-      controller: model.searchController,
-      autoFocus: autoFocus,
+    return FocusScope(
+      child: WordSearchBarWithSuggestions(
+        word: searchWord,
+        controller: model.searchController,
+        focusNode: model.searchBarFocusNode,
+      ),
     );
   }
 }
