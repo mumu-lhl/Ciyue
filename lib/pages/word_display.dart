@@ -382,7 +382,7 @@ class WordDisplay extends StatelessWidget {
                           final model =
                               Provider.of<HomeModel>(context, listen: false);
                           model.searchWord = word;
-                          model.focusTextField();
+                          model.focusSearchBar();
                         },
                         child: Text(AppLocalizations.of(context)!.editWord),
                       ),
@@ -485,13 +485,13 @@ class WordDisplay extends StatelessWidget {
 class WordSearchBarWithSuggestions extends StatelessWidget {
   final String word;
   final SearchController controller;
-  final bool autoFocus;
+  final FocusNode? focusNode;
 
   const WordSearchBarWithSuggestions({
     super.key,
     required this.word,
     required this.controller,
-    this.autoFocus = false,
+    this.focusNode,
   });
 
   @override
@@ -501,11 +501,11 @@ class WordSearchBarWithSuggestions extends StatelessWidget {
         child: SearchAnchor(
           viewHintText: AppLocalizations.of(context)!.search,
           builder: (context, controller) => SearchBar(
+            focusNode: focusNode,
             controller: controller,
             hintText: AppLocalizations.of(context)!.search,
             constraints: const BoxConstraints(
                 maxHeight: 42, minHeight: 42, maxWidth: 500),
-            autoFocus: autoFocus,
             onTap: () => controller.openView(),
             onChanged: (_) => controller.openView(),
             leading: const Icon(Icons.search),

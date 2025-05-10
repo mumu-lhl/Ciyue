@@ -3,7 +3,9 @@ import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/pages/main/settings.dart";
 import "package:ciyue/pages/main/wordbook.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";
+import "package:provider/provider.dart";
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -86,10 +88,11 @@ class _HomeState extends State<Home> {
         bottomNavigationBar: ratio <= 1.0
             ? NavigationBar(
                 onDestinationSelected: (int index) {
-                  FocusScope.of(context).unfocus();
                   setState(() {
                     _currentIndex = index;
                   });
+                  FocusScope.of(context).unfocus();
+                  context.read<HomeModel>().searchBarFocusNode.unfocus();
                 },
                 selectedIndex: _currentIndex,
                 destinations: [

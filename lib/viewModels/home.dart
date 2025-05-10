@@ -14,11 +14,11 @@ class HistoryModel extends ChangeNotifier {
 }
 
 class HomeModel extends ChangeNotifier {
-  bool autofocus = false;
   int state = 0;
   String _searchWord = "";
 
   final searchController = SearchController();
+  final searchBarFocusNode = FocusNode();
 
   set searchWord(String word) {
     _searchWord = word;
@@ -27,13 +27,8 @@ class HomeModel extends ChangeNotifier {
 
   String get searchWord => _searchWord;
 
-  void focusTextField() {
-    autofocus = true;
-    notifyListeners();
-  }
-
-  void cancelFocus() {
-    autofocus = false;
+  void focusSearchBar() {
+    searchBarFocusNode.requestFocus();
     notifyListeners();
   }
 
