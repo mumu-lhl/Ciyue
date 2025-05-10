@@ -313,10 +313,12 @@ class HomeSearchBar extends StatelessWidget {
       model.focusTextField();
     }
 
-    return WordSearchBarWithSuggestions(
-      word: searchWord,
-      controller: model.searchController,
-      autoFocus: autoFocus,
+    return FocusScope(
+      child: WordSearchBarWithSuggestions(
+        word: searchWord,
+        controller: model.searchController,
+        autoFocus: autoFocus,
+      ),
     );
   }
 }

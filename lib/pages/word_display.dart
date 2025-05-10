@@ -499,21 +499,24 @@ class WordSearchBarWithSuggestions extends StatelessWidget {
     return SafeArea(
       child: Center(
         child: SearchAnchor(
+          viewHintText: AppLocalizations.of(context)!.search,
           builder: (context, controller) => SearchBar(
+            controller: controller,
             hintText: AppLocalizations.of(context)!.search,
             constraints: const BoxConstraints(
                 maxHeight: 42, minHeight: 42, maxWidth: 500),
             autoFocus: autoFocus,
-            onTap: () {
-              controller.openView();
-            },
-            onChanged: (_) {
-              controller.openView();
-            },
+            onTap: () => controller.openView(),
+            onChanged: (_) => controller.openView(),
             leading: const Icon(Icons.search),
           ),
           searchController: controller..text = word,
           isFullScreen: !isLargeScreen(context),
+          viewOnSubmitted: (String word) {
+            if (controller.text.isNotEmpty) {
+              context.push("/word", extra: {"word": word});
+            }
+          },
           suggestionsBuilder:
               (BuildContext context, SearchController controller) async {
             if (controller.text.isEmpty) {
