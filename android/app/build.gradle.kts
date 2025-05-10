@@ -95,7 +95,7 @@ dependencies {
     implementation("com.jakewharton.timber:timber:5.0.1")
 }
 
-val abiCodes = mapOf("x86_64" to 1, "armeabi-v7a" to 2, "arm64-v8a" to 3)
+val abiCodes = mapOf("x86_64" to 0, "armeabi-v7a" to 4, "arm64-v8a" to 4)
 
 androidComponents {
     onVariants { variant ->
@@ -105,7 +105,7 @@ androidComponents {
 
             val baseAbiCode = abiCodes[name]
             if (baseAbiCode != null) {
-                output.versionCode.set((output.versionCode.get() * 10) + baseAbiCode)
+                output.versionCode.set(output.versionCode.get() * 10000 + baseAbiCode * 1000)
             }
         }
     }
