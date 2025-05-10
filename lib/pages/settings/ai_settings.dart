@@ -57,7 +57,7 @@ class _AiSettingsState extends State<AiSettings> {
                       const SizedBox(height: 12),
                       buildProvider(context),
                       const SizedBox(height: 24),
-      
+
                       // AI Model
                       TitleText(
                         AppLocalizations.of(context)!.aiModel,
@@ -65,7 +65,7 @@ class _AiSettingsState extends State<AiSettings> {
                       const SizedBox(height: 12),
                       buildModel(context),
                       const SizedBox(height: 24),
-      
+
                       // API Key
                       TitleText(
                         AppLocalizations.of(context)!.apiKey,
@@ -73,11 +73,11 @@ class _AiSettingsState extends State<AiSettings> {
                       const SizedBox(height: 12),
                       buildAPIKey(context),
                       const SizedBox(height: 24),
-      
+
                       // Explain Word
                       buildExplainWord(context),
                       const SizedBox(height: 24),
-      
+
                       // Explain Word Prompt Setting
                       TitleText(
                           AppLocalizations.of(context)!.aiExplainWordPrompt),
@@ -111,8 +111,8 @@ class _AiSettingsState extends State<AiSettings> {
                           maxLines: null,
                           decoration: InputDecoration(
                             border: const OutlineInputBorder(),
-                            labelText:
-                                AppLocalizations.of(context)!.customExplainPrompt,
+                            labelText: AppLocalizations.of(context)!
+                                .customExplainPrompt,
                             helperText: AppLocalizations.of(context)!
                                 .customExplainPromptHelper,
                           ),
@@ -121,9 +121,10 @@ class _AiSettingsState extends State<AiSettings> {
                           },
                         ),
                       const SizedBox(height: 24),
-      
+
                       // AI Translate Prompt Setting
-                      TitleText(AppLocalizations.of(context)!.aiTranslatePrompt),
+                      TitleText(
+                          AppLocalizations.of(context)!.aiTranslatePrompt),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         value: settings.translatePromptMode,
