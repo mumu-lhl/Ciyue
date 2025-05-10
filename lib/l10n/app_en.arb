@@ -209,5 +209,7 @@
   "ttsLanguages": "TTS Languages",
   "@ttsLanguages": {},
   "apiUrl": "API Url",
-  "@apiUrl": {}
+  "@apiUrl": {},
+  "floatingWindow": "Floating Window",
+  "@floatingWindow": {}
 }
