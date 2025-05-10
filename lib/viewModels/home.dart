@@ -15,34 +15,25 @@ class HistoryModel extends ChangeNotifier {
 
 class HomeModel extends ChangeNotifier {
   bool autofocus = false;
-  String _searchWord = "";
   int state = 0;
+  String _searchWord = "";
 
-  final textFieldController = TextEditingController();
-
-  String get searchWord {
-    return _searchWord;
-  }
+  final searchController = SearchController();
 
   set searchWord(String word) {
     _searchWord = word;
     notifyListeners();
   }
 
-  void clearSearchWord() {
-    textFieldController.clear();
-    searchWord = "";
-    notifyListeners();
-  }
+  String get searchWord => _searchWord;
 
   void focusTextField() {
     autofocus = true;
     notifyListeners();
   }
 
-  void setSearchWord(String word) {
-    textFieldController.text = word;
-    _searchWord = word;
+  void cancelFocus() {
+    autofocus = false;
     notifyListeners();
   }
 

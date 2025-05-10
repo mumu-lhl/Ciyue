@@ -1,6 +1,6 @@
 import "package:ciyue/database/app.dart";
-import "package:ciyue/database/dictionary.dart";
 import "package:ciyue/main.dart";
+import "package:ciyue/pages/word_display.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -193,6 +193,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final searchBar = settings.searchBarInAppBar ? HomeSearchBar() : null;
+
     return AppBar(
       title: searchBar,
       automaticallyImplyLeading: settings.showSidebarIcon,
@@ -211,7 +212,6 @@ class HomeBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.select<DictManagerModel, bool>((value) => value.isEmpty);
-    context.select<HomeModel, String>((value) => value.searchWord);
 
     final locale = AppLocalizations.of(context);
 
@@ -242,12 +242,7 @@ class HomeBody extends StatelessWidget {
         ),
       );
     } else {
-      final searchWord = context.read<HomeModel>().searchWord;
-      if (searchWord.isEmpty) {
-        return HistoryList();
-      } else {
-        return SearchResults();
-      }
+      return HistoryList();
     }
   }
 }
@@ -301,6 +296,31 @@ class HomeDrawer extends StatelessWidget {
   }
 }
 
+class HomeSearchBar extends StatelessWidget {
+  const HomeSearchBar({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final searchWord =
+        context.select<HomeModel, String>((model) => model.searchWord);
+    final autoFocus =
+        context.select<HomeModel, bool>((model) => model.autofocus);
+    final model = context.read<HomeModel>();
+
+    if (autoFocus) {
+      model.focusTextField();
+    }
+
+    return WordSearchBarWithSuggestions(
+      word: searchWord,
+      controller: model.searchController,
+      autoFocus: autoFocus,
+    );
+  }
+}
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -325,64 +345,17 @@ class HomeScreen extends StatelessWidget {
           Expanded(child: HomeBody()),
           if (!settings.searchBarInAppBar)
             Selector<DictManagerModel, bool>(
-              selector: (_, model) => model.isEmpty,
-              builder: (_, isEmpty, ___) => isEmpty
-                  ? SizedBox.shrink()
-                  : Padding(
-                      padding: const EdgeInsets.only(
-                          left: 20, right: 20, bottom: 10, top: 10),
-                      child: HomeSearchBar()),
-            ),
+                selector: (_, model) => model.isEmpty,
+                builder: (_, isEmpty, ___) => isEmpty
+                    ? SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.only(
+                            left: 20, right: 20, bottom: 10, top: 10),
+                        child: HomeSearchBar(),
+                      )),
         ],
       ),
       drawer: HomeDrawer(),
-    );
-  }
-}
-
-class HomeSearchBar extends StatelessWidget {
-  const HomeSearchBar({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textFieldController =
-        context.select<HomeModel, TextEditingController>(
-            (model) => model.textFieldController);
-    final autofocus =
-        context.select<HomeModel, bool>((model) => model.autofocus);
-
-    context.select<HomeModel, String>((model) => model.searchWord);
-
-    final model = context.read<HomeModel>();
-    if (autofocus) {
-      model.autofocus = false;
-    }
-
-    return SafeArea(
-      child: Center(
-        child: SearchBar(
-          autoFocus: autofocus,
-          onTapOutside: (pointerDownEvent) {
-            FocusScope.of(context).unfocus();
-          },
-          hintText: AppLocalizations.of(context)!.search,
-          controller: textFieldController,
-          elevation: WidgetStateProperty.all(1),
-          constraints:
-              const BoxConstraints(maxHeight: 42, minHeight: 42, maxWidth: 500),
-          leading: const Icon(Icons.search),
-          trailing: [
-            if (textFieldController.text.isNotEmpty)
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => model.clearSearchWord(),
-              )
-          ],
-          onChanged: (value) => model.searchWord = value,
-        ),
-      ),
     );
   }
 }
@@ -416,35 +389,6 @@ class MoreOptionsDialog extends StatefulWidget {
 
   @override
   State<MoreOptionsDialog> createState() => _MoreOptionsDialogState();
-}
-
-class OneSearchResult extends StatelessWidget {
-  final String word;
-
-  const OneSearchResult({
-    super.key,
-    required this.word,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-        trailing: Icon(Icons.arrow_forward),
-        title: Text(word),
-        leading: IconButton(
-          icon: const Icon(Icons.volume_up_outlined),
-          onPressed: () async {
-            await flutterTts.speak(word);
-          },
-        ),
-        onTap: () async {
-          context.push("/word", extra: {"word": word});
-          await historyDao.addHistory(word);
-          if (settings.autoRemoveSearchWord && context.mounted) {
-            context.read<HomeModel>().clearSearchWord();
-          }
-        });
-  }
 }
 
 class RemoveHistoryConfirmDialog extends StatelessWidget {
@@ -481,55 +425,19 @@ class Searcher {
 
   Searcher(this.text);
 
-  Future<List<DictionaryData>> getSearchResult() async {
-    final searchers = <Future<List<DictionaryData>>>[];
+  Future<List<String>> getSearchResult() async {
+    final searchers = <Future<List<String>>>[];
     for (final dict in dictManager.dicts.values) {
       searchers.add(dict.db.searchWord(text));
     }
+
     final searchResult = [for (final i in await Future.wait(searchers)) ...i];
-    searchResult.sort((a, b) => a.key.compareTo(b.key));
+    searchResult.sort((a, b) => a.compareTo(b));
     searchResult.removeWhere((element) =>
         searchResult.indexOf(element) !=
-        searchResult.lastIndexWhere((e) => e.key == element.key));
+        searchResult.lastIndexWhere((e) => e == element));
+
     return searchResult;
-  }
-}
-
-class SearchResults extends StatelessWidget {
-  const SearchResults({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final text = context.select<HomeModel, String>((model) => model.searchWord);
-
-    return FutureBuilder(
-        future: Searcher(text).getSearchResult(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final searchResult = snapshot.data as List<DictionaryData>;
-            final resultWidgets = <Widget>[];
-
-            if (settings.aiExplainWord &&
-                (searchResult.isEmpty || searchResult[0].key != text)) {
-              resultWidgets.add(OneSearchResult(word: text));
-            }
-            for (final word in searchResult) {
-              resultWidgets.add(OneSearchResult(word: word.key));
-            }
-
-            if (resultWidgets.isEmpty) {
-              return Center(
-                  child: Text(AppLocalizations.of(context)!.noResult,
-                      style: Theme.of(context).textTheme.titleLarge));
-            } else {
-              return ListView(children: resultWidgets);
-            }
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        });
   }
 }
 
