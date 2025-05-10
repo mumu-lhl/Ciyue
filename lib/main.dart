@@ -125,13 +125,16 @@ void main() async {
         ttsEngines = await flutterTts.getEngines;
       }
 
-      final List<dynamic> originalTTSLanguages = await flutterTts.getLanguages;
-      for (final language in originalTTSLanguages) {
-        if (language is String) {
-          ttsLanguages.add(language);
+      if (!Platform.isLinux) {
+        final List<dynamic> originalTTSLanguages =
+            await flutterTts.getLanguages;
+        for (final language in originalTTSLanguages) {
+          if (language is String) {
+            ttsLanguages.add(language);
+          }
         }
+        ttsLanguages.sort((a, b) => a.toString().compareTo(b.toString()));
       }
-      ttsLanguages.sort((a, b) => a.toString().compareTo(b.toString()));
     });
 
     runApp(MultiProvider(providers: [

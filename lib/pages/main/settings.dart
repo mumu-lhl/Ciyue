@@ -387,7 +387,7 @@ class SettingsScreen extends StatelessWidget {
       children: [
         const ManageDictionariesWidget(),
         const AiSettingsWidget(),
-        const AudioSettingsWidget(),
+        if (!Platform.isLinux) const AudioSettingsWidget(),
         TitleDivider(title: AppLocalizations.of(context)!.appearance),
         const ThemeSelector(),
         const LanguageSelector(),
