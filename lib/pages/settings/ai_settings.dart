@@ -1,11 +1,40 @@
+import "package:ciyue/main.dart";
 import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/services/ai.dart";
-import "package:ciyue/main.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
+
+class AIAPIUrl extends StatelessWidget {
+  const AIAPIUrl({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TitleText(
+          AppLocalizations.of(context)!.apiUrl,
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+            initialValue: settings.aiAPIUrl,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              hintText: AppLocalizations.of(context)!.apiUrl,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+            onChanged: (String apiUrl) {
+              settings.setAiAPIUrl(apiUrl);
+            }),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+}
 
 class AiSettings extends StatefulWidget {
   const AiSettings({super.key});
@@ -57,6 +86,11 @@ class _AiSettingsState extends State<AiSettings> {
                       const SizedBox(height: 12),
                       buildProvider(context),
                       const SizedBox(height: 24),
+
+                      // AI API URL
+                      if (ModelProviderManager
+                          .modelProviders[_provider]!.allowCustomAPIUrl)
+                        const AIAPIUrl(),
 
                       // AI Model
                       TitleText(

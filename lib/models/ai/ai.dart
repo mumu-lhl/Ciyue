@@ -18,5 +18,6 @@ abstract class ModelProvider with _$ModelProvider {
     required String apiUrl,
     required List<ModelInfo> models,
     @Default(false) bool allowCustomModel,
+    @Default(false) bool allowCustomAPIUrl,
   }) = _ModelProvider;
 }
