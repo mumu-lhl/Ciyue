@@ -3,6 +3,60 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.12.1](https://github.com/mumu-lhl/Ciyue/compare/v1.12.0..v1.12.1) - 2025-05-05
+
+### Miscellaneous Chores
+
+- **(build)** fix version code - ([674e5fc](https://github.com/mumu-lhl/Ciyue/commit/674e5fccbde659eefffbc74571207fa4bac7616f)) - Mumulhl
+
+---
+## [1.12.0](https://github.com/mumu-lhl/Ciyue/compare/v1.11.0..v1.12.0) - 2025-05-05
+
+### Bug Fixes
+
+- enable auto-update based on user settings - ([4af008c](https://github.com/mumu-lhl/Ciyue/commit/4af008c642fccd40b0e37f555fb8c25aac34aca6)) - Mumulhl
+
+### Features
+
+- **(icon)** add Windows icon - ([c52dd3c](https://github.com/mumu-lhl/Ciyue/commit/c52dd3c08c86f96fc7c3562859ee471e6d3c7844)) - Mumulhl
+- **(translation)** translated using Weblate (Russian) - ([c46c476](https://github.com/mumu-lhl/Ciyue/commit/c46c4766be79d1bd7a16578023b0c2b270346206)) - Xapitonov
+- **(translation)** translated using Weblate (Tamil) - ([7e46baa](https://github.com/mumu-lhl/Ciyue/commit/7e46baac37f7d8be695fe28eb9185388a549f9d4)) - தமிழ்நேரம்
+- **(translation)** translated using Weblate (Spanish) - ([cc9b38b](https://github.com/mumu-lhl/Ciyue/commit/cc9b38b9afa923fe0e4c2f396a78406636af18fa)) - Adolfo Jayme Barrientos
+- **(translation)** added translation using Weblate (Catalan) - ([ed00458](https://github.com/mumu-lhl/Ciyue/commit/ed00458706503d803a4e9c7cb81cdc82a28dd4f8)) - Adolfo Jayme Barrientos
+- **(translation)** translated using Weblate (Catalan) - ([f5c49d7](https://github.com/mumu-lhl/Ciyue/commit/f5c49d7ef20d46033e390c12c17fbff52b672325)) - Adolfo Jayme Barrientos
+- implement auto update - ([43b1968](https://github.com/mumu-lhl/Ciyue/commit/43b19682d45ca1cb85d1c3d5b3f72716a3b81224)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(build)** migrate to kts - ([264a1a6](https://github.com/mumu-lhl/Ciyue/commit/264a1a6abfcd333395e74b9012318c2200958a7f)) - Mumulhl
+- **(ci)** ensure paths are correctly specified for VitePress deploy - ([ec9816a](https://github.com/mumu-lhl/Ciyue/commit/ec9816af70c1746fc6d34713f1dc119181472b48)) - Mumulhl
+- **(ci)** update flutter - ([f9e46c9](https://github.com/mumu-lhl/Ciyue/commit/f9e46c93b18309ec4d0a884ca79448a9be83703e)) - Mumulhl
+- **(ci)** fix release - ([581e342](https://github.com/mumu-lhl/Ciyue/commit/581e3420bcf4bd0f34e85f02e71c1e583d408c88)) - Mumulhl
+- **(deps)** update - ([ad03c73](https://github.com/mumu-lhl/Ciyue/commit/ad03c7340cac1058a6b5789b2f9df94aeb473a0c)) - Mumulhl
+- **(deps)** bump gpt_markdown from 1.0.17 to 1.0.18 - ([0bdff2a](https://github.com/mumu-lhl/Ciyue/commit/0bdff2a7ff18dc86d1a681589db7f19871c6e190)) - dependabot[bot]
+- **(deps)** bump vite in /docs in the npm_and_yarn group - ([82221e7](https://github.com/mumu-lhl/Ciyue/commit/82221e78180337dab8c1767c3a1ede7cb40789ff)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.25.2 to 0.25.3 in /docs - ([c34d741](https://github.com/mumu-lhl/Ciyue/commit/c34d7410414283cc7d260123a3b1193a2f8fa176)) - dependabot[bot]
+- prefer double quotes - ([26dcc4c](https://github.com/mumu-lhl/Ciyue/commit/26dcc4c1843bc831db732c19e168c3776a88284d)) - Mumulhl
+
+### Refactoring
+
+- **(dictionary)** refactor dictionary management - ([aff2377](https://github.com/mumu-lhl/Ciyue/commit/aff23775ebba86a4aa93e78cfa5274e9f5859442)) - Mumulhl
+- **(dictionary)** improve state management and simplify dictionary checks - ([a61b5c5](https://github.com/mumu-lhl/Ciyue/commit/a61b5c5a27c13b572c2783086afbea82579c0b85)) - Mumulhl
+- **(history)** add HistoryModel - ([e329349](https://github.com/mumu-lhl/Ciyue/commit/e329349e6bd2afc983a5e0990ca780b1c944cfaa)) - Mumulhl
+- **(home)** restructure HomeScreen and related components for improved readability and functionality - ([aa8e786](https://github.com/mumu-lhl/Ciyue/commit/aa8e786c42e31075d55390acb5a320a4d440f5c0)) - Mumulhl
+- refactor update - ([9713d06](https://github.com/mumu-lhl/Ciyue/commit/9713d06c9f1ecb50c1269bdb82cdbabb34b12e84)) - Mumulhl
+- move files to services directory - ([a51ffe1](https://github.com/mumu-lhl/Ciyue/commit/a51ffe1211ca6ec2c719fc2b4c2a96729c570661)) - Mumulhl
+- refactor ai.dart - ([5e30372](https://github.com/mumu-lhl/Ciyue/commit/5e303724bf5b4e04df40bad2fbac84b6360e2f94)) - Mumulhl
+- move files to directories - ([6d58cf2](https://github.com/mumu-lhl/Ciyue/commit/6d58cf2794debece778820636f8105974d2d4a87)) - Mumulhl
+- improve export - ([7278ab9](https://github.com/mumu-lhl/Ciyue/commit/7278ab9c0d9f0f1459bf477d0f7a0c5f3c727b7e)) - Mumulhl
+- refactor HomeScreen components - ([d37c878](https://github.com/mumu-lhl/Ciyue/commit/d37c878f3272a5fab9318db0e2a74d052542f03b)) - Mumulhl
+- streamline search functionality and improve state management - ([c7953b8](https://github.com/mumu-lhl/Ciyue/commit/c7953b812b333efc8426e4daa591798e1735ff3d)) - Mumulhl
+
+### Style
+
+- format code - ([5aebf76](https://github.com/mumu-lhl/Ciyue/commit/5aebf761d47339cb46e7e0ac101aaa59ba55b67e)) - Mumulhl
+
+---
 ## [1.11.0](https://github.com/mumu-lhl/Ciyue/compare/v1.10.0..v1.11.0) - 2025-04-19
 
 ### Bug Fixes

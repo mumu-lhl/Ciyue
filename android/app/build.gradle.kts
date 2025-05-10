@@ -58,7 +58,7 @@ android {
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String?
             keyPassword = keystoreProperties["keyPassword"] as String?
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+            storeFile = keystoreProperties["storeFile"].let { file(it) }
             storePassword = keystoreProperties["storePassword"] as String?
         }
     }
@@ -105,7 +105,7 @@ androidComponents {
 
             val baseAbiCode = abiCodes[name]
             if (baseAbiCode != null) {
-                output.versionCode.set(baseAbiCode * 10 + (output.versionCode.get() ?: 0))
+                output.versionCode.set((output.versionCode.get() * 10) + baseAbiCode)
             }
         }
     }

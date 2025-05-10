@@ -17,7 +17,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 
-version: 1.11.0+57
+version: 1.12.1+59
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -36,7 +36,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   # cupertino_icons: ^1.0.8
-  drift: ^2.26.0
+  drift: ^2.26.1
   drift_flutter: ^0.2.4
   dict_reader: ^1.1.4
   shared_preferences: ^2.5.3
@@ -59,7 +59,7 @@ dependencies:
   flutter_local_notifications: ^19.1.0
   dio: ^5.8.0+1
   gpt_markdown: ^1.0.18
-  provider: ^6.1.4
+  provider: ^6.1.5
   freezed_annotation: ^3.0.0
 
 dev_dependencies:
@@ -72,7 +72,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
-  drift_dev: ^2.26.0
+  drift_dev: ^2.26.1
   build_runner: ^2.4.15
   test: ^1.25.15
   freezed: ^3.0.6
