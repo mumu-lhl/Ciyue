@@ -1,11 +1,11 @@
 import "package:ciyue/database/app.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/pages/word_display.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
+import "package:ciyue/widget/search_bar.dart";
 import "package:ciyue/widget/tags_list.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
@@ -312,6 +312,7 @@ class HomeSearchBar extends StatelessWidget {
         word: searchWord,
         controller: model.searchController,
         focusNode: model.searchBarFocusNode,
+        isHome: true,
       ),
     );
   }
