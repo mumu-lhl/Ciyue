@@ -17,6 +17,8 @@ class AI {
   }) {
     if (provider == "gemini") {
       aiProvider = GeminiProvider(apikey: apikey, model: model);
+    } else if (provider == "ollama") {
+      aiProvider = OllamaProvider(model: model, apiUrl: settings.aiAPIUrl);
     } else {
       aiProvider = OpenAICompatibleProvider(
         provider: provider,
@@ -35,7 +37,7 @@ abstract class AIProvider {
   Future<String> request(String prompt);
 }
 
-class GeminiProvider extends AIProvider {
+class GeminiProvider implements AIProvider {
   final String apikey;
   final String model;
 
@@ -196,10 +198,59 @@ class ModelProviderManager {
       allowCustomModel: true,
       allowCustomAPIUrl: true,
     ),
+    "ollama": ModelProvider(
+      name: "ollama",
+      displayedName: "Ollama",
+      apiUrl: "http://localhost:11434/api/chat",
+      models: [],
+      allowCustomModel: true,
+      allowCustomAPIUrl: true,
+    ),
   };
 }
 
-class OpenAICompatibleProvider extends AIProvider {
+class OllamaProvider implements AIProvider {
+  final String model;
+  final String apiUrl;
+
+  const OllamaProvider({required this.model, required this.apiUrl});
+
+  @override
+  Future<String> request(String prompt) async {
+    final dio = Dio();
+    final headers = {
+      "Content-Type": "application/json",
+    };
+
+    final data = {
+      "model": model,
+      "messages": [
+        {"role": "user", "content": prompt}
+      ],
+      "stream": false
+    };
+
+    try {
+      final response = await dio.post(
+        apiUrl,
+        options: Options(headers: headers),
+        data: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        final decodedResponse = response.data;
+        return decodedResponse["message"]["content"];
+      } else {
+        throw Exception(
+            "Failed to fetch response from Ollama API. Status code: ${response.statusCode}, body: ${response.data}");
+      }
+    } on DioException catch (e) {
+      throw Exception("Error requesting Ollama API: $e\nBody: ${e.response}");
+    }
+  }
+}
+
+class OpenAICompatibleProvider implements AIProvider {
   final String provider;
   final String apikey;
   final String model;
