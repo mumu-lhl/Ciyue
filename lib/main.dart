@@ -1,6 +1,7 @@
 import "dart:io";
 
 import "package:ciyue/database/app.dart";
+import "package:ciyue/pages/settings/audio.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/localization_delegates.dart";
@@ -75,6 +76,8 @@ void main() async {
       "tabBarPosition",
       "showSearchBarInWordDisplay",
       "autoUpdate",
+      "ttsEngine",
+      "ttsLanguage",
     }));
 
     int? groupId = prefs.getInt("currentDictionaryGroupId");
@@ -112,6 +115,25 @@ void main() async {
       Updater.autoUpdate();
     }
 
+    if (settings.ttsEngine != null) flutterTts.setEngine(settings.ttsEngine!);
+    if (settings.ttsLanguage != null) {
+      flutterTts.setLanguage(settings.ttsLanguage!);
+    }
+
+    Future.microtask(() async {
+      if (Platform.isAndroid) {
+        ttsEngines = await flutterTts.getEngines;
+      }
+
+      final List<dynamic> originalTTSLanguages = await flutterTts.getLanguages;
+      for (final language in originalTTSLanguages) {
+        if (language is String) {
+          ttsLanguages.add(language);
+        }
+      }
+      ttsLanguages.sort((a, b) => a.toString().compareTo(b.toString()));
+    });
+
     runApp(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WordbookModel()),
       ChangeNotifierProvider(create: (_) => HomeModel()),
@@ -134,6 +156,8 @@ final navigatorKey = GlobalKey<NavigatorState>();
 late final PackageInfo packageInfo;
 late final SharedPreferencesWithCache prefs;
 late final VoidCallback refreshAll;
+late final List<dynamic> ttsEngines;
+final List<dynamic> ttsLanguages = [];
 final router = GoRouter(
   navigatorKey: navigatorKey,
   routes: [
@@ -170,6 +194,9 @@ final router = GoRouter(
     GoRoute(
         path: "/settings/privacy_policy",
         builder: (context, state) => const PrivacyPolicy()),
+    GoRoute(
+        path: "/settings/audio",
+        builder: (context, state) => const AudioSettings()),
     GoRoute(
         path: "/settings/:dictId",
         builder: (context, state) => SettingsDictionary(
