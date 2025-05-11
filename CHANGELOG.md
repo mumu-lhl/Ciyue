@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.13.0](https://github.com/mumu-lhl/Ciyue/compare/v1.12.1..v1.13.0) - 2025-05-11
+
+### Bug Fixes
+
+- **(ui)** fix focus - ([177644b](https://github.com/mumu-lhl/Ciyue/commit/177644befcbd443a1014b10a7fb62e2568e50751)) - Mumulhl
+- search result - ([3d00a91](https://github.com/mumu-lhl/Ciyue/commit/3d00a918d59239fbe58c1808d7422636813ac950)) - Mumulhl
+
+### Features
+
+- **(ai)** add Ollama provider - ([a21651e](https://github.com/mumu-lhl/Ciyue/commit/a21651eedf70744c481d3333c1feda47c65d1f9a)) - Mumulhl
+- **(model)** update Gemini 2.5 Pro to the latest - ([f44f5c1](https://github.com/mumu-lhl/Ciyue/commit/f44f5c1a1f992bc131abd68036b24a18128f0b2d)) - Mumulhl
+- **(settings)** add support for custom AI API Url provider - ([1391415](https://github.com/mumu-lhl/Ciyue/commit/13914158be080dca06dac2600ead07b2944ef509)) - Mumulhl
+- **(translation)** translate all languages - ([7687d31](https://github.com/mumu-lhl/Ciyue/commit/7687d315ceebab1ad18897e313f91fd790f445bf)) - Mumulhl
+- add audio settings - ([b3f6e38](https://github.com/mumu-lhl/Ciyue/commit/b3f6e3864ff9e4f52b5c0f615d4550bc512914fd)) - Mumulhl
+- add Catalan language option to language selector - ([0ba8a8a](https://github.com/mumu-lhl/Ciyue/commit/0ba8a8a211d8f8d4cf7ef1fc1fdefe5f1f773003)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(build)** update Java compatibility to version 21 - ([c17af99](https://github.com/mumu-lhl/Ciyue/commit/c17af9942af44ebe4ba88d53bd34c9e596ede9a9)) - Mumulhl
+- **(build)** adjust version code - ([08ecba3](https://github.com/mumu-lhl/Ciyue/commit/08ecba3124f2d2921f09c3a58dcce05299259b99)) - Mumulhl
+- **(deps)** bump provider from 6.1.4 to 6.1.5 - ([7b1c46a](https://github.com/mumu-lhl/Ciyue/commit/7b1c46abda8474bb05d215de5196177b72ef9a9b)) - dependabot[bot]
+- **(deps)** bump drift from 2.26.0 to 2.26.1 - ([8b78012](https://github.com/mumu-lhl/Ciyue/commit/8b780127fc1df213386555ffbff9d1816dedb01a)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.26.0 to 2.26.1 - ([e7dd221](https://github.com/mumu-lhl/Ciyue/commit/e7dd2219ab6d1df7df62de1a79b251db45c57fac)) - dependabot[bot]
+- **(plugins)** upgrade Android Gradle plugin to version 8.10.0 - ([c98c4fd](https://github.com/mumu-lhl/Ciyue/commit/c98c4fda0835b7de90831adc6c508a1ced541854)) - Mumulhl
+- adjust version code - ([420efcc](https://github.com/mumu-lhl/Ciyue/commit/420efcc4134cee8bdc7d1ed010918e75cdbc5c9a)) - Mumulhl
+- linux runner - ([2ccb038](https://github.com/mumu-lhl/Ciyue/commit/2ccb0380a25c45cc18f5575dc3047d1528d058ef)) - Mumulhl
+
+### Refactoring
+
+- **(search)** replace autofocus with focusNode in search bar implementation - ([0fde1d9](https://github.com/mumu-lhl/Ciyue/commit/0fde1d906050b3f80015939c1ead874c2bd7afba)) - Mumulhl
+
+### Style
+
+- format code - ([7469d78](https://github.com/mumu-lhl/Ciyue/commit/7469d78bcde03bb242e12e6177412ea4b4d0e20d)) - Mumulhl
+
+---
 ## [1.12.1](https://github.com/mumu-lhl/Ciyue/compare/v1.12.0..v1.12.1) - 2025-05-05
 
 ### Miscellaneous Chores
@@ -44,6 +80,7 @@ All notable changes to this project will be documented in this file. See [conven
 - **(dictionary)** improve state management and simplify dictionary checks - ([a61b5c5](https://github.com/mumu-lhl/Ciyue/commit/a61b5c5a27c13b572c2783086afbea82579c0b85)) - Mumulhl
 - **(history)** add HistoryModel - ([e329349](https://github.com/mumu-lhl/Ciyue/commit/e329349e6bd2afc983a5e0990ca780b1c944cfaa)) - Mumulhl
 - **(home)** restructure HomeScreen and related components for improved readability and functionality - ([aa8e786](https://github.com/mumu-lhl/Ciyue/commit/aa8e786c42e31075d55390acb5a320a4d440f5c0)) - Mumulhl
+- **(ui)** improve search ui - ([f8ddcc6](https://github.com/mumu-lhl/Ciyue/commit/f8ddcc68a5d18138a49c02b5d005dcd1fe587446)) - Mumulhl
 - refactor update - ([9713d06](https://github.com/mumu-lhl/Ciyue/commit/9713d06c9f1ecb50c1269bdb82cdbabb34b12e84)) - Mumulhl
 - move files to services directory - ([a51ffe1](https://github.com/mumu-lhl/Ciyue/commit/a51ffe1211ca6ec2c719fc2b4c2a96729c570661)) - Mumulhl
 - refactor ai.dart - ([5e30372](https://github.com/mumu-lhl/Ciyue/commit/5e303724bf5b4e04df40bad2fbac84b6360e2f94)) - Mumulhl
