@@ -131,6 +131,7 @@ late final List<dynamic> ttsEngines;
 final List<dynamic> ttsLanguages = [];
 final WordbookDao wordbookDao = WordbookDao(mainDatabase);
 final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
+
 @pragma("vm:entry-point")
 void floatingWindow(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -296,7 +297,7 @@ class _CiyueState extends State<Ciyue> {
   @override
   Widget build(BuildContext context) {
     if (widget.isFloatingWindow) {
-      router.push("/word", extra: {"word": searchWordFromProcessText});
+      router.go("/word", extra: {"word": searchWordFromProcessText});
     }
 
     Locale? locale;
