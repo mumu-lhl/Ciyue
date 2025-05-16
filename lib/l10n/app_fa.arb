@@ -18,7 +18,7 @@
   "@theme": {},
   "light": "روشن",
   "@light": {},
-  "permissionDenied": "باید دسترسی‌ها را مجاز کنید",
+  "permissionDenied": "باید دسترسی‌ها را اعطا کنید",
   "@permissionDenied": {},
   "system": "سیستم",
   "@system": {},
@@ -90,7 +90,7 @@
   "@manageGroups": {},
   "exportFileName": "نام فایل خروجی",
   "@exportFileName": {},
-  "exportDirectory": "مسیر خروجی",
+  "exportDirectory": "پوشه خروجی",
   "@exportDirectory": {},
   "title": "عنوان",
   "@title": {},
@@ -207,5 +207,7 @@
   "ttsEngines": "موتورهای TTS",
   "@ttsEngines": {},
   "ttsLanguages": "زبان‌های TTS",
-  "@ttsLanguages": {}
+  "@ttsLanguages": {},
+  "apiUrl": "آدرس API",
+  "@apiUrl": {}
 }
