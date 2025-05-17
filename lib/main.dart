@@ -53,7 +53,8 @@ void main() async {
       ChangeNotifierProvider(create: (_) => WordbookModel()),
       ChangeNotifierProvider(create: (_) => HomeModel()),
       ChangeNotifierProvider(create: (_) => DictManagerModel()),
-      ChangeNotifierProvider(create: (_) => HistoryModel())
+      ChangeNotifierProvider(create: (_) => HistoryModel()),
+      ChangeNotifierProvider(create: (_) => ManageDictionariesModel()),
     ], child: const Ciyue()));
   } catch (e) {
     runApp(MaterialApp(home: CiyueError(error: e)));
@@ -123,6 +124,7 @@ final router = GoRouter(
         path: "/properties",
         builder: (context, state) => PropertiesDictionary(
               path: (state.extra as Map<String, dynamic>)["path"],
+              id: (state.extra as Map<String, dynamic>)["id"],
             )),
   ],
 );

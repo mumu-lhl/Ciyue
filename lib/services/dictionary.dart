@@ -162,7 +162,7 @@ class Mdict {
     }
   }
 
-  Future<void> initOnlyMetadata() async {
+  Future<void> initOnlyMetadata(int id) async {
     reader = DictReader("$path.mdx");
     await reader.init();
 

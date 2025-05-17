@@ -5,10 +5,12 @@ import "package:go_router/go_router.dart";
 
 class PropertiesDictionary extends StatelessWidget {
   final String path;
+  final int id;
 
   const PropertiesDictionary({
     super.key,
     required this.path,
+    required this.id,
   });
 
   @override
@@ -22,7 +24,7 @@ class PropertiesDictionary extends StatelessWidget {
         ),
       ),
       body: FutureBuilder(
-        future: dict.initOnlyMetadata(),
+        future: dict.initOnlyMetadata(id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
