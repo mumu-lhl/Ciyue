@@ -26,6 +26,7 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     "de": "German",
     "es": "Spanish",
     "ru": "Russian",
+    "hi": "Hindi",
   };
   final TextEditingController _inputController = TextEditingController();
   bool _isRichOutput = true;
