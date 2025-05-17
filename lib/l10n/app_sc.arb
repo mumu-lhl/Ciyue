@@ -209,5 +209,12 @@
   "ttsLanguages": "Limbas TTS",
   "@ttsLanguages": {},
   "apiUrl": "URL de s'API",
-  "@apiUrl": {}
+  "@apiUrl": {},
+  "floatingWindow": "Ventana flotante",
+  "@floatingWindow": {},
+  "loading": "Carrighende...",
+  "@loading": {},
+  "addingWord": "Annanghende paràula: %s",
+  "@addingWord": {},
+  "copyingFiles": "Copiende archìvios..."
 }

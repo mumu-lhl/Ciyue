@@ -207,5 +207,14 @@
   "ttsEngines": "Motors TTS",
   "@ttsEngines": {},
   "ttsLanguages": "Llengües TTS",
-  "@ttsLanguages": {}
+  "@ttsLanguages": {},
+  "apiUrl": "URL de l'API",
+  "@apiUrl": {},
+  "floatingWindow": "Finestra flotant",
+  "@floatingWindow": {},
+  "loading": "Carregant...",
+  "@loading": {},
+  "addingWord": "S'està afegint el mot: %s",
+  "@addingWord": {},
+  "copyingFiles": "S'estan copiant els fitxers..."
 }

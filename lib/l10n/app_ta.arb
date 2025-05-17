@@ -207,5 +207,14 @@
   "ttsEngines": "TTS இயந்திரங்கள்",
   "@ttsEngines": {},
   "ttsLanguages": "TTS மொழிகள்",
-  "@ttsLanguages": {}
+  "@ttsLanguages": {},
+  "apiUrl": "API URL",
+  "@apiUrl": {},
+  "floatingWindow": "மிதக்கும் சாளரம்",
+  "@floatingWindow": {},
+  "loading": "ஏற்றுகிறது...",
+  "@loading": {},
+  "addingWord": "சொல் சேர்க்கிறது: %s",
+  "@addingWord": {},
+  "copyingFiles": "கோப்புகளை நகலெடுக்கிறது..."
 }

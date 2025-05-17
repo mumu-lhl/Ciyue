@@ -207,5 +207,14 @@
   "ttsEngines": "Motores TTS",
   "@ttsEngines": {},
   "ttsLanguages": "Idiomas TTS",
-  "@ttsLanguages": {}
+  "@ttsLanguages": {},
+  "apiUrl": "URL de la API",
+  "@apiUrl": {},
+  "floatingWindow": "Ventana flotante",
+  "@floatingWindow": {},
+  "loading": "Cargando...",
+  "@loading": {},
+  "addingWord": "Añadiendo palabra: %s",
+  "@addingWord": {},
+  "copyingFiles": "Copiando archivos..."
 }

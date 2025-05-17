@@ -207,5 +207,14 @@
   "ttsEngines": "TTS 引擎",
   "@ttsEngines": {},
   "ttsLanguages": "TTS 語言",
-  "@ttsLanguages": {}
+  "@ttsLanguages": {},
+  "apiUrl": "API URL",
+  "@apiUrl": {},
+  "floatingWindow": "浮動視窗",
+  "@floatingWindow": {},
+  "loading": "載入中...",
+  "@loading": {},
+  "addingWord": "正在新增字詞: %s",
+  "@addingWord": {},
+  "copyingFiles": "正在複製檔案..."
 }

@@ -209,5 +209,12 @@
   "ttsLanguages": "زبان‌های TTS",
   "@ttsLanguages": {},
   "apiUrl": "آدرس API",
-  "@apiUrl": {}
+  "@apiUrl": {},
+  "floatingWindow": "پنجره شناور",
+  "@floatingWindow": {},
+  "loading": "در حال بارگذاری...",
+  "@loading": {},
+  "addingWord": "در حال اضافه کردن کلمه: %s",
+  "@addingWord": {},
+  "copyingFiles": "در حال کپی کردن فایل‌ها..."
 }

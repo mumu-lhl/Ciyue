@@ -207,5 +207,14 @@
   "ttsEngines": "TTS-motorer",
   "@ttsEngines": {},
   "ttsLanguages": "TTS-språk",
-  "@ttsLanguages": {}
+  "@ttsLanguages": {},
+  "apiUrl": "API-URL",
+  "@apiUrl": {},
+  "floatingWindow": "Flytende vindu",
+  "@floatingWindow": {},
+  "loading": "Laster...",
+  "@loading": {},
+  "addingWord": "Legger til ord: %s",
+  "@addingWord": {},
+  "copyingFiles": "Kopierer filer..."
 }

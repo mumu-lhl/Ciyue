@@ -207,5 +207,14 @@
   "ttsEngines": "TTS-Engines",
   "@ttsEngines": {},
   "ttsLanguages": "TTS-Sprachen",
-  "@ttsLanguages": {}
+  "@ttsLanguages": {},
+  "apiUrl": "API-URL",
+  "@apiUrl": {},
+  "floatingWindow": "Schwebendes Fenster",
+  "@floatingWindow": {},
+  "loading": "Lädt...",
+  "@loading": {},
+  "addingWord": "Wort wird hinzugefügt: %s",
+  "@addingWord": {},
+  "copyingFiles": "Dateien werden kopiert..."
 }

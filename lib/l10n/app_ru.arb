@@ -207,5 +207,14 @@
   "ttsEngines": "Движки TTS",
   "@ttsEngines": {},
   "ttsLanguages": "Языки TTS",
-  "@ttsLanguages": {}
+  "@ttsLanguages": {},
+  "apiUrl": "URL API",
+  "@apiUrl": {},
+  "floatingWindow": "Плавающее окно",
+  "@floatingWindow": {},
+  "loading": "Загрузка...",
+  "@loading": {},
+  "addingWord": "Добавление слова: %s",
+  "@addingWord": {},
+  "copyingFiles": "Копирование файлов..."
 }
