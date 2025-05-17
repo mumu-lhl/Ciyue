@@ -83,6 +83,10 @@ android {
                 name = "appName",
                 value = "Ciyue Dev")
         }
+
+        create("production") {
+            dimension = "default"
+        }
     }
 
     dependenciesInfo {

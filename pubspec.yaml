@@ -120,6 +120,7 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
   generate: true
 
+  default-flavor: production
 
 flutter_launcher_icons:
   android: "launcher_icon"
