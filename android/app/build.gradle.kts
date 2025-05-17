@@ -1,3 +1,7 @@
+import com.android.build.api.variant.FilterConfiguration.FilterType.*
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,22 +9,18 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-import com.android.build.api.variant.FilterConfiguration.FilterType.*
-import java.util.Properties
-import java.io.FileInputStream
-
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(FileInputStream(localPropertiesFile))
 }
 
-var flutterVersionCode = localProperties.getProperty("flutter.versionCode")
+var flutterVersionCode: String? = localProperties.getProperty("flutter.versionCode")
 if (flutterVersionCode == null) {
     flutterVersionCode = "1"
 }
 
-var flutterVersionName = localProperties.getProperty("flutter.versionName")
+var flutterVersionName: String? = localProperties.getProperty("flutter.versionName")
 if (flutterVersionName == null) {
     flutterVersionName = "1.0"
 }
@@ -50,7 +50,7 @@ android {
         applicationId = "org.eu.mumulhl.ciyue"
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutterVersionCode.toInt()
+        versionCode = flutterVersionCode!!.toInt()
         versionName = flutterVersionName
     }
 
@@ -68,6 +68,20 @@ android {
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }
+        }
+
+        debug {}
+    }
+    
+    flavorDimensions += "default"
+    productFlavors {
+        create("dev") {
+            dimension = "default"
+            applicationIdSuffix = ".dev"
+            resValue(
+                type = "string",
+                name = "appName",
+                value = "Ciyue Dev")
         }
     }
 
