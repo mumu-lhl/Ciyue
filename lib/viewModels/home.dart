@@ -2,6 +2,11 @@ import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
 
 class HistoryModel extends ChangeNotifier {
+  void addHistory(String word) async {
+    await historyDao.addHistory(word);
+    notifyListeners();
+  }
+
   void clearHistory() {
     historyDao.clearHistory();
     notifyListeners();

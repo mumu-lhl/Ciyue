@@ -2,8 +2,10 @@ import "package:ciyue/pages/main/home.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:provider/provider.dart";
 
 class WordSearchBarWithSuggestions extends StatelessWidget {
   final String word;
@@ -39,6 +41,7 @@ class WordSearchBarWithSuggestions extends StatelessWidget {
           isFullScreen: !isLargeScreen(context),
           viewOnSubmitted: (String word) {
             if (controller.text.isNotEmpty) {
+              context.read<HistoryModel>().addHistory(word);
               context.push("/word", extra: {"word": word});
             }
           },
@@ -59,7 +62,9 @@ class WordSearchBarWithSuggestions extends StatelessWidget {
                   title: Text(e),
                   trailing: Icon(Icons.arrow_forward),
                   onTap: () {
+                    context.read<HistoryModel>().addHistory(e);
                     context.push("/word", extra: {"word": e});
+
                     if (isHome && settings.autoRemoveSearchWord) {
                       controller.text = "";
                     }
