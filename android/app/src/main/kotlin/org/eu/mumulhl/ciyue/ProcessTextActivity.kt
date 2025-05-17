@@ -3,6 +3,7 @@ package org.eu.mumulhl.ciyue
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 
 class ProcessTextActivity : Activity() {
     companion object {
@@ -13,20 +14,22 @@ class ProcessTextActivity : Activity() {
         super.onCreate(savedInstanceState)
 
         val text = intent?.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString() ?: ""
-        
-//        val intent = Intent(this, MainActivity::class.java).apply {
-//            action = Intent.ACTION_PROCESS_TEXT
-//            putExtra(Intent.EXTRA_PROCESS_TEXT, text)
-//            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-//        }
-        
-//        startActivity(intent)
-        val serviceIntent = Intent(this, FloatingWindowService::class.java).apply {
-            putExtra(EXTRA_TEXT_TO_SHOW, text)
-        }
 
-        startService(serviceIntent)
+        if (Settings.canDrawOverlays(this)) {
+            val serviceIntent = Intent(this, FloatingWindowService::class.java).apply {
+                putExtra(EXTRA_TEXT_TO_SHOW, text)
+            }
+
+            startService(serviceIntent)
+        } else {
+            val intent = Intent(this, MainActivity::class.java).apply {
+                action = Intent.ACTION_PROCESS_TEXT
+                putExtra(Intent.EXTRA_PROCESS_TEXT, text)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }
+            startActivity(intent)
+        }
         finish()
     }
 } 
