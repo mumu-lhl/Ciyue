@@ -54,22 +54,21 @@ class FloatingWindowService : Service() {
             FlutterEngineCache.getInstance().put(ENGINE_ID, flutterEngine)
         }
 
-        mFloatingView = FlutterView(this, FlutterSurfaceView(this)).apply {
+        mFloatingView = object : FlutterView(this, FlutterSurfaceView(this)) {
+            override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+                if (isAttachedToWindow) {
+                    if (event.action == KeyEvent.ACTION_UP && event.keyCode == KeyEvent.KEYCODE_BACK) {
+                        hideWindow()
+                        return true
+                    }
+                }
+                return super.dispatchKeyEvent(event)
+            }
+        }.apply {
             attachToFlutterEngine(flutterEngine!!)
             isFocusable = true
             isFocusableInTouchMode = true
             fitsSystemWindows = true
-
-            setOnKeyListener { v, keyCode, event ->
-                if (event.action == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                    if (this.isAttachedToWindow) {
-                        hideWindow()
-                    }
-                    true
-                } else {
-                    false
-                }
-            }
 
             setOnTouchListener { v, event ->
                 when (event.action) {
