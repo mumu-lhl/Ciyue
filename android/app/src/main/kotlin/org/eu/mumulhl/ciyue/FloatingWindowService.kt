@@ -1,11 +1,14 @@
 package org.eu.mumulhl.ciyue
 
+import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
@@ -32,6 +35,7 @@ class FloatingWindowService : Service() {
         return null // This is a started service, not a bound service
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val text = intent?.getStringExtra(EXTRA_TEXT_TO_SHOW) ?: ""
@@ -44,8 +48,7 @@ class FloatingWindowService : Service() {
                     DartExecutor.DartEntrypoint(
                         FlutterInjector.instance().flutterLoader().findAppBundlePath(),
                         "floatingWindow",
-                    ),
-                    listOf<String>(text)
+                    ), listOf<String>(text)
                 )
             }
             FlutterEngineCache.getInstance().put(ENGINE_ID, flutterEngine)
@@ -56,17 +59,41 @@ class FloatingWindowService : Service() {
             isFocusable = true
             isFocusableInTouchMode = true
             fitsSystemWindows = true
+
+            setOnKeyListener { v, keyCode, event ->
+                if (event.action == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                    if (this.isAttachedToWindow) {
+                        hideWindow()
+                    }
+                    true
+                } else {
+                    false
+                }
+            }
+
+            setOnTouchListener { v, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_OUTSIDE -> {
+                        if (this.isAttachedToWindow) {
+                            hideWindow()
+                        }
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+
         }
 
         val params = WindowManager.LayoutParams(
             600,
             800,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            0,
+            WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = 20
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
             y = 100
         }
 
@@ -77,6 +104,15 @@ class FloatingWindowService : Service() {
         }
 
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    fun hideWindow() {
+        if (mFloatingView!!.isAttachedToWindow) {
+            mWindowManager!!.removeView(mFloatingView)
+
+            mFloatingView!!.detachFromFlutterEngine()
+            mFloatingView = null
+        }
     }
 
     override fun onDestroy() {
