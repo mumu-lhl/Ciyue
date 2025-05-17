@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.14.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.13.0..v1.14.0-beta.1) - 2025-05-17
+
+### Bug Fixes
+
+- **(floating_window)** disable drag - ([d1109c8](https://github.com/mumu-lhl/Ciyue/commit/d1109c82e3eb2fc60ee356729692a932a5680095)) - Mumulhl
+- **(floating_window)** not focusable - ([353c793](https://github.com/mumu-lhl/Ciyue/commit/353c79393c345ab7729b90bec5594bc401b14c28)) - Mumulhl
+- history - ([8f51d55](https://github.com/mumu-lhl/Ciyue/commit/8f51d55ce8c3885621811496488b00e985d205ee)) - Mumulhl
+- add loading message for file copying process - ([234dace](https://github.com/mumu-lhl/Ciyue/commit/234dace9aca9317ed3546117df02fe6c72781176)) - Mumulhl
+- set windows webview2 directory - ([ac62170](https://github.com/mumu-lhl/Ciyue/commit/ac621709a870879e22331008e4554502e6724baf)) - Mumulhl
+- only show floating window when permission is enabled - ([8c166f1](https://github.com/mumu-lhl/Ciyue/commit/8c166f1cbd8ca08d5ec00184640f2502961bfb76)) - Mumulhl
+
+### Features
+
+- **(ai translate)** add Hindi language - ([ea32be3](https://github.com/mumu-lhl/Ciyue/commit/ea32be31869a67a7dfd0df436707d9aebc313e01)) - Mumulhl
+- **(floating window)** implement close window when clicks outside the window - ([cc9d52a](https://github.com/mumu-lhl/Ciyue/commit/cc9d52ad6e7f9fc8d6c40f19b05b6980447a1c9d)) - Mumulhl
+- **(floating window)** click back button to close window - ([f77e149](https://github.com/mumu-lhl/Ciyue/commit/f77e149ea405b70e40b1c729c7a2e9ba53685d7e)) - Mumulhl
+- **(translation)** translated using Weblate (Sardinian) - ([df889ef](https://github.com/mumu-lhl/Ciyue/commit/df889efec68527fb7dc65eaddcf53821a684843b)) - Ajeje Brazorf
+- **(translation)** translated using Weblate (Persian) - ([7ed176a](https://github.com/mumu-lhl/Ciyue/commit/7ed176a819065d0f5595db93ad40b1296022d73c)) - Mo
+- implement floating window service initially - ([26d6453](https://github.com/mumu-lhl/Ciyue/commit/26d64534b2685e77ad0777c541c81fac744f1078)) - Mumulhl
+- support add mutiple dictionaries at once - ([27c2fd1](https://github.com/mumu-lhl/Ciyue/commit/27c2fd1bc29e3ceca5342457068d35c7d29c4aeb)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(build)** add dev flavor for android - ([65e3ae5](https://github.com/mumu-lhl/Ciyue/commit/65e3ae5f8b8f55917a3b1bab4feac41b3a5b9a64)) - Mumulhl
+- **(build)** add production flavor for android - ([c19ad56](https://github.com/mumu-lhl/Ciyue/commit/c19ad5609212e45dec7314f50469f0d1395024eb)) - Mumulhl
+- **(deps)** bump flutter_local_notifications from 19.1.0 to 19.2.0 - ([a17f969](https://github.com/mumu-lhl/Ciyue/commit/a17f9692e1667b04afb025c5e6a6a915b1ef423c)) - dependabot[bot]
+- **(deps)** bump go_router from 15.1.1 to 15.1.2 - ([6d7dd92](https://github.com/mumu-lhl/Ciyue/commit/6d7dd92db6eb93045ec47feb88cdab6d2263ac96)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.25.3 to 0.25.4 in /docs - ([c674ffd](https://github.com/mumu-lhl/Ciyue/commit/c674ffd06b61f3e4bc3b00c03512ffbf68bfeafb)) - dependabot[bot]
+- **(release)** add translation label to changelog - ([c9caf8b](https://github.com/mumu-lhl/Ciyue/commit/c9caf8bb9716e833b7867e333cb49d7db8c95472)) - Mumulhl
+- **(vscode)** add launch configuration for Flutter Android development - ([274d5b4](https://github.com/mumu-lhl/Ciyue/commit/274d5b4be83e3df6a580569e0ce1ab789f40ece1)) - Mumulhl
+
+### Refactoring
+
+- **(manage dictionaries)** enhance dictionary management features and improve state handling - ([a6e9d50](https://github.com/mumu-lhl/Ciyue/commit/a6e9d50fca35d3be2422511c7c657feff0beeb3a)) - Mumulhl
+
+---
 ## [1.13.0](https://github.com/mumu-lhl/Ciyue/compare/v1.12.1..v1.13.0) - 2025-05-11
 
 ### Bug Fixes
