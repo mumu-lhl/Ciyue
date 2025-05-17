@@ -215,5 +215,7 @@
   "loading": "Loading...",
   "@loading": {},
   "addingWord": "Adding Word: %s",
-  "@addingWord": {}
+  "@addingWord": {},
+  "copyingFiles": "Copying Files...",
+  "@copyingFiles": {}
 }

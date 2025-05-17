@@ -39,6 +39,9 @@ class AddButton extends StatelessWidget {
       icon: const Icon(Icons.add),
       onPressed: () {
         if (Platform.isAndroid) {
+          showLoadingDialog(context,
+              text: AppLocalizations.of(context)!.copyingFiles);
+
           PlatformMethod.openDirectory();
         } else {
           _selectMdxFile(context);
@@ -56,8 +59,9 @@ class AddButton extends StatelessWidget {
     final files = await openFiles(acceptedTypeGroups: [typeGroup]);
 
     if (files.isNotEmpty) {
-      if (context.mounted)
+      if (context.mounted) {
         showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
+      }
     }
 
     for (final file in files) {
