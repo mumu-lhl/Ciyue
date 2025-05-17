@@ -27,6 +27,7 @@ import "package:flutter/services.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:go_router/go_router.dart";
 import "package:package_info_plus/package_info_plus.dart";
+import "package:path_provider/path_provider.dart";
 import "package:provider/provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
@@ -67,7 +68,7 @@ final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
 
 final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
 
-final floatingWindowNavigatorKey = GlobalKey<NavigatorState>();
+String? windowsWebview2Directory;
 
 late final FlutterTts flutterTts;
 final HistoryDao historyDao = HistoryDao(mainDatabase);
@@ -206,6 +207,10 @@ Future<void> initApp() async {
         }
       }
       ttsLanguages.sort((a, b) => a.toString().compareTo(b.toString()));
+    }
+
+    if (Platform.isWindows) {
+      windowsWebview2Directory = (await getApplicationCacheDirectory()).path;
     }
   });
 }

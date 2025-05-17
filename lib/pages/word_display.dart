@@ -296,11 +296,22 @@ class WebviewWindows extends StatelessWidget {
 
     final Uint8List postData =
         Uint8List.fromList(utf8.encode(json.encode({"content": content})));
-    return InAppWebView(
-      initialUrlRequest:
-          URLRequest(url: WebUri(url), method: "POST", body: postData),
-      initialData: InAppWebViewInitialData(data: content, baseUrl: WebUri(url)),
-    );
+    return FutureBuilder(
+        future: WebViewEnvironment.create(
+            settings: WebViewEnvironmentSettings(
+                userDataFolder: windowsWebview2Directory)),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return InAppWebView(
+              webViewEnvironment: snapshot.data,
+              initialUrlRequest:
+                  URLRequest(url: WebUri(url), method: "POST", body: postData),
+              initialData:
+                  InAppWebViewInitialData(data: content, baseUrl: WebUri(url)),
+            );
+          }
+          return const Center(child: CircularProgressIndicator());
+        });
   }
 }
 
