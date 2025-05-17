@@ -1,9 +1,6 @@
 import "dart:io";
 
 import "package:ciyue/database/app.dart";
-import "package:ciyue/pages/settings/audio.dart";
-import "package:ciyue/viewModels/dictionary.dart";
-import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/localization_delegates.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/main/wordbook.dart";
@@ -11,14 +8,17 @@ import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/pages/manage_dictionaries/properties.dart";
 import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
 import "package:ciyue/pages/settings/ai_settings.dart";
+import "package:ciyue/pages/settings/audio.dart";
 import "package:ciyue/pages/settings/auto_export.dart";
 import "package:ciyue/pages/settings/privacy_policy.dart";
 import "package:ciyue/pages/settings/terms_of_service.dart";
 import "package:ciyue/pages/word_display.dart";
+import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/platform.dart";
-import "package:ciyue/services/updater.dart";
 import "package:ciyue/services/settings.dart";
+import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
@@ -47,95 +47,7 @@ void main() async {
       migrationCompletedKey: "migrationCompleted",
     );
 
-    prefs = await SharedPreferencesWithCache.create(
-        cacheOptions: const SharedPreferencesWithCacheOptions(allowList: {
-      "currentDictionaryGroupId",
-      "exportDirectory",
-      "autoExport",
-      "exportFileName",
-      "autoRemoveSearchWord",
-      "language",
-      "themeMode",
-      "tagsOrder",
-      "secureScreen",
-      "searchBarInAppBar",
-      "showSidebarIcon",
-      "dictionariesDirectory",
-      "exportPath",
-      "notification",
-      "showMoreOptionsButton",
-      "skipTaggedWord",
-      "aiProvider",
-      "aiProviderConfigs",
-      "aiExplainWord",
-      "includePrereleaseUpdates",
-      "explainPromptMode",
-      "customExplainPrompt",
-      "translatePromptMode",
-      "customTranslatePrompt",
-      "tabBarPosition",
-      "showSearchBarInWordDisplay",
-      "autoUpdate",
-      "ttsEngine",
-      "ttsLanguage",
-    }));
-
-    int? groupId = prefs.getInt("currentDictionaryGroupId");
-    if (groupId == null) {
-      groupId = await dictGroupDao.addGroup("Default", []);
-      await prefs.setInt("currentDictionaryGroupId", groupId);
-    }
-    await dictManager.setCurrentGroup(groupId);
-    dictManager.groups = await dictGroupDao.getAllGroups();
-
-    flutterTts = FlutterTts();
-
-    packageInfo = await PackageInfo.fromPlatform();
-
-    await wordbookTagsDao.loadTagsOrder();
-    await wordbookTagsDao.existTag();
-
-    if (Platform.isAndroid) {
-      PlatformMethod.initHandler();
-      PlatformMethod.initNotifications();
-
-      if (settings.secureScreen) {
-        PlatformMethod.setSecureFlag(true);
-      }
-      if (settings.notification) {
-        PlatformMethod.createPersistentNotification(true);
-      }
-    }
-
-    if (Platform.isWindows) {
-      accentColor = await DynamicColorPlugin.getAccentColor();
-    }
-
-    if (settings.autoUpdate) {
-      Updater.autoUpdate();
-    }
-
-    if (settings.ttsEngine != null) flutterTts.setEngine(settings.ttsEngine!);
-    if (settings.ttsLanguage != null) {
-      flutterTts.setLanguage(settings.ttsLanguage!);
-    }
-
-    Future.microtask(() async {
-      if (Platform.isAndroid) {
-        ttsEngines = await flutterTts.getEngines;
-      }
-
-      if (!Platform.isLinux) {
-        final List<dynamic> originalTTSLanguages =
-            await flutterTts.getLanguages;
-        for (final language in originalTTSLanguages) {
-          if (language is String) {
-            ttsLanguages.add(language);
-          }
-        }
-        ttsLanguages.sort((a, b) => a.toString().compareTo(b.toString()));
-      }
-    });
+    await initApp();
 
     runApp(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WordbookModel()),
@@ -151,7 +63,11 @@ void main() async {
 late final Color? accentColor;
 
 final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
+
 final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
+
+final floatingWindowNavigatorKey = GlobalKey<NavigatorState>();
+
 late final FlutterTts flutterTts;
 final HistoryDao historyDao = HistoryDao(mainDatabase);
 final AppDatabase mainDatabase = appDatabase();
@@ -159,8 +75,6 @@ final navigatorKey = GlobalKey<NavigatorState>();
 late final PackageInfo packageInfo;
 late final SharedPreferencesWithCache prefs;
 late final VoidCallback refreshAll;
-late final List<dynamic> ttsEngines;
-final List<dynamic> ttsLanguages = [];
 final router = GoRouter(
   navigatorKey: navigatorKey,
   routes: [
@@ -212,11 +126,127 @@ final router = GoRouter(
             )),
   ],
 );
+String searchWordFromProcessText = "";
+late final List<dynamic> ttsEngines;
+final List<dynamic> ttsLanguages = [];
 final WordbookDao wordbookDao = WordbookDao(mainDatabase);
 final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
 
+@pragma("vm:entry-point")
+void floatingWindow(List<String> args) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await initApp();
+
+  searchWordFromProcessText = args[0];
+
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (_) => WordbookModel()),
+    ChangeNotifierProvider(create: (_) => HomeModel()),
+    ChangeNotifierProvider(create: (_) => DictManagerModel()),
+    ChangeNotifierProvider(create: (_) => HistoryModel())
+  ], child: Ciyue(isFloatingWindow: true)));
+}
+
+Future<void> initApp() async {
+  await initPrefs();
+
+  int? groupId = prefs.getInt("currentDictionaryGroupId");
+  if (groupId == null) {
+    groupId = await dictGroupDao.addGroup("Default", []);
+    await prefs.setInt("currentDictionaryGroupId", groupId);
+  }
+  await dictManager.setCurrentGroup(groupId);
+  dictManager.groups = await dictGroupDao.getAllGroups();
+
+  flutterTts = FlutterTts();
+
+  packageInfo = await PackageInfo.fromPlatform();
+
+  await wordbookTagsDao.loadTagsOrder();
+  await wordbookTagsDao.existTag();
+
+  if (Platform.isAndroid) {
+    PlatformMethod.initHandler();
+    PlatformMethod.initNotifications();
+
+    if (settings.secureScreen) {
+      PlatformMethod.setSecureFlag(true);
+    }
+    if (settings.notification) {
+      PlatformMethod.createPersistentNotification(true);
+    }
+  }
+
+  if (Platform.isWindows) {
+    accentColor = await DynamicColorPlugin.getAccentColor();
+  }
+
+  if (settings.autoUpdate) {
+    Updater.autoUpdate();
+  }
+
+  if (settings.ttsEngine != null) flutterTts.setEngine(settings.ttsEngine!);
+  if (settings.ttsLanguage != null) {
+    flutterTts.setLanguage(settings.ttsLanguage!);
+  }
+
+  Future.microtask(() async {
+    if (Platform.isAndroid) {
+      ttsEngines = await flutterTts.getEngines;
+    }
+
+    if (!Platform.isLinux) {
+      final List<dynamic> originalTTSLanguages = await flutterTts.getLanguages;
+      for (final language in originalTTSLanguages) {
+        if (language is String) {
+          ttsLanguages.add(language);
+        }
+      }
+      ttsLanguages.sort((a, b) => a.toString().compareTo(b.toString()));
+    }
+  });
+}
+
+Future<void> initPrefs() async {
+  prefs = await SharedPreferencesWithCache.create(
+      cacheOptions: const SharedPreferencesWithCacheOptions(allowList: {
+    "currentDictionaryGroupId",
+    "exportDirectory",
+    "autoExport",
+    "exportFileName",
+    "autoRemoveSearchWord",
+    "language",
+    "themeMode",
+    "tagsOrder",
+    "secureScreen",
+    "searchBarInAppBar",
+    "showSidebarIcon",
+    "dictionariesDirectory",
+    "exportPath",
+    "notification",
+    "showMoreOptionsButton",
+    "skipTaggedWord",
+    "aiProvider",
+    "aiProviderConfigs",
+    "aiExplainWord",
+    "includePrereleaseUpdates",
+    "explainPromptMode",
+    "customExplainPrompt",
+    "translatePromptMode",
+    "customTranslatePrompt",
+    "tabBarPosition",
+    "showSearchBarInWordDisplay",
+    "autoUpdate",
+    "ttsEngine",
+    "ttsLanguage",
+  }));
+}
+
 class Ciyue extends StatefulWidget {
-  const Ciyue({super.key});
+  final bool isFloatingWindow;
+
+  const Ciyue({super.key, this.isFloatingWindow = false});
 
   @override
   State<Ciyue> createState() => _CiyueState();
@@ -266,6 +296,10 @@ class CiyueError extends StatelessWidget {
 class _CiyueState extends State<Ciyue> {
   @override
   Widget build(BuildContext context) {
+    if (widget.isFloatingWindow) {
+      router.go("/word", extra: {"word": searchWordFromProcessText});
+    }
+
     Locale? locale;
     if (settings.language != "system") {
       final splittedLanguage = settings.language!.split("_");

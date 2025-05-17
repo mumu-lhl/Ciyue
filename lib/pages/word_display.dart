@@ -362,8 +362,7 @@ class WordDisplay extends StatelessWidget {
                       context.pop();
                     } else {
                       // When opened from context menu
-                      SystemChannels.platform
-                          .invokeMethod("SystemNavigator.pop");
+                      SystemNavigator.pop();
                     }
                   },
                 )),
@@ -404,7 +403,7 @@ class WordDisplay extends StatelessWidget {
               context.pop();
             } else {
               // When opened from context menu
-              SystemChannels.platform.invokeMethod("SystemNavigator.pop");
+              SystemNavigator.pop();
             }
           },
         ),

@@ -4,7 +4,9 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.WindowManager
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -14,14 +16,16 @@ import java.io.BufferedOutputStream
 import java.io.File
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "org.eu.mumulhl.ciyue"
-    private var methodChannel: MethodChannel? = null
+    companion object {
+        const val CHANNEL = "org.eu.mumulhl.ciyue"
 
+        const val OPEN_DOCUMENT_TREE = 0
+        const val CREATE_FILE = 1
+        const val GET_DIRECTORY = 2
+        const val REQUEST_OVERLAY_PERMISSION = 3
+    }
 
-    private val OPEN_DOCUMENT_TREE = 0
-    private val CREATE_FILE = 1
-    private val GET_DIRECTORY = 2
-
+    var methodChannel: MethodChannel? = null
 
     var exportContent = ""
 
@@ -44,7 +48,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun writeFile(directory: String, filename: String, content: String) {
-        val directoryFile = DocumentFile.fromTreeUri(context, Uri.parse(directory))
+        val directoryFile = DocumentFile.fromTreeUri(context, directory.toUri())
         val file = directoryFile!!.findFile(filename)
         if (file == null) {
             val newFile = directoryFile.createFile("application/json", filename)
@@ -69,6 +73,16 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    private fun requestFloatingWindowPermission() {
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                "package:$packageName".toUri()
+            )
+            startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
+        }
+    }
+
     override fun onActivityResult(
         requestCode: Int, resultCode: Int, data: Intent?
     ) {
@@ -79,6 +93,7 @@ class MainActivity : FlutterActivity() {
                 OPEN_DOCUMENT_TREE -> openDocumentTree(data)
                 CREATE_FILE -> createFileHandler(data)
                 GET_DIRECTORY -> getDirectoryHandler(data)
+                REQUEST_OVERLAY_PERMISSION -> {}
             }
         }
     }
@@ -173,8 +188,12 @@ class MainActivity : FlutterActivity() {
                     }
 
                     "updateDictionaries" -> {
-                        val uri = Uri.parse(call.arguments as String)
+                        val uri = (call.arguments as String).toUri()
                         copyDictionariesDirectory(uri)
+                    }
+
+                    "requestFloatingWindowPermission" -> {
+                        requestFloatingWindowPermission()
                     }
 
                     else -> result.notImplemented()

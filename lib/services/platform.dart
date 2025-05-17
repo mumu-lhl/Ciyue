@@ -52,6 +52,12 @@ class PlatformMethod {
     await _platform.invokeMethod("getDirectory");
   }
 
+  static Future<void> requestFloatingWindowPermission() async {
+    if (Platform.isAndroid) {
+      await _platform.invokeMethod("requestFloatingWindowPermission");
+    }
+  }
+
   static initHandler() {
     _platform.setMethodCallHandler((call) async {
       switch (call.method) {

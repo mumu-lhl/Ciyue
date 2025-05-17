@@ -223,6 +223,13 @@ class Feedback extends StatelessWidget {
   }
 }
 
+class FloatingWindow extends StatefulWidget {
+  const FloatingWindow({super.key});
+
+  @override
+  State<FloatingWindow> createState() => _FloatingWindowState();
+}
+
 class GithubUrl extends StatelessWidget {
   const GithubUrl({
     super.key,
@@ -401,6 +408,7 @@ class SettingsScreen extends StatelessWidget {
           const SecureScreenSwitch(),
           const Divider(indent: 16, endIndent: 16),
           const NotificationSwitch(),
+          const FloatingWindow(),
         ],
         TitleDivider(title: AppLocalizations.of(context)!.export),
         const AutoExport(),
@@ -540,6 +548,19 @@ class _DrawerIconSwitchState extends State<DrawerIconSwitch> {
         });
       },
       secondary: const Icon(Icons.menu),
+    );
+  }
+}
+
+class _FloatingWindowState extends State<FloatingWindow> {
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.window),
+      title: Text(AppLocalizations.of(context)!.floatingWindow),
+      onTap: () async {
+        await PlatformMethod.requestFloatingWindowPermission();
+      },
     );
   }
 }
