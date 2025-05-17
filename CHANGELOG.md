@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.14.0-beta.2](https://github.com/mumu-lhl/Ciyue/compare/v1.14.0-beta.1..v1.14.0-beta.2) - 2025-05-17
+
+### Features
+
+- **(translation)** finish translation - ([cb65a7a](https://github.com/mumu-lhl/Ciyue/commit/cb65a7a9fbf53e0d8fcf2ff444fad40092286be5)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(build)** remove flavors - ([e2ee551](https://github.com/mumu-lhl/Ciyue/commit/e2ee55167eff2dd0ca07ea2e3451cd16bff3963b)) - Mumulhl
+
+---
 ## [1.14.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.13.0..v1.14.0-beta.1) - 2025-05-17
 
 ### Bug Fixes
