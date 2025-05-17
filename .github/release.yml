@@ -12,6 +12,10 @@ changelog:
       labels:
         - bug
 
+    - title: Translation 🌐
+      labels:
+        - translation
+
     - title: Documentation 📚
       labels:
         - documentation
