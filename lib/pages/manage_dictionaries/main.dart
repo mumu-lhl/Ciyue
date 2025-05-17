@@ -53,34 +53,37 @@ class AddButton extends StatelessWidget {
       extensions: <String>["mdx"],
     );
 
-    final file = await openFile(acceptedTypeGroups: [typeGroup]);
-    var path = file?.path;
+    final files = await openFiles(acceptedTypeGroups: [typeGroup]);
 
-    if (path != null) {
+    if (files.isNotEmpty) {
+      if (context.mounted)
+        showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
+    }
+
+    for (final file in files) {
       if (context.mounted) {
-        showLoadingDialog(context, text: "Copying files...");
-      }
-
-      late final Mdict tmpDict;
-      try {
-        path = setExtension(path, "");
-        tmpDict = Mdict(path: path);
-        if (await tmpDict.add()) {
-          await tmpDict.close();
+        Mdict? tmpDict;
+        try {
+          final pathNoExtension = setExtension(file.path, "");
+          tmpDict = Mdict(path: pathNoExtension);
+          await tmpDict.add();
+        } catch (e) {
+          if (context.mounted) {
+            final snackBar = SnackBar(
+                content: Text(AppLocalizations.of(context)!.notSupport));
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
+        } finally {
+          if (tmpDict != null) {
+            await tmpDict.close();
+          }
         }
-      } catch (e) {
-        await tmpDict.close();
-        if (context.mounted) {
-          final snackBar =
-              SnackBar(content: Text(AppLocalizations.of(context)!.notSupport));
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        }
       }
+    }
 
-      if (context.mounted) {
-        context.read<ManageDictionariesModel>().update();
-        context.pop();
-      }
+    if (files.isNotEmpty && context.mounted) {
+      context.read<ManageDictionariesModel>().update();
+      context.pop();
     }
   }
 }

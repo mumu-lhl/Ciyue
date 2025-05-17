@@ -2,6 +2,7 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/database/app.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:dict_reader/dict_reader.dart";
@@ -305,7 +306,10 @@ class Mdict {
         await db.insertWords(wordList);
         wordList.clear();
 
-        LoadingDialogContentState.updateText("Adding word: $key");
+        LoadingDialogContentState.updateText(
+            AppLocalizations.of(navigatorKey.currentContext!)!
+                .addingWord
+                .replaceFirst("%s", key));
       }
     }
 

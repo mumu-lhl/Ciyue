@@ -211,5 +211,9 @@
   "apiUrl": "API Url",
   "@apiUrl": {},
   "floatingWindow": "Floating Window",
-  "@floatingWindow": {}
+  "@floatingWindow": {},
+  "loading": "Loading...",
+  "@loading": {},
+  "addingWord": "Adding Word: %s",
+  "@addingWord": {}
 }
