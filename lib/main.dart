@@ -87,11 +87,24 @@ final router = GoRouter(
       },
     ),
     GoRoute(
-        path: "/word",
-        builder: (context, state) {
-          final extra = state.extra as Map<String, String>;
-          return WordDisplay(word: extra["word"]!);
-        }),
+      path: "/word",
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, String>;
+        return CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: WordDisplay(word: extra["word"]!),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            );
+          },
+        );
+      },
+    ),
     GoRoute(
         path: "/description/:dictId",
         builder: (context, state) => WebviewDisplayDescription(
