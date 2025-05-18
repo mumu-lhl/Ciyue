@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.14.0](https://github.com/mumu-lhl/Ciyue/compare/v1.14.0-beta.2..v1.14.0) - 2025-05-18
+
+### Bug Fixes
+
+- fix loading dialog in Android - ([42d75b4](https://github.com/mumu-lhl/Ciyue/commit/42d75b43069e31d3e7ce2a2ef3402f855e518da0)) - Mumulhl
+- fix returned type of initHandler - ([74da32c](https://github.com/mumu-lhl/Ciyue/commit/74da32c94e95d9e032101a5c1953160ceb86c1b1)) - Mumulhl
+
+### Features
+
+- new default explanation prompt - ([6952da0](https://github.com/mumu-lhl/Ciyue/commit/6952da0af059de8ab06cf0c0c24d8e916aaca261)) - Mumulhl
+- Add slide transition to word page - ([439c6e2](https://github.com/mumu-lhl/Ciyue/commit/439c6e22f7b121914f9984f06d99cd5839f2c964)) - Mumulhl
+
+### Refactoring
+
+- **(animation)** refacotr page transition - ([e9675c0](https://github.com/mumu-lhl/Ciyue/commit/e9675c0c5414daf91bf0f35dbf76956b664a9cd9)) - Mumulhl
+
+---
 ## [1.14.0-beta.2](https://github.com/mumu-lhl/Ciyue/compare/v1.14.0-beta.1..v1.14.0-beta.2) - 2025-05-17
 
 ### Features
