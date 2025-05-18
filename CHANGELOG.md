@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.14.1](https://github.com/mumu-lhl/Ciyue/compare/v1.14.0..v1.14.1) - 2025-05-18
+
+### Bug Fixes
+
+- add dictionary on Android - ([01e31d7](https://github.com/mumu-lhl/Ciyue/commit/01e31d791b8750a9cd618595c37c5811ad7d1971)) - Mumulhl
+
+---
 ## [1.14.0](https://github.com/mumu-lhl/Ciyue/compare/v1.14.0-beta.2..v1.14.0) - 2025-05-18
 
 ### Bug Fixes
