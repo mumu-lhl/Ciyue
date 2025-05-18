@@ -58,7 +58,7 @@ class PlatformMethod {
     }
   }
 
-  static initHandler() {
+  static void initHandler() {
     _platform.setMethodCallHandler((call) async {
       switch (call.method) {
         case "processText":
