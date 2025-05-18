@@ -1,5 +1,6 @@
 import "dart:io";
 
+import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/main.dart";
@@ -72,8 +73,13 @@ class PlatformMethod {
           await prefs.setString(
               "dictionariesDirectory", call.arguments as String);
           await _updateAllDictionaries();
+
           router.pop();
-          router.pushReplacement("/settings/dictionaries");
+
+          Provider.of<ManageDictionariesModel>(navigatorKey.currentContext!,
+                  listen: false)
+              .update();
+
           break;
 
         case "showLoadingDialog":
