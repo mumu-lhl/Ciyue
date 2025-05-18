@@ -68,12 +68,13 @@ final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
 
 final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
 
-String? windowsWebview2Directory;
-
 late final FlutterTts flutterTts;
+
 final HistoryDao historyDao = HistoryDao(mainDatabase);
 final AppDatabase mainDatabase = appDatabase();
+
 final navigatorKey = GlobalKey<NavigatorState>();
+
 late final PackageInfo packageInfo;
 late final SharedPreferencesWithCache prefs;
 late final VoidCallback refreshAll;
@@ -87,11 +88,15 @@ final router = GoRouter(
       },
     ),
     GoRoute(
-        path: "/word",
-        builder: (context, state) {
-          final extra = state.extra as Map<String, String>;
-          return WordDisplay(word: extra["word"]!);
-        }),
+      path: "/word",
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, String>;
+        return slideTransitionPageBuilder(
+          key: state.pageKey,
+          child: WordDisplay(word: extra["word"]!),
+        );
+      },
+    ),
     GoRoute(
         path: "/description/:dictId",
         builder: (context, state) => WebviewDisplayDescription(
@@ -99,28 +104,55 @@ final router = GoRouter(
             )),
     GoRoute(
       path: "/settings/autoExport",
-      builder: (context, state) => const AutoExport(),
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const AutoExport(),
+      ),
     ),
     GoRoute(
-        path: "/settings/dictionaries",
-        builder: (context, state) => const ManageDictionaries()),
+      path: "/settings/dictionaries",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const ManageDictionaries(),
+      ),
+    ),
     GoRoute(
-        path: "/settings/ai_settings",
-        builder: (context, state) => const AiSettings()),
+      path: "/settings/ai_settings",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const AiSettings(),
+      ),
+    ),
     GoRoute(
-        path: "/settings/terms_of_service",
-        builder: (context, state) => const TermsOfService()),
+      path: "/settings/terms_of_service",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const TermsOfService(),
+      ),
+    ),
     GoRoute(
-        path: "/settings/privacy_policy",
-        builder: (context, state) => const PrivacyPolicy()),
+      path: "/settings/privacy_policy",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const PrivacyPolicy(),
+      ),
+    ),
     GoRoute(
-        path: "/settings/audio",
-        builder: (context, state) => const AudioSettings()),
+      path: "/settings/audio",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const AudioSettings(),
+      ),
+    ),
     GoRoute(
-        path: "/settings/:dictId",
-        builder: (context, state) => SettingsDictionary(
-              dictId: int.parse(state.pathParameters["dictId"]!),
-            )),
+      path: "/settings/:dictId",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: SettingsDictionary(
+          dictId: int.parse(state.pathParameters["dictId"]!),
+        ),
+      ),
+    ),
     GoRoute(
         path: "/properties",
         builder: (context, state) => PropertiesDictionary(
@@ -132,9 +164,9 @@ final router = GoRouter(
 String searchWordFromProcessText = "";
 late final List<dynamic> ttsEngines;
 final List<dynamic> ttsLanguages = [];
+String? windowsWebview2Directory;
 final WordbookDao wordbookDao = WordbookDao(mainDatabase);
 final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
-
 @pragma("vm:entry-point")
 void floatingWindow(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -248,6 +280,26 @@ Future<void> initPrefs() async {
     "ttsEngine",
     "ttsLanguage",
   }));
+}
+
+CustomTransitionPage<void> slideTransitionPageBuilder({
+  required LocalKey key,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: key,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(1.0, 0.0),
+          end: Offset.zero,
+        ).animate(animation),
+        child: child,
+      );
+    },
+  );
 }
 
 class Ciyue extends StatefulWidget {
