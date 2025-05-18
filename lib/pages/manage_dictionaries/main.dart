@@ -554,6 +554,7 @@ class ManageDictionariesState extends State<ManageDictionaries> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: UniqueKey(),
         onPressed: () {
           showDialog(
             context: context,
