@@ -4,6 +4,7 @@ import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/services/settings.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:flutter/services.dart";
@@ -76,7 +77,9 @@ class PlatformMethod {
           break;
 
         case "showLoadingDialog":
-          showLoadingDialog(navigatorKey.currentContext!);
+          showLoadingDialog(navigatorKey.currentContext!,
+              text: AppLocalizations.of(navigatorKey.currentContext!)!
+                  .copyingFiles);
           break;
 
         case "getDirectory":
