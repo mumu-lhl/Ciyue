@@ -38,17 +38,9 @@ class AIExplainView extends StatelessWidget {
       template = settings.customExplainPrompt;
     } else {
       template =
-          """You are a AI explain word tool called Ciyue(词悦). Generate a detailed explanation of the word "\$word", including the following sections:
-
-Pronunciation: Provide the pronunciation using the International Phonetic Alphabet (IPA).
-Part of Speech: Specify the part of speech (e.g., noun, verb, adjective).
-Meaning: Explain the meaning of the word.
-Example Sentences: Include at least three example sentences that demonstrate the word's usage.
-Synonyms: List at least three synonyms.
-Antonyms: List at least three antonyms.
-
-Format the response using Markdown to ensure each section is clearly organized with appropriate headings.
-The output is entirely and exclusively in \$targetLanguage.""";
+          """Generate a detailed explanation for the word "$word". If it has multiple meanings, list as many as possible. Include pronunciation, part of speech, meaning(s), examples, synonyms, and antonyms.
+The output is entirely and exclusively in \$targetLanguage.
+NO OTHER WORD LIKE 'OK, here is...'""";
     }
     final prompt = template
         .replaceAll(r"$word", word)
