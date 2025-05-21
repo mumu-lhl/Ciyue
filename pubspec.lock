@@ -594,10 +594,10 @@ packages:
     dependency: "direct main"
     description:
       name: gpt_markdown
-      sha256: a4370a8e9886d686e534efb65438ca8c7c9a9ee814ede51d3fc5b340b173e67a
+      sha256: "80f45e45c4c5636c040a64910aa543a4697442f7224391f0aeced3d2ed3a8c06"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.18"
+    version: "1.0.19"
   graphs:
     dependency: transitive
     description:
