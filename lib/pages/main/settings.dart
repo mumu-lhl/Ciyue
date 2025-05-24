@@ -9,6 +9,7 @@ import "package:ciyue/services/settings.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
+import "package:ciyue/widget/alpha_text.dart";
 import "package:ciyue/widget/update_available.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
@@ -511,7 +512,14 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
     return ListTile(
       leading: const Icon(Icons.volume_up),
       trailing: const Icon(Icons.arrow_forward),
-      title: Text(AppLocalizations.of(context)!.audioSettings),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(AppLocalizations.of(context)!.audioSettings),
+          const SizedBox(width: 8),
+          AlphaText(),
+        ],
+      ),
       onTap: () => context.push("/settings/audio"),
     );
   }
@@ -557,7 +565,14 @@ class _FloatingWindowState extends State<FloatingWindow> {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.window),
-      title: Text(AppLocalizations.of(context)!.floatingWindow),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(AppLocalizations.of(context)!.floatingWindow),
+          const SizedBox(width: 8),
+          AlphaText(),
+        ],
+      ),
       onTap: () async {
         await PlatformMethod.requestFloatingWindowPermission();
       },
