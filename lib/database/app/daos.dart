@@ -280,3 +280,42 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
     await prefs.setString("tagsOrder", tagsOrder.join(","));
   }
 }
+
+@DriftAccessor(tables: [MddAudioList])
+class MddAudioListDao extends DatabaseAccessor<AppDatabase>
+    with _$MddAudioListDaoMixin {
+  MddAudioListDao(super.attachedDatabase);
+
+  Future<int> add(String path) {
+    return into(mddAudioList).insert(MddAudioListCompanion(path: Value(path)));
+  }
+
+  Future<void> remove(int id) async {
+    await (delete(mddAudioList)..where((t) => t.id.isValue(id))).go();
+  }
+
+  Future<List<MddAudioListData>> all() {
+    return (select(mddAudioList)).get();
+  }
+}
+
+@DriftAccessor(tables: [MddAudioResource])
+class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
+    with _$MddAudioResourceDaoMixin {
+  MddAudioResourceDao(super.attachedDatabase);
+
+  Future<int> add(MddAudioResourceCompanion data) {
+    return into(mddAudioResource).insert(data);
+  }
+
+  Future<void> remove(int mddAudioListId) async {
+    await (delete(mddAudioResource)
+          ..where((t) => t.mddAudioListId.isValue(mddAudioListId)))
+        .go();
+  }
+
+  Future<MddAudioResourceData?> getByKey(String key) async {
+    return (await (select(mddAudioResource)..where((t) => t.key.isValue(key)))
+            .getSingleOrNull());
+  }
+}

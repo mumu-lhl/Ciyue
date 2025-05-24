@@ -18,3 +18,10 @@ mixin _$WordbookDaoMixin on DatabaseAccessor<AppDatabase> {
 mixin _$WordbookTagsDaoMixin on DatabaseAccessor<AppDatabase> {
   $WordbookTagsTable get wordbookTags => attachedDatabase.wordbookTags;
 }
+mixin _$MddAudioListDaoMixin on DatabaseAccessor<AppDatabase> {
+  $MddAudioListTable get mddAudioList => attachedDatabase.mddAudioList;
+}
+mixin _$MddAudioResourceDaoMixin on DatabaseAccessor<AppDatabase> {
+  $MddAudioResourceTable get mddAudioResource =>
+      attachedDatabase.mddAudioResource;
+}
