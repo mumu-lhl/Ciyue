@@ -113,7 +113,7 @@ class ModelProviderManager {
             "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
         models: [
           ModelInfo(
-              "gemini-2.5-flash-preview-04-17", "Gemini 2.5 Flash Preview"),
+              "gemini-2.5-flash-preview-05-20", "Gemini 2.5 Flash Preview"),
           ModelInfo("gemini-2.5-pro-preview-05-06", "Gemini 2.5 Pro Preview"),
           ModelInfo("gemini-2.5-pro-exp-03-25", "Gemini 2.5 Pro"),
           ModelInfo("gemini-2.0-flash", "Gemini 2.0 Flash"),
@@ -138,12 +138,14 @@ class ModelProviderManager {
         displayedName: "Anthropic",
         apiUrl: "https://api.openai.com/v1/chat/completions",
         models: [
-          ModelInfo("claude-3-7-sonnet-latest", "Claude 3.7 Sonnet"),
-          ModelInfo("claude-3-5-sonnet-latest", "Claude 3.5 Sonnet"),
-          ModelInfo("claude-3-sonnet-20240229", "Claude 3 Sonnet"),
-          ModelInfo("claude-3-5-haiku-latest", "Claude 3.5 Haiku"),
-          ModelInfo("claude-3-haiku-20240307", "Claude 3 Haiku"),
-          ModelInfo("claude-3-opus-latest", "Claude 3 Opus"),
+          ModelInfo("claude-opus-4-0", "Claude Opus 4"),
+          ModelInfo("claude-sonnet-4-0", "Claude Sonnet 4"),
+          ModelInfo("claude-3-7-sonnet-latest", "Claude Sonnet 3.7"),
+          ModelInfo("claude-3-5-sonnet-latest", "Claude Sonnet 3.5"),
+          ModelInfo("claude-3-5-haiku-latest", "Claude Haiku 3.5"),
+          ModelInfo("claude-3-sonnet-20240229", "Claude Sonnet 3"),
+          ModelInfo("claude-3-haiku-20240307", "Claude Haiku 3"),
+          ModelInfo("claude-3-opus-latest", "Claude Opus 3"),
         ]),
     "openrouter": ModelProvider(
         name: "openrouter",
