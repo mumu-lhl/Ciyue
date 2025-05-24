@@ -23,8 +23,8 @@ Future<void> playSoundOfWord(
     final player = AudioPlayer();
 
     for (final mddAudio in mddAudioList) {
-      final audio =
-          await mddAudioResourceDao.getByKeyAndMddAudioID("$word.spx", mddAudio.id);
+      final audio = await mddAudioResourceDao.getByKeyAndMddAudioID(
+          "$word.spx", mddAudio.id);
       if (audio != null) {
         final reader = DictReader(mddAudio.path);
         await reader.init(false);
