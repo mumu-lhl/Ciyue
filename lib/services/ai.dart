@@ -35,6 +35,8 @@ class AI {
 
 abstract class AIProvider {
   Future<String> request(String prompt);
+
+  Stream<String> requestStream(String prompt);
 }
 
 class GeminiProvider implements AIProvider {
@@ -82,6 +84,78 @@ class GeminiProvider implements AIProvider {
       }
     } catch (e) {
       throw Exception("Error requesting Gemini API: $e");
+    }
+  }
+
+  @override
+  Stream<String> requestStream(String prompt) async* {
+    final dio = Dio();
+    final formattedApiUrl = ModelProviderManager
+        .modelProviders["gemini"]!.apiUrl
+        .replaceFirst("{model}", model)
+        .replaceFirst("generateContent", "streamGenerateContent");
+
+    final params = {"key": apikey};
+
+    final headers = {
+      "Content-Type": "application/json",
+      "Accept": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+    };
+    final data = {
+      "contents": [
+        {
+          "parts": [
+            {"text": prompt}
+          ]
+        }
+      ],
+      "generationConfig": {
+        "responseMimeType": "text/plain",
+      },
+    };
+
+    try {
+      final response = await dio.post(
+        formattedApiUrl,
+        queryParameters: params,
+        options: Options(
+          headers: headers,
+          responseType: ResponseType.stream,
+        ),
+        data: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        await for (var chunk in response.data!.stream) {
+          final String decodedChunk = utf8.decode(chunk);
+          final List<String> lines = decodedChunk
+              .split("\n")
+              .where((line) => line.isNotEmpty)
+              .toList();
+
+          for (var line in lines) {
+            try {
+              final Map<String, dynamic> json = jsonDecode(line);
+              if (json["candidates"] != null &&
+                  json["candidates"][0]["content"] != null &&
+                  json["candidates"][0]["content"]["parts"] != null &&
+                  json["candidates"][0]["content"]["parts"][0]["text"] !=
+                      null) {
+                yield json["candidates"][0]["content"]["parts"][0]["text"];
+              }
+            } catch (e) {
+              // Ignore malformed JSON lines or non-text parts
+            }
+          }
+        }
+      } else {
+        throw Exception(
+            "Failed to fetch stream from Gemini API. Status code: ${response.statusCode}, body: ${response.data}");
+      }
+    } on DioException catch (e) {
+      throw Exception("Error streaming Gemini API: $e\nBody: ${e.response}");
     }
   }
 }
@@ -250,6 +324,59 @@ class OllamaProvider implements AIProvider {
       throw Exception("Error requesting Ollama API: $e\nBody: ${e.response}");
     }
   }
+
+  @override
+  Stream<String> requestStream(String prompt) async* {
+    final dio = Dio();
+    final headers = {
+      "Content-Type": "application/json",
+    };
+
+    final data = {
+      "model": model,
+      "messages": [
+        {"role": "user", "content": prompt}
+      ],
+      "stream": true
+    };
+
+    try {
+      final response = await dio.post(
+        apiUrl,
+        options: Options(
+          headers: headers,
+          responseType: ResponseType.stream,
+        ),
+        data: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        await for (var chunk in response.data!.stream) {
+          final String decodedChunk = utf8.decode(chunk);
+          final List<String> lines = decodedChunk
+              .split("\n")
+              .where((line) => line.isNotEmpty)
+              .toList();
+
+          for (var line in lines) {
+            try {
+              final Map<String, dynamic> json = jsonDecode(line);
+              if (json["message"] != null && json["message"]["content"] != null) {
+                yield json["message"]["content"];
+              }
+            } catch (e) {
+              // Ignore malformed JSON lines or non-text parts
+            }
+          }
+        }
+      } else {
+        throw Exception(
+            "Failed to fetch stream from Ollama API. Status code: ${response.statusCode}, body: ${response.data}");
+      }
+    } on DioException catch (e) {
+      throw Exception("Error streaming Ollama API: $e\nBody: ${e.response}");
+    }
+  }
 }
 
 class OpenAICompatibleProvider implements AIProvider {
@@ -308,6 +435,69 @@ class OpenAICompatibleProvider implements AIProvider {
       }
     } on DioException catch (e) {
       throw Exception("Error requesting OpenAI API: $e\nBody: ${e.response}");
+    }
+  }
+
+  @override
+  Stream<String> requestStream(String prompt) async* {
+    final dio = Dio();
+    final headers = {
+      "Content-Type": "application/json",
+    };
+
+    if (provider == "anthropic") {
+      headers["x-api-key"] = apikey;
+    } else {
+      headers["Authorization"] = "Bearer $apikey";
+    }
+
+    final data = {
+      "model": model,
+      "messages": [
+        {"role": "user", "content": prompt}
+      ],
+      "stream": true
+    };
+
+    try {
+      final response = await dio.post(
+        apiUrl,
+        options: Options(
+          headers: headers,
+          responseType: ResponseType.stream,
+        ),
+        data: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        await for (var chunk in response.data!.stream) {
+          final String decodedChunk = utf8.decode(chunk);
+          final List<String> lines = decodedChunk
+              .split("\n")
+              .where((line) => line.startsWith("data:"))
+              .map((line) => line.substring(5).trim())
+              .where((line) => line.isNotEmpty && line != "[DONE]")
+              .toList();
+
+          for (var line in lines) {
+            try {
+              final Map<String, dynamic> json = jsonDecode(line);
+              if (json["choices"] != null &&
+                  json["choices"][0]["delta"] != null &&
+                  json["choices"][0]["delta"]["content"] != null) {
+                yield json["choices"][0]["delta"]["content"];
+              }
+            } catch (e) {
+              // Ignore malformed JSON lines or non-text parts
+            }
+          }
+        }
+      } else {
+        throw Exception(
+            "Failed to fetch stream from OpenAI API. Status code: ${response.statusCode}, body: ${response.data}");
+      }
+    } on DioException catch (e) {
+      throw Exception("Error streaming OpenAI API: $e\nBody: ${e.response}");
     }
   }
 }
