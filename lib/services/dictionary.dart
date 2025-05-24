@@ -282,7 +282,10 @@ class Mdict {
         await db.insertResource(resourceList);
         resourceList.clear();
 
-        LoadingDialogContentState.updateText("Adding resource: $key");
+        LoadingDialogContentState.updateText(
+            AppLocalizations.of(navigatorKey.currentContext!)!
+                .addingResource
+                .replaceFirst("%s", key));
       }
     }
 
@@ -382,7 +385,7 @@ class Mdict {
   }
 }
 
-Future<void> selectMdx(BuildContext context, List<XFile> files) async {
+Future<void> _selectMdx(BuildContext context, List<XFile> files) async {
   for (final file in files) {
     if (context.mounted) {
       Mdict? tmpDict;
@@ -410,7 +413,7 @@ Future<void> selectMdx(BuildContext context, List<XFile> files) async {
   }
 }
 
-Future<void> selectMdd(BuildContext context, List<XFile> files) async {
+Future<void> _selectMdd(BuildContext context, List<XFile> files) async {
   for (final file in files) {
     if (await mddAudioListDao.existMddAudio(file.path)) {
       continue;
@@ -484,9 +487,9 @@ Future<void> selectMdxOrMdd(BuildContext context, bool isMdx) async {
 
   if (context.mounted) {
     if (isMdx) {
-      await selectMdx(context, files);
+      await _selectMdx(context, files);
     } else {
-      await selectMdd(context, files);
+      await _selectMdd(context, files);
     }
   }
 }

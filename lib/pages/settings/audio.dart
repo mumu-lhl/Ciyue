@@ -21,28 +21,41 @@ class AudioItems extends StatelessWidget {
     return Expanded(
       child: ReorderableListView.builder(
         buildDefaultDragHandles: false,
-        itemCount: mddAudioList.length,
+        itemCount: mddAudioList.length + 1,
         itemBuilder: (context, index) {
-          final mddAudio = mddAudioList[index];
-          return Card(
-            key: ValueKey(mddAudio.id),
-            child: ListTile(
-              leading: ReorderableDragStartListener(
-                index: index,
-                child: IconButton(icon: Icon(Icons.menu), onPressed: () {}),
+          if (index == mddAudioList.length) {
+            return Card(
+              key: ValueKey("tts_option"),
+              child: ListTile(
+                title: const Text("TTS"),
               ),
-              title: Text(mddAudio.title),
-              trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () async {
-                    await context
-                        .read<AudioSettingsPageModel>()
-                        .removeMddAudio(mddAudio.id);
-                  }),
-            ),
-          );
+            );
+          } else {
+            final mddAudio = mddAudioList[index];
+            return Card(
+              key: ValueKey(mddAudio.id),
+              child: ListTile(
+                leading: ReorderableDragStartListener(
+                  index: index,
+                  child: IconButton(icon: Icon(Icons.menu), onPressed: () {}),
+                ),
+                title: Text(mddAudio.title),
+                trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () async {
+                      await context
+                          .read<AudioSettingsPageModel>()
+                          .removeMddAudio(mddAudio.id);
+                    }),
+              ),
+            );
+          }
         },
         onReorder: (oldIndex, newIndex) {
+          if (oldIndex >= mddAudioList.length ||
+              newIndex >= mddAudioList.length) {
+            return;
+          }
           context
               .read<AudioSettingsPageModel>()
               .reorderMddAudio(oldIndex, newIndex);
