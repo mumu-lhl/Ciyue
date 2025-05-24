@@ -19,6 +19,7 @@ import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:drift/drift.dart" as drift;
@@ -57,6 +58,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => DictManagerModel()),
       ChangeNotifierProvider(create: (_) => HistoryModel()),
       ChangeNotifierProvider(create: (_) => ManageDictionariesModel()),
+      ChangeNotifierProvider(create: (_) => AudioModel()..init()),
     ], child: const Ciyue()));
   } catch (e) {
     runApp(MaterialApp(home: CiyueError(error: e)));
@@ -64,18 +66,15 @@ void main() async {
 }
 
 late final Color? accentColor;
-
 final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
-
 final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
-
 late final FlutterTts flutterTts;
-
 final HistoryDao historyDao = HistoryDao(mainDatabase);
 final AppDatabase mainDatabase = appDatabase();
-
+final MddAudioListDao mddAudioListDao = MddAudioListDao(mainDatabase);
+final MddAudioResourceDao mddAudioResourceDao =
+    MddAudioResourceDao(mainDatabase);
 final navigatorKey = GlobalKey<NavigatorState>();
-
 late final PackageInfo packageInfo;
 late final SharedPreferencesWithCache prefs;
 late final VoidCallback refreshAll;
@@ -180,7 +179,7 @@ void floatingWindow(List<String> args) async {
     ChangeNotifierProvider(create: (_) => WordbookModel()),
     ChangeNotifierProvider(create: (_) => HomeModel()),
     ChangeNotifierProvider(create: (_) => DictManagerModel()),
-    ChangeNotifierProvider(create: (_) => HistoryModel())
+    ChangeNotifierProvider(create: (_) => HistoryModel()),
   ], child: Ciyue(isFloatingWindow: true)));
 }
 
@@ -280,6 +279,7 @@ Future<void> initPrefs() async {
     "autoUpdate",
     "ttsEngine",
     "ttsLanguage",
+    "audioDirectory",
   }));
 }
 

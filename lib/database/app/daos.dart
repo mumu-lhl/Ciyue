@@ -280,3 +280,69 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
     await prefs.setString("tagsOrder", tagsOrder.join(","));
   }
 }
+
+@DriftAccessor(tables: [MddAudioList])
+class MddAudioListDao extends DatabaseAccessor<AppDatabase>
+    with _$MddAudioListDaoMixin {
+  MddAudioListDao(super.attachedDatabase);
+
+  Future<int> add(String path, String title) async {
+    final maxOrder = await (select(mddAudioList)
+          ..orderBy([
+            (t) => OrderingTerm(expression: t.order, mode: OrderingMode.desc)
+          ])
+          ..limit(1))
+        .getSingleOrNull();
+    final order = (maxOrder?.order ?? -1) + 1;
+
+    return into(mddAudioList).insert(MddAudioListCompanion(
+        path: Value(path), title: Value(title), order: Value(order)));
+  }
+
+  Future<void> remove(int id) async {
+    await (delete(mddAudioList)..where((t) => t.id.isValue(id))).go();
+  }
+
+  Future<List<MddAudioListData>> allOrdered() {
+    return (select(mddAudioList)
+          ..orderBy([(t) => OrderingTerm(expression: t.order)]))
+        .get();
+  }
+
+  Future<void> updateOrder(int id, int order) {
+    return (update(mddAudioList)..where((t) => t.id.isValue(id)))
+        .write(MddAudioListCompanion(order: Value(order)));
+  }
+
+  Future<bool> existMddAudio(String path) async {
+    return (await (select(mddAudioList)..where((t) => t.path.isValue(path)))
+            .get())
+        .isNotEmpty;
+  }
+}
+
+@DriftAccessor(tables: [MddAudioResource])
+class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
+    with _$MddAudioResourceDaoMixin {
+  MddAudioResourceDao(super.attachedDatabase);
+
+  Future<void> add(List<MddAudioResourceCompanion> data) async {
+    await batch((batch) {
+      batch.insertAll(mddAudioResource, data);
+    });
+  }
+
+  Future<void> remove(int mddAudioId) async {
+    await (delete(mddAudioResource)
+          ..where((t) => t.mddAudioListId.isValue(mddAudioId)))
+        .go();
+  }
+
+  Future<MddAudioResourceData?> getByKeyAndMddAudioID(
+      String key, int mddAudioId) async {
+    return (await (select(mddAudioResource)
+          ..where(
+              (t) => t.key.isValue(key) & t.mddAudioListId.isValue(mddAudioId)))
+        .getSingleOrNull());
+  }
+}

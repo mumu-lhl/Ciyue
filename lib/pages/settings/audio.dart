@@ -2,9 +2,98 @@ import "dart:io";
 
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/settings/ai_settings.dart";
+import "package:ciyue/services/dictionary.dart";
+import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/audio.dart";
 import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+
+class AudioItems extends StatelessWidget {
+  const AudioItems({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    context.select<AudioModel, int>((model) => model.mddAudioListState);
+    final mddAudioList = context.read<AudioModel>().mddAudioList;
+
+    return Expanded(
+      child: ReorderableListView.builder(
+        buildDefaultDragHandles: false,
+        itemCount: mddAudioList.length + 1,
+        itemBuilder: (context, index) {
+          if (index == mddAudioList.length) {
+            return Card(
+              key: ValueKey("tts_option"),
+              color: Theme.of(context).colorScheme.onInverseSurface,
+              child: ListTile(
+                title: const Text("TTS"),
+              ),
+            );
+          } else {
+            final mddAudio = mddAudioList[index];
+            return Card(
+              color: Theme.of(context).colorScheme.onInverseSurface,
+              key: ValueKey(mddAudio.id),
+              child: ListTile(
+                leading: ReorderableDragStartListener(
+                  index: index,
+                  child: IconButton(icon: Icon(Icons.menu), onPressed: () {}),
+                ),
+                title: Text(mddAudio.title),
+                trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () async {
+                      await context
+                          .read<AudioModel>()
+                          .removeMddAudio(mddAudio.id);
+                    }),
+              ),
+            );
+          }
+        },
+        onReorder: (oldIndex, newIndex) {
+          if (oldIndex >= mddAudioList.length ||
+              newIndex >= mddAudioList.length) {
+            return;
+          }
+          context.read<AudioModel>().reorderMddAudio(oldIndex, newIndex);
+        },
+      ),
+    );
+  }
+}
+
+class AudioList extends StatelessWidget {
+  const AudioList({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () async {
+                if (Platform.isAndroid) {
+                  PlatformMethod.openAudioDirectory();
+                } else {
+                  await selectMdxOrMdd(context, false);
+                }
+              },
+            ),
+          ],
+        ),
+        AudioItems(),
+      ],
+    );
+  }
+}
 
 class AudioSettings extends StatelessWidget {
   const AudioSettings({super.key});
@@ -24,8 +113,10 @@ class AudioSettings extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
+                  SizedBox(height: 24),
                   if (Platform.isAndroid) TTSEngines(),
-                  TTSLanguages(),
+                  if (!Platform.isLinux) TTSLanguages(),
+                  Expanded(child: AudioList()),
                 ],
               ),
             ),

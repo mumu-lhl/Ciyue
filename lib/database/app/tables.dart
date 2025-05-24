@@ -18,6 +18,23 @@ class History extends Table {
   TextColumn get word => text()();
 }
 
+class MddAudioList extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get path => text()();
+  TextColumn get title => text()();
+  IntColumn get order => integer()();
+}
+
+@TableIndex(name: "idx_mdd_audio_resource", columns: {#key})
+class MddAudioResource extends Table {
+  IntColumn get blockOffset => integer()();
+  IntColumn get compressedSize => integer()();
+  IntColumn get endOffset => integer()();
+  TextColumn get key => text()();
+  IntColumn get mddAudioListId => integer()();
+  IntColumn get startOffset => integer()();
+}
+
 @TableIndex(name: "idx_wordbook", columns: {#word, #createdAt})
 class Wordbook extends Table {
   DateTimeColumn get createdAt => dateTime()();

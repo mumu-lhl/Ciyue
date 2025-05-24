@@ -4,5 +4,5 @@ targets:
       drift_dev:
         options:
           databases:
-            app: lib/database/app.dart
-            dictionary: lib/database/dictionary.dart
+            app: lib/database/app/app.dart
+            dictionary: lib/database/dictionary/dictionary.dart

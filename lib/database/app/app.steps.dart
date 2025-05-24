@@ -649,6 +649,184 @@ final class Schema9 extends i0.VersionedSchema {
 i1.GeneratedColumn<DateTime> _column_11(String aliasedName) =>
     i1.GeneratedColumn<DateTime>('created_at', aliasedName, false,
         type: i1.DriftSqlType.dateTime);
+
+final class Schema10 extends i0.VersionedSchema {
+  Schema10({required super.database}) : super(version: 10);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    dictionaryList,
+    wordbook,
+    wordbookTags,
+    history,
+    dictGroup,
+    mddAudioList,
+    mddAudioResource,
+    idxWordbook,
+    idxWordbookTags,
+    idxMddAudioResource,
+  ];
+  late final Shape6 dictionaryList = Shape6(
+      source: i0.VersionedTable(
+        entityName: 'dictionary_list',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_9,
+          _column_2,
+          _column_0,
+          _column_1,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape7 wordbook = Shape7(
+      source: i0.VersionedTable(
+        entityName: 'wordbook',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_11,
+          _column_4,
+          _column_5,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape3 wordbookTags = Shape3(
+      source: i0.VersionedTable(
+        entityName: 'wordbook_tags',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_0,
+          _column_6,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape4 history = Shape4(
+      source: i0.VersionedTable(
+        entityName: 'history',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_0,
+          _column_5,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape5 dictGroup = Shape5(
+      source: i0.VersionedTable(
+        entityName: 'dict_group',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_7,
+          _column_0,
+          _column_8,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape8 mddAudioList = Shape8(
+      source: i0.VersionedTable(
+        entityName: 'mdd_audio_list',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_0,
+          _column_1,
+          _column_12,
+          _column_13,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape9 mddAudioResource = Shape9(
+      source: i0.VersionedTable(
+        entityName: 'mdd_audio_resource',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_14,
+          _column_15,
+          _column_16,
+          _column_17,
+          _column_18,
+          _column_19,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  final i1.Index idxWordbook = i1.Index('idx_wordbook',
+      'CREATE INDEX idx_wordbook ON wordbook (word, created_at)');
+  final i1.Index idxWordbookTags = i1.Index('idx_wordbook_tags',
+      'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)');
+  final i1.Index idxMddAudioResource = i1.Index('idx_mdd_audio_resource',
+      'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")');
+}
+
+class Shape8 extends i0.VersionedTable {
+  Shape8({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get path =>
+      columnsByName['path']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get title =>
+      columnsByName['title']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get order =>
+      columnsByName['order']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<String> _column_12(String aliasedName) =>
+    i1.GeneratedColumn<String>('title', aliasedName, false,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<int> _column_13(String aliasedName) =>
+    i1.GeneratedColumn<int>('order', aliasedName, false,
+        type: i1.DriftSqlType.int);
+
+class Shape9 extends i0.VersionedTable {
+  Shape9({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get blockOffset =>
+      columnsByName['block_offset']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get compressedSize =>
+      columnsByName['compressed_size']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get endOffset =>
+      columnsByName['end_offset']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get key =>
+      columnsByName['key']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get mddAudioListId =>
+      columnsByName['mdd_audio_list_id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get startOffset =>
+      columnsByName['start_offset']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<int> _column_14(String aliasedName) =>
+    i1.GeneratedColumn<int>('block_offset', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<int> _column_15(String aliasedName) =>
+    i1.GeneratedColumn<int>('compressed_size', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<int> _column_16(String aliasedName) =>
+    i1.GeneratedColumn<int>('end_offset', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<String> _column_17(String aliasedName) =>
+    i1.GeneratedColumn<String>('key', aliasedName, false,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<int> _column_18(String aliasedName) =>
+    i1.GeneratedColumn<int>('mdd_audio_list_id', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<int> _column_19(String aliasedName) =>
+    i1.GeneratedColumn<int>('start_offset', aliasedName, false,
+        type: i1.DriftSqlType.int);
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
@@ -658,6 +836,7 @@ i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema7 schema) from6To7,
   required Future<void> Function(i1.Migrator m, Schema8 schema) from7To8,
   required Future<void> Function(i1.Migrator m, Schema9 schema) from8To9,
+  required Future<void> Function(i1.Migrator m, Schema10 schema) from9To10,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -701,6 +880,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from8To9(migrator, schema);
         return 9;
+      case 9:
+        final schema = Schema10(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from9To10(migrator, schema);
+        return 10;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -716,6 +900,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema7 schema) from6To7,
   required Future<void> Function(i1.Migrator m, Schema8 schema) from7To8,
   required Future<void> Function(i1.Migrator m, Schema9 schema) from8To9,
+  required Future<void> Function(i1.Migrator m, Schema10 schema) from9To10,
 }) =>
     i0.VersionedSchema.stepByStepHelper(
         step: migrationSteps(
@@ -727,4 +912,5 @@ i1.OnUpgrade stepByStep({
       from6To7: from6To7,
       from7To8: from7To8,
       from8To9: from8To9,
+      from9To10: from9To10,
     ));

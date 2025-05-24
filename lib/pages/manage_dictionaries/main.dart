@@ -6,8 +6,6 @@ import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/dictionary.dart";
-import "package:ciyue/widget/loading_dialog.dart";
-import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
@@ -41,51 +39,10 @@ class AddButton extends StatelessWidget {
         if (Platform.isAndroid) {
           PlatformMethod.openDirectory();
         } else {
-          _selectMdxFile(context);
+          selectMdxOrMdd(context, true);
         }
       },
     );
-  }
-
-  Future<void> _selectMdxFile(BuildContext context) async {
-    const XTypeGroup typeGroup = XTypeGroup(
-      label: "MDX File",
-      extensions: <String>["mdx"],
-    );
-
-    final files = await openFiles(acceptedTypeGroups: [typeGroup]);
-
-    if (files.isNotEmpty) {
-      if (context.mounted) {
-        showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
-      }
-    }
-
-    for (final file in files) {
-      if (context.mounted) {
-        Mdict? tmpDict;
-        try {
-          final pathNoExtension = setExtension(file.path, "");
-          tmpDict = Mdict(path: pathNoExtension);
-          await tmpDict.add();
-        } catch (e) {
-          if (context.mounted) {
-            final snackBar = SnackBar(
-                content: Text(AppLocalizations.of(context)!.notSupport));
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          }
-        } finally {
-          if (tmpDict != null) {
-            await tmpDict.close();
-          }
-        }
-      }
-    }
-
-    if (files.isNotEmpty && context.mounted) {
-      context.read<ManageDictionariesModel>().update();
-      context.pop();
-    }
   }
 }
 

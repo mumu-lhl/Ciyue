@@ -1,6 +1,7 @@
 import "dart:io";
 
 import "package:ciyue/pages/manage_dictionaries/main.dart";
+import "package:ciyue/services/audio.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/main.dart";
@@ -82,6 +83,14 @@ class PlatformMethod {
 
           break;
 
+        case "inputAudioDirectory":
+          await prefs.setString("audioDirectory", call.arguments as String);
+
+          final paths = await findMddAudioFilesOnAndroid();
+          await selectMdd(navigatorKey.currentContext!, paths);
+
+          break;
+
         case "showLoadingDialog":
           showLoadingDialog(navigatorKey.currentContext!,
               text: AppLocalizations.of(navigatorKey.currentContext!)!
@@ -99,6 +108,10 @@ class PlatformMethod {
 
   static Future<void> openDirectory() async {
     await _platform.invokeMethod("openDirectory");
+  }
+
+  static Future<void> openAudioDirectory() async {
+    await _platform.invokeMethod("openAudioDirectory");
   }
 
   static Future<void> setSecureFlag(bool value) async {

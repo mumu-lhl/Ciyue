@@ -273,6 +273,12 @@ class $WordbookTable extends Wordbook
   final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $WordbookTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _createdAtMeta =
+      const drift.VerificationMeta('createdAt');
+  @override
+  late final drift.GeneratedColumn<DateTime> createdAt =
+      drift.GeneratedColumn<DateTime>('created_at', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
   static const drift.VerificationMeta _tagMeta =
       const drift.VerificationMeta('tag');
   @override
@@ -285,14 +291,8 @@ class $WordbookTable extends Wordbook
   late final drift.GeneratedColumn<String> word = drift.GeneratedColumn<String>(
       'word', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const drift.VerificationMeta _createdAtMeta =
-      const drift.VerificationMeta('createdAt');
   @override
-  late final drift.GeneratedColumn<DateTime> createdAt =
-      drift.GeneratedColumn<DateTime>('created_at', aliasedName, false,
-          type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  @override
-  List<drift.GeneratedColumn> get $columns => [tag, word, createdAt];
+  List<drift.GeneratedColumn> get $columns => [createdAt, tag, word];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -304,6 +304,12 @@ class $WordbookTable extends Wordbook
       {bool isInserting = false}) {
     final context = drift.VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
     if (data.containsKey('tag')) {
       context.handle(
           _tagMeta, tag.isAcceptableOrUnknown(data['tag']!, _tagMeta));
@@ -314,12 +320,6 @@ class $WordbookTable extends Wordbook
     } else if (isInserting) {
       context.missing(_wordMeta);
     }
-    if (data.containsKey('created_at')) {
-      context.handle(_createdAtMeta,
-          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
     return context;
   }
 
@@ -329,12 +329,12 @@ class $WordbookTable extends Wordbook
   WordbookData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WordbookData(
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       tag: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}tag']),
       word: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
-      createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
   }
 
@@ -346,28 +346,28 @@ class $WordbookTable extends Wordbook
 
 class WordbookData extends drift.DataClass
     implements drift.Insertable<WordbookData> {
+  final DateTime createdAt;
   final int? tag;
   final String word;
-  final DateTime createdAt;
-  const WordbookData({this.tag, required this.word, required this.createdAt});
+  const WordbookData({required this.createdAt, this.tag, required this.word});
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
+    map['created_at'] = drift.Variable<DateTime>(createdAt);
     if (!nullToAbsent || tag != null) {
       map['tag'] = drift.Variable<int>(tag);
     }
     map['word'] = drift.Variable<String>(word);
-    map['created_at'] = drift.Variable<DateTime>(createdAt);
     return map;
   }
 
   WordbookCompanion toCompanion(bool nullToAbsent) {
     return WordbookCompanion(
+      createdAt: drift.Value(createdAt),
       tag: tag == null && nullToAbsent
           ? const drift.Value.absent()
           : drift.Value(tag),
       word: drift.Value(word),
-      createdAt: drift.Value(createdAt),
     );
   }
 
@@ -375,100 +375,100 @@ class WordbookData extends drift.DataClass
       {ValueSerializer? serializer}) {
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return WordbookData(
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       tag: serializer.fromJson<int?>(json['tag']),
       word: serializer.fromJson<String>(json['word']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'createdAt': serializer.toJson<DateTime>(createdAt),
       'tag': serializer.toJson<int?>(tag),
       'word': serializer.toJson<String>(word),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
   WordbookData copyWith(
-          {drift.Value<int?> tag = const drift.Value.absent(),
-          String? word,
-          DateTime? createdAt}) =>
+          {DateTime? createdAt,
+          drift.Value<int?> tag = const drift.Value.absent(),
+          String? word}) =>
       WordbookData(
+        createdAt: createdAt ?? this.createdAt,
         tag: tag.present ? tag.value : this.tag,
         word: word ?? this.word,
-        createdAt: createdAt ?? this.createdAt,
       );
   WordbookData copyWithCompanion(WordbookCompanion data) {
     return WordbookData(
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       tag: data.tag.present ? data.tag.value : this.tag,
       word: data.word.present ? data.word.value : this.word,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
   @override
   String toString() {
     return (StringBuffer('WordbookData(')
+          ..write('createdAt: $createdAt, ')
           ..write('tag: $tag, ')
-          ..write('word: $word, ')
-          ..write('createdAt: $createdAt')
+          ..write('word: $word')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(tag, word, createdAt);
+  int get hashCode => Object.hash(createdAt, tag, word);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WordbookData &&
+          other.createdAt == this.createdAt &&
           other.tag == this.tag &&
-          other.word == this.word &&
-          other.createdAt == this.createdAt);
+          other.word == this.word);
 }
 
 class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
+  final drift.Value<DateTime> createdAt;
   final drift.Value<int?> tag;
   final drift.Value<String> word;
-  final drift.Value<DateTime> createdAt;
   final drift.Value<int> rowid;
   const WordbookCompanion({
+    this.createdAt = const drift.Value.absent(),
     this.tag = const drift.Value.absent(),
     this.word = const drift.Value.absent(),
-    this.createdAt = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   });
   WordbookCompanion.insert({
+    required DateTime createdAt,
     this.tag = const drift.Value.absent(),
     required String word,
-    required DateTime createdAt,
     this.rowid = const drift.Value.absent(),
-  })  : word = drift.Value(word),
-        createdAt = drift.Value(createdAt);
+  })  : createdAt = drift.Value(createdAt),
+        word = drift.Value(word);
   static drift.Insertable<WordbookData> custom({
+    drift.Expression<DateTime>? createdAt,
     drift.Expression<int>? tag,
     drift.Expression<String>? word,
-    drift.Expression<DateTime>? createdAt,
     drift.Expression<int>? rowid,
   }) {
     return drift.RawValuesInsertable({
+      if (createdAt != null) 'created_at': createdAt,
       if (tag != null) 'tag': tag,
       if (word != null) 'word': word,
-      if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   WordbookCompanion copyWith(
-      {drift.Value<int?>? tag,
+      {drift.Value<DateTime>? createdAt,
+      drift.Value<int?>? tag,
       drift.Value<String>? word,
-      drift.Value<DateTime>? createdAt,
       drift.Value<int>? rowid}) {
     return WordbookCompanion(
+      createdAt: createdAt ?? this.createdAt,
       tag: tag ?? this.tag,
       word: word ?? this.word,
-      createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -476,14 +476,14 @@ class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
+    if (createdAt.present) {
+      map['created_at'] = drift.Variable<DateTime>(createdAt.value);
+    }
     if (tag.present) {
       map['tag'] = drift.Variable<int>(tag.value);
     }
     if (word.present) {
       map['word'] = drift.Variable<String>(word.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = drift.Variable<DateTime>(createdAt.value);
     }
     if (rowid.present) {
       map['rowid'] = drift.Variable<int>(rowid.value);
@@ -494,9 +494,9 @@ class WordbookCompanion extends drift.UpdateCompanion<WordbookData> {
   @override
   String toString() {
     return (StringBuffer('WordbookCompanion(')
+          ..write('createdAt: $createdAt, ')
           ..write('tag: $tag, ')
           ..write('word: $word, ')
-          ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1092,6 +1092,639 @@ class DictGroupCompanion extends drift.UpdateCompanion<DictGroupData> {
   }
 }
 
+class $MddAudioListTable extends MddAudioList
+    with drift.TableInfo<$MddAudioListTable, MddAudioListData> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MddAudioListTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _idMeta =
+      const drift.VerificationMeta('id');
+  @override
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const drift.VerificationMeta _pathMeta =
+      const drift.VerificationMeta('path');
+  @override
+  late final drift.GeneratedColumn<String> path = drift.GeneratedColumn<String>(
+      'path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const drift.VerificationMeta _titleMeta =
+      const drift.VerificationMeta('title');
+  @override
+  late final drift.GeneratedColumn<String> title =
+      drift.GeneratedColumn<String>('title', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const drift.VerificationMeta _orderMeta =
+      const drift.VerificationMeta('order');
+  @override
+  late final drift.GeneratedColumn<int> order = drift.GeneratedColumn<int>(
+      'order', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<drift.GeneratedColumn> get $columns => [id, path, title, order];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'mdd_audio_list';
+  @override
+  drift.VerificationContext validateIntegrity(
+      drift.Insertable<MddAudioListData> instance,
+      {bool isInserting = false}) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('order')) {
+      context.handle(
+          _orderMeta, order.isAcceptableOrUnknown(data['order']!, _orderMeta));
+    } else if (isInserting) {
+      context.missing(_orderMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
+  @override
+  MddAudioListData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MddAudioListData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      path: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      order: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}order'])!,
+    );
+  }
+
+  @override
+  $MddAudioListTable createAlias(String alias) {
+    return $MddAudioListTable(attachedDatabase, alias);
+  }
+}
+
+class MddAudioListData extends drift.DataClass
+    implements drift.Insertable<MddAudioListData> {
+  final int id;
+  final String path;
+  final String title;
+  final int order;
+  const MddAudioListData(
+      {required this.id,
+      required this.path,
+      required this.title,
+      required this.order});
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['path'] = drift.Variable<String>(path);
+    map['title'] = drift.Variable<String>(title);
+    map['order'] = drift.Variable<int>(order);
+    return map;
+  }
+
+  MddAudioListCompanion toCompanion(bool nullToAbsent) {
+    return MddAudioListCompanion(
+      id: drift.Value(id),
+      path: drift.Value(path),
+      title: drift.Value(title),
+      order: drift.Value(order),
+    );
+  }
+
+  factory MddAudioListData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return MddAudioListData(
+      id: serializer.fromJson<int>(json['id']),
+      path: serializer.fromJson<String>(json['path']),
+      title: serializer.fromJson<String>(json['title']),
+      order: serializer.fromJson<int>(json['order']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'path': serializer.toJson<String>(path),
+      'title': serializer.toJson<String>(title),
+      'order': serializer.toJson<int>(order),
+    };
+  }
+
+  MddAudioListData copyWith(
+          {int? id, String? path, String? title, int? order}) =>
+      MddAudioListData(
+        id: id ?? this.id,
+        path: path ?? this.path,
+        title: title ?? this.title,
+        order: order ?? this.order,
+      );
+  MddAudioListData copyWithCompanion(MddAudioListCompanion data) {
+    return MddAudioListData(
+      id: data.id.present ? data.id.value : this.id,
+      path: data.path.present ? data.path.value : this.path,
+      title: data.title.present ? data.title.value : this.title,
+      order: data.order.present ? data.order.value : this.order,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MddAudioListData(')
+          ..write('id: $id, ')
+          ..write('path: $path, ')
+          ..write('title: $title, ')
+          ..write('order: $order')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, path, title, order);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MddAudioListData &&
+          other.id == this.id &&
+          other.path == this.path &&
+          other.title == this.title &&
+          other.order == this.order);
+}
+
+class MddAudioListCompanion extends drift.UpdateCompanion<MddAudioListData> {
+  final drift.Value<int> id;
+  final drift.Value<String> path;
+  final drift.Value<String> title;
+  final drift.Value<int> order;
+  const MddAudioListCompanion({
+    this.id = const drift.Value.absent(),
+    this.path = const drift.Value.absent(),
+    this.title = const drift.Value.absent(),
+    this.order = const drift.Value.absent(),
+  });
+  MddAudioListCompanion.insert({
+    this.id = const drift.Value.absent(),
+    required String path,
+    required String title,
+    required int order,
+  })  : path = drift.Value(path),
+        title = drift.Value(title),
+        order = drift.Value(order);
+  static drift.Insertable<MddAudioListData> custom({
+    drift.Expression<int>? id,
+    drift.Expression<String>? path,
+    drift.Expression<String>? title,
+    drift.Expression<int>? order,
+  }) {
+    return drift.RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (path != null) 'path': path,
+      if (title != null) 'title': title,
+      if (order != null) 'order': order,
+    });
+  }
+
+  MddAudioListCompanion copyWith(
+      {drift.Value<int>? id,
+      drift.Value<String>? path,
+      drift.Value<String>? title,
+      drift.Value<int>? order}) {
+    return MddAudioListCompanion(
+      id: id ?? this.id,
+      path: path ?? this.path,
+      title: title ?? this.title,
+      order: order ?? this.order,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (id.present) {
+      map['id'] = drift.Variable<int>(id.value);
+    }
+    if (path.present) {
+      map['path'] = drift.Variable<String>(path.value);
+    }
+    if (title.present) {
+      map['title'] = drift.Variable<String>(title.value);
+    }
+    if (order.present) {
+      map['order'] = drift.Variable<int>(order.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MddAudioListCompanion(')
+          ..write('id: $id, ')
+          ..write('path: $path, ')
+          ..write('title: $title, ')
+          ..write('order: $order')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MddAudioResourceTable extends MddAudioResource
+    with drift.TableInfo<$MddAudioResourceTable, MddAudioResourceData> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MddAudioResourceTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _blockOffsetMeta =
+      const drift.VerificationMeta('blockOffset');
+  @override
+  late final drift.GeneratedColumn<int> blockOffset =
+      drift.GeneratedColumn<int>('block_offset', aliasedName, false,
+          type: DriftSqlType.int, requiredDuringInsert: true);
+  static const drift.VerificationMeta _compressedSizeMeta =
+      const drift.VerificationMeta('compressedSize');
+  @override
+  late final drift.GeneratedColumn<int> compressedSize =
+      drift.GeneratedColumn<int>('compressed_size', aliasedName, false,
+          type: DriftSqlType.int, requiredDuringInsert: true);
+  static const drift.VerificationMeta _endOffsetMeta =
+      const drift.VerificationMeta('endOffset');
+  @override
+  late final drift.GeneratedColumn<int> endOffset = drift.GeneratedColumn<int>(
+      'end_offset', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const drift.VerificationMeta _keyMeta =
+      const drift.VerificationMeta('key');
+  @override
+  late final drift.GeneratedColumn<String> key = drift.GeneratedColumn<String>(
+      'key', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const drift.VerificationMeta _mddAudioListIdMeta =
+      const drift.VerificationMeta('mddAudioListId');
+  @override
+  late final drift.GeneratedColumn<int> mddAudioListId =
+      drift.GeneratedColumn<int>('mdd_audio_list_id', aliasedName, false,
+          type: DriftSqlType.int, requiredDuringInsert: true);
+  static const drift.VerificationMeta _startOffsetMeta =
+      const drift.VerificationMeta('startOffset');
+  @override
+  late final drift.GeneratedColumn<int> startOffset =
+      drift.GeneratedColumn<int>('start_offset', aliasedName, false,
+          type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<drift.GeneratedColumn> get $columns => [
+        blockOffset,
+        compressedSize,
+        endOffset,
+        key,
+        mddAudioListId,
+        startOffset
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'mdd_audio_resource';
+  @override
+  drift.VerificationContext validateIntegrity(
+      drift.Insertable<MddAudioResourceData> instance,
+      {bool isInserting = false}) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('block_offset')) {
+      context.handle(
+          _blockOffsetMeta,
+          blockOffset.isAcceptableOrUnknown(
+              data['block_offset']!, _blockOffsetMeta));
+    } else if (isInserting) {
+      context.missing(_blockOffsetMeta);
+    }
+    if (data.containsKey('compressed_size')) {
+      context.handle(
+          _compressedSizeMeta,
+          compressedSize.isAcceptableOrUnknown(
+              data['compressed_size']!, _compressedSizeMeta));
+    } else if (isInserting) {
+      context.missing(_compressedSizeMeta);
+    }
+    if (data.containsKey('end_offset')) {
+      context.handle(_endOffsetMeta,
+          endOffset.isAcceptableOrUnknown(data['end_offset']!, _endOffsetMeta));
+    } else if (isInserting) {
+      context.missing(_endOffsetMeta);
+    }
+    if (data.containsKey('key')) {
+      context.handle(
+          _keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('mdd_audio_list_id')) {
+      context.handle(
+          _mddAudioListIdMeta,
+          mddAudioListId.isAcceptableOrUnknown(
+              data['mdd_audio_list_id']!, _mddAudioListIdMeta));
+    } else if (isInserting) {
+      context.missing(_mddAudioListIdMeta);
+    }
+    if (data.containsKey('start_offset')) {
+      context.handle(
+          _startOffsetMeta,
+          startOffset.isAcceptableOrUnknown(
+              data['start_offset']!, _startOffsetMeta));
+    } else if (isInserting) {
+      context.missing(_startOffsetMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => const {};
+  @override
+  MddAudioResourceData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MddAudioResourceData(
+      blockOffset: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}block_offset'])!,
+      compressedSize: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}compressed_size'])!,
+      endOffset: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}end_offset'])!,
+      key: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
+      mddAudioListId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}mdd_audio_list_id'])!,
+      startOffset: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}start_offset'])!,
+    );
+  }
+
+  @override
+  $MddAudioResourceTable createAlias(String alias) {
+    return $MddAudioResourceTable(attachedDatabase, alias);
+  }
+}
+
+class MddAudioResourceData extends drift.DataClass
+    implements drift.Insertable<MddAudioResourceData> {
+  final int blockOffset;
+  final int compressedSize;
+  final int endOffset;
+  final String key;
+  final int mddAudioListId;
+  final int startOffset;
+  const MddAudioResourceData(
+      {required this.blockOffset,
+      required this.compressedSize,
+      required this.endOffset,
+      required this.key,
+      required this.mddAudioListId,
+      required this.startOffset});
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['block_offset'] = drift.Variable<int>(blockOffset);
+    map['compressed_size'] = drift.Variable<int>(compressedSize);
+    map['end_offset'] = drift.Variable<int>(endOffset);
+    map['key'] = drift.Variable<String>(key);
+    map['mdd_audio_list_id'] = drift.Variable<int>(mddAudioListId);
+    map['start_offset'] = drift.Variable<int>(startOffset);
+    return map;
+  }
+
+  MddAudioResourceCompanion toCompanion(bool nullToAbsent) {
+    return MddAudioResourceCompanion(
+      blockOffset: drift.Value(blockOffset),
+      compressedSize: drift.Value(compressedSize),
+      endOffset: drift.Value(endOffset),
+      key: drift.Value(key),
+      mddAudioListId: drift.Value(mddAudioListId),
+      startOffset: drift.Value(startOffset),
+    );
+  }
+
+  factory MddAudioResourceData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return MddAudioResourceData(
+      blockOffset: serializer.fromJson<int>(json['blockOffset']),
+      compressedSize: serializer.fromJson<int>(json['compressedSize']),
+      endOffset: serializer.fromJson<int>(json['endOffset']),
+      key: serializer.fromJson<String>(json['key']),
+      mddAudioListId: serializer.fromJson<int>(json['mddAudioListId']),
+      startOffset: serializer.fromJson<int>(json['startOffset']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'blockOffset': serializer.toJson<int>(blockOffset),
+      'compressedSize': serializer.toJson<int>(compressedSize),
+      'endOffset': serializer.toJson<int>(endOffset),
+      'key': serializer.toJson<String>(key),
+      'mddAudioListId': serializer.toJson<int>(mddAudioListId),
+      'startOffset': serializer.toJson<int>(startOffset),
+    };
+  }
+
+  MddAudioResourceData copyWith(
+          {int? blockOffset,
+          int? compressedSize,
+          int? endOffset,
+          String? key,
+          int? mddAudioListId,
+          int? startOffset}) =>
+      MddAudioResourceData(
+        blockOffset: blockOffset ?? this.blockOffset,
+        compressedSize: compressedSize ?? this.compressedSize,
+        endOffset: endOffset ?? this.endOffset,
+        key: key ?? this.key,
+        mddAudioListId: mddAudioListId ?? this.mddAudioListId,
+        startOffset: startOffset ?? this.startOffset,
+      );
+  MddAudioResourceData copyWithCompanion(MddAudioResourceCompanion data) {
+    return MddAudioResourceData(
+      blockOffset:
+          data.blockOffset.present ? data.blockOffset.value : this.blockOffset,
+      compressedSize: data.compressedSize.present
+          ? data.compressedSize.value
+          : this.compressedSize,
+      endOffset: data.endOffset.present ? data.endOffset.value : this.endOffset,
+      key: data.key.present ? data.key.value : this.key,
+      mddAudioListId: data.mddAudioListId.present
+          ? data.mddAudioListId.value
+          : this.mddAudioListId,
+      startOffset:
+          data.startOffset.present ? data.startOffset.value : this.startOffset,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MddAudioResourceData(')
+          ..write('blockOffset: $blockOffset, ')
+          ..write('compressedSize: $compressedSize, ')
+          ..write('endOffset: $endOffset, ')
+          ..write('key: $key, ')
+          ..write('mddAudioListId: $mddAudioListId, ')
+          ..write('startOffset: $startOffset')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      blockOffset, compressedSize, endOffset, key, mddAudioListId, startOffset);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MddAudioResourceData &&
+          other.blockOffset == this.blockOffset &&
+          other.compressedSize == this.compressedSize &&
+          other.endOffset == this.endOffset &&
+          other.key == this.key &&
+          other.mddAudioListId == this.mddAudioListId &&
+          other.startOffset == this.startOffset);
+}
+
+class MddAudioResourceCompanion
+    extends drift.UpdateCompanion<MddAudioResourceData> {
+  final drift.Value<int> blockOffset;
+  final drift.Value<int> compressedSize;
+  final drift.Value<int> endOffset;
+  final drift.Value<String> key;
+  final drift.Value<int> mddAudioListId;
+  final drift.Value<int> startOffset;
+  final drift.Value<int> rowid;
+  const MddAudioResourceCompanion({
+    this.blockOffset = const drift.Value.absent(),
+    this.compressedSize = const drift.Value.absent(),
+    this.endOffset = const drift.Value.absent(),
+    this.key = const drift.Value.absent(),
+    this.mddAudioListId = const drift.Value.absent(),
+    this.startOffset = const drift.Value.absent(),
+    this.rowid = const drift.Value.absent(),
+  });
+  MddAudioResourceCompanion.insert({
+    required int blockOffset,
+    required int compressedSize,
+    required int endOffset,
+    required String key,
+    required int mddAudioListId,
+    required int startOffset,
+    this.rowid = const drift.Value.absent(),
+  })  : blockOffset = drift.Value(blockOffset),
+        compressedSize = drift.Value(compressedSize),
+        endOffset = drift.Value(endOffset),
+        key = drift.Value(key),
+        mddAudioListId = drift.Value(mddAudioListId),
+        startOffset = drift.Value(startOffset);
+  static drift.Insertable<MddAudioResourceData> custom({
+    drift.Expression<int>? blockOffset,
+    drift.Expression<int>? compressedSize,
+    drift.Expression<int>? endOffset,
+    drift.Expression<String>? key,
+    drift.Expression<int>? mddAudioListId,
+    drift.Expression<int>? startOffset,
+    drift.Expression<int>? rowid,
+  }) {
+    return drift.RawValuesInsertable({
+      if (blockOffset != null) 'block_offset': blockOffset,
+      if (compressedSize != null) 'compressed_size': compressedSize,
+      if (endOffset != null) 'end_offset': endOffset,
+      if (key != null) 'key': key,
+      if (mddAudioListId != null) 'mdd_audio_list_id': mddAudioListId,
+      if (startOffset != null) 'start_offset': startOffset,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MddAudioResourceCompanion copyWith(
+      {drift.Value<int>? blockOffset,
+      drift.Value<int>? compressedSize,
+      drift.Value<int>? endOffset,
+      drift.Value<String>? key,
+      drift.Value<int>? mddAudioListId,
+      drift.Value<int>? startOffset,
+      drift.Value<int>? rowid}) {
+    return MddAudioResourceCompanion(
+      blockOffset: blockOffset ?? this.blockOffset,
+      compressedSize: compressedSize ?? this.compressedSize,
+      endOffset: endOffset ?? this.endOffset,
+      key: key ?? this.key,
+      mddAudioListId: mddAudioListId ?? this.mddAudioListId,
+      startOffset: startOffset ?? this.startOffset,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (blockOffset.present) {
+      map['block_offset'] = drift.Variable<int>(blockOffset.value);
+    }
+    if (compressedSize.present) {
+      map['compressed_size'] = drift.Variable<int>(compressedSize.value);
+    }
+    if (endOffset.present) {
+      map['end_offset'] = drift.Variable<int>(endOffset.value);
+    }
+    if (key.present) {
+      map['key'] = drift.Variable<String>(key.value);
+    }
+    if (mddAudioListId.present) {
+      map['mdd_audio_list_id'] = drift.Variable<int>(mddAudioListId.value);
+    }
+    if (startOffset.present) {
+      map['start_offset'] = drift.Variable<int>(startOffset.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = drift.Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MddAudioResourceCompanion(')
+          ..write('blockOffset: $blockOffset, ')
+          ..write('compressedSize: $compressedSize, ')
+          ..write('endOffset: $endOffset, ')
+          ..write('key: $key, ')
+          ..write('mddAudioListId: $mddAudioListId, ')
+          ..write('startOffset: $startOffset, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1100,10 +1733,16 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final $WordbookTagsTable wordbookTags = $WordbookTagsTable(this);
   late final $HistoryTable history = $HistoryTable(this);
   late final $DictGroupTable dictGroup = $DictGroupTable(this);
+  late final $MddAudioListTable mddAudioList = $MddAudioListTable(this);
+  late final $MddAudioResourceTable mddAudioResource =
+      $MddAudioResourceTable(this);
   late final drift.Index idxWordbook = drift.Index('idx_wordbook',
       'CREATE INDEX idx_wordbook ON wordbook (word, created_at)');
   late final drift.Index idxWordbookTags = drift.Index('idx_wordbook_tags',
       'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)');
+  late final drift.Index idxMddAudioResource = drift.Index(
+      'idx_mdd_audio_resource',
+      'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")');
   @override
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
@@ -1114,8 +1753,11 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
         wordbookTags,
         history,
         dictGroup,
+        mddAudioList,
+        mddAudioResource,
         idxWordbook,
-        idxWordbookTags
+        idxWordbookTags,
+        idxMddAudioResource
       ];
 }
 
@@ -1279,15 +1921,15 @@ typedef $$DictionaryListTableProcessedTableManager
         DictionaryListData,
         drift.PrefetchHooks Function()>;
 typedef $$WordbookTableCreateCompanionBuilder = WordbookCompanion Function({
+  required DateTime createdAt,
   drift.Value<int?> tag,
   required String word,
-  required DateTime createdAt,
   drift.Value<int> rowid,
 });
 typedef $$WordbookTableUpdateCompanionBuilder = WordbookCompanion Function({
+  drift.Value<DateTime> createdAt,
   drift.Value<int?> tag,
   drift.Value<String> word,
-  drift.Value<DateTime> createdAt,
   drift.Value<int> rowid,
 });
 
@@ -1300,15 +1942,15 @@ class $$WordbookTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  drift.ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt,
+      builder: (column) => drift.ColumnFilters(column));
+
   drift.ColumnFilters<int> get tag => $composableBuilder(
       column: $table.tag, builder: (column) => drift.ColumnFilters(column));
 
   drift.ColumnFilters<String> get word => $composableBuilder(
       column: $table.word, builder: (column) => drift.ColumnFilters(column));
-
-  drift.ColumnFilters<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt,
-      builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$WordbookTableOrderingComposer
@@ -1320,15 +1962,15 @@ class $$WordbookTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt,
+      builder: (column) => drift.ColumnOrderings(column));
+
   drift.ColumnOrderings<int> get tag => $composableBuilder(
       column: $table.tag, builder: (column) => drift.ColumnOrderings(column));
 
   drift.ColumnOrderings<String> get word => $composableBuilder(
       column: $table.word, builder: (column) => drift.ColumnOrderings(column));
-
-  drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt,
-      builder: (column) => drift.ColumnOrderings(column));
 }
 
 class $$WordbookTableAnnotationComposer
@@ -1340,14 +1982,14 @@ class $$WordbookTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  drift.GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
   drift.GeneratedColumn<int> get tag =>
       $composableBuilder(column: $table.tag, builder: (column) => column);
 
   drift.GeneratedColumn<String> get word =>
       $composableBuilder(column: $table.word, builder: (column) => column);
-
-  drift.GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 }
 
 class $$WordbookTableTableManager extends drift.RootTableManager<
@@ -1376,27 +2018,27 @@ class $$WordbookTableTableManager extends drift.RootTableManager<
           createComputedFieldComposer: () =>
               $$WordbookTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
+            drift.Value<DateTime> createdAt = const drift.Value.absent(),
             drift.Value<int?> tag = const drift.Value.absent(),
             drift.Value<String> word = const drift.Value.absent(),
-            drift.Value<DateTime> createdAt = const drift.Value.absent(),
             drift.Value<int> rowid = const drift.Value.absent(),
           }) =>
               WordbookCompanion(
+            createdAt: createdAt,
             tag: tag,
             word: word,
-            createdAt: createdAt,
             rowid: rowid,
           ),
           createCompanionCallback: ({
+            required DateTime createdAt,
             drift.Value<int?> tag = const drift.Value.absent(),
             required String word,
-            required DateTime createdAt,
             drift.Value<int> rowid = const drift.Value.absent(),
           }) =>
               WordbookCompanion.insert(
+            createdAt: createdAt,
             tag: tag,
             word: word,
-            createdAt: createdAt,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -1803,6 +2445,362 @@ typedef $$DictGroupTableProcessedTableManager = drift.ProcessedTableManager<
     ),
     DictGroupData,
     drift.PrefetchHooks Function()>;
+typedef $$MddAudioListTableCreateCompanionBuilder = MddAudioListCompanion
+    Function({
+  drift.Value<int> id,
+  required String path,
+  required String title,
+  required int order,
+});
+typedef $$MddAudioListTableUpdateCompanionBuilder = MddAudioListCompanion
+    Function({
+  drift.Value<int> id,
+  drift.Value<String> path,
+  drift.Value<String> title,
+  drift.Value<int> order,
+});
+
+class $$MddAudioListTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $MddAudioListTable> {
+  $$MddAudioListTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<String> get path => $composableBuilder(
+      column: $table.path, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => drift.ColumnFilters(column));
+}
+
+class $$MddAudioListTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $MddAudioListTable> {
+  $$MddAudioListTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<String> get path => $composableBuilder(
+      column: $table.path, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$MddAudioListTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $MddAudioListTable> {
+  $$MddAudioListTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
+}
+
+class $$MddAudioListTableTableManager extends drift.RootTableManager<
+    _$AppDatabase,
+    $MddAudioListTable,
+    MddAudioListData,
+    $$MddAudioListTableFilterComposer,
+    $$MddAudioListTableOrderingComposer,
+    $$MddAudioListTableAnnotationComposer,
+    $$MddAudioListTableCreateCompanionBuilder,
+    $$MddAudioListTableUpdateCompanionBuilder,
+    (
+      MddAudioListData,
+      drift.BaseReferences<_$AppDatabase, $MddAudioListTable, MddAudioListData>
+    ),
+    MddAudioListData,
+    drift.PrefetchHooks Function()> {
+  $$MddAudioListTableTableManager(_$AppDatabase db, $MddAudioListTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MddAudioListTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MddAudioListTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MddAudioListTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            drift.Value<String> path = const drift.Value.absent(),
+            drift.Value<String> title = const drift.Value.absent(),
+            drift.Value<int> order = const drift.Value.absent(),
+          }) =>
+              MddAudioListCompanion(
+            id: id,
+            path: path,
+            title: title,
+            order: order,
+          ),
+          createCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            required String path,
+            required String title,
+            required int order,
+          }) =>
+              MddAudioListCompanion.insert(
+            id: id,
+            path: path,
+            title: title,
+            order: order,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$MddAudioListTableProcessedTableManager = drift.ProcessedTableManager<
+    _$AppDatabase,
+    $MddAudioListTable,
+    MddAudioListData,
+    $$MddAudioListTableFilterComposer,
+    $$MddAudioListTableOrderingComposer,
+    $$MddAudioListTableAnnotationComposer,
+    $$MddAudioListTableCreateCompanionBuilder,
+    $$MddAudioListTableUpdateCompanionBuilder,
+    (
+      MddAudioListData,
+      drift.BaseReferences<_$AppDatabase, $MddAudioListTable, MddAudioListData>
+    ),
+    MddAudioListData,
+    drift.PrefetchHooks Function()>;
+typedef $$MddAudioResourceTableCreateCompanionBuilder
+    = MddAudioResourceCompanion Function({
+  required int blockOffset,
+  required int compressedSize,
+  required int endOffset,
+  required String key,
+  required int mddAudioListId,
+  required int startOffset,
+  drift.Value<int> rowid,
+});
+typedef $$MddAudioResourceTableUpdateCompanionBuilder
+    = MddAudioResourceCompanion Function({
+  drift.Value<int> blockOffset,
+  drift.Value<int> compressedSize,
+  drift.Value<int> endOffset,
+  drift.Value<String> key,
+  drift.Value<int> mddAudioListId,
+  drift.Value<int> startOffset,
+  drift.Value<int> rowid,
+});
+
+class $$MddAudioResourceTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $MddAudioResourceTable> {
+  $$MddAudioResourceTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get blockOffset => $composableBuilder(
+      column: $table.blockOffset,
+      builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get compressedSize => $composableBuilder(
+      column: $table.compressedSize,
+      builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get endOffset => $composableBuilder(
+      column: $table.endOffset,
+      builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<String> get key => $composableBuilder(
+      column: $table.key, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get mddAudioListId => $composableBuilder(
+      column: $table.mddAudioListId,
+      builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get startOffset => $composableBuilder(
+      column: $table.startOffset,
+      builder: (column) => drift.ColumnFilters(column));
+}
+
+class $$MddAudioResourceTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $MddAudioResourceTable> {
+  $$MddAudioResourceTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get blockOffset => $composableBuilder(
+      column: $table.blockOffset,
+      builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get compressedSize => $composableBuilder(
+      column: $table.compressedSize,
+      builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get endOffset => $composableBuilder(
+      column: $table.endOffset,
+      builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<String> get key => $composableBuilder(
+      column: $table.key, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get mddAudioListId => $composableBuilder(
+      column: $table.mddAudioListId,
+      builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get startOffset => $composableBuilder(
+      column: $table.startOffset,
+      builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$MddAudioResourceTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $MddAudioResourceTable> {
+  $$MddAudioResourceTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get blockOffset => $composableBuilder(
+      column: $table.blockOffset, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get compressedSize => $composableBuilder(
+      column: $table.compressedSize, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get endOffset =>
+      $composableBuilder(column: $table.endOffset, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get mddAudioListId => $composableBuilder(
+      column: $table.mddAudioListId, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get startOffset => $composableBuilder(
+      column: $table.startOffset, builder: (column) => column);
+}
+
+class $$MddAudioResourceTableTableManager extends drift.RootTableManager<
+    _$AppDatabase,
+    $MddAudioResourceTable,
+    MddAudioResourceData,
+    $$MddAudioResourceTableFilterComposer,
+    $$MddAudioResourceTableOrderingComposer,
+    $$MddAudioResourceTableAnnotationComposer,
+    $$MddAudioResourceTableCreateCompanionBuilder,
+    $$MddAudioResourceTableUpdateCompanionBuilder,
+    (
+      MddAudioResourceData,
+      drift.BaseReferences<_$AppDatabase, $MddAudioResourceTable,
+          MddAudioResourceData>
+    ),
+    MddAudioResourceData,
+    drift.PrefetchHooks Function()> {
+  $$MddAudioResourceTableTableManager(
+      _$AppDatabase db, $MddAudioResourceTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MddAudioResourceTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MddAudioResourceTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MddAudioResourceTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            drift.Value<int> blockOffset = const drift.Value.absent(),
+            drift.Value<int> compressedSize = const drift.Value.absent(),
+            drift.Value<int> endOffset = const drift.Value.absent(),
+            drift.Value<String> key = const drift.Value.absent(),
+            drift.Value<int> mddAudioListId = const drift.Value.absent(),
+            drift.Value<int> startOffset = const drift.Value.absent(),
+            drift.Value<int> rowid = const drift.Value.absent(),
+          }) =>
+              MddAudioResourceCompanion(
+            blockOffset: blockOffset,
+            compressedSize: compressedSize,
+            endOffset: endOffset,
+            key: key,
+            mddAudioListId: mddAudioListId,
+            startOffset: startOffset,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int blockOffset,
+            required int compressedSize,
+            required int endOffset,
+            required String key,
+            required int mddAudioListId,
+            required int startOffset,
+            drift.Value<int> rowid = const drift.Value.absent(),
+          }) =>
+              MddAudioResourceCompanion.insert(
+            blockOffset: blockOffset,
+            compressedSize: compressedSize,
+            endOffset: endOffset,
+            key: key,
+            mddAudioListId: mddAudioListId,
+            startOffset: startOffset,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$MddAudioResourceTableProcessedTableManager
+    = drift.ProcessedTableManager<
+        _$AppDatabase,
+        $MddAudioResourceTable,
+        MddAudioResourceData,
+        $$MddAudioResourceTableFilterComposer,
+        $$MddAudioResourceTableOrderingComposer,
+        $$MddAudioResourceTableAnnotationComposer,
+        $$MddAudioResourceTableCreateCompanionBuilder,
+        $$MddAudioResourceTableUpdateCompanionBuilder,
+        (
+          MddAudioResourceData,
+          drift.BaseReferences<_$AppDatabase, $MddAudioResourceTable,
+              MddAudioResourceData>
+        ),
+        MddAudioResourceData,
+        drift.PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1817,4 +2815,8 @@ class $AppDatabaseManager {
       $$HistoryTableTableManager(_db, _db.history);
   $$DictGroupTableTableManager get dictGroup =>
       $$DictGroupTableTableManager(_db, _db.dictGroup);
+  $$MddAudioListTableTableManager get mddAudioList =>
+      $$MddAudioListTableTableManager(_db, _db.mddAudioList);
+  $$MddAudioResourceTableTableManager get mddAudioResource =>
+      $$MddAudioResourceTableTableManager(_db, _db.mddAudioResource);
 }
