@@ -4,10 +4,12 @@ import "dart:ui" as ui;
 
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/wordbook.dart";
+import "package:ciyue/services/audio.dart";
 import "package:ciyue/services/backup.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/widget/ai_markdown.dart";
 import "package:ciyue/widget/search_bar.dart";
@@ -150,7 +152,10 @@ class WebviewAndroid extends StatelessWidget {
             title: locale.readLoudly,
             action: () async {
               await webViewController!.clearFocus();
-              await flutterTts.speak(selectedText);
+              if (context.mounted) {
+                await playSoundOfWord(
+                    selectedText, context.read<AudioModel>().mddAudioList);
+              }
             })
       ],
       onCreateContextMenu: (hitTestResult) async {
@@ -481,7 +486,7 @@ class _ButtonState extends State<Button> {
     );
   }
 
-  Widget buildReadLoudlyButton(BuildContext context, word) {
+  Widget buildReadLoudlyButton(BuildContext context, String word) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return FloatingActionButton.small(
@@ -489,7 +494,7 @@ class _ButtonState extends State<Button> {
       backgroundColor: colorScheme.primaryContainer,
       child: const Icon(Icons.volume_up),
       onPressed: () async {
-        await flutterTts.speak(word);
+        await playSoundOfWord(word, context.read<AudioModel>().mddAudioList);
       },
     );
   }
