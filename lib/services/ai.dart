@@ -31,6 +31,10 @@ class AI {
   Future<String> request(String prompt) async {
     return aiProvider.request(prompt);
   }
+
+  Stream<String> requestStream(String prompt) async* {
+    yield* aiProvider.requestStream(prompt);
+  }
 }
 
 abstract class AIProvider {

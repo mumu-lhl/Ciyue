@@ -28,14 +28,15 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     "ru": "Russian",
     "hi": "Hindi",
   };
-  final TextEditingController _inputController = TextEditingController();
+
+  final _inputController = TextEditingController();
+  final _outputController = TextEditingController();
+
   bool _isRichOutput = true;
   String _sourceLanguage = "auto";
   String _targetLanguage = settings.language! == "system"
       ? ui.PlatformDispatcher.instance.locale.languageCode
       : settings.language!;
-
-  String _translatedText = "";
 
   bool _isLoading = false;
 
@@ -162,8 +163,13 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
         padding: const EdgeInsets.only(top: 16.0),
         child: SingleChildScrollView(
           child: SelectionArea(
-            child: GptMarkdown(
-              _translatedText,
+            child: AnimatedBuilder(
+              animation: _outputController,
+              builder: (context, _) {
+                return GptMarkdown(
+                  _outputController.text,
+                );
+              }
             ),
           ),
         ),
@@ -214,7 +220,6 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
   Future<void> _translateText() async {
     setState(() {
       _isLoading = true;
-      _translatedText = "";
     });
 
     try {
@@ -247,15 +252,16 @@ Translate the following text from \$sourceLanguage to \$targetLanguage. Please p
           .replaceAll(r"$targetLanguage", targetLangName)
           .replaceAll(r"$text", inputText);
 
-      final translationResult = await ai.request(prompt);
-
       setState(() {
-        _translatedText = translationResult;
         _isLoading = false;
       });
+
+      await for (final textChunk in ai.requestStream(prompt)) {
+        _outputController.text += textChunk;
+      }
     } catch (e) {
       setState(() {
-        _translatedText = "Error: Failed to translate. $e";
+        _outputController.text = "Error: Failed to translate. $e";
         _isLoading = false;
       });
     }
