@@ -4,19 +4,18 @@ import "dart:ui" as ui;
 
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/main/wordbook.dart";
-import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/backup.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
+import "package:ciyue/widget/ai_markdown.dart";
 import "package:ciyue/widget/search_bar.dart";
 import "package:ciyue/widget/tags_list.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
-import "package:gpt_markdown/gpt_markdown.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
@@ -45,33 +44,8 @@ NO OTHER WORD LIKE 'OK, here is...'""";
     final prompt = template
         .replaceAll(r"$word", word)
         .replaceAll(r"$targetLanguage", targetLanguage);
-    final ai = AI(
-      provider: settings.aiProvider,
-      model: settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
-      apikey: settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
-    );
 
-    return FutureBuilder(
-      future: ai.request(prompt),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SingleChildScrollView(
-                  child: SelectionArea(child: GptMarkdown(snapshot.data!))),
-            ),
-          );
-        } else if (snapshot.hasError) {
-          return Center(
-            child: Text(snapshot.error.toString()),
-          );
-        }
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
+    return AIMarkdown(prompt: prompt);
   }
 }
 
