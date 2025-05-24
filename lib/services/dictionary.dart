@@ -426,8 +426,12 @@ Future<void> selectMdd(BuildContext context, List<String> paths) async {
     int? mddAudioListId;
     if (context.mounted) {
       final title = reader.header["Title"] ?? setExtension(basename(path), "");
-      mddAudioListId =
+      if (Platform.isAndroid) {
+        mddAudioListId = await mddAudioListDao.add(path, title);
+      } else {
+        mddAudioListId =
           await context.read<AudioSettingsPageModel>().addMddAudio(path, title);
+      }
     }
 
     final resources = <MddAudioResourceCompanion>[];
@@ -466,6 +470,10 @@ Future<void> selectMdd(BuildContext context, List<String> paths) async {
   }
 
   if (paths.isNotEmpty && context.mounted) {
+    if (Platform.isAndroid) {
+      context.pushReplacement("/settings/audio");
+    }
+
     context.pop();
   }
 }
@@ -497,7 +505,7 @@ Future<List<String>> findMddAudioFilesOnAndroid() async {
   final documentsDir =
       Directory(join((await getApplicationSupportDirectory()).path, "audios"));
   final mddFiles = <String>[];
-  findAllFileByExtension(documentsDir, mddFiles, "mdd");
+  await findAllFileByExtension(documentsDir, mddFiles, "mdd");
   return mddFiles;
 }
 

@@ -88,7 +88,6 @@ class PlatformMethod {
           final paths = await findMddAudioFilesOnAndroid();
           await selectMdd(navigatorKey.currentContext!, paths);
 
-          router.pop();
           break;
 
         case "showLoadingDialog":
