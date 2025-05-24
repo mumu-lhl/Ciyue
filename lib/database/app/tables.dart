@@ -21,6 +21,7 @@ class History extends Table {
 class MddAudioList extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get path => text()();
+  TextColumn get title => text()();
 }
 
 @TableIndex(name: "idx_mdd_audio_resource", columns: {#key})

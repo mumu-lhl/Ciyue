@@ -1114,8 +1114,14 @@ class $MddAudioListTable extends MddAudioList
   late final drift.GeneratedColumn<String> path = drift.GeneratedColumn<String>(
       'path', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const drift.VerificationMeta _titleMeta =
+      const drift.VerificationMeta('title');
   @override
-  List<drift.GeneratedColumn> get $columns => [id, path];
+  late final drift.GeneratedColumn<String> title =
+      drift.GeneratedColumn<String>('title', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<drift.GeneratedColumn> get $columns => [id, path, title];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1136,6 +1142,12 @@ class $MddAudioListTable extends MddAudioList
     } else if (isInserting) {
       context.missing(_pathMeta);
     }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
     return context;
   }
 
@@ -1149,6 +1161,8 @@ class $MddAudioListTable extends MddAudioList
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
     );
   }
 
@@ -1162,12 +1176,15 @@ class MddAudioListData extends drift.DataClass
     implements drift.Insertable<MddAudioListData> {
   final int id;
   final String path;
-  const MddAudioListData({required this.id, required this.path});
+  final String title;
+  const MddAudioListData(
+      {required this.id, required this.path, required this.title});
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
     map['id'] = drift.Variable<int>(id);
     map['path'] = drift.Variable<String>(path);
+    map['title'] = drift.Variable<String>(title);
     return map;
   }
 
@@ -1175,6 +1192,7 @@ class MddAudioListData extends drift.DataClass
     return MddAudioListCompanion(
       id: drift.Value(id),
       path: drift.Value(path),
+      title: drift.Value(title),
     );
   }
 
@@ -1184,6 +1202,7 @@ class MddAudioListData extends drift.DataClass
     return MddAudioListData(
       id: serializer.fromJson<int>(json['id']),
       path: serializer.fromJson<String>(json['path']),
+      title: serializer.fromJson<String>(json['title']),
     );
   }
   @override
@@ -1192,17 +1211,21 @@ class MddAudioListData extends drift.DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'path': serializer.toJson<String>(path),
+      'title': serializer.toJson<String>(title),
     };
   }
 
-  MddAudioListData copyWith({int? id, String? path}) => MddAudioListData(
+  MddAudioListData copyWith({int? id, String? path, String? title}) =>
+      MddAudioListData(
         id: id ?? this.id,
         path: path ?? this.path,
+        title: title ?? this.title,
       );
   MddAudioListData copyWithCompanion(MddAudioListCompanion data) {
     return MddAudioListData(
       id: data.id.present ? data.id.value : this.id,
       path: data.path.present ? data.path.value : this.path,
+      title: data.title.present ? data.title.value : this.title,
     );
   }
 
@@ -1210,47 +1233,58 @@ class MddAudioListData extends drift.DataClass
   String toString() {
     return (StringBuffer('MddAudioListData(')
           ..write('id: $id, ')
-          ..write('path: $path')
+          ..write('path: $path, ')
+          ..write('title: $title')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, path);
+  int get hashCode => Object.hash(id, path, title);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MddAudioListData &&
           other.id == this.id &&
-          other.path == this.path);
+          other.path == this.path &&
+          other.title == this.title);
 }
 
 class MddAudioListCompanion extends drift.UpdateCompanion<MddAudioListData> {
   final drift.Value<int> id;
   final drift.Value<String> path;
+  final drift.Value<String> title;
   const MddAudioListCompanion({
     this.id = const drift.Value.absent(),
     this.path = const drift.Value.absent(),
+    this.title = const drift.Value.absent(),
   });
   MddAudioListCompanion.insert({
     this.id = const drift.Value.absent(),
     required String path,
-  }) : path = drift.Value(path);
+    required String title,
+  })  : path = drift.Value(path),
+        title = drift.Value(title);
   static drift.Insertable<MddAudioListData> custom({
     drift.Expression<int>? id,
     drift.Expression<String>? path,
+    drift.Expression<String>? title,
   }) {
     return drift.RawValuesInsertable({
       if (id != null) 'id': id,
       if (path != null) 'path': path,
+      if (title != null) 'title': title,
     });
   }
 
   MddAudioListCompanion copyWith(
-      {drift.Value<int>? id, drift.Value<String>? path}) {
+      {drift.Value<int>? id,
+      drift.Value<String>? path,
+      drift.Value<String>? title}) {
     return MddAudioListCompanion(
       id: id ?? this.id,
       path: path ?? this.path,
+      title: title ?? this.title,
     );
   }
 
@@ -1263,6 +1297,9 @@ class MddAudioListCompanion extends drift.UpdateCompanion<MddAudioListData> {
     if (path.present) {
       map['path'] = drift.Variable<String>(path.value);
     }
+    if (title.present) {
+      map['title'] = drift.Variable<String>(title.value);
+    }
     return map;
   }
 
@@ -1270,7 +1307,8 @@ class MddAudioListCompanion extends drift.UpdateCompanion<MddAudioListData> {
   String toString() {
     return (StringBuffer('MddAudioListCompanion(')
           ..write('id: $id, ')
-          ..write('path: $path')
+          ..write('path: $path, ')
+          ..write('title: $title')
           ..write(')'))
         .toString();
   }
@@ -2372,11 +2410,13 @@ typedef $$MddAudioListTableCreateCompanionBuilder = MddAudioListCompanion
     Function({
   drift.Value<int> id,
   required String path,
+  required String title,
 });
 typedef $$MddAudioListTableUpdateCompanionBuilder = MddAudioListCompanion
     Function({
   drift.Value<int> id,
   drift.Value<String> path,
+  drift.Value<String> title,
 });
 
 class $$MddAudioListTableFilterComposer
@@ -2393,6 +2433,9 @@ class $$MddAudioListTableFilterComposer
 
   drift.ColumnFilters<String> get path => $composableBuilder(
       column: $table.path, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$MddAudioListTableOrderingComposer
@@ -2409,6 +2452,9 @@ class $$MddAudioListTableOrderingComposer
 
   drift.ColumnOrderings<String> get path => $composableBuilder(
       column: $table.path, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => drift.ColumnOrderings(column));
 }
 
 class $$MddAudioListTableAnnotationComposer
@@ -2425,6 +2471,9 @@ class $$MddAudioListTableAnnotationComposer
 
   drift.GeneratedColumn<String> get path =>
       $composableBuilder(column: $table.path, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
 }
 
 class $$MddAudioListTableTableManager extends drift.RootTableManager<
@@ -2455,18 +2504,22 @@ class $$MddAudioListTableTableManager extends drift.RootTableManager<
           updateCompanionCallback: ({
             drift.Value<int> id = const drift.Value.absent(),
             drift.Value<String> path = const drift.Value.absent(),
+            drift.Value<String> title = const drift.Value.absent(),
           }) =>
               MddAudioListCompanion(
             id: id,
             path: path,
+            title: title,
           ),
           createCompanionCallback: ({
             drift.Value<int> id = const drift.Value.absent(),
             required String path,
+            required String title,
           }) =>
               MddAudioListCompanion.insert(
             id: id,
             path: path,
+            title: title,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>

@@ -3,3 +3,4 @@ documentation: https://docs.flutter.dev/tools/devtools/extensions#configure-exte
 extensions:
   - drift: true
   - shared_preferences: true
+  - provider: true

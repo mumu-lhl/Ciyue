@@ -286,8 +286,8 @@ class MddAudioListDao extends DatabaseAccessor<AppDatabase>
     with _$MddAudioListDaoMixin {
   MddAudioListDao(super.attachedDatabase);
 
-  Future<int> add(String path) {
-    return into(mddAudioList).insert(MddAudioListCompanion(path: Value(path)));
+  Future<int> add(String path, String title) {
+    return into(mddAudioList).insert(MddAudioListCompanion(path: Value(path), title: Value(title)));
   }
 
   Future<void> remove(int id) async {
@@ -296,6 +296,12 @@ class MddAudioListDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<MddAudioListData>> all() {
     return (select(mddAudioList)).get();
+  }
+
+  Future<bool> existMddAudio(String path) async {
+    return (await (select(mddAudioList)..where((t) => t.path.isValue(path)))
+            .get())
+        .isNotEmpty;
   }
 }
 
@@ -310,14 +316,17 @@ class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
-  Future<void> remove(int mddAudioListId) async {
+  Future<void> remove(int mddAudioId) async {
     await (delete(mddAudioResource)
-          ..where((t) => t.mddAudioListId.isValue(mddAudioListId)))
+          ..where((t) => t.mddAudioListId.isValue(mddAudioId)))
         .go();
   }
 
-  Future<MddAudioResourceData?> getByKey(String key) async {
-    return (await (select(mddAudioResource)..where((t) => t.key.isValue(key)))
+  Future<MddAudioResourceData?> getByKeyAndMddAudioID(
+      String key, int mddAudioId) async {
+    return (await (select(mddAudioResource)
+          ..where(
+              (t) => t.key.isValue(key) & t.mddAudioListId.isValue(mddAudioId)))
         .getSingleOrNull());
   }
 }

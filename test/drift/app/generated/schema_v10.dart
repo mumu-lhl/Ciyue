@@ -944,8 +944,11 @@ class MddAudioList extends Table
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
       'path', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [id, path];
+  List<GeneratedColumn> get $columns => [id, path, title];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -961,6 +964,8 @@ class MddAudioList extends Table
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
     );
   }
 
@@ -974,12 +979,15 @@ class MddAudioListData extends DataClass
     implements Insertable<MddAudioListData> {
   final int id;
   final String path;
-  const MddAudioListData({required this.id, required this.path});
+  final String title;
+  const MddAudioListData(
+      {required this.id, required this.path, required this.title});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['path'] = Variable<String>(path);
+    map['title'] = Variable<String>(title);
     return map;
   }
 
@@ -987,6 +995,7 @@ class MddAudioListData extends DataClass
     return MddAudioListCompanion(
       id: Value(id),
       path: Value(path),
+      title: Value(title),
     );
   }
 
@@ -996,6 +1005,7 @@ class MddAudioListData extends DataClass
     return MddAudioListData(
       id: serializer.fromJson<int>(json['id']),
       path: serializer.fromJson<String>(json['path']),
+      title: serializer.fromJson<String>(json['title']),
     );
   }
   @override
@@ -1004,17 +1014,21 @@ class MddAudioListData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'path': serializer.toJson<String>(path),
+      'title': serializer.toJson<String>(title),
     };
   }
 
-  MddAudioListData copyWith({int? id, String? path}) => MddAudioListData(
+  MddAudioListData copyWith({int? id, String? path, String? title}) =>
+      MddAudioListData(
         id: id ?? this.id,
         path: path ?? this.path,
+        title: title ?? this.title,
       );
   MddAudioListData copyWithCompanion(MddAudioListCompanion data) {
     return MddAudioListData(
       id: data.id.present ? data.id.value : this.id,
       path: data.path.present ? data.path.value : this.path,
+      title: data.title.present ? data.title.value : this.title,
     );
   }
 
@@ -1022,46 +1036,56 @@ class MddAudioListData extends DataClass
   String toString() {
     return (StringBuffer('MddAudioListData(')
           ..write('id: $id, ')
-          ..write('path: $path')
+          ..write('path: $path, ')
+          ..write('title: $title')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, path);
+  int get hashCode => Object.hash(id, path, title);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MddAudioListData &&
           other.id == this.id &&
-          other.path == this.path);
+          other.path == this.path &&
+          other.title == this.title);
 }
 
 class MddAudioListCompanion extends UpdateCompanion<MddAudioListData> {
   final Value<int> id;
   final Value<String> path;
+  final Value<String> title;
   const MddAudioListCompanion({
     this.id = const Value.absent(),
     this.path = const Value.absent(),
+    this.title = const Value.absent(),
   });
   MddAudioListCompanion.insert({
     this.id = const Value.absent(),
     required String path,
-  }) : path = Value(path);
+    required String title,
+  })  : path = Value(path),
+        title = Value(title);
   static Insertable<MddAudioListData> custom({
     Expression<int>? id,
     Expression<String>? path,
+    Expression<String>? title,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (path != null) 'path': path,
+      if (title != null) 'title': title,
     });
   }
 
-  MddAudioListCompanion copyWith({Value<int>? id, Value<String>? path}) {
+  MddAudioListCompanion copyWith(
+      {Value<int>? id, Value<String>? path, Value<String>? title}) {
     return MddAudioListCompanion(
       id: id ?? this.id,
       path: path ?? this.path,
+      title: title ?? this.title,
     );
   }
 
@@ -1074,6 +1098,9 @@ class MddAudioListCompanion extends UpdateCompanion<MddAudioListData> {
     if (path.present) {
       map['path'] = Variable<String>(path.value);
     }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
     return map;
   }
 
@@ -1081,7 +1108,8 @@ class MddAudioListCompanion extends UpdateCompanion<MddAudioListData> {
   String toString() {
     return (StringBuffer('MddAudioListCompanion(')
           ..write('id: $id, ')
-          ..write('path: $path')
+          ..write('path: $path, ')
+          ..write('title: $title')
           ..write(')'))
         .toString();
   }

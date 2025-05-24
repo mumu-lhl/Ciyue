@@ -2,9 +2,67 @@ import "dart:io";
 
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/settings/ai_settings.dart";
+import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/audio.dart";
 import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+
+class AudioItems extends StatelessWidget {
+  const AudioItems({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    context.select<AudioSettingsPageModel, int>(
+        (model) => model.mddAudioListState);
+    final mddAudioList = context.read<AudioSettingsPageModel>().mddAudioList;
+
+    return Column(
+      children: [
+        for (final mddAudio in mddAudioList)
+          Card(
+              child: ListTile(
+            leading: IconButton(icon: Icon(Icons.menu), onPressed: () {}),
+            title: Text(mddAudio.title),
+            trailing: IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () async {
+                  await context
+                      .read<AudioSettingsPageModel>()
+                      .removeMddAudio(mddAudio.id);
+                }),
+          ))
+      ],
+    );
+  }
+}
+
+class AudioList extends StatelessWidget {
+  const AudioList({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () async {
+                await selectMdxOrMdd(context, false);
+              },
+            ),
+          ],
+        ),
+        AudioItems(),
+      ],
+    );
+  }
+}
 
 class AudioSettings extends StatelessWidget {
   const AudioSettings({super.key});
@@ -24,18 +82,10 @@ class AudioSettings extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.add),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
+                  Expanded(child: AudioList()),
                   SizedBox(height: 24),
                   if (Platform.isAndroid) TTSEngines(),
-                  TTSLanguages(),
+                  if (!Platform.isLinux) TTSLanguages(),
                 ],
               ),
             ),

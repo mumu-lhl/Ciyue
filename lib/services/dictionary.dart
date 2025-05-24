@@ -412,13 +412,18 @@ Future<void> selectMdx(BuildContext context, List<XFile> files) async {
 
 Future<void> selectMdd(BuildContext context, List<XFile> files) async {
   for (final file in files) {
+    if (await mddAudioListDao.existMddAudio(file.path)) {
+      continue;
+    }
+
     final reader = DictReader(file.path);
     await reader.init();
 
     int? mddAudioListId;
     if (context.mounted) {
+      final title = reader.header["Title"] ?? setExtension(basename(file.path), "");
       mddAudioListId =
-          await context.read<AudioSettingsPageModel>().addMddAudio(file.path);
+          await context.read<AudioSettingsPageModel>().addMddAudio(file.path, title);
     }
 
     final resources = <MddAudioResourceCompanion>[];

@@ -743,6 +743,7 @@ final class Schema10 extends i0.VersionedSchema {
         columns: [
           _column_0,
           _column_1,
+          _column_12,
         ],
         attachedDatabase: database,
       ),
@@ -754,12 +755,12 @@ final class Schema10 extends i0.VersionedSchema {
         isStrict: false,
         tableConstraints: [],
         columns: [
-          _column_12,
           _column_13,
           _column_14,
           _column_15,
           _column_16,
           _column_17,
+          _column_18,
         ],
         attachedDatabase: database,
       ),
@@ -778,7 +779,13 @@ class Shape8 extends i0.VersionedTable {
       columnsByName['id']! as i1.GeneratedColumn<int>;
   i1.GeneratedColumn<String> get path =>
       columnsByName['path']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get title =>
+      columnsByName['title']! as i1.GeneratedColumn<String>;
 }
+
+i1.GeneratedColumn<String> _column_12(String aliasedName) =>
+    i1.GeneratedColumn<String>('title', aliasedName, false,
+        type: i1.DriftSqlType.string);
 
 class Shape9 extends i0.VersionedTable {
   Shape9({required super.source, required super.alias}) : super.aliased();
@@ -796,22 +803,22 @@ class Shape9 extends i0.VersionedTable {
       columnsByName['start_offset']! as i1.GeneratedColumn<int>;
 }
 
-i1.GeneratedColumn<int> _column_12(String aliasedName) =>
+i1.GeneratedColumn<int> _column_13(String aliasedName) =>
     i1.GeneratedColumn<int>('block_offset', aliasedName, false,
         type: i1.DriftSqlType.int);
-i1.GeneratedColumn<int> _column_13(String aliasedName) =>
+i1.GeneratedColumn<int> _column_14(String aliasedName) =>
     i1.GeneratedColumn<int>('compressed_size', aliasedName, false,
         type: i1.DriftSqlType.int);
-i1.GeneratedColumn<int> _column_14(String aliasedName) =>
+i1.GeneratedColumn<int> _column_15(String aliasedName) =>
     i1.GeneratedColumn<int>('end_offset', aliasedName, false,
         type: i1.DriftSqlType.int);
-i1.GeneratedColumn<String> _column_15(String aliasedName) =>
+i1.GeneratedColumn<String> _column_16(String aliasedName) =>
     i1.GeneratedColumn<String>('key', aliasedName, false,
         type: i1.DriftSqlType.string);
-i1.GeneratedColumn<int> _column_16(String aliasedName) =>
+i1.GeneratedColumn<int> _column_17(String aliasedName) =>
     i1.GeneratedColumn<int>('mdd_audio_list_id', aliasedName, false,
         type: i1.DriftSqlType.int);
-i1.GeneratedColumn<int> _column_17(String aliasedName) =>
+i1.GeneratedColumn<int> _column_18(String aliasedName) =>
     i1.GeneratedColumn<int>('start_offset', aliasedName, false,
         type: i1.DriftSqlType.int);
 i0.MigrationStepWithVersion migrationSteps({
