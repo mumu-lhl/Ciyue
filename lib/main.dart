@@ -1,6 +1,7 @@
 import "dart:io";
 
-import "package:ciyue/database/app.dart";
+import "package:ciyue/database/app/app.dart";
+import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/localization_delegates.dart";
 import "package:ciyue/pages/main/main.dart";
 import "package:ciyue/pages/main/wordbook.dart";
