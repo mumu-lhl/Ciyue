@@ -15,8 +15,7 @@ class AudioItems extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.select<AudioModel, int>(
-        (model) => model.mddAudioListState);
+    context.select<AudioModel, int>((model) => model.mddAudioListState);
     final mddAudioList = context.read<AudioModel>().mddAudioList;
 
     return Expanded(
@@ -59,9 +58,7 @@ class AudioItems extends StatelessWidget {
               newIndex >= mddAudioList.length) {
             return;
           }
-          context
-              .read<AudioModel>()
-              .reorderMddAudio(oldIndex, newIndex);
+          context.read<AudioModel>().reorderMddAudio(oldIndex, newIndex);
         },
       ),
     );
