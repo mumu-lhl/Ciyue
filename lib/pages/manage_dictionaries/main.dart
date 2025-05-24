@@ -1,6 +1,6 @@
 import "dart:io";
 
-import "package:ciyue/database/app.dart";
+import "package:ciyue/database/app/app.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/services/platform.dart";

@@ -1,7 +1,7 @@
 // ignore_for_file: unused_local_variable, unused_import
 import "package:drift/drift.dart";
 import "package:drift_dev/api/migrations_native.dart";
-import "package:ciyue/database/dictionary.dart";
+import "package:ciyue/database/dictionary/dictionary.dart";
 import "package:test/test.dart";
 import "generated/schema.dart";
 
