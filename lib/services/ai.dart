@@ -94,10 +94,8 @@ class GeminiProvider implements AIProvider {
   @override
   Stream<String> requestStream(String prompt) async* {
     final dio = Dio();
-    final formattedApiUrl = ModelProviderManager
-        .modelProviders["gemini"]!.apiUrl
-        .replaceFirst("{model}", model)
-        .replaceFirst("generateContent", "streamGenerateContent");
+    final formattedApiUrl =
+        "${ModelProviderManager.modelProviders["gemini"]!.apiUrl.replaceFirst("{model}", model).replaceFirst("generateContent", "streamGenerateContent")}?alt=sse";
 
     final params = {"key": apikey};
 
@@ -134,24 +132,17 @@ class GeminiProvider implements AIProvider {
       if (response.statusCode == 200) {
         await for (var chunk in response.data!.stream) {
           final String decodedChunk = utf8.decode(chunk);
-          final List<String> lines = decodedChunk
-              .split("\n")
-              .where((line) => line.isNotEmpty)
-              .toList();
 
-          for (var line in lines) {
-            try {
-              final Map<String, dynamic> json = jsonDecode(line);
-              if (json["candidates"] != null &&
-                  json["candidates"][0]["content"] != null &&
-                  json["candidates"][0]["content"]["parts"] != null &&
-                  json["candidates"][0]["content"]["parts"][0]["text"] !=
-                      null) {
-                yield json["candidates"][0]["content"]["parts"][0]["text"];
-              }
-            } catch (e) {
-              // Ignore malformed JSON lines or non-text parts
-            }
+          const dataPrefix = "data: ";
+          if (!decodedChunk.startsWith(dataPrefix)) {
+            continue;
+          }
+
+          final Map<String, dynamic> json =
+              jsonDecode(decodedChunk.substring(dataPrefix.length));
+          if (json["candidates"]?[0]?["content"]?["parts"]?[0]?["text"] !=
+              null) {
+            yield json["candidates"][0]["content"]["parts"][0]["text"];
           }
         }
       } else {
@@ -365,7 +356,8 @@ class OllamaProvider implements AIProvider {
           for (var line in lines) {
             try {
               final Map<String, dynamic> json = jsonDecode(line);
-              if (json["message"] != null && json["message"]["content"] != null) {
+              if (json["message"] != null &&
+                  json["message"]["content"] != null) {
                 yield json["message"]["content"];
               }
             } catch (e) {

@@ -164,13 +164,12 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
         child: SingleChildScrollView(
           child: SelectionArea(
             child: AnimatedBuilder(
-              animation: _outputController,
-              builder: (context, _) {
-                return GptMarkdown(
-                  _outputController.text,
-                );
-              }
-            ),
+                animation: _outputController,
+                builder: (context, _) {
+                  return GptMarkdown(
+                    _outputController.text,
+                  );
+                }),
           ),
         ),
       ),
@@ -222,6 +221,8 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
       _isLoading = true;
     });
 
+    _outputController.clear();
+
     try {
       final ai = AI(
         provider: settings.aiProvider,
@@ -252,11 +253,13 @@ Translate the following text from \$sourceLanguage to \$targetLanguage. Please p
           .replaceAll(r"$targetLanguage", targetLangName)
           .replaceAll(r"$text", inputText);
 
-      setState(() {
-        _isLoading = false;
-      });
-
       await for (final textChunk in ai.requestStream(prompt)) {
+        if (_isLoading) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+
         _outputController.text += textChunk;
       }
     } catch (e) {
