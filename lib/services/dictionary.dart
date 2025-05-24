@@ -15,7 +15,6 @@ import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
-import "package:path_provider/path_provider.dart";
 import "package:provider/provider.dart";
 
 import "../database/dictionary/dictionary.dart";
@@ -426,12 +425,8 @@ Future<void> selectMdd(BuildContext context, List<String> paths) async {
     int? mddAudioListId;
     if (context.mounted) {
       final title = reader.header["Title"] ?? setExtension(basename(path), "");
-      if (Platform.isAndroid) {
-        mddAudioListId = await mddAudioListDao.add(path, title);
-      } else {
-        mddAudioListId =
-          await context.read<AudioSettingsPageModel>().addMddAudio(path, title);
-      }
+      mddAudioListId =
+          await context.read<AudioModel>().addMddAudio(path, title);
     }
 
     final resources = <MddAudioResourceCompanion>[];
@@ -447,9 +442,10 @@ Future<void> selectMdd(BuildContext context, List<String> paths) async {
         resources.clear();
 
         if (context.mounted) {
-          LoadingDialogContentState.updateText(AppLocalizations.of(context)!
-              .addingResource
-              .replaceFirst("%s", key));
+          LoadingDialogContentState.updateText(
+              AppLocalizations.of(navigatorKey.currentContext!)!
+                  .addingResource
+                  .replaceFirst("%s", key));
         }
       }
 
@@ -470,10 +466,6 @@ Future<void> selectMdd(BuildContext context, List<String> paths) async {
   }
 
   if (paths.isNotEmpty && context.mounted) {
-    if (Platform.isAndroid) {
-      context.pushReplacement("/settings/audio");
-    }
-
     context.pop();
   }
 }
@@ -499,14 +491,6 @@ Future<void> selectMdxOrMdd(BuildContext context, bool isMdx) async {
       await selectMdd(context, files.map((e) => e.path).toList());
     }
   }
-}
-
-Future<List<String>> findMddAudioFilesOnAndroid() async {
-  final documentsDir =
-      Directory(join((await getApplicationSupportDirectory()).path, "audios"));
-  final mddFiles = <String>[];
-  await findAllFileByExtension(documentsDir, mddFiles, "mdd");
-  return mddFiles;
 }
 
 Future<void> findAllFileByExtension(

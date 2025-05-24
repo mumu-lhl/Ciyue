@@ -58,6 +58,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => DictManagerModel()),
       ChangeNotifierProvider(create: (_) => HistoryModel()),
       ChangeNotifierProvider(create: (_) => ManageDictionariesModel()),
+      ChangeNotifierProvider(create: (_) => AudioModel()..init()),
     ], child: const Ciyue()));
   } catch (e) {
     runApp(MaterialApp(home: CiyueError(error: e)));
@@ -140,10 +141,7 @@ final router = GoRouter(
       path: "/settings/audio",
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
-        child: ChangeNotifierProvider(
-          create: (_) => AudioSettingsPageModel()..init(),
-          child: const AudioSettings(),
-        ),
+        child: const AudioSettings(),
       ),
     ),
     GoRoute(

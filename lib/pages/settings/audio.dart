@@ -15,9 +15,9 @@ class AudioItems extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.select<AudioSettingsPageModel, int>(
+    context.select<AudioModel, int>(
         (model) => model.mddAudioListState);
-    final mddAudioList = context.read<AudioSettingsPageModel>().mddAudioList;
+    final mddAudioList = context.read<AudioModel>().mddAudioList;
 
     return Expanded(
       child: ReorderableListView.builder(
@@ -47,7 +47,7 @@ class AudioItems extends StatelessWidget {
                     icon: Icon(Icons.delete),
                     onPressed: () async {
                       await context
-                          .read<AudioSettingsPageModel>()
+                          .read<AudioModel>()
                           .removeMddAudio(mddAudio.id);
                     }),
               ),
@@ -60,7 +60,7 @@ class AudioItems extends StatelessWidget {
             return;
           }
           context
-              .read<AudioSettingsPageModel>()
+              .read<AudioModel>()
               .reorderMddAudio(oldIndex, newIndex);
         },
       ),

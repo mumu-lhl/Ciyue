@@ -4,7 +4,7 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
 
-class AudioSettingsPageModel extends ChangeNotifier {
+class AudioModel extends ChangeNotifier {
   List<MddAudioListData> mddAudioList = [];
   int mddAudioListState = 0;
 
@@ -56,5 +56,3 @@ class AudioSettingsPageModel extends ChangeNotifier {
     updateMddAudioOrder();
   }
 }
-
-class AudioModel extends ChangeNotifier {}
