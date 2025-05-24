@@ -217,5 +217,7 @@
   "addingWord": "Adding Word: %s",
   "@addingWord": {},
   "copyingFiles": "Copying Files...",
-  "@copyingFiles": {}
+  "@copyingFiles": {},
+  "addingResource": "Adding Resource: %s",
+  "@addingResource": {}
 }

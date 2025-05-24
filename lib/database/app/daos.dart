@@ -304,8 +304,10 @@ class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
     with _$MddAudioResourceDaoMixin {
   MddAudioResourceDao(super.attachedDatabase);
 
-  Future<int> add(MddAudioResourceCompanion data) {
-    return into(mddAudioResource).insert(data);
+  Future<void> add(List<MddAudioResourceCompanion> data) async {
+    await batch((batch) {
+      batch.insertAll(mddAudioResource, data);
+    });
   }
 
   Future<void> remove(int mddAudioListId) async {
@@ -316,6 +318,6 @@ class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
 
   Future<MddAudioResourceData?> getByKey(String key) async {
     return (await (select(mddAudioResource)..where((t) => t.key.isValue(key)))
-            .getSingleOrNull());
+        .getSingleOrNull());
   }
 }

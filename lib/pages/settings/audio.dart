@@ -24,6 +24,16 @@ class AudioSettings extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.add),
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 24),
                   if (Platform.isAndroid) TTSEngines(),
                   TTSLanguages(),
                 ],

@@ -2,14 +2,20 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
+import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
+import "package:file_selector/file_selector.dart";
+import "package:flutter/material.dart";
+import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
+import "package:provider/provider.dart";
 
 import "../database/dictionary/dictionary.dart";
 import "../main.dart";
@@ -372,6 +378,108 @@ class Mdict {
       });
     } catch (e) {
       server?.close();
+    }
+  }
+}
+
+Future<void> selectMdx(BuildContext context, List<XFile> files) async {
+  for (final file in files) {
+    if (context.mounted) {
+      Mdict? tmpDict;
+      try {
+        final pathNoExtension = setExtension(file.path, "");
+        tmpDict = Mdict(path: pathNoExtension);
+        await tmpDict.add();
+      } catch (e) {
+        if (context.mounted) {
+          final snackBar =
+              SnackBar(content: Text(AppLocalizations.of(context)!.notSupport));
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      } finally {
+        if (tmpDict != null) {
+          await tmpDict.close();
+        }
+      }
+    }
+
+    if (files.isNotEmpty && context.mounted) {
+      context.read<ManageDictionariesModel>().update();
+      context.pop();
+    }
+  }
+}
+
+Future<void> selectMdd(BuildContext context, List<XFile> files) async {
+  for (final file in files) {
+    final reader = DictReader(file.path);
+    await reader.init();
+
+    int? mddAudioListId;
+    if (context.mounted) {
+      mddAudioListId =
+          await context.read<AudioSettingsPageModel>().addMddAudio(file.path);
+    }
+
+    final resources = <MddAudioResourceCompanion>[];
+    int number = 0;
+
+    await for (final (
+          key,
+          (blockOffset, startOffset, endOffset, compressedSize)
+        ) in reader.read()) {
+      if (number == 50000) {
+        number = 0;
+        await mddAudioResourceDao.add(resources);
+        resources.clear();
+
+        if (context.mounted) {
+          LoadingDialogContentState.updateText(AppLocalizations.of(context)!
+              .addingResource
+              .replaceFirst("%s", key));
+        }
+      }
+
+      final data = MddAudioResourceCompanion(
+          key: Value(key),
+          blockOffset: Value(blockOffset),
+          startOffset: Value(startOffset),
+          endOffset: Value(endOffset),
+          compressedSize: Value(compressedSize),
+          mddAudioListId: Value(mddAudioListId!));
+      resources.add(data);
+      number++;
+    }
+
+    if (number > 0) {
+      await mddAudioResourceDao.add(resources);
+    }
+  }
+
+  if (files.isNotEmpty && context.mounted) {
+    context.pop();
+  }
+}
+
+Future<void> selectMdxOrMdd(BuildContext context, bool isMdx) async {
+  final XTypeGroup typeGroup = XTypeGroup(
+    label: "${isMdx ? "MDX" : "MDD"} File",
+    extensions: <String>[isMdx ? "mdx" : "mdd"],
+  );
+
+  final files = await openFiles(acceptedTypeGroups: [typeGroup]);
+
+  if (files.isNotEmpty) {
+    if (context.mounted) {
+      showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
+    }
+  }
+
+  if (context.mounted) {
+    if (isMdx) {
+      await selectMdx(context, files);
+    } else {
+      await selectMdd(context, files);
     }
   }
 }
