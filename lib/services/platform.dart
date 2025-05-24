@@ -82,6 +82,15 @@ class PlatformMethod {
 
           break;
 
+        case "inputAudioDirectory":
+          await prefs.setString("audioDirectory", call.arguments as String);
+
+          final paths = await findMddAudioFilesOnAndroid();
+          await selectMdd(navigatorKey.currentContext!, paths);
+
+          router.pop();
+          break;
+
         case "showLoadingDialog":
           showLoadingDialog(navigatorKey.currentContext!,
               text: AppLocalizations.of(navigatorKey.currentContext!)!
@@ -99,6 +108,10 @@ class PlatformMethod {
 
   static Future<void> openDirectory() async {
     await _platform.invokeMethod("openDirectory");
+  }
+
+  static Future<void> openAudioDirectory() async {
+    await _platform.invokeMethod("openAudioDirectory");
   }
 
   static Future<void> setSecureFlag(bool value) async {

@@ -15,6 +15,7 @@ import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
+import "package:path_provider/path_provider.dart";
 import "package:provider/provider.dart";
 
 import "../database/dictionary/dictionary.dart";
@@ -385,12 +386,12 @@ class Mdict {
   }
 }
 
-Future<void> _selectMdx(BuildContext context, List<XFile> files) async {
-  for (final file in files) {
+Future<void> selectMdx(BuildContext context, List<String> paths) async {
+  for (final path in paths) {
     if (context.mounted) {
       Mdict? tmpDict;
       try {
-        final pathNoExtension = setExtension(file.path, "");
+        final pathNoExtension = setExtension(path, "");
         tmpDict = Mdict(path: pathNoExtension);
         await tmpDict.add();
       } catch (e) {
@@ -406,29 +407,27 @@ Future<void> _selectMdx(BuildContext context, List<XFile> files) async {
       }
     }
 
-    if (files.isNotEmpty && context.mounted) {
+    if (paths.isNotEmpty && context.mounted) {
       context.read<ManageDictionariesModel>().update();
       context.pop();
     }
   }
 }
 
-Future<void> _selectMdd(BuildContext context, List<XFile> files) async {
-  for (final file in files) {
-    if (await mddAudioListDao.existMddAudio(file.path)) {
+Future<void> selectMdd(BuildContext context, List<String> paths) async {
+  for (final path in paths) {
+    if (await mddAudioListDao.existMddAudio(path)) {
       continue;
     }
 
-    final reader = DictReader(file.path);
+    final reader = DictReader(path);
     await reader.init();
 
     int? mddAudioListId;
     if (context.mounted) {
-      final title =
-          reader.header["Title"] ?? setExtension(basename(file.path), "");
-      mddAudioListId = await context
-          .read<AudioSettingsPageModel>()
-          .addMddAudio(file.path, title);
+      final title = reader.header["Title"] ?? setExtension(basename(path), "");
+      mddAudioListId =
+          await context.read<AudioSettingsPageModel>().addMddAudio(path, title);
     }
 
     final resources = <MddAudioResourceCompanion>[];
@@ -466,7 +465,7 @@ Future<void> _selectMdd(BuildContext context, List<XFile> files) async {
     }
   }
 
-  if (files.isNotEmpty && context.mounted) {
+  if (paths.isNotEmpty && context.mounted) {
     context.pop();
   }
 }
@@ -487,9 +486,31 @@ Future<void> selectMdxOrMdd(BuildContext context, bool isMdx) async {
 
   if (context.mounted) {
     if (isMdx) {
-      await _selectMdx(context, files);
+      await selectMdx(context, files.map((e) => e.path).toList());
     } else {
-      await _selectMdd(context, files);
+      await selectMdd(context, files.map((e) => e.path).toList());
+    }
+  }
+}
+
+Future<List<String>> findMddAudioFilesOnAndroid() async {
+  final documentsDir =
+      Directory(join((await getApplicationSupportDirectory()).path, "audios"));
+  final mddFiles = <String>[];
+  findAllFileByExtension(documentsDir, mddFiles, "mdd");
+  return mddFiles;
+}
+
+Future<void> findAllFileByExtension(
+    Directory dir, List<String> output, String extension) async {
+  final entities = await dir.list().toList();
+  for (final entity in entities) {
+    if (entity is File) {
+      if (entity.path.endsWith(extension)) {
+        output.add(entity.path);
+      }
+    } else if (entity is Directory) {
+      await findAllFileByExtension(entity, output, extension);
     }
   }
 }

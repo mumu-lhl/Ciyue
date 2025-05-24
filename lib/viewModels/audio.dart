@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
@@ -21,10 +23,15 @@ class AudioSettingsPageModel extends ChangeNotifier {
   }
 
   Future<void> removeMddAudio(int id) async {
-    await mddAudioListDao.remove(id);
+    if (Platform.isAndroid) {
+      final mddAudio = mddAudioList.firstWhere((element) => element.id == id);
+      File(mddAudio.path).delete();
+    }
+
+    mddAudioListDao.remove(id);
     mddAudioList.removeWhere((element) => element.id == id);
 
-    await mddAudioResourceDao.remove(id);
+    mddAudioResourceDao.remove(id);
 
     mddAudioListState++;
     notifyListeners();

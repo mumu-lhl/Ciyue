@@ -281,6 +281,7 @@ Future<void> initPrefs() async {
     "autoUpdate",
     "ttsEngine",
     "ttsLanguage",
+    "audioDirectory",
   }));
 }
 

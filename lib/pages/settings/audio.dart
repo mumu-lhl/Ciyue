@@ -3,6 +3,7 @@ import "dart:io";
 import "package:ciyue/main.dart";
 import "package:ciyue/pages/settings/ai_settings.dart";
 import "package:ciyue/services/dictionary.dart";
+import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/audio.dart";
@@ -26,6 +27,7 @@ class AudioItems extends StatelessWidget {
           if (index == mddAudioList.length) {
             return Card(
               key: ValueKey("tts_option"),
+              color: Theme.of(context).colorScheme.onInverseSurface,
               child: ListTile(
                 title: const Text("TTS"),
               ),
@@ -33,6 +35,7 @@ class AudioItems extends StatelessWidget {
           } else {
             final mddAudio = mddAudioList[index];
             return Card(
+              color: Theme.of(context).colorScheme.onInverseSurface,
               key: ValueKey(mddAudio.id),
               child: ListTile(
                 leading: ReorderableDragStartListener(
@@ -80,7 +83,11 @@ class AudioList extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.add),
               onPressed: () async {
-                await selectMdxOrMdd(context, false);
+                if (Platform.isAndroid) {
+                  PlatformMethod.openAudioDirectory();
+                } else {
+                  await selectMdxOrMdd(context, false);
+                }
               },
             ),
           ],
@@ -109,10 +116,10 @@ class AudioSettings extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Expanded(child: AudioList()),
                   SizedBox(height: 24),
                   if (Platform.isAndroid) TTSEngines(),
                   if (!Platform.isLinux) TTSLanguages(),
+                  Expanded(child: AudioList()),
                 ],
               ),
             ),

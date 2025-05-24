@@ -19,10 +19,11 @@ class MainActivity : FlutterActivity() {
     companion object {
         const val CHANNEL = "org.eu.mumulhl.ciyue"
 
-        const val OPEN_DOCUMENT_TREE = 0
+        const val OPEN_DICTIONARY_DOCUMENT_TREE = 0
         const val CREATE_FILE = 1
         const val GET_DIRECTORY = 2
         const val REQUEST_OVERLAY_PERMISSION = 3
+        const val OPEN_AUDIO_DOCUMENT_TREE = 4
     }
 
     var methodChannel: MethodChannel? = null
@@ -31,7 +32,12 @@ class MainActivity : FlutterActivity() {
 
     private fun openDirectory() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-        startActivityForResult(intent, OPEN_DOCUMENT_TREE)
+        startActivityForResult(intent, OPEN_DICTIONARY_DOCUMENT_TREE)
+    }
+
+    private fun openAudioDirectory() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        startActivityForResult(intent, OPEN_AUDIO_DOCUMENT_TREE)
     }
 
     private fun createFile() {
@@ -88,9 +94,10 @@ class MainActivity : FlutterActivity() {
     ) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == RESULT_OK) {
             when (requestCode) {
-                OPEN_DOCUMENT_TREE -> openDocumentTree(data)
+                OPEN_DICTIONARY_DOCUMENT_TREE -> openDocumentTree(data, "dictionaries")
+                OPEN_AUDIO_DOCUMENT_TREE -> openDocumentTree(data, "audios")
                 CREATE_FILE -> createFileHandler(data)
                 GET_DIRECTORY -> getDirectoryHandler(data)
                 REQUEST_OVERLAY_PERMISSION -> {}
@@ -126,7 +133,12 @@ class MainActivity : FlutterActivity() {
         source.listFiles().forEach { file ->
             if (file.isFile) {
                 BufferedInputStream(contentResolver.openInputStream(file.uri)).use { input ->
-                    BufferedOutputStream(File(target, file.name ?: "").outputStream()).use { output ->
+                    BufferedOutputStream(
+                        File(
+                            target,
+                            file.name ?: ""
+                        ).outputStream()
+                    ).use { output ->
                         input.copyTo(output)
                     }
                 }
@@ -136,22 +148,25 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun copyDictionariesDirectory(uri: Uri) {
+    private fun copyDirectory(uri: Uri, destination: String) {
         methodChannel!!.invokeMethod("showLoadingDialog", null)
 
         val documents = DocumentFile.fromTreeUri(applicationContext, uri)!!
-        copy(documents, File(filesDir, "dictionaries"))
+        copy(documents, File(filesDir, destination))
 
-        methodChannel!!.invokeMethod("inputDirectory", uri.toString())
+        when (destination) {
+            "dictionaries" -> methodChannel!!.invokeMethod("inputDirectory", uri.toString())
+            "audios" -> methodChannel!!.invokeMethod("inputAudioDirectory", uri.toString())
+        }
     }
 
-    private fun openDocumentTree(data: Intent?) {
+    private fun openDocumentTree(data: Intent?, destination: String) {
         data?.data?.also { uri ->
             val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
             contentResolver.takePersistableUriPermission(
                 uri, takeFlags
             )
-            copyDictionariesDirectory(uri)
+            copyDirectory(uri, destination)
         }
     }
 
@@ -163,6 +178,10 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "openDirectory" -> {
                         openDirectory()
+                    }
+
+                    "openAudioDirectory" -> {
+                        openAudioDirectory()
                     }
 
                     "createFile" -> {
@@ -189,7 +208,7 @@ class MainActivity : FlutterActivity() {
 
                     "updateDictionaries" -> {
                         val uri = (call.arguments as String).toUri()
-                        copyDictionariesDirectory(uri)
+                        copyDirectory(uri, "dictionaries")
                     }
 
                     "requestFloatingWindowPermission" -> {
