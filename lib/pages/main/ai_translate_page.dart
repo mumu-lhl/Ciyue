@@ -1,10 +1,9 @@
 import "dart:ui" as ui;
 
-import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/widget/ai_markdown.dart";
 import "package:flutter/material.dart";
-import "package:gpt_markdown/gpt_markdown.dart";
 
 class AiTranslatePage extends StatefulWidget {
   const AiTranslatePage({super.key});
@@ -30,15 +29,13 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
   };
 
   final _inputController = TextEditingController();
-  final _outputController = TextEditingController();
+  String _textToTranslate = "";
 
   bool _isRichOutput = true;
   String _sourceLanguage = "auto";
   String _targetLanguage = settings.language! == "system"
       ? ui.PlatformDispatcher.instance.locale.languageCode
       : settings.language!;
-
-  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -63,12 +60,13 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
                 buildInput(),
                 buildLanguageSelection(),
                 buildTranslateButton(),
-                if (_isLoading)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                buildTranslatedText(),
+                if (_textToTranslate.isNotEmpty)
+                  TranslatedText(
+                      languageMap: _languageMap,
+                      sourceLanguage: _sourceLanguage,
+                      targetLanguage: _targetLanguage,
+                      textToTranslate: _textToTranslate,
+                      isRichOutput: _isRichOutput),
               ],
             ),
           ),
@@ -87,9 +85,6 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
           border: const OutlineInputBorder(),
         ),
         maxLines: null, // Allow multiple lines
-        onChanged: (String value) {
-          setState(() {});
-        },
       ),
     );
   }
@@ -151,27 +146,12 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: ElevatedButton(
-        onPressed: _inputController.text.isEmpty ? null : _translateText,
+        onPressed: () {
+          setState(() {
+            _textToTranslate = _inputController.text;
+          });
+        },
         child: Text(AppLocalizations.of(context)!.translate),
-      ),
-    );
-  }
-
-  Expanded buildTranslatedText() {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 16.0),
-        child: SingleChildScrollView(
-          child: SelectionArea(
-            child: AnimatedBuilder(
-                animation: _outputController,
-                builder: (context, _) {
-                  return GptMarkdown(
-                    _outputController.text,
-                  );
-                }),
-          ),
-        ),
       ),
     );
   }
@@ -215,58 +195,52 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
       },
     );
   }
+}
 
-  Future<void> _translateText() async {
-    setState(() {
-      _isLoading = true;
-    });
+class TranslatedText extends StatelessWidget {
+  const TranslatedText({
+    super.key,
+    required Map<String, String> languageMap,
+    required String sourceLanguage,
+    required String targetLanguage,
+    required String textToTranslate,
+    required bool isRichOutput,
+  })  : _languageMap = languageMap,
+        _sourceLanguage = sourceLanguage,
+        _targetLanguage = targetLanguage,
+        _textToTranslate = textToTranslate,
+        _isRichOutput = isRichOutput;
 
-    _outputController.clear();
+  final Map<String, String> _languageMap;
+  final String _sourceLanguage;
+  final String _targetLanguage;
+  final String _textToTranslate;
+  final bool _isRichOutput;
 
-    try {
-      final ai = AI(
-        provider: settings.aiProvider,
-        model: settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
-        apikey:
-            settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
-      );
+  @override
+  Widget build(BuildContext context) {
+    final sourceLangName = _languageMap[_sourceLanguage] ?? _sourceLanguage;
+    final targetLangName = _languageMap[_targetLanguage] ?? _targetLanguage;
+    final inputText = _textToTranslate.trim();
 
-      final sourceLangName = _languageMap[_sourceLanguage] ?? _sourceLanguage;
-      final targetLangName = _languageMap[_targetLanguage] ?? _targetLanguage;
-      final inputText = _inputController.text.trim();
-
-      String template;
-      if (settings.translatePromptMode == "custom" &&
-          settings.customTranslatePrompt.isNotEmpty) {
-        template = settings.customTranslatePrompt;
-      } else if (_isRichOutput) {
-        template = """
-Translate the following text from \$sourceLanguage to \$targetLanguage. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in \$targetLanguage: \$text
-""";
-      } else {
-        template =
-            'Translate this \$sourceLanguage sentence to \$targetLanguage, only return the translated text: "\$text"';
-      }
-
-      final prompt = template
-          .replaceAll(r"$sourceLanguage", sourceLangName)
-          .replaceAll(r"$targetLanguage", targetLangName)
-          .replaceAll(r"$text", inputText);
-
-      await for (final textChunk in ai.requestStream(prompt)) {
-        if (_isLoading) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-
-        _outputController.text += textChunk;
-      }
-    } catch (e) {
-      setState(() {
-        _outputController.text = "Error: Failed to translate. $e";
-        _isLoading = false;
-      });
+    String template;
+    if (settings.translatePromptMode == "custom" &&
+        settings.customTranslatePrompt.isNotEmpty) {
+      template = settings.customTranslatePrompt;
+    } else if (_isRichOutput) {
+      template = """
+    Translate the following text from \$sourceLanguage to \$targetLanguage. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in \$targetLanguage: \$text
+    """;
+    } else {
+      template =
+          'Translate this \$sourceLanguage sentence to \$targetLanguage, only return the translated text: "\$text"';
     }
+
+    final prompt = template
+        .replaceAll(r"$sourceLanguage", sourceLangName)
+        .replaceAll(r"$targetLanguage", targetLangName)
+        .replaceAll(r"$text", inputText);
+
+    return AIMarkdown(prompt: prompt);
   }
 }
