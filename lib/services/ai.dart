@@ -113,7 +113,7 @@ class ModelProviderManager {
             "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
         models: [
           ModelInfo(
-              "gemini-2.5-flash-preview-04-17", "Gemini 2.5 Flash Preview"),
+              "gemini-2.5-flash-preview-05-20", "Gemini 2.5 Flash Preview"),
           ModelInfo("gemini-2.5-pro-preview-05-06", "Gemini 2.5 Pro Preview"),
           ModelInfo("gemini-2.5-pro-exp-03-25", "Gemini 2.5 Pro"),
           ModelInfo("gemini-2.0-flash", "Gemini 2.0 Flash"),
