@@ -47,11 +47,9 @@ NO OTHER WORD LIKE 'OK, here is...'""";
         .replaceAll(r"$word", word)
         .replaceAll(r"$targetLanguage", targetLanguage);
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: AIMarkdown(prompt: prompt),
-      ),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: AIMarkdown(prompt: prompt),
     );
   }
 }

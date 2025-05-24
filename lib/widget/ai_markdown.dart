@@ -43,12 +43,19 @@ class _AIMarkdownState extends State<AIMarkdown> {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     } else {
-      return SelectionArea(
-        child: AnimatedBuilder(
-            animation: controller,
-            builder: (context, _) {
-              return GptMarkdown(controller.text);
-            }),
+      return SingleChildScrollView(
+        child: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: SelectionArea(
+              child: AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, _) {
+                    return GptMarkdown(controller.text);
+                  }),
+            ),
+          ),
+        ),
       );
     }
   }

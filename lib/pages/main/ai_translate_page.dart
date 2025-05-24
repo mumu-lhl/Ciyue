@@ -241,6 +241,6 @@ class TranslatedText extends StatelessWidget {
         .replaceAll(r"$targetLanguage", targetLangName)
         .replaceAll(r"$text", inputText);
 
-    return AIMarkdown(prompt: prompt);
+    return Expanded(child: AIMarkdown(key: UniqueKey(), prompt: prompt));
   }
 }
