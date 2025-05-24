@@ -7,7 +7,7 @@ class AudioSettingsPageModel extends ChangeNotifier {
   int mddAudioListState = 0;
 
   Future<void> init() async {
-    mddAudioList = await mddAudioListDao.all();
+    mddAudioList = await mddAudioListDao.allOrdered();
     mddAudioListState++;
 
     notifyListeners();
@@ -15,10 +15,7 @@ class AudioSettingsPageModel extends ChangeNotifier {
 
   Future<int> addMddAudio(String path, String title) async {
     final id = await mddAudioListDao.add(path, title);
-    mddAudioList.add(MddAudioListData(id: id, path: path, title: title));
-
-    mddAudioListState++;
-    notifyListeners();
+    await init();
 
     return id;
   }
@@ -31,6 +28,25 @@ class AudioSettingsPageModel extends ChangeNotifier {
 
     mddAudioListState++;
     notifyListeners();
+  }
+
+  Future<void> updateMddAudioOrder() async {
+    for (int i = 0; i < mddAudioList.length; i++) {
+      if (mddAudioList[i].order != i) {
+        await mddAudioListDao.updateOrder(mddAudioList[i].id, i);
+      }
+    }
+  }
+
+  void reorderMddAudio(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final MddAudioListData item = mddAudioList.removeAt(oldIndex);
+    mddAudioList.insert(newIndex, item);
+    mddAudioListState++;
+    notifyListeners();
+    updateMddAudioOrder();
   }
 }
 

@@ -18,22 +18,36 @@ class AudioItems extends StatelessWidget {
         (model) => model.mddAudioListState);
     final mddAudioList = context.read<AudioSettingsPageModel>().mddAudioList;
 
-    return Column(
-      children: [
-        for (final mddAudio in mddAudioList)
-          Card(
-              child: ListTile(
-            leading: IconButton(icon: Icon(Icons.menu), onPressed: () {}),
-            title: Text(mddAudio.title),
-            trailing: IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () async {
-                  await context
-                      .read<AudioSettingsPageModel>()
-                      .removeMddAudio(mddAudio.id);
-                }),
-          ))
-      ],
+    return Expanded(
+      child: ReorderableListView.builder(
+        buildDefaultDragHandles: false,
+        itemCount: mddAudioList.length,
+        itemBuilder: (context, index) {
+          final mddAudio = mddAudioList[index];
+          return Card(
+            key: ValueKey(mddAudio.id),
+            child: ListTile(
+              leading: ReorderableDragStartListener(
+                index: index,
+                child: IconButton(icon: Icon(Icons.menu), onPressed: () {}),
+              ),
+              title: Text(mddAudio.title),
+              trailing: IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () async {
+                    await context
+                        .read<AudioSettingsPageModel>()
+                        .removeMddAudio(mddAudio.id);
+                  }),
+            ),
+          );
+        },
+        onReorder: (oldIndex, newIndex) {
+          context
+              .read<AudioSettingsPageModel>()
+              .reorderMddAudio(oldIndex, newIndex);
+        },
+      ),
     );
   }
 }

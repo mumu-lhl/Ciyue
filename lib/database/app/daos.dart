@@ -286,16 +286,32 @@ class MddAudioListDao extends DatabaseAccessor<AppDatabase>
     with _$MddAudioListDaoMixin {
   MddAudioListDao(super.attachedDatabase);
 
-  Future<int> add(String path, String title) {
-    return into(mddAudioList).insert(MddAudioListCompanion(path: Value(path), title: Value(title)));
+  Future<int> add(String path, String title) async {
+    final maxOrder = await (select(mddAudioList)
+          ..orderBy([
+            (t) => OrderingTerm(expression: t.order, mode: OrderingMode.desc)
+          ])
+          ..limit(1))
+        .getSingleOrNull();
+    final order = (maxOrder?.order ?? -1) + 1;
+
+    return into(mddAudioList).insert(MddAudioListCompanion(
+        path: Value(path), title: Value(title), order: Value(order)));
   }
 
   Future<void> remove(int id) async {
     await (delete(mddAudioList)..where((t) => t.id.isValue(id))).go();
   }
 
-  Future<List<MddAudioListData>> all() {
-    return (select(mddAudioList)).get();
+  Future<List<MddAudioListData>> allOrdered() {
+    return (select(mddAudioList)
+          ..orderBy([(t) => OrderingTerm(expression: t.order)]))
+        .get();
+  }
+
+  Future<void> updateOrder(int id, int order) {
+    return (update(mddAudioList)..where((t) => t.id.isValue(id)))
+        .write(MddAudioListCompanion(order: Value(order)));
   }
 
   Future<bool> existMddAudio(String path) async {

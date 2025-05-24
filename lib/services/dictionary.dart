@@ -421,9 +421,11 @@ Future<void> selectMdd(BuildContext context, List<XFile> files) async {
 
     int? mddAudioListId;
     if (context.mounted) {
-      final title = reader.header["Title"] ?? setExtension(basename(file.path), "");
-      mddAudioListId =
-          await context.read<AudioSettingsPageModel>().addMddAudio(file.path, title);
+      final title =
+          reader.header["Title"] ?? setExtension(basename(file.path), "");
+      mddAudioListId = await context
+          .read<AudioSettingsPageModel>()
+          .addMddAudio(file.path, title);
     }
 
     final resources = <MddAudioResourceCompanion>[];

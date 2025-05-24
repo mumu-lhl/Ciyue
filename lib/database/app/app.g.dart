@@ -1120,8 +1120,14 @@ class $MddAudioListTable extends MddAudioList
   late final drift.GeneratedColumn<String> title =
       drift.GeneratedColumn<String>('title', aliasedName, false,
           type: DriftSqlType.string, requiredDuringInsert: true);
+  static const drift.VerificationMeta _orderMeta =
+      const drift.VerificationMeta('order');
   @override
-  List<drift.GeneratedColumn> get $columns => [id, path, title];
+  late final drift.GeneratedColumn<int> order = drift.GeneratedColumn<int>(
+      'order', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<drift.GeneratedColumn> get $columns => [id, path, title, order];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1148,6 +1154,12 @@ class $MddAudioListTable extends MddAudioList
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
+    if (data.containsKey('order')) {
+      context.handle(
+          _orderMeta, order.isAcceptableOrUnknown(data['order']!, _orderMeta));
+    } else if (isInserting) {
+      context.missing(_orderMeta);
+    }
     return context;
   }
 
@@ -1163,6 +1175,8 @@ class $MddAudioListTable extends MddAudioList
           .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
       title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      order: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}order'])!,
     );
   }
 
@@ -1177,14 +1191,19 @@ class MddAudioListData extends drift.DataClass
   final int id;
   final String path;
   final String title;
+  final int order;
   const MddAudioListData(
-      {required this.id, required this.path, required this.title});
+      {required this.id,
+      required this.path,
+      required this.title,
+      required this.order});
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
     map['id'] = drift.Variable<int>(id);
     map['path'] = drift.Variable<String>(path);
     map['title'] = drift.Variable<String>(title);
+    map['order'] = drift.Variable<int>(order);
     return map;
   }
 
@@ -1193,6 +1212,7 @@ class MddAudioListData extends drift.DataClass
       id: drift.Value(id),
       path: drift.Value(path),
       title: drift.Value(title),
+      order: drift.Value(order),
     );
   }
 
@@ -1203,6 +1223,7 @@ class MddAudioListData extends drift.DataClass
       id: serializer.fromJson<int>(json['id']),
       path: serializer.fromJson<String>(json['path']),
       title: serializer.fromJson<String>(json['title']),
+      order: serializer.fromJson<int>(json['order']),
     );
   }
   @override
@@ -1212,20 +1233,24 @@ class MddAudioListData extends drift.DataClass
       'id': serializer.toJson<int>(id),
       'path': serializer.toJson<String>(path),
       'title': serializer.toJson<String>(title),
+      'order': serializer.toJson<int>(order),
     };
   }
 
-  MddAudioListData copyWith({int? id, String? path, String? title}) =>
+  MddAudioListData copyWith(
+          {int? id, String? path, String? title, int? order}) =>
       MddAudioListData(
         id: id ?? this.id,
         path: path ?? this.path,
         title: title ?? this.title,
+        order: order ?? this.order,
       );
   MddAudioListData copyWithCompanion(MddAudioListCompanion data) {
     return MddAudioListData(
       id: data.id.present ? data.id.value : this.id,
       path: data.path.present ? data.path.value : this.path,
       title: data.title.present ? data.title.value : this.title,
+      order: data.order.present ? data.order.value : this.order,
     );
   }
 
@@ -1234,57 +1259,67 @@ class MddAudioListData extends drift.DataClass
     return (StringBuffer('MddAudioListData(')
           ..write('id: $id, ')
           ..write('path: $path, ')
-          ..write('title: $title')
+          ..write('title: $title, ')
+          ..write('order: $order')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, path, title);
+  int get hashCode => Object.hash(id, path, title, order);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MddAudioListData &&
           other.id == this.id &&
           other.path == this.path &&
-          other.title == this.title);
+          other.title == this.title &&
+          other.order == this.order);
 }
 
 class MddAudioListCompanion extends drift.UpdateCompanion<MddAudioListData> {
   final drift.Value<int> id;
   final drift.Value<String> path;
   final drift.Value<String> title;
+  final drift.Value<int> order;
   const MddAudioListCompanion({
     this.id = const drift.Value.absent(),
     this.path = const drift.Value.absent(),
     this.title = const drift.Value.absent(),
+    this.order = const drift.Value.absent(),
   });
   MddAudioListCompanion.insert({
     this.id = const drift.Value.absent(),
     required String path,
     required String title,
+    required int order,
   })  : path = drift.Value(path),
-        title = drift.Value(title);
+        title = drift.Value(title),
+        order = drift.Value(order);
   static drift.Insertable<MddAudioListData> custom({
     drift.Expression<int>? id,
     drift.Expression<String>? path,
     drift.Expression<String>? title,
+    drift.Expression<int>? order,
   }) {
     return drift.RawValuesInsertable({
       if (id != null) 'id': id,
       if (path != null) 'path': path,
       if (title != null) 'title': title,
+      if (order != null) 'order': order,
     });
   }
 
   MddAudioListCompanion copyWith(
       {drift.Value<int>? id,
       drift.Value<String>? path,
-      drift.Value<String>? title}) {
+      drift.Value<String>? title,
+      drift.Value<int>? order}) {
     return MddAudioListCompanion(
       id: id ?? this.id,
       path: path ?? this.path,
       title: title ?? this.title,
+      order: order ?? this.order,
     );
   }
 
@@ -1300,6 +1335,9 @@ class MddAudioListCompanion extends drift.UpdateCompanion<MddAudioListData> {
     if (title.present) {
       map['title'] = drift.Variable<String>(title.value);
     }
+    if (order.present) {
+      map['order'] = drift.Variable<int>(order.value);
+    }
     return map;
   }
 
@@ -1308,7 +1346,8 @@ class MddAudioListCompanion extends drift.UpdateCompanion<MddAudioListData> {
     return (StringBuffer('MddAudioListCompanion(')
           ..write('id: $id, ')
           ..write('path: $path, ')
-          ..write('title: $title')
+          ..write('title: $title, ')
+          ..write('order: $order')
           ..write(')'))
         .toString();
   }
@@ -2411,12 +2450,14 @@ typedef $$MddAudioListTableCreateCompanionBuilder = MddAudioListCompanion
   drift.Value<int> id,
   required String path,
   required String title,
+  required int order,
 });
 typedef $$MddAudioListTableUpdateCompanionBuilder = MddAudioListCompanion
     Function({
   drift.Value<int> id,
   drift.Value<String> path,
   drift.Value<String> title,
+  drift.Value<int> order,
 });
 
 class $$MddAudioListTableFilterComposer
@@ -2436,6 +2477,9 @@ class $$MddAudioListTableFilterComposer
 
   drift.ColumnFilters<String> get title => $composableBuilder(
       column: $table.title, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$MddAudioListTableOrderingComposer
@@ -2455,6 +2499,9 @@ class $$MddAudioListTableOrderingComposer
 
   drift.ColumnOrderings<String> get title => $composableBuilder(
       column: $table.title, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => drift.ColumnOrderings(column));
 }
 
 class $$MddAudioListTableAnnotationComposer
@@ -2474,6 +2521,9 @@ class $$MddAudioListTableAnnotationComposer
 
   drift.GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
 }
 
 class $$MddAudioListTableTableManager extends drift.RootTableManager<
@@ -2505,21 +2555,25 @@ class $$MddAudioListTableTableManager extends drift.RootTableManager<
             drift.Value<int> id = const drift.Value.absent(),
             drift.Value<String> path = const drift.Value.absent(),
             drift.Value<String> title = const drift.Value.absent(),
+            drift.Value<int> order = const drift.Value.absent(),
           }) =>
               MddAudioListCompanion(
             id: id,
             path: path,
             title: title,
+            order: order,
           ),
           createCompanionCallback: ({
             drift.Value<int> id = const drift.Value.absent(),
             required String path,
             required String title,
+            required int order,
           }) =>
               MddAudioListCompanion.insert(
             id: id,
             path: path,
             title: title,
+            order: order,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>
