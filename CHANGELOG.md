@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.15.0](https://github.com/mumu-lhl/Ciyue/compare/v1.14.1..v1.15.0) - 2025-05-25
+
+### Bug Fixes
+
+- **(audio)** add audio bug on Android - ([148da34](https://github.com/mumu-lhl/Ciyue/commit/148da34251f981d51df2707b5fc0be5b6e4be74c)) - Mumulhl
+
+### Features
+
+- **(audio)** implement audio settings model - ([512c00a](https://github.com/mumu-lhl/Ciyue/commit/512c00ab5902802a7ca8d1f9e8d678236a3b01f1)) - Mumulhl
+- **(audio)** add title field to MddAudioList and update related functionality - ([0b986ef](https://github.com/mumu-lhl/Ciyue/commit/0b986efcc5ff1be365cf3268682db20284d4fb8c)) - Mumulhl
+- **(audio)** add order field to MddAudioList and implement reordering functionality - ([d03ea93](https://github.com/mumu-lhl/Ciyue/commit/d03ea9359052859af7196d2c217deecf7c5d26e1)) - Mumulhl
+- **(audio)** add TTS to audio list - ([0c2fb0b](https://github.com/mumu-lhl/Ciyue/commit/0c2fb0ba5ef7599352f82772d69be378174f64ac)) - Mumulhl
+- **(audio)** support add mdd audio on Android - ([cbc5495](https://github.com/mumu-lhl/Ciyue/commit/cbc54953fd1ab40a3da9063c3a6149be8fefff2e)) - Mumulhl
+- **(audio)** support play sound in word display page - ([1529b17](https://github.com/mumu-lhl/Ciyue/commit/1529b1768e19c8a2c3777a19e337b23f2602d9e5)) - Mumulhl
+- **(database)** add mdd audio table and migration - ([4ad4df9](https://github.com/mumu-lhl/Ciyue/commit/4ad4df943f4d349825e5c1d25276a369cbffeab6)) - Mumulhl
+- **(model)** update Gemini 2.5 Flash Preview version - ([ad89c55](https://github.com/mumu-lhl/Ciyue/commit/ad89c5530ba6ce9d610e25bccee6e6815c49c4f2)) - Mumulhl
+- **(model)** add Claude 4 - ([956f678](https://github.com/mumu-lhl/Ciyue/commit/956f6784cd6118187d95ea06f6a64315dd7af46a)) - Mumulhl
+- add 'Alpha' tag to experimental settings features - ([f2bb70b](https://github.com/mumu-lhl/Ciyue/commit/f2bb70bdc2f834e683b75ab11b26b5d2fa0d65f9)) - Mumulhl
+- fake webview for linux - ([434dbc0](https://github.com/mumu-lhl/Ciyue/commit/434dbc0499905d6886832b241877e430f04ff959)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(build)** fix linux build - ([6298550](https://github.com/mumu-lhl/Ciyue/commit/6298550cd805aafb11ac5a02ae8a7c04ef6a9f4e)) - Mumulhl
+- **(deps)** bump gpt_markdown from 1.0.18 to 1.0.19 - ([e3a3bee](https://github.com/mumu-lhl/Ciyue/commit/e3a3beef0802ca6c58a096e7097ac3aa76d24727)) - dependabot[bot]
+- **(deps)** bump flutter_local_notifications from 19.2.0 to 19.2.1 - ([2e801ed](https://github.com/mumu-lhl/Ciyue/commit/2e801edb2e6e1c580c0ebdd4b236f5f7febf6925)) - dependabot[bot]
+- **(deps)** update intl to 0.20.2 - ([a31bb0e](https://github.com/mumu-lhl/Ciyue/commit/a31bb0e1830b18589d274d54af37aef810948ae9)) - Mumulhl
+- **(deps)** update - ([8da8bcc](https://github.com/mumu-lhl/Ciyue/commit/8da8bccbc8f5d273c503dfb7cdcda102b37b7b01)) - Mumulhl
+- **(release)** update flutter version - ([dee68fa](https://github.com/mumu-lhl/Ciyue/commit/dee68fa8a59f463276a647af3fd03c07b3298527)) - Mumulhl
+
+### Refactoring
+
+- **(ai)** refactor AI Explain Word - ([f6632b1](https://github.com/mumu-lhl/Ciyue/commit/f6632b153a37a9d3d5b51703afb499b7d2483f8a)) - Mumulhl
+- **(audio)** refactor audio management and add AudioModel for better state handling - ([a721666](https://github.com/mumu-lhl/Ciyue/commit/a7216668c777485da70894a54d1f349c31ef20ec)) - Mumulhl
+- refactor database - ([c7d24ed](https://github.com/mumu-lhl/Ciyue/commit/c7d24eddddaa7b6efd70684d2594359718d379f9)) - Mumulhl
+
+### Style
+
+- format code - ([9d97ea2](https://github.com/mumu-lhl/Ciyue/commit/9d97ea268a0627c9392585010b32a90bc61b9f03)) - Mumulhl
+- format code - ([efb798f](https://github.com/mumu-lhl/Ciyue/commit/efb798f2fe9200bb38627d1d60cb2d3d0ca4f917)) - Mumulhl
+
+---
 ## [1.14.1](https://github.com/mumu-lhl/Ciyue/compare/v1.14.0..v1.14.1) - 2025-05-18
 
 ### Bug Fixes
