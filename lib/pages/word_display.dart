@@ -60,6 +60,20 @@ class Button extends StatefulWidget {
   State<Button> createState() => _ButtonState();
 }
 
+class FakeWebViewByAI extends StatelessWidget {
+  final String html;
+
+  const FakeWebViewByAI({super.key, required this.html});
+
+  @override
+  Widget build(BuildContext context) {
+    final prompt =
+        "Extract the content from the following HTML into Markdown format: $html";
+
+    return AIMarkdown(prompt: prompt);
+  }
+}
+
 class LocalResourcesPathHandler extends CustomPathHandler {
   final int dictId;
 
@@ -442,8 +456,10 @@ class WordDisplay extends StatelessWidget {
           if (snapshot.hasData) {
             if (Platform.isAndroid) {
               return WebviewAndroid(content: snapshot.data!, dictId: id);
-            } else {
+            } else if (Platform.isWindows) {
               return WebviewWindows(content: snapshot.data!, dictId: id);
+            } else {
+              return FakeWebViewByAI(html: snapshot.data!);
             }
           } else {
             return const SizedBox.shrink();
