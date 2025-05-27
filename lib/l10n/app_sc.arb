@@ -216,5 +216,8 @@
   "@loading": {},
   "addingWord": "Annanghende paràula: %s",
   "@addingWord": {},
-  "copyingFiles": "Copiende archìvios..."
+  "copyingFiles": "Copiende archìvios...",
+  "@copyingFiles": {},
+  "addingResource": "Annanghende resursa: %s",
+  "@addingResource": {}
 }
