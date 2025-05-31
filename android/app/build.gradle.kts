@@ -112,7 +112,7 @@ dependencies {
     implementation("androidx.documentfile:documentfile:1.1.0")
 }
 
-val abiCodes = mapOf("x86_64" to 0, "armeabi-v7a" to 4, "arm64-v8a" to 4)
+val abiCodes = mapOf("x86_64" to 1, "armeabi-v7a" to 2, "arm64-v8a" to 3, "universal" to 4)
 
 androidComponents {
     onVariants { variant ->
@@ -120,7 +120,7 @@ androidComponents {
         variant.outputs.forEach { output ->
             val name = output.filters.find { it.filterType == ABI }?.identifier
 
-            val baseAbiCode = abiCodes[name]
+            val baseAbiCode = abiCodes[name ?: "universal"]
             if (baseAbiCode != null) {
                 output.versionCode.set(output.versionCode.get() * 10000 + baseAbiCode * 1000)
             }
