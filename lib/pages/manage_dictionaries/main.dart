@@ -39,7 +39,7 @@ class AddButton extends StatelessWidget {
         if (Platform.isAndroid) {
           PlatformMethod.openDirectory();
         } else {
-          selectMdxOrMdd(context, true);
+          selectMdxOrMddOnDesktop(context, true);
         }
       },
     );

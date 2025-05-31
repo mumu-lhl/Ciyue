@@ -83,7 +83,7 @@ class AudioList extends StatelessWidget {
                 if (Platform.isAndroid) {
                   PlatformMethod.openAudioDirectory();
                 } else {
-                  await selectMdxOrMdd(context, false);
+                  await selectMdxOrMddOnDesktop(context, false);
                 }
               },
             ),

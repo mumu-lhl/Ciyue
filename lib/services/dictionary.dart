@@ -15,6 +15,7 @@ import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
+import "package:path_provider/path_provider.dart";
 import "package:provider/provider.dart";
 
 import "../database/dictionary/dictionary.dart";
@@ -100,12 +101,6 @@ class Mdict {
   Mdict({required this.path});
 
   Future<bool> add() async {
-    try {
-      await dictionaryListDao.getId(path);
-      return false;
-      // ignore: empty_catches
-    } catch (e) {}
-
     await _initDictReader(path);
 
     await dictionaryListDao.add(path);
@@ -384,33 +379,35 @@ class Mdict {
 
 Future<void> selectMdx(BuildContext context, List<String> paths) async {
   for (final path in paths) {
-    if (context.mounted) {
-      Mdict? tmpDict;
-      try {
-        final pathNoExtension = setExtension(path, "");
-        tmpDict = Mdict(path: pathNoExtension);
-        await tmpDict.add();
-      } catch (e) {
-        if (context.mounted) {
-          final snackBar =
-              SnackBar(content: Text(AppLocalizations.of(context)!.notSupport));
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        }
-      } finally {
-        if (tmpDict != null) {
-          await tmpDict.close();
-        }
-      }
+    if (await dictionaryListDao.dictionaryExist(path)) {
+      continue;
     }
 
-    if (paths.isNotEmpty && context.mounted) {
-      context.read<ManageDictionariesModel>().update();
-      context.pop();
+    Mdict? tmpDict;
+    try {
+      final pathNoExtension = setExtension(path, "");
+      tmpDict = Mdict(path: pathNoExtension);
+      await tmpDict.add();
+      await tmpDict.close();
+    } catch (e) {
+      if (context.mounted) {
+        final snackBar =
+            SnackBar(content: Text(AppLocalizations.of(context)!.notSupport));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+
+      // Why? Don't know. Strange!
+      continue;
     }
+  }
+
+  if (paths.isNotEmpty && context.mounted) {
+    context.read<ManageDictionariesModel>().update();
+    context.pop();
   }
 }
 
-Future<void> selectMdd(BuildContext context, List<String> paths) async {
+Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
   for (final path in paths) {
     if (await mddAudioListDao.existMddAudio(path)) {
       continue;
@@ -466,7 +463,7 @@ Future<void> selectMdd(BuildContext context, List<String> paths) async {
   }
 }
 
-Future<void> selectMdxOrMdd(BuildContext context, bool isMdx) async {
+Future<void> selectMdxOrMddOnDesktop(BuildContext context, bool isMdx) async {
   final XTypeGroup typeGroup = XTypeGroup(
     label: "${isMdx ? "MDX" : "MDD"} File",
     extensions: <String>[isMdx ? "mdx" : "mdd"],
@@ -484,14 +481,14 @@ Future<void> selectMdxOrMdd(BuildContext context, bool isMdx) async {
     if (isMdx) {
       await selectMdx(context, files.map((e) => e.path).toList());
     } else {
-      await selectMdd(context, files.map((e) => e.path).toList());
+      await selectAudioMdd(context, files.map((e) => e.path).toList());
     }
   }
 }
 
 Future<void> findAllFileByExtension(
-    Directory dir, List<String> output, String extension) async {
-  final entities = await dir.list().toList();
+    Directory startDir, List<String> output, String extension) async {
+  final entities = await startDir.list().toList();
   for (final entity in entities) {
     if (entity is File) {
       if (entity.path.endsWith(extension)) {
@@ -501,4 +498,13 @@ Future<void> findAllFileByExtension(
       await findAllFileByExtension(entity, output, extension);
     }
   }
+}
+
+Future<List<String>> findMdxFilesOnAndroid() async {
+  final documentsDir = Directory(
+      join((await getApplicationSupportDirectory()).path, "dictionaries"));
+  final mdxFiles = <String>[];
+  await findAllFileByExtension(documentsDir, mdxFiles, "mdx");
+
+  return mdxFiles;
 }

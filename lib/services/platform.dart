@@ -1,6 +1,5 @@
 import "dart:io";
 
-import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:ciyue/main.dart";
@@ -10,40 +9,10 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/widget/loading_dialog.dart";
 import "package:flutter/services.dart";
-import "package:path/path.dart";
-import "package:path_provider/path_provider.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:provider/provider.dart";
 
 const _platform = MethodChannel("org.eu.mumulhl.ciyue");
-
-Future<void> _updateAllDictionaries() async {
-  final documentsDir = Directory(
-      join((await getApplicationSupportDirectory()).path, "dictionaries"));
-  final entities = await documentsDir.list(followLinks: false).toList();
-  await _addDictionaries(entities);
-}
-
-Future<void> _addDictionaries(List<FileSystemEntity> entities) async {
-  for (final entity in entities) {
-    if (entity is File) {
-      if (!entity.path.endsWith(".mdx")) continue;
-      if (await dictionaryListDao.dictionaryExist(entity.path)) continue;
-
-      try {
-        final path = setExtension(entity.path, "");
-        final tmpDict = Mdict(path: path);
-        if (await tmpDict.add()) {
-          await tmpDict.close();
-        }
-        // ignore: empty_catches
-      } catch (e) {}
-    } else {
-      final entities = await (entity as Directory).list().toList();
-      await _addDictionaries(entities);
-    }
-  }
-}
 
 class PlatformMethod {
   static Future<void> createFile(String content) async {
@@ -73,21 +42,17 @@ class PlatformMethod {
         case "inputDirectory":
           await prefs.setString(
               "dictionariesDirectory", call.arguments as String);
-          await _updateAllDictionaries();
 
-          router.pop();
-
-          Provider.of<ManageDictionariesModel>(navigatorKey.currentContext!,
-                  listen: false)
-              .update();
+          final mdxFiles = await findMdxFilesOnAndroid();
+          await selectMdx(navigatorKey.currentContext!, mdxFiles);
 
           break;
 
         case "inputAudioDirectory":
           await prefs.setString("audioDirectory", call.arguments as String);
 
-          final paths = await findMddAudioFilesOnAndroid();
-          await selectMdd(navigatorKey.currentContext!, paths);
+          final paths = (await findMddAudioFilesOnAndroid());
+          await selectAudioMdd(navigatorKey.currentContext!, paths);
 
           break;
 
