@@ -73,6 +73,22 @@ android {
         debug {}
     }
 
+    flavorDimensions += "default"
+    productFlavors {
+        create("common") {
+            dimension = "default"
+        }
+
+        create("dev") {
+            dimension = "default"
+            resValue(
+                type = "string",
+                name = "appName",
+                value = "Ciyue Dev")
+            applicationIdSuffix = ".dev"
+        }
+    }
+
     dependenciesInfo {
         // Disables dependency metadata when building APKs.
         includeInApk = false
@@ -96,7 +112,7 @@ dependencies {
     implementation("androidx.documentfile:documentfile:1.1.0")
 }
 
-val abiCodes = mapOf("x86_64" to 0, "armeabi-v7a" to 4, "arm64-v8a" to 4)
+val abiCodes = mapOf("x86_64" to 1, "armeabi-v7a" to 2, "arm64-v8a" to 3, "universal" to 4)
 
 androidComponents {
     onVariants { variant ->
@@ -104,7 +120,7 @@ androidComponents {
         variant.outputs.forEach { output ->
             val name = output.filters.find { it.filterType == ABI }?.identifier
 
-            val baseAbiCode = abiCodes[name]
+            val baseAbiCode = abiCodes[name ?: "universal"]
             if (baseAbiCode != null) {
                 output.versionCode.set(output.versionCode.get() * 10000 + baseAbiCode * 1000)
             }
