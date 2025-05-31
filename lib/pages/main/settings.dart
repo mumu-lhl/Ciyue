@@ -19,11 +19,6 @@ import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
-const discordUri = "https://discord.gg/BazBZuvKZG";
-const feedbackUri = "https://github.com/mumu-lhl/Ciyue/issues";
-const githubUri = "https://github.com/mumu-lhl/Ciyue";
-const sponsorUri = "https://afdian.com/a/mumulhl";
-
 void _copy(BuildContext context, String text) {
   Clipboard.setData(ClipboardData(text: text));
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -173,6 +168,8 @@ class ClearHistory extends StatelessWidget {
 }
 
 class DiscordUrl extends StatelessWidget {
+  static const discordUri = "https://discord.gg/BazBZuvKZG";
+
   const DiscordUrl({
     super.key,
   });
@@ -186,13 +183,6 @@ class DiscordUrl extends StatelessWidget {
         onTap: () => launchUrl(Uri.parse(discordUri)),
         onLongPress: () => _copy(context, discordUri));
   }
-}
-
-class DrawerIconSwitch extends StatefulWidget {
-  const DrawerIconSwitch({super.key});
-
-  @override
-  State<DrawerIconSwitch> createState() => _DrawerIconSwitchState();
 }
 
 class Export extends StatelessWidget {
@@ -209,6 +199,8 @@ class Export extends StatelessWidget {
 }
 
 class Feedback extends StatelessWidget {
+  static const feedbackUri = "https://github.com/mumu-lhl/Ciyue/issues";
+
   const Feedback({
     super.key,
   });
@@ -232,6 +224,8 @@ class FloatingWindow extends StatefulWidget {
 }
 
 class GithubUrl extends StatelessWidget {
+  static const githubUri = "https://github.com/mumu-lhl/Ciyue";
+
   const GithubUrl({
     super.key,
   });
@@ -327,14 +321,6 @@ class ManageDictionariesWidget extends StatelessWidget {
   }
 }
 
-class MoreOptionsButtonSwitch extends StatefulWidget {
-  const MoreOptionsButtonSwitch({super.key});
-
-  @override
-  State<MoreOptionsButtonSwitch> createState() =>
-      _MoreOptionsButtonSwitchState();
-}
-
 class NotificationSwitch extends StatefulWidget {
   const NotificationSwitch({super.key});
 
@@ -363,22 +349,6 @@ class PrivacyPolicy extends StatelessWidget {
   }
 }
 
-class SearchbarInWordDisplaySwitch extends StatefulWidget {
-  const SearchbarInWordDisplaySwitch({super.key});
-
-  @override
-  State<SearchbarInWordDisplaySwitch> createState() =>
-      _SearchbarInWordDisplaySwitchState();
-}
-
-class SearchbarLocationSelector extends StatefulWidget {
-  const SearchbarLocationSelector({super.key});
-
-  @override
-  State<SearchbarLocationSelector> createState() =>
-      _SearchbarLocationSelectorState();
-}
-
 class SecureScreenSwitch extends StatefulWidget {
   const SecureScreenSwitch({super.key});
 
@@ -399,11 +369,7 @@ class SettingsScreen extends StatelessWidget {
         TitleDivider(title: AppLocalizations.of(context)!.appearance),
         const ThemeSelector(),
         const LanguageSelector(),
-        const SearchbarLocationSelector(),
-        const TabBarPositionSelector(),
-        const SearchbarInWordDisplaySwitch(),
-        const DrawerIconSwitch(),
-        const MoreOptionsButtonSwitch(),
+        AppearanceSettings(),
         if (Platform.isAndroid) ...[
           TitleDivider(title: AppLocalizations.of(context)!.privacy),
           const SecureScreenSwitch(),
@@ -435,7 +401,25 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
+class AppearanceSettings extends StatelessWidget {
+  const AppearanceSettings({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.palette),
+      trailing: const Icon(Icons.arrow_forward),
+      title: Text(AppLocalizations.of(context)!.appearance),
+      onTap: () => context.push("/settings/appearance"),
+    );
+  }
+}
+
 class SponsorUrl extends StatelessWidget {
+  static const sponsorUri = "https://afdian.com/a/mumulhl";
+
   const SponsorUrl({
     super.key,
   });
@@ -449,13 +433,6 @@ class SponsorUrl extends StatelessWidget {
         onTap: () => launchUrl(Uri.parse(sponsorUri)),
         onLongPress: () => _copy(context, sponsorUri));
   }
-}
-
-class TabBarPositionSelector extends StatefulWidget {
-  const TabBarPositionSelector({super.key});
-
-  @override
-  State<TabBarPositionSelector> createState() => _TabBarPositionSelectorState();
 }
 
 class TermsOfService extends StatelessWidget {
@@ -541,25 +518,6 @@ class _AutoUpdateSwitchState extends State<AutoUpdateSwitch> {
   }
 }
 
-class _DrawerIconSwitchState extends State<DrawerIconSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.sidebarIcon),
-      value: settings.showSidebarIcon,
-      onChanged: (value) async {
-        await prefs.setBool("showSidebarIcon", value);
-        if (context.mounted) context.read<HomeModel>().update();
-        setState(() {
-          settings.showSidebarIcon = value;
-        });
-      },
-      secondary: const Icon(Icons.menu),
-    );
-  }
-}
-
 class _FloatingWindowState extends State<FloatingWindow> {
   @override
   Widget build(BuildContext context) {
@@ -634,25 +592,6 @@ class _LanguageSelectorState extends State<LanguageSelector> {
   }
 }
 
-class _MoreOptionsButtonSwitchState extends State<MoreOptionsButtonSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.moreOptionsButton),
-      value: settings.showMoreOptionsButton,
-      onChanged: (value) async {
-        await prefs.setBool("showMoreOptionsButton", value);
-        if (context.mounted) context.read<HomeModel>().update();
-        setState(() {
-          settings.showMoreOptionsButton = value;
-        });
-      },
-      secondary: const Icon(Icons.more_vert),
-    );
-  }
-}
-
 class _NotificationSwitchState extends State<NotificationSwitch> {
   @override
   Widget build(BuildContext context) {
@@ -694,64 +633,6 @@ class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
   }
 }
 
-class _SearchbarInWordDisplaySwitchState
-    extends State<SearchbarInWordDisplaySwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.showSearchBarInWordDisplayPage),
-      value: settings.showSearchBarInWordDisplay,
-      onChanged: (value) async {
-        await prefs.setBool("showSearchBarInWordDisplay", value);
-        setState(() {
-          settings.showSearchBarInWordDisplay = value;
-        });
-      },
-      secondary: const Icon(Icons.search),
-    );
-  }
-}
-
-class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-
-    return InkWell(
-      onTapUp: (tapUpDetails) async {
-        final searchBarLocationSelected = await showMenu(
-          context: context,
-          position: RelativeRect.fromLTRB(
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-          ),
-          initialValue: settings.searchBarInAppBar,
-          items: [
-            PopupMenuItem(value: true, child: Text(locale.top)),
-            PopupMenuItem(value: false, child: Text(locale.bottom)),
-          ],
-        );
-
-        if (searchBarLocationSelected != null) {
-          settings.searchBarInAppBar = searchBarLocationSelected;
-          await prefs.setBool("searchBarInAppBar", searchBarLocationSelected);
-
-          if (context.mounted) context.read<HomeModel>().update();
-          setState(() {});
-        }
-      },
-      child: ListTile(
-        leading: const Icon(Icons.search),
-        title: Text(locale!.searchBarLocation),
-        trailing: const Icon(Icons.keyboard_arrow_down),
-      ),
-    );
-  }
-}
-
 class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
   @override
   Widget build(BuildContext context) {
@@ -767,48 +648,6 @@ class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
         });
       },
       secondary: const Icon(Icons.security),
-    );
-  }
-}
-
-class _TabBarPositionSelectorState extends State<TabBarPositionSelector> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context)!;
-
-    return InkWell(
-      onTapUp: (tapUpDetails) async {
-        final selected = await showMenu<TabBarPosition>(
-          context: context,
-          position: RelativeRect.fromLTRB(
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-          ),
-          initialValue: settings.tabBarPosition,
-          items: [
-            PopupMenuItem(
-              value: TabBarPosition.top,
-              child: Text(locale.top),
-            ),
-            PopupMenuItem(
-              value: TabBarPosition.bottom,
-              child: Text(locale.bottom),
-            ),
-          ],
-        );
-
-        if (selected != null && selected != settings.tabBarPosition) {
-          await settings.setTabBarPosition(selected);
-          setState(() {});
-        }
-      },
-      child: ListTile(
-        leading: const Icon(Icons.tab),
-        title: Text(locale.tabBarPosition),
-        trailing: const Icon(Icons.keyboard_arrow_down),
-      ),
     );
   }
 }

@@ -9,6 +9,7 @@ import "package:ciyue/pages/manage_dictionaries/main.dart";
 import "package:ciyue/pages/manage_dictionaries/properties.dart";
 import "package:ciyue/pages/manage_dictionaries/settings_dictionary.dart";
 import "package:ciyue/pages/settings/ai_settings.dart";
+import "package:ciyue/pages/settings/appearance_settings.dart";
 import "package:ciyue/pages/settings/audio.dart";
 import "package:ciyue/pages/settings/auto_export.dart";
 import "package:ciyue/pages/settings/privacy_policy.dart";
@@ -142,6 +143,13 @@ final router = GoRouter(
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
         child: const AudioSettings(),
+      ),
+    ),
+    GoRoute(
+      path: "/settings/appearance",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const AppearanceSettingsPage(),
       ),
     ),
     GoRoute(
