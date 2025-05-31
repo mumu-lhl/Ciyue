@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 env:
-  flutter-version: 3.32.0
+  FLUTTER_VERSION: 3.32.1
 
 jobs:
   changelogFile:
@@ -48,7 +48,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.flutter-version }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
       - uses: actions/setup-java@v4
@@ -96,7 +96,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.flutter-version }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
       - name: Install dependencies
@@ -142,7 +142,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.flutter-version }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
       - name: Install dependencies
