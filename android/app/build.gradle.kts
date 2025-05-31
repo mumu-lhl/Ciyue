@@ -73,6 +73,22 @@ android {
         debug {}
     }
 
+    flavorDimensions += "default"
+    productFlavors {
+        create("common") {
+            dimension = "default"
+        }
+
+        create("dev") {
+            dimension = "default"
+            resValue(
+                type = "string",
+                name = "appName",
+                value = "Ciyue Dev")
+            applicationIdSuffix = ".dev"
+        }
+    }
+
     dependenciesInfo {
         // Disables dependency metadata when building APKs.
         includeInApk = false
