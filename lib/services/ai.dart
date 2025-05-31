@@ -136,7 +136,7 @@ class ModelProviderManager {
     "anthropic": ModelProvider(
         name: "anthropic",
         displayedName: "Anthropic",
-        apiUrl: "https://api.openai.com/v1/chat/completions",
+        apiUrl: "https://api.anthropic.com/v1/messages",
         models: [
           ModelInfo("claude-opus-4-0", "Claude Opus 4"),
           ModelInfo("claude-sonnet-4-0", "Claude Sonnet 4"),
