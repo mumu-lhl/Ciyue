@@ -338,11 +338,11 @@ class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
         .go();
   }
 
-  Future<MddAudioResourceData?> getByKeyAndMddAudioID(
+  Future<List<MddAudioResourceData>?> getByKeyAndMddAudioID(
       String key, int mddAudioId) async {
     return (await (select(mddAudioResource)
           ..where(
               (t) => t.key.isValue(key) & t.mddAudioListId.isValue(mddAudioId)))
-        .getSingleOrNull());
+        .get());
   }
 }
