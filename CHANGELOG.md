@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.16.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.15.0..v1.16.0-beta.1) - 2025-05-31
+
+### Bug Fixes
+
+- fix anthropic url - ([9239a54](https://github.com/mumu-lhl/Ciyue/commit/9239a546103a03d92dc8a96bd5c23524cd777cb4)) - Mumulhl
+- not show not support notice on android - ([e093ad4](https://github.com/mumu-lhl/Ciyue/commit/e093ad49ced1507ec4e7dc0ba3331b3e1b2ecde9)) - Mumulhl
+
+### Features
+
+- **(audio)** support any audio format - ([aa088a9](https://github.com/mumu-lhl/Ciyue/commit/aa088a911a77e1799d700719609b616ef9223f09)) - Mumulhl
+- **(translation)** translated using Weblate (Sardinian) - ([5a6e225](https://github.com/mumu-lhl/Ciyue/commit/5a6e225dc7cbf2cbc6065440251e577561fba770)) - Ajeje Brazorf
+- add more languages on translate page - ([2bb2348](https://github.com/mumu-lhl/Ciyue/commit/2bb2348bb9f77bd55959c728ff0363ce4d4581fa)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(appimage)** add update information - ([0c83ae1](https://github.com/mumu-lhl/Ciyue/commit/0c83ae13741bf191bca8d421a5538662a5fa6518)) - Mumulhl
+- **(build)** support AppImage - ([7689b8d](https://github.com/mumu-lhl/Ciyue/commit/7689b8dcf57825ee700bd88e30215e38615d418a)) - Mumulhl
+- **(ci)** update APK naming conventions in workflows - ([5856c7b](https://github.com/mumu-lhl/Ciyue/commit/5856c7befcdfba02b246ad3a9ca0d9df084e7301)) - Mumulhl
+- **(ci)** add AppImage build release workflow - ([a776c5c](https://github.com/mumu-lhl/Ciyue/commit/a776c5c975e63e4b12b0724eefd680c242d65e71)) - Mumulhl
+- **(gradle)** upgrade AGP - ([7b7e334](https://github.com/mumu-lhl/Ciyue/commit/7b7e334e5c157e8dc8ce38d9f45158bf3ed94237)) - Mumulhl
+- **(gradle)** upgrade kotlin to 2.1.0 - ([742c901](https://github.com/mumu-lhl/Ciyue/commit/742c901c0abb37bcafee578b746a9d0ef7c959ad)) - Mumulhl
+- **(gradle)** enable flavour - ([dafe61f](https://github.com/mumu-lhl/Ciyue/commit/dafe61fb5ea4b4711b98d6af9841ad2b308b6e97)) - Mumulhl
+- **(gradle)** update version code for different archs - ([bda15bc](https://github.com/mumu-lhl/Ciyue/commit/bda15bc540a01c4902e5b8fa092ac628bfb5d723)) - Mumulhl
+- update Flutter version to 3.32.1 in release workflow - ([0129818](https://github.com/mumu-lhl/Ciyue/commit/012981898918a6da51eacb292b67563b82f238e9)) - Mumulhl
+- standardize app name string key to 'app_name' across all locales - ([cf97953](https://github.com/mumu-lhl/Ciyue/commit/cf97953165919715a958b2ce1d215f2e0f0bc344)) - Mumulhl
+
+### Refactoring
+
+- **(translation)** migrate i18n placeholders to named arguments - ([066a0c1](https://github.com/mumu-lhl/Ciyue/commit/066a0c189f91ac31663bec07bc3026262bddc22e)) - Mumulhl
+- **(ui)** settings page - ([571fa38](https://github.com/mumu-lhl/Ciyue/commit/571fa3877eae1605053b8c39dbdb33dca9da82b5)) - Mumulhl
+
+---
 ## [1.15.0](https://github.com/mumu-lhl/Ciyue/compare/v1.14.1..v1.15.0) - 2025-05-25
 
 ### Bug Fixes
