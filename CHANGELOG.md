@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.16.0-beta.4](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0-beta.3..v1.16.0-beta.4) - 2025-05-31
+
+### Miscellaneous Chores
+
+- **(release)** update APK naming conventions for Android builds - ([46e31c1](https://github.com/mumu-lhl/Ciyue/commit/46e31c1f79a88b45eb23e34613d76fda41351d34)) - Mumulhl
+
+---
 ## [1.16.0-beta.3](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0-beta.2..v1.16.0-beta.3) - 2025-05-31
 
 ### Miscellaneous Chores
