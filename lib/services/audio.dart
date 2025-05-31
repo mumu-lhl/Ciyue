@@ -6,6 +6,7 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/main.dart";
 import "package:ciyue/services/dictionary.dart";
 import "package:dict_reader/dict_reader.dart";
+import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 
@@ -23,15 +24,20 @@ Future<void> playSoundOfWord(
     final player = AudioPlayer();
 
     for (final mddAudio in mddAudioList) {
-      final audio = await mddAudioResourceDao.getByKeyAndMddAudioID(
+      final audios = await mddAudioResourceDao.getByKeyAndMddAudioID(
           "$word.spx", mddAudio.id);
-      if (audio != null) {
+      for (final audio in audios!) {
+        if (setExtension(audio.key, "") != word) {
+          continue;
+        }
+
         final reader = DictReader(mddAudio.path);
         await reader.init(false);
 
         final Uint8List data = await reader.readOne(audio.blockOffset,
             audio.startOffset, audio.endOffset, audio.compressedSize);
-        await player.setSourceBytes(data, mimeType: "audio/x-speex");
+        final mimeType = lookupMimeType(audio.key);
+        await player.setSourceBytes(data, mimeType: mimeType);
 
         await player.resume();
 
