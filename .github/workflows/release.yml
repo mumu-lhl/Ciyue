@@ -176,7 +176,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Linux-AppImage
-          path: Ciyue-latest-x86_64.AppImage
+          path: Ciyue-latest-x86_64.AppImage*
 
   release:
     name: Release
@@ -191,5 +191,5 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "APKs/ciyue-*-release.apk,Windows/ciyue-windows.zip,Windows-Installer/ciyue-installer.exe,Linux/ciyue-linux.tar.xz,Linux-AppImage/Ciyue-latest-x86_64.AppImage"
+          artifacts: "APKs/ciyue-*-release.apk,Windows/ciyue-windows.zip,Windows-Installer/ciyue-installer.exe,Linux/ciyue-linux.tar.xz,Linux-AppImage/Ciyue-latest-x86_64.AppImage*"
           tag: ${{ github.ref_name }}
