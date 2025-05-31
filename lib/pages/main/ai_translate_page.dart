@@ -23,10 +23,16 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     "ja": "Japanese",
     "ko": "Korean",
     "fr": "French",
-    "de": "German",
-    "es": "Spanish",
-    "ru": "Russian",
+    "de": "Deutsch",
+    "es": "Español",
+    "ru": "Русский",
     "hi": "Hindi",
+    "bn": "Bengali",
+    "ca": "Catalan",
+    "nb": "Bokmål",
+    "sc": "Sardinian",
+    "ta": "Tamil",
+    "fa": "فارسی",
   };
   final TextEditingController _inputController = TextEditingController();
   bool _isRichOutput = true;
