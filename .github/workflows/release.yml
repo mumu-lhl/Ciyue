@@ -78,9 +78,9 @@ jobs:
         run: |
           cd build/app/outputs/flutter-apk
           mv app-common-release.apk ciyue-universal-release.apk
-          mv app-common-armeabi-v7a-release.apk ciyue-armeabi-v7a-release.apk
-          mv app-common-arm64-v8a-release.apk ciyue-arm64-v8a-release.apk
-          mv app-common-x86_64-release.apk ciyue-x86_64-release.apk
+          mv app-armeabi-v7a-common-release.apk ciyue-armeabi-v7a-release.apk
+          mv app-arm64-v8a-common-release.apk ciyue-arm64-v8a-release.apk
+          mv app-x86_64-common-release.apk ciyue-x86_64-release.apk
 
       - uses: actions/upload-artifact@v4
         with:
