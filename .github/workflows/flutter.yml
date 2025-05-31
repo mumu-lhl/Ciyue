@@ -70,7 +70,7 @@ jobs:
         with:
           name: Apk
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/flutter-apk/app-common-release.apk
 
   build-windows:
     name: Build Windows
