@@ -400,9 +400,8 @@ class RemoveHistoryConfirmDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(AppLocalizations.of(context)!.removeOneHistory),
-      content: Text(AppLocalizations.of(context)!
-          .removeOneHistoryConfirm
-          .replaceFirst("%s", item.word)),
+      content: Text(
+          AppLocalizations.of(context)!.removeOneHistoryConfirm(item.word)),
       actions: [
         TextButton(
           onPressed: () => context.pop(false),

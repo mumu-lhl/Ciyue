@@ -70,12 +70,24 @@
   "@confirm": {},
   "noResult": "無結果",
   "@noResult": {},
-  "updateAnnouncement": "更新至 %s 的公告",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "更新至 {version} 的公告",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "description": "簡介",
   "@description": {},
-  "removeOneHistoryConfirm": "你確認要從歷史記錄中刪除「%s」嗎？",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "你確認要從歷史記錄中刪除「{word}」嗎？",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "removeOneHistory": "刪除歷史記錄",
   "@removeOneHistory": {},
   "clearHistory": "清空歷史記錄",
@@ -166,8 +178,14 @@
   "@checkForUpdates": {},
   "updateAvailable": "有可用更新",
   "@updateAvailable": {},
-  "updateAvailableContent": "有新版本 %s 可供更新",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "有新版本 {version} 可供更新",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "更新",
   "@update": {},
   "noUpdateAvailable": "目前是最新版本",
@@ -214,7 +232,21 @@
   "@floatingWindow": {},
   "loading": "載入中...",
   "@loading": {},
-  "addingWord": "正在新增字詞: %s",
-  "@addingWord": {},
-  "copyingFiles": "正在複製檔案..."
+  "addingWord": "正在新增字詞: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "正在複製檔案...",
+  "addingResource": "正在新增資源: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }

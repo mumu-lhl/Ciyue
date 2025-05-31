@@ -72,14 +72,26 @@
   "@noResult": {},
   "description": "Descritzione",
   "@description": {},
-  "updateAnnouncement": "S'annùntziu de atualizatzione a %s",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "S'annùntziu de atualizatzione a {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "properties": "Propiedades",
   "@properties": {},
   "removeOneHistory": "Boga sa cronologia",
   "@removeOneHistory": {},
-  "removeOneHistoryConfirm": "Ses seguru de bòlere bogare '%s' dae sa cronologia?",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "Ses seguru de bòlere bogare '{word}' dae sa cronologia?",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "clearHistory": "Isbòida sa cronologia",
   "@clearHistory": {},
   "clearHistoryConfirm": "Ses seguru de bòlere isboidare sa cronologia?",
@@ -166,8 +178,14 @@
   "@checkForUpdates": {},
   "updateAvailable": "Atualizatzione a disponimentu",
   "@updateAvailable": {},
-  "updateAvailableContent": "Sa versione noa %s est a disponimentu. Boles atualizare?",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "Sa versione noa {version} est a disponimentu. Boles atualizare?",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "Atualiza",
   "@update": {},
   "noUpdateAvailable": "Peruna atualizatzione a disponimentu",
@@ -214,7 +232,22 @@
   "@floatingWindow": {},
   "loading": "Carrighende...",
   "@loading": {},
-  "addingWord": "Annanghende paràula: %s",
-  "@addingWord": {},
-  "copyingFiles": "Copiende archìvios..."
+  "addingWord": "Annanghende paràula: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "Copiende archìvios...",
+  "@copyingFiles": {},
+  "addingResource": "Annanghende risorsa: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }

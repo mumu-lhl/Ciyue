@@ -17,9 +17,7 @@ class UpdateAvailable extends StatelessWidget {
     return AlertDialog(
       title: Text(AppLocalizations.of(context)!.updateAvailable),
       content: Text(
-        AppLocalizations.of(context)!
-            .updateAvailableContent
-            .replaceFirst("%s", update.version),
+        AppLocalizations.of(context)!.updateAvailableContent(update.version),
       ),
       actions: [
         TextButton(

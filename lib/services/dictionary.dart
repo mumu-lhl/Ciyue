@@ -284,8 +284,7 @@ class Mdict {
 
         LoadingDialogContentState.updateText(
             AppLocalizations.of(navigatorKey.currentContext!)!
-                .addingResource
-                .replaceFirst("%s", key));
+                .addingResource(key));
       }
     }
 
@@ -316,9 +315,7 @@ class Mdict {
         wordList.clear();
 
         LoadingDialogContentState.updateText(
-            AppLocalizations.of(navigatorKey.currentContext!)!
-                .addingWord
-                .replaceFirst("%s", key));
+            AppLocalizations.of(navigatorKey.currentContext!)!.addingWord(key));
       }
     }
 
@@ -444,8 +441,7 @@ Future<void> selectMdd(BuildContext context, List<String> paths) async {
         if (context.mounted) {
           LoadingDialogContentState.updateText(
               AppLocalizations.of(navigatorKey.currentContext!)!
-                  .addingResource
-                  .replaceFirst("%s", key));
+                  .addingResource(key));
         }
       }
 

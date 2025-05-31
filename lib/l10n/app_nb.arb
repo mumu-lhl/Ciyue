@@ -40,8 +40,14 @@
   "@manageDictionaries": {},
   "noResult": "Ingen resultat",
   "@noResult": {},
-  "updateAnnouncement": "Oppdatering til %s",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "Oppdatering til {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "description": "Beskrivelse",
   "@description": {},
   "recommendedDictionaries": "Anbefalte ordbøker",
@@ -78,8 +84,14 @@
   "@properties": {},
   "removeOneHistory": "Fjern historikk",
   "@removeOneHistory": {},
-  "removeOneHistoryConfirm": "Er du sikker på at du vil fjerne '%s' fra historikken?",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "Er du sikker på at du vil fjerne '{word}' fra historikken?",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "clearHistory": "Tøm historikk",
   "@clearHistory": {},
   "clearHistoryConfirm": "Er du sikker på at du vil tømme historikken?",
@@ -166,8 +178,14 @@
   "@checkForUpdates": {},
   "updateAvailable": "Oppdatering tilgjengelig",
   "@updateAvailable": {},
-  "updateAvailableContent": "Ny versjon %s er tilgjengelig. Vil du oppdatere?",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "Ny versjon {version} er tilgjengelig. Vil du oppdatere?",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "Oppdater",
   "@update": {},
   "noUpdateAvailable": "Ingen oppdatering tilgjengelig",
@@ -214,7 +232,22 @@
   "@floatingWindow": {},
   "loading": "Laster...",
   "@loading": {},
-  "addingWord": "Legger til ord: %s",
-  "@addingWord": {},
-  "copyingFiles": "Kopierer filer..."
+  "addingWord": "Legger til ord: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "Kopierer filer...",
+  "@copyingFiles": {},
+  "addingResource": "Legger til ressurs: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }

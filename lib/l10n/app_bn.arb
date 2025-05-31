@@ -66,8 +66,14 @@
   "@properties": {},
   "removeOneHistory": "ইতিহাস মুছুন",
   "@removeOneHistory": {},
-  "removeOneHistoryConfirm": "আপনি কি নিশ্চিত আপনি '%s' কে ইতিহাস থেকে মুছে ফেলতে চান?",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "আপনি কি নিশ্চিত আপনি '{word}' কে ইতিহাস থেকে মুছে ফেলতে চান?",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "clearHistory": "ইতিহাস পরিষ্কার করুন",
   "@clearHistory": {},
   "clearHistoryConfirm": "আপনি কি নিশ্চিত আপনি ইতিহাস পরিষ্কার করতে চান?",
@@ -136,8 +142,14 @@
   "@aiModel": {},
   "tagList": "চিরকুট তালিকা",
   "@tagList": {},
-  "updateAnnouncement": "%s এ উত্তরণের ঘোষণা",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "{version} এ উত্তরণের ঘোষণা",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "recommendedDictionaries": "সুপারিশকৃত অভিধানসমূহ",
   "@recommendedDictionaries": {},
   "tagName": "চিরকুটের নাম",
@@ -160,8 +172,14 @@
   "@autoDetect": {},
   "checkForUpdates": "হালনাগাদের জন্য খোঁজ করুন",
   "@checkForUpdates": {},
-  "updateAvailableContent": "নতুন সংস্করণ %s আছে। আপনি কি হালনাগাদ করতে চান?",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "নতুন সংস্করণ {version} আছে। আপনি কি হালনাগাদ করতে চান?",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "হালনাগাদ করুন",
   "@update": {},
   "noUpdateAvailable": "কোন সাম্প্রতিক সংস্করণ পাওয়া যায় নি",
@@ -207,5 +225,29 @@
   "ttsEngines": "টিটিএস ইঞ্জিন",
   "@ttsEngines": {},
   "ttsLanguages": "টিটিএস ভাষা",
-  "@ttsLanguages": {}
+  "@ttsLanguages": {},
+  "apiUrl": "API URL",
+  "@apiUrl": {},
+  "floatingWindow": "ভাসমান উইন্ডো",
+  "@floatingWindow": {},
+  "loading": "লোড হচ্ছে...",
+  "@loading": {},
+  "addingWord": "শব্দ যোগ করা হচ্ছে: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "ফাইল কপি করা হচ্ছে...",
+  "@copyingFiles": {},
+  "addingResource": "সম্পদ যোগ করা হচ্ছে: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }

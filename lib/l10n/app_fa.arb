@@ -56,8 +56,14 @@
   "@confirm": {},
   "noResult": "بدون نتیجه",
   "@noResult": {},
-  "updateAnnouncement": "اعلان آپدیت کردن به %s",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "اعلان آپدیت کردن به {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "addDictionary": "لطفا اول در تنظیمات یک دیکشنری MDX اضافه کنید",
   "@addDictionary": {},
   "tags": "برچسب ها",
@@ -76,8 +82,14 @@
   "@description": {},
   "removeOneHistory": "حذف سابقه",
   "@removeOneHistory": {},
-  "removeOneHistoryConfirm": "آیا از حذف «%s» از سابقه اطمینان دارید؟",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "آیا از حذف «{word}» از سابقه اطمینان دارید؟",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "clearHistory": "حذف سوابق",
   "@clearHistory": {},
   "clearHistoryConfirm": "آیا از حذف سوابق اطمینان دارید؟",
@@ -166,8 +178,14 @@
   "@checkForUpdates": {},
   "updateAvailable": "به‌روزرسانی موجود است",
   "@updateAvailable": {},
-  "updateAvailableContent": "نسخه جدید %s موجود است. آیا می‌خواهید به‌روزرسانی کنید؟",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "نسخه جدید {version} موجود است. آیا می‌خواهید به‌روزرسانی کنید؟",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "به‌روزرسانی",
   "@update": {},
   "noUpdateAvailable": "به‌روزرسانی موجود نیست",
@@ -214,7 +232,22 @@
   "@floatingWindow": {},
   "loading": "در حال بارگذاری...",
   "@loading": {},
-  "addingWord": "در حال اضافه کردن کلمه: %s",
-  "@addingWord": {},
-  "copyingFiles": "در حال کپی کردن فایل‌ها..."
+  "addingWord": "در حال اضافه کردن کلمه: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "در حال کپی کردن فایل‌ها...",
+  "@copyingFiles": {},
+  "addingResource": "در حال اضافه کردن منبع: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }
