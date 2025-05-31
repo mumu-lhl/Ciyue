@@ -16,8 +16,14 @@
   "@export": {},
   "updateCheckFailed": "Ha fallat la comprovació d’actualitzacions",
   "@updateCheckFailed": {},
-  "updateAnnouncement": "Anunci de l’actualització a %s",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "Anunci de l’actualització a {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "addDictionary": "Afegiu primer un diccionari MDX a Paràmetres",
   "@addDictionary": {},
   "tags": "Etiquetes",
@@ -70,8 +76,14 @@
   "@addTag": {},
   "properties": "Propietats",
   "@properties": {},
-  "removeOneHistoryConfirm": "Segur que voleu eliminar «%s» de l’historial?",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "Segur que voleu eliminar «{word}» de l’historial?",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "clearHistory": "Buida l’historial",
   "@clearHistory": {},
   "default_": "Per defecte",
@@ -126,8 +138,14 @@
   "@autoDetect": {},
   "checkForUpdates": "Comprova si hi ha actualitzacions",
   "@checkForUpdates": {},
-  "updateAvailableContent": "La versió %s està disponible. Voleu actualitzar?",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "La versió {version} està disponible. Voleu actualitzar?",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "Actualitza",
   "@update": {},
   "noUpdateAvailable": "No hi ha cap actualització disponible",
@@ -214,7 +232,22 @@
   "@floatingWindow": {},
   "loading": "Carregant...",
   "@loading": {},
-  "addingWord": "S'està afegint el mot: %s",
-  "@addingWord": {},
-  "copyingFiles": "S'estan copiant els fitxers..."
+  "addingWord": "S'està afegint el mot: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "S'estan copiant els fitxers...",
+  "@copyingFiles": {},
+  "addingResource": "S'està afegint el recurs: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -6,8 +6,14 @@
   "@export": {},
   "import": "இறக்குமதி",
   "@import": {},
-  "updateAnnouncement": "%s க்கு புதுப்பிக்கும் அறிவிப்பு",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "{version} க்கு புதுப்பிக்கும் அறிவிப்பு",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "permissionDenied": "நீங்கள் அனுமதிகளை அங்கீகரிக்க வேண்டும்",
   "@permissionDenied": {},
   "close": "மூடு",
@@ -78,8 +84,14 @@
   "@properties": {},
   "removeOneHistory": "வரலாற்றை அகற்று",
   "@removeOneHistory": {},
-  "removeOneHistoryConfirm": "வரலாற்றிலிருந்து '%s' ஐ அகற்ற விரும்புகிறீர்களா?",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "வரலாற்றிலிருந்து '{word}' ஐ அகற்ற விரும்புகிறீர்களா?",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "clearHistory": "வரலாற்றை அழி",
   "@clearHistory": {},
   "clearHistoryConfirm": "வரலாற்றை அழிக்க விரும்புகிறீர்களா?",
@@ -166,8 +178,14 @@
   "@checkForUpdates": {},
   "updateAvailable": "புதுப்பிப்பு கிடைக்கிறது",
   "@updateAvailable": {},
-  "updateAvailableContent": "புதிய பதிப்பு %s கிடைக்கிறது. புதுப்பிக்க விரும்புகிறீர்களா?",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "புதிய பதிப்பு {version} கிடைக்கிறது. புதுப்பிக்க விரும்புகிறீர்களா?",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "புதுப்பி",
   "@update": {},
   "noUpdateAvailable": "புதுப்பிப்பு எதுவும் இல்லை",
@@ -214,7 +232,22 @@
   "@floatingWindow": {},
   "loading": "ஏற்றுகிறது...",
   "@loading": {},
-  "addingWord": "சொல் சேர்க்கிறது: %s",
-  "@addingWord": {},
-  "copyingFiles": "கோப்புகளை நகலெடுக்கிறது..."
+  "addingWord": "சொல் சேர்க்கிறது: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "கோப்புகளை நகலெடுக்கிறது...",
+  "@copyingFiles": {},
+  "addingResource": "வளத்தைச் சேர்க்கிறது: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }

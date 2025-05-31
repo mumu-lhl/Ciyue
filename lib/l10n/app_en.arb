@@ -70,16 +70,28 @@
   "@confirm": {},
   "noResult": "No Result",
   "@noResult": {},
-  "updateAnnouncement": "The Announcement of Updating to %s",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "The Announcement of Updating to {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "description": "Description",
   "@description": {},
   "properties": "Properties",
   "@properties": {},
   "removeOneHistory": "Remove History",
   "@removeOneHistory": {},
-  "removeOneHistoryConfirm": "Are you sure you want to remove '%s' from history?",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "Are you sure you want to remove '{word}' from history?",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "clearHistory": "Clear History",
   "@clearHistory": {},
   "clearHistoryConfirm": "Are you sure you want to clear history?",
@@ -166,8 +178,14 @@
   "@checkForUpdates": {},
   "updateAvailable": "Update Available",
   "@updateAvailable": {},
-  "updateAvailableContent": "New version %s is available. Do you want to update?",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "New version {version} is available. Do you want to update?",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "Update",
   "@update": {},
   "noUpdateAvailable": "No update available",
@@ -214,10 +232,22 @@
   "@floatingWindow": {},
   "loading": "Loading...",
   "@loading": {},
-  "addingWord": "Adding Word: %s",
-  "@addingWord": {},
+  "addingWord": "Adding Word: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "copyingFiles": "Copying Files...",
   "@copyingFiles": {},
-  "addingResource": "Adding Resource: %s",
-  "@addingResource": {}
+  "addingResource": "Adding Resource: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }

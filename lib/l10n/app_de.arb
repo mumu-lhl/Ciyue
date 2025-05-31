@@ -68,8 +68,14 @@
   "@properties": {},
   "removeOneHistory": "Verlauf entfernen",
   "@removeOneHistory": {},
-  "removeOneHistoryConfirm": "Sind Sie sicher, dass Sie '%s' aus dem Verlauf entfernen wollen?",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "Sind Sie sicher, dass Sie '{word}' aus dem Verlauf entfernen wollen?",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "clearHistory": "Verlauf leeren",
   "@clearHistory": {},
   "clearHistoryConfirm": "Sind Sie sicher, dass Sie den Verlauf leeren wollen?",
@@ -98,8 +104,14 @@
   "@light": {},
   "empty": "Leer...",
   "@empty": {},
-  "updateAnnouncement": "Die Ankündigung der Aktualisierung auf %s",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "Die Ankündigung der Aktualisierung auf {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "exportDirectory": "Export Verzeichnis",
   "@exportDirectory": {},
   "secureScreen": "Sicherer Bildschirm",
@@ -166,8 +178,14 @@
   "@checkForUpdates": {},
   "updateAvailable": "Update verfügbar",
   "@updateAvailable": {},
-  "updateAvailableContent": "Neue Version %s ist verfügbar. Möchten Sie aktualisieren?",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "Neue Version {version} ist verfügbar. Möchten Sie aktualisieren?",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "Aktualisieren",
   "@update": {},
   "noUpdateAvailable": "Kein Update verfügbar",
@@ -214,7 +232,22 @@
   "@floatingWindow": {},
   "loading": "Lädt...",
   "@loading": {},
-  "addingWord": "Wort wird hinzugefügt: %s",
-  "@addingWord": {},
-  "copyingFiles": "Dateien werden kopiert..."
+  "addingWord": "Wort wird hinzugefügt: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "Dateien werden kopiert...",
+  "@copyingFiles": {},
+  "addingResource": "Ressource wird hinzugefügt: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }

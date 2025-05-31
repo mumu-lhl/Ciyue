@@ -70,14 +70,26 @@
   "@confirm": {},
   "noResult": "无结果",
   "@noResult": {},
-  "updateAnnouncement": "更新至 %s 的公告",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "更新至 {version} 的公告",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "description": "简介",
   "@description": {},
   "removeOneHistory": "删除历史记录",
   "@removeOneHistory": {},
-  "removeOneHistoryConfirm": "你确定要从历史记录中删除 “%s” 吗？",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "你确定要从历史记录中删除 “{word}” 吗？",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "clearHistory": "清空历史记录",
   "@clearHistory": {},
   "clearHistoryConfirm": "你确定要清空历史记录吗？",
@@ -166,8 +178,14 @@
   "@checkForUpdates": {},
   "updateAvailable": "有可用更新",
   "@updateAvailable": {},
-  "updateAvailableContent": "新版本 %s 已可用。是否要更新？",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "新版本 {version} 已可用。是否要更新？",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "更新",
   "@update": {},
   "noUpdateAvailable": "暂无可用更新",
@@ -214,7 +232,22 @@
   "@floatingWindow": {},
   "loading": "加载中...",
   "@loading": {},
-  "addingWord": "正在添加单词: %s",
-  "@addingWord": {},
-  "copyingFiles": "正在复制文件..."
+  "addingWord": "正在添加单词: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "正在复制文件...",
+  "@copyingFiles": {},
+  "addingResource": "正在添加资源: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }

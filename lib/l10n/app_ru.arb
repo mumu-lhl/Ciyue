@@ -72,14 +72,26 @@
   "@noResult": {},
   "description": "Описание",
   "@description": {},
-  "updateAnnouncement": "Есть обновление до %s",
-  "@updateAnnouncement": {},
+  "updateAnnouncement": "Есть обновление до {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "properties": "Свойства",
   "@properties": {},
   "removeOneHistory": "Удалить из истории",
   "@removeOneHistory": {},
-  "removeOneHistoryConfirm": "Вы уверены, что хотите удалить '%s' из истории?",
-  "@removeOneHistoryConfirm": {},
+  "removeOneHistoryConfirm": "Вы уверены, что хотите удалить '{word}' из истории?",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
   "clearHistory": "Очистить историю",
   "@clearHistory": {},
   "clearHistoryConfirm": "Вы уверены, что хотите очистить историю?",
@@ -166,8 +178,14 @@
   "@checkForUpdates": {},
   "updateAvailable": "Есть обновление",
   "@updateAvailable": {},
-  "updateAvailableContent": "Доступна новая версия %s. Хотите обновить?",
-  "@updateAvailableContent": {},
+  "updateAvailableContent": "Доступна новая версия {version}. Хотите обновить?",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "update": "Обновить",
   "@update": {},
   "noUpdateAvailable": "Нет доступных обновлений",
@@ -214,7 +232,22 @@
   "@floatingWindow": {},
   "loading": "Загрузка...",
   "@loading": {},
-  "addingWord": "Добавление слова: %s",
-  "@addingWord": {},
-  "copyingFiles": "Копирование файлов..."
+  "addingWord": "Добавление слова: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "Копирование файлов...",
+  "@copyingFiles": {},
+  "addingResource": "Добавление ресурса: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  }
 }
