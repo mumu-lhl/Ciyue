@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.16.0-beta.3](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0-beta.2..v1.16.0-beta.3) - 2025-05-31
+
+### Miscellaneous Chores
+
+- **(appimage)** fix build - ([0ed41d3](https://github.com/mumu-lhl/Ciyue/commit/0ed41d3fa8406ea8f33dff91a4f3febaffd117e2)) - Mumulhl
+
+---
 ## [1.16.0-beta.2](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0-beta.1..v1.16.0-beta.2) - 2025-05-31
 
 ### Miscellaneous Chores
