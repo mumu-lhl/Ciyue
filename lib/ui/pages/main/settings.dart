@@ -1,13 +1,26 @@
 import "dart:io";
 
-import "package:ciyue/main.dart";
-import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/core/alpha_text.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
+
+class AboutPageListTile extends StatelessWidget {
+  const AboutPageListTile({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.info),
+      title: Text(AppLocalizations.of(context)!.about),
+      onTap: () => context.push("/settings/about"),
+    );
+  }
+}
 
 class AiSettingsPageListTile extends StatelessWidget {
   const AiSettingsPageListTile({super.key});
@@ -96,13 +109,6 @@ class ClearHistory extends StatelessWidget {
   }
 }
 
-class LanguageSelector extends StatefulWidget {
-  const LanguageSelector({super.key});
-
-  @override
-  State<LanguageSelector> createState() => _LanguageSelectorState();
-}
-
 class ManageDictionariesPageListTile extends StatelessWidget {
   const ManageDictionariesPageListTile({super.key});
 
@@ -144,8 +150,6 @@ class SettingsScreen extends StatelessWidget {
         const ManageDictionariesPageListTile(),
         const AiSettingsPageListTile(),
         const AudioSettingsPageListTile(),
-        const ThemeSelector(),
-        const LanguageSelector(),
         const AppearanceSettingsPageListTile(),
         const ClearHistory(),
         const BackupPageListTile(),
@@ -155,28 +159,6 @@ class SettingsScreen extends StatelessWidget {
       ],
     );
   }
-}
-
-class AboutPageListTile extends StatelessWidget {
-  const AboutPageListTile({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.info),
-      title: Text(AppLocalizations.of(context)!.about),
-      onTap: () => context.push("/settings/about"),
-    );
-  }
-}
-
-class ThemeSelector extends StatefulWidget {
-  const ThemeSelector({super.key});
-
-  @override
-  State<ThemeSelector> createState() => _ThemeSelectorState();
 }
 
 class UpdatePageListTile extends StatelessWidget {
@@ -208,111 +190,6 @@ class _AudioSettingsPageListTileState extends State<AudioSettingsPageListTile> {
         ],
       ),
       onTap: () => context.push("/settings/audio"),
-    );
-  }
-}
-
-class _LanguageSelectorState extends State<LanguageSelector> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-
-    return InkWell(
-      onTapUp: (tapUpDetails) async {
-        final languageSelected = await showMenu(
-          context: context,
-          position: RelativeRect.fromLTRB(
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-          ),
-          initialValue: settings.language,
-          items: [
-            PopupMenuItem(
-                value: "system",
-                child: Text(AppLocalizations.of(context)!.system)),
-            const PopupMenuItem(value: "bn", child: Text("Bengali")),
-            const PopupMenuItem(value: "ca", child: Text("Catalan")),
-            const PopupMenuItem(value: "de", child: Text("Deutsch")),
-            const PopupMenuItem(value: "es", child: Text("Español")),
-            const PopupMenuItem(value: "en", child: Text("English")),
-            const PopupMenuItem(value: "ru", child: Text("Русский")),
-            const PopupMenuItem(value: "nb", child: Text("Bokmål")),
-            const PopupMenuItem(value: "sc", child: Text("Sardinian")),
-            const PopupMenuItem(value: "ta", child: Text("Tamil")),
-            const PopupMenuItem(value: "fa", child: Text("فارسی")),
-            const PopupMenuItem(value: "zh", child: Text("简体中文")),
-            const PopupMenuItem(value: "zh_HK", child: Text("繁體中文（香港）")),
-            const PopupMenuItem(value: "zh_TW", child: Text("正體中文（臺灣）")),
-          ],
-        );
-
-        if (languageSelected != null) {
-          settings.language = languageSelected;
-
-          prefs.setString("language", languageSelected);
-
-          setState(() {});
-          refreshAll();
-        }
-      },
-      child: ListTile(
-        leading: const Icon(Icons.language),
-        title: Text(locale!.language),
-        trailing: const Icon(Icons.keyboard_arrow_down),
-      ),
-    );
-  }
-}
-
-class _ThemeSelectorState extends State<ThemeSelector> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-
-    return InkWell(
-      onTapUp: (tapUpDetails) async {
-        final themeModeSelected = await showMenu(
-          context: context,
-          position: RelativeRect.fromLTRB(
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-          ),
-          initialValue: settings.themeMode,
-          items: [
-            PopupMenuItem(value: ThemeMode.light, child: Text(locale.light)),
-            PopupMenuItem(value: ThemeMode.dark, child: Text(locale.dark)),
-            PopupMenuItem(value: ThemeMode.system, child: Text(locale.system)),
-          ],
-        );
-
-        if (themeModeSelected != null) {
-          settings.themeMode = themeModeSelected;
-
-          String themeModeString;
-          switch (themeModeSelected) {
-            case ThemeMode.light:
-              themeModeString = "light";
-            case ThemeMode.dark:
-              themeModeString = "dark";
-            case ThemeMode.system:
-              themeModeString = "system";
-          }
-
-          prefs.setString("themeMode", themeModeString);
-
-          setState(() {});
-          refreshAll();
-        }
-      },
-      child: ListTile(
-        leading: const Icon(Icons.light_mode),
-        title: Text(locale!.theme),
-        trailing: const Icon(Icons.keyboard_arrow_down),
-      ),
     );
   }
 }
