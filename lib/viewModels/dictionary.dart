@@ -1,5 +1,5 @@
 import "package:ciyue/main.dart";
-import "package:ciyue/services/dictionary.dart";
+import "package:ciyue/repositories/dictionary.dart";
 import "package:flutter/material.dart";
 
 class DictManagerModel extends ChangeNotifier {

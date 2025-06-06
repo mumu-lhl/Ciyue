@@ -1,9 +1,9 @@
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/services/settings.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/widget/date_divider.dart";
-import "package:ciyue/widget/text_buttons.dart";
+import "package:ciyue/ui/pages/core/date_divider.dart";
+import "package:ciyue/ui/pages/core/text_buttons.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";

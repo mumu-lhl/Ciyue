@@ -1,5 +1,5 @@
 import "package:ciyue/main.dart";
-import "package:ciyue/services/settings.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";

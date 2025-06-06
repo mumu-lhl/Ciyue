@@ -1,13 +1,13 @@
 import "dart:io";
 
 import "package:ciyue/services/audio.dart";
-import "package:ciyue/services/dictionary.dart";
+import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/pages/main/main.dart";
-import "package:ciyue/services/settings.dart";
+import "package:ciyue/ui/pages/main/main.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
-import "package:ciyue/widget/loading_dialog.dart";
+import "package:ciyue/ui/pages/core/loading_dialog.dart";
 import "package:flutter/services.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:provider/provider.dart";
