@@ -1,12 +1,12 @@
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/services/dictionary.dart";
-import "package:ciyue/services/settings.dart";
+import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
-import "package:ciyue/widget/search_bar.dart";
-import "package:ciyue/widget/tags_list.dart";
+import "package:ciyue/ui/pages/core/search_bar.dart";
+import "package:ciyue/ui/pages/core/tags_list.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";

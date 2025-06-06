@@ -1,5 +1,5 @@
-import "package:ciyue/pages/main/home.dart";
-import "package:ciyue/services/settings.dart";
+import "package:ciyue/ui/pages/main/home.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";

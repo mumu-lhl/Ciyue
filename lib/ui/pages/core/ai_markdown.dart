@@ -1,5 +1,5 @@
 import "package:ciyue/services/ai.dart";
-import "package:ciyue/services/settings.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:flutter/material.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 

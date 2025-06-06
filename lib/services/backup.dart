@@ -4,7 +4,7 @@ import "dart:io";
 import "package:ciyue/main.dart";
 import "package:ciyue/models/backup/backup.dart";
 import "package:ciyue/services/platform.dart";
-import "package:ciyue/services/settings.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:file_selector/file_selector.dart";
 import "package:path/path.dart";
 

@@ -4,7 +4,7 @@ import "dart:typed_data";
 import "package:audioplayers/audioplayers.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/main.dart";
-import "package:ciyue/services/dictionary.dart";
+import "package:ciyue/repositories/dictionary.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";

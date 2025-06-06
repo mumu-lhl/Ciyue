@@ -1,10 +1,10 @@
 import "dart:io";
 
 import "package:ciyue/main.dart";
-import "package:ciyue/pages/settings/ai_settings.dart";
-import "package:ciyue/services/dictionary.dart";
+import "package:ciyue/ui/pages/settings/ai_settings.dart";
+import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/platform.dart";
-import "package:ciyue/services/settings.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:flutter/material.dart";
