@@ -11,7 +11,7 @@
             "program": "lib/main.dart"
         },
         {
-            "name": "Flutter (Dev Flavour)",
+            "name": "Flutter (Dev Flavor)",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
