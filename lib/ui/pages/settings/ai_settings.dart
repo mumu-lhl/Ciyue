@@ -36,11 +36,11 @@ class AIAPIUrl extends StatelessWidget {
   }
 }
 
-class AiSettings extends StatefulWidget {
-  const AiSettings({super.key});
+class AiSettingsPage extends StatefulWidget {
+  const AiSettingsPage({super.key});
 
   @override
-  State<AiSettings> createState() => _AiSettingsState();
+  State<AiSettingsPage> createState() => _AiSettingsPageState();
 }
 
 class TitleText extends StatelessWidget {
@@ -57,7 +57,7 @@ class TitleText extends StatelessWidget {
   }
 }
 
-class _AiSettingsState extends State<AiSettings> {
+class _AiSettingsPageState extends State<AiSettingsPage> {
   String _provider = "";
   String _model = "";
   String _apiKey = "";

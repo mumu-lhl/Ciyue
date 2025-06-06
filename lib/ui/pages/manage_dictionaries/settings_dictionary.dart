@@ -5,9 +5,9 @@ import "package:flutter/material.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 
-class SettingsDictionary extends StatelessWidget {
+class SettingsDictionaryPage extends StatelessWidget {
   final int dictId;
-  const SettingsDictionary({super.key, required this.dictId});
+  const SettingsDictionaryPage({super.key, required this.dictId});
 
   @override
   Widget build(BuildContext context) {

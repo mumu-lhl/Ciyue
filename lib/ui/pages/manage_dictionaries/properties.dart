@@ -3,11 +3,11 @@ import "package:flutter/material.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:go_router/go_router.dart";
 
-class PropertiesDictionary extends StatelessWidget {
+class PropertiesDictionaryPage extends StatelessWidget {
   final String path;
   final int id;
 
-  const PropertiesDictionary({
+  const PropertiesDictionaryPage({
     super.key,
     required this.path,
     required this.id,

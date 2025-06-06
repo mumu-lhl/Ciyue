@@ -249,5 +249,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "other": "Other",
+  "@other": {},
+  "about": "About",
+  "@about": {},
+  "backup": "Backup",
+  "@backup": {}
 }

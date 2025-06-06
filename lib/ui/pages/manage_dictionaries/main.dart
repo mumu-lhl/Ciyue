@@ -135,7 +135,7 @@ class DictionaryCard extends StatelessWidget {
                     SimpleDialogOption(
                       onPressed: () {
                         context.pop();
-                        context.push("/settings/${dictionary.id}");
+                        context.push("/settings/dictionary/${dictionary.id}");
                       },
                       child: ListTile(
                         leading: Icon(Icons.settings),
@@ -405,11 +405,11 @@ class InfoButton extends StatelessWidget {
   }
 }
 
-class ManageDictionaries extends StatefulWidget {
-  const ManageDictionaries({super.key});
+class ManageDictionariesPage extends StatefulWidget {
+  const ManageDictionariesPage({super.key});
 
   @override
-  State<ManageDictionaries> createState() => ManageDictionariesState();
+  State<ManageDictionariesPage> createState() => ManageDictionariesPageState();
 }
 
 class ManageDictionariesBody extends StatelessWidget {
@@ -490,7 +490,7 @@ class ManageDictionariesModel extends ChangeNotifier {
   }
 }
 
-class ManageDictionariesState extends State<ManageDictionaries> {
+class ManageDictionariesPageState extends State<ManageDictionariesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -28,7 +28,7 @@ class BackupSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.export),
+        title: Text(AppLocalizations.of(context)!.backup),
       ),
       body: ListView(
         children: [

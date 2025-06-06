@@ -2,8 +2,8 @@ import "package:flutter/material.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 
-class TermsOfService extends StatelessWidget {
-  const TermsOfService({super.key});
+class TermsOfServicePage extends StatelessWidget {
+  const TermsOfServicePage({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -95,8 +95,8 @@ class AudioList extends StatelessWidget {
   }
 }
 
-class AudioSettings extends StatelessWidget {
-  const AudioSettings({super.key});
+class AudioSettingsPage extends StatelessWidget {
+  const AudioSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

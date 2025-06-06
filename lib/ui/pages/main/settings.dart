@@ -1,117 +1,62 @@
 import "dart:io";
 
 import "package:ciyue/main.dart";
-import "package:ciyue/services/platform.dart";
 import "package:ciyue/repositories/settings.dart";
-import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/pages/core/alpha_text.dart";
-import "package:ciyue/ui/pages/core/update_available.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
-import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
-import "package:url_launcher/url_launcher.dart";
 
-void _copy(BuildContext context, String text) {
-  Clipboard.setData(ClipboardData(text: text));
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    content: Text(AppLocalizations.of(context)!.copied),
-    duration: const Duration(seconds: 1),
-  ));
-}
-
-class About extends StatelessWidget {
-  const About({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AboutListTile(
-      icon: const Icon(Icons.info),
-      applicationName: packageInfo.appName,
-      applicationVersion: "${packageInfo.version} (${packageInfo.buildNumber})",
-      applicationLegalese: "\u{a9} 2024-2025 Mumulhl and contributors",
-    );
-  }
-}
-
-class AiSettingsWidget extends StatelessWidget {
-  const AiSettingsWidget({super.key});
+class AiSettingsPageListTile extends StatelessWidget {
+  const AiSettingsPageListTile({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.settings),
-      trailing: const Icon(Icons.arrow_forward),
       title: Text(AppLocalizations.of(context)!.aiSettings),
       onTap: () => context.push("/settings/ai_settings"),
     );
   }
 }
 
-class AudioSettingsWidget extends StatefulWidget {
-  const AudioSettingsWidget({super.key});
-
-  @override
-  State<AudioSettingsWidget> createState() => _AudioSettingsWidgetState();
-}
-
-
-class AutoUpdateSwitch extends StatefulWidget {
-  const AutoUpdateSwitch({super.key});
-
-  @override
-  State<AutoUpdateSwitch> createState() => _AutoUpdateSwitchState();
-}
-
-class CheckForUpdates extends StatelessWidget {
-  const CheckForUpdates({super.key});
+class AppearanceSettingsPageListTile extends StatelessWidget {
+  const AppearanceSettingsPageListTile({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        leading: const Icon(Icons.update),
-        title: Text(AppLocalizations.of(context)!.checkForUpdates),
-        onTap: () async {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.checkingForUpdates),
-            ),
-          );
+      leading: const Icon(Icons.palette),
+      title: Text(AppLocalizations.of(context)!.appearance),
+      onTap: () => context.push("/settings/appearance"),
+    );
+  }
+}
 
-          final update = await Updater.check();
-          if (!update.success) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content:
-                      Text(AppLocalizations.of(context)!.updateCheckFailed),
-                ),
-              );
-            }
-          }
-          if (update.isUpdateAvailable) {
-            if (context.mounted) {
-              showDialog(
-                context: context,
-                builder: (context) => UpdateAvailable(update: update),
-              );
-            }
-          } else {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content:
-                      Text(AppLocalizations.of(context)!.noUpdateAvailable),
-                ),
-              );
-            }
-          }
-        });
+class AudioSettingsPageListTile extends StatefulWidget {
+  const AudioSettingsPageListTile({super.key});
+
+  @override
+  State<AudioSettingsPageListTile> createState() =>
+      _AudioSettingsPageListTileState();
+}
+
+class BackupPageListTile extends StatelessWidget {
+  const BackupPageListTile({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.import_export),
+      title: Text(AppLocalizations.of(context)!.backup),
+      onTap: () => context.push("/settings/backup"),
+    );
   }
 }
 
@@ -151,69 +96,6 @@ class ClearHistory extends StatelessWidget {
   }
 }
 
-class DiscordUrl extends StatelessWidget {
-  static const discordUri = "https://discord.gg/BazBZuvKZG";
-
-  const DiscordUrl({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-        title: const Text("Discord"),
-        subtitle: const Text(discordUri),
-        leading: const Icon(Icons.discord),
-        onTap: () => launchUrl(Uri.parse(discordUri)),
-        onLongPress: () => _copy(context, discordUri));
-  }
-}
-
-
-class Feedback extends StatelessWidget {
-  static const feedbackUri = "https://github.com/mumu-lhl/Ciyue/issues";
-
-  const Feedback({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-        title: Text(AppLocalizations.of(context)!.feedback),
-        subtitle: const Text(feedbackUri),
-        leading: const Icon(Icons.feedback),
-        onTap: () => launchUrl(Uri.parse(feedbackUri)),
-        onLongPress: () => _copy(context, feedbackUri));
-  }
-}
-
-class FloatingWindow extends StatefulWidget {
-  const FloatingWindow({super.key});
-
-  @override
-  State<FloatingWindow> createState() => _FloatingWindowState();
-}
-
-class GithubUrl extends StatelessWidget {
-  static const githubUri = "https://github.com/mumu-lhl/Ciyue";
-
-  const GithubUrl({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-        title: const Text("Github"),
-        subtitle: const Text(githubUri),
-        leading: const Icon(Icons.public),
-        onTap: () => launchUrl(Uri.parse(githubUri)),
-        onLongPress: () => _copy(context, githubUri));
-  }
-}
-
-
 class LanguageSelector extends StatefulWidget {
   const LanguageSelector({super.key});
 
@@ -221,9 +103,8 @@ class LanguageSelector extends StatefulWidget {
   State<LanguageSelector> createState() => _LanguageSelectorState();
 }
 
-
-class ManageDictionariesWidget extends StatelessWidget {
-  const ManageDictionariesWidget({super.key});
+class ManageDictionariesPageListTile extends StatelessWidget {
+  const ManageDictionariesPageListTile({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -231,7 +112,6 @@ class ManageDictionariesWidget extends StatelessWidget {
 
     return ListTile(
         leading: const Icon(Icons.book),
-        trailing: const Icon(Icons.arrow_forward),
         title: Text(locale!.manageDictionaries),
         onTap: () async {
           await context.push("/settings/dictionaries");
@@ -239,39 +119,19 @@ class ManageDictionariesWidget extends StatelessWidget {
   }
 }
 
-class NotificationSwitch extends StatefulWidget {
-  const NotificationSwitch({super.key});
-
-  @override
-  State<NotificationSwitch> createState() => _NotificationSwitchState();
-}
-
-class PrereleaseUpdatesSwitch extends StatefulWidget {
-  const PrereleaseUpdatesSwitch({super.key});
-
-  @override
-  State<PrereleaseUpdatesSwitch> createState() =>
-      _PrereleaseUpdatesSwitchState();
-}
-
-class PrivacyPolicy extends StatelessWidget {
-  const PrivacyPolicy({super.key});
+class OtherPageListTile extends StatelessWidget {
+  const OtherPageListTile({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: const Icon(Icons.security),
-      title: Text(AppLocalizations.of(context)!.privacyPolicy),
-      onTap: () => context.push("/settings/privacy_policy"),
+      leading: const Icon(Icons.more_horiz),
+      title: Text(AppLocalizations.of(context)!.other),
+      onTap: () => context.push("/settings/other"),
     );
   }
-}
-
-class SecureScreenSwitch extends StatefulWidget {
-  const SecureScreenSwitch({super.key});
-
-  @override
-  State<SecureScreenSwitch> createState() => _SecureScreenSwitchState();
 }
 
 class SettingsScreen extends StatelessWidget {
@@ -281,88 +141,33 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        const ManageDictionariesWidget(),
-        const AiSettingsWidget(),
-        const AudioSettingsWidget(),
-        TitleDivider(title: AppLocalizations.of(context)!.appearance),
+        const ManageDictionariesPageListTile(),
+        const AiSettingsPageListTile(),
+        const AudioSettingsPageListTile(),
         const ThemeSelector(),
         const LanguageSelector(),
-        AppearanceSettings(),
-        if (Platform.isAndroid) ...[
-          TitleDivider(title: AppLocalizations.of(context)!.privacy),
-          const SecureScreenSwitch(),
-          const Divider(indent: 16, endIndent: 16),
-          const NotificationSwitch(),
-          const FloatingWindow(),
-        ],
-        ListTile(
-          leading: const Icon(Icons.import_export),
-          trailing: const Icon(Icons.arrow_forward),
-          title: Text(AppLocalizations.of(context)!.export),
-          onTap: () => context.push("/settings/backup"),
-        ),
-        TitleDivider(title: AppLocalizations.of(context)!.history),
+        const AppearanceSettingsPageListTile(),
         const ClearHistory(),
-        TitleDivider(title: AppLocalizations.of(context)!.update),
-        const AutoUpdateSwitch(),
-        const PrereleaseUpdatesSwitch(),
-        const CheckForUpdates(),
-        const Divider(indent: 16, endIndent: 16),
-        const Feedback(),
-        const GithubUrl(),
-        const DiscordUrl(),
-        const SponsorUrl(),
-        const TermsOfService(),
-        const PrivacyPolicy(),
-        const About(),
+        const BackupPageListTile(),
+        const UpdatePageListTile(),
+        if (Platform.isAndroid) const OtherPageListTile(),
+        const AboutPageListTile(),
       ],
     );
   }
 }
 
-class AppearanceSettings extends StatelessWidget {
-  const AppearanceSettings({
+class AboutPageListTile extends StatelessWidget {
+  const AboutPageListTile({
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: const Icon(Icons.palette),
-      trailing: const Icon(Icons.arrow_forward),
-      title: Text(AppLocalizations.of(context)!.appearance),
-      onTap: () => context.push("/settings/appearance"),
-    );
-  }
-}
-
-class SponsorUrl extends StatelessWidget {
-  static const sponsorUri = "https://afdian.com/a/mumulhl";
-
-  const SponsorUrl({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-        title: Text(AppLocalizations.of(context)!.sponsor),
-        subtitle: const Text(sponsorUri),
-        leading: const Icon(Icons.favorite),
-        onTap: () => launchUrl(Uri.parse(sponsorUri)),
-        onLongPress: () => _copy(context, sponsorUri));
-  }
-}
-
-class TermsOfService extends StatelessWidget {
-  const TermsOfService({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.article),
-      title: Text(AppLocalizations.of(context)!.termsOfService),
-      onTap: () => context.push("/settings/terms_of_service"),
+      leading: const Icon(Icons.info),
+      title: Text(AppLocalizations.of(context)!.about),
+      onTap: () => context.push("/settings/about"),
     );
   }
 }
@@ -374,40 +179,26 @@ class ThemeSelector extends StatefulWidget {
   State<ThemeSelector> createState() => _ThemeSelectorState();
 }
 
-class TitleDivider extends StatelessWidget {
-  final String title;
-
-  const TitleDivider({
+class UpdatePageListTile extends StatelessWidget {
+  const UpdatePageListTile({
     super.key,
-    required this.title,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
-          ),
-        ),
-        Expanded(child: Divider(endIndent: 16)),
-      ],
+    return ListTile(
+      leading: const Icon(Icons.update),
+      title: Text(AppLocalizations.of(context)!.update),
+      onTap: () => context.push("/settings/update"),
     );
   }
 }
 
-class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
+class _AudioSettingsPageListTileState extends State<AudioSettingsPageListTile> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.volume_up),
-      trailing: const Icon(Icons.arrow_forward),
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -417,42 +208,6 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
         ],
       ),
       onTap: () => context.push("/settings/audio"),
-    );
-  }
-}
-
-class _AutoUpdateSwitchState extends State<AutoUpdateSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.autoUpdate),
-      value: settings.autoUpdate,
-      onChanged: (value) {
-        settings.setAutoUpdate(value);
-        setState(() {});
-      },
-      secondary: const Icon(Icons.autorenew),
-    );
-  }
-}
-
-class _FloatingWindowState extends State<FloatingWindow> {
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.window),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(AppLocalizations.of(context)!.floatingWindow),
-          const SizedBox(width: 8),
-          AlphaText(),
-        ],
-      ),
-      onTap: () async {
-        await PlatformMethod.requestFloatingWindowPermission();
-      },
     );
   }
 }
@@ -507,66 +262,6 @@ class _LanguageSelectorState extends State<LanguageSelector> {
         title: Text(locale!.language),
         trailing: const Icon(Icons.keyboard_arrow_down),
       ),
-    );
-  }
-}
-
-class _NotificationSwitchState extends State<NotificationSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.notification),
-      value: settings.notification,
-      onChanged: (value) async {
-        await prefs.setBool("notification", value);
-        setState(() {
-          settings.notification = value;
-        });
-        await PlatformMethod.flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>()
-            ?.requestNotificationsPermission();
-        PlatformMethod.createPersistentNotification(value);
-      },
-      secondary: const Icon(Icons.notifications),
-    );
-  }
-}
-
-class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.includePrerelease),
-      value: settings.includePrereleaseUpdates,
-      onChanged: (value) async {
-        await prefs.setBool("includePrereleaseUpdates", value);
-        setState(() {
-          settings.includePrereleaseUpdates = value;
-        });
-      },
-      secondary: const Icon(Icons.settings_suggest_outlined),
-    );
-  }
-}
-
-class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.secureScreen),
-      value: settings.secureScreen,
-      onChanged: (value) async {
-        PlatformMethod.setSecureFlag(value);
-        await prefs.setBool("secureScreen", value);
-        setState(() {
-          settings.secureScreen = value;
-        });
-      },
-      secondary: const Icon(Icons.security),
     );
   }
 }

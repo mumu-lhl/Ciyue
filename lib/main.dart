@@ -8,6 +8,7 @@ import "package:ciyue/ui/pages/main/wordbook.dart";
 import "package:ciyue/ui/pages/manage_dictionaries/main.dart";
 import "package:ciyue/ui/pages/manage_dictionaries/properties.dart";
 import "package:ciyue/ui/pages/manage_dictionaries/settings_dictionary.dart";
+import "package:ciyue/ui/pages/settings/about.dart";
 import "package:ciyue/ui/pages/settings/ai_settings.dart";
 import "package:ciyue/ui/pages/settings/appearance_settings.dart";
 import "package:ciyue/ui/pages/settings/audio.dart";
@@ -21,6 +22,7 @@ import "package:ciyue/services/platform.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/pages/settings/update.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -115,35 +117,35 @@ final router = GoRouter(
       path: "/settings/dictionaries",
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
-        child: const ManageDictionaries(),
+        child: const ManageDictionariesPage(),
       ),
     ),
     GoRoute(
       path: "/settings/ai_settings",
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
-        child: const AiSettings(),
+        child: const AiSettingsPage(),
       ),
     ),
     GoRoute(
       path: "/settings/terms_of_service",
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
-        child: const TermsOfService(),
+        child: const TermsOfServicePage(),
       ),
     ),
     GoRoute(
       path: "/settings/privacy_policy",
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
-        child: const PrivacyPolicy(),
+        child: const PrivacyPolicyPage(),
       ),
     ),
     GoRoute(
       path: "/settings/audio",
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
-        child: const AudioSettings(),
+        child: const AudioSettingsPage(),
       ),
     ),
     GoRoute(
@@ -161,17 +163,31 @@ final router = GoRouter(
       ),
     ),
     GoRoute(
-      path: "/settings/:dictId",
+      path: "/settings/update",
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
-        child: SettingsDictionary(
+        child: const UpdateSettingsPage(),
+      ),
+    ),
+    GoRoute(
+      path: "/settings/about",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const AboutSettingsPage(),
+      ),
+    ),
+    GoRoute(
+      path: "/settings/dictionary/:dictId",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: SettingsDictionaryPage(
           dictId: int.parse(state.pathParameters["dictId"]!),
         ),
       ),
     ),
     GoRoute(
         path: "/properties",
-        builder: (context, state) => PropertiesDictionary(
+        builder: (context, state) => PropertiesDictionaryPage(
               path: (state.extra as Map<String, dynamic>)["path"],
               id: (state.extra as Map<String, dynamic>)["id"],
             )),
