@@ -1,0 +1,1 @@
+Translate all untranslated items under @/lib/l10n/
