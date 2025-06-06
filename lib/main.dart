@@ -12,6 +12,7 @@ import "package:ciyue/ui/pages/settings/ai_settings.dart";
 import "package:ciyue/ui/pages/settings/appearance_settings.dart";
 import "package:ciyue/ui/pages/settings/audio.dart";
 import "package:ciyue/ui/pages/settings/auto_export.dart";
+import "package:ciyue/ui/pages/settings/backup.dart";
 import "package:ciyue/ui/pages/settings/privacy_policy.dart";
 import "package:ciyue/ui/pages/settings/terms_of_service.dart";
 import "package:ciyue/ui/pages/core/word_display.dart";
@@ -107,7 +108,7 @@ final router = GoRouter(
       path: "/settings/autoExport",
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
-        child: const AutoExport(),
+        child: const AutoExportSettingsPage(),
       ),
     ),
     GoRoute(
@@ -150,6 +151,13 @@ final router = GoRouter(
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
         child: const AppearanceSettingsPage(),
+      ),
+    ),
+    GoRoute(
+      path: "/settings/backup",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const BackupSettingsPage(),
       ),
     ),
     GoRoute(

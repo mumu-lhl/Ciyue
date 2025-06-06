@@ -8,8 +8,8 @@ import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 
-class AutoExport extends StatelessWidget {
-  const AutoExport({super.key});
+class AutoExportSettingsPage extends StatelessWidget {
+  const AutoExportSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
