@@ -10,10 +10,11 @@ import "package:ciyue/ui/pages/manage_dictionaries/properties.dart";
 import "package:ciyue/ui/pages/manage_dictionaries/settings_dictionary.dart";
 import "package:ciyue/ui/pages/settings/about.dart";
 import "package:ciyue/ui/pages/settings/ai_settings.dart";
-import "package:ciyue/ui/pages/settings/appearance_settings.dart";
+import "package:ciyue/ui/pages/settings/appearance.dart";
 import "package:ciyue/ui/pages/settings/audio.dart";
 import "package:ciyue/ui/pages/settings/auto_export.dart";
 import "package:ciyue/ui/pages/settings/backup.dart";
+import "package:ciyue/ui/pages/settings/other.dart";
 import "package:ciyue/ui/pages/settings/privacy_policy.dart";
 import "package:ciyue/ui/pages/settings/terms_of_service.dart";
 import "package:ciyue/ui/pages/core/word_display.dart";
@@ -170,6 +171,13 @@ final router = GoRouter(
       ),
     ),
     GoRoute(
+      path: "/settings/other",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const OtherSettingsPage(),
+      ),
+    ),
+    GoRoute(
       path: "/settings/about",
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
@@ -312,6 +320,7 @@ Future<void> initPrefs() async {
     "ttsEngine",
     "ttsLanguage",
     "audioDirectory",
+    "advance"
   }));
 }
 

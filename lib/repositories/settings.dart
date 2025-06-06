@@ -30,6 +30,7 @@ class _Settings {
   late bool autoUpdate;
   late bool includePrereleaseUpdates;
   late bool skipTaggedWord;
+  late bool advance;
 
   late String aiProvider;
   late bool aiExplainWord;
@@ -65,6 +66,8 @@ class _Settings {
         prefs.getBool("includePrereleaseUpdates") ?? false;
 
     notification = prefs.getBool("notification") ?? false;
+
+    advance = prefs.getBool("advance") ?? false;
 
     skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
 
@@ -161,5 +164,10 @@ class _Settings {
   Future<void> setTTSLanguage(String lang) async {
     ttsLanguage = lang;
     await prefs.setString("ttsLanguage", lang);
+  }
+
+  Future<void> setAdvance(bool value) async {
+    advance = value;
+    await prefs.setBool("advance", value);
   }
 }

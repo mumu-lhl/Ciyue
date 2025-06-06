@@ -1,5 +1,3 @@
-import "dart:io";
-
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/core/alpha_text.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -154,7 +152,7 @@ class SettingsScreen extends StatelessWidget {
         const ClearHistory(),
         const BackupPageListTile(),
         const UpdatePageListTile(),
-        if (Platform.isAndroid) const OtherPageListTile(),
+        const OtherPageListTile(),
         const AboutPageListTile(),
       ],
     );

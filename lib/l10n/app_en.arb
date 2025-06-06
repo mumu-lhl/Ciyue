@@ -255,5 +255,9 @@
   "about": "About",
   "@about": {},
   "backup": "Backup",
-  "@backup": {}
+  "@backup": {},
+  "advance": "Advance",
+  "@advance": {},
+  "advanceSwitchDescription": "Enable to show more settings options",
+  "@advanceSwitchDescription": {}
 }

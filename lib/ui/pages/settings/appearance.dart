@@ -15,14 +15,19 @@ class AppearanceSettingsPage extends StatelessWidget {
         title: Text(AppLocalizations.of(context)!.appearance),
       ),
       body: ListView(
-        children: const [
-          LanguageSelector(),
-          ThemeSelector(),
-          SearchbarLocationSelector(),
-          TabBarPositionSelector(),
-          SearchbarInWordDisplaySwitch(),
-          DrawerIconSwitch(),
-          MoreOptionsButtonSwitch(),
+        children: [
+          const LanguageSelector(),
+          const ThemeSelector(),
+          if (settings.advance)
+            const Column(
+              children: [
+                SearchbarLocationSelector(),
+                TabBarPositionSelector(),
+                SearchbarInWordDisplaySwitch(),
+                DrawerIconSwitch(),
+                MoreOptionsButtonSwitch(),
+              ],
+            ),
         ],
       ),
     );
