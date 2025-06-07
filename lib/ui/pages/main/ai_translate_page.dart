@@ -33,6 +33,7 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
     "sc": "Sardinian",
     "ta": "Tamil",
     "fa": "فارسی",
+    "bg": "Bulgarian",
   };
   final TextEditingController _inputController = TextEditingController();
   bool _isRichOutput = true;
