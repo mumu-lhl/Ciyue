@@ -5,8 +5,11 @@ import "package:ciyue/main.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/dictionary.dart";
+import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
 import "package:provider/provider.dart";
@@ -35,9 +38,22 @@ class AddButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.add),
-      onPressed: () {
+      onPressed: () async {
         if (Platform.isAndroid) {
-          PlatformMethod.openDirectory();
+          if (appFlavor == "full") {
+            final isGranted = await requestManageExternalStorage(context);
+            if (isGranted) {
+              final path = await getDirectoryPath();
+              if (path != null) {
+                await prefs.setString("dictionariesDirectory", path);
+
+                final paths = await findMdxFilesOnAndroid(path);
+                if (context.mounted) await selectMdx(context, paths);
+              }
+            }
+          } else {
+            PlatformMethod.openDirectory();
+          }
         } else {
           selectMdxOrMddOnDesktop(context, true);
         }

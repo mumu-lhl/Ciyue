@@ -2,7 +2,7 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/database/app/app.dart";
-import "package:ciyue/ui/pages/manage_dictionaries/main.dart";
+import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/audio.dart";
@@ -500,8 +500,8 @@ Future<void> findAllFileByExtension(
   }
 }
 
-Future<List<String>> findMdxFilesOnAndroid() async {
-  final documentsDir = Directory(
+Future<List<String>> findMdxFilesOnAndroid(String? directory) async {
+  final documentsDir = Directory(directory ??
       join((await getApplicationSupportDirectory()).path, "dictionaries"));
   final mdxFiles = <String>[];
   await findAllFileByExtension(documentsDir, mdxFiles, "mdx");
