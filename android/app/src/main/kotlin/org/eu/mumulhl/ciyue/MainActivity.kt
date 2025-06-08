@@ -79,16 +79,6 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun requestFloatingWindowPermission() {
-        if (!Settings.canDrawOverlays(this)) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                "package:$packageName".toUri()
-            )
-            startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
-        }
-    }
-
     override fun onActivityResult(
         requestCode: Int, resultCode: Int, data: Intent?
     ) {
@@ -209,10 +199,6 @@ class MainActivity : FlutterActivity() {
                     "updateDictionaries" -> {
                         val uri = (call.arguments as String).toUri()
                         copyDirectory(uri, "dictionaries")
-                    }
-
-                    "requestFloatingWindowPermission" -> {
-                        requestFloatingWindowPermission()
                     }
 
                     else -> result.notImplemented()

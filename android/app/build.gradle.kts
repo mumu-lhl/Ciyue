@@ -87,6 +87,10 @@ android {
                 value = "Ciyue Dev")
             applicationIdSuffix = ".dev"
         }
+
+        create("full") {
+            dimension = "default"
+        }
     }
 
     dependenciesInfo {

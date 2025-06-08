@@ -10,9 +10,9 @@ import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 
-Future<List<String>> findMddAudioFilesOnAndroid() async {
-  final documentsDir =
-      Directory(join((await getApplicationSupportDirectory()).path, "audios"));
+Future<List<String>> findMddAudioFilesOnAndroid(String? directory) async {
+  final documentsDir = Directory(directory ??
+      join((await getApplicationSupportDirectory()).path, "audios"));
   final mddFiles = <String>[];
   await findAllFileByExtension(documentsDir, mddFiles, "mdd");
   return mddFiles;

@@ -1,5 +1,3 @@
-import "dart:io";
-
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/main.dart";
@@ -23,12 +21,6 @@ class PlatformMethod {
     await _platform.invokeMethod("getDirectory");
   }
 
-  static Future<void> requestFloatingWindowPermission() async {
-    if (Platform.isAndroid) {
-      await _platform.invokeMethod("requestFloatingWindowPermission");
-    }
-  }
-
   static void initHandler() {
     _platform.setMethodCallHandler((call) async {
       switch (call.method) {
@@ -43,7 +35,7 @@ class PlatformMethod {
           await prefs.setString(
               "dictionariesDirectory", call.arguments as String);
 
-          final mdxFiles = await findMdxFilesOnAndroid();
+          final mdxFiles = await findMdxFilesOnAndroid(null);
           await selectMdx(navigatorKey.currentContext!, mdxFiles);
 
           break;
@@ -51,7 +43,7 @@ class PlatformMethod {
         case "inputAudioDirectory":
           await prefs.setString("audioDirectory", call.arguments as String);
 
-          final paths = (await findMddAudioFilesOnAndroid());
+          final paths = await findMddAudioFilesOnAndroid(null);
           await selectAudioMdd(navigatorKey.currentContext!, paths);
 
           break;

@@ -7,6 +7,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/core/alpha_text.dart";
 import "package:flutter/material.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
+import "package:permission_handler/permission_handler.dart";
 
 class FloatingWindow extends StatefulWidget {
   const FloatingWindow({super.key});
@@ -66,7 +67,7 @@ class _FloatingWindowState extends State<FloatingWindow> {
         ],
       ),
       onTap: () async {
-        await PlatformMethod.requestFloatingWindowPermission();
+        await Permission.systemAlertWindow.request();
       },
     );
   }

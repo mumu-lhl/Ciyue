@@ -1,13 +1,17 @@
 import "dart:io";
 
 import "package:ciyue/main.dart";
+import "package:ciyue/services/audio.dart";
 import "package:ciyue/ui/pages/settings/ai_settings.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/audio.dart";
+import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:provider/provider.dart";
 
 class AudioItems extends StatelessWidget {
@@ -81,7 +85,23 @@ class AudioList extends StatelessWidget {
               icon: Icon(Icons.add),
               onPressed: () async {
                 if (Platform.isAndroid) {
-                  PlatformMethod.openAudioDirectory();
+                  if (appFlavor == "full") {
+                    final isGranted =
+                        await requestManageExternalStorage(context);
+                    if (isGranted) {
+                      final path = await getDirectoryPath();
+                      if (path != null) {
+                        await prefs.setString("audioDirectory", path);
+
+                        final paths = await findMddAudioFilesOnAndroid(path);
+                        if (context.mounted) {
+                          await selectAudioMdd(context, paths);
+                        }
+                      }
+                    }
+                  } else {
+                    PlatformMethod.openAudioDirectory();
+                  }
                 } else {
                   await selectMdxOrMddOnDesktop(context, false);
                 }
