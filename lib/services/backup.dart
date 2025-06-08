@@ -9,7 +9,7 @@ import "package:file_selector/file_selector.dart";
 import "package:path/path.dart";
 
 class Backup {
-  static const version = "v1";
+  static const version = 1;
 
   static Future<void> export(bool autoExport) async {
     final words = await wordbookDao.getAllWords(),
