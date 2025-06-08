@@ -40,7 +40,7 @@ jobs:
           git push
 
   build-android:
-    name: Build Android
+    name: Build Android (Common)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -84,8 +84,56 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: APKs
+          name: APK
           path: build/app/outputs/flutter-apk/ciyue-*-release.apk
+
+  build-android-full:
+    name: Build Android (Full)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: "temurin"
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+
+      - name: Create key.properties
+        run: |
+          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Android
+        run: |
+          flutter build apk --flavor=full
+          flutter build apk --flavor=full --split-per-abi --target-platform=android-arm64
+          flutter build apk --flavor=full --split-per-abi --target-platform=android-arm
+          flutter build apk --flavor=full --split-per-abi --target-platform=android-x64
+
+      - name: Rename .apk
+        run: |
+          cd build/app/outputs/flutter-apk
+          mv app-full-release.apk ciyue-universal-full.apk
+          mv app-armeabi-v7a-full-release.apk ciyue-armeabi-v7a-full.apk
+          mv app-arm64-v8a-full-release.apk ciyue-arm64-v8a-full.apk
+          mv app-x86_64-full-release.apk ciyue-x86_64-full.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: APK-FULL
+          path: build/app/outputs/flutter-apk/ciyue-*-full.apk
 
   build-windows:
     name: Build Windows
@@ -191,5 +239,5 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "APKs/ciyue-*-release.apk,Windows/ciyue-windows.zip,Windows-Installer/ciyue-installer.exe,Linux/ciyue-linux.tar.xz,Linux-AppImage/Ciyue-latest-x86_64.AppImage*"
+          artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/ciyue-windows.zip,Windows-Installer/ciyue-installer.exe,Linux/ciyue-linux.tar.xz,Linux-AppImage/Ciyue-latest-x86_64.AppImage*"
           tag: ${{ github.ref_name }}
