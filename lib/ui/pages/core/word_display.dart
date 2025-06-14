@@ -2,7 +2,7 @@ import "dart:convert";
 import "dart:io";
 import "dart:ui" as ui;
 
-import "package:ciyue/main.dart";
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/ui/pages/main/wordbook.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/services/backup.dart";

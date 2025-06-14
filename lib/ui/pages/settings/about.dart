@@ -1,4 +1,4 @@
-import "package:ciyue/main.dart";
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:flutter/material.dart";

@@ -1,7 +1,7 @@
 import "dart:io";
 
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
-import "package:ciyue/main.dart";
 import "package:flutter/material.dart";
 
 class AudioModel extends ChangeNotifier {

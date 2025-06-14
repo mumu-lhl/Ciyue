@@ -1,5 +1,5 @@
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/dictionary.dart";
-import "package:ciyue/main.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";

@@ -1,45 +1,23 @@
 import "dart:io";
 
-import "package:ciyue/database/app/app.dart";
-import "package:ciyue/database/app/daos.dart";
+import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/app_initialization.dart";
+import "package:ciyue/core/app_router.dart";
+import "package:ciyue/core/ciyue_error.dart";
 import "package:ciyue/localization_delegates.dart";
-import "package:ciyue/ui/pages/main/main.dart";
-import "package:ciyue/ui/pages/main/wordbook.dart";
-import "package:ciyue/ui/pages/settings/history.dart";
-import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
-import "package:ciyue/ui/pages/settings/manage_dictionaries/properties.dart";
-import "package:ciyue/ui/pages/settings/manage_dictionaries/settings_dictionary.dart";
-import "package:ciyue/ui/pages/settings/about.dart";
-import "package:ciyue/ui/pages/settings/ai_settings.dart";
-import "package:ciyue/ui/pages/settings/appearance.dart";
-import "package:ciyue/ui/pages/settings/audio.dart";
-import "package:ciyue/ui/pages/settings/auto_export.dart";
-import "package:ciyue/ui/pages/settings/backup.dart";
-import "package:ciyue/ui/pages/settings/other.dart";
-import "package:ciyue/ui/pages/settings/privacy_policy.dart";
-import "package:ciyue/ui/pages/settings/terms_of_service.dart";
-import "package:ciyue/ui/pages/core/word_display.dart";
-import "package:ciyue/repositories/dictionary.dart";
-import "package:ciyue/services/platform.dart";
 import "package:ciyue/repositories/settings.dart";
-import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/ui/pages/settings/update.dart";
+import "package:ciyue/ui/pages/main/wordbook.dart";
+import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
-import "package:flutter_tts/flutter_tts.dart";
-import "package:go_router/go_router.dart";
-import "package:package_info_plus/package_info_plus.dart";
-import "package:path_provider/path_provider.dart";
 import "package:provider/provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
-import "package:url_launcher/url_launcher.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,150 +49,6 @@ void main() async {
   }
 }
 
-late final Color? accentColor;
-final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
-final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
-late final FlutterTts flutterTts;
-final HistoryDao historyDao = HistoryDao(mainDatabase);
-final AppDatabase mainDatabase = appDatabase();
-final MddAudioListDao mddAudioListDao = MddAudioListDao(mainDatabase);
-final MddAudioResourceDao mddAudioResourceDao =
-    MddAudioResourceDao(mainDatabase);
-final navigatorKey = GlobalKey<NavigatorState>();
-late final PackageInfo packageInfo;
-late final SharedPreferencesWithCache prefs;
-late final VoidCallback refreshAll;
-final router = GoRouter(
-  navigatorKey: navigatorKey,
-  routes: [
-    GoRoute(
-      path: "/",
-      builder: (context, state) {
-        return const Home();
-      },
-    ),
-    GoRoute(
-      path: "/word",
-      pageBuilder: (context, state) {
-        final extra = state.extra as Map<String, String>;
-        return slideTransitionPageBuilder(
-          key: state.pageKey,
-          child: WordDisplay(word: extra["word"]!),
-        );
-      },
-    ),
-    GoRoute(
-        path: "/description/:dictId",
-        builder: (context, state) => WebviewDisplayDescription(
-              dictId: int.parse(state.pathParameters["dictId"]!),
-            )),
-    GoRoute(
-      path: "/settings/autoExport",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const AutoExportSettingsPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/dictionaries",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const ManageDictionariesPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/ai_settings",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const AiSettingsPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/terms_of_service",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const TermsOfServicePage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/privacy_policy",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const PrivacyPolicyPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/audio",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const AudioSettingsPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/appearance",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const AppearanceSettingsPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/backup",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const BackupSettingsPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/update",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const UpdateSettingsPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/other",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const OtherSettingsPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/about",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const AboutSettingsPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/history",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const HistorySettingsPage(),
-      ),
-    ),
-    GoRoute(
-      path: "/settings/dictionary/:dictId",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: SettingsDictionaryPage(
-          dictId: int.parse(state.pathParameters["dictId"]!),
-        ),
-      ),
-    ),
-    GoRoute(
-        path: "/properties",
-        builder: (context, state) => PropertiesDictionaryPage(
-              path: (state.extra as Map<String, dynamic>)["path"],
-              id: (state.extra as Map<String, dynamic>)["id"],
-            )),
-  ],
-);
-String searchWordFromProcessText = "";
-late final List<dynamic> ttsEngines;
-final List<dynamic> ttsLanguages = [];
-String? windowsWebview2Directory;
-final WordbookDao wordbookDao = WordbookDao(mainDatabase);
-final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
 @pragma("vm:entry-point")
 void floatingWindow(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -231,128 +65,6 @@ void floatingWindow(List<String> args) async {
   ], child: Ciyue(isFloatingWindow: true)));
 }
 
-Future<void> initApp() async {
-  await initPrefs();
-
-  int? groupId = prefs.getInt("currentDictionaryGroupId");
-  if (groupId == null) {
-    groupId = await dictGroupDao.addGroup("Default", []);
-    await prefs.setInt("currentDictionaryGroupId", groupId);
-  }
-  await dictManager.setCurrentGroup(groupId);
-  dictManager.groups = await dictGroupDao.getAllGroups();
-
-  flutterTts = FlutterTts();
-
-  packageInfo = await PackageInfo.fromPlatform();
-
-  await wordbookTagsDao.loadTagsOrder();
-  await wordbookTagsDao.existTag();
-
-  if (Platform.isAndroid) {
-    PlatformMethod.initHandler();
-    PlatformMethod.initNotifications();
-
-    if (settings.secureScreen) {
-      PlatformMethod.setSecureFlag(true);
-    }
-    if (settings.notification) {
-      PlatformMethod.createPersistentNotification(true);
-    }
-  }
-
-  if (Platform.isWindows) {
-    accentColor = await DynamicColorPlugin.getAccentColor();
-  }
-
-  if (settings.autoUpdate) {
-    Updater.autoUpdate();
-  }
-
-  if (settings.ttsEngine != null) flutterTts.setEngine(settings.ttsEngine!);
-  if (settings.ttsLanguage != null) {
-    flutterTts.setLanguage(settings.ttsLanguage!);
-  }
-
-  Future.microtask(() async {
-    if (Platform.isAndroid) {
-      ttsEngines = await flutterTts.getEngines;
-    }
-
-    if (!Platform.isLinux) {
-      final List<dynamic> originalTTSLanguages = await flutterTts.getLanguages;
-      for (final language in originalTTSLanguages) {
-        if (language is String) {
-          ttsLanguages.add(language);
-        }
-      }
-      ttsLanguages.sort((a, b) => a.toString().compareTo(b.toString()));
-    }
-
-    if (Platform.isWindows) {
-      windowsWebview2Directory = (await getApplicationCacheDirectory()).path;
-    }
-  });
-}
-
-Future<void> initPrefs() async {
-  prefs = await SharedPreferencesWithCache.create(
-      cacheOptions: const SharedPreferencesWithCacheOptions(allowList: {
-    "currentDictionaryGroupId",
-    "exportDirectory",
-    "autoExport",
-    "exportFileName",
-    "autoRemoveSearchWord",
-    "language",
-    "themeMode",
-    "tagsOrder",
-    "secureScreen",
-    "searchBarInAppBar",
-    "showSidebarIcon",
-    "dictionariesDirectory",
-    "exportPath",
-    "notification",
-    "showMoreOptionsButton",
-    "skipTaggedWord",
-    "aiProvider",
-    "aiProviderConfigs",
-    "aiExplainWord",
-    "includePrereleaseUpdates",
-    "explainPromptMode",
-    "customExplainPrompt",
-    "translatePromptMode",
-    "customTranslatePrompt",
-    "tabBarPosition",
-    "showSearchBarInWordDisplay",
-    "autoUpdate",
-    "ttsEngine",
-    "ttsLanguage",
-    "audioDirectory",
-    "advance",
-    "enableHistory",
-  }));
-}
-
-CustomTransitionPage<void> slideTransitionPageBuilder({
-  required LocalKey key,
-  required Widget child,
-}) {
-  return CustomTransitionPage<void>(
-    key: key,
-    child: child,
-    transitionDuration: const Duration(milliseconds: 200),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(1.0, 0.0),
-          end: Offset.zero,
-        ).animate(animation),
-        child: child,
-      );
-    },
-  );
-}
-
 class Ciyue extends StatefulWidget {
   final bool isFloatingWindow;
 
@@ -360,47 +72,6 @@ class Ciyue extends StatefulWidget {
 
   @override
   State<Ciyue> createState() => _CiyueState();
-}
-
-class CiyueError extends StatelessWidget {
-  final Object error;
-
-  const CiyueError({super.key, required this.error});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Error"),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(error.toString()),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                launchUrl(
-                    Uri.parse("https://github.com/mumu-lhl/ciyue/issues"));
-              },
-              child: const Text("Report Issue"),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: error.toString()));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Error copied to clipboard")),
-                );
-              },
-              child: const Text("Copy Error"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _CiyueState extends State<Ciyue> {

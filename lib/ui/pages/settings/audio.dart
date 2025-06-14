@@ -1,6 +1,6 @@
 import "dart:io";
 
-import "package:ciyue/main.dart";
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/ui/pages/settings/ai_settings.dart";
 import "package:ciyue/repositories/dictionary.dart";

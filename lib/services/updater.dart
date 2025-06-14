@@ -1,4 +1,5 @@
-import "package:ciyue/main.dart";
+import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/app_router.dart";
 import "package:ciyue/models/updater/updater.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/ui/pages/core/update_available.dart";

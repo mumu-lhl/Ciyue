@@ -1,6 +1,8 @@
 import "dart:convert";
 import "dart:io";
 
+import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -19,7 +21,6 @@ import "package:path_provider/path_provider.dart";
 import "package:provider/provider.dart";
 
 import "../database/dictionary/dictionary.dart";
-import "../main.dart";
 
 final dictManager = DictManager();
 

@@ -1,6 +1,6 @@
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/tables.dart";
-import "package:ciyue/main.dart";
 import "package:drift/drift.dart";
 
 part "daos.g.dart";

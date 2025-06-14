@@ -2,8 +2,8 @@ import "dart:io";
 import "dart:typed_data";
 
 import "package:audioplayers/audioplayers.dart";
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
-import "package:ciyue/main.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:mime/mime.dart";

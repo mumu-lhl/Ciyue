@@ -1,9 +1,9 @@
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/core/update_available.dart";
 import "package:flutter/material.dart";
-import "package:ciyue/main.dart";
 
 class UpdateSettingsPage extends StatelessWidget {
   const UpdateSettingsPage({super.key});
