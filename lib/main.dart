@@ -5,6 +5,7 @@ import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/localization_delegates.dart";
 import "package:ciyue/ui/pages/main/main.dart";
 import "package:ciyue/ui/pages/main/wordbook.dart";
+import "package:ciyue/ui/pages/settings/history.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/properties.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/settings_dictionary.dart";
@@ -185,6 +186,13 @@ final router = GoRouter(
       ),
     ),
     GoRoute(
+      path: "/settings/history",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const HistorySettingsPage(),
+      ),
+    ),
+    GoRoute(
       path: "/settings/dictionary/:dictId",
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
@@ -320,7 +328,8 @@ Future<void> initPrefs() async {
     "ttsEngine",
     "ttsLanguage",
     "audioDirectory",
-    "advance"
+    "advance",
+    "enableHistory",
   }));
 }
 

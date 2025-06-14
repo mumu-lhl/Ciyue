@@ -28,6 +28,7 @@ class _Settings {
   late bool notification;
 
   late bool autoUpdate;
+  late bool enableHistory;
   late bool includePrereleaseUpdates;
   late bool skipTaggedWord;
   late bool advance;
@@ -66,6 +67,8 @@ class _Settings {
         prefs.getBool("includePrereleaseUpdates") ?? false;
 
     notification = prefs.getBool("notification") ?? false;
+
+    enableHistory = prefs.getBool("enableHistory") ?? true;
 
     advance = prefs.getBool("advance") ?? false;
 
@@ -169,5 +172,10 @@ class _Settings {
   Future<void> setAdvance(bool value) async {
     advance = value;
     await prefs.setBool("advance", value);
+  }
+
+  Future<void> setEnableHistory(bool value) async {
+    enableHistory = value;
+    await prefs.setBool("enableHistory", value);
   }
 }
