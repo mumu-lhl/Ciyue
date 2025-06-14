@@ -4,7 +4,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/core/ciyue_error.dart";
-import "package:ciyue/localization_delegates.dart";
+import "package:ciyue/core/localization_delegates.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/main/wordbook.dart";
