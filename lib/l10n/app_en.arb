@@ -259,5 +259,7 @@
   "advance": "Advance",
   "@advance": {},
   "advanceSwitchDescription": "Enable to show more settings options",
-  "@advanceSwitchDescription": {}
+  "@advanceSwitchDescription": {},
+  "enableHistory": "Enable History",
+  "@enableHistory": {}
 }

@@ -1,9 +1,7 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/core/alpha_text.dart";
-import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
 
 class AboutPageListTile extends StatelessWidget {
   const AboutPageListTile({
@@ -71,38 +69,15 @@ class BackupPageListTile extends StatelessWidget {
   }
 }
 
-class ClearHistory extends StatelessWidget {
-  const ClearHistory({super.key});
+class HistoryPageListTile extends StatelessWidget {
+  const HistoryPageListTile({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-
     return ListTile(
-      leading: const Icon(Icons.delete),
-      title: Text(locale!.clearHistory),
-      onTap: () => showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(locale.clearHistory),
-          content: Text(locale.clearHistoryConfirm),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: Text(locale.close),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (context.mounted) {
-                  context.read<HistoryModel>().clearHistory();
-                  context.pop(context);
-                }
-              },
-              child: Text(locale.confirm),
-            ),
-          ],
-        ),
-      ),
+      leading: const Icon(Icons.update),
+      title: Text(AppLocalizations.of(context)!.history),
+      onTap: () => context.push("/settings/history"),
     );
   }
 }
@@ -149,7 +124,7 @@ class SettingsScreen extends StatelessWidget {
         const AiSettingsPageListTile(),
         const AudioSettingsPageListTile(),
         const AppearanceSettingsPageListTile(),
-        const ClearHistory(),
+        const HistoryPageListTile(),
         const BackupPageListTile(),
         const UpdatePageListTile(),
         const OtherPageListTile(),

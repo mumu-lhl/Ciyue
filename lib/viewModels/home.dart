@@ -1,8 +1,14 @@
 import "package:ciyue/main.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:flutter/material.dart";
 
 class HistoryModel extends ChangeNotifier {
+  bool get enableHistory => settings.enableHistory;
+
   void addHistory(String word) async {
+    if (!settings.enableHistory) {
+      return;
+    }
     await historyDao.addHistory(word);
     notifyListeners();
   }
@@ -16,6 +22,11 @@ class HistoryModel extends ChangeNotifier {
     historyDao.removeHistory(word);
     notifyListeners();
   }
+
+  void setEnableHistory(bool value) {
+    settings.setEnableHistory(value);
+    notifyListeners();
+  }
 }
 
 class HomeModel extends ChangeNotifier {
@@ -25,12 +36,12 @@ class HomeModel extends ChangeNotifier {
   final searchController = SearchController();
   final searchBarFocusNode = FocusNode();
 
+  String get searchWord => _searchWord;
+
   set searchWord(String word) {
     _searchWord = word;
     notifyListeners();
   }
-
-  String get searchWord => _searchWord;
 
   void focusSearchBar() {
     searchBarFocusNode.requestFocus();
