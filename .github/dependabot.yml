@@ -15,4 +15,5 @@ updates:
       interval: "weekly"
   - package-ecosystem: "gradle"
     directory: "/android/app"
-    interval: "weekly"
+    schedule:
+      interval: "weekly"
