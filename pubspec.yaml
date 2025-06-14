@@ -48,7 +48,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
-  flutter_launcher_icons: ^0.14.3
+  flutter_launcher_icons: ^0.14.4
   dynamic_color: ^1.7.0
   flutter_tts:
     git: https://github.com/mumu-lhl/flutter_tts.git
