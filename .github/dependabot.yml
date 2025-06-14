@@ -13,6 +13,6 @@ updates:
     directory: "/docs"
     schedule:
       interval: "weekly"
-  - package-echosystem: "gradle"
+  - package-ecosystem: "gradle"
     directory: "/android/app"
     interval: "weekly"
