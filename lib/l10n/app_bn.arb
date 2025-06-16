@@ -249,5 +249,17 @@
         "type": "String"
       }
     }
-  }
+  },
+  "enableHistory": "ইতিহাস চালু করুন",
+  "@enableHistory": {},
+  "advanceSwitchDescription": "আরও বিকল্প সেটিংস দেখানোর জন্য সক্ষম করুন",
+  "@advanceSwitchDescription": {},
+  "other": "অন্যান্য",
+  "@other": {},
+  "backup": "ব্যাকআপ",
+  "@backup": {},
+  "about": "পরিচিতি",
+  "@about": {},
+  "advance": "অতিরিক্ত",
+  "@advance": {}
 }
