@@ -57,3 +57,6 @@ AppDir/
 *.AppImage
 *.AppImage.zsync
 appimage-build/
+
+# VS Code
+.vscode/settings.json
