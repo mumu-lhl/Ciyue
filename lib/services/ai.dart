@@ -112,6 +112,10 @@ class ModelProviderManager {
         apiUrl:
             "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
         models: [
+          ModelInfo("gemini-2.5-flash", "Gemini 2.5 Flash"),
+          ModelInfo("gemini-2.5-flash-lite-preview-06-17",
+              "Gemini 2.5 Flash Lite Preview"),
+          ModelInfo("gemini-2.5-pro", "Gemini 2.5 Pro"),
           ModelInfo(
               "gemini-2.5-flash-preview-05-20", "Gemini 2.5 Flash Preview"),
           ModelInfo("gemini-2.5-pro-preview-06-05", "Gemini 2.5 Pro Preview"),
