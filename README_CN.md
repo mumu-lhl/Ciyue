@@ -25,12 +25,26 @@
 
 ## 安装
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/ciyue.svg)](https://repology.org/project/ciyue/versions)
+
 [<img src="https://github.com/NeoApplications/Neo-Backup/raw/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
     alt="Get it on GitHub"
     height="80">](https://github.com/mumu-lhl/Ciyue/releases/latest)
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/org.eu.mumulhl.ciyue/)
+
+### Arch Linux
+
+您可以从 [AUR](https://aur.archlinux.org/packages/ciyue) 或 [archlinuxcn](https://github.com/archlinuxcn/repo/tree/master/archlinuxcn/ciyue) 仓库安装词悦。
+
+```bash
+# yay
+yay -S ciyue
+
+# paru
+paru -S ciyue
+```
 
 ## 推荐词典
 
