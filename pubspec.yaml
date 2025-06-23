@@ -38,7 +38,7 @@ dependencies:
   # cupertino_icons: ^1.0.8
   drift: ^2.27.0
   drift_flutter: ^0.2.4
-  dict_reader: ^1.2.1
+  dict_reader: ^1.3.0
   shared_preferences: ^2.5.3
   go_router: ^15.2.3
   flutter_inappwebview: ^6.1.5
