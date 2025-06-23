@@ -301,10 +301,10 @@ packages:
     dependency: "direct main"
     description:
       name: dict_reader
-      sha256: "592ceabbc57f40214dbab11a94f37fbb129cf9787cff64c4a6646edd2b0c5d3d"
+      sha256: c2149581e46663e3681c29ed4c28e07e930ad9fc478640de604bd8e007f8ce6c
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.1"
+    version: "1.3.0"
   dio:
     dependency: "direct main"
     description:
