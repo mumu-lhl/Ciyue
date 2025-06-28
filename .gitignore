@@ -49,7 +49,7 @@ app.*.map.json
 # AI
 memory-bank/
 .kilocode/
-.cline/
+.clinerules/
 
 # Generated files
 lib/src/generated/i18n/*
