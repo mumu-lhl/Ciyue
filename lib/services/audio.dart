@@ -34,8 +34,9 @@ Future<void> playSoundOfWord(
         final reader = DictReader(mddAudio.path);
         await reader.init(false);
 
-        final Uint8List data = await reader.readOne(audio.blockOffset,
+        final info = RecordOffsetInfo(word, audio.blockOffset,
             audio.startOffset, audio.endOffset, audio.compressedSize);
+        final Uint8List data = await reader.readOneMdd(info) as Uint8List;
         final mimeType = lookupMimeType(audio.key);
         await player.setSourceBytes(data, mimeType: mimeType);
 

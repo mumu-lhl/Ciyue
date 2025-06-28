@@ -14,6 +14,7 @@ import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/pages/core/ai_markdown.dart";
 import "package:ciyue/ui/pages/core/search_bar.dart";
 import "package:ciyue/ui/pages/core/tags_list.dart";
+import "package:dict_reader/dict_reader.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
@@ -101,11 +102,10 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       } else {
         try {
           final result = await dictManager.dicts[dictId]!.db.readResource(path);
-          data = await dictManager.dicts[dictId]!.readerResource!.readOne(
-              result.blockOffset,
-              result.startOffset,
-              result.endOffset,
-              result.compressedSize);
+          final info = RecordOffsetInfo(result.key, result.blockOffset,
+              result.startOffset, result.endOffset, result.compressedSize);
+          data = await dictManager.dicts[dictId]!.readerResource!
+              .readOneMdd(info) as Uint8List;
         } catch (e) {
           // Find resource under directory if resource is not in mdd
           final file =
@@ -188,11 +188,9 @@ class WebviewAndroid extends StatelessWidget {
           final word = await dictManager.dicts[dictId]!.db.getOffset(
               Uri.decodeFull(url.toString().replaceFirst("entry://", "")));
 
-          final String data = await dictManager.dicts[dictId]!.reader.readOne(
-              word.blockOffset,
-              word.startOffset,
-              word.endOffset,
-              word.compressedSize);
+          final info = RecordOffsetInfo(word.key, word.blockOffset,
+              word.startOffset, word.endOffset, word.compressedSize);
+          final data = await dictManager.dicts[dictId]!.reader.readOneMdx(info);
 
           if (context.mounted) {
             context.push("/word", extra: {"content": data, "word": word.key});

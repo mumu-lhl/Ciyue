@@ -196,8 +196,9 @@ class Mdict {
       } else {
         try {
           final result = await db.readResource(filename);
-          data = await readerResource!.readOne(result.blockOffset,
+          final info = RecordOffsetInfo(result.key, result.blockOffset,
               result.startOffset, result.endOffset, result.compressedSize);
+          data = await readerResource!.readOneMdd(info) as Uint8List;
         } catch (e) {
           // Find resource under directory if resource is not in mdd
           final file = File("${dirname(path)}/$filename");
@@ -218,16 +219,17 @@ class Mdict {
       data = await db.getOffset(word.toLowerCase());
     }
 
-    String content = await reader.readOne(data.blockOffset, data.startOffset,
+    final info = RecordOffsetInfo(data.key, data.blockOffset, data.startOffset,
         data.endOffset, data.compressedSize);
+
+    String content = await reader.readOneMdx(info);
 
     if (content.startsWith("@@@LINK=")) {
       // 8: remove @@@LINK=
       // content.length - 3: remove \r\n\x00
       data = await db
           .getOffset(content.substring(8, content.length - 3).trimRight());
-      content = await reader.readOne(data.blockOffset, data.startOffset,
-          data.endOffset, data.compressedSize);
+      content = await reader.readOneMdx(info);
     }
 
     return content;
@@ -261,16 +263,13 @@ class Mdict {
     final resourceList = <ResourceCompanion>[];
     var number = 0;
 
-    await for (final (
-          key,
-          (blockOffset, startOffset, endOffset, compressedSize)
-        ) in readerResource!.read()) {
+    await for (final info in readerResource!.readWithOffset()) {
       resourceList.add(ResourceCompanion(
-          key: Value(key),
-          blockOffset: Value(blockOffset),
-          startOffset: Value(startOffset),
-          endOffset: Value(endOffset),
-          compressedSize: Value(compressedSize)));
+          key: Value(info.keyText),
+          blockOffset: Value(info.recordBlockOffset),
+          startOffset: Value(info.startOffset),
+          endOffset: Value(info.endOffset),
+          compressedSize: Value(info.compressedSize)));
       number++;
 
       if (number == 50000) {
@@ -280,7 +279,7 @@ class Mdict {
 
         LoadingDialogContentState.updateText(
             AppLocalizations.of(navigatorKey.currentContext!)!
-                .addingResource(key));
+                .addingResource(info.keyText));
       }
     }
 
@@ -293,16 +292,13 @@ class Mdict {
     final wordList = <DictionaryCompanion>[];
     var number = 0;
 
-    await for (final (
-          key,
-          (blockOffset, startOffset, endOffset, compressedSize)
-        ) in reader.read()) {
+    await for (final info in reader.readWithOffset()) {
       wordList.add(DictionaryCompanion(
-          key: Value(key),
-          blockOffset: Value(blockOffset),
-          startOffset: Value(startOffset),
-          endOffset: Value(endOffset),
-          compressedSize: Value(compressedSize)));
+          key: Value(info.keyText),
+          blockOffset: Value(info.recordBlockOffset),
+          startOffset: Value(info.startOffset),
+          endOffset: Value(info.endOffset),
+          compressedSize: Value(info.compressedSize)));
       number++;
 
       if (number == 50000) {
@@ -311,7 +307,8 @@ class Mdict {
         wordList.clear();
 
         LoadingDialogContentState.updateText(
-            AppLocalizations.of(navigatorKey.currentContext!)!.addingWord(key));
+            AppLocalizations.of(navigatorKey.currentContext!)!
+                .addingWord(info.keyText));
       }
     }
 
@@ -427,10 +424,7 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
     final resources = <MddAudioResourceCompanion>[];
     int number = 0;
 
-    await for (final (
-          key,
-          (blockOffset, startOffset, endOffset, compressedSize)
-        ) in reader.read()) {
+    await for (final info in reader.readWithOffset()) {
       if (number == 50000) {
         number = 0;
         await mddAudioResourceDao.add(resources);
@@ -439,16 +433,16 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
         if (context.mounted) {
           LoadingDialogContentState.updateText(
               AppLocalizations.of(navigatorKey.currentContext!)!
-                  .addingResource(key));
+                  .addingResource(info.keyText));
         }
       }
 
       final data = MddAudioResourceCompanion(
-          key: Value(key),
-          blockOffset: Value(blockOffset),
-          startOffset: Value(startOffset),
-          endOffset: Value(endOffset),
-          compressedSize: Value(compressedSize),
+          key: Value(info.keyText),
+          blockOffset: Value(info.recordBlockOffset),
+          startOffset: Value(info.startOffset),
+          endOffset: Value(info.endOffset),
+          compressedSize: Value(info.compressedSize),
           mddAudioListId: Value(mddAudioListId!));
       resources.add(data);
       number++;
