@@ -46,8 +46,10 @@ app.*.map.json
 # Aider
 .aider*
 
-# Cline
+# AI
 memory-bank/
+.kilocode/
+.cline/
 
 # Generated files
 lib/src/generated/i18n/*
