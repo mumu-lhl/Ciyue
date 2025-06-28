@@ -12,6 +12,7 @@ import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
+import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
@@ -43,6 +44,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => HistoryModel()),
       ChangeNotifierProvider(create: (_) => ManageDictionariesModel()),
       ChangeNotifierProvider(create: (_) => AudioModel()..init()),
+      ChangeNotifierProvider(create: (_) => AIExplanationModel()),
     ], child: const Ciyue()));
   } catch (e) {
     runApp(MaterialApp(home: CiyueError(error: e)));

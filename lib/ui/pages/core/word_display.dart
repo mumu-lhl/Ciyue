@@ -14,6 +14,7 @@ import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/pages/core/ai_markdown.dart";
 import "package:ciyue/ui/pages/core/search_bar.dart";
 import "package:ciyue/ui/pages/core/tags_list.dart";
+import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -54,8 +55,10 @@ NO OTHER WORD LIKE 'OK, here is...'""";
 
 class Button extends StatefulWidget {
   final String word;
+  final bool showAIExplainRefreshButton;
 
-  const Button({super.key, required this.word});
+  const Button(
+      {super.key, required this.word, this.showAIExplainRefreshButton = false});
 
   @override
   State<Button> createState() => _ButtonState();
@@ -318,22 +321,37 @@ class WordDisplay extends StatelessWidget {
                   ? DefaultTabController(
                       initialIndex: 0,
                       length: dictsLength,
-                      child: Scaffold(
-                        appBar: buildAppBar(context, showTab),
-                        floatingActionButton: Button(word: word),
-                        body: Column(
-                          children: [
-                            Expanded(
-                              child: buildTabView(context,
-                                  validDictIds: snapshot.data!),
-                            ),
-                            if (settings.tabBarPosition ==
-                                    TabBarPosition.bottom &&
-                                showTab)
-                              buildTabBar(context),
-                          ],
-                        ),
-                      ))
+                      child: Builder(builder: (context) {
+                        final tabController = DefaultTabController.of(context);
+                        return Scaffold(
+                          appBar: buildAppBar(context, showTab),
+                          floatingActionButton: ListenableBuilder(
+                            listenable: tabController,
+                            builder: (context, child) {
+                              final isAIExplainTabSelected =
+                                  settings.aiExplainWord &&
+                                      tabController.index == 0;
+                              return Button(
+                                word: word,
+                                showAIExplainRefreshButton:
+                                    isAIExplainTabSelected,
+                              );
+                            },
+                          ),
+                          body: Column(
+                            children: [
+                              Expanded(
+                                child: buildTabView(context,
+                                    validDictIds: snapshot.data!),
+                              ),
+                              if (settings.tabBarPosition ==
+                                      TabBarPosition.bottom &&
+                                  showTab)
+                                buildTabBar(context),
+                            ],
+                          ),
+                        );
+                      }))
                   : Scaffold(
                       appBar: AppBar(
                         title: settings.showSearchBarInWordDisplay
@@ -343,7 +361,9 @@ class WordDisplay extends StatelessWidget {
                               )
                             : null,
                       ),
-                      floatingActionButton: Button(word: word),
+                      floatingActionButton: Button(
+                          word: word,
+                          showAIExplainRefreshButton: settings.aiExplainWord),
                       body: settings.aiExplainWord
                           ? AIExplainView(word: word)
                           : buildWebView(snapshot.data![0]));
@@ -442,7 +462,10 @@ class WordDisplay extends StatelessWidget {
   Widget buildTabView(BuildContext context,
       {List<int> validDictIds = const []}) {
     return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-      if (settings.aiExplainWord) AIExplainView(word: word),
+      if (settings.aiExplainWord)
+        AIExplainView(
+            word: word,
+            key: ValueKey(context.watch<AIExplanationModel>().refreshKey)),
       for (final id in validDictIds) buildWebView(id)
     ]);
   }
@@ -491,7 +514,11 @@ class _ButtonState extends State<Button> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        buildReadLoudlyButton(context, widget.word),
+        if (widget.showAIExplainRefreshButton) RefreshAIExplainButton(),
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: buildReadLoudlyButton(context, widget.word),
+        ),
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: buildStarButton(context),
@@ -636,5 +663,25 @@ class _ButtonState extends State<Button> {
     super.initState();
 
     stared = wordbookDao.wordExist(widget.word);
+  }
+}
+
+class RefreshAIExplainButton extends StatelessWidget {
+  const RefreshAIExplainButton({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return FloatingActionButton.small(
+      foregroundColor: colorScheme.primary,
+      backgroundColor: colorScheme.primaryContainer,
+      child: const Icon(Icons.refresh),
+      onPressed: () {
+        context.read<AIExplanationModel>().refreshExplanation();
+      },
+    );
   }
 }
