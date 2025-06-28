@@ -249,5 +249,13 @@
         "type": "String"
       }
     }
-  }
+  },
+  "enableHistory": "启用历史记录",
+  "@enableHistory": {},
+  "other": "其他",
+  "@other": {},
+  "backup": "备份",
+  "@backup": {},
+  "about": "关于",
+  "@about": {}
 }
