@@ -12,33 +12,6 @@ env:
   FLUTTER_VERSION: 3.32.2
 
 jobs:
-  changelogFile:
-    name: Generate changelog file
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: "main"
-
-      - name: Generate a changelog
-        uses: orhun/git-cliff-action@v3
-        with:
-          config: cliff.toml
-          args: --verbose --tag ${{ github.ref_name }}
-        env:
-          OUTPUT: CHANGELOG.md
-
-      - name: Commit
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          set +e
-          git add CHANGELOG.md
-          git commit -m "Update changelog"
-          git push
-
   build-android:
     name: Build Android (Common)
     runs-on: ubuntu-latest
