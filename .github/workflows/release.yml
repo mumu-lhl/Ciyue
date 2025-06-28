@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 env:
-  FLUTTER_VERSION: 3.32.2
+  FLUTTER_VERSION: 3.32.4
 
 jobs:
   build-android:
