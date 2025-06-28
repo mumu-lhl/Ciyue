@@ -4,6 +4,8 @@ import "package:ciyue/utils.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:url_launcher/url_launcher.dart";
+import "package:ciyue/services/changelog.dart";
+import "package:ciyue/ui/pages/core/changelog_dialog.dart";
 
 class AboutSettingsPage extends StatelessWidget {
   const AboutSettingsPage({super.key});
@@ -22,7 +24,8 @@ class AboutSettingsPage extends StatelessWidget {
           SponsorUrl(),
           TermsOfServicePageListTile(),
           PrivacyPolicyPageListTile(),
-          AboutPageListTile()
+          ChangelogPageListTile(),
+          AboutPageListTile(),
         ],
       ),
     );
@@ -139,6 +142,31 @@ class AboutPageListTile extends StatelessWidget {
       applicationName: packageInfo.appName,
       applicationVersion: "${packageInfo.version} (${packageInfo.buildNumber})",
       applicationLegalese: "\u{a9} 2024-2025 Mumulhl and contributors",
+    );
+  }
+}
+
+class ChangelogPageListTile extends StatelessWidget {
+  const ChangelogPageListTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.history),
+      title: Text(AppLocalizations.of(context)!.changelog),
+      onTap: () async {
+        final changelogContent = await ChangelogService.getChangelogContent(
+            Localizations.localeOf(context));
+
+        if (!context.mounted) return;
+
+        showDialog(
+          context: context,
+          builder: (context) => ChangelogDialog(
+            changelogContent: changelogContent,
+          ),
+        );
+      },
     );
   }
 }
