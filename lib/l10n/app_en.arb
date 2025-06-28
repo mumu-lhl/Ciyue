@@ -261,5 +261,7 @@
   "advanceSwitchDescription": "Enable to show more settings options",
   "@advanceSwitchDescription": {},
   "enableHistory": "Enable History",
-  "@enableHistory": {}
+  "@enableHistory": {},
+  "changelog": "Changelog",
+  "@changelog": {}
 }

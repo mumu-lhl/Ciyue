@@ -3,12 +3,16 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/updater.dart";
+import "package:ciyue/services/changelog.dart";
+import "package:ciyue/ui/pages/core/changelog_dialog.dart";
 import "package:dynamic_color/dynamic_color.dart";
+import "package:flutter/material.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:path_provider/path_provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/app_router.dart";
 
 Future<void> initApp() async {
   await initPrefs();
@@ -52,6 +56,20 @@ Future<void> initApp() async {
   if (settings.ttsLanguage != null) {
     flutterTts.setLanguage(settings.ttsLanguage!);
   }
+
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (await ChangelogService.shouldShowChangelog()) {
+      final String changelogContent =
+          await ChangelogService.getChangelogContent(
+              Localizations.localeOf(navigatorKey.currentContext!));
+      showDialog(
+        context: navigatorKey.currentContext!,
+        builder: (context) =>
+            ChangelogDialog(changelogContent: changelogContent),
+      );
+      await ChangelogService.markChangelogShown();
+    }
+  });
 
   Future.microtask(() async {
     if (Platform.isAndroid) {
@@ -109,5 +127,6 @@ Future<void> initPrefs() async {
     "audioDirectory",
     "advance",
     "enableHistory",
+    "versionCode",
   }));
 }
