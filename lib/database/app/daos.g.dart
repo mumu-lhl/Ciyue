@@ -25,3 +25,6 @@ mixin _$MddAudioResourceDaoMixin on DatabaseAccessor<AppDatabase> {
   $MddAudioResourceTable get mddAudioResource =>
       attachedDatabase.mddAudioResource;
 }
+mixin _$AiExplanationDaoMixin on DatabaseAccessor<AppDatabase> {
+  $AiExplanationsTable get aiExplanations => attachedDatabase.aiExplanations;
+}

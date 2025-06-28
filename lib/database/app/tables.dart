@@ -47,3 +47,9 @@ class WordbookTags extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get tag => text().unique()();
 }
+
+@TableIndex(name: "idx_ai_explanations", columns: {#word})
+class AiExplanations extends Table {
+  TextColumn get word => text().unique()();
+  TextColumn get explanation => text()();
+}
