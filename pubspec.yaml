@@ -60,7 +60,7 @@ dependencies:
   html_unescape: ^2.0.0
   flutter_local_notifications: ^19.3.0
   dio: ^5.8.0+1
-  gpt_markdown: ^1.1.0
+  gpt_markdown: ^1.1.1
   provider: ^6.1.5
   freezed_annotation: ^3.0.0
   audioplayers: ^6.5.0
