@@ -1,6 +1,5 @@
 import "dart:convert";
 import "dart:io";
-import "dart:ui" as ui;
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/ui/pages/main/wordbook.dart";
@@ -14,11 +13,13 @@ import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/pages/core/ai_markdown.dart";
 import "package:ciyue/ui/pages/core/search_bar.dart";
 import "package:ciyue/ui/pages/core/tags_list.dart";
+import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
+import "package:gpt_markdown/gpt_markdown.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
@@ -31,31 +32,37 @@ class AIExplainView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final targetLanguage = settings.language! == "system"
-        ? ui.PlatformDispatcher.instance.locale.languageCode
-        : settings.language!;
-    String template;
-    if (settings.explainPromptMode == "custom" &&
-        settings.customExplainPrompt.isNotEmpty) {
-      template = settings.customExplainPrompt;
-    } else {
-      template =
-          """Generate a detailed explanation for the word "$word". If it has multiple meanings, list as many as possible. Include pronunciation, part of speech, meaning(s), examples, synonyms, and antonyms.
-The output is entirely and exclusively in \$targetLanguage.
-NO OTHER WORD LIKE 'OK, here is...'""";
-    }
-    final prompt = template
-        .replaceAll(r"$word", word)
-        .replaceAll(r"$targetLanguage", targetLanguage);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AIExplanationModel>().getExplanation(word);
+    });
 
-    return AIMarkdown(prompt: prompt);
+    return Consumer<AIExplanationModel>(
+      builder: (context, model, child) {
+        if (model.isLoading || model.explanation == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Center(
+          child: Container(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SelectionArea(child: GptMarkdown(model.explanation!)),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
 class Button extends StatefulWidget {
   final String word;
+  final bool showAIExplainRefreshButton;
 
-  const Button({super.key, required this.word});
+  const Button(
+      {super.key, required this.word, this.showAIExplainRefreshButton = false});
 
   @override
   State<Button> createState() => _ButtonState();
@@ -308,19 +315,39 @@ class WordDisplay extends StatelessWidget {
     return FutureBuilder(
         future: validDictionaryIds(),
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            if (snapshot.data!.isNotEmpty || settings.aiExplainWord) {
-              final dictsLength = settings.aiExplainWord
-                  ? snapshot.data!.length + 1
-                  : snapshot.data!.length;
-              final showTab = dictsLength > 1;
-              return showTab
-                  ? DefaultTabController(
-                      initialIndex: 0,
-                      length: dictsLength,
-                      child: Scaffold(
+          if (!snapshot.hasData) {
+            return const SizedBox.shrink();
+          }
+
+          if (snapshot.data!.isNotEmpty || settings.aiExplainWord) {
+            final dictsLength = settings.aiExplainWord
+                ? snapshot.data!.length + 1
+                : snapshot.data!.length;
+            final showTab = dictsLength > 1;
+
+            if (showTab) {
+              return ChangeNotifierProvider(
+                create: (_) => AIExplanationModel(),
+                child: DefaultTabController(
+                    initialIndex: 0,
+                    length: dictsLength,
+                    child: Builder(builder: (context) {
+                      final tabController = DefaultTabController.of(context);
+                      return Scaffold(
                         appBar: buildAppBar(context, showTab),
-                        floatingActionButton: Button(word: word),
+                        floatingActionButton: ListenableBuilder(
+                          listenable: tabController,
+                          builder: (context, child) {
+                            final isAIExplainTabSelected =
+                                settings.aiExplainWord &&
+                                    tabController.index == 0;
+                            return Button(
+                              word: word,
+                              showAIExplainRefreshButton:
+                                  isAIExplainTabSelected,
+                            );
+                          },
+                        ),
                         body: Column(
                           children: [
                             Expanded(
@@ -333,58 +360,64 @@ class WordDisplay extends StatelessWidget {
                               buildTabBar(context),
                           ],
                         ),
-                      ))
-                  : Scaffold(
-                      appBar: AppBar(
-                        title: settings.showSearchBarInWordDisplay
-                            ? WordSearchBarWithSuggestions(
-                                word: word,
-                                controller: SearchController(),
-                              )
-                            : null,
-                      ),
-                      floatingActionButton: Button(word: word),
-                      body: settings.aiExplainWord
-                          ? AIExplainView(word: word)
-                          : buildWebView(snapshot.data![0]));
+                      );
+                    })),
+              );
             } else {
-              final fromProcessText = !context.canPop();
-              return Scaffold(
-                appBar: AppBar(leading: BackButton(
-                  onPressed: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      // When opened from context menu
-                      SystemNavigator.pop();
-                    }
-                  },
-                )),
-                body: Center(
-                    child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(AppLocalizations.of(context)!.notFound,
-                        style: Theme.of(context).textTheme.titleLarge),
-                    Visibility(
-                      visible: fromProcessText,
-                      child: TextButton(
-                        onPressed: () {
-                          context.go("/");
-                          final model =
-                              Provider.of<HomeModel>(context, listen: false);
-                          model.searchWord = word;
-                          model.focusSearchBar();
-                        },
-                        child: Text(AppLocalizations.of(context)!.editWord),
-                      ),
+              return ChangeNotifierProvider(
+                create: (_) => AIExplanationModel(),
+                child: Scaffold(
+                    appBar: AppBar(
+                      title: settings.showSearchBarInWordDisplay
+                          ? WordSearchBarWithSuggestions(
+                              word: word,
+                              controller: SearchController(),
+                            )
+                          : null,
                     ),
-                  ],
-                )),
+                    floatingActionButton: Button(
+                        word: word,
+                        showAIExplainRefreshButton: settings.aiExplainWord),
+                    body: settings.aiExplainWord
+                        ? AIExplainView(word: word)
+                        : buildWebView(snapshot.data![0])),
               );
             }
           } else {
-            return const SizedBox.shrink();
+            final fromProcessText = !context.canPop();
+            return Scaffold(
+              appBar: AppBar(leading: BackButton(
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    // When opened from context menu
+                    SystemNavigator.pop();
+                  }
+                },
+              )),
+              body: Center(
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(AppLocalizations.of(context)!.notFound,
+                      style: Theme.of(context).textTheme.titleLarge),
+                  Visibility(
+                    visible: fromProcessText,
+                    child: TextButton(
+                      onPressed: () {
+                        context.go("/");
+                        final model =
+                            Provider.of<HomeModel>(context, listen: false);
+                        model.searchWord = word;
+                        model.focusSearchBar();
+                      },
+                      child: Text(AppLocalizations.of(context)!.editWord),
+                    ),
+                  ),
+                ],
+              )),
+            );
           }
         });
   }
@@ -441,8 +474,11 @@ class WordDisplay extends StatelessWidget {
 
   Widget buildTabView(BuildContext context,
       {List<int> validDictIds = const []}) {
-    return TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-      if (settings.aiExplainWord) AIExplainView(word: word),
+    return TabBarView(physics: const NeverScrollableScrollPhysics(), children: [
+      if (settings.aiExplainWord)
+        AIExplainView(
+            word: word,
+            key: ValueKey(context.watch<AIExplanationModel>().refreshKey)),
       for (final id in validDictIds) buildWebView(id)
     ]);
   }
@@ -491,7 +527,12 @@ class _ButtonState extends State<Button> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        buildReadLoudlyButton(context, widget.word),
+        if (widget.showAIExplainRefreshButton)
+          RefreshAIExplainButton(word: widget.word),
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: buildReadLoudlyButton(context, widget.word),
+        ),
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: buildStarButton(context),
@@ -636,5 +677,28 @@ class _ButtonState extends State<Button> {
     super.initState();
 
     stared = wordbookDao.wordExist(widget.word);
+  }
+}
+
+class RefreshAIExplainButton extends StatelessWidget {
+  final String word;
+
+  const RefreshAIExplainButton({
+    super.key,
+    required this.word,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return FloatingActionButton.small(
+      foregroundColor: colorScheme.primary,
+      backgroundColor: colorScheme.primaryContainer,
+      child: const Icon(Icons.refresh),
+      onPressed: () {
+        context.read<AIExplanationModel>().refreshExplanation(word);
+      },
+    );
   }
 }

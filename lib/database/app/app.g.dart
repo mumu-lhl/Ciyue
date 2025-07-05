@@ -1725,6 +1725,207 @@ class MddAudioResourceCompanion
   }
 }
 
+class $AiExplanationsTable extends AiExplanations
+    with drift.TableInfo<$AiExplanationsTable, AiExplanation> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AiExplanationsTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _wordMeta =
+      const drift.VerificationMeta('word');
+  @override
+  late final drift.GeneratedColumn<String> word = drift.GeneratedColumn<String>(
+      'word', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const drift.VerificationMeta _explanationMeta =
+      const drift.VerificationMeta('explanation');
+  @override
+  late final drift.GeneratedColumn<String> explanation =
+      drift.GeneratedColumn<String>('explanation', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<drift.GeneratedColumn> get $columns => [word, explanation];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ai_explanations';
+  @override
+  drift.VerificationContext validateIntegrity(
+      drift.Insertable<AiExplanation> instance,
+      {bool isInserting = false}) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('word')) {
+      context.handle(
+          _wordMeta, word.isAcceptableOrUnknown(data['word']!, _wordMeta));
+    } else if (isInserting) {
+      context.missing(_wordMeta);
+    }
+    if (data.containsKey('explanation')) {
+      context.handle(
+          _explanationMeta,
+          explanation.isAcceptableOrUnknown(
+              data['explanation']!, _explanationMeta));
+    } else if (isInserting) {
+      context.missing(_explanationMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => const {};
+  @override
+  AiExplanation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AiExplanation(
+      word: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      explanation: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}explanation'])!,
+    );
+  }
+
+  @override
+  $AiExplanationsTable createAlias(String alias) {
+    return $AiExplanationsTable(attachedDatabase, alias);
+  }
+}
+
+class AiExplanation extends drift.DataClass
+    implements drift.Insertable<AiExplanation> {
+  final String word;
+  final String explanation;
+  const AiExplanation({required this.word, required this.explanation});
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['word'] = drift.Variable<String>(word);
+    map['explanation'] = drift.Variable<String>(explanation);
+    return map;
+  }
+
+  AiExplanationsCompanion toCompanion(bool nullToAbsent) {
+    return AiExplanationsCompanion(
+      word: drift.Value(word),
+      explanation: drift.Value(explanation),
+    );
+  }
+
+  factory AiExplanation.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return AiExplanation(
+      word: serializer.fromJson<String>(json['word']),
+      explanation: serializer.fromJson<String>(json['explanation']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'word': serializer.toJson<String>(word),
+      'explanation': serializer.toJson<String>(explanation),
+    };
+  }
+
+  AiExplanation copyWith({String? word, String? explanation}) => AiExplanation(
+        word: word ?? this.word,
+        explanation: explanation ?? this.explanation,
+      );
+  AiExplanation copyWithCompanion(AiExplanationsCompanion data) {
+    return AiExplanation(
+      word: data.word.present ? data.word.value : this.word,
+      explanation:
+          data.explanation.present ? data.explanation.value : this.explanation,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiExplanation(')
+          ..write('word: $word, ')
+          ..write('explanation: $explanation')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(word, explanation);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AiExplanation &&
+          other.word == this.word &&
+          other.explanation == this.explanation);
+}
+
+class AiExplanationsCompanion extends drift.UpdateCompanion<AiExplanation> {
+  final drift.Value<String> word;
+  final drift.Value<String> explanation;
+  final drift.Value<int> rowid;
+  const AiExplanationsCompanion({
+    this.word = const drift.Value.absent(),
+    this.explanation = const drift.Value.absent(),
+    this.rowid = const drift.Value.absent(),
+  });
+  AiExplanationsCompanion.insert({
+    required String word,
+    required String explanation,
+    this.rowid = const drift.Value.absent(),
+  })  : word = drift.Value(word),
+        explanation = drift.Value(explanation);
+  static drift.Insertable<AiExplanation> custom({
+    drift.Expression<String>? word,
+    drift.Expression<String>? explanation,
+    drift.Expression<int>? rowid,
+  }) {
+    return drift.RawValuesInsertable({
+      if (word != null) 'word': word,
+      if (explanation != null) 'explanation': explanation,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AiExplanationsCompanion copyWith(
+      {drift.Value<String>? word,
+      drift.Value<String>? explanation,
+      drift.Value<int>? rowid}) {
+    return AiExplanationsCompanion(
+      word: word ?? this.word,
+      explanation: explanation ?? this.explanation,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (word.present) {
+      map['word'] = drift.Variable<String>(word.value);
+    }
+    if (explanation.present) {
+      map['explanation'] = drift.Variable<String>(explanation.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = drift.Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiExplanationsCompanion(')
+          ..write('word: $word, ')
+          ..write('explanation: $explanation, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1736,6 +1937,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final $MddAudioListTable mddAudioList = $MddAudioListTable(this);
   late final $MddAudioResourceTable mddAudioResource =
       $MddAudioResourceTable(this);
+  late final $AiExplanationsTable aiExplanations = $AiExplanationsTable(this);
   late final drift.Index idxWordbook = drift.Index('idx_wordbook',
       'CREATE INDEX idx_wordbook ON wordbook (word, created_at)');
   late final drift.Index idxWordbookTags = drift.Index('idx_wordbook_tags',
@@ -1743,6 +1945,8 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final drift.Index idxMddAudioResource = drift.Index(
       'idx_mdd_audio_resource',
       'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")');
+  late final drift.Index idxAiExplanations = drift.Index('idx_ai_explanations',
+      'CREATE INDEX idx_ai_explanations ON ai_explanations (word)');
   @override
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
@@ -1755,9 +1959,11 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
         dictGroup,
         mddAudioList,
         mddAudioResource,
+        aiExplanations,
         idxWordbook,
         idxWordbookTags,
-        idxMddAudioResource
+        idxMddAudioResource,
+        idxAiExplanations
       ];
 }
 
@@ -2801,6 +3007,140 @@ typedef $$MddAudioResourceTableProcessedTableManager
         ),
         MddAudioResourceData,
         drift.PrefetchHooks Function()>;
+typedef $$AiExplanationsTableCreateCompanionBuilder = AiExplanationsCompanion
+    Function({
+  required String word,
+  required String explanation,
+  drift.Value<int> rowid,
+});
+typedef $$AiExplanationsTableUpdateCompanionBuilder = AiExplanationsCompanion
+    Function({
+  drift.Value<String> word,
+  drift.Value<String> explanation,
+  drift.Value<int> rowid,
+});
+
+class $$AiExplanationsTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $AiExplanationsTable> {
+  $$AiExplanationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<String> get explanation => $composableBuilder(
+      column: $table.explanation,
+      builder: (column) => drift.ColumnFilters(column));
+}
+
+class $$AiExplanationsTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $AiExplanationsTable> {
+  $$AiExplanationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<String> get explanation => $composableBuilder(
+      column: $table.explanation,
+      builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$AiExplanationsTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $AiExplanationsTable> {
+  $$AiExplanationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<String> get word =>
+      $composableBuilder(column: $table.word, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get explanation => $composableBuilder(
+      column: $table.explanation, builder: (column) => column);
+}
+
+class $$AiExplanationsTableTableManager extends drift.RootTableManager<
+    _$AppDatabase,
+    $AiExplanationsTable,
+    AiExplanation,
+    $$AiExplanationsTableFilterComposer,
+    $$AiExplanationsTableOrderingComposer,
+    $$AiExplanationsTableAnnotationComposer,
+    $$AiExplanationsTableCreateCompanionBuilder,
+    $$AiExplanationsTableUpdateCompanionBuilder,
+    (
+      AiExplanation,
+      drift.BaseReferences<_$AppDatabase, $AiExplanationsTable, AiExplanation>
+    ),
+    AiExplanation,
+    drift.PrefetchHooks Function()> {
+  $$AiExplanationsTableTableManager(
+      _$AppDatabase db, $AiExplanationsTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AiExplanationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AiExplanationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AiExplanationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            drift.Value<String> word = const drift.Value.absent(),
+            drift.Value<String> explanation = const drift.Value.absent(),
+            drift.Value<int> rowid = const drift.Value.absent(),
+          }) =>
+              AiExplanationsCompanion(
+            word: word,
+            explanation: explanation,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String word,
+            required String explanation,
+            drift.Value<int> rowid = const drift.Value.absent(),
+          }) =>
+              AiExplanationsCompanion.insert(
+            word: word,
+            explanation: explanation,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AiExplanationsTableProcessedTableManager
+    = drift.ProcessedTableManager<
+        _$AppDatabase,
+        $AiExplanationsTable,
+        AiExplanation,
+        $$AiExplanationsTableFilterComposer,
+        $$AiExplanationsTableOrderingComposer,
+        $$AiExplanationsTableAnnotationComposer,
+        $$AiExplanationsTableCreateCompanionBuilder,
+        $$AiExplanationsTableUpdateCompanionBuilder,
+        (
+          AiExplanation,
+          drift
+          .BaseReferences<_$AppDatabase, $AiExplanationsTable, AiExplanation>
+        ),
+        AiExplanation,
+        drift.PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2819,4 +3159,6 @@ class $AppDatabaseManager {
       $$MddAudioListTableTableManager(_db, _db.mddAudioList);
   $$MddAudioResourceTableTableManager get mddAudioResource =>
       $$MddAudioResourceTableTableManager(_db, _db.mddAudioResource);
+  $$AiExplanationsTableTableManager get aiExplanations =>
+      $$AiExplanationsTableTableManager(_db, _db.aiExplanations);
 }

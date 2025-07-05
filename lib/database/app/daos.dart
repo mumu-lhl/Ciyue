@@ -346,3 +346,31 @@ class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
         .get());
   }
 }
+
+@DriftAccessor(tables: [AiExplanations])
+class AiExplanationDao extends DatabaseAccessor<AppDatabase>
+    with _$AiExplanationDaoMixin {
+  AiExplanationDao(super.attachedDatabase);
+
+  Future<int> insertAiExplanation(AiExplanation explanation) {
+    return into(aiExplanations).insert(explanation);
+  }
+
+  Future<AiExplanation?> getAiExplanation(String word) {
+    return (select(aiExplanations)..where((t) => t.word.isValue(word)))
+        .getSingleOrNull();
+  }
+
+  Future<int> updateAiExplanation(AiExplanation explanation) {
+    return (update(aiExplanations)
+          ..where((t) => t.word.isValue(explanation.word)))
+        .write(AiExplanationsCompanion(
+      word: Value(explanation.word),
+      explanation: Value(explanation.explanation),
+    ));
+  }
+
+  Future<int> deleteAiExplanation(String word) {
+    return (delete(aiExplanations)..where((t) => t.word.isValue(word))).go();
+  }
+}
