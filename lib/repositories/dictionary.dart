@@ -382,11 +382,11 @@ Future<void> selectMdx(BuildContext context, List<String> paths) async {
     }
 
     Mdict? tmpDict;
+    final pathNoExtension = setExtension(path, "");
+    tmpDict = Mdict(path: pathNoExtension);
+
     try {
-      final pathNoExtension = setExtension(path, "");
-      tmpDict = Mdict(path: pathNoExtension);
       await tmpDict.add();
-      await tmpDict.close();
     } catch (e) {
       if (context.mounted) {
         final snackBar =
@@ -397,6 +397,8 @@ Future<void> selectMdx(BuildContext context, List<String> paths) async {
       // Why? Don't know. Strange!
       continue;
     }
+
+    await tmpDict.close();
   }
 
   if (paths.isNotEmpty && context.mounted) {
