@@ -377,26 +377,29 @@ class Mdict {
 
 Future<void> selectMdx(BuildContext context, List<String> paths) async {
   for (final path in paths) {
-    if (await dictionaryListDao.dictionaryExist(path)) {
+    final pathNoExtension = setExtension(path, "");
+
+    if (await dictionaryListDao.dictionaryExist(pathNoExtension)) {
       continue;
     }
 
     Mdict? tmpDict;
+    tmpDict = Mdict(path: pathNoExtension);
+
     try {
-      final pathNoExtension = setExtension(path, "");
-      tmpDict = Mdict(path: pathNoExtension);
       await tmpDict.add();
-      await tmpDict.close();
     } catch (e) {
       if (context.mounted) {
         final snackBar =
             SnackBar(content: Text(AppLocalizations.of(context)!.notSupport));
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
-
-      // Why? Don't know. Strange!
-      continue;
     }
+
+    await tmpDict.close();
+
+    // Why? Don't know. Strange!
+    continue;
   }
 
   if (paths.isNotEmpty && context.mounted) {
