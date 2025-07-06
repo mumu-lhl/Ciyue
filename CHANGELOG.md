@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
+## [1.17.0] - 2025-07-06
+
+### Features
+
+* Show changelog after updating
+* Cache AI Explanation
+
+### UI
+
+* Refactor settings page
+
+### Bugs
+
+* Fix adding dictionaries repeatly by refresh button
+* Fix show not support dictionary wrongly
+
+
 ---
 ## [1.16.0-beta.4](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0-beta.3..v1.16.0-beta.4) - 2025-05-31
 
