@@ -257,5 +257,11 @@
   "backup": "备份",
   "@backup": {},
   "about": "关于",
-  "@about": {}
+  "@about": {},
+  "advance": "高级",
+  "@advance": {},
+  "advanceSwitchDescription": "启用以显示更多设置选项",
+  "@advanceSwitchDescription": {},
+  "changelog": "更新日志",
+  "@changelog": {}
 }

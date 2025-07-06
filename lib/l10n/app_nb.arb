@@ -249,5 +249,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "other": "Annet",
+  "@other": {},
+  "about": "Om",
+  "@about": {},
+  "backup": "Sikkerhetskopiering",
+  "@backup": {},
+  "advance": "Avansert",
+  "@advance": {},
+  "advanceSwitchDescription": "Aktiver for å vise flere innstillingsalternativer",
+  "@advanceSwitchDescription": {},
+  "enableHistory": "Aktiver historikk",
+  "@enableHistory": {},
+  "changelog": "Endringslogg",
+  "@changelog": {}
 }

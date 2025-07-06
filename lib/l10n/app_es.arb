@@ -249,5 +249,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "other": "Otro",
+  "@other": {},
+  "about": "Acerca de",
+  "@about": {},
+  "backup": "Copia de seguridad",
+  "@backup": {},
+  "advance": "Avanzado",
+  "@advance": {},
+  "advanceSwitchDescription": "Habilitar para mostrar más opciones de configuración",
+  "@advanceSwitchDescription": {},
+  "enableHistory": "Habilitar historial",
+  "@enableHistory": {},
+  "changelog": "Registro de cambios",
+  "@changelog": {}
 }

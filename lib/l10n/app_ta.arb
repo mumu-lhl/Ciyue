@@ -249,5 +249,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "other": "மற்றவை",
+  "@other": {},
+  "about": "பற்றி",
+  "@about": {},
+  "backup": "காப்பு",
+  "@backup": {},
+  "advance": "முன்னேற்றம்",
+  "@advance": {},
+  "advanceSwitchDescription": "மேலும் அமைப்புகள் விருப்பங்களைக் காட்ட இயக்கு",
+  "@advanceSwitchDescription": {},
+  "enableHistory": "வரலாற்றை இயக்கு",
+  "@enableHistory": {},
+  "changelog": "மாற்றங்களின் பதிவு",
+  "@changelog": {}
 }

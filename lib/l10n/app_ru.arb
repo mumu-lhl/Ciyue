@@ -249,5 +249,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "other": "Другое",
+  "@other": {},
+  "about": "О программе",
+  "@about": {},
+  "backup": "Резервное копирование",
+  "@backup": {},
+  "advance": "Продвинутый",
+  "@advance": {},
+  "advanceSwitchDescription": "Включите, чтобы показать больше опций настроек",
+  "@advanceSwitchDescription": {},
+  "enableHistory": "Включить историю",
+  "@enableHistory": {},
+  "changelog": "Журнал изменений",
+  "@changelog": {}
 }

@@ -249,5 +249,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "other": "Àteru",
+  "@other": {},
+  "about": "In contu de",
+  "@about": {},
+  "backup": "Còpia de seguresa",
+  "@backup": {},
+  "advance": "Avantzadu",
+  "@advance": {},
+  "advanceSwitchDescription": "Ativa pro ammustrare àteras optziones de impostatzione",
+  "@advanceSwitchDescription": {},
+  "enableHistory": "Ativa sa cronologia",
+  "@enableHistory": {},
+  "changelog": "Registru de sas mudàntzias",
+  "@changelog": {}
 }

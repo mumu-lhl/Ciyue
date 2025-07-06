@@ -249,5 +249,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "other": "Altres",
+  "@other": {},
+  "about": "Quant a",
+  "@about": {},
+  "backup": "Còpia de seguretat",
+  "@backup": {},
+  "advance": "Avançat",
+  "@advance": {},
+  "advanceSwitchDescription": "Activa per a mostrar més opcions de configuració",
+  "@advanceSwitchDescription": {},
+  "enableHistory": "Activa l'historial",
+  "@enableHistory": {},
+  "changelog": "Registre de canvis",
+  "@changelog": {}
 }

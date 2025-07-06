@@ -249,5 +249,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "other": "دیگر",
+  "@other": {},
+  "about": "درباره",
+  "@about": {},
+  "backup": "پشتیبان گیری",
+  "@backup": {},
+  "advance": "پیشرفته",
+  "@advance": {},
+  "advanceSwitchDescription": "برای نمایش گزینه‌های بیشتر تنظیمات، فعال کنید",
+  "@advanceSwitchDescription": {},
+  "enableHistory": "فعال کردن تاریخچه",
+  "@enableHistory": {},
+  "changelog": "لیست تغییرات",
+  "@changelog": {}
 }

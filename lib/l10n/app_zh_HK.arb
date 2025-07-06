@@ -241,6 +241,7 @@
     }
   },
   "copyingFiles": "正在複製檔案...",
+  "@copyingFiles": {},
   "addingResource": "正在新增資源: {resource}",
   "@addingResource": {
     "placeholders": {
@@ -248,5 +249,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "other": "其他",
+  "@other": {},
+  "about": "關於",
+  "@about": {},
+  "backup": "備份",
+  "@backup": {},
+  "advance": "進階",
+  "@advance": {},
+  "advanceSwitchDescription": "啟用以顯示更多設定選項",
+  "@advanceSwitchDescription": {},
+  "enableHistory": "啟用歷史記錄",
+  "@enableHistory": {},
+  "changelog": "更新日誌",
+  "@changelog": {}
 }

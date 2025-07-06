@@ -261,5 +261,7 @@
   "about": "পরিচিতি",
   "@about": {},
   "advance": "অতিরিক্ত",
-  "@advance": {}
+  "@advance": {},
+  "changelog": "পরিবর্তনের তালিকা",
+  "@changelog": {}
 }
