@@ -269,5 +269,11 @@
   "enterAIExplanation": "Enter AI Explanation",
   "@enterAIExplanation": {},
   "save": "Save",
-  "@save": {}
+  "@save": {},
+  "dictionarySwitchStyle": "Dictionary Switch Style",
+  "@dictionarySwitchStyle": {},
+  "expansion": "Expansion",
+  "@expansion": {},
+  "tag": "Tag",
+  "@tag": {}
 }

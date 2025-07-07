@@ -7,6 +7,8 @@ final settings = _Settings();
 
 enum TabBarPosition { top, bottom }
 
+enum DictionarySwitchStyle { expansion, tag }
+
 class _Settings {
   late bool autoExport;
   late String exportFileName;
@@ -20,6 +22,7 @@ class _Settings {
   late bool showSidebarIcon;
   late bool showMoreOptionsButton;
   late bool showSearchBarInWordDisplay;
+  late DictionarySwitchStyle dictionarySwitchStyle;
 
   late bool autoRemoveSearchWord;
 
@@ -61,6 +64,15 @@ class _Settings {
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
     showSearchBarInWordDisplay =
         prefs.getBool("showSearchBarInWordDisplay") ?? true;
+
+    final dictionarySwitchStyleString =
+        prefs.getString("dictionarySwitchStyle");
+    if (dictionarySwitchStyleString == null) {
+      dictionarySwitchStyle = DictionarySwitchStyle.expansion;
+    } else {
+      dictionarySwitchStyle =
+          DictionarySwitchStyle.values.byName(dictionarySwitchStyleString);
+    }
 
     autoUpdate = prefs.getBool("autoUpdate") ?? false;
     includePrereleaseUpdates =
@@ -147,6 +159,11 @@ class _Settings {
   Future<void> setTabBarPosition(TabBarPosition position) async {
     tabBarPosition = position;
     await prefs.setString("tabBarPosition", position.name);
+  }
+
+  Future<void> setDictionarySwitchStyle(DictionarySwitchStyle style) async {
+    dictionarySwitchStyle = style;
+    await prefs.setString("dictionarySwitchStyle", style.name);
   }
 
   Future<void> setTranslatePromptMode(String mode) async {

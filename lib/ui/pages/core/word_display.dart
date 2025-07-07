@@ -25,6 +25,131 @@ import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:provider/provider.dart";
 
+class ExpansionWordDisplay extends StatefulWidget {
+  final String word;
+  final List<int> validDictIds;
+
+  const ExpansionWordDisplay({
+    super.key,
+    required this.word,
+    required this.validDictIds,
+  });
+
+  @override
+  State<ExpansionWordDisplay> createState() => _ExpansionWordDisplayState();
+}
+
+class _ExpansionWordDisplayState extends State<ExpansionWordDisplay> {
+  late List<bool> _isExpanded;
+
+  @override
+  void initState() {
+    super.initState();
+    final length = settings.aiExplainWord
+        ? widget.validDictIds.length + 1
+        : widget.validDictIds.length;
+    _isExpanded = List<bool>.generate(
+      length,
+      (_) => true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final panels = <ExpansionPanel>[];
+    int panelIndex = 0;
+
+    if (settings.aiExplainWord) {
+      panels.add(
+        ExpansionPanel(
+          headerBuilder: (context, isExpanded) {
+            return const ListTile(title: Text("AI"));
+          },
+          body: AIExplainView(
+            word: widget.word,
+            key: ValueKey(context
+                .select<AIExplanationModel, int>((model) => model.refreshKey)),
+          ),
+          isExpanded: _isExpanded[panelIndex],
+          canTapOnHeader: true,
+        ),
+      );
+      panelIndex++;
+    }
+
+    for (final dictId in widget.validDictIds) {
+      panels.add(
+        ExpansionPanel(
+          headerBuilder: (context, isExpanded) {
+            return ListTile(title: Text(dictManager.dicts[dictId]!.title));
+          },
+          body: _buildWebView(widget.word, dictId),
+          isExpanded: _isExpanded[panelIndex],
+          canTapOnHeader: true,
+        ),
+      );
+      panelIndex++;
+    }
+
+    final isAIExplainTabSelected =
+        settings.aiExplainWord && _isExpanded.isNotEmpty && _isExpanded[0];
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              // When opened from context menu
+              SystemNavigator.pop();
+            }
+          },
+        ),
+        title: settings.showSearchBarInWordDisplay
+            ? WordSearchBarWithSuggestions(
+                word: widget.word,
+                controller: SearchController(),
+              )
+            : null,
+      ),
+      floatingActionButton: Button(
+        word: widget.word,
+        showAIButtons: isAIExplainTabSelected,
+      ),
+      body: SingleChildScrollView(
+        child: ExpansionPanelList(
+          expansionCallback: (int index, bool isExpanded) {
+            setState(() {
+              _isExpanded[index] = isExpanded;
+            });
+          },
+          children: panels,
+        ),
+      ),
+    );
+  }
+}
+
+Widget _buildWebView(String word, int id) {
+  return FutureBuilder(
+    future: dictManager.dicts[id]!.readWord(word),
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        if (Platform.isAndroid) {
+          return WebviewAndroid(content: snapshot.data!, dictId: id);
+        } else if (Platform.isWindows) {
+          return WebviewWindows(content: snapshot.data!, dictId: id);
+        } else {
+          return FakeWebViewByAI(html: snapshot.data!);
+        }
+      } else {
+        return const SizedBox.shrink();
+      }
+    },
+  );
+}
+
 class AIExplainView extends StatelessWidget {
   final String word;
 
@@ -368,47 +493,57 @@ class WordDisplay extends StatelessWidget {
           final showTab = dictsLength > 1;
 
           if (showTab) {
-            return ChangeNotifierProvider(
-              create: (_) => AIExplanationModel(),
-              child: DefaultTabController(
-                initialIndex: 0,
-                length: dictsLength,
-                child: Builder(
-                  builder: (context) {
-                    final tabController = DefaultTabController.of(context);
-                    return Scaffold(
-                      appBar: buildAppBar(context, showTab),
-                      floatingActionButton: ListenableBuilder(
-                        listenable: tabController,
-                        builder: (context, child) {
-                          final isAIExplainTabSelected =
-                              settings.aiExplainWord &&
-                                  tabController.index == 0;
-                          return Button(
-                            word: word,
-                            showAIButtons: isAIExplainTabSelected,
-                          );
-                        },
-                      ),
-                      body: Column(
-                        children: [
-                          Expanded(
-                            child: buildTabView(
-                              context,
-                              validDictIds: snapshot.data!,
+            if (settings.dictionarySwitchStyle == DictionarySwitchStyle.tag) {
+              return ChangeNotifierProvider(
+                create: (_) => AIExplanationModel(),
+                child: DefaultTabController(
+                  initialIndex: 0,
+                  length: dictsLength,
+                  child: Builder(
+                    builder: (context) {
+                      final tabController = DefaultTabController.of(context);
+                      return Scaffold(
+                        appBar: buildAppBar(context, showTab),
+                        floatingActionButton: ListenableBuilder(
+                          listenable: tabController,
+                          builder: (context, child) {
+                            final isAIExplainTabSelected =
+                                settings.aiExplainWord &&
+                                    tabController.index == 0;
+                            return Button(
+                              word: word,
+                              showAIButtons: isAIExplainTabSelected,
+                            );
+                          },
+                        ),
+                        body: Column(
+                          children: [
+                            Expanded(
+                              child: buildTabView(
+                                context,
+                                validDictIds: snapshot.data!,
+                              ),
                             ),
-                          ),
-                          if (settings.tabBarPosition ==
-                                  TabBarPosition.bottom &&
-                              showTab)
-                            buildTabBar(context),
-                        ],
-                      ),
-                    );
-                  },
+                            if (settings.tabBarPosition ==
+                                    TabBarPosition.bottom &&
+                                showTab)
+                              buildTabBar(context),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-            );
+              );
+            } else {
+              return ChangeNotifierProvider(
+                create: (_) => AIExplanationModel(),
+                child: ExpansionWordDisplay(
+                  word: word,
+                  validDictIds: snapshot.data!,
+                ),
+              );
+            }
           } else {
             return ChangeNotifierProvider(
               create: (_) => AIExplanationModel(),
@@ -549,22 +684,7 @@ class WordDisplay extends StatelessWidget {
   }
 
   Widget buildWebView(int id) {
-    return FutureBuilder(
-      future: dictManager.dicts[id]!.readWord(word),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          if (Platform.isAndroid) {
-            return WebviewAndroid(content: snapshot.data!, dictId: id);
-          } else if (Platform.isWindows) {
-            return WebviewWindows(content: snapshot.data!, dictId: id);
-          } else {
-            return FakeWebViewByAI(html: snapshot.data!);
-          }
-        } else {
-          return const SizedBox.shrink();
-        }
-      },
-    );
+    return _buildWebView(word, id);
   }
 
   Future<List<int>> validDictionaryIds() async {

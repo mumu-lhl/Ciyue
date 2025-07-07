@@ -18,12 +18,13 @@ class AppearanceSettingsPage extends StatelessWidget {
         children: [
           const LanguageSelector(),
           const ThemeSelector(),
+          const DictionarySwitchStyleSelector(),
+          const SearchbarLocationSelector(),
+          const TabBarPositionSelector(),
+          const SearchbarInWordDisplaySwitch(),
           if (settings.advance)
             const Column(
               children: [
-                SearchbarLocationSelector(),
-                TabBarPositionSelector(),
-                SearchbarInWordDisplaySwitch(),
                 DrawerIconSwitch(),
                 MoreOptionsButtonSwitch(),
               ],
@@ -32,6 +33,14 @@ class AppearanceSettingsPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class DictionarySwitchStyleSelector extends StatefulWidget {
+  const DictionarySwitchStyleSelector({super.key});
+
+  @override
+  State<DictionarySwitchStyleSelector> createState() =>
+      _DictionarySwitchStyleSelectorState();
 }
 
 class DrawerIconSwitch extends StatefulWidget {
@@ -323,6 +332,49 @@ class _ThemeSelectorState extends State<ThemeSelector> {
       child: ListTile(
         leading: const Icon(Icons.light_mode),
         title: Text(locale!.theme),
+        trailing: const Icon(Icons.keyboard_arrow_down),
+      ),
+    );
+  }
+}
+
+class _DictionarySwitchStyleSelectorState
+    extends State<DictionarySwitchStyleSelector> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+
+    return InkWell(
+      onTapUp: (tapUpDetails) async {
+        final selected = await showMenu<DictionarySwitchStyle>(
+          context: context,
+          position: RelativeRect.fromLTRB(
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+            tapUpDetails.globalPosition.dx,
+            tapUpDetails.globalPosition.dy,
+          ),
+          initialValue: settings.dictionarySwitchStyle,
+          items: [
+            PopupMenuItem(
+              value: DictionarySwitchStyle.expansion,
+              child: Text(locale.expansion),
+            ),
+            PopupMenuItem(
+              value: DictionarySwitchStyle.tag,
+              child: Text(locale.tag),
+            ),
+          ],
+        );
+
+        if (selected != null && selected != settings.dictionarySwitchStyle) {
+          await settings.setDictionarySwitchStyle(selected);
+          setState(() {});
+        }
+      },
+      child: ListTile(
+        leading: const Icon(Icons.style),
+        title: Text(locale.dictionarySwitchStyle),
         trailing: const Icon(Icons.keyboard_arrow_down),
       ),
     );

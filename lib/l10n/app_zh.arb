@@ -263,5 +263,13 @@
   "advanceSwitchDescription": "启用以显示更多设置选项",
   "@advanceSwitchDescription": {},
   "changelog": "更新日志",
-  "@changelog": {}
+  "@changelog": {},
+  "save": "保存",
+  "@save": {},
+  "dictionarySwitchStyle": "词典切换样式",
+  "@dictionarySwitchStyle": {},
+  "expansion": "展开式",
+  "@expansion": {},
+  "tag": "标签式",
+  "@tag": {}
 }

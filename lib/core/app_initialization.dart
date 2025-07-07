@@ -128,5 +128,6 @@ Future<void> initPrefs() async {
     "advance",
     "enableHistory",
     "versionCode",
+    "dictionarySwitchStyle",
   }));
 }
