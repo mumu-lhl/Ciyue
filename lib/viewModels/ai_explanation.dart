@@ -95,4 +95,11 @@ NO OTHER WORD LIKE 'OK, here is...'""";
       notifyListeners();
     }
   }
+
+  Future<void> updateExplanation(String word, String newExplanation) async {
+    _explanation = newExplanation;
+    await _aiExplanationDao.updateAiExplanation(
+        AiExplanation(word: word, explanation: newExplanation));
+    notifyListeners();
+  }
 }

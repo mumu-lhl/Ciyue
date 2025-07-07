@@ -14,8 +14,10 @@ import "package:ciyue/ui/pages/settings/other.dart";
 import "package:ciyue/ui/pages/settings/privacy_policy.dart";
 import "package:ciyue/ui/pages/settings/terms_of_service.dart";
 import "package:ciyue/ui/pages/settings/update.dart";
+import "package:ciyue/ui/pages/core/ai_explanation_edit_page.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:ciyue/viewModels/ai_explanation.dart";
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -35,6 +37,21 @@ final router = GoRouter(
         return slideTransitionPageBuilder(
           key: state.pageKey,
           child: WordDisplay(word: extra["word"]!),
+        );
+      },
+    ),
+    GoRoute(
+      path: "/edit_ai_explanation",
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return slideTransitionPageBuilder(
+          key: state.pageKey,
+          child: AIExplanationEditPage(
+            word: extra["word"]! as String,
+            initialExplanation: extra["initialExplanation"]! as String,
+            aiExplanationModel:
+                extra["aiExplanationModel"] as AIExplanationModel,
+          ),
         );
       },
     ),
