@@ -59,10 +59,9 @@ class AIExplainView extends StatelessWidget {
 
 class Button extends StatefulWidget {
   final String word;
-  final bool showAIExplainRefreshButton;
+  final bool showAIButtons;
 
-  const Button(
-      {super.key, required this.word, this.showAIExplainRefreshButton = false});
+  const Button({super.key, required this.word, this.showAIButtons = false});
 
   @override
   State<Button> createState() => _ButtonState();
@@ -109,14 +108,20 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       } else {
         try {
           final result = await dictManager.dicts[dictId]!.db.readResource(path);
-          final info = RecordOffsetInfo(result.key, result.blockOffset,
-              result.startOffset, result.endOffset, result.compressedSize);
+          final info = RecordOffsetInfo(
+            result.key,
+            result.blockOffset,
+            result.startOffset,
+            result.endOffset,
+            result.compressedSize,
+          );
           data = await dictManager.dicts[dictId]!.readerResource!
               .readOneMdd(info) as Uint8List;
         } catch (e) {
           // Find resource under directory if resource is not in mdd
-          final file =
-              File("${dirname(dictManager.dicts[dictId]!.path)}/$path");
+          final file = File(
+            "${dirname(dictManager.dicts[dictId]!.path)}/$path",
+          );
           data = await file.readAsBytes();
         }
       }
@@ -131,8 +136,11 @@ class WebviewAndroid extends StatelessWidget {
   final String content;
   final int dictId;
 
-  const WebviewAndroid(
-      {super.key, required this.content, required this.dictId});
+  const WebviewAndroid({
+    super.key,
+    required this.content,
+    required this.dictId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -142,9 +150,10 @@ class WebviewAndroid extends StatelessWidget {
       resourceCustomSchemes: ["entry"],
       transparentBackground: true,
       webViewAssetLoader: WebViewAssetLoader(
-          domain: "ciyue.internal",
-          httpAllowed: true,
-          pathHandlers: [LocalResourcesPathHandler(path: "/", dictId: dictId)]),
+        domain: "ciyue.internal",
+        httpAllowed: true,
+        pathHandlers: [LocalResourcesPathHandler(path: "/", dictId: dictId)],
+      ),
     );
 
     InAppWebViewController? webViewController;
@@ -156,28 +165,33 @@ class WebviewAndroid extends StatelessWidget {
       settings: ContextMenuSettings(hideDefaultSystemContextMenuItems: true),
       menuItems: [
         ContextMenuItem(
-            id: 1,
-            title: locale.copy,
-            action: () async {
-              await webViewController!.clearFocus();
-              Clipboard.setData(ClipboardData(text: selectedText));
-            }),
+          id: 1,
+          title: locale.copy,
+          action: () async {
+            await webViewController!.clearFocus();
+            Clipboard.setData(ClipboardData(text: selectedText));
+          },
+        ),
         ContextMenuItem(
-            id: 2,
-            title: locale.lookup,
-            action: () async {
-              context.push("/word", extra: {"word": selectedText});
-            }),
+          id: 2,
+          title: locale.lookup,
+          action: () async {
+            context.push("/word", extra: {"word": selectedText});
+          },
+        ),
         ContextMenuItem(
-            id: 3,
-            title: locale.readLoudly,
-            action: () async {
-              await webViewController!.clearFocus();
-              if (context.mounted) {
-                await playSoundOfWord(
-                    selectedText, context.read<AudioModel>().mddAudioList);
-              }
-            })
+          id: 3,
+          title: locale.readLoudly,
+          action: () async {
+            await webViewController!.clearFocus();
+            if (context.mounted) {
+              await playSoundOfWord(
+                selectedText,
+                context.read<AudioModel>().mddAudioList,
+              );
+            }
+          },
+        ),
       ],
       onCreateContextMenu: (hitTestResult) async {
         selectedText = await webViewController?.getSelectedText() ?? "";
@@ -186,17 +200,25 @@ class WebviewAndroid extends StatelessWidget {
 
     return InAppWebView(
       initialData: InAppWebViewInitialData(
-          data: content, baseUrl: WebUri("http://ciyue.internal/")),
+        data: content,
+        baseUrl: WebUri("http://ciyue.internal/"),
+      ),
       initialSettings: settings,
       contextMenu: contextMenu,
       shouldOverrideUrlLoading: (controller, navigationAction) async {
         final url = navigationAction.request.url;
         if (url!.scheme == "entry") {
           final word = await dictManager.dicts[dictId]!.db.getOffset(
-              Uri.decodeFull(url.toString().replaceFirst("entry://", "")));
+            Uri.decodeFull(url.toString().replaceFirst("entry://", "")),
+          );
 
-          final info = RecordOffsetInfo(word.key, word.blockOffset,
-              word.startOffset, word.endOffset, word.compressedSize);
+          final info = RecordOffsetInfo(
+            word.key,
+            word.blockOffset,
+            word.startOffset,
+            word.endOffset,
+            word.compressedSize,
+          );
           final data = await dictManager.dicts[dictId]!.reader.readOneMdx(info);
 
           if (context.mounted) {
@@ -211,12 +233,14 @@ class WebviewAndroid extends StatelessWidget {
       },
       onPageCommitVisible: (controller, url) async {
         if (dictManager.dicts[dictId]!.fontName != null) {
-          await controller.evaluateJavascript(source: """
+          await controller.evaluateJavascript(
+            source: """
 const font = new FontFace('Custom Font', 'url(/${dictManager.dicts[dictId]!.fontName})');
 font.load();
 document.fonts.add(font);
 document.body.style.fontFamily = 'Custom Font';
-          """);
+          """,
+          );
         }
       },
     );
@@ -236,30 +260,36 @@ class WebviewDisplayDescription extends StatelessWidget {
       html = HtmlUnescape().convert(html);
 
       return Scaffold(
-          appBar: AppBar(leading: BackButton(
+        appBar: AppBar(
+          leading: BackButton(
             onPressed: () {
               context.pop();
             },
-          )),
-          body: WebviewAndroid(content: html, dictId: dictId));
+          ),
+        ),
+        body: WebviewAndroid(content: html, dictId: dictId),
+      );
     } else {
       final html = getDescriptionFromInactiveDict();
       return FutureBuilder(
-          future: html,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return Scaffold(
-                  appBar: AppBar(leading: BackButton(
-                    onPressed: () {
-                      context.pop();
-                    },
-                  )),
-                  body:
-                      WebviewAndroid(content: snapshot.data!, dictId: dictId));
-            } else {
-              return const Center(child: CircularProgressIndicator());
-            }
-          });
+        future: html,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Scaffold(
+              appBar: AppBar(
+                leading: BackButton(
+                  onPressed: () {
+                    context.pop();
+                  },
+                ),
+              ),
+              body: WebviewAndroid(content: snapshot.data!, dictId: dictId),
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
+      );
     }
   }
 
@@ -276,32 +306,44 @@ class WebviewWindows extends StatelessWidget {
   final String content;
   final int dictId;
 
-  const WebviewWindows(
-      {super.key, required this.content, required this.dictId});
+  const WebviewWindows({
+    super.key,
+    required this.content,
+    required this.dictId,
+  });
 
   @override
   Widget build(BuildContext context) {
     final port = dictManager.dicts[dictId]!.port;
     final url = "http://localhost:$port/";
 
-    final Uint8List postData =
-        Uint8List.fromList(utf8.encode(json.encode({"content": content})));
+    final Uint8List postData = Uint8List.fromList(
+      utf8.encode(json.encode({"content": content})),
+    );
     return FutureBuilder(
-        future: WebViewEnvironment.create(
-            settings: WebViewEnvironmentSettings(
-                userDataFolder: windowsWebview2Directory)),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return InAppWebView(
-              webViewEnvironment: snapshot.data,
-              initialUrlRequest:
-                  URLRequest(url: WebUri(url), method: "POST", body: postData),
-              initialData:
-                  InAppWebViewInitialData(data: content, baseUrl: WebUri(url)),
-            );
-          }
-          return const Center(child: CircularProgressIndicator());
-        });
+      future: WebViewEnvironment.create(
+        settings: WebViewEnvironmentSettings(
+          userDataFolder: windowsWebview2Directory,
+        ),
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return InAppWebView(
+            webViewEnvironment: snapshot.data,
+            initialUrlRequest: URLRequest(
+              url: WebUri(url),
+              method: "POST",
+              body: postData,
+            ),
+            initialData: InAppWebViewInitialData(
+              data: content,
+              baseUrl: WebUri(url),
+            ),
+          );
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
   }
 }
 
@@ -313,80 +355,87 @@ class WordDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: validDictionaryIds(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const SizedBox.shrink();
-          }
+      future: validDictionaryIds(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
 
-          if (snapshot.data!.isNotEmpty || settings.aiExplainWord) {
-            final dictsLength = settings.aiExplainWord
-                ? snapshot.data!.length + 1
-                : snapshot.data!.length;
-            final showTab = dictsLength > 1;
+        if (snapshot.data!.isNotEmpty || settings.aiExplainWord) {
+          final dictsLength = settings.aiExplainWord
+              ? snapshot.data!.length + 1
+              : snapshot.data!.length;
+          final showTab = dictsLength > 1;
 
-            if (showTab) {
-              return ChangeNotifierProvider(
-                create: (_) => AIExplanationModel(),
-                child: DefaultTabController(
-                    initialIndex: 0,
-                    length: dictsLength,
-                    child: Builder(builder: (context) {
-                      final tabController = DefaultTabController.of(context);
-                      return Scaffold(
-                        appBar: buildAppBar(context, showTab),
-                        floatingActionButton: ListenableBuilder(
-                          listenable: tabController,
-                          builder: (context, child) {
-                            final isAIExplainTabSelected =
-                                settings.aiExplainWord &&
-                                    tabController.index == 0;
-                            return Button(
-                              word: word,
-                              showAIExplainRefreshButton:
-                                  isAIExplainTabSelected,
-                            );
-                          },
-                        ),
-                        body: Column(
-                          children: [
-                            Expanded(
-                              child: buildTabView(context,
-                                  validDictIds: snapshot.data!),
+          if (showTab) {
+            return ChangeNotifierProvider(
+              create: (_) => AIExplanationModel(),
+              child: DefaultTabController(
+                initialIndex: 0,
+                length: dictsLength,
+                child: Builder(
+                  builder: (context) {
+                    final tabController = DefaultTabController.of(context);
+                    return Scaffold(
+                      appBar: buildAppBar(context, showTab),
+                      floatingActionButton: ListenableBuilder(
+                        listenable: tabController,
+                        builder: (context, child) {
+                          final isAIExplainTabSelected =
+                              settings.aiExplainWord &&
+                                  tabController.index == 0;
+                          return Button(
+                            word: word,
+                            showAIButtons: isAIExplainTabSelected,
+                          );
+                        },
+                      ),
+                      body: Column(
+                        children: [
+                          Expanded(
+                            child: buildTabView(
+                              context,
+                              validDictIds: snapshot.data!,
                             ),
-                            if (settings.tabBarPosition ==
-                                    TabBarPosition.bottom &&
-                                showTab)
-                              buildTabBar(context),
-                          ],
-                        ),
-                      );
-                    })),
-              );
-            } else {
-              return ChangeNotifierProvider(
-                create: (_) => AIExplanationModel(),
-                child: Scaffold(
-                    appBar: AppBar(
-                      title: settings.showSearchBarInWordDisplay
-                          ? WordSearchBarWithSuggestions(
-                              word: word,
-                              controller: SearchController(),
-                            )
-                          : null,
-                    ),
-                    floatingActionButton: Button(
-                        word: word,
-                        showAIExplainRefreshButton: settings.aiExplainWord),
-                    body: settings.aiExplainWord
-                        ? AIExplainView(word: word)
-                        : buildWebView(snapshot.data![0])),
-              );
-            }
+                          ),
+                          if (settings.tabBarPosition ==
+                                  TabBarPosition.bottom &&
+                              showTab)
+                            buildTabBar(context),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
           } else {
-            final fromProcessText = !context.canPop();
-            return Scaffold(
-              appBar: AppBar(leading: BackButton(
+            return ChangeNotifierProvider(
+              create: (_) => AIExplanationModel(),
+              child: Scaffold(
+                appBar: AppBar(
+                  title: settings.showSearchBarInWordDisplay
+                      ? WordSearchBarWithSuggestions(
+                          word: word,
+                          controller: SearchController(),
+                        )
+                      : null,
+                ),
+                floatingActionButton: Button(
+                  word: word,
+                  showAIButtons: settings.aiExplainWord,
+                ),
+                body: settings.aiExplainWord
+                    ? AIExplainView(word: word)
+                    : buildWebView(snapshot.data![0]),
+              ),
+            );
+          }
+        } else {
+          final fromProcessText = !context.canPop();
+          return Scaffold(
+            appBar: AppBar(
+              leading: BackButton(
                 onPressed: () {
                   if (context.canPop()) {
                     context.pop();
@@ -395,20 +444,25 @@ class WordDisplay extends StatelessWidget {
                     SystemNavigator.pop();
                   }
                 },
-              )),
-              body: Center(
-                  child: Column(
+              ),
+            ),
+            body: Center(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(AppLocalizations.of(context)!.notFound,
-                      style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    AppLocalizations.of(context)!.notFound,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   Visibility(
                     visible: fromProcessText,
                     child: TextButton(
                       onPressed: () {
                         context.go("/");
-                        final model =
-                            Provider.of<HomeModel>(context, listen: false);
+                        final model = Provider.of<HomeModel>(
+                          context,
+                          listen: false,
+                        );
                         model.searchWord = word;
                         model.focusSearchBar();
                       },
@@ -416,89 +470,100 @@ class WordDisplay extends StatelessWidget {
                     ),
                   ),
                 ],
-              )),
-            );
-          }
-        });
+              ),
+            ),
+          );
+        }
+      },
+    );
   }
 
   AppBar buildAppBar(BuildContext context, bool showTab) {
     return AppBar(
-        leading: BackButton(
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              // When opened from context menu
-              SystemNavigator.pop();
-            }
-          },
-        ),
-        title: settings.showSearchBarInWordDisplay
-            ? WordSearchBarWithSuggestions(
-                word: word,
-                controller: SearchController(),
-              )
-            : null,
-        bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
-            ? buildTabBar(context)
-            : null);
+      leading: BackButton(
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            // When opened from context menu
+            SystemNavigator.pop();
+          }
+        },
+      ),
+      title: settings.showSearchBarInWordDisplay
+          ? WordSearchBarWithSuggestions(
+              word: word,
+              controller: SearchController(),
+            )
+          : null,
+      bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
+          ? buildTabBar(context)
+          : null,
+    );
   }
 
   PreferredSizeWidget buildTabBar(BuildContext context) {
     return PreferredSize(
-        preferredSize: const Size.fromHeight(48),
-        child: FutureBuilder(
-            future: Future.wait([
-              for (final id in dictManager.dictIds)
-                dictManager.dicts[id]!.db.wordExist(word)
-            ]),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return TabBar(
-                    isScrollable: true,
-                    tabAlignment: TabAlignment.center,
-                    tabs: [
-                      if (settings.aiExplainWord) Tab(text: "AI"),
-                      for (int i = 0; i < snapshot.data!.length; i++)
-                        if (snapshot.data![i])
-                          Tab(
-                              text: dictManager
-                                  .dicts[dictManager.dictIds[i]]!.title)
-                    ]);
-              } else {
-                return const SizedBox.shrink();
-              }
-            }));
+      preferredSize: const Size.fromHeight(48),
+      child: FutureBuilder(
+        future: Future.wait([
+          for (final id in dictManager.dictIds)
+            dictManager.dicts[id]!.db.wordExist(word),
+        ]),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return TabBar(
+              isScrollable: true,
+              tabAlignment: TabAlignment.center,
+              tabs: [
+                if (settings.aiExplainWord) Tab(text: "AI"),
+                for (int i = 0; i < snapshot.data!.length; i++)
+                  if (snapshot.data![i])
+                    Tab(text: dictManager.dicts[dictManager.dictIds[i]]!.title),
+              ],
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
+        },
+      ),
+    );
   }
 
-  Widget buildTabView(BuildContext context,
-      {List<int> validDictIds = const []}) {
-    return TabBarView(physics: const NeverScrollableScrollPhysics(), children: [
-      if (settings.aiExplainWord)
-        AIExplainView(
+  Widget buildTabView(
+    BuildContext context, {
+    List<int> validDictIds = const [],
+  }) {
+    return TabBarView(
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        if (settings.aiExplainWord)
+          AIExplainView(
             word: word,
-            key: ValueKey(context.watch<AIExplanationModel>().refreshKey)),
-      for (final id in validDictIds) buildWebView(id)
-    ]);
+            key: ValueKey(context.watch<AIExplanationModel>().refreshKey),
+          ),
+        for (final id in validDictIds) buildWebView(id),
+      ],
+    );
   }
 
   Widget buildWebView(int id) {
     return FutureBuilder(
-        future: dictManager.dicts[id]!.readWord(word),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            if (Platform.isAndroid) {
-              return WebviewAndroid(content: snapshot.data!, dictId: id);
-            } else if (Platform.isWindows) {
-              return WebviewWindows(content: snapshot.data!, dictId: id);
-            } else {
-              return FakeWebViewByAI(html: snapshot.data!);
-            }
+      future: dictManager.dicts[id]!.readWord(word),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          if (Platform.isAndroid) {
+            return WebviewAndroid(content: snapshot.data!, dictId: id);
+          } else if (Platform.isWindows) {
+            return WebviewWindows(content: snapshot.data!, dictId: id);
           } else {
-            return const SizedBox.shrink();
+            return FakeWebViewByAI(html: snapshot.data!);
           }
-        });
+        } else {
+          return const SizedBox.shrink();
+        }
+      },
+    );
   }
 
   Future<List<int>> validDictionaryIds() async {
@@ -527,8 +592,16 @@ class _ButtonState extends State<Button> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (widget.showAIExplainRefreshButton)
-          RefreshAIExplainButton(word: widget.word),
+        if (widget.showAIButtons) RefreshAIExplainButton(word: widget.word),
+        if (widget.showAIButtons)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: EditAIExplainButton(
+              word: widget.word,
+              initialExplanation:
+                  context.watch<AIExplanationModel>().explanation ?? "",
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: buildReadLoudlyButton(context, widget.word),
@@ -559,111 +632,110 @@ class _ButtonState extends State<Button> {
     final locale = AppLocalizations.of(context)!;
 
     return FutureBuilder(
-        future: stared,
-        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-          if (!snapshot.hasData) {
-            return FloatingActionButton.small(
-              foregroundColor: colorScheme.primary,
-              backgroundColor: colorScheme.surface,
-              child: const Icon(Icons.star_outline),
-              onPressed: () {},
-            );
-          }
-
+      future: stared,
+      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+        if (!snapshot.hasData) {
           return FloatingActionButton.small(
             foregroundColor: colorScheme.primary,
-            backgroundColor: colorScheme.primaryContainer,
-            child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),
-            onPressed: () async {
-              Future<void> star() async {
-                if (snapshot.data!) {
-                  await wordbookDao.removeWord(widget.word);
-                } else {
-                  await wordbookDao.addWord(widget.word);
-                }
-
-                await autoExport();
-                if (context.mounted) {
-                  context.read<WordbookModel>().updateWordList();
-                }
-                checkStared();
-              }
-
-              if (wordbookTagsDao.tagExist) {
-                final tagsOfWord = await wordbookDao.tagsOfWord(widget.word),
-                    tags = await wordbookTagsDao.getAllTags();
-
-                final toAdd = <int>[], toDel = <int>[];
-
-                if (!context.mounted) return;
-
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text(locale.tags),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TagsList(
-                              tags: tags,
-                              tagsOfWord: tagsOfWord,
-                              toAdd: toAdd,
-                              toDel: toDel,
-                            ),
-                          ],
-                        ),
-                        actions: [
-                          TextButton(
-                            child: Text(locale.remove),
-                            onPressed: () async {
-                              await wordbookDao
-                                  .removeWordWithAllTags(widget.word);
-
-                              if (context.mounted) context.pop();
-
-                              await autoExport();
-                              if (context.mounted) {
-                                context.read<WordbookModel>().updateWordList();
-                              }
-                              checkStared();
-                            },
-                          ),
-                          TextButton(
-                            child: Text(locale.confirm),
-                            onPressed: () async {
-                              if (!snapshot.data!) {
-                                await wordbookDao.addWord(widget.word);
-                              }
-
-                              for (final tag in toAdd) {
-                                await wordbookDao.addWord(widget.word,
-                                    tag: tag);
-                              }
-
-                              for (final tag in toDel) {
-                                await wordbookDao.removeWord(widget.word,
-                                    tag: tag);
-                              }
-
-                              if (context.mounted) context.pop();
-
-                              await autoExport();
-                              if (context.mounted) {
-                                context.read<WordbookModel>().updateWordList();
-                              }
-                              checkStared();
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              } else {
-                await star();
-              }
-            },
+            backgroundColor: colorScheme.surface,
+            child: const Icon(Icons.star_outline),
+            onPressed: () {},
           );
-        });
+        }
+
+        return FloatingActionButton.small(
+          foregroundColor: colorScheme.primary,
+          backgroundColor: colorScheme.primaryContainer,
+          child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),
+          onPressed: () async {
+            Future<void> star() async {
+              if (snapshot.data!) {
+                await wordbookDao.removeWord(widget.word);
+              } else {
+                await wordbookDao.addWord(widget.word);
+              }
+
+              await autoExport();
+              if (context.mounted) {
+                context.read<WordbookModel>().updateWordList();
+              }
+              checkStared();
+            }
+
+            if (wordbookTagsDao.tagExist) {
+              final tagsOfWord = await wordbookDao.tagsOfWord(widget.word),
+                  tags = await wordbookTagsDao.getAllTags();
+
+              final toAdd = <int>[], toDel = <int>[];
+
+              if (!context.mounted) return;
+
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text(locale.tags),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TagsList(
+                          tags: tags,
+                          tagsOfWord: tagsOfWord,
+                          toAdd: toAdd,
+                          toDel: toDel,
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        child: Text(locale.remove),
+                        onPressed: () async {
+                          await wordbookDao.removeWordWithAllTags(widget.word);
+
+                          if (context.mounted) context.pop();
+
+                          await autoExport();
+                          if (context.mounted) {
+                            context.read<WordbookModel>().updateWordList();
+                          }
+                          checkStared();
+                        },
+                      ),
+                      TextButton(
+                        child: Text(locale.confirm),
+                        onPressed: () async {
+                          if (!snapshot.data!) {
+                            await wordbookDao.addWord(widget.word);
+                          }
+
+                          for (final tag in toAdd) {
+                            await wordbookDao.addWord(widget.word, tag: tag);
+                          }
+
+                          for (final tag in toDel) {
+                            await wordbookDao.removeWord(widget.word, tag: tag);
+                          }
+
+                          if (context.mounted) context.pop();
+
+                          await autoExport();
+                          if (context.mounted) {
+                            context.read<WordbookModel>().updateWordList();
+                          }
+                          checkStared();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            } else {
+              await star();
+            }
+          },
+        );
+      },
+    );
   }
 
   void checkStared() {
@@ -698,6 +770,38 @@ class RefreshAIExplainButton extends StatelessWidget {
       child: const Icon(Icons.refresh),
       onPressed: () {
         context.read<AIExplanationModel>().refreshExplanation(word);
+      },
+    );
+  }
+}
+
+class EditAIExplainButton extends StatelessWidget {
+  final String word;
+  final String initialExplanation;
+
+  const EditAIExplainButton({
+    super.key,
+    required this.word,
+    required this.initialExplanation,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return FloatingActionButton.small(
+      foregroundColor: colorScheme.primary,
+      backgroundColor: colorScheme.primaryContainer,
+      child: const Icon(Icons.edit),
+      onPressed: () {
+        context.push(
+          "/edit_ai_explanation",
+          extra: {
+            "word": word,
+            "initialExplanation": initialExplanation,
+            "aiExplanationModel": context.read<AIExplanationModel>(),
+          },
+        );
       },
     );
   }

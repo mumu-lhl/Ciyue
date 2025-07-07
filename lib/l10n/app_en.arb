@@ -263,5 +263,11 @@
   "enableHistory": "Enable History",
   "@enableHistory": {},
   "changelog": "Changelog",
-  "@changelog": {}
+  "@changelog": {},
+  "editAIExplanation": "Edit AI Explanation",
+  "@editAIExplanation": {},
+  "enterAIExplanation": "Enter AI Explanation",
+  "@enterAIExplanation": {},
+  "save": "Save",
+  "@save": {}
 }
