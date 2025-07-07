@@ -55,10 +55,6 @@ class AIExplanationModel extends ChangeNotifier {
   }
 
   Future<void> _fetchFromAI(String word, {bool forceRefresh = false}) async {
-    if (forceRefresh) {
-      _refreshKey++;
-    }
-
     final targetLanguage = settings.language! == "system"
         ? ui.PlatformDispatcher.instance.locale.languageCode
         : settings.language!;
@@ -92,6 +88,11 @@ NO OTHER WORD LIKE 'OK, here is...'""";
       _explanation = "Error: ${e.toString()}";
     } finally {
       _isLoading = false;
+
+      if (forceRefresh) {
+        _refreshKey++;
+      }
+
       notifyListeners();
     }
   }
