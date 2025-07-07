@@ -540,7 +540,8 @@ class WordDisplay extends StatelessWidget {
         if (settings.aiExplainWord)
           AIExplainView(
             word: word,
-            key: ValueKey(context.watch<AIExplanationModel>().refreshKey),
+            key: ValueKey(context
+                .select<AIExplanationModel, int>((model) => model.refreshKey)),
           ),
         for (final id in validDictIds) buildWebView(id),
       ],
