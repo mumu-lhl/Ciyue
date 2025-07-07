@@ -65,7 +65,8 @@ class _Settings {
     showSearchBarInWordDisplay =
         prefs.getBool("showSearchBarInWordDisplay") ?? true;
 
-    final dictionarySwitchStyleString = prefs.getString("dictionarySwitchStyle");
+    final dictionarySwitchStyleString =
+        prefs.getString("dictionarySwitchStyle");
     if (dictionarySwitchStyleString == null) {
       dictionarySwitchStyle = DictionarySwitchStyle.expansion;
     } else {
