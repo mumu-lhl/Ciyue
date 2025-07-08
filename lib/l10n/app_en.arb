@@ -295,5 +295,13 @@
   "back": "Back",
   "@back": {},
   "dictionaryFileNotFound": "Dictionary file not found. Removing from database.",
-  "@dictionaryFileNotFound": {}
+  "@dictionaryFileNotFound": {},
+  "confirmDeleteWords": "Are you sure you want to delete the selected {count} words?",
+  "@confirmDeleteWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
