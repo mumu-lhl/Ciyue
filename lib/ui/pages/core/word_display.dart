@@ -2,7 +2,6 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
-import "package:ciyue/ui/pages/main/wordbook.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/services/backup.dart";
 import "package:ciyue/repositories/dictionary.dart";
@@ -14,6 +13,7 @@ import "package:ciyue/ui/pages/core/ai_markdown.dart";
 import "package:ciyue/ui/pages/core/search_bar.dart";
 import "package:ciyue/ui/pages/core/tags_list.dart";
 import "package:ciyue/viewModels/ai_explanation.dart";
+import "package:ciyue/viewModels/wordbook.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";

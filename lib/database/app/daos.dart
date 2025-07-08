@@ -214,6 +214,23 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
   }
 
+  Future<void> removeWords(List<WordbookData> words) async {
+    await batch((batch) {
+      for (final wordData in words) {
+        if (wordData.tag == null) {
+          batch.deleteWhere(wordbook,
+              (row) => row.word.isValue(wordData.word) & row.tag.isNull());
+        } else {
+          batch.deleteWhere(
+              wordbook,
+              (row) =>
+                  row.word.isValue(wordData.word) &
+                  row.tag.isValue(wordData.tag!));
+        }
+      }
+    });
+  }
+
   Future<List<int>> tagsOfWord(String word) {
     return (select(wordbook)
           ..where((t) => t.word.isValue(word) & t.tag.isNotNull()))

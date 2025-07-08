@@ -4,6 +4,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/core/date_divider.dart";
 import "package:ciyue/ui/pages/core/text_buttons.dart";
+import "package:ciyue/viewModels/wordbook.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
@@ -35,44 +36,6 @@ class TagListDialog extends StatefulWidget {
 
   @override
   State<TagListDialog> createState() => _TagListDialogState();
-}
-
-class WordbookModel extends ChangeNotifier {
-  late Future<List<WordbookData>> allWords;
-  late Future<List<WordbookTag>> tags;
-  DateTime? selectedDate;
-  int? selectedTag;
-
-  void updateSelectedDate(DateTime? date) {
-    selectedDate = date;
-    notifyListeners();
-  }
-
-  void updateSelectedTag(int? tag) {
-    selectedTag = tag;
-    notifyListeners();
-  }
-
-  void updateTags() {
-    tags = wordbookTagsDao.getAllTags();
-    notifyListeners();
-  }
-
-  void updateWordList() {
-    if (selectedDate != null) {
-      allWords = wordbookDao.getWordsByYearMonth(
-        selectedDate!.year,
-        selectedDate!.month,
-        tag: selectedTag,
-      );
-    } else {
-      allWords = wordbookDao.getAllWordsWithTag(
-        tag: selectedTag,
-        skipTagged: selectedTag == null && settings.skipTaggedWord,
-      );
-    }
-    notifyListeners();
-  }
 }
 
 class WordBookScreen extends StatefulWidget {
@@ -113,14 +76,46 @@ class WordView extends StatelessWidget {
                 ));
               }
 
-              list.add(ListTile(
-                title: Text(data.word),
-                onTap: () async {
-                  if (context.mounted) {
-                    context.push("/word", extra: {"word": data.word});
-                  }
-                },
-              ));
+              list.add(
+                Selector<WordbookModel, (bool, bool)>(
+                  selector: (context, model) => (
+                    model.isMultiSelectMode,
+                    model.selectedWords.contains(data)
+                  ),
+                  builder: (context, value, child) {
+                    final isMultiSelectMode = value.$1;
+                    final isSelected = value.$2;
+                    final model = context.read<WordbookModel>();
+
+                    return ListTile(
+                      leading: isMultiSelectMode
+                          ? Checkbox(
+                              value: isSelected,
+                              onChanged: (value) {
+                                model.selectWord(data);
+                              },
+                            )
+                          : null,
+                      title: Text(data.word),
+                      onLongPress: () {
+                        if (!isMultiSelectMode) {
+                          model.toggleMultiSelectMode();
+                          model.selectWord(data);
+                        }
+                      },
+                      onTap: () async {
+                        if (isMultiSelectMode) {
+                          model.selectWord(data);
+                        } else {
+                          if (context.mounted) {
+                            context.push("/word", extra: {"word": data.word});
+                          }
+                        }
+                      },
+                    );
+                  },
+                ),
+              );
             }
           }
 
@@ -427,32 +422,94 @@ class _WordBookScreenState extends State<WordBookScreen> {
         });
   }
 
+  Future<void> _showDeleteConfirmationDialog(WordbookModel model) async {
+    final count = model.selectedWords.length;
+    final locale = AppLocalizations.of(context)!;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(locale.confirmDelete),
+        content: Text(locale.confirmDeleteWords(count)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(locale.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(locale.delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await model.deleteSelectedWords();
+    }
+  }
+
   AppBar buildAppBar(BuildContext context) {
+    final model = context.read<WordbookModel>();
+
     return AppBar(
       actions: [
-        IconButton(
-          icon: Icon(Icons.label_outline),
-          onPressed: () async {
-            final tags = await context.read<WordbookModel>().tags;
+        Selector<WordbookModel, (bool, bool)>(
+          selector: (context, model) =>
+              (model.isMultiSelectMode, model.selectedWords.isEmpty),
+          builder: (context, value, child) {
+            final isMultiSelectMode = value.$1;
+            final isSelectedWordsEmpty = value.$2;
 
-            if (!context.mounted) return;
-
-            if (tags.isEmpty) {
-              await buildAddTag(context);
+            if (isMultiSelectMode) {
+              return Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      model.toggleMultiSelectMode();
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: isSelectedWordsEmpty
+                        ? null
+                        : () {
+                            _showDeleteConfirmationDialog(model);
+                          },
+                  ),
+                ],
+              );
             } else {
-              await buildTagsList(context, tags);
+              return Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.label_outline),
+                    onPressed: () async {
+                      final tags = await model.tags;
+
+                      if (!context.mounted) return;
+
+                      if (tags.isEmpty) {
+                        await buildAddTag(context);
+                      } else {
+                        await buildTagsList(context, tags);
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () async {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return const MoreOptionsDialog();
+                        },
+                      );
+                    },
+                  ),
+                ],
+              );
             }
-          },
-        ),
-        IconButton(
-          icon: Icon(Icons.more_vert),
-          onPressed: () async {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return const MoreOptionsDialog();
-              },
-            );
           },
         ),
       ],
@@ -513,51 +570,55 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Consumer<WordbookModel>(builder: (context, model, child) {
-          return FutureBuilder(
-            future: model.tags,
-            builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                final choiceChips = <Widget>[];
-                final tagsMap = <int, WordbookTag>{};
-                for (final tag in snapshot.data!) {
-                  tagsMap[tag.id] = tag;
+        Selector<WordbookModel, (Future<List<WordbookTag>>, int?)>(
+          selector: (context, model) => (model.tags, model.selectedTag),
+          builder: (context, value, child) {
+            final tagsFuture = value.$1;
+            final selectedTag = value.$2;
+            final model = context.read<WordbookModel>();
+
+            return FutureBuilder(
+              future: tagsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                  final choiceChips = <Widget>[];
+                  final tagsMap = <int, WordbookTag>{};
+                  for (final tag in snapshot.data!) {
+                    tagsMap[tag.id] = tag;
+                  }
+
+                  for (final tagId in wordbookTagsDao.tagsOrder) {
+                    final tag = tagsMap[tagId];
+                    if (tag == null) continue;
+
+                    choiceChips.add(ChoiceChip(
+                      label: Text(tag.tag),
+                      selected: selectedTag == tag.id,
+                      onSelected: (selected) {
+                        model.updateSelectedTag(selected ? tag.id : null);
+                        model.updateWordList();
+                      },
+                    ));
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 16.0),
+                    child: Wrap(
+                        spacing: 8.0, runSpacing: 4.0, children: choiceChips),
+                  );
                 }
 
-                for (final tagId in wordbookTagsDao.tagsOrder) {
-                  final tag = tagsMap[tagId];
-                  if (tag == null) continue;
-
-                  choiceChips.add(ChoiceChip(
-                    label: Text(tag.tag),
-                    selected:
-                        context.read<WordbookModel>().selectedTag == tag.id,
-                    onSelected: (selected) {
-                      setState(() {
-                        final wordbookModel = context.read<WordbookModel>();
-                        wordbookModel
-                            .updateSelectedTag(selected ? tag.id : null);
-                        wordbookModel.updateWordList();
-                      });
-                    },
-                  ));
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.only(left: 16.0),
-                  child: Wrap(
-                      spacing: 8.0, runSpacing: 4.0, children: choiceChips),
-                );
-              }
-
-              return Wrap();
-            },
-          );
-        }),
-        Consumer<WordbookModel>(
-            builder: (context, model, child) => WordView(
-                  allWords: model.allWords,
-                ))
+                return Wrap();
+              },
+            );
+          },
+        ),
+        Selector<WordbookModel, Future<List<WordbookData>>>(
+          selector: (context, model) => model.allWords,
+          builder: (context, allWords, child) => WordView(
+            allWords: allWords,
+          ),
+        )
       ],
     );
   }
