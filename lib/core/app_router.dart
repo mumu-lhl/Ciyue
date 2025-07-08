@@ -18,6 +18,9 @@ import "package:ciyue/ui/pages/core/ai_explanation_edit_page.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:ciyue/viewModels/ai_explanation.dart";
+import "package:ciyue/ui/pages/settings/storage_management.dart";
+import "package:ciyue/viewModels/storage_management.dart";
+import "package:provider/provider.dart";
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -150,6 +153,16 @@ final router = GoRouter(
         key: state.pageKey,
         child: SettingsDictionaryPage(
           dictId: int.parse(state.pathParameters["dictId"]!),
+        ),
+      ),
+    ),
+    GoRoute(
+      path: "/settings/storage_management",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: ChangeNotifierProvider(
+          create: (context) => StorageManagementViewModel(),
+          child: const StorageManagementPage(),
         ),
       ),
     ),

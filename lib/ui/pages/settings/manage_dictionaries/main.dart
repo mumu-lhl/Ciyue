@@ -72,6 +72,52 @@ class DictionaryCard extends StatelessWidget {
     required this.index,
   });
 
+  Future<bool> _checkAndDeleteDictionary(BuildContext context) async {
+    final mdxFile = File("${dictionary.path}.mdx");
+    if (!await mdxFile.exists()) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text(AppLocalizations.of(context)!.dictionaryFileNotFound)),
+        );
+      }
+
+      // Ensure it's removed from dictionaryListDao
+      await dictionaryListDao.remove(dictionary.path);
+
+      // Try to delete the associated dictionary database file
+      final databasePath = join((await databaseDirectory()).path,
+          "dictionary_${dictionary.id}.sqlite");
+      final dbFile = File(databasePath);
+      if (await dbFile.exists()) {
+        try {
+          await dbFile.delete();
+        } catch (e) {
+          logger.e("Failed to delete dictionary database file: $e");
+        }
+      }
+
+      // Remove from dictManager if it was loaded
+      if (dictManager.contain(dictionary.id)) {
+        await dictManager.close(dictionary.id);
+      }
+
+      // Update dictIds in the current group
+      final dictIds = [for (final dict in dictManager.dicts.values) dict.id];
+      dictManager.dictIds = dictIds;
+      await dictGroupDao.updateDictIds(dictManager.groupId, dictIds);
+
+      // Update UI
+      if (context.mounted) {
+        context.read<ManageDictionariesModel>().update();
+        context.read<DictManagerModel>().checkIsEmpty();
+      }
+      return true;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -94,7 +140,12 @@ class DictionaryCard extends StatelessWidget {
                   title: Text(title),
                   children: <Widget>[
                     SimpleDialogOption(
-                      onPressed: () {
+                      onPressed: () async {
+                        if (await _checkAndDeleteDictionary(context)) {
+                          if (context.mounted) context.pop();
+                          return;
+                        }
+                        if (!context.mounted) return;
                         context.pop();
                         context.push("/properties", extra: {
                           "path": dictionary.path,
@@ -108,7 +159,13 @@ class DictionaryCard extends StatelessWidget {
                     ),
                     SimpleDialogOption(
                       onPressed: () async {
-                        if (dictManager.contain(dictionary.id)) {
+                        if (await _checkAndDeleteDictionary(context)) {
+                          if (context.mounted) context.pop();
+                          return;
+                        }
+                        // Existing remove logic
+                        if (dictManager.contain(dictionary.id) &&
+                            context.mounted) {
                           final model = context.read<DictManagerModel>();
                           await model.close(dictionary.id);
 
@@ -124,6 +181,8 @@ class DictionaryCard extends StatelessWidget {
                         }
 
                         final tmpDict = Mdict(path: dictionary.path);
+                        // No need to init if file is already gone, _checkAndDeleteDictionary handles it.
+                        // If file exists, init will succeed.
                         await tmpDict.init();
                         await tmpDict.removeDictionary();
                         await tmpDict.close();
@@ -139,7 +198,12 @@ class DictionaryCard extends StatelessWidget {
                       ),
                     ),
                     SimpleDialogOption(
-                      onPressed: () {
+                      onPressed: () async {
+                        if (await _checkAndDeleteDictionary(context)) {
+                          if (context.mounted) context.pop();
+                          return;
+                        }
+                        if (!context.mounted) return;
                         context.pop();
                         context.push("/description/${dictionary.id}");
                       },
@@ -149,7 +213,12 @@ class DictionaryCard extends StatelessWidget {
                       ),
                     ),
                     SimpleDialogOption(
-                      onPressed: () {
+                      onPressed: () async {
+                        if (await _checkAndDeleteDictionary(context)) {
+                          if (context.mounted) context.pop();
+                          return;
+                        }
+                        if (!context.mounted) return;
                         context.pop();
                         context.push("/settings/dictionary/${dictionary.id}");
                       },
@@ -229,6 +298,11 @@ class DictionaryCard extends StatelessWidget {
                 child:
                     IconButton(icon: Icon(Icons.reorder), onPressed: () => {})),
             onChanged: (bool? value) async {
+              if (await _checkAndDeleteDictionary(context)) {
+                return;
+              }
+
+              if (!context.mounted) return;
               final model = context.read<DictManagerModel>();
 
               if (value == true) {

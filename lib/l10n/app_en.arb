@@ -275,5 +275,25 @@
   "expansion": "Expansion",
   "@expansion": {},
   "tag": "Tag",
-  "@tag": {}
+  "@tag": {},
+  "manageStorage": "Manage Storage",
+  "@manageStorage": {},
+  "confirmDelete": "Confirm Delete",
+  "@confirmDelete": {},
+  "confirmDeleteMessage": "Are you sure you want to delete '{name}'?",
+  "@confirmDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "Delete",
+  "@delete": {},
+  "cancel": "Cancel",
+  "@cancel": {},
+  "back": "Back",
+  "@back": {},
+  "dictionaryFileNotFound": "Dictionary file not found. Removing from database.",
+  "@dictionaryFileNotFound": {}
 }
