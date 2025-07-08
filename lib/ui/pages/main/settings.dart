@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/core/alpha_text.dart";
 import "package:flutter/material.dart";
@@ -123,6 +125,7 @@ class SettingsScreen extends StatelessWidget {
         const ManageDictionariesPageListTile(),
         const AiSettingsPageListTile(),
         const AudioSettingsPageListTile(),
+        if (Platform.isAndroid) const ManageStorageListTile(),
         const AppearanceSettingsPageListTile(),
         const HistoryPageListTile(),
         const BackupPageListTile(),
@@ -130,6 +133,21 @@ class SettingsScreen extends StatelessWidget {
         const OtherPageListTile(),
         const AboutPageListTile(),
       ],
+    );
+  }
+}
+
+class ManageStorageListTile extends StatelessWidget {
+  const ManageStorageListTile({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.sd_storage),
+      title: Text(AppLocalizations.of(context)!.manageStorage),
+      onTap: () => context.push("/settings/storage_management"),
     );
   }
 }
