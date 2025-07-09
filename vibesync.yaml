@@ -1,0 +1,14 @@
+# Vibe Sync Configuration
+
+version: 1
+
+sync_from: "Gemini"
+# sync_from:
+#   - custom: xxx/xxx/xxx
+
+sync_to:
+  - "Claude Code"
+  - "Cline"
+  - "Kilo Code"
+  - "Jules"
+  - "Roo Code"

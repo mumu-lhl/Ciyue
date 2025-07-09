@@ -46,11 +46,6 @@ app.*.map.json
 # Aider
 .aider*
 
-# AI
-memory-bank/
-.kilocode/
-.clinerules/
-
 # Generated files
 lib/src/generated/i18n/*
 
