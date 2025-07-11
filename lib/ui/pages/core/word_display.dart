@@ -813,12 +813,13 @@ class _ButtonState extends State<Button> {
                         onPressed: () async {
                           await wordbookDao.removeWordWithAllTags(widget.word);
 
-                          if (context.mounted) context.pop();
-
-                          await autoExport();
                           if (context.mounted) {
+                            context.pop();
                             context.read<WordbookModel>().updateWordList();
                           }
+
+                          await autoExport();
+
                           checkStared();
                         },
                       ),
@@ -837,12 +838,13 @@ class _ButtonState extends State<Button> {
                             await wordbookDao.removeWord(widget.word, tag: tag);
                           }
 
-                          if (context.mounted) context.pop();
-
-                          await autoExport();
                           if (context.mounted) {
+                            context.pop();
                             context.read<WordbookModel>().updateWordList();
                           }
+
+                          await autoExport();
+
                           checkStared();
                         },
                       ),
