@@ -7,6 +7,7 @@ import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/pages/core/search_bar.dart";
 import "package:ciyue/ui/pages/core/tags_list.dart";
+import "package:ciyue/viewModels/wordbook.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
@@ -54,7 +55,10 @@ class AddHistoryToWordbookDialog extends StatelessWidget {
           child: Text(AppLocalizations.of(context)!.remove),
           onPressed: () async {
             await wordbookDao.removeWordWithAllTags(item.word);
-            if (context.mounted) context.pop(true);
+            if (context.mounted) {
+              context.pop(true);
+              context.read<WordbookModel>().updateWordList();
+            }
           },
         ),
         TextButton(
@@ -72,7 +76,10 @@ class AddHistoryToWordbookDialog extends StatelessWidget {
               await wordbookDao.removeWord(item.word, tag: tag);
             }
 
-            if (context.mounted) context.pop(true);
+            if (context.mounted) {
+              context.pop(true);
+              context.read<WordbookModel>().updateWordList();
+            }
           },
         ),
       ],
@@ -107,36 +114,40 @@ class HistoryList extends StatelessWidget {
                       if (direction == DismissDirection.endToStart) {
                         return await buildRemoveHistoryConfirmDialog(
                             context, item, model);
-                      } else {
-                        if (wordbookTagsDao.tagExist) {
-                          final tagsOfWord =
-                                  await wordbookDao.tagsOfWord(item.word),
-                              tags = await wordbookTagsDao.getAllTags();
-                          final toAdd = <int>[], toDel = <int>[];
-
-                          if (!context.mounted) return false;
-
-                          await showDialog<bool>(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AddHistoryToWordbookDialog(
-                                  tags: tags,
-                                  tagsOfWord: tagsOfWord,
-                                  toAdd: toAdd,
-                                  toDel: toDel,
-                                  item: item);
-                            },
-                          );
-                          return false;
-                        } else {
-                          if (await wordbookDao.wordExist(item.word)) {
-                            await wordbookDao.removeWord(item.word);
-                          } else {
-                            await wordbookDao.addWord(item.word);
-                          }
-                          return false;
-                        }
                       }
+
+                      if (wordbookTagsDao.tagExist) {
+                        final tagsOfWord =
+                                await wordbookDao.tagsOfWord(item.word),
+                            tags = await wordbookTagsDao.getAllTags();
+                        final toAdd = <int>[], toDel = <int>[];
+
+                        if (!context.mounted) return false;
+
+                        await showDialog<bool>(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AddHistoryToWordbookDialog(
+                                tags: tags,
+                                tagsOfWord: tagsOfWord,
+                                toAdd: toAdd,
+                                toDel: toDel,
+                                item: item);
+                          },
+                        );
+                        return false;
+                      }
+
+                      if (await wordbookDao.wordExist(item.word)) {
+                        await wordbookDao.removeWord(item.word);
+                      } else {
+                        await wordbookDao.addWord(item.word);
+                      }
+                      if (context.mounted) {
+                        context.read<WordbookModel>().updateWordList();
+                      }
+
+                      return false;
                     },
                     background: Container(
                         color: Theme.of(context).colorScheme.primary,
