@@ -97,87 +97,89 @@ class HistoryList extends StatelessWidget {
     final locale = AppLocalizations.of(context);
     final future = historyDao.getAllHistory();
 
-    return FutureBuilder(
-        future: future,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final history = snapshot.data as List<HistoryData>;
-            if (history.isEmpty) {
-              return Center(child: Text(locale!.startToSearch));
-            }
-            return ListView(
-              children: [
-                for (final item in history)
-                  Dismissible(
-                    key: ValueKey(item.id),
-                    confirmDismiss: (direction) async {
-                      if (direction == DismissDirection.endToStart) {
-                        return await buildRemoveHistoryConfirmDialog(
-                            context, item, model);
-                      }
+    return Expanded(
+      child: FutureBuilder(
+          future: future,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final history = snapshot.data as List<HistoryData>;
+              if (history.isEmpty) {
+                return Center(child: Text(locale!.startToSearch));
+              }
+              return ListView(
+                children: [
+                  for (final item in history)
+                    Dismissible(
+                      key: ValueKey(item.id),
+                      confirmDismiss: (direction) async {
+                        if (direction == DismissDirection.endToStart) {
+                          return await buildRemoveHistoryConfirmDialog(
+                              context, item, model);
+                        }
 
-                      if (wordbookTagsDao.tagExist) {
-                        final tagsOfWord =
-                                await wordbookDao.tagsOfWord(item.word),
-                            tags = await wordbookTagsDao.getAllTags();
-                        final toAdd = <int>[], toDel = <int>[];
+                        if (wordbookTagsDao.tagExist) {
+                          final tagsOfWord =
+                                  await wordbookDao.tagsOfWord(item.word),
+                              tags = await wordbookTagsDao.getAllTags();
+                          final toAdd = <int>[], toDel = <int>[];
 
-                        if (!context.mounted) return false;
+                          if (!context.mounted) return false;
 
-                        await showDialog<bool>(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AddHistoryToWordbookDialog(
-                                tags: tags,
-                                tagsOfWord: tagsOfWord,
-                                toAdd: toAdd,
-                                toDel: toDel,
-                                item: item);
-                          },
-                        );
+                          await showDialog<bool>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AddHistoryToWordbookDialog(
+                                  tags: tags,
+                                  tagsOfWord: tagsOfWord,
+                                  toAdd: toAdd,
+                                  toDel: toDel,
+                                  item: item);
+                            },
+                          );
+                          return false;
+                        }
+
+                        if (await wordbookDao.wordExist(item.word)) {
+                          await wordbookDao.removeWord(item.word);
+                        } else {
+                          await wordbookDao.addWord(item.word);
+                        }
+                        if (context.mounted) {
+                          context.read<WordbookModel>().updateWordList();
+                        }
+
                         return false;
-                      }
-
-                      if (await wordbookDao.wordExist(item.word)) {
-                        await wordbookDao.removeWord(item.word);
-                      } else {
-                        await wordbookDao.addWord(item.word);
-                      }
-                      if (context.mounted) {
-                        context.read<WordbookModel>().updateWordList();
-                      }
-
-                      return false;
-                    },
-                    background: Container(
-                        color: Theme.of(context).colorScheme.primary,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: Icon(Icons.book_outlined,
-                            color: Theme.of(context).colorScheme.onPrimary)),
-                    secondaryBackground: Container(
-                        color: Theme.of(context).colorScheme.error,
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: Icon(Icons.delete_outline,
-                            color: Theme.of(context).colorScheme.onError)),
-                    child: ListTile(
-                      title: Text(item.word),
-                      onTap: () {
-                        context.push("/word", extra: {"word": item.word});
                       },
-                      onLongPress: () async {
-                        await buildRemoveHistoryConfirmDialog(
-                            context, item, model);
-                      },
-                    ),
-                  )
-              ],
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        });
+                      background: Container(
+                          color: Theme.of(context).colorScheme.primary,
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.only(left: 16.0),
+                          child: Icon(Icons.book_outlined,
+                              color: Theme.of(context).colorScheme.onPrimary)),
+                      secondaryBackground: Container(
+                          color: Theme.of(context).colorScheme.error,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: Icon(Icons.delete_outline,
+                              color: Theme.of(context).colorScheme.onError)),
+                      child: ListTile(
+                        title: Text(item.word),
+                        onTap: () {
+                          context.push("/word", extra: {"word": item.word});
+                        },
+                        onLongPress: () async {
+                          await buildRemoveHistoryConfirmDialog(
+                              context, item, model);
+                        },
+                      ),
+                    )
+                ],
+              );
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          }),
+    );
   }
 
   Future<bool> buildRemoveHistoryConfirmDialog(
@@ -211,6 +213,58 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         if (settings.showMoreOptionsButton) MoreButton(),
       ],
+    );
+  }
+}
+
+class ActionButtons extends StatelessWidget {
+  const ActionButtons({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children: [
+              OneActionButton(
+                  title: AppLocalizations.of(context)!.writingCheck,
+                  path: "/writing_check",
+                  icon: Icons.spellcheck_outlined),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class OneActionButton extends StatelessWidget {
+  final String title;
+  final String path;
+  final IconData icon;
+
+  const OneActionButton({
+    super.key,
+    required this.title,
+    required this.path,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton.filledTonal(
+      tooltip: AppLocalizations.of(context)!.writingCheck,
+      icon: Icon(Icons.spellcheck_outlined,
+          color: Theme.of(context).colorScheme.primary),
+      onPressed: () {
+        context.push("/writing_check");
+      },
     );
   }
 }
@@ -256,23 +310,31 @@ class HomeBody extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16, top: 10, bottom: 5),
-            child: Text(
-              AppLocalizations.of(context)!.history,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .secondary
-                      .withValues(alpha: 0.7)),
-            ),
-          ),
-          const Expanded(
-            child: HistoryList(),
-          ),
+          const ActionButtons(),
+          const HistoryLabel(),
+          const HistoryList(),
         ],
       );
     }
+  }
+}
+
+class HistoryLabel extends StatelessWidget {
+  const HistoryLabel({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, top: 10, bottom: 5),
+      child: Text(
+        AppLocalizations.of(context)!.history,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color:
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7)),
+      ),
+    );
   }
 }
 

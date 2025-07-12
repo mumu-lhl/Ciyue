@@ -303,5 +303,11 @@
         "type": "int"
       }
     }
-  }
+  },
+  "writingCheck": "Writing Check",
+  "@writingCheck": {},
+  "label_enter_to_check": "Enter text to check",
+  "@label_enter_to_check": {},
+  "check": "Check",
+  "@check": {}
 }

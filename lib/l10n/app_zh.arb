@@ -299,5 +299,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "writingCheck": "写作检查",
+  "@writingCheck": {}
 }

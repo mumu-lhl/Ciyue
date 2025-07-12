@@ -3,16 +3,11 @@ import "package:ciyue/repositories/settings.dart";
 import "package:flutter/material.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 
-class AIMarkdown extends StatefulWidget {
+class AIMarkdown extends StatelessWidget {
   final String prompt;
 
-  const AIMarkdown({super.key, required this.prompt});
+  AIMarkdown({super.key, required this.prompt});
 
-  @override
-  State<AIMarkdown> createState() => _AIMarkdownState();
-}
-
-class _AIMarkdownState extends State<AIMarkdown> {
   final ai = AI(
     provider: settings.aiProvider,
     model: settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
@@ -22,7 +17,7 @@ class _AIMarkdownState extends State<AIMarkdown> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: ai.request(widget.prompt),
+      future: ai.request(prompt),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return Center(
