@@ -233,7 +233,7 @@ class HomeBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(locale!.addDictionary),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               child: Text(locale.recommendedDictionaries),
               onPressed: () async {
@@ -241,7 +241,7 @@ class HomeBody extends StatelessWidget {
                     "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
               },
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             ElevatedButton(
               child: const Text("FreeMDict Cloud"),
               onPressed: () async {
@@ -253,7 +253,24 @@ class HomeBody extends StatelessWidget {
         ),
       );
     } else {
-      return HistoryList();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 10, bottom: 5),
+            child: Text(
+              AppLocalizations.of(context)!.history,
+              style: Theme.of(context)
+                  .textTheme
+                  .labelSmall
+                  ?.copyWith(color: Colors.grey),
+            ),
+          ),
+          const Expanded(
+            child: HistoryList(),
+          ),
+        ],
+      );
     }
   }
 }
