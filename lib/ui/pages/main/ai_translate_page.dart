@@ -1,10 +1,12 @@
 import "dart:ui" as ui;
 
+import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:flutter/material.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
+import "package:provider/provider.dart";
 
 class AiTranslatePage extends StatefulWidget {
   const AiTranslatePage({super.key});
@@ -236,15 +238,10 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
       final targetLangName = _languageMap[_targetLanguage] ?? _targetLanguage;
       final inputText = _inputController.text.trim();
 
-      String template;
-      if (settings.translatePromptMode == "custom" &&
-          settings.customTranslatePrompt.isNotEmpty) {
-        template = settings.customTranslatePrompt;
-      } else if (_isRichOutput) {
-        template = """
-Translate the following text from \$sourceLanguage to \$targetLanguage. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in \$targetLanguage: \$text
-""";
-      } else {
+      final aiPrompts = context.read<AIPrompts>();
+      String template = aiPrompts.translatePrompt;
+
+      if (!_isRichOutput) {
         template =
             'Translate this \$sourceLanguage sentence to \$targetLanguage, only return the translated text: "\$text"';
       }

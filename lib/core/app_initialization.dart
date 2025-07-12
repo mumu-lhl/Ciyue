@@ -1,9 +1,12 @@
 import "dart:io";
+
+import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/changelog.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/updater.dart";
-import "package:ciyue/services/changelog.dart";
 import "package:ciyue/ui/pages/core/changelog_dialog.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
@@ -11,8 +14,6 @@ import "package:flutter_tts/flutter_tts.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:path_provider/path_provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
-import "package:ciyue/core/app_globals.dart";
-import "package:ciyue/core/app_router.dart";
 
 Future<void> initApp() async {
   await initPrefs();
@@ -115,10 +116,12 @@ Future<void> initPrefs() async {
     "aiProviderConfigs",
     "aiExplainWord",
     "includePrereleaseUpdates",
-    "explainPromptMode",
+
+    // AI Prompts
     "customExplainPrompt",
-    "translatePromptMode",
     "customTranslatePrompt",
+    "customWritingCheckPrompt",
+
     "tabBarPosition",
     "showSearchBarInWordDisplay",
     "autoUpdate",

@@ -1,3 +1,4 @@
+import "package:ciyue/ui/pages/writing_check/writing_check.dart";
 import "package:ciyue/ui/pages/core/word_display.dart";
 import "package:ciyue/ui/pages/main/main.dart";
 import "package:ciyue/ui/pages/settings/about.dart";
@@ -172,6 +173,13 @@ final router = GoRouter(
               path: (state.extra as Map<String, dynamic>)["path"],
               id: (state.extra as Map<String, dynamic>)["id"],
             )),
+    GoRoute(
+      path: "/writing_check",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const WritingCheckPage(),
+      ),
+    ),
   ],
 );
 

@@ -40,11 +40,6 @@ class _Settings {
   late bool aiExplainWord;
   Map<String, Map<String, dynamic>> aiProviderConfigs = {};
 
-  late String explainPromptMode;
-  late String customExplainPrompt;
-  late String translatePromptMode;
-  late String customTranslatePrompt;
-
   late String? ttsEngine;
   late String? ttsLanguage;
 
@@ -88,11 +83,6 @@ class _Settings {
 
     aiProvider = prefs.getString("aiProvider") ?? "openai";
     aiExplainWord = prefs.getBool("aiExplainWord") ?? false;
-
-    explainPromptMode = prefs.getString("explainPromptMode") ?? "default";
-    customExplainPrompt = prefs.getString("customExplainPrompt") ?? "";
-    translatePromptMode = prefs.getString("translatePromptMode") ?? "default";
-    customTranslatePrompt = prefs.getString("customTranslatePrompt") ?? "";
 
     ttsEngine = prefs.getString("ttsEngine");
     ttsLanguage = prefs.getString("ttsLanguage");
@@ -141,21 +131,6 @@ class _Settings {
     await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
   }
 
-  Future<void> setCustomExplainPrompt(String prompt) async {
-    customExplainPrompt = prompt;
-    await prefs.setString("customExplainPrompt", prompt);
-  }
-
-  Future<void> setCustomTranslatePrompt(String prompt) async {
-    customTranslatePrompt = prompt;
-    await prefs.setString("customTranslatePrompt", prompt);
-  }
-
-  Future<void> setExplainPromptMode(String mode) async {
-    explainPromptMode = mode;
-    await prefs.setString("explainPromptMode", mode);
-  }
-
   Future<void> setTabBarPosition(TabBarPosition position) async {
     tabBarPosition = position;
     await prefs.setString("tabBarPosition", position.name);
@@ -164,11 +139,6 @@ class _Settings {
   Future<void> setDictionarySwitchStyle(DictionarySwitchStyle style) async {
     dictionarySwitchStyle = style;
     await prefs.setString("dictionarySwitchStyle", style.name);
-  }
-
-  Future<void> setTranslatePromptMode(String mode) async {
-    translatePromptMode = mode;
-    await prefs.setString("translatePromptMode", mode);
   }
 
   Future<void> setAutoUpdate(bool value) async {
