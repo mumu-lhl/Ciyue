@@ -1,5 +1,6 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/ai/ai.dart";
+import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -64,6 +65,8 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final aiPrompts = Provider.of<AIPrompts>(context);
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -113,97 +116,94 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                       const SizedBox(height: 24),
 
                       // Explain Word Prompt Setting
-                      TitleText(
-                          AppLocalizations.of(context)!.aiExplainWordPrompt),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        value: settings.explainPromptMode,
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          labelText: AppLocalizations.of(context)!.promptMode,
-                        ),
-                        items: [
-                          DropdownMenuItem(
-                              value: "default",
-                              child:
-                                  Text(AppLocalizations.of(context)!.default_)),
-                          DropdownMenuItem(
-                              value: "custom",
-                              child: Text(
-                                  AppLocalizations.of(context)!.customOption)),
-                        ],
-                        onChanged: (value) async {
-                          if (value == null) return;
-                          await settings.setExplainPromptMode(value);
-                          setState(() {});
-                        },
+                      buildPromptSetting(
+                        context,
+                        AppLocalizations.of(context)!.aiExplainWordPrompt,
+                        aiPrompts.explainPrompt,
+                        AppLocalizations.of(context)!.customExplainPromptHelper,
+                        aiPrompts.setExplainPrompt,
+                        aiPrompts.resetExplainPrompt,
                       ),
-                      const SizedBox(height: 12),
-                      if (settings.explainPromptMode == "custom")
-                        TextFormField(
-                          initialValue: settings.customExplainPrompt,
-                          maxLines: null,
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            labelText: AppLocalizations.of(context)!
-                                .customExplainPrompt,
-                            helperText: AppLocalizations.of(context)!
-                                .customExplainPromptHelper,
-                          ),
-                          onChanged: (value) async {
-                            await settings.setCustomExplainPrompt(value);
-                          },
-                        ),
                       const SizedBox(height: 24),
 
                       // AI Translate Prompt Setting
-                      TitleText(
-                          AppLocalizations.of(context)!.aiTranslatePrompt),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        value: settings.translatePromptMode,
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          labelText: AppLocalizations.of(context)!.promptMode,
-                        ),
-                        items: [
-                          DropdownMenuItem(
-                              value: "default",
-                              child:
-                                  Text(AppLocalizations.of(context)!.default_)),
-                          DropdownMenuItem(
-                              value: "custom",
-                              child: Text(
-                                  AppLocalizations.of(context)!.customOption)),
-                        ],
-                        onChanged: (value) async {
-                          if (value == null) return;
-                          await settings.setTranslatePromptMode(value);
-                          setState(() {});
-                        },
+                      buildPromptSetting(
+                        context,
+                        AppLocalizations.of(context)!.aiTranslatePrompt,
+                        aiPrompts.translatePrompt,
+                        AppLocalizations.of(context)!
+                            .customTranslatePromptHelper,
+                        aiPrompts.setTranslatePrompt,
+                        aiPrompts.resetTranslatePrompt,
                       ),
-                      const SizedBox(height: 12),
-                      if (settings.translatePromptMode == "custom")
-                        TextFormField(
-                          initialValue: settings.customTranslatePrompt,
-                          maxLines: null,
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            labelText: AppLocalizations.of(context)!
-                                .customTranslatePrompt,
-                            helperText: AppLocalizations.of(context)!
-                                .customTranslatePromptHelper,
-                          ),
-                          onChanged: (value) async {
-                            await settings.setCustomTranslatePrompt(value);
-                          },
-                        ),
+                      const SizedBox(height: 24),
+
+                      // Writing Check Prompt Setting
+                      buildPromptSetting(
+                        context,
+                        AppLocalizations.of(context)!.writingCheckPromptTitle,
+                        aiPrompts.writingCheckPrompt,
+                        AppLocalizations.of(context)!.writingCheckPromptHelper,
+                        aiPrompts.setWritingCheckPrompt,
+                        aiPrompts.resetWritingCheckPrompt,
+                      ),
                     ],
                   ),
                 ),
               )),
         ),
       ),
+    );
+  }
+
+  Widget buildPromptSetting(
+    BuildContext context,
+    String title,
+    String initialValue,
+    String helperText,
+    Future<void> Function(String) onChanged,
+    Future<void> Function() onReset,
+  ) {
+    final controller = TextEditingController(text: initialValue);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TitleText(title),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: controller,
+          maxLines: null,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            helperText: helperText,
+          ),
+          onChanged: onChanged,
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () async {
+              await onReset();
+              // we need to update the controller's text
+              // because the parent widget holds the state
+              if (!context.mounted) {
+                return;
+              }
+              final newText = context.read<AIPrompts>();
+              if (title == AppLocalizations.of(context)!.aiExplainWordPrompt) {
+                controller.text = newText.explainPrompt;
+              } else if (title ==
+                  AppLocalizations.of(context)!.aiTranslatePrompt) {
+                controller.text = newText.translatePrompt;
+              } else {
+                controller.text = newText.writingCheckPrompt;
+              }
+            },
+            child: Text(AppLocalizations.of(context)!.resetToDefault),
+          ),
+        ),
+      ],
     );
   }
 
