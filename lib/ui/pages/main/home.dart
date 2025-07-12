@@ -260,10 +260,11 @@ class HomeBody extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16, top: 10, bottom: 5),
             child: Text(
               AppLocalizations.of(context)!.history,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelSmall
-                  ?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .secondary
+                      .withValues(alpha: 0.7)),
             ),
           ),
           const Expanded(
