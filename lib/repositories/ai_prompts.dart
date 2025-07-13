@@ -35,7 +35,6 @@ Suggestions:""";
   Future<void> setExplainPrompt(String prompt) async {
     _explainPrompt = prompt;
     await prefs.setString("customExplainPrompt", prompt);
-    notifyListeners();
   }
 
   Future<void> resetExplainPrompt() async {
@@ -47,7 +46,6 @@ Suggestions:""";
   Future<void> setTranslatePrompt(String prompt) async {
     _translatePrompt = prompt;
     await prefs.setString("customTranslatePrompt", prompt);
-    notifyListeners();
   }
 
   Future<void> resetTranslatePrompt() async {
@@ -59,7 +57,6 @@ Suggestions:""";
   Future<void> setWritingCheckPrompt(String prompt) async {
     _writingCheckPrompt = prompt;
     await prefs.setString("customWritingCheckPrompt", prompt);
-    notifyListeners();
   }
 
   Future<void> resetWritingCheckPrompt() async {
