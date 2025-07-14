@@ -55,7 +55,7 @@ dependencies:
       url: https://github.com/saif-ellafi/flutter_tts.git
       ref: 7eac1f68b11b188a5cdf79eb5b2610dfe792af23
   package_info_plus: ^8.3.0
-  url_launcher: ^6.3.1
+  url_launcher: ^6.3.2
   file_selector: ^1.0.3
   html_unescape: ^2.0.0
   flutter_local_notifications: ^19.3.0
