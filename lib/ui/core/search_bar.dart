@@ -12,6 +12,7 @@ class WordSearchBarWithSuggestions extends StatelessWidget {
   final SearchController controller;
   final FocusNode? focusNode;
   final bool isHome;
+  final bool autoFocus;
 
   const WordSearchBarWithSuggestions({
     super.key,
@@ -19,6 +20,7 @@ class WordSearchBarWithSuggestions extends StatelessWidget {
     required this.controller,
     this.focusNode,
     this.isHome = false,
+    this.autoFocus = false,
   });
 
   @override
@@ -28,6 +30,7 @@ class WordSearchBarWithSuggestions extends StatelessWidget {
         child: SearchAnchor(
           viewHintText: AppLocalizations.of(context)!.search,
           builder: (context, controller) => SearchBar(
+            autoFocus: autoFocus,
             focusNode: focusNode,
             controller: controller,
             hintText: AppLocalizations.of(context)!.search,

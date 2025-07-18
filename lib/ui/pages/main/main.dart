@@ -65,7 +65,14 @@ class _HomeState extends State<Home> {
                     ],
                     selectedIndex: _currentIndex,
                     onDestinationSelected: (int index) {
-                      FocusScope.of(context).unfocus();
+                      if (index != 0) {
+                        FocusScope.of(context).unfocus();
+                      } else {
+                        context
+                            .read<HomeModel>()
+                            .searchBarFocusNode
+                            .requestFocus();
+                      }
                       setState(() {
                         _currentIndex = index;
                       });
@@ -92,7 +99,11 @@ class _HomeState extends State<Home> {
                     _currentIndex = index;
                   });
                   FocusScope.of(context).unfocus();
-                  context.read<HomeModel>().searchBarFocusNode.unfocus();
+                  if (index != 0) {
+                    context.read<HomeModel>().searchBarFocusNode.unfocus();
+                  } else {
+                    context.read<HomeModel>().searchBarFocusNode.requestFocus();
+                  }
                 },
                 selectedIndex: _currentIndex,
                 destinations: [

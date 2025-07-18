@@ -404,6 +404,7 @@ class HomeSearchBar extends StatelessWidget {
         controller: model.searchController,
         focusNode: model.searchBarFocusNode,
         isHome: true,
+        autoFocus: true,
       ),
     );
   }
