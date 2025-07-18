@@ -6,7 +6,7 @@ import "package:ciyue/ui/pages/main/main.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
-import "package:ciyue/ui/pages/core/loading_dialog.dart";
+import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:flutter/services.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:provider/provider.dart";

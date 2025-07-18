@@ -2,7 +2,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/models/updater/updater.dart";
 import "package:ciyue/repositories/settings.dart";
-import "package:ciyue/ui/pages/core/update_available.dart";
+import "package:ciyue/ui/core/update_available.dart";
 import "package:dio/dio.dart";
 import "package:flutter/material.dart";
 

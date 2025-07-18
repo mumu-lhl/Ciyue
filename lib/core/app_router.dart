@@ -1,5 +1,5 @@
 import "package:ciyue/ui/pages/writing_check/writing_check.dart";
-import "package:ciyue/ui/pages/core/word_display.dart";
+import "package:ciyue/ui/core/word_display.dart";
 import "package:ciyue/ui/pages/main/main.dart";
 import "package:ciyue/ui/pages/settings/about.dart";
 import "package:ciyue/ui/pages/settings/ai_settings.dart";
@@ -15,7 +15,7 @@ import "package:ciyue/ui/pages/settings/other.dart";
 import "package:ciyue/ui/pages/settings/privacy_policy.dart";
 import "package:ciyue/ui/pages/settings/terms_of_service.dart";
 import "package:ciyue/ui/pages/settings/update.dart";
-import "package:ciyue/ui/pages/core/ai_explanation_edit_page.dart";
+import "package:ciyue/ui/core/ai_explanation_edit_page.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:ciyue/viewModels/ai_explanation.dart";

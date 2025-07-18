@@ -8,7 +8,7 @@ import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/audio.dart";
-import "package:ciyue/ui/pages/core/loading_dialog.dart";
+import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
 import "package:file_selector/file_selector.dart";

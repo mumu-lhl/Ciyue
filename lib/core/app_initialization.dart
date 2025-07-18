@@ -7,7 +7,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/changelog.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/updater.dart";
-import "package:ciyue/ui/pages/core/changelog_dialog.dart";
+import "package:ciyue/ui/core/changelog_dialog.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
 import "package:flutter_tts/flutter_tts.dart";

@@ -2,7 +2,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/writing_check.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
-import "package:ciyue/ui/pages/core/ai_markdown.dart";
+import "package:ciyue/ui/core/ai_markdown.dart";
 
 class WritingCheckPage extends StatelessWidget {
   const WritingCheckPage({super.key});

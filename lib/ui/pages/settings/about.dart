@@ -5,7 +5,7 @@ import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:ciyue/services/changelog.dart";
-import "package:ciyue/ui/pages/core/changelog_dialog.dart";
+import "package:ciyue/ui/core/changelog_dialog.dart";
 
 class AboutSettingsPage extends StatelessWidget {
   const AboutSettingsPage({super.key});

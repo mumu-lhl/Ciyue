@@ -4,7 +4,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/ui/pages/core/alpha_text.dart";
+import "package:ciyue/ui/core/alpha_text.dart";
 import "package:flutter/material.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:permission_handler/permission_handler.dart";
