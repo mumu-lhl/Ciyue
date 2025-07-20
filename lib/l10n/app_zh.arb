@@ -299,5 +299,13 @@
   "writingCheckPromptTitle": "写作检查提示词",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "你可以在提示词中使用 $text。",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "editAIExplanation": "编辑 AI 解释",
+  "@editAIExplanation": {},
+  "enterAIExplanation": "输入 AI 解释",
+  "@enterAIExplanation": {},
+  "label_enter_to_check": "输入要检查的文本",
+  "@label_enter_to_check": {},
+  "check": "检查",
+  "@check": {}
 }

@@ -1,7 +1,5 @@
 {
   "@@locale": "de",
-  "tagName": "Schlüsselwort Name",
-  "@tagName": {},
   "addDictionary": "Bitte öffne zuerst ein MDX Wörterbuch in den Einstellungen",
   "@addDictionary": {},
   "startToSearch": "Beginne mit einer Wortsuche :)",
@@ -22,6 +20,8 @@
   "@search": {},
   "theme": "Thema",
   "@theme": {},
+  "light": "Hell",
+  "@light": {},
   "dark": "Dunkel",
   "@dark": {},
   "system": "System",
@@ -36,6 +36,8 @@
   "@notSupport": {},
   "copy": "Kopieren",
   "@copy": {},
+  "readLoudly": "Laut vorlesen",
+  "@readLoudly": {},
   "recommendedDictionaries": "Empfohlene Wörterbücher",
   "@recommendedDictionaries": {},
   "feedback": "Feedback",
@@ -48,12 +50,18 @@
   "@import": {},
   "customFont": "Benutzerdefinierte Schriftart",
   "@customFont": {},
+  "empty": "Leer...",
+  "@empty": {},
   "add": "Hinzufügen",
   "@add": {},
   "autoExport": "Automatisch Exportieren",
   "@autoExport": {},
   "tags": "Schlüsselwörter",
   "@tags": {},
+  "addTag": "Schlüsselwörter hinzufügen",
+  "@addTag": {},
+  "tagName": "Schlüsselwort Name",
+  "@tagName": {},
   "tagList": "Schlüsselwörter Liste",
   "@tagList": {},
   "remove": "Entfernen",
@@ -62,6 +70,14 @@
   "@confirm": {},
   "noResult": "Keine Ergebnisse",
   "@noResult": {},
+  "updateAnnouncement": "Die Ankündigung der Aktualisierung auf {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "description": "Beschreibung",
   "@description": {},
   "properties": "Eigenschaften",
@@ -86,34 +102,18 @@
   "@manageGroups": {},
   "exportFileName": "Export Datei-Name",
   "@exportFileName": {},
+  "exportDirectory": "Export Verzeichnis",
+  "@exportDirectory": {},
   "title": "Titel",
   "@title": {},
   "totalNumberOfEntries": "Anzahl aller Einträge",
   "@totalNumberOfEntries": {},
   "sponsor": "Sponsor",
   "@sponsor": {},
-  "addTag": "Schlüsselwörter hinzufügen",
-  "@addTag": {},
   "more": "Mehr",
   "@more": {},
   "autoRemoveSearchWord": "Suchbegriff automatisch entfernen",
   "@autoRemoveSearchWord": {},
-  "readLoudly": "Laut vorlesen",
-  "@readLoudly": {},
-  "light": "Hell",
-  "@light": {},
-  "empty": "Leer...",
-  "@empty": {},
-  "updateAnnouncement": "Die Ankündigung der Aktualisierung auf {version}",
-  "@updateAnnouncement": {
-    "placeholders": {
-      "version": {
-        "type": "String"
-      }
-    }
-  },
-  "exportDirectory": "Export Verzeichnis",
-  "@exportDirectory": {},
   "secureScreen": "Sicherer Bildschirm",
   "@secureScreen": {},
   "searchBarLocation": "Suchleistenposition",
@@ -263,5 +263,57 @@
   "enableHistory": "Verlauf aktivieren",
   "@enableHistory": {},
   "changelog": "Änderungsprotokoll",
-  "@changelog": {}
+  "@changelog": {},
+  "editAIExplanation": "KI-Erklärung bearbeiten",
+  "@editAIExplanation": {},
+  "enterAIExplanation": "KI-Erklärung eingeben",
+  "@enterAIExplanation": {},
+  "save": "Speichern",
+  "@save": {},
+  "dictionarySwitchStyle": "Wörterbuch-Wechselstil",
+  "@dictionarySwitchStyle": {},
+  "expansion": "Erweiterung",
+  "@expansion": {},
+  "tag": "Tag",
+  "@tag": {},
+  "manageStorage": "Speicher verwalten",
+  "@manageStorage": {},
+  "confirmDelete": "Löschen bestätigen",
+  "@confirmDelete": {},
+  "confirmDeleteMessage": "Sind Sie sicher, dass Sie '{name}' löschen möchten?",
+  "@confirmDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "Löschen",
+  "@delete": {},
+  "cancel": "Abbrechen",
+  "@cancel": {},
+  "back": "Zurück",
+  "@back": {},
+  "dictionaryFileNotFound": "Wörterbuchdatei nicht gefunden. Wird aus der Datenbank entfernt.",
+  "@dictionaryFileNotFound": {},
+  "confirmDeleteWords": "Sind Sie sicher, dass Sie die ausgewählten {count} Wörter löschen möchten?",
+  "@confirmDeleteWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "writingCheck": "Schreibprüfung",
+  "@writingCheck": {},
+  "label_enter_to_check": "Text zur Überprüfung eingeben",
+  "@label_enter_to_check": {},
+  "check": "Prüfen",
+  "@check": {},
+  "resetToDefault": "Auf Standard zurücksetzen",
+  "@resetToDefault": {},
+  "writingCheckPromptTitle": "Aufforderung zur Schreibprüfung",
+  "@writingCheckPromptTitle": {},
+  "writingCheckPromptHelper": "Sie können $text in Ihrer Aufforderung verwenden.",
+  "@writingCheckPromptHelper": {}
 }

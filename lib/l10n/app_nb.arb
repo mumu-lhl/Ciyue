@@ -1,9 +1,19 @@
 {
   "@@locale": "nb",
+  "addDictionary": "Legg til en MDX-ordbok i innstillingene først",
+  "@addDictionary": {},
+  "startToSearch": "Begynn ditt ordsøk :)",
+  "@startToSearch": {},
+  "manageDictionaries": "Håndter ordbøker",
+  "@manageDictionaries": {},
   "home": "Hjem",
   "@home": {},
+  "wordBook": "Ordbok",
+  "@wordBook": {},
   "settings": "Innstillinger",
   "@settings": {},
+  "permissionDenied": "Du må innvilge tilgangene",
+  "@permissionDenied": {},
   "close": "Lukk",
   "@close": {},
   "search": "Søk",
@@ -28,28 +38,6 @@
   "@copy": {},
   "readLoudly": "Les høyt",
   "@readLoudly": {},
-  "addDictionary": "Legg til en MDX-ordbok i innstillingene først",
-  "@addDictionary": {},
-  "startToSearch": "Begynn ditt ordsøk :)",
-  "@startToSearch": {},
-  "wordBook": "Ordbok",
-  "@wordBook": {},
-  "permissionDenied": "Du må innvilge tilgangene",
-  "@permissionDenied": {},
-  "manageDictionaries": "Håndter ordbøker",
-  "@manageDictionaries": {},
-  "noResult": "Ingen resultat",
-  "@noResult": {},
-  "updateAnnouncement": "Oppdatering til {version}",
-  "@updateAnnouncement": {
-    "placeholders": {
-      "version": {
-        "type": "String"
-      }
-    }
-  },
-  "description": "Beskrivelse",
-  "@description": {},
   "recommendedDictionaries": "Anbefalte ordbøker",
   "@recommendedDictionaries": {},
   "feedback": "Tilbakemelding",
@@ -80,6 +68,18 @@
   "@remove": {},
   "confirm": "Bekreft",
   "@confirm": {},
+  "noResult": "Ingen resultat",
+  "@noResult": {},
+  "updateAnnouncement": "Oppdatering til {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "description": "Beskrivelse",
+  "@description": {},
   "properties": "Egenskaper",
   "@properties": {},
   "removeOneHistory": "Fjern historikk",
@@ -250,18 +250,70 @@
       }
     }
   },
-  "other": "Annet",
-  "@other": {},
-  "about": "Om",
-  "@about": {},
-  "backup": "Sikkerhetskopiering",
-  "@backup": {},
-  "advance": "Avansert",
-  "@advance": {},
-  "advanceSwitchDescription": "Aktiver for å vise flere innstillingsalternativer",
-  "@advanceSwitchDescription": {},
   "enableHistory": "Aktiver historikk",
   "@enableHistory": {},
+  "advanceSwitchDescription": "Aktiver for å vise flere innstillingsalternativer",
+  "@advanceSwitchDescription": {},
+  "other": "Annet",
+  "@other": {},
+  "backup": "Sikkerhetskopiering",
+  "@backup": {},
+  "about": "Om",
+  "@about": {},
+  "advance": "Avansert",
+  "@advance": {},
   "changelog": "Endringslogg",
-  "@changelog": {}
+  "@changelog": {},
+  "editAIExplanation": "Rediger AI-forklaring",
+  "@editAIExplanation": {},
+  "enterAIExplanation": "Skriv inn AI-forklaring",
+  "@enterAIExplanation": {},
+  "save": "Lagre",
+  "@save": {},
+  "dictionarySwitchStyle": "Ordbokbryterstil",
+  "@dictionarySwitchStyle": {},
+  "expansion": "Utvidelse",
+  "@expansion": {},
+  "tag": "Merkelapp",
+  "@tag": {},
+  "manageStorage": "Administrer lagring",
+  "@manageStorage": {},
+  "confirmDelete": "Bekreft sletting",
+  "@confirmDelete": {},
+  "confirmDeleteMessage": "Er du sikker på at du vil slette '{name}'?",
+  "@confirmDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "Slett",
+  "@delete": {},
+  "cancel": "Avbryt",
+  "@cancel": {},
+  "back": "Tilbake",
+  "@back": {},
+  "dictionaryFileNotFound": "Ordbokfil ikke funnet. Fjerner fra databasen.",
+  "@dictionaryFileNotFound": {},
+  "confirmDeleteWords": "Er du sikker på at du vil slette de valgte {count} ordene?",
+  "@confirmDeleteWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "writingCheck": "Skrivekontroll",
+  "@writingCheck": {},
+  "label_enter_to_check": "Skriv inn tekst for å sjekke",
+  "@label_enter_to_check": {},
+  "check": "Sjekk",
+  "@check": {},
+  "resetToDefault": "Tilbakestill til standard",
+  "@resetToDefault": {},
+  "writingCheckPromptTitle": "Skrivekontroll-prompt",
+  "@writingCheckPromptTitle": {},
+  "writingCheckPromptHelper": "Du kan bruke $text i prompten din.",
+  "@writingCheckPromptHelper": {}
 }

@@ -1,11 +1,11 @@
 {
   "@@locale": "sc",
-  "manageDictionaries": "Manìgia sos ditzionàrios",
-  "@manageDictionaries": {},
   "addDictionary": "In antis annanghe unu ditzionàriu MDX in sas Impostatziones",
   "@addDictionary": {},
   "startToSearch": "Incumintza a fàghere una chirca de paràulas :)",
   "@startToSearch": {},
+  "manageDictionaries": "Manìgia sos ditzionàrios",
+  "@manageDictionaries": {},
   "home": "Pàgina printzipale",
   "@home": {},
   "wordBook": "Libru de paràulas",
@@ -46,6 +46,8 @@
   "@copied": {},
   "export": "Esporta",
   "@export": {},
+  "import": "Importa",
+  "@import": {},
   "customFont": "Caràtere personalizadu",
   "@customFont": {},
   "empty": "Bòidu...",
@@ -54,6 +56,8 @@
   "@add": {},
   "autoExport": "Esportatzione automàtica",
   "@autoExport": {},
+  "tags": "Etichetas",
+  "@tags": {},
   "addTag": "Annanghe un'eticheta",
   "@addTag": {},
   "tagName": "Nùmene de s'eticheta",
@@ -64,14 +68,8 @@
   "@remove": {},
   "confirm": "Cunfirma",
   "@confirm": {},
-  "import": "Importa",
-  "@import": {},
-  "tags": "Etichetas",
-  "@tags": {},
   "noResult": "Perunu resurtadu",
   "@noResult": {},
-  "description": "Descritzione",
-  "@description": {},
   "updateAnnouncement": "S'annùntziu de atualizatzione a {version}",
   "@updateAnnouncement": {
     "placeholders": {
@@ -80,6 +78,8 @@
       }
     }
   },
+  "description": "Descritzione",
+  "@description": {},
   "properties": "Propiedades",
   "@properties": {},
   "removeOneHistory": "Boga sa cronologia",
@@ -250,18 +250,70 @@
       }
     }
   },
-  "other": "Àteru",
-  "@other": {},
-  "about": "In contu de",
-  "@about": {},
-  "backup": "Còpia de seguresa",
-  "@backup": {},
-  "advance": "Avantzadu",
-  "@advance": {},
-  "advanceSwitchDescription": "Ativa pro ammustrare àteras optziones de impostatzione",
-  "@advanceSwitchDescription": {},
   "enableHistory": "Ativa sa cronologia",
   "@enableHistory": {},
+  "advanceSwitchDescription": "Ativa pro ammustrare àteras optziones de impostatzione",
+  "@advanceSwitchDescription": {},
+  "other": "Àteru",
+  "@other": {},
+  "backup": "Còpia de seguresa",
+  "@backup": {},
+  "about": "In contu de",
+  "@about": {},
+  "advance": "Avantzadu",
+  "@advance": {},
   "changelog": "Registru de sas mudàntzias",
-  "@changelog": {}
+  "@changelog": {},
+  "editAIExplanation": "Modìfica s'ispricatzione de s'IA",
+  "@editAIExplanation": {},
+  "enterAIExplanation": "Inserta s'ispricatzione de s'IA",
+  "@enterAIExplanation": {},
+  "save": "Sarva",
+  "@save": {},
+  "dictionarySwitchStyle": "Istile de càmbiu de ditzionàriu",
+  "@dictionarySwitchStyle": {},
+  "expansion": "Espansione",
+  "@expansion": {},
+  "tag": "Eticheta",
+  "@tag": {},
+  "manageStorage": "Manìgia s'archiviatzione",
+  "@manageStorage": {},
+  "confirmDelete": "Cunfirma s'iscantzelladura",
+  "@confirmDelete": {},
+  "confirmDeleteMessage": "Ses seguru de bòlere iscantzellare '{name}'?",
+  "@confirmDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "Iscantzella",
+  "@delete": {},
+  "cancel": "Annulla",
+  "@cancel": {},
+  "back": "In segus",
+  "@back": {},
+  "dictionaryFileNotFound": "Archìviu de ditzionàriu non agatadu. Boghende dae sa base de datos.",
+  "@dictionaryFileNotFound": {},
+  "confirmDeleteWords": "Ses seguru de bòlere iscantzellare sas {count} paràulas seberadas?",
+  "@confirmDeleteWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "writingCheck": "Verìfica de iscritura",
+  "@writingCheck": {},
+  "label_enter_to_check": "Inserta su testu de verificare",
+  "@label_enter_to_check": {},
+  "check": "Verìfica",
+  "@check": {},
+  "resetToDefault": "Torra a su predefinidu",
+  "@resetToDefault": {},
+  "writingCheckPromptTitle": "Indicatzione de verìfica de iscritura",
+  "@writingCheckPromptTitle": {},
+  "writingCheckPromptHelper": "Podes impreare $text in s'indicatzione.",
+  "@writingCheckPromptHelper": {}
 }

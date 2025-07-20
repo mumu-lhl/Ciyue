@@ -1,19 +1,17 @@
 {
   "@@locale": "ta",
-  "copied": "நகலெடுக்கப்பட்டது",
-  "@copied": {},
-  "export": "ஏற்றுமதி",
-  "@export": {},
-  "import": "இறக்குமதி",
-  "@import": {},
-  "updateAnnouncement": "{version} க்கு புதுப்பிக்கும் அறிவிப்பு",
-  "@updateAnnouncement": {
-    "placeholders": {
-      "version": {
-        "type": "String"
-      }
-    }
-  },
+  "addDictionary": "முதலில் அமைப்புகளில் ஒரு MDX அகராதியைச் சேர்க்கவும்",
+  "@addDictionary": {},
+  "startToSearch": "ஒரு சொல் தேடலில் செல்லத் தொடங்குங்கள் :)",
+  "@startToSearch": {},
+  "manageDictionaries": "அகராதிகளை நிர்வகிக்கவும்",
+  "@manageDictionaries": {},
+  "home": "வீடு",
+  "@home": {},
+  "wordBook": "சொல் நூல்",
+  "@wordBook": {},
+  "settings": "அமைப்புகள்",
+  "@settings": {},
   "permissionDenied": "நீங்கள் அனுமதிகளை அங்கீகரிக்க வேண்டும்",
   "@permissionDenied": {},
   "close": "மூடு",
@@ -44,6 +42,12 @@
   "@recommendedDictionaries": {},
   "feedback": "கருத்து",
   "@feedback": {},
+  "copied": "நகலெடுக்கப்பட்டது",
+  "@copied": {},
+  "export": "ஏற்றுமதி",
+  "@export": {},
+  "import": "இறக்குமதி",
+  "@import": {},
   "customFont": "தனிப்பயன் எழுத்துரு",
   "@customFont": {},
   "empty": "காலியாக ...",
@@ -54,30 +58,26 @@
   "@autoExport": {},
   "tags": "குறிச்சொற்கள்",
   "@tags": {},
+  "addTag": "குறிச்சொல்லைச் சேர்க்கவும்",
+  "@addTag": {},
   "tagName": "குறிச்சொல் பெயர்",
   "@tagName": {},
   "tagList": "குறிச்சொல் பட்டியல்",
   "@tagList": {},
   "remove": "அகற்று",
   "@remove": {},
-  "addTag": "குறிச்சொல்லைச் சேர்க்கவும்",
-  "@addTag": {},
   "confirm": "உறுதிப்படுத்தவும்",
   "@confirm": {},
   "noResult": "முடிவு இல்லை",
   "@noResult": {},
-  "addDictionary": "முதலில் அமைப்புகளில் ஒரு MDX அகராதியைச் சேர்க்கவும்",
-  "@addDictionary": {},
-  "startToSearch": "ஒரு சொல் தேடலில் செல்லத் தொடங்குங்கள் :)",
-  "@startToSearch": {},
-  "manageDictionaries": "அகராதிகளை நிர்வகிக்கவும்",
-  "@manageDictionaries": {},
-  "home": "வீடு",
-  "@home": {},
-  "wordBook": "சொல் நூல்",
-  "@wordBook": {},
-  "settings": "அமைப்புகள்",
-  "@settings": {},
+  "updateAnnouncement": "{version} க்கு புதுப்பிக்கும் அறிவிப்பு",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "description": "விளக்கம்",
   "@description": {},
   "properties": "பண்புகள்",
@@ -250,18 +250,70 @@
       }
     }
   },
-  "other": "மற்றவை",
-  "@other": {},
-  "about": "பற்றி",
-  "@about": {},
-  "backup": "காப்பு",
-  "@backup": {},
-  "advance": "முன்னேற்றம்",
-  "@advance": {},
-  "advanceSwitchDescription": "மேலும் அமைப்புகள் விருப்பங்களைக் காட்ட இயக்கு",
-  "@advanceSwitchDescription": {},
   "enableHistory": "வரலாற்றை இயக்கு",
   "@enableHistory": {},
+  "advanceSwitchDescription": "மேலும் அமைப்புகள் விருப்பங்களைக் காட்ட இயக்கு",
+  "@advanceSwitchDescription": {},
+  "other": "மற்றவை",
+  "@other": {},
+  "backup": "காப்பு",
+  "@backup": {},
+  "about": "பற்றி",
+  "@about": {},
+  "advance": "முன்னேற்றம்",
+  "@advance": {},
   "changelog": "மாற்றங்களின் பதிவு",
-  "@changelog": {}
+  "@changelog": {},
+  "editAIExplanation": "AI விளக்கத்தைத் திருத்து",
+  "@editAIExplanation": {},
+  "enterAIExplanation": "AI விளக்கத்தை உள்ளிடவும்",
+  "@enterAIExplanation": {},
+  "save": "சேமி",
+  "@save": {},
+  "dictionarySwitchStyle": "அகராதி மாற்று நடை",
+  "@dictionarySwitchStyle": {},
+  "expansion": "விரிவாக்கம்",
+  "@expansion": {},
+  "tag": "குறிச்சொல்",
+  "@tag": {},
+  "manageStorage": "சேமிப்பிடத்தை நிர்வகி",
+  "@manageStorage": {},
+  "confirmDelete": "நீக்குவதை உறுதிப்படுத்து",
+  "@confirmDelete": {},
+  "confirmDeleteMessage": "'{name}' ஐ நீக்க விரும்புகிறீர்களா?",
+  "@confirmDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "நீக்கு",
+  "@delete": {},
+  "cancel": "ரத்துசெய்",
+  "@cancel": {},
+  "back": "பின்",
+  "@back": {},
+  "dictionaryFileNotFound": "அகராதி கோப்பு கிடைக்கவில்லை. தரவுத்தளத்திலிருந்து அகற்றப்படுகிறது.",
+  "@dictionaryFileNotFound": {},
+  "confirmDeleteWords": "தேர்ந்தெடுக்கப்பட்ட {count} வார்த்தைகளை நீக்க விரும்புகிறீர்களா?",
+  "@confirmDeleteWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "writingCheck": "எழுத்து சரிபார்ப்பு",
+  "@writingCheck": {},
+  "label_enter_to_check": "சரிபார்க்க உரையை உள்ளிடவும்",
+  "@label_enter_to_check": {},
+  "check": "சரிபார்க்கவும்",
+  "@check": {},
+  "resetToDefault": "இயல்புநிலைக்கு மீட்டமை",
+  "@resetToDefault": {},
+  "writingCheckPromptTitle": "எழுத்து சரிபார்ப்பு தூண்டுதல்",
+  "@writingCheckPromptTitle": {},
+  "writingCheckPromptHelper": "உங்கள் தூண்டுதலில் $text ஐப் பயன்படுத்தலாம்.",
+  "@writingCheckPromptHelper": {}
 }

@@ -263,5 +263,57 @@
   "enableHistory": "啟用歷史記錄",
   "@enableHistory": {},
   "changelog": "更新日誌",
-  "@changelog": {}
+  "@changelog": {},
+  "save": "儲存",
+  "@save": {},
+  "dictionarySwitchStyle": "詞典切換樣式",
+  "@dictionarySwitchStyle": {},
+  "expansion": "展開式",
+  "@expansion": {},
+  "tag": "標籤式",
+  "@tag": {},
+  "manageStorage": "管理儲存空間",
+  "@manageStorage": {},
+  "confirmDelete": "確認刪除",
+  "@confirmDelete": {},
+  "confirmDeleteMessage": "你確定要刪除「{name}」嗎？",
+  "@confirmDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "刪除",
+  "@delete": {},
+  "cancel": "取消",
+  "@cancel": {},
+  "back": "返回",
+  "@back": {},
+  "dictionaryFileNotFound": "詞典檔案未找到。正在從資料庫中刪除。",
+  "@dictionaryFileNotFound": {},
+  "confirmDeleteWords": "您確定要刪除所選的 {count} 個單字嗎？",
+  "@confirmDeleteWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "writingCheck": "寫作檢查",
+  "@writingCheck": {},
+  "label_enter_to_check": "輸入要檢查的文本",
+  "@label_enter_to_check": {},
+  "check": "檢查",
+  "@check": {},
+  "resetToDefault": "重設為預設",
+  "@resetToDefault": {},
+  "writingCheckPromptTitle": "寫作檢查提示詞",
+  "@writingCheckPromptTitle": {},
+  "writingCheckPromptHelper": "你可以在提示詞中使用 $text。",
+  "@writingCheckPromptHelper": {},
+  "editAIExplanation": "編輯 AI 解釋",
+  "@editAIExplanation": {},
+  "enterAIExplanation": "輸入 AI 解釋",
+  "@enterAIExplanation": {}
 }
