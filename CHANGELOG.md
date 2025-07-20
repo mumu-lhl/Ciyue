@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
+## [1.18.0](https://github.com/mumu-lhl/Ciyue/compare/v1.17.0..v1.18.0) - 2025-07-20
+
+### Features
+
+* Auto pop up keyboard in main search tab
+* Add storage management
+* Add multiselectmode on wordbook page
+* Add writing check
+
+### Bugs
+
+* Fix add word to wordbook on home page
+
 ## [1.17.0] - 2025-07-06
 
 ### Features
