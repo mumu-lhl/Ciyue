@@ -435,7 +435,7 @@ class HomeScreen extends StatelessWidget {
           if (!settings.searchBarInAppBar)
             Selector<DictManagerModel, bool>(
                 selector: (_, model) => model.isEmpty,
-                builder: (_, isEmpty, ___) => isEmpty
+                builder: (_, isEmpty, __) => isEmpty
                     ? SizedBox.shrink()
                     : Padding(
                         padding: const EdgeInsets.only(

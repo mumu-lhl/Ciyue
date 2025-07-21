@@ -8,6 +8,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/dictionary.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -313,7 +314,25 @@ class DictionaryCard extends StatelessWidget {
               final model = context.read<DictManagerModel>();
 
               if (value == true) {
+                final oldDictionariesNumber = dictManager.dicts.length;
+
                 await model.add(dictionary.path);
+
+                if (oldDictionariesNumber == 0) {
+                  if (!context.mounted) return;
+
+                  final searchBarFocusNode =
+                      context.read<HomeModel>().searchBarFocusNode;
+
+                  void searchBarFocusListener() {
+                    if (searchBarFocusNode.hasFocus) {
+                      searchBarFocusNode.unfocus();
+                      searchBarFocusNode.removeListener(searchBarFocusListener);
+                    }
+                  }
+
+                  searchBarFocusNode.addListener(searchBarFocusListener);
+                }
               } else {
                 await model.close(dictionary.id);
               }
