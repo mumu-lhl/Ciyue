@@ -90,6 +90,7 @@ android {
 
         create("full") {
             dimension = "default"
+            applicationIdSuffix = ".full"
         }
     }
 
