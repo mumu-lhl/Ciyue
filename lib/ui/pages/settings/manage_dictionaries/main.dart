@@ -5,6 +5,7 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:file_selector/file_selector.dart";
@@ -48,6 +49,10 @@ class AddButton extends StatelessWidget {
             if (path == null) return;
 
             await prefs.setString("dictionariesDirectory", path);
+
+            if (!context.mounted) return;
+            showLoadingDialog(context,
+                text: AppLocalizations.of(context)!.loading);
 
             final paths = await findMdxFilesOnAndroid(path);
             if (context.mounted) await selectMdx(context, paths);
