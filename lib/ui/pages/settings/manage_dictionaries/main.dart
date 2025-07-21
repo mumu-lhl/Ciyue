@@ -42,21 +42,23 @@ class AddButton extends StatelessWidget {
         if (Platform.isAndroid) {
           if (appFlavor == "full") {
             final isGranted = await requestManageExternalStorage(context);
-            if (isGranted) {
-              final path = await getDirectoryPath();
-              if (path != null) {
-                await prefs.setString("dictionariesDirectory", path);
+            if (!isGranted) return;
 
-                final paths = await findMdxFilesOnAndroid(path);
-                if (context.mounted) await selectMdx(context, paths);
-              }
-            }
-          } else {
-            PlatformMethod.openDirectory();
+            final path = await getDirectoryPath();
+            if (path == null) return;
+
+            await prefs.setString("dictionariesDirectory", path);
+
+            final paths = await findMdxFilesOnAndroid(path);
+            if (context.mounted) await selectMdx(context, paths);
+            return;
           }
-        } else {
-          selectMdxOrMddOnDesktop(context, true);
+
+          PlatformMethod.openDirectory();
+          return;
         }
+
+        selectMdxOrMddOnDesktop(context, true);
       },
     );
   }

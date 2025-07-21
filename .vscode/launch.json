@@ -15,7 +15,20 @@
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
-            "args": ["--flavor", "dev"]
+            "args": [
+                "--flavor",
+                "dev"
+            ]
+        },
+        {
+            "name": "Flutter (Full Flavor)",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "args": [
+                "--flavor",
+                "full"
+            ]
         },
     ]
 }
