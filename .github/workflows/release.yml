@@ -184,20 +184,20 @@ jobs:
           name: Linux
           path: ciyue-linux.tar.xz
 
-      - name: Install AppImage-Builder
-        run: |
-          wget -O appimage-builder-x86_64.AppImage https://github.com/AppImageCrafters/appimage-builder/releases/download/v1.1.0/appimage-builder-1.1.0-x86_64.AppImage
-          chmod +x appimage-builder-x86_64.AppImage
-          sudo apt install -y binutils coreutils desktop-file-utils fakeroot fuse libgdk-pixbuf2.0-dev patchelf python3-pip python3-setuptools squashfs-tools strace util-linux zsync
+      # - name: Install AppImage-Builder
+      #   run: |
+      #     wget -O appimage-builder-x86_64.AppImage https://github.com/AppImageCrafters/appimage-builder/releases/download/v1.1.0/appimage-builder-1.1.0-x86_64.AppImage
+      #     chmod +x appimage-builder-x86_64.AppImage
+      #     sudo apt install -y binutils coreutils desktop-file-utils fakeroot fuse libgdk-pixbuf2.0-dev patchelf python3-pip python3-setuptools squashfs-tools strace util-linux zsync
 
-      - name: Build AppImage
-        run: ./appimage-builder-x86_64.AppImage
+      # - name: Build AppImage
+      #   run: ./appimage-builder-x86_64.AppImage
 
-      - name: Upload AppImage
-        uses: actions/upload-artifact@v4
-        with:
-          name: Linux-AppImage
-          path: Ciyue-latest-x86_64.AppImage*
+      # - name: Upload AppImage
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: Linux-AppImage
+      #     path: Ciyue-latest-x86_64.AppImage*
 
   release:
     name: Release
@@ -212,5 +212,6 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/ciyue-windows.zip,Windows-Installer/ciyue-installer.exe,Linux/ciyue-linux.tar.xz,Linux-AppImage/Ciyue-latest-x86_64.AppImage*"
+          # artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/ciyue-windows.zip,Windows-Installer/ciyue-installer.exe,Linux/ciyue-linux.tar.xz,Linux-AppImage/Ciyue-latest-x86_64.AppImage*"
+          artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/ciyue-windows.zip,Windows-Installer/ciyue-installer.exe,Linux/ciyue-linux.tar.xz"
           tag: ${{ github.ref_name }}
