@@ -1,5 +1,6 @@
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
+import "package:ciyue/services/logger.dart";
 import "package:flutter/material.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:logger/logger.dart";
@@ -26,4 +27,5 @@ final WordbookDao wordbookDao = WordbookDao(mainDatabase);
 final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
 
 // Logger
-final logger = Logger();
+final loggerOutput = MemoryOutput(bufferSize: 100);
+final logger = Logger(printer: CustomLogPrinter(), output: loggerOutput);

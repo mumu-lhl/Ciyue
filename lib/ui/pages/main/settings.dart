@@ -115,6 +115,19 @@ class OtherPageListTile extends StatelessWidget {
   }
 }
 
+class LoggerPageListTile extends StatelessWidget {
+  const LoggerPageListTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.receipt_long),
+      title: Text(AppLocalizations.of(context)!.logs),
+      onTap: () => context.push("/settings/logs"),
+    );
+  }
+}
+
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -131,6 +144,7 @@ class SettingsScreen extends StatelessWidget {
         const BackupPageListTile(),
         const UpdatePageListTile(),
         const OtherPageListTile(),
+        const LoggerPageListTile(),
         const AboutPageListTile(),
       ],
     );

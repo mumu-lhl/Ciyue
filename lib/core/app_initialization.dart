@@ -16,6 +16,8 @@ import "package:path_provider/path_provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 Future<void> initApp() async {
+  logger.d("Initializing application...");
+
   await initPrefs();
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
@@ -90,10 +92,14 @@ Future<void> initApp() async {
     if (Platform.isWindows) {
       windowsWebview2Directory = (await getApplicationCacheDirectory()).path;
     }
+
+    logger.d("Application initialized successfully.");
   });
 }
 
 Future<void> initPrefs() async {
+  logger.d("Initializing shared preferences...");
+
   prefs = await SharedPreferencesWithCache.create(
       cacheOptions: const SharedPreferencesWithCacheOptions(allowList: {
     "currentDictionaryGroupId",
@@ -133,4 +139,6 @@ Future<void> initPrefs() async {
     "versionCode",
     "dictionarySwitchStyle",
   }));
+
+  logger.d("Shared preferences initialized successfully.");
 }
