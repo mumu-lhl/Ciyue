@@ -307,5 +307,7 @@
   "writingCheckPromptTitle": "Writing Check Prompt",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "You can use $text in your prompt.",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "logs": "Logs",
+  "@logs": {}
 }
