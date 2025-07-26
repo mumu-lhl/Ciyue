@@ -596,9 +596,9 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "7eac1f68b11b188a5cdf79eb5b2610dfe792af23"
-      resolved-ref: "7eac1f68b11b188a5cdf79eb5b2610dfe792af23"
-      url: "https://github.com/saif-ellafi/flutter_tts.git"
+      ref: "50e6993a3f9aa547b88f4de4cc801cabc1b5ff25"
+      resolved-ref: "50e6993a3f9aa547b88f4de4cc801cabc1b5ff25"
+      url: "https://github.com/Metaildust/flutter_tts.git"
     source: git
     version: "4.2.3"
   flutter_web_plugins:
