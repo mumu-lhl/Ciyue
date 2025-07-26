@@ -50,10 +50,8 @@ app.*.map.json
 lib/src/generated/i18n/*
 
 # AppImage
-AppDir/
 *.AppImage
 *.AppImage.zsync
-appimage-build/
 
 # VS Code
 .vscode/settings.json

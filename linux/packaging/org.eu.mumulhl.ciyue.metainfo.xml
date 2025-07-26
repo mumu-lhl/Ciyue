@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.eu.mumulhl.ciyue</id>
+  
+  <name>Ciyue</name>
+  <summary>A simple mdict dictionary</summary>
+  
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  
+  <description>
+    <p>
+      📄 Support MDX/MDD (not on Linux yet) 🔍 Support multiple dictionaries search and display 🎨 Support Material You 🌐 AI Translate (Support OpenAI, Gemini, Deepseek...) 🔈 Support reading aloud 🔖 Bookmarking words to the word book
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">org.eu.mumulhl.ciyue.desktop</launchable>
+  
+  <icon type="stock">ciyue</icon>
+  
+  <categories>
+    <category>Education</category>
+    <category>Languages</category>
+  </categories>
+  
+  <provides>
+    <binary>ciyue</binary>
+  </provides>
+</component>
