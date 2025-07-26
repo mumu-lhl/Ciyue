@@ -156,6 +156,7 @@ jobs:
           name: Windows
           path: |
             ciyue-installer.exe
+            ciyue-installer.msix
             ciyue-windows.zip
 
   build-linux:
