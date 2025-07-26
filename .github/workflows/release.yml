@@ -138,6 +138,9 @@ jobs:
       - name: Compression
         run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath ciyue-windows.zip
 
+      - name: Install fastforge
+        run: dart pub global activate fastforge
+
       - name: Build exe
         run: |
           fastforge package --platform windows --targets exe
