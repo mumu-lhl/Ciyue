@@ -135,12 +135,20 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup -y
 
-      - name: Build Installer
-        run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ciyue.iss
-
       - name: Compression
         run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath ciyue-windows.zip
+
+      - name: Build exe
+        run: |
+          fastforge package --platform windows --targets exe
+          mv dist/*/*.exe .
+          mv *.exe ciyue-installer.exe
+
+      - name: Build msix
+        run: |
+          fastforge package --platform windows --targets msix
+          mv dist/*/*.msix .
+          mv *.msix ciyue-installer.msix
 
       - name: Upload
         uses: actions/upload-artifact@v4
