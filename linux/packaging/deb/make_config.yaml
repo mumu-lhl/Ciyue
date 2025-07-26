@@ -1,0 +1,25 @@
+display_name: Ciyue
+package_name: ciyue
+maintainer:
+  name: Mumulhl
+  email: mumulhl.666@gmail.com
+priority: optional
+section: x11
+installed_size: 57732
+essential: false
+icon: assets/icon.png
+
+keywords:
+  - Application
+  - Dictionary
+
+generic_name: Music Application
+
+categories:
+  - Education
+  - Languages
+
+startup_notify: true
+# You can also specify [metainfo](https://freedesktop.org/software/appstream/docs/chap-Quickstart.html) file
+# which contains metadata of the app.
+metainfo: linux/packaging/org.eu.mumulhl.ciyue.metainfo.xml
