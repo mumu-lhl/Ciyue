@@ -138,6 +138,7 @@ Future<void> initPrefs() async {
     "enableHistory",
     "versionCode",
     "dictionarySwitchStyle",
+    "translationProvider",
   }));
 
   logger.d("Shared preferences initialized successfully.");
