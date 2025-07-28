@@ -53,7 +53,11 @@ class _WritingCheckPage extends StatelessWidget {
                       if (viewModel.prompt != null)
                         Expanded(
                           child: AIMarkdown(
-                              key: UniqueKey(), prompt: viewModel.prompt!),
+                            prompt: viewModel.prompt!,
+                            onResult: (outputText) {
+                              viewModel.saveResult(outputText);
+                            },
+                          ),
                         ),
                     ],
                   ),

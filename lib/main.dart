@@ -7,6 +7,7 @@ import "package:ciyue/core/ciyue_error.dart";
 import "package:ciyue/core/localization_delegates.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/repositories/writing_check_history.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/viewModels/audio.dart";
@@ -45,6 +46,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => ManageDictionariesModel()),
       ChangeNotifierProvider(create: (_) => AudioModel()..init()),
       ChangeNotifierProvider(create: (_) => AIPrompts()),
+      Provider(create: (_) => WritingCheckHistoryRepository(mainDatabase)),
     ], child: const Ciyue()));
   } catch (e) {
     runApp(MaterialApp(home: CiyueError(error: e)));
