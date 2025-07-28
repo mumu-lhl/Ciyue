@@ -307,5 +307,7 @@
   "label_enter_to_check": "输入要检查的文本",
   "@label_enter_to_check": {},
   "check": "检查",
-  "@check": {}
+  "@check": {},
+  "translationProvider": "翻译源",
+  "@translationProvider": {}
 }

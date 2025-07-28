@@ -66,6 +66,7 @@ dependencies:
   audioplayers: ^6.5.0
   permission_handler: ^12.0.1
   logger: ^2.6.1
+  translator: ^1.0.3+1
 
 dev_dependencies:
   flutter_test:

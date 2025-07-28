@@ -43,6 +43,8 @@ class _Settings {
   late String? ttsEngine;
   late String? ttsLanguage;
 
+  late String translationProvider;
+
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
@@ -83,6 +85,7 @@ class _Settings {
 
     aiProvider = prefs.getString("aiProvider") ?? "openai";
     aiExplainWord = prefs.getBool("aiExplainWord") ?? false;
+    translationProvider = prefs.getString("translationProvider") ?? "ai";
 
     ttsEngine = prefs.getString("ttsEngine");
     ttsLanguage = prefs.getString("ttsLanguage");
@@ -164,5 +167,10 @@ class _Settings {
   Future<void> setEnableHistory(bool value) async {
     enableHistory = value;
     await prefs.setBool("enableHistory", value);
+  }
+
+  Future<void> setTranslationProvider(String provider) async {
+    translationProvider = provider;
+    await prefs.setString("translationProvider", provider);
   }
 }
