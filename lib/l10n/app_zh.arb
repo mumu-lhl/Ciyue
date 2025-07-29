@@ -311,5 +311,17 @@
   "translationProvider": "翻译源",
   "@translationProvider": {},
   "searchLanguage": "搜索语言",
-  "@searchLanguage": {}
+  "@searchLanguage": {},
+  "writingCheckHistory": "写作历史",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} 已选择",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "翻译历史",
+  "@translationHistory": {}
 }

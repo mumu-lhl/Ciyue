@@ -1843,6 +1843,194 @@ class WritingCheckHistoryCompanion
   }
 }
 
+class TranslateHistory extends Table
+    with TableInfo<TranslateHistory, TranslateHistoryData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  TranslateHistory(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  late final GeneratedColumn<String> inputText = GeneratedColumn<String>(
+      'input_text', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, inputText, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'translate_history';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TranslateHistoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TranslateHistoryData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      inputText: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}input_text'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  TranslateHistory createAlias(String alias) {
+    return TranslateHistory(attachedDatabase, alias);
+  }
+}
+
+class TranslateHistoryData extends DataClass
+    implements Insertable<TranslateHistoryData> {
+  final int id;
+  final String inputText;
+  final DateTime createdAt;
+  const TranslateHistoryData(
+      {required this.id, required this.inputText, required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['input_text'] = Variable<String>(inputText);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  TranslateHistoryCompanion toCompanion(bool nullToAbsent) {
+    return TranslateHistoryCompanion(
+      id: Value(id),
+      inputText: Value(inputText),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory TranslateHistoryData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TranslateHistoryData(
+      id: serializer.fromJson<int>(json['id']),
+      inputText: serializer.fromJson<String>(json['inputText']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'inputText': serializer.toJson<String>(inputText),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  TranslateHistoryData copyWith(
+          {int? id, String? inputText, DateTime? createdAt}) =>
+      TranslateHistoryData(
+        id: id ?? this.id,
+        inputText: inputText ?? this.inputText,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  TranslateHistoryData copyWithCompanion(TranslateHistoryCompanion data) {
+    return TranslateHistoryData(
+      id: data.id.present ? data.id.value : this.id,
+      inputText: data.inputText.present ? data.inputText.value : this.inputText,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TranslateHistoryData(')
+          ..write('id: $id, ')
+          ..write('inputText: $inputText, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, inputText, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TranslateHistoryData &&
+          other.id == this.id &&
+          other.inputText == this.inputText &&
+          other.createdAt == this.createdAt);
+}
+
+class TranslateHistoryCompanion extends UpdateCompanion<TranslateHistoryData> {
+  final Value<int> id;
+  final Value<String> inputText;
+  final Value<DateTime> createdAt;
+  const TranslateHistoryCompanion({
+    this.id = const Value.absent(),
+    this.inputText = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  TranslateHistoryCompanion.insert({
+    this.id = const Value.absent(),
+    required String inputText,
+    required DateTime createdAt,
+  })  : inputText = Value(inputText),
+        createdAt = Value(createdAt);
+  static Insertable<TranslateHistoryData> custom({
+    Expression<int>? id,
+    Expression<String>? inputText,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (inputText != null) 'input_text': inputText,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  TranslateHistoryCompanion copyWith(
+      {Value<int>? id, Value<String>? inputText, Value<DateTime>? createdAt}) {
+    return TranslateHistoryCompanion(
+      id: id ?? this.id,
+      inputText: inputText ?? this.inputText,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (inputText.present) {
+      map['input_text'] = Variable<String>(inputText.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TranslateHistoryCompanion(')
+          ..write('id: $id, ')
+          ..write('inputText: $inputText, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class DatabaseAtV12 extends GeneratedDatabase {
   DatabaseAtV12(QueryExecutor e) : super(e);
   late final DictionaryList dictionaryList = DictionaryList(this);
@@ -1855,6 +2043,7 @@ class DatabaseAtV12 extends GeneratedDatabase {
   late final AiExplanations aiExplanations = AiExplanations(this);
   late final WritingCheckHistory writingCheckHistory =
       WritingCheckHistory(this);
+  late final TranslateHistory translateHistory = TranslateHistory(this);
   late final Index idxWordbook = Index('idx_wordbook',
       'CREATE INDEX idx_wordbook ON wordbook (word, created_at)');
   late final Index idxWordbookTags = Index('idx_wordbook_tags',
@@ -1863,8 +2052,6 @@ class DatabaseAtV12 extends GeneratedDatabase {
       'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")');
   late final Index idxAiExplanations = Index('idx_ai_explanations',
       'CREATE INDEX idx_ai_explanations ON ai_explanations (word)');
-  late final Index idxWritingCheckHistory = Index('idx_writing_check_history',
-      'CREATE INDEX idx_writing_check_history ON writing_check_history (id, created_at)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1879,11 +2066,11 @@ class DatabaseAtV12 extends GeneratedDatabase {
         mddAudioResource,
         aiExplanations,
         writingCheckHistory,
+        translateHistory,
         idxWordbook,
         idxWordbookTags,
         idxMddAudioResource,
-        idxAiExplanations,
-        idxWritingCheckHistory
+        idxAiExplanations
       ];
   @override
   int get schemaVersion => 12;

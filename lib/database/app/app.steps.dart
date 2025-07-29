@@ -998,11 +998,11 @@ final class Schema12 extends i0.VersionedSchema {
     mddAudioResource,
     aiExplanations,
     writingCheckHistory,
+    translateHistory,
     idxWordbook,
     idxWordbookTags,
     idxMddAudioResource,
     idxAiExplanations,
-    idxWritingCheckHistory,
   ];
   late final Shape6 dictionaryList = Shape6(
       source: i0.VersionedTable(
@@ -1133,6 +1133,20 @@ final class Schema12 extends i0.VersionedSchema {
         attachedDatabase: database,
       ),
       alias: null);
+  late final Shape12 translateHistory = Shape12(
+      source: i0.VersionedTable(
+        entityName: 'translate_history',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [],
+        columns: [
+          _column_0,
+          _column_22,
+          _column_11,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
   final i1.Index idxWordbook = i1.Index('idx_wordbook',
       'CREATE INDEX idx_wordbook ON wordbook (word, created_at)');
   final i1.Index idxWordbookTags = i1.Index('idx_wordbook_tags',
@@ -1141,8 +1155,6 @@ final class Schema12 extends i0.VersionedSchema {
       'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")');
   final i1.Index idxAiExplanations = i1.Index('idx_ai_explanations',
       'CREATE INDEX idx_ai_explanations ON ai_explanations (word)');
-  final i1.Index idxWritingCheckHistory = i1.Index('idx_writing_check_history',
-      'CREATE INDEX idx_writing_check_history ON writing_check_history (id, created_at)');
 }
 
 class Shape11 extends i0.VersionedTable {
@@ -1163,6 +1175,17 @@ i1.GeneratedColumn<String> _column_22(String aliasedName) =>
 i1.GeneratedColumn<String> _column_23(String aliasedName) =>
     i1.GeneratedColumn<String>('output_text', aliasedName, false,
         type: i1.DriftSqlType.string);
+
+class Shape12 extends i0.VersionedTable {
+  Shape12({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get inputText =>
+      columnsByName['input_text']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<DateTime> get createdAt =>
+      columnsByName['created_at']! as i1.GeneratedColumn<DateTime>;
+}
+
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,

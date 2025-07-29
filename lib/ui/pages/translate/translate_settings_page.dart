@@ -1,5 +1,5 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/ai_translate_settings_view_model.dart";
+import "package:ciyue/viewModels/translate_settings_view_model.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
 

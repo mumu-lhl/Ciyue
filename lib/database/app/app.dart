@@ -1,3 +1,4 @@
+import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/database/app/tables.dart";
 import "package:ciyue/utils.dart";
 import "package:drift/drift.dart" as drift;
@@ -26,6 +27,19 @@ AppDatabase appDatabase() {
     MddAudioResource,
     AiExplanations,
     WritingCheckHistory,
+    TranslateHistory,
+  ],
+  daos: [
+    DictionaryListDao,
+    WordbookDao,
+    WordbookTagsDao,
+    HistoryDao,
+    DictGroupDao,
+    MddAudioListDao,
+    MddAudioResourceDao,
+    AiExplanationDao,
+    WritingCheckHistoryDao,
+    TranslateHistoryDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -78,7 +92,7 @@ class AppDatabase extends _$AppDatabase {
         },
         from11To12: (m, schema) async {
           await m.create(schema.writingCheckHistory);
-          await m.createIndex(schema.idxWritingCheckHistory);
+          await m.create(schema.translateHistory);
         },
       ),
     );

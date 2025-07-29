@@ -47,6 +47,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => AudioModel()..init()),
       ChangeNotifierProvider(create: (_) => AIPrompts()),
       Provider(create: (_) => WritingCheckHistoryDao(mainDatabase)),
+      Provider(create: (_) => TranslateHistoryDao(mainDatabase)),
     ], child: const Ciyue()));
   } catch (e) {
     runApp(MaterialApp(home: CiyueError(error: e)));

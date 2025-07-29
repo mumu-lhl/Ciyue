@@ -1,7 +1,9 @@
+import "package:ciyue/database/app/app.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/language_picker.dart";
-import "package:ciyue/ui/pages/main/ai_translate_settings_page.dart";
-import "package:ciyue/viewModels/ai_translate_view_model.dart";
+import "package:ciyue/ui/pages/translate/translate_history_page.dart";
+import "package:ciyue/ui/pages/translate/translate_settings_page.dart";
+import "package:ciyue/viewModels/translate_view_model.dart";
 import "package:flutter/material.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 import "package:provider/provider.dart";
@@ -18,6 +20,21 @@ class AiTranslatePage extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               actions: <Widget>[
+                IconButton(
+                  icon: const Icon(Icons.history),
+                  tooltip: AppLocalizations.of(context)!.translationHistory,
+                  onPressed: () async {
+                    final result = await Navigator.push<TranslateHistoryData>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TranslateHistoryPage(),
+                      ),
+                    );
+                    if (result != null) {
+                      viewModel.inputController.text = result.inputText;
+                    }
+                  },
+                ),
                 IconButton(
                   icon: const Icon(Icons.settings),
                   tooltip: AppLocalizations.of(context)!.settings,

@@ -4,30 +4,39 @@ import "package:ciyue/database/app/daos.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
 
-class WritingCheckHistoryViewModel with ChangeNotifier {
-  List<WritingCheckHistoryData> _history = [];
-  List<WritingCheckHistoryData> get history => _history;
-
+class TranslateHistoryViewModel with ChangeNotifier {
   bool _isLoading = true;
   bool get isLoading => _isLoading;
 
-  bool _isSelecting = false;
-  bool get isSelecting => _isSelecting;
+  List<TranslateHistoryData> _history = [];
+  List<TranslateHistoryData> get history => _history;
 
-  final List<int> _selectedIds = [];
+  final _selectedIds = <int>[];
   List<int> get selectedIds => _selectedIds;
+  bool get isSelecting => _selectedIds.isNotEmpty;
 
-  WritingCheckHistoryViewModel() {
+  TranslateHistoryViewModel() {
     _loadHistory();
   }
 
   Future<void> _loadHistory() async {
-    _history = await Provider.of<WritingCheckHistoryDao>(
+    _isLoading = true;
+    notifyListeners();
+
+    _history = await Provider.of<TranslateHistoryDao>(
             navigatorKey.currentContext!,
             listen: false)
         .getAllHistory();
 
     _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> deleteHistory(int id) async {
+    await Provider.of<TranslateHistoryDao>(navigatorKey.currentContext!,
+            listen: false)
+        .deleteHistory(id);
+    _history.removeWhere((item) => item.id == id);
     notifyListeners();
   }
 
@@ -37,33 +46,20 @@ class WritingCheckHistoryViewModel with ChangeNotifier {
     } else {
       _selectedIds.add(id);
     }
-    if (_selectedIds.isEmpty) {
-      _isSelecting = false;
-    } else {
-      _isSelecting = true;
-    }
     notifyListeners();
   }
 
   void clearSelection() {
     _selectedIds.clear();
-    _isSelecting = false;
     notifyListeners();
   }
 
   Future<void> deleteSelected() async {
-    await Provider.of<WritingCheckHistoryDao>(navigatorKey.currentContext!,
+    await Provider.of<TranslateHistoryDao>(navigatorKey.currentContext!,
             listen: false)
         .deleteHistories(_selectedIds);
     _history.removeWhere((item) => _selectedIds.contains(item.id));
-    clearSelection();
-  }
-
-  Future<void> deleteHistory(int id) async {
-    await Provider.of<WritingCheckHistoryDao>(navigatorKey.currentContext!,
-            listen: false)
-        .deleteHistory(id);
-    _history.removeWhere((item) => item.id == id);
+    _selectedIds.clear();
     notifyListeners();
   }
 }

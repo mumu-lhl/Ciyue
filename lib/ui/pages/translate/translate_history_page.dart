@@ -1,33 +1,33 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/writing_check_history.dart";
+import "package:ciyue/viewModels/translate_history_view_model.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
 
-class WritingCheckHistoryPage extends StatelessWidget {
-  const WritingCheckHistoryPage({super.key});
+class TranslateHistoryPage extends StatelessWidget {
+  const TranslateHistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => WritingCheckHistoryViewModel(),
-      child: const _WritingCheckHistoryPage(),
+      create: (context) => TranslateHistoryViewModel(),
+      child: const _TranslateHistoryPage(),
     );
   }
 }
 
-class _WritingCheckHistoryPage extends StatelessWidget {
-  const _WritingCheckHistoryPage();
+class _TranslateHistoryPage extends StatelessWidget {
+  const _TranslateHistoryPage();
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WritingCheckHistoryViewModel>(
+    return Consumer<TranslateHistoryViewModel>(
       builder: (context, viewModel, child) {
         final l10n = AppLocalizations.of(context)!;
         return Scaffold(
           appBar: AppBar(
             title: viewModel.isSelecting
                 ? Text(l10n.nSelected(viewModel.selectedIds.length))
-                : Text(l10n.writingCheckHistory),
+                : Text(l10n.translationHistory),
             leading: viewModel.isSelecting
                 ? IconButton(
                     icon: const Icon(Icons.close),
@@ -79,17 +79,6 @@ class _WritingCheckHistoryPage extends StatelessWidget {
                                     item.inputText,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                  ),
-                                  subtitle: Text(
-                                    item.outputText,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
-                                          color: Colors.grey,
-                                        ),
                                   ),
                                   onTap: () {
                                     if (viewModel.isSelecting) {
