@@ -12,6 +12,9 @@ class WritingCheckViewModel extends ChangeNotifier {
   String? _prompt;
   String? get prompt => _prompt;
 
+  String? _outputText;
+  String? get outputText => _outputText;
+
   List<WritingCheckHistoryData> _history = [];
   List<WritingCheckHistoryData> get history => _history;
 
@@ -30,8 +33,15 @@ class WritingCheckViewModel extends ChangeNotifier {
     final template =
         Provider.of<AIPrompts>(navigatorKey.currentContext!, listen: false)
             .writingCheckPrompt;
-    final inputText = textEditingController.text;
-    _prompt = template.replaceAll(r"$text", inputText);
+    _prompt = template.replaceAll(r"$text", textEditingController.text);
+    _outputText = null;
+    notifyListeners();
+  }
+
+  void loadFromHistory(WritingCheckHistoryData item) {
+    textEditingController.text = item.inputText;
+    _outputText = item.outputText;
+    _prompt = null;
     notifyListeners();
   }
 

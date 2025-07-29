@@ -1,7 +1,9 @@
+import "package:ciyue/database/app/app.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/writing_check.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:gpt_markdown/gpt_markdown.dart";
 import "package:provider/provider.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
 
@@ -30,8 +32,11 @@ class _WritingCheckPage extends StatelessWidget {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.history),
-                  onPressed: () {
-                    context.push("/writing_check/history");
+                  onPressed: () async {
+                    final result = await context.push("/writing_check/history");
+                    if (result is WritingCheckHistoryData) {
+                      viewModel.loadFromHistory(result);
+                    }
                   },
                 ),
               ],
@@ -51,7 +56,7 @@ class _WritingCheckPage extends StatelessWidget {
                               .label_enter_to_check,
                           alignLabelWithHint: true,
                         ),
-                        maxLines: 10,
+                        maxLines: 5,
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -66,6 +71,17 @@ class _WritingCheckPage extends StatelessWidget {
                             onResult: (outputText) {
                               viewModel.saveResult(outputText);
                             },
+                          ),
+                        ),
+                      if (viewModel.outputText != null)
+                        SingleChildScrollView(
+                          child: Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: SelectionArea(
+                                child: GptMarkdown(viewModel.outputText!),
+                              ),
+                            ),
                           ),
                         ),
                     ],
