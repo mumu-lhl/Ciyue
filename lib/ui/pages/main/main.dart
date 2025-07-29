@@ -1,4 +1,4 @@
-import "package:ciyue/ui/pages/main/ai_translate_page.dart";
+import "package:ciyue/ui/pages/translate/translate_page.dart";
 import "package:ciyue/ui/pages/main/home.dart";
 import "package:ciyue/ui/pages/main/settings.dart";
 import "package:ciyue/ui/pages/main/wordbook.dart";
