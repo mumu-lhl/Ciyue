@@ -313,5 +313,15 @@
   "translationProvider": "Translation Provider",
   "@translationProvider": {},
   "searchLanguage": "Search language",
-  "@searchLanguage": {}
+  "@searchLanguage": {},
+  "writingCheckHistory": "Writing Check History",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} selected",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
