@@ -391,3 +391,34 @@ class AiExplanationDao extends DatabaseAccessor<AppDatabase>
     return (delete(aiExplanations)..where((t) => t.word.isValue(word))).go();
   }
 }
+
+@DriftAccessor(tables: [WritingCheckHistory])
+class WritingCheckHistoryDao extends DatabaseAccessor<AppDatabase>
+    with _$WritingCheckHistoryDaoMixin {
+  WritingCheckHistoryDao(super.attachedDatabase);
+
+  Future<int> addHistory(String inputText, String outputText) {
+    return into(writingCheckHistory).insert(
+      WritingCheckHistoryCompanion(
+        inputText: Value(inputText),
+        outputText: Value(outputText),
+        createdAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<List<WritingCheckHistoryData>> getAllHistory() {
+    return (select(writingCheckHistory)
+          ..orderBy(
+              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
+        .get();
+  }
+
+  Future<void> clearHistory() {
+    return delete(writingCheckHistory).go();
+  }
+
+  Future<void> deleteHistory(int id) {
+    return (delete(writingCheckHistory)..where((t) => t.id.isValue(id))).go();
+  }
+}

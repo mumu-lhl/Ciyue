@@ -53,3 +53,11 @@ class AiExplanations extends Table {
   TextColumn get word => text().unique()();
   TextColumn get explanation => text()();
 }
+
+@TableIndex(name: "idx_writing_check_history", columns: {#id, #createdAt})
+class WritingCheckHistory extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get inputText => text()();
+  TextColumn get outputText => text()();
+  DateTimeColumn get createdAt => dateTime()();
+}

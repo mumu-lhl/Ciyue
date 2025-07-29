@@ -25,6 +25,7 @@ AppDatabase appDatabase() {
     MddAudioList,
     MddAudioResource,
     AiExplanations,
+    WritingCheckHistory,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -75,10 +76,14 @@ class AppDatabase extends _$AppDatabase {
           await m.create(schema.aiExplanations);
           await m.createIndex(schema.idxAiExplanations);
         },
+        from11To12: (m, schema) async {
+          await m.create(schema.writingCheckHistory);
+          await m.createIndex(schema.idxWritingCheckHistory);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 }

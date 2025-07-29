@@ -15,60 +15,62 @@ class AiTranslatePage extends StatelessWidget {
       child: Consumer<AiTranslateViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
-            appBar: AppBar(
-              actions: <Widget>[
-                IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  tooltip: AppLocalizations.of(context)!.more,
-                  onPressed: () => _showMoreDialog(context, viewModel),
-                ),
-              ],
-            ),
-            body: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _InputSection(
-                        inputController: viewModel.inputController,
+              appBar: AppBar(
+                actions: <Widget>[
+                  IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    tooltip: AppLocalizations.of(context)!.more,
+                    onPressed: () => _showMoreDialog(context, viewModel),
+                  ),
+                ],
+              ),
+              body: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _InputSection(
+                            inputController: viewModel.inputController,
+                          ),
+                          _LanguageSelectionSection(
+                            sourceLanguage: viewModel.sourceLanguage,
+                            targetLanguage: viewModel.targetLanguage,
+                            languageMap: languageMap,
+                            getLanguageName: viewModel.getLanguageName,
+                            onSourceChanged: (String? newValue) {
+                              if (newValue != null) {
+                                viewModel.setSourceLanguage(newValue);
+                              }
+                            },
+                            onTargetChanged: (String? newValue) {
+                              if (newValue != null) {
+                                viewModel.setTargetLanguage(newValue);
+                              }
+                            },
+                          ),
+                          _TranslateButton(
+                            onPressed: viewModel.inputController.text.isEmpty
+                                ? null
+                                : () => viewModel.translateText(context),
+                          ),
+                          if (viewModel.isLoading)
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 16.0),
+                              child: Center(child: CircularProgressIndicator()),
+                            ),
+                          _TranslatedTextSection(
+                              translatedText: viewModel.translatedText),
+                        ],
                       ),
-                      _LanguageSelectionSection(
-                        sourceLanguage: viewModel.sourceLanguage,
-                        targetLanguage: viewModel.targetLanguage,
-                        languageMap: languageMap,
-                        getLanguageName: viewModel.getLanguageName,
-                        onSourceChanged: (String? newValue) {
-                          if (newValue != null) {
-                            viewModel.setSourceLanguage(newValue);
-                          }
-                        },
-                        onTargetChanged: (String? newValue) {
-                          if (newValue != null) {
-                            viewModel.setTargetLanguage(newValue);
-                          }
-                        },
-                      ),
-                      _TranslateButton(
-                        onPressed: viewModel.inputController.text.isEmpty
-                            ? null
-                            : () => viewModel.translateText(context),
-                      ),
-                      if (viewModel.isLoading)
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 16.0),
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                      _TranslatedTextSection(
-                          translatedText: viewModel.translatedText),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          );
+              ));
         },
       ),
     );
@@ -208,15 +210,11 @@ class _TranslatedTextSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 16.0),
-        child: SingleChildScrollView(
-          child: SelectionArea(
-            child: GptMarkdown(
-              translatedText,
-            ),
-          ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0),
+      child: SelectionArea(
+        child: GptMarkdown(
+          translatedText,
         ),
       ),
     );
