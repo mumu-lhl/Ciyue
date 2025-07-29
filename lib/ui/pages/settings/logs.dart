@@ -28,6 +28,17 @@ class LogsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.logs),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.copy_all_outlined),
+            onPressed: () {
+              final allLogs = loggerOutput.buffer
+                  .map((log) => log.lines.join("\n"))
+                  .join("\n\n");
+              addToClipboard(context, allLogs);
+            },
+          ),
+        ],
       ),
       body: ListView.builder(
         itemCount: loggerOutput.buffer.length,
