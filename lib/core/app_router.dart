@@ -1,4 +1,5 @@
 import "package:ciyue/ui/pages/writing_check/writing_check.dart";
+import "package:ciyue/ui/pages/writing_check/writing_check_history.dart";
 import "package:ciyue/ui/core/word_display.dart";
 import "package:ciyue/ui/pages/main/main.dart";
 import "package:ciyue/ui/pages/settings/about.dart";
@@ -179,6 +180,13 @@ final router = GoRouter(
       pageBuilder: (context, state) => slideTransitionPageBuilder(
         key: state.pageKey,
         child: const WritingCheckPage(),
+      ),
+    ),
+    GoRoute(
+      path: "/writing_check/history",
+      pageBuilder: (context, state) => slideTransitionPageBuilder(
+        key: state.pageKey,
+        child: const WritingCheckHistoryPage(),
       ),
     ),
     GoRoute(
