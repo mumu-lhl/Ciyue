@@ -1,8 +1,11 @@
 import "dart:ui" as ui;
 
+import "package:ciyue/core/app_router.dart";
+import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/translation.dart";
 import "package:flutter/material.dart";
+import "package:provider/provider.dart";
 
 class AiTranslateViewModel extends ChangeNotifier {
   final TextEditingController inputController = TextEditingController();
@@ -56,11 +59,16 @@ class AiTranslateViewModel extends ChangeNotifier {
   }
 
   Future<void> translateText(BuildContext context) async {
+    if (inputController.text.trim().isEmpty) return;
     _isLoading = true;
     _translatedText = "";
     notifyListeners();
 
     try {
+      Provider.of<TranslateHistoryDao>(navigatorKey.currentContext!,
+              listen: false)
+          .addHistory(inputController.text.trim());
+
       TranslationService service;
       switch (settings.translationProvider) {
         case "google":

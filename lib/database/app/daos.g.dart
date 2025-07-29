@@ -32,3 +32,7 @@ mixin _$WritingCheckHistoryDaoMixin on DatabaseAccessor<AppDatabase> {
   $WritingCheckHistoryTable get writingCheckHistory =>
       attachedDatabase.writingCheckHistory;
 }
+mixin _$TranslateHistoryDaoMixin on DatabaseAccessor<AppDatabase> {
+  $TranslateHistoryTable get translateHistory =>
+      attachedDatabase.translateHistory;
+}

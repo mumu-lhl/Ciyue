@@ -426,3 +426,37 @@ class WritingCheckHistoryDao extends DatabaseAccessor<AppDatabase>
     return (delete(writingCheckHistory)..where((t) => t.id.isIn(ids))).go();
   }
 }
+
+@DriftAccessor(tables: [TranslateHistory])
+class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
+    with _$TranslateHistoryDaoMixin {
+  TranslateHistoryDao(super.attachedDatabase);
+
+  Future<int> addHistory(String inputText) {
+    return into(translateHistory).insert(
+      TranslateHistoryCompanion(
+        inputText: Value(inputText),
+        createdAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<List<TranslateHistoryData>> getAllHistory() {
+    return (select(translateHistory)
+          ..orderBy(
+              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
+        .get();
+  }
+
+  Future<void> clearHistory() {
+    return delete(translateHistory).go();
+  }
+
+  Future<void> deleteHistory(int id) {
+    return (delete(translateHistory)..where((t) => t.id.isValue(id))).go();
+  }
+
+  Future<void> deleteHistories(List<int> ids) {
+    return (delete(translateHistory)..where((t) => t.id.isIn(ids))).go();
+  }
+}
