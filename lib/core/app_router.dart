@@ -16,7 +16,7 @@ import "package:ciyue/ui/pages/settings/other.dart";
 import "package:ciyue/ui/pages/settings/privacy_policy.dart";
 import "package:ciyue/ui/pages/settings/terms_of_service.dart";
 import "package:ciyue/ui/pages/settings/update.dart";
-import "package:ciyue/ui/pages/settings/logger.dart";
+import "package:ciyue/ui/pages/settings/logs.dart";
 import "package:ciyue/ui/core/ai_explanation_edit_page.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
