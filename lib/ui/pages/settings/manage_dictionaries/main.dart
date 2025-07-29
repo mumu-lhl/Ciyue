@@ -564,7 +564,11 @@ class ManageDictionariesBody extends StatelessWidget {
         }
 
         if (children.isEmpty) {
-          return Center(child: Text(AppLocalizations.of(context)!.empty));
+          return Center(
+              child: Text(
+            AppLocalizations.of(context)!.empty,
+            style: Theme.of(context).textTheme.titleLarge,
+          ));
         } else {
           return ReorderableListView(
             buildDefaultDragHandles: false,

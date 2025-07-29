@@ -8,23 +8,24 @@ import "package:package_info_plus/package_info_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 late final Color? accentColor;
-final DictGroupDao dictGroupDao = DictGroupDao(mainDatabase);
-final DictionaryListDao dictionaryListDao = DictionaryListDao(mainDatabase);
-late final FlutterTts flutterTts;
-final HistoryDao historyDao = HistoryDao(mainDatabase);
 final AppDatabase mainDatabase = appDatabase();
-final MddAudioListDao mddAudioListDao = MddAudioListDao(mainDatabase);
-final MddAudioResourceDao mddAudioResourceDao =
-    MddAudioResourceDao(mainDatabase);
 late final PackageInfo packageInfo;
 late final SharedPreferencesWithCache prefs;
 late final VoidCallback refreshAll;
+late final FlutterTts flutterTts;
 String searchWordFromProcessText = "";
 late final List<dynamic> ttsEngines;
 final List<dynamic> ttsLanguages = [];
 String? windowsWebview2Directory;
-final WordbookDao wordbookDao = WordbookDao(mainDatabase);
-final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(mainDatabase);
+
+// Daos
+final dictGroupDao = DictGroupDao(mainDatabase);
+final dictionaryListDao = DictionaryListDao(mainDatabase);
+final historyDao = HistoryDao(mainDatabase);
+final mddAudioListDao = MddAudioListDao(mainDatabase);
+final mddAudioResourceDao = MddAudioResourceDao(mainDatabase);
+final wordbookDao = WordbookDao(mainDatabase);
+final wordbookTagsDao = WordbookTagsDao(mainDatabase);
 
 // Logger
 final loggerOutput = MemoryOutput(bufferSize: 100);
