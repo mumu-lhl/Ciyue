@@ -25,7 +25,22 @@ class _TranslateHistoryPage extends StatelessWidget {
         final l10n = AppLocalizations.of(context)!;
         return Scaffold(
           appBar: AppBar(
-            title: Text(l10n.translationHistory),
+            title: viewModel.isSelecting
+                ? Text(l10n.nSelected(viewModel.selectedIds.length))
+                : Text(l10n.translationHistory),
+            leading: viewModel.isSelecting
+                ? IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: viewModel.clearSelection,
+                  )
+                : null,
+            actions: [
+              if (viewModel.isSelecting)
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: viewModel.deleteSelected,
+                ),
+            ],
           ),
           body: Center(
             child: ConstrainedBox(
@@ -47,11 +62,18 @@ class _TranslateHistoryPage extends StatelessWidget {
                             itemCount: viewModel.history.length,
                             itemBuilder: (context, index) {
                               final item = viewModel.history[index];
+                              final isSelected =
+                                  viewModel.selectedIds.contains(item.id);
                               return Card(
                                 key: ValueKey(item.id),
                                 clipBehavior: Clip.antiAlias,
                                 margin:
                                     const EdgeInsets.symmetric(vertical: 4.0),
+                                color: isSelected
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
+                                    : null,
                                 child: ListTile(
                                   title: Text(
                                     item.inputText,
@@ -59,14 +81,29 @@ class _TranslateHistoryPage extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   onTap: () {
-                                    Navigator.of(context).pop(item);
+                                    if (viewModel.isSelecting) {
+                                      viewModel.toggleSelection(item.id);
+                                    } else {
+                                      Navigator.of(context).pop(item);
+                                    }
                                   },
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.delete_outline),
-                                    onPressed: () {
-                                      viewModel.deleteHistory(item.id);
-                                    },
-                                  ),
+                                  onLongPress: () {
+                                    viewModel.toggleSelection(item.id);
+                                  },
+                                  trailing: viewModel.isSelecting
+                                      ? Checkbox(
+                                          value: isSelected,
+                                          onChanged: (value) {
+                                            viewModel.toggleSelection(item.id);
+                                          },
+                                        )
+                                      : IconButton(
+                                          icon:
+                                              const Icon(Icons.delete_outline),
+                                          onPressed: () {
+                                            viewModel.deleteHistory(item.id);
+                                          },
+                                        ),
                                 ),
                               );
                             },

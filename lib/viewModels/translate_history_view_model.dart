@@ -11,6 +11,10 @@ class TranslateHistoryViewModel with ChangeNotifier {
   List<TranslateHistoryData> _history = [];
   List<TranslateHistoryData> get history => _history;
 
+  final _selectedIds = <int>[];
+  List<int> get selectedIds => _selectedIds;
+  bool get isSelecting => _selectedIds.isNotEmpty;
+
   TranslateHistoryViewModel() {
     _loadHistory();
   }
@@ -33,6 +37,29 @@ class TranslateHistoryViewModel with ChangeNotifier {
             listen: false)
         .deleteHistory(id);
     _history.removeWhere((item) => item.id == id);
+    notifyListeners();
+  }
+
+  void toggleSelection(int id) {
+    if (_selectedIds.contains(id)) {
+      _selectedIds.remove(id);
+    } else {
+      _selectedIds.add(id);
+    }
+    notifyListeners();
+  }
+
+  void clearSelection() {
+    _selectedIds.clear();
+    notifyListeners();
+  }
+
+  Future<void> deleteSelected() async {
+    await Provider.of<TranslateHistoryDao>(navigatorKey.currentContext!,
+            listen: false)
+        .deleteHistories(_selectedIds);
+    _history.removeWhere((item) => _selectedIds.contains(item.id));
+    _selectedIds.clear();
     notifyListeners();
   }
 }
