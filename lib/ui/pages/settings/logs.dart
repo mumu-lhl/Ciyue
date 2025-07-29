@@ -1,8 +1,8 @@
-import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/utils.dart";
+import "package:ciyue/viewModels/logs_view_model.dart";
 import "package:flutter/material.dart";
 import "package:logger/logger.dart";
+import "package:provider/provider.dart";
 
 class LogsPage extends StatelessWidget {
   const LogsPage({super.key});
@@ -25,33 +25,59 @@ class LogsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.logs),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.copy_all_outlined),
-            onPressed: () {
-              final allLogs = loggerOutput.buffer
-                  .map((log) => log.lines.join("\n"))
-                  .join("\n\n");
-              addToClipboard(context, allLogs);
-            },
-          ),
-        ],
-      ),
-      body: ListView.builder(
-        itemCount: loggerOutput.buffer.length,
-        itemBuilder: (context, index) {
-          final log = loggerOutput.buffer.elementAt(index);
-          final logText = log.lines.join("\n");
+    return ChangeNotifierProvider(
+      create: (_) => LogsViewModel(),
+      child: Consumer<LogsViewModel>(
+        builder: (context, viewModel, child) {
+          return Scaffold(
+            appBar: viewModel.isMultiSelectMode
+                ? AppBar(
+                    leading: IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: viewModel.clearSelection,
+                    ),
+                    title: Text("${viewModel.selectedIndices.length} selected"),
+                    actions: [
+                      IconButton(
+                        icon: const Icon(Icons.copy),
+                        onPressed: () => viewModel.copySelectedLogs(context),
+                      ),
+                    ],
+                  )
+                : AppBar(
+                    title: Text(AppLocalizations.of(context)!.logs),
+                    actions: [
+                      IconButton(
+                        icon: const Icon(Icons.copy_all_outlined),
+                        onPressed: () => viewModel.copyAllLogs(context),
+                      ),
+                    ],
+                  ),
+            body: ListView.builder(
+              itemCount: viewModel.logs.length,
+              itemBuilder: (context, index) {
+                final log = viewModel.logs.elementAt(index);
+                final logText = log.lines.join("\n");
 
-          return ListTile(
-            title: Text(
-              logText,
-              style: TextStyle(color: _getLogColor(log.level, context)),
+                return ListTile(
+                  selectedTileColor:
+                      Theme.of(context).colorScheme.secondaryContainer,
+                  title: Text(
+                    logText,
+                    style: TextStyle(color: _getLogColor(log.level, context)),
+                  ),
+                  selected: viewModel.selectedIndices.contains(index),
+                  onTap: () {
+                    if (viewModel.isMultiSelectMode) {
+                      viewModel.toggleSelection(index);
+                    } else {
+                      viewModel.copyLog(context, logText);
+                    }
+                  },
+                  onLongPress: () => viewModel.toggleSelection(index),
+                );
+              },
             ),
-            onTap: () => addToClipboard(context, logText),
           );
         },
       ),
