@@ -38,35 +38,32 @@ class _WritingCheckHistoryPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final item = viewModel.history[index];
                     return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      key: ValueKey(item.id),
                       clipBehavior: Clip.antiAlias,
-                      child: InkWell(
+                      margin: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: ListTile(
+                        title: Text(
+                          item.inputText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          item.outputText,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey,
+                                  ),
+                        ),
                         onTap: () {
                           Navigator.of(context).pop(item);
                         },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.inputText,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                item.outputText,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: Colors.grey,
-                                    ),
-                              ),
-                            ],
-                          ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () {
+                            viewModel.deleteHistory(item.id);
+                          },
                         ),
                       ),
                     );

@@ -417,4 +417,8 @@ class WritingCheckHistoryDao extends DatabaseAccessor<AppDatabase>
   Future<void> clearHistory() {
     return delete(writingCheckHistory).go();
   }
+
+  Future<void> deleteHistory(int id) {
+    return (delete(writingCheckHistory)..where((t) => t.id.isValue(id))).go();
+  }
 }

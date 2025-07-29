@@ -21,6 +21,10 @@ class WritingCheckHistoryRepository {
     return _dao.clearHistory();
   }
 
+  Future<void> deleteHistory(int id) {
+    return _dao.deleteHistory(id);
+  }
+
   static WritingCheckHistoryRepository of(BuildContext context) {
     return Provider.of<WritingCheckHistoryRepository>(context, listen: false);
   }

@@ -16,4 +16,10 @@ class WritingCheckHistoryViewModel with ChangeNotifier {
     _history = await _repository.getAllHistory();
     notifyListeners();
   }
+
+  Future<void> deleteHistory(int id) async {
+    await _repository.deleteHistory(id);
+    _history.removeWhere((item) => item.id == id);
+    notifyListeners();
+  }
 }
