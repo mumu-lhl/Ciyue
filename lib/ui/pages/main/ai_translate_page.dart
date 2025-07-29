@@ -1,5 +1,6 @@
 import "package:ciyue/services/translation.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/pages/main/ai_translate_settings_page.dart";
 import "package:ciyue/viewModels/ai_translate_view_model.dart";
 import "package:flutter/material.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
@@ -18,9 +19,19 @@ class AiTranslatePage extends StatelessWidget {
               appBar: AppBar(
                 actions: <Widget>[
                   IconButton(
-                    icon: const Icon(Icons.more_vert),
-                    tooltip: AppLocalizations.of(context)!.more,
-                    onPressed: () => _showMoreDialog(context, viewModel),
+                    icon: const Icon(Icons.settings),
+                    tooltip: AppLocalizations.of(context)!.settings,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChangeNotifierProvider.value(
+                            value: viewModel,
+                            child: const AiTranslateSettingsPage(),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -73,28 +84,6 @@ class AiTranslatePage extends StatelessWidget {
               ));
         },
       ),
-    );
-  }
-
-  void _showMoreDialog(BuildContext context, AiTranslateViewModel viewModel) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return _MoreOptionsDialog(
-          isRichOutput: viewModel.isRichOutput,
-          onOutputTypeChanged: (bool? newValue) {
-            if (newValue != null) {
-              viewModel.setRichOutput(newValue);
-            }
-          },
-          translationProvider: viewModel.translationProvider,
-          onTranslationProviderChanged: (String? newValue) {
-            if (newValue != null) {
-              viewModel.setTranslationProvider(newValue);
-            }
-          },
-        );
-      },
     );
   }
 }
@@ -217,75 +206,6 @@ class _TranslatedTextSection extends StatelessWidget {
           translatedText,
         ),
       ),
-    );
-  }
-}
-
-class _MoreOptionsDialog extends StatelessWidget {
-  const _MoreOptionsDialog({
-    required this.isRichOutput,
-    required this.onOutputTypeChanged,
-    required this.translationProvider,
-    required this.onTranslationProviderChanged,
-  });
-
-  final bool isRichOutput;
-  final ValueChanged<bool?> onOutputTypeChanged;
-  final String translationProvider;
-  final ValueChanged<String?> onTranslationProviderChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.more),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          DropdownButtonFormField<bool>(
-            decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.outputType,
-              border: const OutlineInputBorder(),
-            ),
-            value: isRichOutput,
-            items: [
-              DropdownMenuItem(
-                value: true,
-                child: Text(AppLocalizations.of(context)!.richOutput),
-              ),
-              DropdownMenuItem(
-                value: false,
-                child: Text(AppLocalizations.of(context)!.simpleOutput),
-              ),
-            ],
-            onChanged: onOutputTypeChanged,
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.translationProvider,
-              border: const OutlineInputBorder(),
-            ),
-            value: translationProvider,
-            items: [
-              DropdownMenuItem(
-                value: "ai",
-                child: const Text("AI"),
-              ),
-              DropdownMenuItem(
-                value: "google",
-                child: const Text("Google"),
-              ),
-            ],
-            onChanged: onTranslationProviderChanged,
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(AppLocalizations.of(context)!.close),
-        )
-      ],
     );
   }
 }
