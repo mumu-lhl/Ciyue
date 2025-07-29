@@ -25,10 +25,7 @@ class AiTranslatePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ChangeNotifierProvider.value(
-                            value: viewModel,
-                            child: const AiTranslateSettingsPage(),
-                          ),
+                          builder: (_) => const AiTranslateSettingsPage(),
                         ),
                       );
                     },

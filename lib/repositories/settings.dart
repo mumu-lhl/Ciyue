@@ -44,6 +44,8 @@ class _Settings {
   late String? ttsLanguage;
 
   late String translationProvider;
+  late String? deeplxUrl;
+  late bool isRichOutput;
 
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
@@ -86,6 +88,8 @@ class _Settings {
     aiProvider = prefs.getString("aiProvider") ?? "openai";
     aiExplainWord = prefs.getBool("aiExplainWord") ?? false;
     translationProvider = prefs.getString("translationProvider") ?? "ai";
+    deeplxUrl = prefs.getString("deeplxUrl");
+    isRichOutput = prefs.getBool("isRichOutput") ?? true;
 
     ttsEngine = prefs.getString("ttsEngine");
     ttsLanguage = prefs.getString("ttsLanguage");
@@ -172,5 +176,15 @@ class _Settings {
   Future<void> setTranslationProvider(String provider) async {
     translationProvider = provider;
     await prefs.setString("translationProvider", provider);
+  }
+
+  Future<void> setDeeplxUrl(String url) async {
+    deeplxUrl = url;
+    await prefs.setString("deeplxUrl", url);
+  }
+
+  Future<void> setRichOutput(bool value) async {
+    isRichOutput = value;
+    await prefs.setBool("isRichOutput", value);
   }
 }

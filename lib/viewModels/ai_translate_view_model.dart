@@ -6,7 +6,6 @@ import "package:flutter/material.dart";
 
 class AiTranslateViewModel extends ChangeNotifier {
   final TextEditingController inputController = TextEditingController();
-  bool _isRichOutput = true;
   String _sourceLanguage = "auto";
   String _targetLanguage = settings.language! == "system"
       ? ui.PlatformDispatcher.instance.locale.languageCode
@@ -20,17 +19,12 @@ class AiTranslateViewModel extends ChangeNotifier {
     });
   }
 
-  bool get isRichOutput => _isRichOutput;
+  bool get isRichOutput => settings.isRichOutput;
   String get sourceLanguage => _sourceLanguage;
   String get targetLanguage => _targetLanguage;
   String get translatedText => _translatedText;
   bool get isLoading => _isLoading;
   String get translationProvider => settings.translationProvider;
-
-  void setRichOutput(bool value) {
-    _isRichOutput = value;
-    notifyListeners();
-  }
 
   void setSourceLanguage(String value) {
     _sourceLanguage = value;
@@ -58,10 +52,15 @@ class AiTranslateViewModel extends ChangeNotifier {
 
     try {
       TranslationService service;
-      if (settings.translationProvider == "google") {
-        service = GoogleTranslationService();
-      } else {
-        service = AITranslationService();
+      switch (settings.translationProvider) {
+        case "google":
+          service = GoogleTranslationService();
+          break;
+        case "deeplx":
+          service = DeepLXTranslationService();
+          break;
+        default:
+          service = AITranslationService();
       }
 
       final translationResult = await service.translate(
@@ -69,7 +68,7 @@ class AiTranslateViewModel extends ChangeNotifier {
         text: inputController.text.trim(),
         sourceLanguage: _sourceLanguage,
         targetLanguage: _targetLanguage,
-        isRichOutput: _isRichOutput,
+        isRichOutput: settings.isRichOutput,
       );
 
       _translatedText = translationResult;
