@@ -311,5 +311,7 @@
   "logs": "Logs",
   "@logs": {},
   "translationProvider": "Translation Provider",
-  "@translationProvider": {}
+  "@translationProvider": {},
+  "searchLanguage": "Search language",
+  "@searchLanguage": {}
 }

@@ -1,7 +1,12 @@
+import "dart:convert";
+
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:flutter/material.dart";
+
+import "package:dio/dio.dart";
 import "package:provider/provider.dart";
 import "package:translator/translator.dart";
 
@@ -72,6 +77,54 @@ class GoogleTranslationService implements TranslationService {
       to: languageCodeMap[targetLanguage] ?? targetLanguage,
     );
     return translation.text;
+  }
+}
+
+class DeepLXTranslationService implements TranslationService {
+  final _dio = Dio();
+
+  static const languageCodeMap = {
+    "auto": "auto",
+    "zh_HK": "ZH",
+    "zh_TW": "ZH",
+  };
+
+  @override
+  Future<String> translate(
+    BuildContext context, {
+    required String text,
+    required String sourceLanguage,
+    required String targetLanguage,
+    required bool isRichOutput,
+  }) async {
+    final url = settings.deeplxUrl;
+    if (url == null || url.isEmpty) {
+      throw Exception("DeepLX URL is not configured.");
+    }
+
+    final headers = {
+      "Content-Type": "application/json",
+    };
+    final data = {
+      "text": text,
+      "source_lang":
+          languageCodeMap[sourceLanguage] ?? sourceLanguage.toUpperCase(),
+      "target_lang":
+          languageCodeMap[targetLanguage] ?? targetLanguage.toUpperCase(),
+    };
+
+    final response = await _dio.post(
+      url,
+      options: Options(headers: headers),
+      data: jsonEncode(data),
+    );
+    logger.d(url);
+
+    if (response.statusCode == 200) {
+      return response.data["data"];
+    } else {
+      throw Exception("Failed to translate with DeepLX: ${response.data}");
+    }
   }
 }
 

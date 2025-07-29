@@ -38,26 +38,19 @@ final router = GoRouter(
     ),
     GoRoute(
       path: "/word",
-      pageBuilder: (context, state) {
+      builder: (context, state) {
         final extra = state.extra as Map<String, String>;
-        return slideTransitionPageBuilder(
-          key: state.pageKey,
-          child: WordDisplay(word: extra["word"]!),
-        );
+        return WordDisplay(word: extra["word"]!);
       },
     ),
     GoRoute(
       path: "/edit_ai_explanation",
-      pageBuilder: (context, state) {
+      builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>;
-        return slideTransitionPageBuilder(
-          key: state.pageKey,
-          child: AIExplanationEditPage(
-            word: extra["word"]! as String,
-            initialExplanation: extra["initialExplanation"]! as String,
-            aiExplanationModel:
-                extra["aiExplanationModel"] as AIExplanationModel,
-          ),
+        return AIExplanationEditPage(
+          word: extra["word"]! as String,
+          initialExplanation: extra["initialExplanation"]! as String,
+          aiExplanationModel: extra["aiExplanationModel"] as AIExplanationModel,
         );
       },
     ),
@@ -68,105 +61,63 @@ final router = GoRouter(
             )),
     GoRoute(
       path: "/settings/autoExport",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const AutoExportSettingsPage(),
-      ),
+      builder: (context, state) => const AutoExportSettingsPage(),
     ),
     GoRoute(
       path: "/settings/dictionaries",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const ManageDictionariesPage(),
-      ),
+      builder: (context, state) => const ManageDictionariesPage(),
     ),
     GoRoute(
       path: "/settings/ai_settings",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const AiSettingsPage(),
-      ),
+      builder: (context, state) => const AiSettingsPage(),
     ),
     GoRoute(
       path: "/settings/terms_of_service",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const TermsOfServicePage(),
-      ),
+      builder: (context, state) => const TermsOfServicePage(),
     ),
     GoRoute(
       path: "/settings/privacy_policy",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const PrivacyPolicyPage(),
-      ),
+      builder: (context, state) => const PrivacyPolicyPage(),
     ),
     GoRoute(
       path: "/settings/audio",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const AudioSettingsPage(),
-      ),
+      builder: (context, state) => const AudioSettingsPage(),
     ),
     GoRoute(
       path: "/settings/appearance",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const AppearanceSettingsPage(),
-      ),
+      builder: (context, state) => const AppearanceSettingsPage(),
     ),
     GoRoute(
       path: "/settings/backup",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const BackupSettingsPage(),
-      ),
+      builder: (context, state) => const BackupSettingsPage(),
     ),
     GoRoute(
       path: "/settings/update",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const UpdateSettingsPage(),
-      ),
+      builder: (context, state) => const UpdateSettingsPage(),
     ),
     GoRoute(
       path: "/settings/other",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const OtherSettingsPage(),
-      ),
+      builder: (context, state) => const OtherSettingsPage(),
     ),
     GoRoute(
       path: "/settings/about",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const AboutSettingsPage(),
-      ),
+      builder: (context, state) => const AboutSettingsPage(),
     ),
     GoRoute(
       path: "/settings/history",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const HistorySettingsPage(),
-      ),
+      builder: (context, state) => const HistorySettingsPage(),
     ),
     GoRoute(
       path: "/settings/dictionary/:dictId",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: SettingsDictionaryPage(
-          dictId: int.parse(state.pathParameters["dictId"]!),
-        ),
+      builder: (context, state) => SettingsDictionaryPage(
+        dictId: int.parse(state.pathParameters["dictId"]!),
       ),
     ),
     GoRoute(
       path: "/settings/storage_management",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: ChangeNotifierProvider(
-          create: (context) => StorageManagementViewModel(),
-          child: const StorageManagementPage(),
-        ),
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (context) => StorageManagementViewModel(),
+        child: const StorageManagementPage(),
       ),
     ),
     GoRoute(
@@ -177,44 +128,15 @@ final router = GoRouter(
             )),
     GoRoute(
       path: "/writing_check",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const WritingCheckPage(),
-      ),
+      builder: (context, state) => const WritingCheckPage(),
     ),
     GoRoute(
       path: "/writing_check/history",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const WritingCheckHistoryPage(),
-      ),
+      builder: (context, state) => const WritingCheckHistoryPage(),
     ),
     GoRoute(
       path: "/settings/logs",
-      pageBuilder: (context, state) => slideTransitionPageBuilder(
-        key: state.pageKey,
-        child: const LogsPage(),
-      ),
+      builder: (context, state) => const LogsPage(),
     ),
   ],
 );
-
-CustomTransitionPage<void> slideTransitionPageBuilder({
-  required LocalKey key,
-  required Widget child,
-}) {
-  return CustomTransitionPage<void>(
-    key: key,
-    child: child,
-    transitionDuration: const Duration(milliseconds: 200),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(1.0, 0.0),
-          end: Offset.zero,
-        ).animate(animation),
-        child: child,
-      );
-    },
-  );
-}

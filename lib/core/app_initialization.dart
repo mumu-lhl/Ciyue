@@ -139,6 +139,8 @@ Future<void> initPrefs() async {
     "versionCode",
     "dictionarySwitchStyle",
     "translationProvider",
+    "deeplxUrl",
+    "isRichOutput",
   }));
 
   logger.d("Shared preferences initialized successfully.");

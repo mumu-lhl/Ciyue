@@ -1,5 +1,6 @@
-import "package:ciyue/services/translation.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/language_picker.dart";
+import "package:ciyue/ui/pages/main/ai_translate_settings_page.dart";
 import "package:ciyue/viewModels/ai_translate_view_model.dart";
 import "package:flutter/material.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
@@ -15,86 +16,102 @@ class AiTranslatePage extends StatelessWidget {
       child: Consumer<AiTranslateViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
-              appBar: AppBar(
-                actions: <Widget>[
-                  IconButton(
-                    icon: const Icon(Icons.more_vert),
-                    tooltip: AppLocalizations.of(context)!.more,
-                    onPressed: () => _showMoreDialog(context, viewModel),
-                  ),
-                ],
-              ),
-              body: Align(
-                alignment: Alignment.topCenter,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _InputSection(
-                            inputController: viewModel.inputController,
-                          ),
-                          _LanguageSelectionSection(
-                            sourceLanguage: viewModel.sourceLanguage,
-                            targetLanguage: viewModel.targetLanguage,
-                            languageMap: languageMap,
-                            getLanguageName: viewModel.getLanguageName,
-                            onSourceChanged: (String? newValue) {
-                              if (newValue != null) {
-                                viewModel.setSourceLanguage(newValue);
-                              }
-                            },
-                            onTargetChanged: (String? newValue) {
-                              if (newValue != null) {
-                                viewModel.setTargetLanguage(newValue);
-                              }
-                            },
-                          ),
-                          _TranslateButton(
-                            onPressed: viewModel.inputController.text.isEmpty
-                                ? null
-                                : () => viewModel.translateText(context),
-                          ),
-                          if (viewModel.isLoading)
-                            const Padding(
-                              padding: EdgeInsets.only(bottom: 16.0),
-                              child: Center(child: CircularProgressIndicator()),
-                            ),
-                          _TranslatedTextSection(
-                              translatedText: viewModel.translatedText),
-                        ],
+            appBar: AppBar(
+              actions: <Widget>[
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  tooltip: AppLocalizations.of(context)!.settings,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AiTranslateSettingsPage(),
                       ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            body: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _InputSection(
+                          inputController: viewModel.inputController,
+                        ),
+                        _LanguageSelectionRow(
+                          sourceLanguage: viewModel.sourceLanguage,
+                          targetLanguage: viewModel.targetLanguage,
+                          getLanguageName: viewModel.getLanguageName,
+                          onSwap: viewModel.swapLanguages,
+                          onSourceTap: () => _showLanguagePicker(
+                            context,
+                            viewModel,
+                            true,
+                          ),
+                          onTargetTap: () => _showLanguagePicker(
+                            context,
+                            viewModel,
+                            false,
+                          ),
+                        ),
+                        _TranslateButton(
+                          onPressed: viewModel.inputController.text.isEmpty
+                              ? null
+                              : () => viewModel.translateText(context),
+                        ),
+                        if (viewModel.isLoading)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 16.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                        _TranslatedTextSection(
+                          translatedText: viewModel.translatedText,
+                          translationProvider: viewModel.translationProvider,
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ));
+              ),
+            ),
+          );
         },
       ),
     );
   }
 
-  void _showMoreDialog(BuildContext context, AiTranslateViewModel viewModel) {
-    showDialog<void>(
+  void _showLanguagePicker(
+    BuildContext context,
+    AiTranslateViewModel viewModel,
+    bool isSource,
+  ) {
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return _MoreOptionsDialog(
-          isRichOutput: viewModel.isRichOutput,
-          onOutputTypeChanged: (bool? newValue) {
-            if (newValue != null) {
-              viewModel.setRichOutput(newValue);
+      isScrollControlled: true,
+      builder: (_) => FractionallySizedBox(
+        heightFactor: 0.8,
+        widthFactor: 0.9,
+        child: LanguagePicker(
+          selectedLanguage:
+              isSource ? viewModel.sourceLanguage : viewModel.targetLanguage,
+          onLanguageSelected: (languageCode) {
+            if (isSource) {
+              viewModel.setSourceLanguage(languageCode);
+            } else {
+              viewModel.setTargetLanguage(languageCode);
             }
+            Navigator.pop(context);
           },
-          translationProvider: viewModel.translationProvider,
-          onTranslationProviderChanged: (String? newValue) {
-            if (newValue != null) {
-              viewModel.setTranslationProvider(newValue);
-            }
-          },
-        );
-      },
+          isSource: isSource,
+        ),
+      ),
     );
   }
 }
@@ -122,66 +139,69 @@ class _InputSection extends StatelessWidget {
   }
 }
 
-class _LanguageSelectionSection extends StatelessWidget {
-  const _LanguageSelectionSection({
+class _LanguageSelectionRow extends StatelessWidget {
+  const _LanguageSelectionRow({
     required this.sourceLanguage,
     required this.targetLanguage,
-    required this.languageMap,
     required this.getLanguageName,
-    required this.onSourceChanged,
-    required this.onTargetChanged,
+    required this.onSwap,
+    required this.onSourceTap,
+    required this.onTargetTap,
   });
 
   final String sourceLanguage;
   final String targetLanguage;
-  final Map<String, String> languageMap;
   final String Function(String) getLanguageName;
-  final ValueChanged<String?> onSourceChanged;
-  final ValueChanged<String?> onTargetChanged;
+  final VoidCallback onSwap;
+  final VoidCallback onSourceTap;
+  final VoidCallback onTargetTap;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.sourceLanguage,
-              border: const OutlineInputBorder(),
-            ),
-            value: sourceLanguage,
-            items:
-                languageMap.keys.map<DropdownMenuItem<String>>((String code) {
-              return DropdownMenuItem<String>(
-                value: code,
-                child: Text(getLanguageName(code) == "Auto Detect"
-                    ? AppLocalizations.of(context)!.autoDetect
-                    : getLanguageName(code)),
-              );
-            }).toList(),
-            onChanged: onSourceChanged,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _LanguageChip(
+            languageName: getLanguageName(sourceLanguage) == "Auto Detect"
+                ? AppLocalizations.of(context)!.autoDetect
+                : getLanguageName(sourceLanguage),
+            onTap: onSourceTap,
           ),
-        ),
-        const SizedBox(width: 16.0),
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.targetLanguage,
-              border: const OutlineInputBorder(),
-            ),
-            value: targetLanguage,
-            items: languageMap.keys
-                .where((code) => code != "auto")
-                .map<DropdownMenuItem<String>>((String code) {
-              return DropdownMenuItem<String>(
-                value: code,
-                child: Text(getLanguageName(code)),
-              );
-            }).toList(),
-            onChanged: onTargetChanged,
+          IconButton(
+            icon: const Icon(Icons.swap_horiz),
+            onPressed: onSwap,
           ),
+          _LanguageChip(
+            languageName: getLanguageName(targetLanguage),
+            onTap: onTargetTap,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LanguageChip extends StatelessWidget {
+  const _LanguageChip({required this.languageName, required this.onTap});
+
+  final String languageName;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(color: Theme.of(context).dividerColor),
+          borderRadius: BorderRadius.circular(20),
         ),
-      ],
+        child: Text(languageName),
+      ),
     );
   }
 }
@@ -204,88 +224,35 @@ class _TranslateButton extends StatelessWidget {
 }
 
 class _TranslatedTextSection extends StatelessWidget {
-  const _TranslatedTextSection({required this.translatedText});
+  const _TranslatedTextSection({
+    required this.translatedText,
+    required this.translationProvider,
+  });
 
   final String translatedText;
+  final String translationProvider;
 
   @override
   Widget build(BuildContext context) {
+    final Widget child;
+    switch (translationProvider) {
+      case "AI":
+        child = GptMarkdown(
+          translatedText,
+        );
+        break;
+      default:
+        child = Text(
+          translatedText,
+          style: const TextStyle(fontSize: 20.0),
+        );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: SelectionArea(
-        child: GptMarkdown(
-          translatedText,
-        ),
+        child: child,
       ),
-    );
-  }
-}
-
-class _MoreOptionsDialog extends StatelessWidget {
-  const _MoreOptionsDialog({
-    required this.isRichOutput,
-    required this.onOutputTypeChanged,
-    required this.translationProvider,
-    required this.onTranslationProviderChanged,
-  });
-
-  final bool isRichOutput;
-  final ValueChanged<bool?> onOutputTypeChanged;
-  final String translationProvider;
-  final ValueChanged<String?> onTranslationProviderChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.more),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          DropdownButtonFormField<bool>(
-            decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.outputType,
-              border: const OutlineInputBorder(),
-            ),
-            value: isRichOutput,
-            items: [
-              DropdownMenuItem(
-                value: true,
-                child: Text(AppLocalizations.of(context)!.richOutput),
-              ),
-              DropdownMenuItem(
-                value: false,
-                child: Text(AppLocalizations.of(context)!.simpleOutput),
-              ),
-            ],
-            onChanged: onOutputTypeChanged,
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.translationProvider,
-              border: const OutlineInputBorder(),
-            ),
-            value: translationProvider,
-            items: [
-              DropdownMenuItem(
-                value: "ai",
-                child: const Text("AI"),
-              ),
-              DropdownMenuItem(
-                value: "google",
-                child: const Text("Google"),
-              ),
-            ],
-            onChanged: onTranslationProviderChanged,
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(AppLocalizations.of(context)!.close),
-        )
-      ],
     );
   }
 }
