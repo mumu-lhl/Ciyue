@@ -36,6 +36,16 @@ class AiTranslateViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void swapLanguages() {
+    if (_sourceLanguage == "auto") {
+      _sourceLanguage = ui.PlatformDispatcher.instance.locale.languageCode;
+    }
+    final temp = _sourceLanguage;
+    _sourceLanguage = _targetLanguage;
+    _targetLanguage = temp;
+    notifyListeners();
+  }
+
   String getLanguageName(String code) {
     return languageMap[code] ?? code;
   }

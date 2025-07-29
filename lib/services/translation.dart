@@ -1,8 +1,10 @@
+import "dart:convert";
+
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:flutter/material.dart";
-import "dart:convert";
 
 import "package:dio/dio.dart";
 import "package:provider/provider.dart";
@@ -81,85 +83,10 @@ class GoogleTranslationService implements TranslationService {
 class DeepLXTranslationService implements TranslationService {
   final _dio = Dio();
 
-  static const sourceLanguageCodeMap = {
-    "ar": "AR",
-    "bg": "BG",
-    "cs": "CS",
-    "da": "DA",
-    "de": "DE",
-    "el": "EL",
-    "en": "EN",
-    "es": "ES",
-    "et": "ET",
-    "fi": "FI",
-    "fr": "FR",
-    "he": "HE",
-    "hu": "HU",
-    "id": "ID",
-    "it": "IT",
-    "ja": "JA",
-    "ko": "KO",
-    "lt": "LT",
-    "lv": "LV",
-    "nb": "NB",
-    "nl": "NL",
-    "pl": "PL",
-    "pt": "PT",
-    "ro": "RO",
-    "ru": "RU",
-    "sk": "SK",
-    "sl": "SL",
-    "sv": "SV",
-    "th": "TH",
-    "tr": "TR",
-    "uk": "UK",
-    "vi": "VI",
-    "zh": "ZH",
+  static const languageCodeMap = {
+    "auto": "auto",
     "zh_HK": "ZH",
     "zh_TW": "ZH",
-  };
-
-  static const targetLanguageCodeMap = {
-    "ar": "AR",
-    "bg": "BG",
-    "cs": "CS",
-    "da": "DA",
-    "de": "DE",
-    "el": "EL",
-    "en": "EN-US",
-    "en_GB": "EN-GB",
-    "en_US": "EN-US",
-    "es": "ES",
-    "es_419": "ES-419",
-    "et": "ET",
-    "fi": "FI",
-    "fr": "FR",
-    "he": "HE",
-    "hu": "HU",
-    "id": "ID",
-    "it": "IT",
-    "ja": "JA",
-    "ko": "KO",
-    "lt": "LT",
-    "lv": "LV",
-    "nb": "NB",
-    "nl": "NL",
-    "pl": "PL",
-    "pt": "PT-BR",
-    "pt_BR": "PT-BR",
-    "pt_PT": "PT-PT",
-    "ro": "RO",
-    "ru": "RU",
-    "sk": "SK",
-    "sl": "SL",
-    "sv": "SV",
-    "th": "TH",
-    "tr": "TR",
-    "uk": "UK",
-    "vi": "VI",
-    "zh": "ZH-HANS",
-    "zh_HK": "ZH-HANT",
-    "zh_TW": "ZH-HANT",
   };
 
   @override
@@ -175,16 +102,23 @@ class DeepLXTranslationService implements TranslationService {
       throw Exception("DeepLX URL is not configured.");
     }
 
+    final headers = {
+      "Content-Type": "application/json",
+    };
+    final data = {
+      "text": text,
+      "source_lang":
+          languageCodeMap[sourceLanguage] ?? sourceLanguage.toUpperCase(),
+      "target_lang":
+          languageCodeMap[targetLanguage] ?? targetLanguage.toUpperCase(),
+    };
+
     final response = await _dio.post(
       url,
-      data: jsonEncode({
-        "text": text,
-        "source_lang": sourceLanguageCodeMap[sourceLanguage] ??
-            sourceLanguage.toUpperCase(),
-        "target_lang": targetLanguageCodeMap[targetLanguage] ??
-            targetLanguage.toUpperCase(),
-      }),
+      options: Options(headers: headers),
+      data: jsonEncode(data),
     );
+    logger.d(url);
 
     if (response.statusCode == 200) {
       return response.data["data"];

@@ -309,5 +309,7 @@
   "check": "检查",
   "@check": {},
   "translationProvider": "翻译源",
-  "@translationProvider": {}
+  "@translationProvider": {},
+  "searchLanguage": "搜索语言",
+  "@searchLanguage": {}
 }
