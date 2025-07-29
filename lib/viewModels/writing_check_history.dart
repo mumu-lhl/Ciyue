@@ -8,6 +8,9 @@ class WritingCheckHistoryViewModel with ChangeNotifier {
   List<WritingCheckHistoryData> _history = [];
   List<WritingCheckHistoryData> get history => _history;
 
+  bool _isLoading = true;
+  bool get isLoading => _isLoading;
+
   bool _isSelecting = false;
   bool get isSelecting => _isSelecting;
 
@@ -23,6 +26,8 @@ class WritingCheckHistoryViewModel with ChangeNotifier {
             navigatorKey.currentContext!,
             listen: false)
         .getAllHistory();
+
+    _isLoading = false;
     notifyListeners();
   }
 

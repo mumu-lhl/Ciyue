@@ -47,70 +47,78 @@ class _WritingCheckHistoryPage extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 500),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: viewModel.history.isEmpty
-                    ? Center(
-                        child: Text(
-                          l10n.empty,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
+                child: viewModel.isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(),
                       )
-                    : ListView.builder(
-                        itemCount: viewModel.history.length,
-                        itemBuilder: (context, index) {
-                          final item = viewModel.history[index];
-                          final isSelected =
-                              viewModel.selectedIds.contains(item.id);
-                          return Card(
-                            key: ValueKey(item.id),
-                            clipBehavior: Clip.antiAlias,
-                            margin: const EdgeInsets.symmetric(vertical: 4.0),
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.primaryContainer
-                                : null,
-                            child: ListTile(
-                              title: Text(
-                                item.inputText,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Text(
-                                item.outputText,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: Colors.grey,
-                                    ),
-                              ),
-                              onTap: () {
-                                if (viewModel.isSelecting) {
-                                  viewModel.toggleSelection(item.id);
-                                } else {
-                                  Navigator.of(context).pop(item);
-                                }
-                              },
-                              onLongPress: () {
-                                viewModel.toggleSelection(item.id);
-                              },
-                              trailing: viewModel.isSelecting
-                                  ? Checkbox(
-                                      value: isSelected,
-                                      onChanged: (value) {
-                                        viewModel.toggleSelection(item.id);
-                                      },
-                                    )
-                                  : IconButton(
-                                      icon: const Icon(Icons.delete_outline),
-                                      onPressed: () {
-                                        viewModel.deleteHistory(item.id);
-                                      },
-                                    ),
+                    : viewModel.history.isEmpty
+                        ? Center(
+                            child: Text(
+                              l10n.empty,
+                              style: Theme.of(context).textTheme.titleLarge,
                             ),
-                          );
-                        },
-                      ),
+                          )
+                        : ListView.builder(
+                            itemCount: viewModel.history.length,
+                            itemBuilder: (context, index) {
+                              final item = viewModel.history[index];
+                              final isSelected =
+                                  viewModel.selectedIds.contains(item.id);
+                              return Card(
+                                key: ValueKey(item.id),
+                                clipBehavior: Clip.antiAlias,
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 4.0),
+                                color: isSelected
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
+                                    : null,
+                                child: ListTile(
+                                  title: Text(
+                                    item.inputText,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  subtitle: Text(
+                                    item.outputText,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: Colors.grey,
+                                        ),
+                                  ),
+                                  onTap: () {
+                                    if (viewModel.isSelecting) {
+                                      viewModel.toggleSelection(item.id);
+                                    } else {
+                                      Navigator.of(context).pop(item);
+                                    }
+                                  },
+                                  onLongPress: () {
+                                    viewModel.toggleSelection(item.id);
+                                  },
+                                  trailing: viewModel.isSelecting
+                                      ? Checkbox(
+                                          value: isSelected,
+                                          onChanged: (value) {
+                                            viewModel.toggleSelection(item.id);
+                                          },
+                                        )
+                                      : IconButton(
+                                          icon:
+                                              const Icon(Icons.delete_outline),
+                                          onPressed: () {
+                                            viewModel.deleteHistory(item.id);
+                                          },
+                                        ),
+                                ),
+                              );
+                            },
+                          ),
               ),
             ),
           ),

@@ -323,5 +323,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "translationHistory": "Translation History",
+  "@translationHistory": {}
 }

@@ -93,7 +93,6 @@ class AppDatabase extends _$AppDatabase {
         from11To12: (m, schema) async {
           await m.create(schema.writingCheckHistory);
           await m.create(schema.translateHistory);
-
         },
       ),
     );
