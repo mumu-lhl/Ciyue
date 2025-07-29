@@ -41,50 +41,44 @@ class _WritingCheckPage extends StatelessWidget {
                 ),
               ],
             ),
-            body: Center(
+            body: Align(
+              alignment: Alignment.topCenter,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: viewModel.textEditingController,
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          labelText: AppLocalizations.of(context)!
-                              .label_enter_to_check,
-                          alignLabelWithHint: true,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: viewModel.textEditingController,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: AppLocalizations.of(context)!
+                                .label_enter_to_check,
+                            alignLabelWithHint: true,
+                          ),
+                          maxLines: 5,
                         ),
-                        maxLines: 5,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: viewModel.check,
-                        child: Text(AppLocalizations.of(context)!.check),
-                      ),
-                      const SizedBox(height: 16),
-                      if (viewModel.prompt != null)
-                        Expanded(
-                          child: AIMarkdown(
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: viewModel.check,
+                          child: Text(AppLocalizations.of(context)!.check),
+                        ),
+                        const SizedBox(height: 16),
+                        if (viewModel.prompt != null)
+                          AIMarkdown(
                             prompt: viewModel.prompt!,
                             onResult: (outputText) {
                               viewModel.saveResult(outputText);
                             },
                           ),
-                        ),
-                      if (viewModel.outputText != null)
-                        SingleChildScrollView(
-                          child: Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: SelectionArea(
-                                child: GptMarkdown(viewModel.outputText!),
-                              ),
-                            ),
+                        if (viewModel.outputText != null)
+                          SelectionArea(
+                            child: GptMarkdown(viewModel.outputText!),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

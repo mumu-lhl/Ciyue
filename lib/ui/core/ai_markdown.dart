@@ -56,11 +56,9 @@ class _AIMarkdownState extends State<AIMarkdown> {
             return Center(
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 500),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: SelectionArea(child: GptMarkdown(snapshot.data!)),
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SelectionArea(child: GptMarkdown(snapshot.data!)),
                 ),
               ),
             );
