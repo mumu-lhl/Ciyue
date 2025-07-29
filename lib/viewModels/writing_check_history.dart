@@ -55,7 +55,8 @@ class WritingCheckHistoryViewModel with ChangeNotifier {
     await Provider.of<WritingCheckHistoryDao>(navigatorKey.currentContext!,
             listen: false)
         .deleteHistories(_selectedIds);
-    _history.removeWhere((item) => _selectedIds.contains(item.id));
+    _history =
+        _history.where((item) => !_selectedIds.contains(item.id)).toList();
     clearSelection();
   }
 
@@ -63,7 +64,7 @@ class WritingCheckHistoryViewModel with ChangeNotifier {
     await Provider.of<WritingCheckHistoryDao>(navigatorKey.currentContext!,
             listen: false)
         .deleteHistory(id);
-    _history.removeWhere((item) => item.id == id);
+    _history = _history.where((item) => item.id != id).toList();
     notifyListeners();
   }
 }
