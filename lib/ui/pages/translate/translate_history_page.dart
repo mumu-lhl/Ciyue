@@ -3,6 +3,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/history_page.dart";
 import "package:ciyue/viewModels/translate_history_view_model.dart";
 import "package:flutter/material.dart";
+import "package:intl/intl.dart";
 import "package:provider/provider.dart";
 
 class TranslateHistoryPage extends StatelessWidget {
@@ -45,6 +46,14 @@ class _HistoryListItem extends StatelessWidget {
           item.inputText,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+              .add_jm()
+              .format(item.createdAt),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey,
+              ),
         ),
         onTap: () {
           if (isSelecting) {

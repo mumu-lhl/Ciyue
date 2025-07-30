@@ -24,6 +24,11 @@ class WordbookModel extends ChangeNotifier {
     } else {
       selectedWords.add(word);
     }
+
+    if (selectedWords.isEmpty) {
+      isMultiSelectMode = false;
+    }
+
     notifyListeners();
   }
 

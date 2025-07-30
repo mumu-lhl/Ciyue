@@ -3,6 +3,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/history_page.dart";
 import "package:ciyue/viewModels/writing_check_history.dart";
 import "package:flutter/material.dart";
+import "package:intl/intl.dart";
 import "package:provider/provider.dart";
 
 class WritingCheckHistoryPage extends StatelessWidget {
@@ -46,13 +47,27 @@ class _HistoryListItem extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Text(
-          item.outputText,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey,
-              ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              item.outputText,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey,
+                  ),
+            ),
+            SizedBox(height: 4.0),
+            Text(
+              DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+                  .add_jm()
+                  .format(item.createdAt),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey,
+                  ),
+            ),
+          ],
         ),
         onTap: () {
           if (isSelecting) {
