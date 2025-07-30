@@ -14,12 +14,17 @@ class UpdateSettingsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.update),
       ),
-      body: ListView(
-        children: const [
-          AutoUpdateSwitch(),
-          PrereleaseUpdatesSwitch(),
-          CheckForUpdates(),
-        ],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: ListView(
+            children: const [
+              AutoUpdateSwitch(),
+              PrereleaseUpdatesSwitch(),
+              CheckForUpdates(),
+            ],
+          ),
+        ),
       ),
     );
   }
