@@ -89,7 +89,7 @@ class _Settings {
     aiExplainWord = prefs.getBool("aiExplainWord") ?? false;
     translationProvider = prefs.getString("translationProvider") ?? "ai";
     deeplxUrl = prefs.getString("deeplxUrl");
-    isRichOutput = prefs.getBool("isRichOutput") ?? true;
+    isRichOutput = prefs.getBool("isRichOutput") ?? false;
 
     ttsEngine = prefs.getString("ttsEngine");
     ttsLanguage = prefs.getString("ttsLanguage");
