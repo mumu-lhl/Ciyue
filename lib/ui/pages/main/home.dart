@@ -483,6 +483,13 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       drawer: historyModel.isSelecting ? null : const HomeDrawer(),
+      // floatingActionButton: FloatingActionButton(
+      //   heroTag: "chatButton",
+      //   onPressed: () {
+      //     context.push("/chat");
+      //   },
+      //   child: const Icon(Icons.chat),
+      // ),
     );
   }
 }

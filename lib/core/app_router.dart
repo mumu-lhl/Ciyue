@@ -1,3 +1,4 @@
+import "package:ciyue/ui/pages/chat/chat.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check_history.dart";
 import "package:ciyue/ui/core/word_display.dart";
@@ -137,6 +138,10 @@ final router = GoRouter(
     GoRoute(
       path: "/settings/logs",
       builder: (context, state) => const LogsPage(),
+    ),
+    GoRoute(
+      path: "/chat",
+      builder: (context, state) => const ChatPage(),
     ),
   ],
 );
