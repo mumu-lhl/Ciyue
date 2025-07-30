@@ -261,17 +261,18 @@ class _ModelSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.select((AISettingsViewModel vm) => vm.provider);
-    final model = context.select((AISettingsViewModel vm) => vm.model);
     final viewModel = context.read<AISettingsViewModel>();
+    final providerName =
+        context.select((AISettingsViewModel vm) => vm.provider);
+    final modelName = context.select((AISettingsViewModel vm) => vm.model);
 
-    final currentProvider = ModelProviderManager.modelProviders[provider] ??
+    final currentProvider = ModelProviderManager.modelProviders[providerName] ??
         ModelProviderManager.modelProviders.values.first;
 
     if (currentProvider.allowCustomModel) {
       return TextFormField(
-        key: ValueKey(provider + model),
-        initialValue: model,
+        key: ValueKey(providerName + modelName),
+        initialValue: modelName,
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
           hintText: AppLocalizations.of(context)!.aiModel,
@@ -282,23 +283,25 @@ class _ModelSetting extends StatelessWidget {
       );
     } else {
       final currentModels = currentProvider.models;
-      return DropdownButtonFormField<String>(
-        value: currentModels.any((m) => m.originName == model)
-            ? model
-            : currentModels[0].originName,
-        hint: Text(AppLocalizations.of(context)!.aiModel),
-        padding: const EdgeInsets.only(left: 8, right: 8),
-        onChanged: (String? newValue) {
-          if (newValue != null) {
-            viewModel.setModel(newValue);
-          }
-        },
-        items: currentModels.map<DropdownMenuItem<String>>((ModelInfo value) {
-          return DropdownMenuItem<String>(
-            value: value.originName,
-            child: Text(value.shownName),
+      final currentModel = currentModels.firstWhere(
+        (m) => m.originName == modelName,
+        orElse: () => currentModels.first,
+      );
+
+      return _SettingSelectionChip(
+        label: currentModel.shownName,
+        onTap: () {
+          _showSelectionModal<ModelInfo>(
+            context: context,
+            title: AppLocalizations.of(context)!.aiModel,
+            items: currentModels,
+            currentItem: currentModel,
+            itemText: (m) => m.shownName,
+            onItemSelected: (m) {
+              viewModel.setModel(m.originName);
+            },
           );
-        }).toList(),
+        },
       );
     }
   }
@@ -309,24 +312,105 @@ class _ProviderSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.select((AISettingsViewModel vm) => vm.provider);
     final viewModel = context.read<AISettingsViewModel>();
-    return DropdownButtonFormField<String>(
-      value: provider,
-      hint: Text(AppLocalizations.of(context)!.aiProvider),
-      padding: const EdgeInsets.only(left: 8, right: 8),
-      onChanged: (String? newValue) {
-        if (newValue != null) {
-          viewModel.setProvider(newValue);
-        }
-      },
-      items: ModelProviderManager.modelProviders.values
-          .map<DropdownMenuItem<String>>((ModelProvider p) {
-        return DropdownMenuItem<String>(
-          value: p.name,
-          child: Text(p.displayedName),
+    final providerName =
+        context.select((AISettingsViewModel vm) => vm.provider);
+    final providers = ModelProviderManager.modelProviders.values.toList();
+    final currentProvider = providers.firstWhere((p) => p.name == providerName,
+        orElse: () => providers.first);
+
+    return _SettingSelectionChip(
+      label: currentProvider.displayedName,
+      onTap: () {
+        _showSelectionModal<ModelProvider>(
+          context: context,
+          title: AppLocalizations.of(context)!.aiProvider,
+          items: providers,
+          currentItem: currentProvider,
+          itemText: (p) => p.displayedName,
+          onItemSelected: (p) {
+            viewModel.setProvider(p.name);
+          },
         );
-      }).toList(),
+      },
     );
   }
+}
+
+class _SettingSelectionChip extends StatelessWidget {
+  const _SettingSelectionChip({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Theme.of(context).dividerColor),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 16)),
+            const Icon(Icons.arrow_drop_down),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+void _showSelectionModal<T>({
+  required BuildContext context,
+  required String title,
+  required List<T> items,
+  required T currentItem,
+  required String Function(T) itemText,
+  required void Function(T) onItemSelected,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => FractionallySizedBox(
+      heightFactor: 0.8,
+      widthFactor: 0.9,
+      child: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return ListTile(
+                    title: Text(itemText(item)),
+                    trailing:
+                        item == currentItem ? const Icon(Icons.check) : null,
+                    onTap: () {
+                      onItemSelected(item);
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
