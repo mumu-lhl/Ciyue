@@ -2,7 +2,7 @@
 
 Best practice for Flutter.
 
-## Guidelines
+## Code Guidelines
 
 * Use dependency injection (`provider`)
 * Use immutable data models (`freezed`)
@@ -38,3 +38,13 @@ Follow:
 * Database (Drift): at `lib/database/`
 * UI Shared Widgets: at `lib/ui/core/`
 * Data Model: at `lib/models/`
+
+## Helper Commands
+
+* `just build_runner` - Run build_runner
+* `just make-migrations` - Make drift migrations
+* `just icon` - Generate icons for different platforms
+
+## Define Slash Commands
+
+* `/cm` - Generate commit message by `git --no-pager diff`.

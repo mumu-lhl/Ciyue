@@ -2,7 +2,7 @@
 
 version: 1
 
-sync_from: "Gemini"
+sync_from: "Agent"
 # sync_from:
 #   - custom: xxx/xxx/xxx
 
@@ -12,3 +12,4 @@ sync_to:
   - "Kilo Code"
   - "Jules"
   - "Roo Code"
+  - "Gemini"
