@@ -7,7 +7,7 @@ import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 
-class WordSearchBarWithSuggestions extends StatelessWidget {
+class WordSearchBarWithSuggestions extends StatefulWidget {
   final String word;
   final SearchController controller;
   final FocusNode? focusNode;
@@ -24,14 +24,35 @@ class WordSearchBarWithSuggestions extends StatelessWidget {
   });
 
   @override
+  State<WordSearchBarWithSuggestions> createState() =>
+      _WordSearchBarWithSuggestionsState();
+}
+
+class _WordSearchBarWithSuggestionsState
+    extends State<WordSearchBarWithSuggestions> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.text = widget.word;
+  }
+
+  @override
+  void didUpdateWidget(covariant WordSearchBarWithSuggestions oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.word != oldWidget.word) {
+      widget.controller.text = widget.word;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Center(
         child: SearchAnchor(
           viewHintText: AppLocalizations.of(context)!.search,
           builder: (context, controller) => SearchBar(
-            autoFocus: autoFocus,
-            focusNode: focusNode,
+            autoFocus: widget.autoFocus,
+            focusNode: widget.focusNode,
             controller: controller,
             hintText: AppLocalizations.of(context)!.search,
             constraints: const BoxConstraints(
@@ -40,10 +61,10 @@ class WordSearchBarWithSuggestions extends StatelessWidget {
             onChanged: (_) => controller.openView(),
             leading: const Icon(Icons.search),
           ),
-          searchController: controller..text = word,
+          searchController: widget.controller,
           isFullScreen: !isLargeScreen(context),
           viewOnSubmitted: (String word) {
-            if (controller.text.isNotEmpty) {
+            if (widget.controller.text.isNotEmpty) {
               context.read<HistoryModel>().addHistory(word);
               context.push("/word", extra: {"word": word});
             }
@@ -63,12 +84,12 @@ class WordSearchBarWithSuggestions extends StatelessWidget {
 
             return searchResult.map((e) => ListTile(
                   title: Text(e),
-                  trailing: Icon(Icons.arrow_forward),
+                  trailing: const Icon(Icons.arrow_forward),
                   onTap: () {
                     context.read<HistoryModel>().addHistory(e);
                     context.push("/word", extra: {"word": e});
 
-                    if (isHome && settings.autoRemoveSearchWord) {
+                    if (widget.isHome && settings.autoRemoveSearchWord) {
                       controller.text = "";
                     }
                   },

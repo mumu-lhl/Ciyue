@@ -1,8 +1,10 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/viewModels/history_view_model.dart";
 import "package:flutter/material.dart";
 
-class HistoryModel extends ChangeNotifier {
+class HistoryModel extends HistoryViewModel<HistoryData> {
   bool get enableHistory => settings.enableHistory;
 
   void addHistory(String word) async {
@@ -10,17 +12,35 @@ class HistoryModel extends ChangeNotifier {
       return;
     }
     await historyDao.addHistory(word);
-    notifyListeners();
+    await loadHistory();
   }
 
-  void clearHistory() {
-    historyDao.clearHistory();
-    notifyListeners();
+  void clearHistory() async {
+    await historyDao.clearHistory();
+    await loadHistory();
   }
 
-  void removeHistory(String word) {
-    historyDao.removeHistory(word);
-    notifyListeners();
+  @override
+  Future<void> deleteHistory(int id) async {
+    final word = history.firstWhere((element) => element.id == id).word;
+    await historyDao.removeHistory(word);
+    await loadHistory();
+  }
+
+  @override
+  Future<void> deleteSelected() async {
+    await historyDao.removeHistories(selectedIds);
+    clearSelection();
+    await loadHistory();
+  }
+
+  @override
+  Iterable<int> get historyIds => history.map((e) => e.id);
+
+  @override
+  Future<void> loadHistory() async {
+    final history = await historyDao.getAllHistory();
+    setHistory(history);
   }
 
   void setEnableHistory(bool value) {

@@ -93,105 +93,118 @@ class HistoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<HistoryModel>();
+    final history = model.history;
 
     final locale = AppLocalizations.of(context);
-    final future = historyDao.getAllHistory();
+
+    if (history.isEmpty) {
+      return Expanded(child: Center(child: Text(locale!.startToSearch)));
+    }
 
     return Expanded(
-      child: FutureBuilder(
-          future: future,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final history = snapshot.data as List<HistoryData>;
-              if (history.isEmpty) {
-                return Center(child: Text(locale!.startToSearch));
-              }
-              return ListView(
-                children: [
-                  for (final item in history)
-                    Dismissible(
-                      key: ValueKey(item.id),
-                      confirmDismiss: (direction) async {
-                        if (direction == DismissDirection.endToStart) {
-                          return await buildRemoveHistoryConfirmDialog(
-                              context, item, model);
-                        }
+      child: ListView(
+        children: [
+          for (final item in history)
+            Dismissible(
+              key: ValueKey(item.id),
+              confirmDismiss: (direction) async {
+                if (model.isSelecting) return false;
 
-                        if (wordbookTagsDao.tagExist) {
-                          final tagsOfWord =
-                                  await wordbookDao.tagsOfWord(item.word),
-                              tags = await wordbookTagsDao.getAllTags();
-                          final toAdd = <int>[], toDel = <int>[];
+                if (direction == DismissDirection.endToStart) {
+                  final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(locale!.confirmDelete),
+                          content: Text(locale.confirmDeleteMessage(item.word)),
+                          actions: [
+                            TextButton(
+                              onPressed: () => context.pop(false),
+                              child: Text(locale.close),
+                            ),
+                            TextButton(
+                              onPressed: () => context.pop(true),
+                              child: Text(locale.remove),
+                            ),
+                          ],
+                        ),
+                      ) ??
+                      false;
 
-                          if (!context.mounted) return false;
+                  if (confirm) {
+                    model.deleteHistory(item.id);
+                  }
+                  return confirm;
+                }
 
-                          await showDialog<bool>(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AddHistoryToWordbookDialog(
-                                  tags: tags,
-                                  tagsOfWord: tagsOfWord,
-                                  toAdd: toAdd,
-                                  toDel: toDel,
-                                  item: item);
-                            },
-                          );
-                          return false;
-                        }
+                if (wordbookTagsDao.tagExist) {
+                  final tagsOfWord = await wordbookDao.tagsOfWord(item.word),
+                      tags = await wordbookTagsDao.getAllTags();
+                  final toAdd = <int>[], toDel = <int>[];
 
-                        if (await wordbookDao.wordExist(item.word)) {
-                          await wordbookDao.removeWord(item.word);
-                        } else {
-                          await wordbookDao.addWord(item.word);
-                        }
-                        if (context.mounted) {
-                          context.read<WordbookModel>().updateWordList();
-                        }
+                  if (!context.mounted) return false;
 
-                        return false;
-                      },
-                      background: Container(
-                          color: Theme.of(context).colorScheme.primary,
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.only(left: 16.0),
-                          child: Icon(Icons.book_outlined,
-                              color: Theme.of(context).colorScheme.onPrimary)),
-                      secondaryBackground: Container(
-                          color: Theme.of(context).colorScheme.error,
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.only(right: 16.0),
-                          child: Icon(Icons.delete_outline,
-                              color: Theme.of(context).colorScheme.onError)),
-                      child: ListTile(
-                        title: Text(item.word),
-                        onTap: () {
-                          context.push("/word", extra: {"word": item.word});
+                  await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AddHistoryToWordbookDialog(
+                          tags: tags,
+                          tagsOfWord: tagsOfWord,
+                          toAdd: toAdd,
+                          toDel: toDel,
+                          item: item);
+                    },
+                  );
+                  return false;
+                }
+
+                if (await wordbookDao.wordExist(item.word)) {
+                  await wordbookDao.removeWord(item.word);
+                } else {
+                  await wordbookDao.addWord(item.word);
+                }
+                if (context.mounted) {
+                  context.read<WordbookModel>().updateWordList();
+                }
+
+                return false;
+              },
+              background: Container(
+                  color: Theme.of(context).colorScheme.primary,
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: Icon(Icons.book_outlined,
+                      color: Theme.of(context).colorScheme.onPrimary)),
+              secondaryBackground: Container(
+                  color: Theme.of(context).colorScheme.error,
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: Icon(Icons.delete_outline,
+                      color: Theme.of(context).colorScheme.onError)),
+              child: ListTile(
+                leading: model.isSelecting
+                    ? Checkbox(
+                        value: model.selectedIds.contains(item.id),
+                        onChanged: (value) {
+                          model.toggleSelection(item.id);
                         },
-                        onLongPress: () async {
-                          await buildRemoveHistoryConfirmDialog(
-                              context, item, model);
-                        },
-                      ),
-                    )
-                ],
-              );
-            } else {
-              return const Center(child: CircularProgressIndicator());
-            }
-          }),
+                      )
+                    : null,
+                title: Text(item.word),
+                onTap: () {
+                  if (model.isSelecting) {
+                    model.toggleSelection(item.id);
+                  } else {
+                    context.push("/word", extra: {"word": item.word});
+                  }
+                },
+                onLongPress: () {
+                  model.toggleSelection(item.id);
+                },
+              ),
+            )
+        ],
+      ),
     );
-  }
-
-  Future<bool> buildRemoveHistoryConfirmDialog(
-      BuildContext context, HistoryData item, HistoryModel model) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => RemoveHistoryConfirmDialog(item: item),
-    );
-    if (confirmed == true) {
-      model.removeHistory(item.word);
-    }
-    return confirmed ?? false;
   }
 }
 
@@ -205,15 +218,44 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final searchBar = settings.searchBarInAppBar ? HomeSearchBar() : null;
+    final model = context.watch<HistoryModel>();
 
-    return AppBar(
-      title: searchBar,
-      automaticallyImplyLeading: settings.showSidebarIcon,
-      actions: [
-        if (settings.showMoreOptionsButton) MoreButton(),
-      ],
-    );
+    if (model.isSelecting) {
+      return AppBar(
+        title: Text(
+            AppLocalizations.of(context)!.nSelected(model.selectedIds.length)),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            model.clearSelection();
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            onPressed: () {
+              model.selectAll();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              model.deleteSelected();
+            },
+          ),
+        ],
+      );
+    } else {
+      final searchBar = settings.searchBarInAppBar ? HomeSearchBar() : null;
+
+      return AppBar(
+        title: searchBar,
+        automaticallyImplyLeading: settings.showSidebarIcon,
+        actions: [
+          if (settings.showMoreOptionsButton) MoreButton(),
+        ],
+      );
+    }
   }
 }
 
@@ -415,36 +457,32 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.select<HomeModel, int>((model) => model.state);
+    context.watch<HomeModel>();
+    final historyModel = context.watch<HistoryModel>();
 
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: Selector<DictManagerModel, bool>(
-          selector: (_, model) => model.isEmpty,
-          builder: (BuildContext context, value, Widget? child) {
-            return (!dictManager.isEmpty || settings.aiExplainWord)
-                ? HomeAppBar()
-                : const SizedBox.shrink();
-          },
-        ),
+        child: (!dictManager.isEmpty || settings.aiExplainWord)
+            ? const HomeAppBar()
+            : const SizedBox.shrink(),
       ),
       body: Column(
         children: [
-          Expanded(child: HomeBody()),
+          const Expanded(child: HomeBody()),
           if (!settings.searchBarInAppBar)
             Selector<DictManagerModel, bool>(
                 selector: (_, model) => model.isEmpty,
                 builder: (_, isEmpty, __) => isEmpty
-                    ? SizedBox.shrink()
-                    : Padding(
-                        padding: const EdgeInsets.only(
+                    ? const SizedBox.shrink()
+                    : const Padding(
+                        padding: EdgeInsets.only(
                             left: 20, right: 20, bottom: 10, top: 10),
                         child: HomeSearchBar(),
                       )),
         ],
       ),
-      drawer: HomeDrawer(),
+      drawer: historyModel.isSelecting ? null : const HomeDrawer(),
     );
   }
 }
@@ -478,34 +516,6 @@ class MoreOptionsDialog extends StatefulWidget {
 
   @override
   State<MoreOptionsDialog> createState() => _MoreOptionsDialogState();
-}
-
-class RemoveHistoryConfirmDialog extends StatelessWidget {
-  final HistoryData item;
-
-  const RemoveHistoryConfirmDialog({
-    super.key,
-    required this.item,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.removeOneHistory),
-      content: Text(
-          AppLocalizations.of(context)!.removeOneHistoryConfirm(item.word)),
-      actions: [
-        TextButton(
-          onPressed: () => context.pop(false),
-          child: Text(AppLocalizations.of(context)!.close),
-        ),
-        TextButton(
-          onPressed: () => context.pop(true),
-          child: Text(AppLocalizations.of(context)!.remove),
-        ),
-      ],
-    );
-  }
 }
 
 class Searcher {

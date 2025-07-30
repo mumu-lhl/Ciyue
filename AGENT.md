@@ -47,4 +47,4 @@ Follow:
 
 ## Define Slash Commands
 
-* `/cm` - Generate commit message by `git --no-pager diff`.
+* `/cm` - Generate commit message by `git --no-pager diff`. It shouldn't just provide a simple description; instead, it should detail the specific features that were changed, the bugs that were fixed, and any refactoring that was applied.

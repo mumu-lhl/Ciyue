@@ -23,6 +23,8 @@ class AIExplanationModel extends ChangeNotifier {
   int _refreshKey = 0;
   int get refreshKey => _refreshKey;
 
+  bool _mounted = true;
+
   AIExplanationModel()
       : _aiExplanationDao = AiExplanationDao(mainDatabase),
         _ai = AI(
@@ -33,12 +35,21 @@ class AIExplanationModel extends ChangeNotifier {
               settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
         );
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> getExplanation(String word) async {
     _isLoading = true;
     _explanation = null;
     notifyListeners();
 
     final cached = await _aiExplanationDao.getAiExplanation(word);
+
+    if (!_mounted) return;
+
     if (cached != null) {
       _explanation = cached.explanation;
       _isLoading = false;
@@ -83,6 +94,8 @@ class AIExplanationModel extends ChangeNotifier {
     } catch (e) {
       _explanation = "Error: ${e.toString()}";
     } finally {
+      // ignore: control_flow_in_finally
+      if (!_mounted) return;
       _isLoading = false;
 
       if (forceRefresh) {
@@ -97,6 +110,8 @@ class AIExplanationModel extends ChangeNotifier {
     _explanation = newExplanation;
     await _aiExplanationDao.updateAiExplanation(
         AiExplanation(word: word, explanation: newExplanation));
+
+    if (!_mounted) return;
     notifyListeners();
   }
 }

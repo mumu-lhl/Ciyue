@@ -126,6 +126,10 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
   Future<int> removeHistory(String word) {
     return (delete(history)..where((t) => t.word.isValue(word))).go();
   }
+
+  Future<void> removeHistories(Iterable<int> ids) {
+    return (delete(history)..where((t) => t.id.isIn(ids))).go();
+  }
 }
 
 @DriftAccessor(tables: [Wordbook])
