@@ -30,13 +30,18 @@ class BackupSettingsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.backup),
       ),
-      body: ListView(
-        children: [
-          const AutoExport(),
-          const Export(),
-          const Import(),
-          const LegacyImport(),
-        ],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: ListView(
+            children: [
+              const AutoExport(),
+              const Export(),
+              const Import(),
+              const LegacyImport(),
+            ],
+          ),
+        ),
       ),
     );
   }

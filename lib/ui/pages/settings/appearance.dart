@@ -14,22 +14,27 @@ class AppearanceSettingsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.appearance),
       ),
-      body: ListView(
-        children: [
-          const LanguageSelector(),
-          const ThemeSelector(),
-          const DictionarySwitchStyleSelector(),
-          const SearchbarLocationSelector(),
-          const TabBarPositionSelector(),
-          const SearchbarInWordDisplaySwitch(),
-          if (settings.advance)
-            const Column(
-              children: [
-                DrawerIconSwitch(),
-                MoreOptionsButtonSwitch(),
-              ],
-            ),
-        ],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: ListView(
+            children: [
+              const LanguageSelector(),
+              const ThemeSelector(),
+              const DictionarySwitchStyleSelector(),
+              const SearchbarLocationSelector(),
+              const TabBarPositionSelector(),
+              const SearchbarInWordDisplaySwitch(),
+              if (settings.advance)
+                const Column(
+                  children: [
+                    DrawerIconSwitch(),
+                    MoreOptionsButtonSwitch(),
+                  ],
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -32,15 +32,20 @@ class OtherSettingsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.other),
       ),
-      body: ListView(
-        children: [
-          if (Platform.isAndroid) ...[
-            const SecureScreenSwitch(),
-            const NotificationSwitch(),
-            const FloatingWindow(),
-          ],
-          const AdvanceSwitch(),
-        ],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: ListView(
+            children: [
+              if (Platform.isAndroid) ...[
+                const SecureScreenSwitch(),
+                const NotificationSwitch(),
+                const FloatingWindow(),
+              ],
+              const AdvanceSwitch(),
+            ],
+          ),
+        ),
       ),
     );
   }
