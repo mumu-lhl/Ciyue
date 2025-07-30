@@ -61,10 +61,10 @@ Future<void> initApp() async {
   }
 
   WidgetsBinding.instance.addPostFrameCallback((_) async {
-    if (await ChangelogService.shouldShowChangelog()) {
+    final locale = Localizations.localeOf(navigatorKey.currentContext!);
+    if (await ChangelogService.shouldShowChangelog(locale)) {
       final String changelogContent =
-          await ChangelogService.getChangelogContent(
-              Localizations.localeOf(navigatorKey.currentContext!));
+          await ChangelogService.getChangelogContent(locale);
       showDialog(
         context: navigatorKey.currentContext!,
         builder: (context) =>

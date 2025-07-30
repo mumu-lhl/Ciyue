@@ -3,7 +3,7 @@ import "package:flutter/services.dart" show rootBundle;
 import "package:ciyue/core/app_globals.dart";
 
 class ChangelogService {
-  static Future<bool> shouldShowChangelog() async {
+  static Future<bool> shouldShowChangelog(Locale locale) async {
     final String? lastShownCode = prefs.getString("versionCode");
     final String currentCode = packageInfo.buildNumber;
 
@@ -13,6 +13,10 @@ class ChangelogService {
     }
 
     if (lastShownCode != currentCode) {
+      final String content = await getChangelogContent(locale);
+      if (content.trim().isEmpty) {
+        return false;
+      }
       return true;
     }
 
