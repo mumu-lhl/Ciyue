@@ -432,7 +432,8 @@ class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
     with _$TranslateHistoryDaoMixin {
   TranslateHistoryDao(super.attachedDatabase);
 
-  Future<int> addHistory(String inputText) {
+  Future<int> addHistory(String inputText) async {
+    await deleteHistoryByInputText(inputText);
     return into(translateHistory).insert(
       TranslateHistoryCompanion(
         inputText: Value(inputText),
@@ -458,5 +459,11 @@ class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> deleteHistories(List<int> ids) {
     return (delete(translateHistory)..where((t) => t.id.isIn(ids))).go();
+  }
+
+  Future<int> deleteHistoryByInputText(String inputText) {
+    return (delete(translateHistory)
+          ..where((t) => t.inputText.isValue(inputText)))
+        .go();
   }
 }
