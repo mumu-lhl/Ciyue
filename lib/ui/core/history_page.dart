@@ -71,11 +71,16 @@ class _AppBar<T, VM extends HistoryViewModel<T>> extends StatelessWidget
             )
           : null,
       actions: [
-        if (isSelecting)
+        if (isSelecting) ...[
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            onPressed: viewModel.selectAll,
+          ),
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: viewModel.deleteSelected,
           ),
+        ]
       ],
     );
   }

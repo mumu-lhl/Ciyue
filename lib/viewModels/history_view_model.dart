@@ -7,6 +7,8 @@ abstract class HistoryViewModel<T> extends ChangeNotifier {
   List<T> _history = [];
   List<T> get history => _history;
 
+  Iterable<int> get historyIds;
+
   final Set<int> _selectedIds = {};
   Set<int> get selectedIds => _selectedIds;
 
@@ -30,6 +32,15 @@ abstract class HistoryViewModel<T> extends ChangeNotifier {
 
   void clearSelection() {
     _selectedIds.clear();
+    notifyListeners();
+  }
+
+  void selectAll() {
+    if (_selectedIds.length == history.length) {
+      _selectedIds.clear();
+    } else {
+      _selectedIds.addAll(historyIds);
+    }
     notifyListeners();
   }
 

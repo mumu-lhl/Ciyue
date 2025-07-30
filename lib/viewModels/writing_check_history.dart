@@ -7,6 +7,9 @@ import "package:provider/provider.dart";
 class WritingCheckHistoryViewModel
     extends HistoryViewModel<WritingCheckHistoryData> {
   @override
+  Iterable<int> get historyIds => history.map((e) => e.id);
+
+  @override
   Future<void> loadHistory() async {
     final history = await Provider.of<WritingCheckHistoryDao>(
             navigatorKey.currentContext!,
