@@ -15,6 +15,7 @@ class AiTranslateViewModel extends ChangeNotifier {
       : settings.language!;
   String _translatedText = "";
   bool _isLoading = false;
+  bool _isError = false;
 
   AiTranslateViewModel() {
     inputController.addListener(() {
@@ -27,6 +28,7 @@ class AiTranslateViewModel extends ChangeNotifier {
   String get targetLanguage => _targetLanguage;
   String get translatedText => _translatedText;
   bool get isLoading => _isLoading;
+  bool get isError => _isError;
   String get translationProvider => settings.translationProvider;
 
   void setSourceLanguage(String value) {
@@ -62,6 +64,7 @@ class AiTranslateViewModel extends ChangeNotifier {
     if (inputController.text.trim().isEmpty) return;
     _isLoading = true;
     _translatedText = "";
+    _isError = false;
     notifyListeners();
 
     try {
@@ -92,6 +95,7 @@ class AiTranslateViewModel extends ChangeNotifier {
       _translatedText = translationResult;
     } catch (e) {
       _translatedText = "Error: Failed to translate. $e";
+      _isError = true;
     } finally {
       _isLoading = false;
       notifyListeners();

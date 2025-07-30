@@ -91,6 +91,7 @@ class AiTranslatePage extends StatelessWidget {
                         _TranslatedTextSection(
                           translatedText: viewModel.translatedText,
                           translationProvider: viewModel.translationProvider,
+                          isError: viewModel.isError,
                         ),
                       ],
                     ),
@@ -244,25 +245,28 @@ class _TranslatedTextSection extends StatelessWidget {
   const _TranslatedTextSection({
     required this.translatedText,
     required this.translationProvider,
+    required this.isError,
   });
 
   final String translatedText;
   final String translationProvider;
+  final bool isError;
 
   @override
   Widget build(BuildContext context) {
     final Widget child;
-    switch (translationProvider) {
-      case "AI":
-        child = GptMarkdown(
-          translatedText,
-        );
-        break;
-      default:
-        child = Text(
-          translatedText,
-          style: const TextStyle(fontSize: 20.0),
-        );
+    if (translationProvider == "AI" && !isError) {
+      child = GptMarkdown(
+        translatedText,
+      );
+    } else {
+      child = Text(
+        translatedText,
+        style: TextStyle(
+          fontSize: 20.0,
+          color: isError ? Theme.of(context).colorScheme.error : null,
+        ),
+      );
     }
 
     return Padding(

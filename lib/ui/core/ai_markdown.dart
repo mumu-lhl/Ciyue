@@ -64,7 +64,13 @@ class _AIMarkdownState extends State<AIMarkdown> {
             );
           } else if (snapshot.hasError) {
             return Center(
-              child: Text(snapshot.error.toString()),
+              child: Text(
+                snapshot.error.toString(),
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
             );
           }
         }
