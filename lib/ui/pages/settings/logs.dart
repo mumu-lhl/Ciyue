@@ -104,8 +104,8 @@ class _LogListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isSelected =
-        context.select((LogsViewModel vm) => vm.selectedIndices.contains(index));
+    final isSelected = context
+        .select((LogsViewModel vm) => vm.selectedIndices.contains(index));
     final viewModel = context.read<LogsViewModel>();
     final logText = log.lines.join("\n");
 
