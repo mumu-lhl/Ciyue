@@ -298,7 +298,7 @@
   "@resetToDefault": {},
   "writingCheckPromptTitle": "写作检查提示词",
   "@writingCheckPromptTitle": {},
-  "writingCheckPromptHelper": "你可以在提示词中使用 $text。",
+  "writingCheckPromptHelper": "你可以在提示词中使用 $text 和 $targetLanguage。",
   "@writingCheckPromptHelper": {},
   "editAIExplanation": "编辑 AI 解释",
   "@editAIExplanation": {},

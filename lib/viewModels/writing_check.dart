@@ -5,6 +5,8 @@ import "package:ciyue/repositories/ai_prompts.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
 
+import "dart:ui" as ui;
+
 class WritingCheckViewModel extends ChangeNotifier {
   final TextEditingController textEditingController = TextEditingController();
 
@@ -18,7 +20,10 @@ class WritingCheckViewModel extends ChangeNotifier {
     final template =
         Provider.of<AIPrompts>(navigatorKey.currentContext!, listen: false)
             .writingCheckPrompt;
-    _prompt = template.replaceAll(r"$text", textEditingController.text);
+    _prompt = template
+        .replaceAll(r"$text", textEditingController.text)
+        .replaceAll(r"$targetLanguage",
+            ui.PlatformDispatcher.instance.locale.toLanguageTag());
     _outputText = null;
     notifyListeners();
   }

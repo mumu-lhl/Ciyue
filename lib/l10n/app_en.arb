@@ -306,7 +306,7 @@
   "@resetToDefault": {},
   "writingCheckPromptTitle": "Writing Check Prompt",
   "@writingCheckPromptTitle": {},
-  "writingCheckPromptHelper": "You can use $text in your prompt.",
+  "writingCheckPromptHelper": "You can use $text and $targetLanguage in your prompt.",
   "@writingCheckPromptHelper": {},
   "logs": "Logs",
   "@logs": {},

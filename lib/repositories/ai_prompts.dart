@@ -13,11 +13,25 @@ NO OTHER WORD LIKE 'OK, here is...'""";
   static const String defaultTranslatePrompt =
       "Translate the following text from \$sourceLanguage to \$targetLanguage. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in \$targetLanguage: \$text";
   static const String defaultWritingCheckPrompt =
-      """Please check the following text for grammar, spelling, and style. Provide suggestions for improvement.
+      """Please evaluate the text from a grammatical and orthographical standpoint, offering suggestions to enhance its composition for a more idiomatic and authentic expression in the given language. 
+You must output the translation entirely, exclusively and naturally in \$targetLanguage.
 
-\$text
+Example:
 
-Suggestions:""";
+## Evaluation
+...
+
+## How to Improve
+...
+
+## Better Expression
+...
+
+## Translation
+...
+
+Text:
+\$text""";
 
   AIPrompts() {
     _explainPrompt =
