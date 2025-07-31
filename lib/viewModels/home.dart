@@ -34,6 +34,21 @@ class HistoryModel extends HistoryViewModel<HistoryData> {
     await loadHistory();
   }
 
+  Future<void> addSelectedToWordbook() async {
+    final words = history
+        .where((element) => selectedIds.contains(element.id))
+        .map((e) => e.word);
+    final existWords = await wordbookDao.wordsExist(words);
+    for (final word in words) {
+      if (existWords.contains(word)) {
+        await wordbookDao.removeWord(word);
+      } else {
+        await wordbookDao.addWord(word);
+      }
+    }
+    clearSelection();
+  }
+
   @override
   Iterable<int> get historyIds => history.map((e) => e.id);
 
