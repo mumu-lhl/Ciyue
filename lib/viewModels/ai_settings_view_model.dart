@@ -7,12 +7,16 @@ import "package:flutter/material.dart";
 
 class AISettingsViewModel with ChangeNotifier {
   late String _provider;
-  late String _model;
-  late String _apiKey;
   final AIPrompts _aiPrompts;
   final HomeModel _homeModel;
 
+  late final TextEditingController apiKeyController;
+  late final TextEditingController modelController;
+
   AISettingsViewModel(this._aiPrompts, this._homeModel) {
+    apiKeyController = TextEditingController();
+    modelController = TextEditingController();
+
     _provider = settings.aiProvider;
     if (ModelProviderManager.modelProviders[_provider] == null) {
       _provider = ModelProviderManager.modelProviders.values.first.name;
@@ -21,25 +25,27 @@ class AISettingsViewModel with ChangeNotifier {
     }
 
     final config = settings.getAiProviderConfig(_provider);
-    _model = config["model"]!;
-    _apiKey = config["apiKey"]!;
+    modelController.text = config["model"]!;
+    apiKeyController.text = config["apiKey"]!;
 
     final currentProvider = ModelProviderManager.modelProviders[_provider]!;
-    if (!currentProvider.models.any((m) => m.originName == _model) &&
+    if (!currentProvider.models
+            .any((m) => m.originName == modelController.text) &&
         !currentProvider.allowCustomModel) {
-      _model = currentProvider.models[0].originName;
+      modelController.text = currentProvider.models[0].originName;
       _saveAiProviderConfig();
     }
   }
 
   String get provider => _provider;
-  String get model => _model;
-  String get apiKey => _apiKey;
+  String get model => modelController.text;
+  String get apiKey => apiKeyController.text;
   bool get explainWord => settings.aiExplainWord;
   AIPrompts get aiPrompts => _aiPrompts;
 
   void _saveAiProviderConfig() {
-    settings.saveAiProviderConfig(_provider, _model, _apiKey);
+    settings.saveAiProviderConfig(
+        _provider, modelController.text, apiKeyController.text);
     notifyListeners();
   }
 
@@ -49,24 +55,25 @@ class AISettingsViewModel with ChangeNotifier {
     prefs.setString("aiProvider", newProvider);
 
     final config = settings.getAiProviderConfig(_provider);
-    _model = config["model"]!;
+    modelController.text = config["model"]!;
     final currentProvider = ModelProviderManager.modelProviders[_provider] ??
         ModelProviderManager.modelProviders.values.first;
-    if (!currentProvider.models.any((m) => m.originName == _model) &&
+    if (!currentProvider.models
+            .any((m) => m.originName == modelController.text) &&
         !currentProvider.allowCustomModel) {
-      _model = currentProvider.models[0].originName;
+      modelController.text = currentProvider.models[0].originName;
     }
-    _apiKey = config["apiKey"]!;
+    apiKeyController.text = config["apiKey"]!;
     notifyListeners();
   }
 
   void setModel(String newModel) {
-    _model = newModel;
+    if (modelController.text != newModel) modelController.text = newModel;
     _saveAiProviderConfig();
   }
 
   void setApiKey(String newApiKey) {
-    _apiKey = newApiKey;
+    if (apiKeyController.text != newApiKey) apiKeyController.text = newApiKey;
     _saveAiProviderConfig();
   }
 
@@ -80,5 +87,12 @@ class AISettingsViewModel with ChangeNotifier {
   void setAiAPIUrl(String apiUrl) {
     settings.setAiAPIUrl(apiUrl);
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    apiKeyController.dispose();
+    modelController.dispose();
+    super.dispose();
   }
 }
