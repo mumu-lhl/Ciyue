@@ -47,6 +47,8 @@ class _Settings {
   late String? deeplxUrl;
   late bool isRichOutput;
 
+  late bool enableTranslationHistory;
+
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
@@ -90,6 +92,9 @@ class _Settings {
     translationProvider = prefs.getString("translationProvider") ?? "ai";
     deeplxUrl = prefs.getString("deeplxUrl");
     isRichOutput = prefs.getBool("isRichOutput") ?? false;
+
+    enableTranslationHistory =
+        prefs.getBool("enableTranslationHistory") ?? true;
 
     ttsEngine = prefs.getString("ttsEngine");
     ttsLanguage = prefs.getString("ttsLanguage");
@@ -186,5 +191,10 @@ class _Settings {
   Future<void> setRichOutput(bool value) async {
     isRichOutput = value;
     await prefs.setBool("isRichOutput", value);
+  }
+
+  Future<void> setEnableTranslationHistory(bool value) async {
+    enableTranslationHistory = value;
+    await prefs.setBool("enableTranslationHistory", value);
   }
 }

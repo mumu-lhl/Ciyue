@@ -83,11 +83,16 @@ class AiTranslateSettingsPage extends StatelessWidget {
                             labelText: "DeepLX URL",
                             border: OutlineInputBorder(),
                           ),
-                          onChanged: (value) {
-                            viewModel.setDeeplxUrl(value);
-                          },
+                          onChanged: viewModel.setDeeplxUrl,
                         ),
                       ],
+                      const SizedBox(height: 16),
+                      SwitchListTile(
+                        title: Text(AppLocalizations.of(context)!
+                            .enableTranslationHistory),
+                        value: viewModel.enableTranslationHistory,
+                        onChanged: viewModel.setEnableTranslationHistory,
+                      ),
                     ],
                   ),
                 ),

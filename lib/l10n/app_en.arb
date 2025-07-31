@@ -325,5 +325,7 @@
     }
   },
   "translationHistory": "Translation History",
-  "@translationHistory": {}
+  "@translationHistory": {},
+  "enableTranslationHistory": "Enable Translation History",
+  "@enableTranslationHistory": {}
 }

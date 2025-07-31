@@ -10,6 +10,12 @@ class AiTranslateSettingsViewModel extends ChangeNotifier {
 
   String get translationProvider => settings.translationProvider;
   bool get isRichOutput => settings.isRichOutput;
+  bool get enableTranslationHistory => settings.enableTranslationHistory;
+
+  Future<void> setEnableTranslationHistory(bool value) async {
+    await settings.setEnableTranslationHistory(value);
+    notifyListeners();
+  }
 
   Future<void> setTranslationProvider(String provider) async {
     await settings.setTranslationProvider(provider);

@@ -141,6 +141,7 @@ Future<void> initPrefs() async {
     "translationProvider",
     "deeplxUrl",
     "isRichOutput",
+    "enableTranslationHistory",
   }));
 
   logger.d("Shared preferences initialized successfully.");

@@ -323,5 +323,7 @@
     }
   },
   "translationHistory": "翻译历史",
-  "@translationHistory": {}
+  "@translationHistory": {},
+  "enableTranslationHistory": "启用翻译历史记录",
+  "@enableTranslationHistory": {}
 }
