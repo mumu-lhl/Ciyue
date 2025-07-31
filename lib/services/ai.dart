@@ -263,10 +263,15 @@ class OpenAICompatibleProvider implements AIProvider {
     required this.apikey,
     required this.model,
   }) {
-    if (ModelProviderManager.modelProviders.containsKey(provider)) {
+    if (provider == "openai_compatible") {
+      final aiAPIUrl = settings.aiAPIUrl;
+      if (aiAPIUrl.endsWith("/chat/completions")) {
+        apiUrl = aiAPIUrl;
+      } else {
+        apiUrl = "$aiAPIUrl/chat/completions";
+      }
+    } else if (ModelProviderManager.modelProviders.containsKey(provider)) {
       apiUrl = ModelProviderManager.modelProviders[provider]!.apiUrl;
-    } else if (provider == "openai_compatible") {
-      apiUrl = settings.aiAPIUrl;
     } else {
       apiUrl = ModelProviderManager.modelProviders["openai"]!.apiUrl;
     }

@@ -216,11 +216,9 @@ class _APIKeySetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final apiKey = context.select((AISettingsViewModel vm) => vm.apiKey);
     final viewModel = context.read<AISettingsViewModel>();
     return TextFormField(
-      key: ValueKey(apiKey),
-      initialValue: apiKey,
+      controller: viewModel.apiKeyController,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
         hintText: AppLocalizations.of(context)!.apiKey,
@@ -271,8 +269,7 @@ class _ModelSetting extends StatelessWidget {
 
     if (currentProvider.allowCustomModel) {
       return TextFormField(
-        key: ValueKey(providerName + modelName),
-        initialValue: modelName,
+        controller: viewModel.modelController,
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
           hintText: AppLocalizations.of(context)!.aiModel,
