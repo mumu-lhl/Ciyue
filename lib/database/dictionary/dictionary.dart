@@ -38,12 +38,15 @@ class DictionaryDatabase extends _$DictionaryDatabase {
         from3To4: (m, schema) async {
           await m.deleteTable("Wordbook");
         },
+        from4To5: (m, schema) async {
+          await m.addColumn(schema.resource, schema.resource.part);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   Future<DictionaryData> getOffset(String word) async {
     return (await (select(dictionary)..where((u) => u.key.isValue(word)))
@@ -62,9 +65,8 @@ class DictionaryDatabase extends _$DictionaryDatabase {
     });
   }
 
-  Future<ResourceData> readResource(String key) async {
-    return (await ((select(resource)..where((u) => u.key.isValue(key)))
-        .get()))[0];
+  Future<List<ResourceData>> readResource(String key) async {
+    return (await ((select(resource)..where((u) => u.key.equals(key))).get()));
   }
 
   Future<List<String>> searchWord(String word) {

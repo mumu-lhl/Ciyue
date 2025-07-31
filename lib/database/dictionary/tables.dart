@@ -16,4 +16,5 @@ class Resource extends Table {
   IntColumn get endOffset => integer()();
   TextColumn get key => text()();
   IntColumn get startOffset => integer()();
+  IntColumn get part => integer().nullable()();
 }

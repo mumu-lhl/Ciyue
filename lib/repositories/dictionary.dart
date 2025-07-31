@@ -93,12 +93,15 @@ class Mdict {
   String? fontPath;
   late final DictionaryDatabase db;
   late final DictReader reader;
-  DictReader? readerResource;
+  List<DictReader> readerResource = [];
   late String title;
   late final int entriesTotal;
 
   late HttpServer? server;
   late int port;
+
+  static const maxBatchSize = 50000;
+  static const maxLoadingCount = 5000;
 
   Mdict({required this.path});
 
@@ -112,7 +115,7 @@ class Mdict {
 
     await _addWords();
 
-    if (readerResource != null) await _addResource();
+    if (readerResource.isNotEmpty) await _addResource();
 
     customFont(null);
 
@@ -142,11 +145,22 @@ class Mdict {
     reader = DictReader("$path.mdx");
     await reader.init(false);
 
-    try {
-      readerResource = DictReader("$path.mdd");
-      await readerResource!.init(false);
-    } catch (e) {
-      readerResource = null;
+    final mddFile = File("$path.mdd");
+    if (await mddFile.exists()) {
+      final reader = DictReader(mddFile.path);
+      await reader.init(false);
+      readerResource.add(reader);
+    }
+
+    for (var i = 1;; i++) {
+      final mddFile = File("$path.$i.mdd");
+      if (await mddFile.exists()) {
+        final reader = DictReader(mddFile.path);
+        await reader.init(false);
+        readerResource.add(reader);
+      } else {
+        break;
+      }
     }
 
     db = dictionaryDatabase(id);
@@ -190,16 +204,28 @@ class Mdict {
     try {
       Uint8List? data;
 
-      if (readerResource == null) {
+      if (readerResource.isEmpty) {
         // Find resource under directory if no mdd
         final file = File("${dirname(path)}/$filename");
         data = await file.readAsBytes();
       } else {
         try {
-          final result = await db.readResource(filename);
-          final info = RecordOffsetInfo(result.key, result.blockOffset,
-              result.startOffset, result.endOffset, result.compressedSize);
-          data = await readerResource!.readOneMdd(info) as Uint8List;
+          final results = await db.readResource(filename);
+          for (final result in results) {
+            final info = RecordOffsetInfo(result.key, result.blockOffset,
+                result.startOffset, result.endOffset, result.compressedSize);
+            try {
+              if (result.part == null) {
+                data = await readerResource[0].readOneMdd(info) as Uint8List;
+              } else {
+                data = await readerResource[result.part!].readOneMdd(info)
+                    as Uint8List;
+              }
+              break;
+            } catch (e) {
+              continue;
+            }
+          }
         } catch (e) {
           // Find resource under directory if resource is not in mdd
           final file = File("${dirname(path)}/$filename");
@@ -255,6 +281,15 @@ class Mdict {
       if (await mddFile.exists()) {
         await mddFile.delete();
       }
+
+      for (var i = 1;; i++) {
+        final mddFile = File("$path.$i.mdd");
+        if (await mddFile.exists()) {
+          await mddFile.delete();
+        } else {
+          break;
+        }
+      }
     }
   }
 
@@ -263,37 +298,46 @@ class Mdict {
   }
 
   Future<void> _addResource() async {
-    final resourceList = <ResourceCompanion>[];
-    var number = 0;
+    for (var i = 0; i < readerResource.length; i++) {
+      final resourceList = <ResourceCompanion>[];
+      var number = 0;
+      var loadingCount = 0;
 
-    await for (final info in readerResource!.readWithOffset()) {
-      resourceList.add(ResourceCompanion(
-          key: Value(info.keyText),
-          blockOffset: Value(info.recordBlockOffset),
-          startOffset: Value(info.startOffset),
-          endOffset: Value(info.endOffset),
-          compressedSize: Value(info.compressedSize)));
-      number++;
+      await for (final info in readerResource[i].readWithOffset()) {
+        resourceList.add(ResourceCompanion(
+            key: Value(info.keyText),
+            blockOffset: Value(info.recordBlockOffset),
+            startOffset: Value(info.startOffset),
+            endOffset: Value(info.endOffset),
+            compressedSize: Value(info.compressedSize),
+            part: i == 0 ? Value(null) : Value(i)));
+        number++;
+        loadingCount++;
 
-      if (number == 50000) {
-        number = 0;
-        await db.insertResource(resourceList);
-        resourceList.clear();
+        if (number == maxBatchSize) {
+          number = 0;
+          await db.insertResource(resourceList);
+          resourceList.clear();
+        }
 
-        LoadingDialogContentState.updateText(
-            AppLocalizations.of(navigatorKey.currentContext!)!
-                .addingResource(info.keyText));
+        if (loadingCount == maxLoadingCount) {
+          LoadingDialogContentState.updateText(
+              AppLocalizations.of(navigatorKey.currentContext!)!
+                  .addingResource(info.keyText));
+          loadingCount = 0;
+        }
       }
-    }
 
-    if (resourceList.isNotEmpty) {
-      await db.insertResource(resourceList);
+      if (resourceList.isNotEmpty) {
+        await db.insertResource(resourceList);
+      }
     }
   }
 
   Future<void> _addWords() async {
     final wordList = <DictionaryCompanion>[];
     var number = 0;
+    var loadingCount = 0;
 
     await for (final info in reader.readWithOffset()) {
       wordList.add(DictionaryCompanion(
@@ -303,15 +347,19 @@ class Mdict {
           endOffset: Value(info.endOffset),
           compressedSize: Value(info.compressedSize)));
       number++;
+      loadingCount++;
 
-      if (number == 50000) {
+      if (number == maxBatchSize) {
         number = 0;
         await db.insertWords(wordList);
         wordList.clear();
+      }
 
+      if (loadingCount == maxLoadingCount) {
         LoadingDialogContentState.updateText(
             AppLocalizations.of(navigatorKey.currentContext!)!
                 .addingWord(info.keyText));
+        loadingCount = 0;
       }
     }
 
@@ -326,11 +374,22 @@ class Mdict {
 
     reader = dictReaderTemp;
 
-    try {
-      readerResource = DictReader("$path.mdd");
-      await readerResource!.init(readKey);
-    } catch (e) {
-      readerResource = null;
+    final mddFile = File("$path.mdd");
+    if (await mddFile.exists()) {
+      final reader = DictReader(mddFile.path);
+      await reader.init(readKey);
+      readerResource.add(reader);
+    }
+
+    for (var i = 1;; i++) {
+      final mddFile = File("$path.$i.mdd");
+      if (await mddFile.exists()) {
+        final reader = DictReader(mddFile.path);
+        await reader.init(readKey);
+        readerResource.add(reader);
+      } else {
+        break;
+      }
     }
   }
 
@@ -432,19 +491,21 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
     }
 
     final resources = <MddAudioResourceCompanion>[];
-    int number = 0;
+    var number = 0;
+    var loadingCount = 0;
 
     await for (final info in reader.readWithOffset()) {
-      if (number == 50000) {
+      if (number == Mdict.maxBatchSize) {
         number = 0;
         await mddAudioResourceDao.add(resources);
         resources.clear();
+      }
 
-        if (context.mounted) {
-          LoadingDialogContentState.updateText(
-              AppLocalizations.of(navigatorKey.currentContext!)!
-                  .addingResource(info.keyText));
-        }
+      if (loadingCount == Mdict.maxLoadingCount) {
+        LoadingDialogContentState.updateText(
+            AppLocalizations.of(navigatorKey.currentContext!)!
+                .addingResource(info.keyText));
+        loadingCount = 0;
       }
 
       final data = MddAudioResourceCompanion(
@@ -455,7 +516,9 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
           compressedSize: Value(info.compressedSize),
           mddAudioListId: Value(mddAudioListId!));
       resources.add(data);
+
       number++;
+      loadingCount++;
     }
 
     if (number > 0) {
