@@ -18,6 +18,15 @@ Future<List<String>> findMddAudioFilesOnAndroid(String? directory) async {
   return mddFiles;
 }
 
+Future<void> playSound(Uint8List audio, String mimeType) async {
+  final player = AudioPlayer();
+  await player.setSourceBytes(audio, mimeType: mimeType);
+  await player.resume();
+  player.onPlayerComplete.listen((event) {
+    player.release();
+  });
+}
+
 Future<void> playSoundOfWord(
     String word, List<MddAudioListData> mddAudioList) async {
   if (mddAudioList.isNotEmpty) {

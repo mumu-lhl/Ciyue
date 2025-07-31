@@ -26,6 +26,104 @@ import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:provider/provider.dart";
 
+Future<CustomSchemeResponse?> Function(
+        InAppWebViewController controller, WebResourceRequest request)
+    onLoadResourceWithCustomSchemeWarpper(int dictId) {
+  return (controller, request) async {
+    final url = request.url;
+    if (url.scheme == "sound") {
+      final filename =
+          Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
+      final results =
+          await dictManager.dicts[dictId]!.db.readResource(filename);
+      for (final result in results) {
+        final info = RecordOffsetInfo(
+          result.key,
+          result.blockOffset,
+          result.startOffset,
+          result.endOffset,
+          result.compressedSize,
+        );
+        try {
+          final Uint8List data;
+          if (result.part == null) {
+            data = await dictManager.dicts[dictId]!.readerResource[0]
+                .readOneMdd(info) as Uint8List;
+          } else {
+            data = await dictManager.dicts[dictId]!.readerResource[result.part!]
+                .readOneMdd(info) as Uint8List;
+          }
+          return CustomSchemeResponse(
+              contentType: lookupMimeType(filename)!, data: data);
+        } catch (e) {
+          logger.d(e);
+
+          continue;
+        }
+      }
+    }
+    return null;
+  };
+}
+
+Future<NavigationActionPolicy?> Function(
+  InAppWebViewController controller,
+  NavigationAction navigationAction,
+) shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
+  return (controller, navigationAction) async {
+    final url = navigationAction.request.url;
+    if (url!.scheme == "entry") {
+      final word = await dictManager.dicts[dictId]!.db.getOffset(
+        Uri.decodeFull(url.toString().replaceFirst("entry://", "")),
+      );
+
+      final info = RecordOffsetInfo(
+        word.key,
+        word.blockOffset,
+        word.startOffset,
+        word.endOffset,
+        word.compressedSize,
+      );
+      final data = await dictManager.dicts[dictId]!.reader.readOneMdx(info);
+
+      if (context.mounted) {
+        context.push("/word", extra: {"content": data, "word": word.key});
+      }
+    } else if (url.scheme == "sound") {
+      final filename =
+          Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
+      final results =
+          await dictManager.dicts[dictId]!.db.readResource(filename);
+      for (final result in results) {
+        final info = RecordOffsetInfo(
+          result.key,
+          result.blockOffset,
+          result.startOffset,
+          result.endOffset,
+          result.compressedSize,
+        );
+        try {
+          final Uint8List data;
+          if (result.part == null) {
+            data = await dictManager.dicts[dictId]!.readerResource[0]
+                .readOneMdd(info) as Uint8List;
+          } else {
+            data = await dictManager.dicts[dictId]!.readerResource[result.part!]
+                .readOneMdd(info) as Uint8List;
+          }
+          await playSound(data, lookupMimeType(filename)!);
+        } catch (e) {
+          logger.d(e);
+
+          continue;
+        }
+      }
+    }
+
+    return NavigationActionPolicy.CANCEL;
+  };
+}
+
 class ExpansionWordDisplay extends StatefulWidget {
   final String word;
   final List<int> validDictIds;
@@ -348,65 +446,10 @@ class WebviewAndroid extends StatelessWidget {
       ),
       initialSettings: settings,
       contextMenu: contextMenu,
-      onLoadResourceWithCustomScheme: (controller, request) async {
-        final url = request.url;
-        if (url.scheme == "sound") {
-          final filename =
-              Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
-          final results =
-              await dictManager.dicts[dictId]!.db.readResource(filename);
-          for (final result in results) {
-            final info = RecordOffsetInfo(
-              result.key,
-              result.blockOffset,
-              result.startOffset,
-              result.endOffset,
-              result.compressedSize,
-            );
-            try {
-              final Uint8List data;
-              if (result.part == null) {
-                data = await dictManager.dicts[dictId]!.readerResource[0]
-                    .readOneMdd(info) as Uint8List;
-              } else {
-                data = await dictManager
-                    .dicts[dictId]!.readerResource[result.part!]
-                    .readOneMdd(info) as Uint8List;
-              }
-              return CustomSchemeResponse(
-                  contentType: lookupMimeType(url.path)!, data: data);
-            } catch (e) {
-              continue;
-            }
-          }
-        }
-        return null;
-      },
-      shouldOverrideUrlLoading: (controller, navigationAction) async {
-        final url = navigationAction.request.url;
-        if (url!.scheme == "entry") {
-          final word = await dictManager.dicts[dictId]!.db.getOffset(
-            Uri.decodeFull(url.toString().replaceFirst("entry://", "")),
-          );
-
-          final info = RecordOffsetInfo(
-            word.key,
-            word.blockOffset,
-            word.startOffset,
-            word.endOffset,
-            word.compressedSize,
-          );
-          final data = await dictManager.dicts[dictId]!.reader.readOneMdx(info);
-
-          if (context.mounted) {
-            context.push("/word", extra: {"content": data, "word": word.key});
-          }
-        } else if (url.scheme == "sound") {
-          return NavigationActionPolicy.ALLOW;
-        }
-
-        return null;
-      },
+      onLoadResourceWithCustomScheme:
+          onLoadResourceWithCustomSchemeWarpper(dictId),
+      shouldOverrideUrlLoading:
+          shouldOverrideUrlLoadingWarpper(dictId, context),
       onWebViewCreated: (controller) {
         webViewController = controller;
       },
@@ -518,6 +561,10 @@ class WebviewWindows extends StatelessWidget {
               data: content,
               baseUrl: WebUri(url),
             ),
+            onLoadResourceWithCustomScheme:
+                onLoadResourceWithCustomSchemeWarpper(dictId),
+            shouldOverrideUrlLoading:
+                shouldOverrideUrlLoadingWarpper(dictId, context),
           );
         }
         return const Center(child: CircularProgressIndicator());

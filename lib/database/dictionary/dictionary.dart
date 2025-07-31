@@ -65,8 +65,8 @@ class DictionaryDatabase extends _$DictionaryDatabase {
     });
   }
 
-  Future<List<ResourceData>> readResource(String key) async {
-    return (await ((select(resource)..where((u) => u.key.equals(key))).get()));
+  Future<List<ResourceData>> readResource(String key) {
+    return (select(resource)..where((u) => u.key.equals(key))).get();
   }
 
   Future<List<String>> searchWord(String word) {
