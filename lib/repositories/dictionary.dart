@@ -213,7 +213,7 @@ class Mdict {
   }
 
   Future<String> readWord(String word) async {
-    late DictionaryData data;
+    DictionaryData data;
     try {
       data = await db.getOffset(word);
     } catch (e) {
@@ -226,11 +226,13 @@ class Mdict {
     String content = await reader.readOneMdx(info);
 
     if (content.startsWith("@@@LINK=")) {
-      // 8: remove @@@LINK=
-      // content.length - 3: remove \r\n\x00
-      data = await db
-          .getOffset(content.substring(8, content.length - 3).trimRight());
-      content = await reader.readOneMdx(info);
+      final newData = await db.getOffset(content
+          .replaceFirst("@@@LINK=", "")
+          .replaceAll(RegExp(r"[\n\r\x00]"), "")
+          .trimRight());
+      final newInfo = RecordOffsetInfo(newData.key, newData.blockOffset,
+          newData.startOffset, newData.endOffset, newData.compressedSize);
+      content = await reader.readOneMdx(newInfo);
     }
 
     return content;
