@@ -39,9 +39,15 @@ class $ResourceTable extends Resource
   late final drift.GeneratedColumn<int> startOffset =
       drift.GeneratedColumn<int>('start_offset', aliasedName, false,
           type: DriftSqlType.int, requiredDuringInsert: true);
+  static const drift.VerificationMeta _partMeta =
+      const drift.VerificationMeta('part');
+  @override
+  late final drift.GeneratedColumn<int> part = drift.GeneratedColumn<int>(
+      'part', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   @override
   List<drift.GeneratedColumn> get $columns =>
-      [blockOffset, compressedSize, endOffset, key, startOffset];
+      [blockOffset, compressedSize, endOffset, key, startOffset, part];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -89,6 +95,10 @@ class $ResourceTable extends Resource
     } else if (isInserting) {
       context.missing(_startOffsetMeta);
     }
+    if (data.containsKey('part')) {
+      context.handle(
+          _partMeta, part.isAcceptableOrUnknown(data['part']!, _partMeta));
+    }
     return context;
   }
 
@@ -108,6 +118,8 @@ class $ResourceTable extends Resource
           .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
       startOffset: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}start_offset'])!,
+      part: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}part']),
     );
   }
 
@@ -124,12 +136,14 @@ class ResourceData extends drift.DataClass
   final int endOffset;
   final String key;
   final int startOffset;
+  final int? part;
   const ResourceData(
       {required this.blockOffset,
       required this.compressedSize,
       required this.endOffset,
       required this.key,
-      required this.startOffset});
+      required this.startOffset,
+      this.part});
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
@@ -138,6 +152,9 @@ class ResourceData extends drift.DataClass
     map['end_offset'] = drift.Variable<int>(endOffset);
     map['key'] = drift.Variable<String>(key);
     map['start_offset'] = drift.Variable<int>(startOffset);
+    if (!nullToAbsent || part != null) {
+      map['part'] = drift.Variable<int>(part);
+    }
     return map;
   }
 
@@ -148,6 +165,9 @@ class ResourceData extends drift.DataClass
       endOffset: drift.Value(endOffset),
       key: drift.Value(key),
       startOffset: drift.Value(startOffset),
+      part: part == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(part),
     );
   }
 
@@ -160,6 +180,7 @@ class ResourceData extends drift.DataClass
       endOffset: serializer.fromJson<int>(json['endOffset']),
       key: serializer.fromJson<String>(json['key']),
       startOffset: serializer.fromJson<int>(json['startOffset']),
+      part: serializer.fromJson<int?>(json['part']),
     );
   }
   @override
@@ -171,6 +192,7 @@ class ResourceData extends drift.DataClass
       'endOffset': serializer.toJson<int>(endOffset),
       'key': serializer.toJson<String>(key),
       'startOffset': serializer.toJson<int>(startOffset),
+      'part': serializer.toJson<int?>(part),
     };
   }
 
@@ -179,13 +201,15 @@ class ResourceData extends drift.DataClass
           int? compressedSize,
           int? endOffset,
           String? key,
-          int? startOffset}) =>
+          int? startOffset,
+          drift.Value<int?> part = const drift.Value.absent()}) =>
       ResourceData(
         blockOffset: blockOffset ?? this.blockOffset,
         compressedSize: compressedSize ?? this.compressedSize,
         endOffset: endOffset ?? this.endOffset,
         key: key ?? this.key,
         startOffset: startOffset ?? this.startOffset,
+        part: part.present ? part.value : this.part,
       );
   ResourceData copyWithCompanion(ResourceCompanion data) {
     return ResourceData(
@@ -198,6 +222,7 @@ class ResourceData extends drift.DataClass
       key: data.key.present ? data.key.value : this.key,
       startOffset:
           data.startOffset.present ? data.startOffset.value : this.startOffset,
+      part: data.part.present ? data.part.value : this.part,
     );
   }
 
@@ -208,14 +233,15 @@ class ResourceData extends drift.DataClass
           ..write('compressedSize: $compressedSize, ')
           ..write('endOffset: $endOffset, ')
           ..write('key: $key, ')
-          ..write('startOffset: $startOffset')
+          ..write('startOffset: $startOffset, ')
+          ..write('part: $part')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(blockOffset, compressedSize, endOffset, key, startOffset);
+  int get hashCode => Object.hash(
+      blockOffset, compressedSize, endOffset, key, startOffset, part);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -224,7 +250,8 @@ class ResourceData extends drift.DataClass
           other.compressedSize == this.compressedSize &&
           other.endOffset == this.endOffset &&
           other.key == this.key &&
-          other.startOffset == this.startOffset);
+          other.startOffset == this.startOffset &&
+          other.part == this.part);
 }
 
 class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
@@ -233,6 +260,7 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
   final drift.Value<int> endOffset;
   final drift.Value<String> key;
   final drift.Value<int> startOffset;
+  final drift.Value<int?> part;
   final drift.Value<int> rowid;
   const ResourceCompanion({
     this.blockOffset = const drift.Value.absent(),
@@ -240,6 +268,7 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
     this.endOffset = const drift.Value.absent(),
     this.key = const drift.Value.absent(),
     this.startOffset = const drift.Value.absent(),
+    this.part = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   });
   ResourceCompanion.insert({
@@ -248,6 +277,7 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
     required int endOffset,
     required String key,
     required int startOffset,
+    this.part = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   })  : blockOffset = drift.Value(blockOffset),
         compressedSize = drift.Value(compressedSize),
@@ -260,6 +290,7 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
     drift.Expression<int>? endOffset,
     drift.Expression<String>? key,
     drift.Expression<int>? startOffset,
+    drift.Expression<int>? part,
     drift.Expression<int>? rowid,
   }) {
     return drift.RawValuesInsertable({
@@ -268,6 +299,7 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
       if (endOffset != null) 'end_offset': endOffset,
       if (key != null) 'key': key,
       if (startOffset != null) 'start_offset': startOffset,
+      if (part != null) 'part': part,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -278,6 +310,7 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
       drift.Value<int>? endOffset,
       drift.Value<String>? key,
       drift.Value<int>? startOffset,
+      drift.Value<int?>? part,
       drift.Value<int>? rowid}) {
     return ResourceCompanion(
       blockOffset: blockOffset ?? this.blockOffset,
@@ -285,6 +318,7 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
       endOffset: endOffset ?? this.endOffset,
       key: key ?? this.key,
       startOffset: startOffset ?? this.startOffset,
+      part: part ?? this.part,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -307,6 +341,9 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
     if (startOffset.present) {
       map['start_offset'] = drift.Variable<int>(startOffset.value);
     }
+    if (part.present) {
+      map['part'] = drift.Variable<int>(part.value);
+    }
     if (rowid.present) {
       map['rowid'] = drift.Variable<int>(rowid.value);
     }
@@ -321,6 +358,7 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
           ..write('endOffset: $endOffset, ')
           ..write('key: $key, ')
           ..write('startOffset: $startOffset, ')
+          ..write('part: $part, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -674,6 +712,7 @@ typedef $$ResourceTableCreateCompanionBuilder = ResourceCompanion Function({
   required int endOffset,
   required String key,
   required int startOffset,
+  drift.Value<int?> part,
   drift.Value<int> rowid,
 });
 typedef $$ResourceTableUpdateCompanionBuilder = ResourceCompanion Function({
@@ -682,6 +721,7 @@ typedef $$ResourceTableUpdateCompanionBuilder = ResourceCompanion Function({
   drift.Value<int> endOffset,
   drift.Value<String> key,
   drift.Value<int> startOffset,
+  drift.Value<int?> part,
   drift.Value<int> rowid,
 });
 
@@ -712,6 +752,9 @@ class $$ResourceTableFilterComposer
   drift.ColumnFilters<int> get startOffset => $composableBuilder(
       column: $table.startOffset,
       builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get part => $composableBuilder(
+      column: $table.part, builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$ResourceTableOrderingComposer
@@ -741,6 +784,9 @@ class $$ResourceTableOrderingComposer
   drift.ColumnOrderings<int> get startOffset => $composableBuilder(
       column: $table.startOffset,
       builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get part => $composableBuilder(
+      column: $table.part, builder: (column) => drift.ColumnOrderings(column));
 }
 
 class $$ResourceTableAnnotationComposer
@@ -766,6 +812,9 @@ class $$ResourceTableAnnotationComposer
 
   drift.GeneratedColumn<int> get startOffset => $composableBuilder(
       column: $table.startOffset, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get part =>
+      $composableBuilder(column: $table.part, builder: (column) => column);
 }
 
 class $$ResourceTableTableManager extends drift.RootTableManager<
@@ -799,6 +848,7 @@ class $$ResourceTableTableManager extends drift.RootTableManager<
             drift.Value<int> endOffset = const drift.Value.absent(),
             drift.Value<String> key = const drift.Value.absent(),
             drift.Value<int> startOffset = const drift.Value.absent(),
+            drift.Value<int?> part = const drift.Value.absent(),
             drift.Value<int> rowid = const drift.Value.absent(),
           }) =>
               ResourceCompanion(
@@ -807,6 +857,7 @@ class $$ResourceTableTableManager extends drift.RootTableManager<
             endOffset: endOffset,
             key: key,
             startOffset: startOffset,
+            part: part,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -815,6 +866,7 @@ class $$ResourceTableTableManager extends drift.RootTableManager<
             required int endOffset,
             required String key,
             required int startOffset,
+            drift.Value<int?> part = const drift.Value.absent(),
             drift.Value<int> rowid = const drift.Value.absent(),
           }) =>
               ResourceCompanion.insert(
@@ -823,6 +875,7 @@ class $$ResourceTableTableManager extends drift.RootTableManager<
             endOffset: endOffset,
             key: key,
             startOffset: startOffset,
+            part: part,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

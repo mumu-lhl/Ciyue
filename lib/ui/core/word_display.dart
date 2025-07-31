@@ -2,6 +2,7 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/database/dictionary/dictionary.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/services/backup.dart";
 import "package:ciyue/repositories/dictionary.dart";
@@ -24,6 +25,104 @@ import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:provider/provider.dart";
+
+Future<CustomSchemeResponse?> Function(
+        InAppWebViewController controller, WebResourceRequest request)
+    onLoadResourceWithCustomSchemeWarpper(int dictId) {
+  return (controller, request) async {
+    final url = request.url;
+    if (url.scheme == "sound") {
+      final filename =
+          Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
+      final results =
+          await dictManager.dicts[dictId]!.db.readResource(filename);
+      for (final result in results) {
+        final info = RecordOffsetInfo(
+          result.key,
+          result.blockOffset,
+          result.startOffset,
+          result.endOffset,
+          result.compressedSize,
+        );
+        try {
+          final Uint8List data;
+          if (result.part == null) {
+            data = await dictManager.dicts[dictId]!.readerResource[0]
+                .readOneMdd(info) as Uint8List;
+          } else {
+            data = await dictManager.dicts[dictId]!.readerResource[result.part!]
+                .readOneMdd(info) as Uint8List;
+          }
+          return CustomSchemeResponse(
+              contentType: lookupMimeType(filename)!, data: data);
+        } catch (e) {
+          logger.d(e);
+
+          continue;
+        }
+      }
+    }
+    return null;
+  };
+}
+
+Future<NavigationActionPolicy?> Function(
+  InAppWebViewController controller,
+  NavigationAction navigationAction,
+) shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
+  return (controller, navigationAction) async {
+    final url = navigationAction.request.url;
+    if (url!.scheme == "entry") {
+      final word = await dictManager.dicts[dictId]!.db.getOffset(
+        Uri.decodeFull(url.toString().replaceFirst("entry://", "")),
+      );
+
+      final info = RecordOffsetInfo(
+        word.key,
+        word.blockOffset,
+        word.startOffset,
+        word.endOffset,
+        word.compressedSize,
+      );
+      final data = await dictManager.dicts[dictId]!.reader.readOneMdx(info);
+
+      if (context.mounted) {
+        context.push("/word", extra: {"content": data, "word": word.key});
+      }
+    } else if (url.scheme == "sound") {
+      final filename =
+          Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
+      final results =
+          await dictManager.dicts[dictId]!.db.readResource(filename);
+      for (final result in results) {
+        final info = RecordOffsetInfo(
+          result.key,
+          result.blockOffset,
+          result.startOffset,
+          result.endOffset,
+          result.compressedSize,
+        );
+        try {
+          final Uint8List data;
+          if (result.part == null) {
+            data = await dictManager.dicts[dictId]!.readerResource[0]
+                .readOneMdd(info) as Uint8List;
+          } else {
+            data = await dictManager.dicts[dictId]!.readerResource[result.part!]
+                .readOneMdd(info) as Uint8List;
+          }
+          await playSound(data, lookupMimeType(filename)!);
+        } catch (e) {
+          logger.d(e);
+
+          continue;
+        }
+      }
+    }
+
+    return NavigationActionPolicy.CANCEL;
+  };
+}
 
 class ExpansionWordDisplay extends StatefulWidget {
   final String word;
@@ -226,13 +325,25 @@ class LocalResourcesPathHandler extends CustomPathHandler {
     try {
       Uint8List? data;
 
-      if (dictManager.dicts[dictId]!.readerResource == null) {
+      if (dictManager.dicts[dictId]!.readerResource.isEmpty) {
         // Find resource under directory if no mdd
         final file = File("${dirname(dictManager.dicts[dictId]!.path)}/$path");
         data = await file.readAsBytes();
       } else {
-        try {
-          final result = await dictManager.dicts[dictId]!.db.readResource(path);
+        List<ResourceData> results;
+        results = await dictManager.dicts[dictId]!.db.readResource(path);
+
+        if (results.isEmpty) {
+          // Find resource under directory if resource is not in mdd
+          final file = File(
+            "${dirname(dictManager.dicts[dictId]!.path)}/$path",
+          );
+          data = await file.readAsBytes();
+          return WebResourceResponse(
+              data: data, contentType: lookupMimeType(path));
+        }
+
+        for (final result in results) {
           final info = RecordOffsetInfo(
             result.key,
             result.blockOffset,
@@ -240,14 +351,19 @@ class LocalResourcesPathHandler extends CustomPathHandler {
             result.endOffset,
             result.compressedSize,
           );
-          data = await dictManager.dicts[dictId]!.readerResource!
-              .readOneMdd(info) as Uint8List;
-        } catch (e) {
-          // Find resource under directory if resource is not in mdd
-          final file = File(
-            "${dirname(dictManager.dicts[dictId]!.path)}/$path",
-          );
-          data = await file.readAsBytes();
+          try {
+            if (result.part == null) {
+              data = await dictManager.dicts[dictId]!.readerResource[0]
+                  .readOneMdd(info) as Uint8List;
+            } else {
+              data = await dictManager
+                  .dicts[dictId]!.readerResource[result.part!]
+                  .readOneMdd(info) as Uint8List;
+            }
+            break;
+          } catch (e) {
+            continue;
+          }
         }
       }
       return WebResourceResponse(data: data, contentType: lookupMimeType(path));
@@ -272,7 +388,7 @@ class WebviewAndroid extends StatelessWidget {
     final settings = InAppWebViewSettings(
       useWideViewPort: false,
       algorithmicDarkeningAllowed: true,
-      resourceCustomSchemes: ["entry"],
+      resourceCustomSchemes: ["entry", "sound"],
       transparentBackground: true,
       webViewAssetLoader: WebViewAssetLoader(
         domain: "ciyue.internal",
@@ -330,29 +446,10 @@ class WebviewAndroid extends StatelessWidget {
       ),
       initialSettings: settings,
       contextMenu: contextMenu,
-      shouldOverrideUrlLoading: (controller, navigationAction) async {
-        final url = navigationAction.request.url;
-        if (url!.scheme == "entry") {
-          final word = await dictManager.dicts[dictId]!.db.getOffset(
-            Uri.decodeFull(url.toString().replaceFirst("entry://", "")),
-          );
-
-          final info = RecordOffsetInfo(
-            word.key,
-            word.blockOffset,
-            word.startOffset,
-            word.endOffset,
-            word.compressedSize,
-          );
-          final data = await dictManager.dicts[dictId]!.reader.readOneMdx(info);
-
-          if (context.mounted) {
-            context.push("/word", extra: {"content": data, "word": word.key});
-          }
-        }
-
-        return NavigationActionPolicy.CANCEL;
-      },
+      onLoadResourceWithCustomScheme:
+          onLoadResourceWithCustomSchemeWarpper(dictId),
+      shouldOverrideUrlLoading:
+          shouldOverrideUrlLoadingWarpper(dictId, context),
       onWebViewCreated: (controller) {
         webViewController = controller;
       },
@@ -464,6 +561,10 @@ class WebviewWindows extends StatelessWidget {
               data: content,
               baseUrl: WebUri(url),
             ),
+            onLoadResourceWithCustomScheme:
+                onLoadResourceWithCustomSchemeWarpper(dictId),
+            shouldOverrideUrlLoading:
+                shouldOverrideUrlLoadingWarpper(dictId, context),
           );
         }
         return const Center(child: CircularProgressIndicator());
