@@ -1,6 +1,5 @@
 import "dart:convert";
 
-import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
@@ -118,7 +117,6 @@ class DeepLXTranslationService implements TranslationService {
       options: Options(headers: headers),
       data: jsonEncode(data),
     );
-    logger.d(url);
 
     if (response.statusCode == 200) {
       return response.data["data"];
