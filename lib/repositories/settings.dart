@@ -137,7 +137,10 @@ class _Settings {
 
   Future<void> saveAiProviderConfig(
       String provider, String model, String apiKey) async {
-    aiProviderConfigs[provider] = {"model": model, "apiKey": apiKey};
+    final currentConfig = aiProviderConfigs[provider] ?? {};
+    currentConfig["model"] = model;
+    currentConfig["apiKey"] = apiKey;
+    aiProviderConfigs[provider] = currentConfig;
     await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
   }
 

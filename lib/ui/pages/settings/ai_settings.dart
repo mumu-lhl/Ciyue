@@ -1,7 +1,6 @@
 import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/services/ai.dart";
-import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/ai_settings_view_model.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -22,7 +21,7 @@ class AIAPIUrl extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         TextFormField(
-            initialValue: settings.aiAPIUrl,
+            controller: viewModel.apiUrlController,
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
               hintText: AppLocalizations.of(context)!.apiUrl,
