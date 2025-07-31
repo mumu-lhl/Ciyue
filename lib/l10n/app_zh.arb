@@ -322,8 +322,10 @@
       }
     }
   },
-  "translationHistory": "翻译历史",
+  "translationHistory": "翻译历史记录",
   "@translationHistory": {},
   "enableTranslationHistory": "启用翻译历史记录",
-  "@enableTranslationHistory": {}
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "启用写作检查历史记录",
+  "@enableWritingCheckHistory": {}
 }

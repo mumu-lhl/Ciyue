@@ -14,6 +14,7 @@ NO OTHER WORD LIKE 'OK, here is...'""";
       "Translate the following text from \$sourceLanguage to \$targetLanguage. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in \$targetLanguage: \$text";
   static const String defaultWritingCheckPrompt =
       """Please evaluate the text from a grammatical and orthographical standpoint, offering suggestions to enhance its composition for a more idiomatic and authentic expression in the given language. 
+Source language: auto decect
 You must output the translation entirely, exclusively and naturally in \$targetLanguage.
 
 Example:

@@ -2,6 +2,7 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
 
@@ -36,6 +37,9 @@ class WritingCheckViewModel extends ChangeNotifier {
   }
 
   Future<void> saveResult(String outputText) async {
+    if (!settings.enableWritingCheckHistory) {
+      return;
+    }
     final inputText = textEditingController.text;
     await Provider.of<WritingCheckHistoryDao>(navigatorKey.currentContext!,
             listen: false)

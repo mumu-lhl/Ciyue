@@ -48,6 +48,7 @@ class _Settings {
   late bool isRichOutput;
 
   late bool enableTranslationHistory;
+  late bool enableWritingCheckHistory;
 
   _Settings() {
     autoExport = prefs.getBool("autoExport") ?? false;
@@ -95,6 +96,8 @@ class _Settings {
 
     enableTranslationHistory =
         prefs.getBool("enableTranslationHistory") ?? true;
+    enableWritingCheckHistory =
+        prefs.getBool("enableWritingCheckHistory") ?? true;
 
     ttsEngine = prefs.getString("ttsEngine");
     ttsLanguage = prefs.getString("ttsLanguage");
@@ -196,5 +199,10 @@ class _Settings {
   Future<void> setEnableTranslationHistory(bool value) async {
     enableTranslationHistory = value;
     await prefs.setBool("enableTranslationHistory", value);
+  }
+
+  Future<void> setEnableWritingCheckHistory(bool value) async {
+    enableWritingCheckHistory = value;
+    await prefs.setBool("enableWritingCheckHistory", value);
   }
 }

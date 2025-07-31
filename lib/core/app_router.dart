@@ -1,6 +1,7 @@
 import "package:ciyue/ui/pages/chat/chat.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check_history.dart";
+import "package:ciyue/ui/pages/writing_check/writing_check_settings.dart";
 import "package:ciyue/ui/core/word_display.dart";
 import "package:ciyue/ui/pages/main/main.dart";
 import "package:ciyue/ui/pages/settings/about.dart";
@@ -134,6 +135,10 @@ final router = GoRouter(
     GoRoute(
       path: "/writing_check/history",
       builder: (context, state) => const WritingCheckHistoryPage(),
+    ),
+    GoRoute(
+      path: "/writing_check/settings",
+      builder: (context, state) => const WritingCheckSettingsPage(),
     ),
     GoRoute(
       path: "/settings/logs",

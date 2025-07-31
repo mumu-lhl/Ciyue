@@ -39,6 +39,12 @@ class _WritingCheckPage extends StatelessWidget {
                     }
                   },
                 ),
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {
+                    context.push("/writing_check/settings");
+                  },
+                ),
               ],
             ),
             body: Align(

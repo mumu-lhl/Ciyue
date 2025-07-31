@@ -327,5 +327,7 @@
   "translationHistory": "Translation History",
   "@translationHistory": {},
   "enableTranslationHistory": "Enable Translation History",
-  "@enableTranslationHistory": {}
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "Enable Writing Check History",
+  "@enableWritingCheckHistory": {}
 }
