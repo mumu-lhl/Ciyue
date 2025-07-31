@@ -246,6 +246,12 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     return (await (select(wordbook)..where((u) => u.word.isValue(word))).get())
         .isNotEmpty;
   }
+
+  Future<Set<String>> wordsExist(Iterable<String> words) async {
+    final result =
+        await (select(wordbook)..where((u) => u.word.isIn(words))).get();
+    return result.map((e) => e.word).toSet();
+  }
 }
 
 @DriftAccessor(tables: [WordbookTags])

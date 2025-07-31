@@ -233,15 +233,20 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.select_all),
-            onPressed: () {
-              model.selectAll();
+            onPressed: () => model.selectAll(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.book_outlined),
+            onPressed: () async {
+              await model.addSelectedToWordbook();
+              if (context.mounted) {
+                context.read<WordbookModel>().updateWordList();
+              }
             },
           ),
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: () {
-              model.deleteSelected();
-            },
+            onPressed: () => model.deleteSelected(),
           ),
         ],
       );
