@@ -12,10 +12,12 @@ class AISettingsViewModel with ChangeNotifier {
 
   late final TextEditingController apiKeyController;
   late final TextEditingController modelController;
+  late final TextEditingController apiUrlController;
 
   AISettingsViewModel(this._aiPrompts, this._homeModel) {
     apiKeyController = TextEditingController();
     modelController = TextEditingController();
+    apiUrlController = TextEditingController();
 
     _provider = settings.aiProvider;
     if (ModelProviderManager.modelProviders[_provider] == null) {
@@ -27,6 +29,7 @@ class AISettingsViewModel with ChangeNotifier {
     final config = settings.getAiProviderConfig(_provider);
     modelController.text = config["model"]!;
     apiKeyController.text = config["apiKey"]!;
+    apiUrlController.text = settings.aiAPIUrl;
 
     final currentProvider = ModelProviderManager.modelProviders[_provider]!;
     if (!currentProvider.models
@@ -85,6 +88,7 @@ class AISettingsViewModel with ChangeNotifier {
   }
 
   void setAiAPIUrl(String apiUrl) {
+    if (apiUrlController.text != apiUrl) apiUrlController.text = apiUrl;
     settings.setAiAPIUrl(apiUrl);
     notifyListeners();
   }
@@ -93,6 +97,7 @@ class AISettingsViewModel with ChangeNotifier {
   void dispose() {
     apiKeyController.dispose();
     modelController.dispose();
+    apiUrlController.dispose();
     super.dispose();
   }
 }
