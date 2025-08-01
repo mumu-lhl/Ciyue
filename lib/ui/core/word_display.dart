@@ -110,6 +110,7 @@ Future<NavigationActionPolicy?> Function(
                 .readOneMdd(info) as Uint8List;
           }
           await playSound(data, lookupMimeType(filename)!);
+          return NavigationActionPolicy.CANCEL;
         } catch (e) {
           continue;
         }
