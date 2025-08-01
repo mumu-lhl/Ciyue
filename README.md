@@ -20,9 +20,8 @@ A mdict dictionary with Android/Windows/Linux support.
 
 ## Screenshots
 
-| <img alt="Home" src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img alt="Switch Dictionart Groups" src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img alt="Settings" src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img alt="Manage Dictionaries" src="./metadata/en-US/images/phoneScreenshots/4.png"> |
-|-|-|-|-|
-| <img alt="Search Word" src="./metadata/en-US/images/phoneScreenshots/5.png"> | <img alt="Display Word Explanation" src="./metadata/en-US/images/phoneScreenshots/6.png"> | <img alt="Wordbook" src="./metadata/en-US/images/phoneScreenshots/7.png"> | <img alt="AI Translate" src="./metadata/en-US/images/phoneScreenshots/8.png"> |
+| <img src="./metadata/en-US/images/phoneScreenshots/1.png"> | <img src="./metadata/en-US/images/phoneScreenshots/2.png"> | <img src="./metadata/en-US/images/phoneScreenshots/3.png"> | <img src="./metadata/en-US/images/phoneScreenshots/4.png"> | <img src="./metadata/en-US/images/phoneScreenshots/5.png"> |
+|-|-|-|-|-|
 
 ## Install
 
