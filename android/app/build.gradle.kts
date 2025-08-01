@@ -92,6 +92,11 @@ android {
             dimension = "default"
             applicationIdSuffix = ".full"
         }
+
+        create("full-dev") {
+            dimension = "default"
+            applicationIdSuffix = ".full.dev"
+        }
     }
 
     dependenciesInfo {

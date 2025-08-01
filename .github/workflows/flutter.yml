@@ -62,8 +62,11 @@ jobs:
         run: |
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 
-      - name: Build APK
-        run: flutter build apk
+      - name: Build Common APK
+        run: flutter build apk --flavor dev
+
+      - name: Build Full APK
+        run: flutter build apk --flavor full-dev
 
       - name: Upload
         uses: actions/upload-artifact@v4
@@ -71,6 +74,7 @@ jobs:
           name: Apk
           path: |
             build/app/outputs/flutter-apk/app-common-release.apk
+            build/app/outputs/flutter-apk/app-full-dev-release.apk
 
   build-windows:
     name: Build Windows
