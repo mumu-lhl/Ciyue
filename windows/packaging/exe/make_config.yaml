@@ -5,6 +5,7 @@ publisher: Mumulhl
 publisher_url: https://github.com/mumu-lhl/Ciyue
 display_name: Ciyue
 create_desktop_icon: true
+script_template: inno_setup.iss
 # See: https://jrsoftware.org/ishelp/index.php?topic=setup_defaultdirname
 # install_dir_name: "D:\\HELLO-WORLD"
 # This path is relative to the root directory of your project; The format of icon file must be ico, can not be png or others
