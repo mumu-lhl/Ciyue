@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
+## [1.19.0](https://github.com/mumu-lhl/Ciyue/compare/v1.18.0..v1.19.0) - 2025-08-01
+
+### Features
+
+- Audio settings are now officially available
+- Support in-dictionary audio playback
+- Support importing multiple .mdd files (e.g., xxx.1.mdd, xxx.2.mdd, xxx.3.mdd)
+- Add Google Translate and DeepLX as translation providers
+- Add history for translation and writing check
+- Add logs page
+- Support multi-select on search history for bulk delete, add to wordbook, and remove from wordbook
+
+### Bugs
+
+- Fix misaligned inputs for API Key and AI Model on the AI Settings page
+
+### UI
+
+- Redesign AI Settings page
+- Redesign Translate page
+
 ## [1.18.0](https://github.com/mumu-lhl/Ciyue/compare/v1.17.0..v1.18.0) - 2025-07-20
 
 ### Features
