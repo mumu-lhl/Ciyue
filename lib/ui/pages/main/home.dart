@@ -323,6 +323,9 @@ class HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.select<HomeModel, int>((value) => value.state);
+    context.select<DictManagerModel, bool>((value) => value.isEmpty);
+
     final locale = AppLocalizations.of(context);
 
     if (dictManager.isEmpty && !settings.aiExplainWord) {
