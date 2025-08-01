@@ -143,9 +143,7 @@ jobs:
 
       - name: Build exe
         run: |
-          fastforge package --platform windows --targets exe
-          mv dist/*/*.exe .
-          mv *.exe ciyue-installer.exe
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" inno_setup.iss
 
       - name: Build msix
         run: |
