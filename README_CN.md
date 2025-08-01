@@ -61,6 +61,8 @@ paru -S ciyue
 
 [加入我们的 Discord 服务器](https://discord.gg/BazBZuvKZG) 来与社区联系！
 
+QQ 群：`1057888678`
+
 ## 翻译
 
 您可以到 [Weblate](https://hosted.weblate.org/engage/ciyue/) 添加语言或补齐翻译。

@@ -24,6 +24,7 @@ class AboutSettingsPage extends StatelessWidget {
               FeedbackUrl(),
               GithubUrl(),
               DiscordUrl(),
+              QQGroupTile(),
               SponsorListTile(),
               TermsOfServicePageListTile(),
               PrivacyPolicyPageListTile(),
@@ -349,6 +350,33 @@ class PrivacyPolicyPageListTile extends StatelessWidget {
       leading: const Icon(Icons.security),
       title: Text(AppLocalizations.of(context)!.privacyPolicy),
       onTap: () => context.push("/settings/privacy_policy"),
+    );
+  }
+}
+
+class QQGroupTile extends StatelessWidget {
+  static const String groupNumber = "1057888678";
+
+  const QQGroupTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.group),
+      title: const Text("QQ"),
+      subtitle: const Text(groupNumber),
+      onTap: () async {
+        addToClipboard(context, groupNumber);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+              AppLocalizations.of(context)!.copied,
+            )),
+          );
+        }
+      },
+      onLongPress: () => addToClipboard(context, groupNumber),
     );
   }
 }

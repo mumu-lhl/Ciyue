@@ -62,6 +62,8 @@ When checking for updates or requesting third-party services (such as AI Provide
 
 [Join our Discord server](https://discord.gg/BazBZuvKZG) to connect with the community!
 
+QQ Group: `1057888678`
+
 ## Translation
 
 You can visit [Weblate](https://hosted.weblate.org/engage/ciyue/) to add languages or fill in translations.
