@@ -1,9 +1,9 @@
 import "package:flutter/material.dart";
 
-class AlphaText extends StatelessWidget {
-  const AlphaText({
-    super.key,
-  });
+class BaseBadge extends StatelessWidget {
+  final String text;
+
+  const BaseBadge({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class AlphaText extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        "Alpha",
+        text,
         style: TextStyle(
           color: Theme.of(context).colorScheme.onPrimary,
           fontSize: 10,

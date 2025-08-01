@@ -51,7 +51,9 @@ Future<void> playSoundOfWord(
 
         await player.resume();
 
-        await player.release();
+        player.onPlayerComplete.listen((event) {
+          player.release();
+        });
 
         return;
       }
