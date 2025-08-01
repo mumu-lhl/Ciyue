@@ -110,6 +110,9 @@ Future<NavigationActionPolicy?> Function(
                 .readOneMdd(info) as Uint8List;
           }
           await playSound(data, lookupMimeType(filename)!);
+          talker.info(
+            "Playing sound: $filename",
+          );
           return NavigationActionPolicy.CANCEL;
         } catch (e) {
           continue;
@@ -382,9 +385,12 @@ class WebviewAndroid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings = InAppWebViewSettings(
+    final isLightTheme = settings.themeMode == ThemeMode.light ||
+        settings.themeMode == ThemeMode.system &&
+            MediaQuery.of(context).platformBrightness == Brightness.light;
+    final webviewSettings = InAppWebViewSettings(
       useWideViewPort: false,
-      algorithmicDarkeningAllowed: true,
+      algorithmicDarkeningAllowed: !isLightTheme,
       resourceCustomSchemes: ["entry", "sound"],
       transparentBackground: true,
       webViewAssetLoader: WebViewAssetLoader(
@@ -441,7 +447,7 @@ class WebviewAndroid extends StatelessWidget {
         data: content,
         baseUrl: WebUri("http://ciyue.internal/"),
       ),
-      initialSettings: settings,
+      initialSettings: webviewSettings,
       contextMenu: contextMenu,
       onLoadResourceWithCustomScheme:
           onLoadResourceWithCustomSchemeWarpper(dictId),
