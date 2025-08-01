@@ -53,6 +53,9 @@ Future<CustomSchemeResponse?> Function(
             data = await dictManager.dicts[dictId]!.readerResource[result.part!]
                 .readOneMdd(info) as Uint8List;
           }
+          talker.info(
+            "Playing sound (2): $filename",
+          );
           return CustomSchemeResponse(
               contentType: lookupMimeType(filename)!, data: data);
         } catch (e) {
@@ -111,7 +114,7 @@ Future<NavigationActionPolicy?> Function(
           }
           await playSound(data, lookupMimeType(filename)!);
           talker.info(
-            "Playing sound: $filename",
+            "Playing sound (1): $filename",
           );
           return NavigationActionPolicy.CANCEL;
         } catch (e) {
