@@ -186,10 +186,12 @@ class ModelProviderManager {
       displayedName: "xAI",
       apiUrl: "https://api.x.ai/v1/chat/completions",
       models: [
-        ModelInfo("grok-3-beta", "Grok 3"),
-        ModelInfo("grok-3-fast-beta", "Grok 3 Fast"),
-        ModelInfo("grok-3-mini-beta", "Grok 3 Mini"),
-        ModelInfo("grok-3-mini-fast-beta", "Grok 3 Mini Fast"),
+        ModelInfo("grok-4", "Grok 4"),
+        ModelInfo("grok-3", "Grok 3"),
+        ModelInfo("grok-3-fast", "Grok 3 Fast"),
+        ModelInfo("grok-3-mini", "Grok 3 Mini"),
+        ModelInfo("grok-3-mini-fast", "Grok 3 Mini Fast"),
+        ModelInfo("grok-2-vision", "Grok 2 Vision"),
       ],
     ),
     "openai_compatible": ModelProvider(
