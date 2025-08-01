@@ -3,6 +3,7 @@ import "dart:convert";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
+import "package:ciyue/models/translation_result.dart";
 import "package:flutter/material.dart";
 
 import "package:dio/dio.dart";
@@ -10,7 +11,7 @@ import "package:provider/provider.dart";
 import "package:translator/translator.dart";
 
 abstract class TranslationService {
-  Future<String> translate(
+  Future<TranslationResult> translate(
     BuildContext context, {
     required String text,
     required String sourceLanguage,
@@ -21,7 +22,7 @@ abstract class TranslationService {
 
 class AITranslationService implements TranslationService {
   @override
-  Future<String> translate(
+  Future<TranslationResult> translate(
     BuildContext context, {
     required String text,
     required String sourceLanguage,
@@ -50,7 +51,8 @@ class AITranslationService implements TranslationService {
         .replaceAll(r"$targetLanguage", targetLangName)
         .replaceAll(r"$text", text);
 
-    return await ai.request(prompt);
+    final result = await ai.request(prompt);
+    return TranslationResult(text: result);
   }
 }
 
@@ -63,7 +65,7 @@ class GoogleTranslationService implements TranslationService {
   final _translator = GoogleTranslator();
 
   @override
-  Future<String> translate(
+  Future<TranslationResult> translate(
     BuildContext context, {
     required String text,
     required String sourceLanguage,
@@ -75,7 +77,7 @@ class GoogleTranslationService implements TranslationService {
       from: sourceLanguage,
       to: languageCodeMap[targetLanguage] ?? targetLanguage,
     );
-    return translation.text;
+    return TranslationResult(text: translation.text);
   }
 }
 
@@ -89,7 +91,7 @@ class DeepLXTranslationService implements TranslationService {
   };
 
   @override
-  Future<String> translate(
+  Future<TranslationResult> translate(
     BuildContext context, {
     required String text,
     required String sourceLanguage,
@@ -119,7 +121,12 @@ class DeepLXTranslationService implements TranslationService {
     );
 
     if (response.statusCode == 200) {
-      return response.data["data"];
+      final body = response.data;
+      final primary = body["data"];
+      final alternatives = (body["alternatives"] is List<String>)
+          ? body["alternatives"] as List<String>
+          : const <String>[];
+      return TranslationResult(text: primary, alternatives: alternatives);
     } else {
       throw Exception("Failed to translate with DeepLX: ${response.data}");
     }

@@ -14,6 +14,7 @@ class AiTranslateViewModel extends ChangeNotifier {
       ? ui.PlatformDispatcher.instance.locale.languageCode
       : settings.language!;
   String _translatedText = "";
+  List<String> _alternativeTexts = const [];
   bool _isLoading = false;
   bool _isError = false;
 
@@ -27,6 +28,7 @@ class AiTranslateViewModel extends ChangeNotifier {
   String get sourceLanguage => _sourceLanguage;
   String get targetLanguage => _targetLanguage;
   String get translatedText => _translatedText;
+  List<String> get alternativeTexts => _alternativeTexts;
   bool get isLoading => _isLoading;
   bool get isError => _isError;
   String get translationProvider => settings.translationProvider;
@@ -64,6 +66,7 @@ class AiTranslateViewModel extends ChangeNotifier {
     if (inputController.text.trim().isEmpty) return;
     _isLoading = true;
     _translatedText = "";
+    _alternativeTexts = const [];
     _isError = false;
     notifyListeners();
 
@@ -94,9 +97,12 @@ class AiTranslateViewModel extends ChangeNotifier {
         isRichOutput: settings.isRichOutput,
       );
 
-      _translatedText = translationResult;
+      _translatedText = translationResult.text;
+      // _alternativeTexts = translationResult.alternatives;
+      _alternativeTexts = ["Good, morning!"];
     } catch (e) {
       _translatedText = "Error: Failed to translate. $e";
+      _alternativeTexts = const [];
       _isError = true;
     } finally {
       _isLoading = false;

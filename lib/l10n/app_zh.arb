@@ -327,5 +327,7 @@
   "enableTranslationHistory": "启用翻译历史记录",
   "@enableTranslationHistory": {},
   "enableWritingCheckHistory": "启用写作检查历史记录",
-  "@enableWritingCheckHistory": {}
+  "@enableWritingCheckHistory": {},
+  "alternatives": "替代方案",
+  "@alternatives": {}
 }

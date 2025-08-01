@@ -329,5 +329,7 @@
   "enableTranslationHistory": "Enable Translation History",
   "@enableTranslationHistory": {},
   "enableWritingCheckHistory": "Enable Writing Check History",
-  "@enableWritingCheckHistory": {}
+  "@enableWritingCheckHistory": {},
+  "alternatives": "Alternatives",
+  "@alternatives": {}
 }

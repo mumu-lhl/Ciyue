@@ -93,6 +93,10 @@ class AiTranslatePage extends StatelessWidget {
                           translationProvider: viewModel.translationProvider,
                           isError: viewModel.isError,
                         ),
+                        if (viewModel.alternativeTexts.isNotEmpty)
+                          _AlternativesSection(
+                            alternatives: viewModel.alternativeTexts,
+                          ),
                       ],
                     ),
                   ),
@@ -236,6 +240,89 @@ class _TranslateButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         child: Text(AppLocalizations.of(context)!.translate),
+      ),
+    );
+  }
+}
+
+class _AlternativesSection extends StatelessWidget {
+  const _AlternativesSection({required this.alternatives});
+  final List<String> alternatives;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.primary;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.auto_awesome, size: 20, color: color),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context)!.alternatives,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Divider(
+                  color: color.withValues(alpha: 0.3),
+                  thickness: 1,
+                  height: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...alternatives.map((t) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: _AlternativeItem(text: t),
+              )),
+        ],
+      ),
+    );
+  }
+}
+
+class _AlternativeItem extends StatefulWidget {
+  const _AlternativeItem({required this.text});
+  final String text;
+
+  @override
+  State<_AlternativeItem> createState() => _AlternativeItemState();
+}
+
+class _AlternativeItemState extends State<_AlternativeItem> {
+  bool _hover = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color hoverBg =
+        Theme.of(context).colorScheme.primary.withValues(alpha: 0.06);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: _hover ? hoverBg : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          widget.text,
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
       ),
     );
   }
