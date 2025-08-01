@@ -290,6 +290,12 @@ class OpenAICompatibleProvider implements AIProvider {
       headers["Authorization"] = "Bearer $apikey";
     }
 
+    // OpenRouter App Attribution
+    if (provider == "openrouter") {
+      headers["HTTP-Referer"] = "https://github.com/mumu-lhl/Ciyue";
+      headers["X-Title"] = "Ciyue";
+    }
+
     final data = {
       "model": model,
       "messages": [
