@@ -2,6 +2,7 @@ import "dart:convert";
 
 import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/core/http_client.dart";
 import "package:dio/dio.dart";
 
 class AI {
@@ -45,7 +46,6 @@ class GeminiProvider implements AIProvider {
 
   @override
   Future<String> request(String prompt) async {
-    final dio = Dio();
     final formattedApiUrl = ModelProviderManager
         .modelProviders["gemini"]!.apiUrl
         .replaceFirst("{model}", model);
@@ -66,10 +66,10 @@ class GeminiProvider implements AIProvider {
     };
 
     try {
-      final response = await dio.post(
+      final response = await AppHttp.post(
         formattedApiUrl,
-        queryParameters: params,
-        options: Options(headers: headers),
+        query: params,
+        headers: headers,
         data: jsonEncode(data),
       );
 
@@ -219,7 +219,6 @@ class OllamaProvider implements AIProvider {
 
   @override
   Future<String> request(String prompt) async {
-    final dio = Dio();
     final headers = {
       "Content-Type": "application/json",
     };
@@ -233,9 +232,9 @@ class OllamaProvider implements AIProvider {
     };
 
     try {
-      final response = await dio.post(
+      final response = await AppHttp.post(
         apiUrl,
-        options: Options(headers: headers),
+        headers: headers,
         data: jsonEncode(data),
       );
 
@@ -279,7 +278,6 @@ class OpenAICompatibleProvider implements AIProvider {
 
   @override
   Future<String> request(String prompt) async {
-    final dio = Dio();
     final headers = {
       "Content-Type": "application/json",
     };
@@ -298,9 +296,9 @@ class OpenAICompatibleProvider implements AIProvider {
     };
 
     try {
-      final response = await dio.post(
+      final response = await AppHttp.post(
         apiUrl,
-        options: Options(headers: headers),
+        headers: headers,
         data: jsonEncode(data),
       );
 

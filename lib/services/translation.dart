@@ -6,7 +6,7 @@ import "package:ciyue/services/ai.dart";
 import "package:ciyue/models/translation_result.dart";
 import "package:flutter/material.dart";
 
-import "package:dio/dio.dart";
+import "package:ciyue/core/http_client.dart";
 import "package:provider/provider.dart";
 import "package:translator/translator.dart";
 
@@ -82,8 +82,6 @@ class GoogleTranslationService implements TranslationService {
 }
 
 class DeepLXTranslationService implements TranslationService {
-  final _dio = Dio();
-
   static const languageCodeMap = {
     "auto": "auto",
     "zh_HK": "ZH",
@@ -114,9 +112,9 @@ class DeepLXTranslationService implements TranslationService {
           languageCodeMap[targetLanguage] ?? targetLanguage.toUpperCase(),
     };
 
-    final response = await _dio.post(
+    final response = await AppHttp.post(
       url,
-      options: Options(headers: headers),
+      headers: headers,
       data: jsonEncode(data),
     );
 

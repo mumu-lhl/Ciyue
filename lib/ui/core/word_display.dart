@@ -56,8 +56,6 @@ Future<CustomSchemeResponse?> Function(
           return CustomSchemeResponse(
               contentType: lookupMimeType(filename)!, data: data);
         } catch (e) {
-          logger.d(e);
-
           continue;
         }
       }
@@ -113,8 +111,6 @@ Future<NavigationActionPolicy?> Function(
           }
           await playSound(data, lookupMimeType(filename)!);
         } catch (e) {
-          logger.d(e);
-
           continue;
         }
       }

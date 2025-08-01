@@ -3,7 +3,7 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/models/updater/updater.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/ui/core/update_available.dart";
-import "package:dio/dio.dart";
+import "package:ciyue/core/http_client.dart";
 import "package:flutter/material.dart";
 
 class Updater {
@@ -18,7 +18,7 @@ class Updater {
 
   static Future<Update> check() async {
     try {
-      final response = await Dio().get(
+      final response = await AppHttp.get(
         settings.includePrereleaseUpdates
             ? "https://api.github.com/repos/mumu-lhl/Ciyue/releases"
             : "https://api.github.com/repos/mumu-lhl/Ciyue/releases/latest",

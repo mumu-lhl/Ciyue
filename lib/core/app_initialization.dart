@@ -16,7 +16,7 @@ import "package:path_provider/path_provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 Future<void> initApp() async {
-  logger.i("Initializing application...");
+  talker.info("Initializing application...");
 
   await initPrefs();
 
@@ -93,12 +93,12 @@ Future<void> initApp() async {
       windowsWebview2Directory = (await getApplicationCacheDirectory()).path;
     }
 
-    logger.i("Application initialized successfully.");
+    talker.info("Application initialized successfully.");
   });
 }
 
 Future<void> initPrefs() async {
-  logger.i("Initializing shared preferences...");
+  talker.info("Initializing shared preferences...");
 
   prefs = await SharedPreferencesWithCache.create(
       cacheOptions: const SharedPreferencesWithCacheOptions(allowList: {
@@ -145,5 +145,5 @@ Future<void> initPrefs() async {
     "enableWritingCheckHistory",
   }));
 
-  logger.i("Shared preferences initialized successfully.");
+  talker.info("Shared preferences initialized successfully.");
 }

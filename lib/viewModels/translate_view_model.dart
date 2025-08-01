@@ -98,8 +98,7 @@ class AiTranslateViewModel extends ChangeNotifier {
       );
 
       _translatedText = translationResult.text;
-      // _alternativeTexts = translationResult.alternatives;
-      _alternativeTexts = ["Good, morning!"];
+      _alternativeTexts = translationResult.alternatives;
     } catch (e) {
       _translatedText = "Error: Failed to translate. $e";
       _alternativeTexts = const [];

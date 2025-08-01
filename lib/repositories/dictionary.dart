@@ -397,7 +397,7 @@ class Mdict {
     try {
       server = await HttpServer.bind("localhost", 0);
       port = server!.port;
-      logger.i("HTTP server started on port $port");
+      talker.info("HTTP server started on port $port");
 
       server!.listen((HttpRequest request) async {
         if (request.method == "POST" && request.uri.path == "/") {
@@ -451,14 +451,14 @@ Future<void> selectMdx(BuildContext context, List<String> paths) async {
 
     try {
       await tmpDict.add();
-      logger.i("Added dictionary: $pathNoExtension");
+      talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
       if (context.mounted) {
         final snackBar =
             SnackBar(content: Text(AppLocalizations.of(context)!.notSupport));
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        logger.e("Failed to add dictionary: $pathNoExtension, error: $e",
-            error: e, stackTrace: StackTrace.current);
+        talker.error("Failed to add dictionary: $pathNoExtension, error: $e", e,
+            StackTrace.current);
       }
     }
 

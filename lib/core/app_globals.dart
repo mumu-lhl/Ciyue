@@ -1,11 +1,10 @@
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
-import "package:ciyue/services/logger.dart";
 import "package:flutter/material.dart";
 import "package:flutter_tts/flutter_tts.dart";
-import "package:logger/logger.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
+import "package:talker_flutter/talker_flutter.dart";
 
 late final Color? accentColor;
 final AppDatabase mainDatabase = appDatabase();
@@ -27,6 +26,4 @@ final mddAudioResourceDao = MddAudioResourceDao(mainDatabase);
 final wordbookDao = WordbookDao(mainDatabase);
 final wordbookTagsDao = WordbookTagsDao(mainDatabase);
 
-// Logger
-final loggerOutput = MemoryOutput(bufferSize: 100);
-final logger = Logger(printer: CustomLogPrinter(), output: loggerOutput);
+final talker = TalkerFlutter.init();

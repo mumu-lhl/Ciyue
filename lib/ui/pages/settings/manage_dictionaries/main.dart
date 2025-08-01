@@ -102,7 +102,8 @@ class DictionaryCard extends StatelessWidget {
         try {
           await dbFile.delete();
         } catch (e) {
-          logger.e("Failed to delete dictionary database file: $e");
+          talker.error("Failed to delete dictionary database file: $e", e,
+              StackTrace.current);
         }
       }
 
