@@ -185,7 +185,7 @@ class _ExpansionWordDisplayState extends State<ExpansionWordDisplay> {
           headerBuilder: (context, isExpanded) {
             return ListTile(title: Text(dictManager.dicts[dictId]!.title));
           },
-          body: _buildWebView(widget.word, dictId),
+          body: _buildWebView(widget.word, dictId, true),
           isExpanded: _isExpanded[panelIndex],
           canTapOnHeader: true,
         ),
@@ -233,13 +233,14 @@ class _ExpansionWordDisplayState extends State<ExpansionWordDisplay> {
   }
 }
 
-Widget _buildWebView(String word, int id) {
+Widget _buildWebView(String word, int id, bool isExpansion) {
   return FutureBuilder(
     future: dictManager.dicts[id]!.readWord(word),
     builder: (context, snapshot) {
       if (snapshot.hasData) {
         if (Platform.isAndroid) {
-          return WebviewAndroid(content: snapshot.data!, dictId: id);
+          return WebviewAndroid(
+              content: snapshot.data!, dictId: id, isExpansion: isExpansion);
         } else if (Platform.isWindows) {
           return WebviewWindows(content: snapshot.data!, dictId: id);
         } else {
@@ -376,15 +377,24 @@ class LocalResourcesPathHandler extends CustomPathHandler {
   }
 }
 
-class WebviewAndroid extends StatelessWidget {
+class WebviewAndroid extends StatefulWidget {
   final String content;
   final int dictId;
+  final bool isExpansion;
 
   const WebviewAndroid({
     super.key,
     required this.content,
     required this.dictId,
+    required this.isExpansion,
   });
+
+  @override
+  State<WebviewAndroid> createState() => _WebviewAndroidState();
+}
+
+class _WebviewAndroidState extends State<WebviewAndroid> {
+  double height = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +409,9 @@ class WebviewAndroid extends StatelessWidget {
       webViewAssetLoader: WebViewAssetLoader(
         domain: "ciyue.internal",
         httpAllowed: true,
-        pathHandlers: [LocalResourcesPathHandler(path: "/", dictId: dictId)],
+        pathHandlers: [
+          LocalResourcesPathHandler(path: "/", dictId: widget.dictId)
+        ],
       ),
     );
 
@@ -445,33 +457,65 @@ class WebviewAndroid extends StatelessWidget {
       },
     );
 
-    return InAppWebView(
+    final webview = InAppWebView(
       initialData: InAppWebViewInitialData(
-        data: content,
+        data: widget.content,
         baseUrl: WebUri("http://ciyue.internal/"),
       ),
       initialSettings: webviewSettings,
       contextMenu: contextMenu,
       onLoadResourceWithCustomScheme:
-          onLoadResourceWithCustomSchemeWarpper(dictId),
+          onLoadResourceWithCustomSchemeWarpper(widget.dictId),
       shouldOverrideUrlLoading:
-          shouldOverrideUrlLoadingWarpper(dictId, context),
-      onWebViewCreated: (controller) {
+          shouldOverrideUrlLoadingWarpper(widget.dictId, context),
+      onWebViewCreated: (controller) async {
         webViewController = controller;
+
+        controller.addJavaScriptHandler(
+          handlerName: "WebViewHeight",
+          callback: (args) {
+            double newHeight = args[0].toDouble();
+            setState(() {
+              height = newHeight;
+            });
+          },
+        );
       },
       onPageCommitVisible: (controller, url) async {
-        if (dictManager.dicts[dictId]!.fontName != null) {
+        controller.evaluateJavascript(source: """
+var lastHeight = 0;
+function checkHeight() {
+  var currentHeight = document.body.scrollHeight;
+  if (currentHeight !== lastHeight) {
+    lastHeight = currentHeight;
+    window.flutter_inappwebview.callHandler('WebViewHeight', currentHeight);
+  }
+  requestAnimationFrame(checkHeight);
+}
+checkHeight();
+""");
+
+        if (dictManager.dicts[widget.dictId]!.fontName != null) {
           await controller.evaluateJavascript(
             source: """
-const font = new FontFace('Custom Font', 'url(/${dictManager.dicts[dictId]!.fontName})');
-font.load();
-document.fonts.add(font);
-document.body.style.fontFamily = 'Custom Font';
-          """,
+      const font = new FontFace('Custom Font', 'url(/${dictManager.dicts[widget.dictId]!.fontName})');
+      font.load();
+      document.fonts.add(font);
+      document.body.style.fontFamily = 'Custom Font';
+            """,
           );
         }
       },
     );
+
+    if (widget.isExpansion) {
+      return SizedBox(
+        height: height,
+        child: webview,
+      );
+    } else {
+      return webview;
+    }
   }
 }
 
@@ -495,7 +539,11 @@ class WebviewDisplayDescription extends StatelessWidget {
             },
           ),
         ),
-        body: WebviewAndroid(content: html, dictId: dictId),
+        body: WebviewAndroid(
+          content: html,
+          dictId: dictId,
+          isExpansion: false,
+        ),
       );
     } else {
       final html = getDescriptionFromInactiveDict();
@@ -511,7 +559,11 @@ class WebviewDisplayDescription extends StatelessWidget {
                   },
                 ),
               ),
-              body: WebviewAndroid(content: snapshot.data!, dictId: dictId),
+              body: WebviewAndroid(
+                content: snapshot.data!,
+                dictId: dictId,
+                isExpansion: false,
+              ),
             );
           } else {
             return const Center(child: CircularProgressIndicator());
@@ -791,7 +843,7 @@ class WordDisplay extends StatelessWidget {
   }
 
   Widget buildWebView(int id) {
-    return _buildWebView(word, id);
+    return _buildWebView(word, id, false);
   }
 
   Future<List<int>> validDictionaryIds() async {
