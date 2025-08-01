@@ -545,11 +545,16 @@ class Searcher {
 
     final searchResult = [for (final i in await Future.wait(searchers)) ...i];
     searchResult.sort((a, b) => a.compareTo(b));
-    searchResult.removeWhere((element) =>
-        searchResult.indexOf(element) !=
-        searchResult.lastIndexWhere((e) => e == element));
 
-    return searchResult;
+    final seen = <String>{};
+    final deduped = <String>[];
+    for (final s in searchResult) {
+      if (seen.add(s)) {
+        deduped.add(s);
+      }
+    }
+
+    return deduped;
   }
 }
 
