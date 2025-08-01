@@ -27,7 +27,7 @@ class ChangelogDialog extends StatelessWidget {
       actions: [
         TextButton.icon(
           onPressed: () {
-            launchUrl(Uri.parse(SponsorUrl.sponsorUri));
+            launchUrl(Uri.parse(SponsorListTile.sponsorUri));
             context.pop();
           },
           icon: const Icon(Icons.favorite),

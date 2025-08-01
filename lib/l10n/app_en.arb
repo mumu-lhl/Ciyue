@@ -331,5 +331,15 @@
   "enableWritingCheckHistory": "Enable Writing Check History",
   "@enableWritingCheckHistory": {},
   "alternatives": "Alternatives",
-  "@alternatives": {}
+  "@alternatives": {},
+  "openLink": "Open link",
+  "@openLink": {},
+  "copyLink": "Copy link",
+  "@copyLink": {},
+  "sponsorSupportTip": "Your support will help the project develop continuously ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "Sponsor codes",
+  "@sponsorCodes": {},
+  "wechat": "WeChat",
+  "@wechat": {}
 }

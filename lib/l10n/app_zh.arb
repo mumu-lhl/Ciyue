@@ -329,5 +329,15 @@
   "enableWritingCheckHistory": "启用写作检查历史记录",
   "@enableWritingCheckHistory": {},
   "alternatives": "替代方案",
-  "@alternatives": {}
+  "@alternatives": {},
+  "openLink": "打开链接",
+  "@openLink": {},
+  "copyLink": "复制链接",
+  "@copyLink": {},
+  "sponsorSupportTip": "你的支持将帮助项目持续开发 ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "赞助码",
+  "@sponsorCodes": {},
+  "wechat": "微信",
+  "@wechat": {}
 }
