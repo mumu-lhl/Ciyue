@@ -341,5 +341,7 @@
   "sponsorCodes": "Sponsor codes",
   "@sponsorCodes": {},
   "wechat": "WeChat",
-  "@wechat": {}
+  "@wechat": {},
+  "pressAgainToExit": "Press back again to exit",
+  "@pressAgainToExit": {}
 }

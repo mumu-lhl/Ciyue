@@ -341,5 +341,7 @@
   "wechat": "微信",
   "@wechat": {},
   "logs": "日志",
-  "@logs": {}
+  "@logs": {},
+  "pressAgainToExit": "再按一次退出",
+  "@pressAgainToExit": {}
 }

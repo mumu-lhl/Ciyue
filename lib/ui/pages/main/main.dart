@@ -5,6 +5,7 @@ import "package:ciyue/ui/pages/main/wordbook.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:provider/provider.dart";
 
 class Home extends StatefulWidget {
@@ -25,6 +26,7 @@ class MainPage {
 class _HomeState extends State<Home> {
   late String searchWord;
   var _currentIndex = 0;
+  DateTime? _lastPressedAt;
 
   // Using FocusScope for each page within the IndexedStack.
   // Why?
@@ -45,76 +47,101 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final ratio = MediaQuery.sizeOf(context).aspectRatio;
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        body: ratio > 1.0
-            ? Row(
-                children: [
-                  NavigationRail(
-                    extended: ratio > 1.5,
-                    labelType: ratio > 1.5
-                        ? NavigationRailLabelType.none
-                        : NavigationRailLabelType.all,
-                    destinations: [
-                      for (final destination in buildCommonDestinations())
-                        NavigationRailDestination(
-                          icon: destination.$1,
-                          label: Text(destination.$2),
-                        )
-                    ],
-                    selectedIndex: _currentIndex,
-                    onDestinationSelected: (int index) {
-                      if (index != 0) {
-                        FocusScope.of(context).unfocus();
-                      } else {
-                        context
-                            .read<HomeModel>()
-                            .searchBarFocusNode
-                            .requestFocus();
-                      }
-                      setState(() {
-                        _currentIndex = index;
-                      });
-                    },
-                    leading: const SizedBox(),
-                  ),
-                  const VerticalDivider(thickness: 1, width: 1),
-                  Expanded(
-                    child: IndexedStack(
-                      index: _currentIndex,
-                      children: _pages,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? _) {
+        if (didPop) {
+          return;
+        }
+
+        final now = DateTime.now();
+        if (_lastPressedAt == null ||
+            now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
+          _lastPressedAt = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.pressAgainToExit),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+          return;
+        }
+        SystemNavigator.pop();
+      },
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          body: ratio > 1.0
+              ? Row(
+                  children: [
+                    NavigationRail(
+                      extended: ratio > 1.5,
+                      labelType: ratio > 1.5
+                          ? NavigationRailLabelType.none
+                          : NavigationRailLabelType.all,
+                      destinations: [
+                        for (final destination in buildCommonDestinations())
+                          NavigationRailDestination(
+                            icon: destination.$1,
+                            label: Text(destination.$2),
+                          )
+                      ],
+                      selectedIndex: _currentIndex,
+                      onDestinationSelected: (int index) {
+                        if (index != 0) {
+                          FocusScope.of(context).unfocus();
+                        } else {
+                          context
+                              .read<HomeModel>()
+                              .searchBarFocusNode
+                              .requestFocus();
+                        }
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                      leading: const SizedBox(),
                     ),
-                  ),
-                ],
-              )
-            : IndexedStack(
-                index: _currentIndex,
-                children: _pages,
-              ),
-        bottomNavigationBar: ratio <= 1.0
-            ? NavigationBar(
-                onDestinationSelected: (int index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                  FocusScope.of(context).unfocus();
-                  if (index != 0) {
-                    context.read<HomeModel>().searchBarFocusNode.unfocus();
-                  } else {
-                    context.read<HomeModel>().searchBarFocusNode.requestFocus();
-                  }
-                },
-                selectedIndex: _currentIndex,
-                destinations: [
-                  for (final destination in buildCommonDestinations())
-                    NavigationDestination(
-                      icon: destination.$1,
-                      label: destination.$2,
-                    )
-                ],
-              )
-            : null,
+                    const VerticalDivider(thickness: 1, width: 1),
+                    Expanded(
+                      child: IndexedStack(
+                        index: _currentIndex,
+                        children: _pages,
+                      ),
+                    ),
+                  ],
+                )
+              : IndexedStack(
+                  index: _currentIndex,
+                  children: _pages,
+                ),
+          bottomNavigationBar: ratio <= 1.0
+              ? NavigationBar(
+                  onDestinationSelected: (int index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                    FocusScope.of(context).unfocus();
+                    if (index != 0) {
+                      context.read<HomeModel>().searchBarFocusNode.unfocus();
+                    } else {
+                      context
+                          .read<HomeModel>()
+                          .searchBarFocusNode
+                          .requestFocus();
+                    }
+                  },
+                  selectedIndex: _currentIndex,
+                  destinations: [
+                    for (final destination in buildCommonDestinations())
+                      NavigationDestination(
+                        icon: destination.$1,
+                        label: destination.$2,
+                      )
+                  ],
+                )
+              : null,
+        ),
       ),
     );
   }
