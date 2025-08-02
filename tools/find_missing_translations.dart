@@ -1,4 +1,5 @@
 import "dart:convert";
+import "dart:developer";
 import "dart:io";
 
 Future<void> main() async {
@@ -7,14 +8,14 @@ Future<void> main() async {
 
   final enFile = File("lib/l10n/app_en.arb");
   if (!await enFile.exists()) {
-    print("Error: lib/l10n/app_en.arb not found!");
+    log("Error: lib/l10n/app_en.arb not found!");
     return;
   }
   final enContent = await enFile.readAsString();
   final enJson = jsonDecode(enContent) as Map<String, dynamic>;
   final enKeys = enJson.keys.where((key) => !key.startsWith("@")).toSet();
 
-  print("Found ${enKeys.length} keys in app_en.arb");
+  log("Found ${enKeys.length} keys in app_en.arb");
 
   for (final fileSystemEntity in files) {
     final file = File(fileSystemEntity.path);
@@ -30,19 +31,17 @@ Future<void> main() async {
     final missingKeys = enKeys.difference(keys);
 
     if (missingKeys.isNotEmpty) {
-      print(
-          "\n--- Missing translations for ${file.path} (locale: $locale) ---");
+      log("\n--- Missing translations for ${file.path} (locale: $locale) ---");
       for (final key in missingKeys) {
         final value = enJson[key];
         final meta = enJson["@$key"];
-        print('"$key": "$value",');
+        log('"$key": "$value",');
         if (meta != null) {
-          print('"@$key": ${jsonEncode(meta)},');
+          log('"@$key": ${jsonEncode(meta)},');
         }
       }
     } else {
-      print(
-          "\n--- No missing translations for ${file.path} (locale: $locale) ---");
+      log("\n--- No missing translations for ${file.path} (locale: $locale) ---");
     }
   }
 }
