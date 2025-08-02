@@ -1,5 +1,6 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/update_available.dart";
@@ -88,21 +89,15 @@ class CheckForUpdates extends StatelessWidget {
         leading: const Icon(Icons.update),
         title: Text(AppLocalizations.of(context)!.checkForUpdates),
         onTap: () async {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.checkingForUpdates),
-            ),
-          );
+          ToastService.show(
+              AppLocalizations.of(context)!.checkingForUpdates, context,
+              type: ToastType.waiting);
 
           final update = await Updater.check();
           if (!update.success) {
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content:
-                      Text(AppLocalizations.of(context)!.updateCheckFailed),
-                ),
-              );
+              ToastService.show(
+                  AppLocalizations.of(context)!.updateCheckFailed, context);
             }
           }
           if (update.isUpdateAvailable) {
@@ -114,12 +109,8 @@ class CheckForUpdates extends StatelessWidget {
             }
           } else {
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content:
-                      Text(AppLocalizations.of(context)!.noUpdateAvailable),
-                ),
-              );
+              ToastService.show(
+                  AppLocalizations.of(context)!.noUpdateAvailable, context);
             }
           }
         });

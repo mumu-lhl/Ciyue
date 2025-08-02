@@ -5,6 +5,7 @@ import "package:ciyue/ui/pages/main/wordbook.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";
+import "package:ciyue/services/toast.dart";
 import "package:flutter/services.dart";
 import "package:provider/provider.dart";
 
@@ -58,11 +59,10 @@ class _HomeState extends State<Home> {
         if (_lastPressedAt == null ||
             now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
           _lastPressedAt = now;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.pressAgainToExit),
-              duration: const Duration(seconds: 2),
-            ),
+          ToastService.show(
+            AppLocalizations.of(context)!.pressAgainToExit,
+            context,
+            type: ToastType.info,
           );
           return;
         }

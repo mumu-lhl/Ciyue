@@ -5,13 +5,11 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:path_provider/path_provider.dart";
 import "package:permission_handler/permission_handler.dart";
+import "services/toast.dart";
 
 void addToClipboard(BuildContext context, String text) {
   Clipboard.setData(ClipboardData(text: text));
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    content: Text(AppLocalizations.of(context)!.copied),
-    duration: const Duration(seconds: 1),
-  ));
+  ToastService.show(AppLocalizations.of(context)!.copied, context);
 }
 
 Future<Directory> databaseDirectory() {
@@ -33,10 +31,10 @@ Future<bool> requestManageExternalStorage(BuildContext context) async {
     return true;
   } else {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.permissionDenied),
-        ),
+      ToastService.show(
+        AppLocalizations.of(context)!.permissionDenied,
+        context,
+        type: ToastType.error,
       );
     }
     return false;
