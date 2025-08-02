@@ -103,8 +103,8 @@ Future<NavigationActionPolicy?> Function(
           result.endOffset,
           result.compressedSize,
         );
+        final Uint8List data;
         try {
-          final Uint8List data;
           if (result.part == null) {
             data = await dictManager.dicts[dictId]!.readerResource[0]
                 .readOneMdd(info) as Uint8List;
@@ -112,14 +112,18 @@ Future<NavigationActionPolicy?> Function(
             data = await dictManager.dicts[dictId]!.readerResource[result.part!]
                 .readOneMdd(info) as Uint8List;
           }
-          await playSound(data, lookupMimeType(filename)!);
-          talker.info(
-            "Playing sound (1): $filename",
-          );
-          return NavigationActionPolicy.CANCEL;
         } catch (e) {
+          talker.info(
+            "Failed to read sound resource (${result.part == null ? 0 : result.part!}): $filename",
+          );
           continue;
         }
+
+        await playSound(data, lookupMimeType(filename)!);
+        talker.info(
+          "Playing sound (1): $filename",
+        );
+        return NavigationActionPolicy.CANCEL;
       }
     }
 
