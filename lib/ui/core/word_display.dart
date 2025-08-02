@@ -476,9 +476,6 @@ class _WebviewAndroidState extends State<WebviewAndroid> {
         Factory<VerticalDragGestureRecognizer>(
           () => VerticalDragGestureRecognizer(),
         ),
-        Factory<OneSequenceGestureRecognizer>(
-          () => EagerGestureRecognizer(),
-        ),
       },
       onLoadResourceWithCustomScheme:
           onLoadResourceWithCustomSchemeWarpper(widget.dictId),
