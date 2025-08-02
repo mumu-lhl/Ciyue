@@ -16,6 +16,8 @@ import "package:ciyue/ui/core/tags_list.dart";
 import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:ciyue/viewModels/wordbook.dart";
 import "package:dict_reader/dict_reader.dart";
+import "package:flutter/foundation.dart";
+import "package:flutter/gestures.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
@@ -410,6 +412,7 @@ class _WebviewAndroidState extends State<WebviewAndroid> {
       algorithmicDarkeningAllowed: !isLightTheme,
       resourceCustomSchemes: ["entry", "sound"],
       transparentBackground: true,
+      horizontalScrollBarEnabled: ,
       webViewAssetLoader: WebViewAssetLoader(
         domain: "ciyue.internal",
         httpAllowed: true,
@@ -468,6 +471,13 @@ class _WebviewAndroidState extends State<WebviewAndroid> {
       ),
       initialSettings: webviewSettings,
       contextMenu: contextMenu,
+      gestureRecognizers: {
+        // Flutter inappwebview scroll not working inside the NestedScrollView TabBarView
+        // https://stackoverflow.com/a/67345391
+        Factory<VerticalDragGestureRecognizer>(
+          () => VerticalDragGestureRecognizer(),
+        ),
+      },
       onLoadResourceWithCustomScheme:
           onLoadResourceWithCustomSchemeWarpper(widget.dictId),
       shouldOverrideUrlLoading:
@@ -475,15 +485,17 @@ class _WebviewAndroidState extends State<WebviewAndroid> {
       onWebViewCreated: (controller) async {
         webViewController = controller;
 
-        controller.addJavaScriptHandler(
-          handlerName: "WebViewHeight",
-          callback: (args) {
-            double newHeight = args[0].toDouble();
-            setState(() {
-              height = newHeight;
-            });
-          },
-        );
+        if (widget.isExpansion) {
+          controller.addJavaScriptHandler(
+            handlerName: "WebViewHeight",
+            callback: (args) {
+              double newHeight = args[0].toDouble();
+              setState(() {
+                height = newHeight;
+              });
+            },
+          );
+        }
       },
       onPageCommitVisible: (controller, url) async {
         controller.evaluateJavascript(source: """
@@ -833,7 +845,6 @@ class WordDisplay extends StatelessWidget {
     List<int> validDictIds = const [],
   }) {
     return TabBarView(
-      physics: const NeverScrollableScrollPhysics(),
       children: [
         if (settings.aiExplainWord)
           AIExplainView(
