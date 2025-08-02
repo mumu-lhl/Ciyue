@@ -70,7 +70,7 @@ class _Settings {
     final dictionarySwitchStyleString =
         prefs.getString("dictionarySwitchStyle");
     if (dictionarySwitchStyleString == null) {
-      dictionarySwitchStyle = DictionarySwitchStyle.tag;
+      dictionarySwitchStyle = DictionarySwitchStyle.expansion;
     } else {
       dictionarySwitchStyle =
           DictionarySwitchStyle.values.byName(dictionarySwitchStyleString);
