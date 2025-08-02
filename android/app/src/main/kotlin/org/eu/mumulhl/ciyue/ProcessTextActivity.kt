@@ -3,7 +3,8 @@ package org.eu.mumulhl.ciyue
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
+import io.flutter.util.PathUtils
+import java.io.File
 
 class ProcessTextActivity : Activity() {
     companion object {
@@ -15,7 +16,10 @@ class ProcessTextActivity : Activity() {
 
         val text = intent?.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString() ?: ""
 
-        if (Settings.canDrawOverlays(this)) {
+        val dataDirectory = PathUtils.getDataDirectory(applicationContext)
+        val disableFloatingWindowFile = File(dataDirectory, "disable_floating_window")
+
+        if (!disableFloatingWindowFile.exists()) {
             val serviceIntent = Intent(this, FloatingWindowService::class.java).apply {
                 putExtra(EXTRA_TEXT_TO_SHOW, text)
             }

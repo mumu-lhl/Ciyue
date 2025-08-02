@@ -33,6 +33,14 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".FloatingWindowActivity"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:theme="@style/Theme.Transparent"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false"
+            />
+        <activity
             android:name=".ProcessTextActivity"
             android:exported="true">
             <intent-filter>
