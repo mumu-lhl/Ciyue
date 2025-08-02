@@ -476,6 +476,10 @@ class _WebviewAndroidState extends State<WebviewAndroid> {
         Factory<VerticalDragGestureRecognizer>(
           () => VerticalDragGestureRecognizer(),
         ),
+        if (!widget.isExpansion)
+          Factory<LongPressGestureRecognizer>(() => LongPressGestureRecognizer(
+                duration: Duration(milliseconds: 200),
+              )),
       },
       onLoadResourceWithCustomScheme:
           onLoadResourceWithCustomSchemeWarpper(widget.dictId),
