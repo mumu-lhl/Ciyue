@@ -7,13 +7,71 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/badges.dart";
 import "package:flutter/material.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
-import "package:permission_handler/permission_handler.dart";
+import "package:path_provider/path_provider.dart";
 
 class FloatingWindow extends StatefulWidget {
   const FloatingWindow({super.key});
 
   @override
   State<FloatingWindow> createState() => _FloatingWindowState();
+}
+
+class _FloatingWindowState extends State<FloatingWindow> {
+  bool _isFloatingWindowEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFloatingWindowStatus();
+  }
+
+  Future<File> _getDisableFloatingWindowFile() async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File("${directory.path}/disable_floating_window");
+  }
+
+  Future<void> _checkFloatingWindowStatus() async {
+    final file = await _getDisableFloatingWindowFile();
+    final exists = await file.exists();
+    setState(() {
+      _isFloatingWindowEnabled = !exists;
+    });
+  }
+
+  Future<void> _toggleFloatingWindow(bool value) async {
+    final file = await _getDisableFloatingWindowFile();
+    if (value) {
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } else {
+      if (!await file.exists()) {
+        await file.create();
+      }
+    }
+    setState(() {
+      _isFloatingWindowEnabled = value;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      secondary: const Icon(Icons.window),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(AppLocalizations.of(context)!.floatingWindow),
+          const SizedBox(width: 8),
+          const BaseBadge(
+            text: "Alpha",
+          ),
+        ],
+      ),
+      value: _isFloatingWindowEnabled,
+      onChanged: _toggleFloatingWindow,
+    );
+  }
 }
 
 class NotificationSwitch extends StatefulWidget {
@@ -56,28 +114,6 @@ class SecureScreenSwitch extends StatefulWidget {
 
   @override
   State<SecureScreenSwitch> createState() => _SecureScreenSwitchState();
-}
-
-class _FloatingWindowState extends State<FloatingWindow> {
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.window),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(AppLocalizations.of(context)!.floatingWindow),
-          const SizedBox(width: 8),
-          BaseBadge(
-            text: "Alpha",
-          ),
-        ],
-      ),
-      onTap: () async {
-        await Permission.systemAlertWindow.request();
-      },
-    );
-  }
 }
 
 class _NotificationSwitchState extends State<NotificationSwitch> {
