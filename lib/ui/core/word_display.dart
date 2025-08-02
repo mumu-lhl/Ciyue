@@ -473,9 +473,13 @@ class _WebviewAndroidState extends State<WebviewAndroid> {
       gestureRecognizers: {
         // Flutter inappwebview scroll not working inside the NestedScrollView TabBarView
         // https://stackoverflow.com/a/67345391
-        Factory<VerticalDragGestureRecognizer>(
-          () => VerticalDragGestureRecognizer(),
-        ),
+        if (!widget.isExpansion)
+          Factory<VerticalDragGestureRecognizer>(
+            () => VerticalDragGestureRecognizer(),
+          ),
+        Factory<LongPressGestureRecognizer>(() => LongPressGestureRecognizer(
+              duration: Duration(milliseconds: 200),
+            )),
       },
       onLoadResourceWithCustomScheme:
           onLoadResourceWithCustomSchemeWarpper(widget.dictId),
