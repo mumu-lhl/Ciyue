@@ -339,5 +339,7 @@
   "sponsorCodes": "赞助码",
   "@sponsorCodes": {},
   "wechat": "微信",
-  "@wechat": {}
+  "@wechat": {},
+  "logs": "日志",
+  "@logs": {}
 }

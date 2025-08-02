@@ -315,5 +315,39 @@
   "writingCheckPromptTitle": "Indicatzione de verìfica de iscritura",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "Podes impreare $text in s'indicatzione.",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "logs": "Registros",
+  "@logs": {},
+  "translationProvider": "Frunidore de tradutzione",
+  "@translationProvider": {},
+  "searchLanguage": "Limba de chirca",
+  "@searchLanguage": {},
+  "writingCheckHistory": "Cronologia de verìfica de iscritura",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} seberados",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "Cronologia de tradutzione",
+  "@translationHistory": {},
+  "enableTranslationHistory": "Ativa sa cronologia de tradutzione",
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "Ativa sa cronologia de verìfica de iscritura",
+  "@enableWritingCheckHistory": {},
+  "alternatives": "Alternativas",
+  "@alternatives": {},
+  "openLink": "Abre su ligàmene",
+  "@openLink": {},
+  "copyLink": "Còpia su ligàmene",
+  "@copyLink": {},
+  "sponsorSupportTip": "S'agiudu tou at a permìtere a su progetu de sighire a s'isvilupare ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "Còdighes de patrotzìniu",
+  "@sponsorCodes": {},
+  "wechat": "WeChat",
+  "@wechat": {}
 }

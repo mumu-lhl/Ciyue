@@ -315,5 +315,39 @@
   "editAIExplanation": "編輯 AI 解釋",
   "@editAIExplanation": {},
   "enterAIExplanation": "輸入 AI 解釋",
-  "@enterAIExplanation": {}
+  "@enterAIExplanation": {},
+  "logs": "日誌",
+  "@logs": {},
+  "translationProvider": "翻譯提供者",
+  "@translationProvider": {},
+  "searchLanguage": "搜尋語言",
+  "@searchLanguage": {},
+  "writingCheckHistory": "寫作檢查歷史",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} 已選取",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "翻譯歷史記錄",
+  "@translationHistory": {},
+  "enableTranslationHistory": "啟用翻譯歷史記錄",
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "啟用寫作檢查歷史記錄",
+  "@enableWritingCheckHistory": {},
+  "alternatives": "替代方案",
+  "@alternatives": {},
+  "openLink": "開啟連結",
+  "@openLink": {},
+  "copyLink": "複製連結",
+  "@copyLink": {},
+  "sponsorSupportTip": "你的支持將幫助項目持續開發 ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "贊助碼",
+  "@sponsorCodes": {},
+  "wechat": "微信",
+  "@wechat": {}
 }

@@ -315,5 +315,39 @@
   "writingCheckPromptTitle": "Приглашение к проверке правописания",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "Вы можете использовать $text в своем приглашении.",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "logs": "Журналы",
+  "@logs": {},
+  "translationProvider": "Поставщик переводов",
+  "@translationProvider": {},
+  "searchLanguage": "Язык поиска",
+  "@searchLanguage": {},
+  "writingCheckHistory": "История проверки правописания",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} выбрано",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "История переводов",
+  "@translationHistory": {},
+  "enableTranslationHistory": "Включить историю переводов",
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "Включить историю проверки правописания",
+  "@enableWritingCheckHistory": {},
+  "alternatives": "Альтернативы",
+  "@alternatives": {},
+  "openLink": "Открыть ссылку",
+  "@openLink": {},
+  "copyLink": "Копировать ссылку",
+  "@copyLink": {},
+  "sponsorSupportTip": "Ваша поддержка поможет проекту постоянно развиваться ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "Коды спонсоров",
+  "@sponsorCodes": {},
+  "wechat": "WeChat",
+  "@wechat": {}
 }

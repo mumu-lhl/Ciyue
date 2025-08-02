@@ -315,5 +315,39 @@
   "writingCheckPromptTitle": "Skrivekontroll-prompt",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "Du kan bruke $text i prompten din.",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "logs": "Logger",
+  "@logs": {},
+  "translationProvider": "Oversettelsesleverandør",
+  "@translationProvider": {},
+  "searchLanguage": "Søkespråk",
+  "@searchLanguage": {},
+  "writingCheckHistory": "Skrivekontrollhistorikk",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} valgt",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "Oversettelseshistorikk",
+  "@translationHistory": {},
+  "enableTranslationHistory": "Aktiver oversettelseshistorikk",
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "Aktiver skrivekontrollhistorikk",
+  "@enableWritingCheckHistory": {},
+  "alternatives": "Alternativer",
+  "@alternatives": {},
+  "openLink": "Åpne lenke",
+  "@openLink": {},
+  "copyLink": "Kopier lenke",
+  "@copyLink": {},
+  "sponsorSupportTip": "Din støtte vil hjelpe prosjektet med å utvikle seg kontinuerlig ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "Sponsorkoder",
+  "@sponsorCodes": {},
+  "wechat": "WeChat",
+  "@wechat": {}
 }

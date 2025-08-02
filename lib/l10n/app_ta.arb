@@ -315,5 +315,39 @@
   "writingCheckPromptTitle": "எழுத்து சரிபார்ப்பு தூண்டுதல்",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "உங்கள் தூண்டுதலில் $text ஐப் பயன்படுத்தலாம்.",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "logs": "பதிவுகள்",
+  "@logs": {},
+  "translationProvider": "மொழிபெயர்ப்பு வழங்குநர்",
+  "@translationProvider": {},
+  "searchLanguage": "தேடல் மொழி",
+  "@searchLanguage": {},
+  "writingCheckHistory": "எழுத்து சரிபார்ப்பு வரலாறு",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} தேர்ந்தெடுக்கப்பட்டது",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "மொழிபெயர்ப்பு வரலாறு",
+  "@translationHistory": {},
+  "enableTranslationHistory": "மொழிபெயர்ப்பு வரலாற்றை இயக்கு",
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "எழுத்து சரிபார்ப்பு வரலாற்றை இயக்கு",
+  "@enableWritingCheckHistory": {},
+  "alternatives": "மாற்றுகள்",
+  "@alternatives": {},
+  "openLink": "இணைப்பைத் திற",
+  "@openLink": {},
+  "copyLink": "இணைப்பை நகலெடு",
+  "@copyLink": {},
+  "sponsorSupportTip": "உங்கள் ஆதரவு திட்டம் தொடர்ந்து வளர உதவும் ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "ஸ்பான்சர் குறியீடுகள்",
+  "@sponsorCodes": {},
+  "wechat": "வீசாட்",
+  "@wechat": {}
 }

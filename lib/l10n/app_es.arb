@@ -315,5 +315,39 @@
   "writingCheckPromptTitle": "Solicitud de comprobación de escritura",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "Puede utilizar $text en su solicitud.",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "logs": "Registros",
+  "@logs": {},
+  "translationProvider": "Proveedor de traducción",
+  "@translationProvider": {},
+  "searchLanguage": "Idioma de búsqueda",
+  "@searchLanguage": {},
+  "writingCheckHistory": "Historial de comprobación de escritura",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} seleccionados",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "Historial de traducciones",
+  "@translationHistory": {},
+  "enableTranslationHistory": "Habilitar historial de traducciones",
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "Habilitar historial de comprobación de escritura",
+  "@enableWritingCheckHistory": {},
+  "alternatives": "Alternativas",
+  "@alternatives": {},
+  "openLink": "Abrir enlace",
+  "@openLink": {},
+  "copyLink": "Copiar enlace",
+  "@copyLink": {},
+  "sponsorSupportTip": "Su apoyo ayudará a que el proyecto se desarrolle continuamente ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "Códigos de patrocinador",
+  "@sponsorCodes": {},
+  "wechat": "WeChat",
+  "@wechat": {}
 }

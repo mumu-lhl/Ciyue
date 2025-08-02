@@ -315,5 +315,39 @@
   "writingCheckPromptTitle": "Aufforderung zur Schreibprüfung",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "Sie können $text in Ihrer Aufforderung verwenden.",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "logs": "Protokolle",
+  "@logs": {},
+  "translationProvider": "Übersetzungsanbieter",
+  "@translationProvider": {},
+  "searchLanguage": "Sprache suchen",
+  "@searchLanguage": {},
+  "writingCheckHistory": "Verlauf der Schreibprüfung",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} ausgewählt",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "Übersetzungsverlauf",
+  "@translationHistory": {},
+  "enableTranslationHistory": "Übersetzungsverlauf aktivieren",
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "Verlauf der Schreibprüfung aktivieren",
+  "@enableWritingCheckHistory": {},
+  "alternatives": "Alternativen",
+  "@alternatives": {},
+  "openLink": "Link öffnen",
+  "@openLink": {},
+  "copyLink": "Link kopieren",
+  "@copyLink": {},
+  "sponsorSupportTip": "Ihre Unterstützung hilft dem Projekt, sich kontinuierlich weiterzuentwickeln ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "Sponsoren-Codes",
+  "@sponsorCodes": {},
+  "wechat": "WeChat",
+  "@wechat": {}
 }

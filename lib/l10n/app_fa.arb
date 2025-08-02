@@ -315,5 +315,39 @@
   "writingCheckPromptTitle": "اعلان بررسی نوشتار",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "می‌توانید از $text در اعلان خود استفاده کنید.",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "logs": "گزارش‌ها",
+  "@logs": {},
+  "translationProvider": "ارائه دهنده ترجمه",
+  "@translationProvider": {},
+  "searchLanguage": "زبان جستجو",
+  "@searchLanguage": {},
+  "writingCheckHistory": "تاریخچه بررسی نوشتار",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} انتخاب شده",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "تاریخچه ترجمه",
+  "@translationHistory": {},
+  "enableTranslationHistory": "فعال کردن تاریخچه ترجمه",
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "فعال کردن تاریخچه بررسی نوشتار",
+  "@enableWritingCheckHistory": {},
+  "alternatives": "جایگزین‌ها",
+  "@alternatives": {},
+  "openLink": "باز کردن پیوند",
+  "@openLink": {},
+  "copyLink": "کپی کردن پیوند",
+  "@copyLink": {},
+  "sponsorSupportTip": "حمایت شما به توسعه مداوم پروژه کمک خواهد کرد ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "کدهای حامی",
+  "@sponsorCodes": {},
+  "wechat": "وی‌چت",
+  "@wechat": {}
 }

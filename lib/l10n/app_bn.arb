@@ -315,5 +315,39 @@
   "writingCheckPromptTitle": "লেখার পরীক্ষণের প্রম্পট",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "আপনি আপনার প্রম্পটে $text ব্যবহার করতে পারেন।",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "logs": "লগ",
+  "@logs": {},
+  "translationProvider": "অনুবাদ প্রদানকারী",
+  "@translationProvider": {},
+  "searchLanguage": "অনুসন্ধানের ভাষা",
+  "@searchLanguage": {},
+  "writingCheckHistory": "লেখার পরীক্ষার ইতিহাস",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} টি নির্বাচিত",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "অনুবাদের ইতিহাস",
+  "@translationHistory": {},
+  "enableTranslationHistory": "অনুবাদের ইতিহাস সক্ষম করুন",
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "লেখার পরীক্ষার ইতিহাস সক্ষম করুন",
+  "@enableWritingCheckHistory": {},
+  "alternatives": "বিকল্প",
+  "@alternatives": {},
+  "openLink": "লিঙ্ক খুলুন",
+  "@openLink": {},
+  "copyLink": "লিঙ্ক অনুলিপি করুন",
+  "@copyLink": {},
+  "sponsorSupportTip": "আপনার সমর্থন প্রকল্পটি ক্রমাগত বিকাশে সহায়তা করবে ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "পৃষ্ঠপোষক কোড",
+  "@sponsorCodes": {},
+  "wechat": "উইচ্যাট",
+  "@wechat": {}
 }

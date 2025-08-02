@@ -315,5 +315,39 @@
   "writingCheckPromptTitle": "Sol·licitud de comprovació d'escriptura",
   "@writingCheckPromptTitle": {},
   "writingCheckPromptHelper": "Podeu utilitzar $text a la vostra sol·licitud.",
-  "@writingCheckPromptHelper": {}
+  "@writingCheckPromptHelper": {},
+  "logs": "Registres",
+  "@logs": {},
+  "translationProvider": "Proveïdor de traducció",
+  "@translationProvider": {},
+  "searchLanguage": "Llengua de cerca",
+  "@searchLanguage": {},
+  "writingCheckHistory": "Historial de comprovació d'escriptura",
+  "@writingCheckHistory": {},
+  "nSelected": "{count} seleccionats",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "Historial de traduccions",
+  "@translationHistory": {},
+  "enableTranslationHistory": "Activa l'historial de traduccions",
+  "@enableTranslationHistory": {},
+  "enableWritingCheckHistory": "Activa l'historial de comprovació d'escriptura",
+  "@enableWritingCheckHistory": {},
+  "alternatives": "Alternatives",
+  "@alternatives": {},
+  "openLink": "Obre l'enllaç",
+  "@openLink": {},
+  "copyLink": "Copia l'enllaç",
+  "@copyLink": {},
+  "sponsorSupportTip": "El vostre suport ajudarà el projecte a desenvolupar-se contínuament ❤",
+  "@sponsorSupportTip": {},
+  "sponsorCodes": "Codis de patrocinador",
+  "@sponsorCodes": {},
+  "wechat": "WeChat",
+  "@wechat": {}
 }
