@@ -30,17 +30,19 @@ Future<void> main() async {
     final missingKeys = enKeys.difference(keys);
 
     if (missingKeys.isNotEmpty) {
-      print("\n--- Missing translations for ${file.path} (locale: $locale) ---");
+      print(
+          "\n--- Missing translations for ${file.path} (locale: $locale) ---");
       for (final key in missingKeys) {
         final value = enJson[key];
         final meta = enJson["@$key"];
         print('"$key": "$value",');
         if (meta != null) {
-            print('"@$key": ${jsonEncode(meta)},');
+          print('"@$key": ${jsonEncode(meta)},');
         }
       }
     } else {
-      print("\n--- No missing translations for ${file.path} (locale: $locale) ---");
+      print(
+          "\n--- No missing translations for ${file.path} (locale: $locale) ---");
     }
   }
 }
