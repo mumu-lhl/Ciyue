@@ -228,3 +228,5 @@ jobs:
         with:
           artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/*,Linux/*"
           tag: ${{ github.ref_name }}
+          generateReleaseNotes: true
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
