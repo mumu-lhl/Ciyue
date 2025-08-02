@@ -6,6 +6,7 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/services/toast.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
@@ -454,9 +455,8 @@ Future<void> selectMdx(BuildContext context, List<String> paths) async {
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
       if (context.mounted) {
-        final snackBar =
-            SnackBar(content: Text(AppLocalizations.of(context)!.notSupport));
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        ToastService.show(AppLocalizations.of(context)!.notSupport, context,
+            type: ToastType.error);
         talker.error("Failed to add dictionary: $pathNoExtension, error: $e", e,
             StackTrace.current);
       }

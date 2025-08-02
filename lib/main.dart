@@ -17,6 +17,7 @@ import "package:ciyue/viewModels/wordbook.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
+import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:provider/provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
@@ -140,6 +141,7 @@ class _CiyueState extends State<Ciyue> {
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      builder: FlutterSmartDialog.init(),
     );
   }
 

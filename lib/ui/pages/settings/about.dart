@@ -222,16 +222,8 @@ class SponsorListTile extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () async {
-                          addToClipboard(context, SponsorListTile.sponsorUri);
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      AppLocalizations.of(context)!.copied)),
-                            );
-                          }
-                        },
+                        onPressed: () =>
+                            addToClipboard(context, SponsorListTile.sponsorUri),
                         icon: const Icon(Icons.copy_rounded),
                         label: Text(AppLocalizations.of(context)!.copyLink),
                       ),
@@ -365,17 +357,7 @@ class QQGroupTile extends StatelessWidget {
       leading: const Icon(Icons.group),
       title: const Text("QQ"),
       subtitle: const Text(groupNumber),
-      onTap: () async {
-        addToClipboard(context, groupNumber);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-              AppLocalizations.of(context)!.copied,
-            )),
-          );
-        }
-      },
+      onTap: () => addToClipboard(context, groupNumber),
       onLongPress: () => addToClipboard(context, groupNumber),
     );
   }
