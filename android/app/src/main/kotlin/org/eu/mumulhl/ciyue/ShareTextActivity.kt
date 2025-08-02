@@ -3,7 +3,6 @@ package org.eu.mumulhl.ciyue
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import io.flutter.embedding.android.FlutterActivity
 
 class ShareTextActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
