@@ -1,5 +1,7 @@
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/custom_context_menu.dart";
+import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:ciyue/viewModels/writing_check.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
@@ -64,6 +66,10 @@ class _WritingCheckPage extends StatelessWidget {
                                 .label_enter_to_check,
                             alignLabelWithHint: true,
                           ),
+                          contextMenuBuilder:
+                              buildEditableTextCustomContextMenu(
+                                  fallbackText:
+                                      viewModel.textEditingController.text),
                           maxLines: 5,
                         ),
                         const SizedBox(height: 16),
@@ -81,6 +87,11 @@ class _WritingCheckPage extends StatelessWidget {
                           ),
                         if (viewModel.outputText != null)
                           SelectionArea(
+                            onSelectionChanged: context
+                                .read<SelectionTextViewModel>()
+                                .setSelectedText,
+                            contextMenuBuilder: buildCustomContextMenu(
+                                fallbackText: viewModel.outputText!),
                             child: GptMarkdown(viewModel.outputText!),
                           ),
                       ],
