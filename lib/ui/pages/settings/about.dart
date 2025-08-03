@@ -99,7 +99,7 @@ class SponsorListTile extends StatelessWidget {
     super.key,
   });
 
-  void _showSponsorSheet(BuildContext context) {
+  static void showSponsorSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -264,7 +264,7 @@ class SponsorListTile extends StatelessWidget {
     return ListTile(
         title: Text(AppLocalizations.of(context)!.sponsor),
         leading: const Icon(Icons.favorite),
-        onTap: () => _showSponsorSheet(context),
+        onTap: () => showSponsorSheet(context),
         onLongPress: () => addToClipboard(context, sponsorUri));
   }
 }
