@@ -149,6 +149,7 @@ class _LanguageSelectorState extends State<LanguageSelector> {
             const PopupMenuItem(value: "sc", child: Text("Sardinian")),
             const PopupMenuItem(value: "ta", child: Text("Tamil")),
             const PopupMenuItem(value: "fa", child: Text("فارسی")),
+            const PopupMenuItem(value: "got", child: Text("Gothic")),
             const PopupMenuItem(value: "zh", child: Text("简体中文")),
             const PopupMenuItem(value: "zh_HK", child: Text("繁體中文（香港）")),
             const PopupMenuItem(value: "zh_TW", child: Text("正體中文（臺灣）")),
