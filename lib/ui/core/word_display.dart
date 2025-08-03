@@ -847,17 +847,25 @@ class WordDisplay extends StatelessWidget {
     BuildContext context, {
     List<int> validDictIds = const [],
   }) {
-    return TabBarView(
-      children: [
-        if (settings.aiExplainWord)
-          AIExplainView(
+    final children = <Widget>[
+      if (settings.aiExplainWord)
+        _KeepAlive(
+          key: const ValueKey("ai_tab"),
+          child: AIExplainView(
             word: word,
-            key: ValueKey(context
-                .select<AIExplanationModel, int>((model) => model.refreshKey)),
+            key: ValueKey(
+              context
+                  .select<AIExplanationModel, int>((model) => model.refreshKey),
+            ),
           ),
-        for (final id in validDictIds) buildWebView(id),
-      ],
-    );
+        ),
+      for (final id in validDictIds)
+        _KeepAlive(
+          key: ValueKey("dict_$id"),
+          child: buildWebView(id),
+        ),
+    ];
+    return TabBarView(children: children);
   }
 
   Widget buildWebView(int id) {
@@ -1072,6 +1080,27 @@ class RefreshAIExplainButton extends StatelessWidget {
         context.read<AIExplanationModel>().refreshExplanation(word);
       },
     );
+  }
+}
+
+class _KeepAlive extends StatefulWidget {
+  final Widget child;
+
+  const _KeepAlive({super.key, required this.child});
+
+  @override
+  State<_KeepAlive> createState() => _KeepAliveState();
+}
+
+class _KeepAliveState extends State<_KeepAlive>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }
 
