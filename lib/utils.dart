@@ -40,3 +40,7 @@ Future<bool> requestManageExternalStorage(BuildContext context) async {
     return false;
   }
 }
+
+bool isFullFlavor() {
+  return ["full", "full-dev"].contains(appFlavor);
+}

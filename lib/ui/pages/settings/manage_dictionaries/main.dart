@@ -12,7 +12,6 @@ import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
 import "package:provider/provider.dart";
@@ -43,7 +42,7 @@ class AddButton extends StatelessWidget {
       icon: const Icon(Icons.add),
       onPressed: () async {
         if (Platform.isAndroid) {
-          if (appFlavor == "full") {
+          if (isFullFlavor()) {
             final isGranted = await requestManageExternalStorage(context);
             if (!isGranted) return;
 

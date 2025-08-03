@@ -11,7 +11,6 @@ import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
 import "package:provider/provider.dart";
 
 class AudioItems extends StatelessWidget {
@@ -85,7 +84,7 @@ class AudioList extends StatelessWidget {
               icon: Icon(Icons.add),
               onPressed: () async {
                 if (Platform.isAndroid) {
-                  if (appFlavor == "full") {
+                  if (isFullFlavor()) {
                     final isGranted =
                         await requestManageExternalStorage(context);
                     if (isGranted) {

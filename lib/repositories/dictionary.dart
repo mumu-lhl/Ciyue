@@ -14,7 +14,6 @@ import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
 import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
@@ -274,7 +273,7 @@ class Mdict {
 
     await dictionaryListDao.remove(path);
 
-    if (Platform.isAndroid && appFlavor != "full") {
+    if (Platform.isAndroid && !isFullFlavor()) {
       final mdxFile = File("$path.mdx");
       await mdxFile.delete();
 
