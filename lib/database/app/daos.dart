@@ -49,8 +49,8 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
   DictionaryListDao(super.attachedDatabase);
 
   Future<int> add(String path) {
-    return into(dictionaryList)
-        .insert(DictionaryListCompanion(path: Value(path)));
+    return into(dictionaryList).insert(
+        DictionaryListCompanion(path: Value(path), type: const Value(1)));
   }
 
   Future<List<DictionaryListData>> all() {
@@ -100,6 +100,12 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
   Future<int> updateFont(int id, String? fontPath) {
     return (update(dictionaryList)..where((t) => t.id.isValue(id)))
         .write(DictionaryListCompanion(fontPath: Value(fontPath)));
+  }
+
+  Future<int> getType(int id) async {
+    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
+            .getSingle()))
+        .type;
   }
 }
 

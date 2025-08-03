@@ -540,7 +540,7 @@ class Searcher {
   Future<List<String>> getSearchResult() async {
     final searchers = <Future<List<String>>>[];
     for (final dict in dictManager.dicts.values) {
-      searchers.add(dict.db.searchWord(text));
+      searchers.add(dict.search(text));
     }
 
     final searchResult = [for (final i in await Future.wait(searchers)) ...i];
