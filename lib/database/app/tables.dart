@@ -6,11 +6,15 @@ class DictGroup extends Table {
   TextColumn get name => text().unique()();
 }
 
+/// Type:
+/// 0: Old way, needs database to store dictionary info.
+/// 1: New way, does not need database to store dictionary info.
 class DictionaryList extends Table {
   TextColumn get alias => text().nullable()();
   TextColumn get fontPath => text().nullable()();
   IntColumn get id => integer().autoIncrement()();
   TextColumn get path => text()();
+  IntColumn get type => integer().withDefault(const Constant(0))();
 }
 
 class History extends Table {

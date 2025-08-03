@@ -93,9 +93,11 @@ class Mdict {
   String? fontPath;
   late final DictionaryDatabase db;
   late final DictReader reader;
-  List<DictReader> readerResource = [];
+  List<DictReader> readerResources = [];
   late String title;
   late final int entriesTotal;
+
+  late final int type;
 
   late HttpServer? server;
   late int port;
@@ -105,26 +107,11 @@ class Mdict {
 
   Mdict({required this.path});
 
-  Future<bool> add() async {
-    await _initDictReader(path);
-
-    await dictionaryListDao.add(path);
-
-    id = await dictionaryListDao.getId(path);
-    db = dictionaryDatabase(id);
-
-    await _addWords();
-
-    if (readerResource.isNotEmpty) await _addResource();
-
-    customFont(null);
-
-    title = HtmlUnescape().convert(reader.header["Title"] ?? basename(path));
-
-    return true;
-  }
-
   Future<void> close() async {
+    if (type != 0) {
+      return;
+    }
+
     await db.close();
   }
 
@@ -141,29 +128,32 @@ class Mdict {
 
   Future<void> init() async {
     id = await dictionaryListDao.getId(path);
+    type = await dictionaryListDao.getType(id);
 
     reader = DictReader("$path.mdx");
-    await reader.init(false);
+    await reader.init();
+
+    if (type == 0) {
+      db = dictionaryDatabase(id);
+    }
 
     final mddFile = File("$path.mdd");
     if (await mddFile.exists()) {
       final reader = DictReader(mddFile.path);
-      await reader.init(false);
-      readerResource.add(reader);
+      reader.init();
+      readerResources.add(reader);
     }
 
     for (var i = 1;; i++) {
       final mddFile = File("$path.$i.mdd");
       if (await mddFile.exists()) {
         final reader = DictReader(mddFile.path);
-        await reader.init(false);
-        readerResource.add(reader);
+        reader.init();
+        readerResources.add(reader);
       } else {
         break;
       }
     }
-
-    db = dictionaryDatabase(id);
 
     final fontPath = await dictionaryListDao.getFontPath(id);
     customFont(fontPath);
@@ -190,7 +180,7 @@ class Mdict {
     entriesTotal = reader.numEntries;
   }
 
-  Future<List<int>?> readResource(String filename) async {
+  Future<List<int>?> _readResourceDesktop(String filename) async {
     if (filename == "favicon.ico") {
       return null;
     }
@@ -204,21 +194,21 @@ class Mdict {
     try {
       Uint8List? data;
 
-      if (readerResource.isEmpty) {
+      if (readerResources.isEmpty) {
         // Find resource under directory if no mdd
         final file = File("${dirname(path)}/$filename");
         data = await file.readAsBytes();
       } else {
         try {
-          final results = await db.readResource(filename);
+          final results = await readResource(filename);
           for (final result in results) {
             final info = RecordOffsetInfo(result.key, result.blockOffset,
                 result.startOffset, result.endOffset, result.compressedSize);
             try {
               if (result.part == null) {
-                data = await readerResource[0].readOneMdd(info) as Uint8List;
+                data = await readerResources[0].readOneMdd(info) as Uint8List;
               } else {
-                data = await readerResource[result.part!].readOneMdd(info)
+                data = await readerResources[result.part!].readOneMdd(info)
                     as Uint8List;
               }
               break;
@@ -239,11 +229,13 @@ class Mdict {
   }
 
   Future<String> readWord(String word) async {
-    DictionaryData data;
-    try {
-      data = await db.getOffset(word);
-    } catch (e) {
-      data = await db.getOffset(word.toLowerCase());
+    DictionaryData? data;
+
+    data = await getOffset(word);
+    data ??= await getOffset(word.toLowerCase());
+
+    if (data == null) {
+      throw Exception("Word not found: $word");
     }
 
     final info = RecordOffsetInfo(data.key, data.blockOffset, data.startOffset,
@@ -252,10 +244,15 @@ class Mdict {
     String content = await reader.readOneMdx(info);
 
     if (content.startsWith("@@@LINK=")) {
-      final newData = await db.getOffset(content
+      final newData = await getOffset(content
           .replaceFirst("@@@LINK=", "")
           .replaceAll(RegExp(r"[\n\r\x00]"), "")
           .trimRight());
+      if (newData == null) {
+        throw Exception(
+            "Linked word not found: ${content.replaceFirst("@@@LINK=", "")}");
+      }
+
       final newInfo = RecordOffsetInfo(newData.key, newData.blockOffset,
           newData.startOffset, newData.endOffset, newData.compressedSize);
       content = await reader.readOneMdx(newInfo);
@@ -265,11 +262,13 @@ class Mdict {
   }
 
   Future<void> removeDictionary() async {
-    await db.close();
-    final databasePath =
-        join((await databaseDirectory()).path, "dictionary_$id.sqlite");
-    final file = File(databasePath);
-    await file.delete();
+    if (type == 0) {
+      await db.close();
+      final databasePath =
+          join((await databaseDirectory()).path, "dictionary_$id.sqlite");
+      final file = File(databasePath);
+      await file.delete();
+    }
 
     await dictionaryListDao.remove(path);
 
@@ -297,99 +296,62 @@ class Mdict {
     title = HtmlUnescape().convert(reader.header["Title"] ?? basename(path));
   }
 
-  Future<void> _addResource() async {
-    for (var i = 0; i < readerResource.length; i++) {
-      final resourceList = <ResourceCompanion>[];
-      var number = 0;
-      var loadingCount = 0;
-
-      await for (final info in readerResource[i].readWithOffset()) {
-        resourceList.add(ResourceCompanion(
-            key: Value(info.keyText),
-            blockOffset: Value(info.recordBlockOffset),
-            startOffset: Value(info.startOffset),
-            endOffset: Value(info.endOffset),
-            compressedSize: Value(info.compressedSize),
-            part: i == 0 ? Value(null) : Value(i)));
-        number++;
-        loadingCount++;
-
-        if (number == maxBatchSize) {
-          number = 0;
-          await db.insertResource(resourceList);
-          resourceList.clear();
-        }
-
-        if (loadingCount == maxLoadingCount) {
-          LoadingDialogContentState.updateText(
-              AppLocalizations.of(navigatorKey.currentContext!)!
-                  .addingResource(info.keyText));
-          loadingCount = 0;
-        }
-      }
-
-      if (resourceList.isNotEmpty) {
-        await db.insertResource(resourceList);
-      }
+  Future<List<String>> search(String query) async {
+    if (type == 0) {
+      return await db.searchWord(query);
+    } else {
+      return reader.search(query, limit: 30);
     }
   }
 
-  Future<void> _addWords() async {
-    final wordList = <DictionaryCompanion>[];
-    var number = 0;
-    var loadingCount = 0;
+  Future<DictionaryData?> getOffset(String word) async {
+    if (type == 0) {
+      return await db.getOffset(word);
+    } else {
+      final offsetInfo = await reader.locate(word);
 
-    await for (final info in reader.readWithOffset()) {
-      wordList.add(DictionaryCompanion(
-          key: Value(info.keyText),
-          blockOffset: Value(info.recordBlockOffset),
-          startOffset: Value(info.startOffset),
-          endOffset: Value(info.endOffset),
-          compressedSize: Value(info.compressedSize)));
-      number++;
-      loadingCount++;
-
-      if (number == maxBatchSize) {
-        number = 0;
-        await db.insertWords(wordList);
-        wordList.clear();
+      if (offsetInfo == null) {
+        return null;
       }
 
-      if (loadingCount == maxLoadingCount) {
-        LoadingDialogContentState.updateText(
-            AppLocalizations.of(navigatorKey.currentContext!)!
-                .addingWord(info.keyText));
-        loadingCount = 0;
-      }
-    }
-
-    if (wordList.isNotEmpty) {
-      await db.insertWords(wordList);
+      return DictionaryData(
+        key: offsetInfo.keyText,
+        blockOffset: offsetInfo.recordBlockOffset,
+        startOffset: offsetInfo.startOffset,
+        endOffset: offsetInfo.endOffset,
+        compressedSize: offsetInfo.compressedSize,
+      );
     }
   }
 
-  Future<void> _initDictReader(String path, {bool readKey = true}) async {
-    final dictReaderTemp = DictReader("$path.mdx");
-    await dictReaderTemp.init(readKey);
-
-    reader = dictReaderTemp;
-
-    final mddFile = File("$path.mdd");
-    if (await mddFile.exists()) {
-      final reader = DictReader(mddFile.path);
-      await reader.init(readKey);
-      readerResource.add(reader);
+  Future<bool> wordExist(String word) async {
+    if (type == 0) {
+      return await db.wordExist(word);
+    } else {
+      return await reader.locate(word) != null;
     }
+  }
 
-    for (var i = 1;; i++) {
-      final mddFile = File("$path.$i.mdd");
-      if (await mddFile.exists()) {
-        final reader = DictReader(mddFile.path);
-        await reader.init(readKey);
-        readerResource.add(reader);
-      } else {
-        break;
+  Future<List<ResourceData>> readResource(String key) async {
+    if (type == 0) {
+      return await db.readResource(key);
+    } else {
+      final resourceData = <ResourceData>[];
+      for (final readerResource in readerResources) {
+        final offsetInfo = await readerResource.locate(key);
+        if (offsetInfo == null) {
+          continue;
+        }
+        resourceData.add(ResourceData(
+          key: offsetInfo.keyText,
+          blockOffset: offsetInfo.recordBlockOffset,
+          startOffset: offsetInfo.startOffset,
+          endOffset: offsetInfo.endOffset,
+          compressedSize: offsetInfo.compressedSize,
+        ));
       }
+
+      return resourceData;
     }
   }
 
@@ -418,7 +380,7 @@ class Mdict {
           }
         } else if (request.method == "GET" && request.uri.path != "/") {
           final filename = request.uri.path.substring(1);
-          final resource = await readResource(filename);
+          final resource = await _readResourceDesktop(filename);
           if (resource == null) {
             request.response
               ..statusCode = HttpStatus.notFound
@@ -446,11 +408,8 @@ Future<void> selectMdx(BuildContext context, List<String> paths) async {
       continue;
     }
 
-    Mdict? tmpDict;
-    tmpDict = Mdict(path: pathNoExtension);
-
     try {
-      await tmpDict.add();
+      await dictionaryListDao.add(pathNoExtension);
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
       if (context.mounted) {
@@ -460,8 +419,6 @@ Future<void> selectMdx(BuildContext context, List<String> paths) async {
             StackTrace.current);
       }
     }
-
-    await tmpDict.close();
 
     // Why? Don't know. Strange!
     continue;

@@ -337,7 +337,7 @@ class DictionaryCard extends StatelessWidget {
               }
 
               final dictIds = [
-                for (final dict in dictManager.dicts.values) dict.id
+                for (final dict in dictManager.dicts.values) dict.id,
               ];
               dictManager.dictIds = dictIds;
               model.checkIsEmpty();

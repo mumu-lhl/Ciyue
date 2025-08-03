@@ -37,8 +37,16 @@ class $DictionaryListTable extends DictionaryList
   late final drift.GeneratedColumn<String> path = drift.GeneratedColumn<String>(
       'path', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const drift.VerificationMeta _typeMeta =
+      const drift.VerificationMeta('type');
   @override
-  List<drift.GeneratedColumn> get $columns => [alias, fontPath, id, path];
+  late final drift.GeneratedColumn<int> type = drift.GeneratedColumn<int>(
+      'type', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const drift.Constant(0));
+  @override
+  List<drift.GeneratedColumn> get $columns => [alias, fontPath, id, path, type];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -67,6 +75,10 @@ class $DictionaryListTable extends DictionaryList
     } else if (isInserting) {
       context.missing(_pathMeta);
     }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    }
     return context;
   }
 
@@ -84,6 +96,8 @@ class $DictionaryListTable extends DictionaryList
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      type: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}type'])!,
     );
   }
 
@@ -99,8 +113,13 @@ class DictionaryListData extends drift.DataClass
   final String? fontPath;
   final int id;
   final String path;
+  final int type;
   const DictionaryListData(
-      {this.alias, this.fontPath, required this.id, required this.path});
+      {this.alias,
+      this.fontPath,
+      required this.id,
+      required this.path,
+      required this.type});
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
@@ -112,6 +131,7 @@ class DictionaryListData extends drift.DataClass
     }
     map['id'] = drift.Variable<int>(id);
     map['path'] = drift.Variable<String>(path);
+    map['type'] = drift.Variable<int>(type);
     return map;
   }
 
@@ -125,6 +145,7 @@ class DictionaryListData extends drift.DataClass
           : drift.Value(fontPath),
       id: drift.Value(id),
       path: drift.Value(path),
+      type: drift.Value(type),
     );
   }
 
@@ -136,6 +157,7 @@ class DictionaryListData extends drift.DataClass
       fontPath: serializer.fromJson<String?>(json['fontPath']),
       id: serializer.fromJson<int>(json['id']),
       path: serializer.fromJson<String>(json['path']),
+      type: serializer.fromJson<int>(json['type']),
     );
   }
   @override
@@ -146,6 +168,7 @@ class DictionaryListData extends drift.DataClass
       'fontPath': serializer.toJson<String?>(fontPath),
       'id': serializer.toJson<int>(id),
       'path': serializer.toJson<String>(path),
+      'type': serializer.toJson<int>(type),
     };
   }
 
@@ -153,12 +176,14 @@ class DictionaryListData extends drift.DataClass
           {drift.Value<String?> alias = const drift.Value.absent(),
           drift.Value<String?> fontPath = const drift.Value.absent(),
           int? id,
-          String? path}) =>
+          String? path,
+          int? type}) =>
       DictionaryListData(
         alias: alias.present ? alias.value : this.alias,
         fontPath: fontPath.present ? fontPath.value : this.fontPath,
         id: id ?? this.id,
         path: path ?? this.path,
+        type: type ?? this.type,
       );
   DictionaryListData copyWithCompanion(DictionaryListCompanion data) {
     return DictionaryListData(
@@ -166,6 +191,7 @@ class DictionaryListData extends drift.DataClass
       fontPath: data.fontPath.present ? data.fontPath.value : this.fontPath,
       id: data.id.present ? data.id.value : this.id,
       path: data.path.present ? data.path.value : this.path,
+      type: data.type.present ? data.type.value : this.type,
     );
   }
 
@@ -175,13 +201,14 @@ class DictionaryListData extends drift.DataClass
           ..write('alias: $alias, ')
           ..write('fontPath: $fontPath, ')
           ..write('id: $id, ')
-          ..write('path: $path')
+          ..write('path: $path, ')
+          ..write('type: $type')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(alias, fontPath, id, path);
+  int get hashCode => Object.hash(alias, fontPath, id, path, type);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -189,7 +216,8 @@ class DictionaryListData extends drift.DataClass
           other.alias == this.alias &&
           other.fontPath == this.fontPath &&
           other.id == this.id &&
-          other.path == this.path);
+          other.path == this.path &&
+          other.type == this.type);
 }
 
 class DictionaryListCompanion
@@ -198,29 +226,34 @@ class DictionaryListCompanion
   final drift.Value<String?> fontPath;
   final drift.Value<int> id;
   final drift.Value<String> path;
+  final drift.Value<int> type;
   const DictionaryListCompanion({
     this.alias = const drift.Value.absent(),
     this.fontPath = const drift.Value.absent(),
     this.id = const drift.Value.absent(),
     this.path = const drift.Value.absent(),
+    this.type = const drift.Value.absent(),
   });
   DictionaryListCompanion.insert({
     this.alias = const drift.Value.absent(),
     this.fontPath = const drift.Value.absent(),
     this.id = const drift.Value.absent(),
     required String path,
+    this.type = const drift.Value.absent(),
   }) : path = drift.Value(path);
   static drift.Insertable<DictionaryListData> custom({
     drift.Expression<String>? alias,
     drift.Expression<String>? fontPath,
     drift.Expression<int>? id,
     drift.Expression<String>? path,
+    drift.Expression<int>? type,
   }) {
     return drift.RawValuesInsertable({
       if (alias != null) 'alias': alias,
       if (fontPath != null) 'font_path': fontPath,
       if (id != null) 'id': id,
       if (path != null) 'path': path,
+      if (type != null) 'type': type,
     });
   }
 
@@ -228,12 +261,14 @@ class DictionaryListCompanion
       {drift.Value<String?>? alias,
       drift.Value<String?>? fontPath,
       drift.Value<int>? id,
-      drift.Value<String>? path}) {
+      drift.Value<String>? path,
+      drift.Value<int>? type}) {
     return DictionaryListCompanion(
       alias: alias ?? this.alias,
       fontPath: fontPath ?? this.fontPath,
       id: id ?? this.id,
       path: path ?? this.path,
+      type: type ?? this.type,
     );
   }
 
@@ -252,6 +287,9 @@ class DictionaryListCompanion
     if (path.present) {
       map['path'] = drift.Variable<String>(path.value);
     }
+    if (type.present) {
+      map['type'] = drift.Variable<int>(type.value);
+    }
     return map;
   }
 
@@ -261,7 +299,8 @@ class DictionaryListCompanion
           ..write('alias: $alias, ')
           ..write('fontPath: $fontPath, ')
           ..write('id: $id, ')
-          ..write('path: $path')
+          ..write('path: $path, ')
+          ..write('type: $type')
           ..write(')'))
         .toString();
   }
@@ -2490,6 +2529,7 @@ typedef $$DictionaryListTableCreateCompanionBuilder = DictionaryListCompanion
   drift.Value<String?> fontPath,
   drift.Value<int> id,
   required String path,
+  drift.Value<int> type,
 });
 typedef $$DictionaryListTableUpdateCompanionBuilder = DictionaryListCompanion
     Function({
@@ -2497,6 +2537,7 @@ typedef $$DictionaryListTableUpdateCompanionBuilder = DictionaryListCompanion
   drift.Value<String?> fontPath,
   drift.Value<int> id,
   drift.Value<String> path,
+  drift.Value<int> type,
 });
 
 class $$DictionaryListTableFilterComposer
@@ -2520,6 +2561,9 @@ class $$DictionaryListTableFilterComposer
 
   drift.ColumnFilters<String> get path => $composableBuilder(
       column: $table.path, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get type => $composableBuilder(
+      column: $table.type, builder: (column) => drift.ColumnFilters(column));
 }
 
 class $$DictionaryListTableOrderingComposer
@@ -2543,6 +2587,9 @@ class $$DictionaryListTableOrderingComposer
 
   drift.ColumnOrderings<String> get path => $composableBuilder(
       column: $table.path, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get type => $composableBuilder(
+      column: $table.type, builder: (column) => drift.ColumnOrderings(column));
 }
 
 class $$DictionaryListTableAnnotationComposer
@@ -2565,6 +2612,9 @@ class $$DictionaryListTableAnnotationComposer
 
   drift.GeneratedColumn<String> get path =>
       $composableBuilder(column: $table.path, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
 }
 
 class $$DictionaryListTableTableManager extends drift.RootTableManager<
@@ -2599,24 +2649,28 @@ class $$DictionaryListTableTableManager extends drift.RootTableManager<
             drift.Value<String?> fontPath = const drift.Value.absent(),
             drift.Value<int> id = const drift.Value.absent(),
             drift.Value<String> path = const drift.Value.absent(),
+            drift.Value<int> type = const drift.Value.absent(),
           }) =>
               DictionaryListCompanion(
             alias: alias,
             fontPath: fontPath,
             id: id,
             path: path,
+            type: type,
           ),
           createCompanionCallback: ({
             drift.Value<String?> alias = const drift.Value.absent(),
             drift.Value<String?> fontPath = const drift.Value.absent(),
             drift.Value<int> id = const drift.Value.absent(),
             required String path,
+            drift.Value<int> type = const drift.Value.absent(),
           }) =>
               DictionaryListCompanion.insert(
             alias: alias,
             fontPath: fontPath,
             id: id,
             path: path,
+            type: type,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>

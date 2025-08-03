@@ -36,8 +36,7 @@ Future<CustomSchemeResponse?> Function(
     if (url.scheme == "sound") {
       final filename =
           Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
-      final results =
-          await dictManager.dicts[dictId]!.db.readResource(filename);
+      final results = await dictManager.dicts[dictId]!.readResource(filename);
       for (final result in results) {
         final info = RecordOffsetInfo(
           result.key,
@@ -49,10 +48,11 @@ Future<CustomSchemeResponse?> Function(
         try {
           final Uint8List data;
           if (result.part == null) {
-            data = await dictManager.dicts[dictId]!.readerResource[0]
+            data = await dictManager.dicts[dictId]!.readerResources[0]
                 .readOneMdd(info) as Uint8List;
           } else {
-            data = await dictManager.dicts[dictId]!.readerResource[result.part!]
+            data = await dictManager
+                .dicts[dictId]!.readerResources[result.part!]
                 .readOneMdd(info) as Uint8List;
           }
           talker.info(
@@ -76,9 +76,14 @@ Future<NavigationActionPolicy?> Function(
   return (controller, navigationAction) async {
     final url = navigationAction.request.url;
     if (url!.scheme == "entry") {
-      final word = await dictManager.dicts[dictId]!.db.getOffset(
+      final word = await dictManager.dicts[dictId]!.getOffset(
         Uri.decodeFull(url.toString().replaceFirst("entry://", "")),
       );
+
+      if (word == null) {
+        talker.info("Word not found: ${url.toString()}");
+        return NavigationActionPolicy.CANCEL;
+      }
 
       final info = RecordOffsetInfo(
         word.key,
@@ -95,8 +100,7 @@ Future<NavigationActionPolicy?> Function(
     } else if (url.scheme == "sound") {
       final filename =
           Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
-      final results =
-          await dictManager.dicts[dictId]!.db.readResource(filename);
+      final results = await dictManager.dicts[dictId]!.readResource(filename);
       for (final result in results) {
         final info = RecordOffsetInfo(
           result.key,
@@ -108,10 +112,11 @@ Future<NavigationActionPolicy?> Function(
         final Uint8List data;
         try {
           if (result.part == null) {
-            data = await dictManager.dicts[dictId]!.readerResource[0]
+            data = await dictManager.dicts[dictId]!.readerResources[0]
                 .readOneMdd(info) as Uint8List;
           } else {
-            data = await dictManager.dicts[dictId]!.readerResource[result.part!]
+            data = await dictManager
+                .dicts[dictId]!.readerResources[result.part!]
                 .readOneMdd(info) as Uint8List;
           }
         } catch (e) {
@@ -335,13 +340,13 @@ class LocalResourcesPathHandler extends CustomPathHandler {
     try {
       Uint8List? data;
 
-      if (dictManager.dicts[dictId]!.readerResource.isEmpty) {
+      if (dictManager.dicts[dictId]!.readerResources.isEmpty) {
         // Find resource under directory if no mdd
         final file = File("${dirname(dictManager.dicts[dictId]!.path)}/$path");
         data = await file.readAsBytes();
       } else {
         List<ResourceData> results;
-        results = await dictManager.dicts[dictId]!.db.readResource(path);
+        results = await dictManager.dicts[dictId]!.readResource(path);
 
         if (results.isEmpty) {
           // Find resource under directory if resource is not in mdd
@@ -363,11 +368,11 @@ class LocalResourcesPathHandler extends CustomPathHandler {
           );
           try {
             if (result.part == null) {
-              data = await dictManager.dicts[dictId]!.readerResource[0]
+              data = await dictManager.dicts[dictId]!.readerResources[0]
                   .readOneMdd(info) as Uint8List;
             } else {
               data = await dictManager
-                  .dicts[dictId]!.readerResource[result.part!]
+                  .dicts[dictId]!.readerResources[result.part!]
                   .readOneMdd(info) as Uint8List;
             }
             break;
@@ -821,7 +826,7 @@ class WordDisplay extends StatelessWidget {
       child: FutureBuilder(
         future: Future.wait([
           for (final id in dictManager.dictIds)
-            dictManager.dicts[id]!.db.wordExist(word),
+            dictManager.dicts[id]!.wordExist(word),
         ]),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -875,7 +880,7 @@ class WordDisplay extends StatelessWidget {
   Future<List<int>> validDictionaryIds() async {
     final validIds = <int>[];
     for (final id in dictManager.dictIds) {
-      if (await dictManager.dicts[id]!.db.wordExist(word)) {
+      if (await dictManager.dicts[id]!.wordExist(word)) {
         validIds.add(id);
       }
     }
