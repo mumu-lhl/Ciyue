@@ -1,8 +1,10 @@
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/language_picker.dart";
+import "package:ciyue/ui/core/custom_context_menu.dart";
 import "package:ciyue/ui/pages/translate/translate_history_page.dart";
 import "package:ciyue/ui/pages/translate/translate_settings_page.dart";
+import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:ciyue/viewModels/translate_view_model.dart";
 import "package:flutter/material.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
@@ -154,6 +156,9 @@ class _InputSection extends StatelessWidget {
         decoration: InputDecoration(
           labelText: AppLocalizations.of(context)!.enterTextToTranslate,
           border: const OutlineInputBorder(),
+        ),
+        contextMenuBuilder: buildEditableTextCustomContextMenu(
+          fallbackText: inputController.text,
         ),
         maxLines: null, // Allow multiple lines
       ),
@@ -359,6 +364,11 @@ class _TranslatedTextSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: SelectionArea(
+        onSelectionChanged:
+            context.read<SelectionTextViewModel>().setSelectedText,
+        contextMenuBuilder: buildCustomContextMenu(
+          fallbackText: translatedText,
+        ),
         child: child,
       ),
     );

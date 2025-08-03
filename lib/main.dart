@@ -14,6 +14,7 @@ import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/viewModels/wordbook.dart";
+import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
@@ -47,6 +48,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => ManageDictionariesModel()),
       ChangeNotifierProvider(create: (_) => AudioModel()..init()),
       ChangeNotifierProvider(create: (_) => AIPrompts()),
+      ChangeNotifierProvider(create: (_) => SelectionTextViewModel()),
       Provider(create: (_) => WritingCheckHistoryDao(mainDatabase)),
       Provider(create: (_) => TranslateHistoryDao(mainDatabase)),
     ], child: const Ciyue()));
