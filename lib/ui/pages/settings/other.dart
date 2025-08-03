@@ -64,7 +64,7 @@ class _FloatingWindowState extends State<FloatingWindow> {
           Text(AppLocalizations.of(context)!.floatingWindow),
           const SizedBox(width: 8),
           const BaseBadge(
-            text: "Alpha",
+            text: "Beta",
           ),
         ],
       ),
