@@ -342,12 +342,16 @@ class Mdict {
         if (offsetInfo == null) {
           continue;
         }
+
+        final part = readerResources.indexOf(readerResource);
+
         resourceData.add(ResourceData(
           key: offsetInfo.keyText,
           blockOffset: offsetInfo.recordBlockOffset,
           startOffset: offsetInfo.startOffset,
           endOffset: offsetInfo.endOffset,
           compressedSize: offsetInfo.compressedSize,
+          part: part == -1 ? null : part,
         ));
       }
 

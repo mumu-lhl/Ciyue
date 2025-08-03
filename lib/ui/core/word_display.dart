@@ -110,22 +110,21 @@ Future<NavigationActionPolicy?> Function(
           result.compressedSize,
         );
         final Uint8List data;
-        try {
-          if (result.part == null) {
-            data = await dictManager.dicts[dictId]!.readerResources[0]
-                .readOneMdd(info) as Uint8List;
-          } else {
-            data = await dictManager
-                .dicts[dictId]!.readerResources[result.part!]
-                .readOneMdd(info) as Uint8List;
-          }
-        } catch (e) {
-          talker.error(
-            "Failed to read sound resource (${result.part == null ? 0 : result.part!}): $filename",
-            e,
-          );
-          continue;
+        // try {
+        if (result.part == null) {
+          data = await dictManager.dicts[dictId]!.readerResources[0]
+              .readOneMdd(info) as Uint8List;
+        } else {
+          data = await dictManager.dicts[dictId]!.readerResources[result.part!]
+              .readOneMdd(info) as Uint8List;
         }
+        // } catch (e) {
+        //   talker.error(
+        //     "Failed to read sound resource (${result.part == null ? 0 : result.part!}): $filename",
+        //     e,
+        //   );
+        //   continue;
+        // }
 
         await playSound(data, lookupMimeType(filename)!);
         talker.info(
