@@ -120,8 +120,9 @@ Future<NavigationActionPolicy?> Function(
                 .readOneMdd(info) as Uint8List;
           }
         } catch (e) {
-          talker.info(
+          talker.error(
             "Failed to read sound resource (${result.part == null ? 0 : result.part!}): $filename",
+            e,
           );
           continue;
         }

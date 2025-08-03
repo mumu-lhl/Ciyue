@@ -308,9 +308,10 @@ packages:
   dict_reader:
     dependency: "direct main"
     description:
-      path: "../dict_reader"
-      relative: true
-    source: path
+      name: dict_reader
+      sha256: "6c408ca63a9a38ed64a49722daf64c91da4733ecaf3e3f78d21f910fe61416b0"
+      url: "https://pub.dev"
+    source: hosted
     version: "1.4.1"
   dio:
     dependency: "direct main"
