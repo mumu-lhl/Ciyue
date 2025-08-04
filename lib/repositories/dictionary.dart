@@ -93,7 +93,6 @@ class Mdict {
   final String path;
   String? fontName;
   String? fontPath;
-  late final DictionaryDatabase db;
   late final DictReader reader;
   List<DictReader> readerResources = [];
   late String title;
@@ -115,12 +114,6 @@ class Mdict {
     for (final readerResource in readerResources) {
       await readerResource.close();
     }
-
-    if (type != 0) {
-      return;
-    }
-
-    await db.close();
   }
 
   Future<void> customFont(String? path) async {
@@ -141,10 +134,6 @@ class Mdict {
     reader = DictReader("$path.mdx");
     await reader.initDict(readKeys: false, readRecordBlockInfo: false);
     reader.initDict(readHeader: false);
-
-    if (type == 0) {
-      db = dictionaryDatabase(id);
-    }
 
     final mddFile = File("$path.mdd");
     if (await mddFile.exists()) {
@@ -277,7 +266,6 @@ class Mdict {
 
   Future<void> removeDictionary() async {
     if (type == 0) {
-      await db.close();
       final databasePath =
           join((await databaseDirectory()).path, "dictionary_$id.sqlite");
       final file = File(databasePath);
@@ -311,66 +299,43 @@ class Mdict {
   }
 
   Future<List<String>> search(String query) async {
-    if (type == 0) {
-      return await db.searchWord(query);
-    } else {
-      return reader.search(query, limit: 30);
-    }
+    return reader.search(query, limit: 30);
   }
 
   Future<RecordOffsetInfo?> getOffset(String word) async {
-    if (type == 0) {
-      final offsetInfo = await db.getOffset(word);
-      return RecordOffsetInfo(
-        word,
-        offsetInfo.blockOffset,
-        offsetInfo.startOffset,
-        offsetInfo.endOffset,
-        offsetInfo.compressedSize,
-      );
-    } else {
-      return await reader.locate(word);
-    }
+    return await reader.locate(word);
   }
 
   Future<bool> wordExist(String word) async {
-    if (type == 0) {
-      return await db.wordExist(word);
-    } else {
-      return reader.exist(word);
-    }
+    return reader.exist(word);
   }
 
   Future<List<ResourceData>> readResource(String key) async {
-    if (type == 0) {
-      return await db.readResource(key);
-    } else {
-      final resourceData = <ResourceData>[];
-      for (final readerResource in readerResources) {
-        if (!readerResource.exist(key)) {
-          continue;
-        }
-
-        final offsetInfo = await readerResource.locate(key);
-
-        if (offsetInfo == null) {
-          continue;
-        }
-
-        final part = readerResources.indexOf(readerResource);
-
-        resourceData.add(ResourceData(
-          key: offsetInfo.keyText,
-          blockOffset: offsetInfo.recordBlockOffset,
-          startOffset: offsetInfo.startOffset,
-          endOffset: offsetInfo.endOffset,
-          compressedSize: offsetInfo.compressedSize,
-          part: part == -1 ? null : part,
-        ));
+    final resourceData = <ResourceData>[];
+    for (final readerResource in readerResources) {
+      if (!readerResource.exist(key)) {
+        continue;
       }
 
-      return resourceData;
+      final offsetInfo = await readerResource.locate(key);
+
+      if (offsetInfo == null) {
+        continue;
+      }
+
+      final part = readerResources.indexOf(readerResource);
+
+      resourceData.add(ResourceData(
+        key: offsetInfo.keyText,
+        blockOffset: offsetInfo.recordBlockOffset,
+        startOffset: offsetInfo.startOffset,
+        endOffset: offsetInfo.endOffset,
+        compressedSize: offsetInfo.compressedSize,
+        part: part == -1 ? null : part,
+      ));
     }
+
+    return resourceData;
   }
 
   Future<void> _startServer() async {
