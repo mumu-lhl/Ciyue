@@ -9,7 +9,6 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/audio.dart";
-import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/tags_list.dart";
@@ -75,27 +74,19 @@ Future<NavigationActionPolicy?> Function(
 ) shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
   return (controller, navigationAction) async {
     final url = navigationAction.request.url;
-    if (url!.scheme == "entry") {
-      final word = await dictManager.dicts[dictId]!.getOffset(
-        Uri.decodeFull(url.toString().replaceFirst("entry://", "")),
-      );
+    final word = Uri.decodeFull(url.toString().replaceFirst("entry://", ""));
 
-      if (word == null) {
+    if (url!.scheme == "entry") {
+      if (!(await dictManager.dicts[dictId]!.wordExist(word))) {
         talker.info("Word not found: ${url.toString()}");
         return NavigationActionPolicy.CANCEL;
       }
 
-      final info = RecordOffsetInfo(
-        word.key,
-        word.blockOffset,
-        word.startOffset,
-        word.endOffset,
-        word.compressedSize,
-      );
-      final data = await dictManager.dicts[dictId]!.reader.readOneMdx(info);
+      final info = await dictManager.dicts[dictId]!.getOffset(word);
+      final data = await dictManager.dicts[dictId]!.reader.readOneMdx(info!);
 
       if (context.mounted) {
-        context.push("/word", extra: {"content": data, "word": word.key});
+        context.push("/word", extra: {"content": data, "word": info.keyText});
       }
     } else if (url.scheme == "sound") {
       final filename =
@@ -110,21 +101,22 @@ Future<NavigationActionPolicy?> Function(
           result.compressedSize,
         );
         final Uint8List data;
-        // try {
-        if (result.part == null) {
-          data = await dictManager.dicts[dictId]!.readerResources[0]
-              .readOneMdd(info) as Uint8List;
-        } else {
-          data = await dictManager.dicts[dictId]!.readerResources[result.part!]
-              .readOneMdd(info) as Uint8List;
+        try {
+          if (result.part == null) {
+            data = await dictManager.dicts[dictId]!.readerResources[0]
+                .readOneMdd(info) as Uint8List;
+          } else {
+            data = await dictManager
+                .dicts[dictId]!.readerResources[result.part!]
+                .readOneMdd(info) as Uint8List;
+          }
+        } catch (e) {
+          talker.error(
+            "Failed to read sound resource (${result.part == null ? 0 : result.part!}): $filename",
+            e,
+          );
+          continue;
         }
-        // } catch (e) {
-        //   talker.error(
-        //     "Failed to read sound resource (${result.part == null ? 0 : result.part!}): $filename",
-        //     e,
-        //   );
-        //   continue;
-        // }
 
         await playSound(data, lookupMimeType(filename)!);
         talker.info(
@@ -666,104 +658,18 @@ class WordDisplay extends StatelessWidget {
       future: validDictionaryIds(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const SizedBox.shrink();
+          return Scaffold(
+            appBar: buildAppBar(context, false),
+            body: Center(
+                child: CircularProgressIndicator(
+              color: Theme.of(context).colorScheme.primary,
+            )),
+          );
         }
 
-        if (snapshot.data!.isNotEmpty || settings.aiExplainWord) {
-          final dictsLength = settings.aiExplainWord
-              ? snapshot.data!.length + 1
-              : snapshot.data!.length;
-          final showTab = dictsLength > 1;
-
-          if (showTab) {
-            if (settings.dictionarySwitchStyle == DictionarySwitchStyle.tag) {
-              return ChangeNotifierProvider(
-                create: (_) => AIExplanationModel(),
-                child: DefaultTabController(
-                  initialIndex: 0,
-                  length: dictsLength,
-                  child: Builder(
-                    builder: (context) {
-                      final tabController = DefaultTabController.of(context);
-                      return Scaffold(
-                        appBar: buildAppBar(context, showTab),
-                        floatingActionButton: ListenableBuilder(
-                          listenable: tabController,
-                          builder: (context, child) {
-                            final isAIExplainTabSelected =
-                                settings.aiExplainWord &&
-                                    tabController.index == 0;
-                            return Button(
-                              word: word,
-                              showAIButtons: isAIExplainTabSelected,
-                            );
-                          },
-                        ),
-                        body: Column(
-                          children: [
-                            Expanded(
-                              child: buildTabView(
-                                context,
-                                validDictIds: snapshot.data!,
-                              ),
-                            ),
-                            if (settings.tabBarPosition ==
-                                    TabBarPosition.bottom &&
-                                showTab)
-                              buildTabBar(context),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              );
-            } else {
-              return ChangeNotifierProvider(
-                create: (_) => AIExplanationModel(),
-                child: ExpansionWordDisplay(
-                  word: word,
-                  validDictIds: snapshot.data!,
-                ),
-              );
-            }
-          } else {
-            return ChangeNotifierProvider(
-              create: (_) => AIExplanationModel(),
-              child: Scaffold(
-                appBar: AppBar(
-                  title: settings.showSearchBarInWordDisplay
-                      ? WordSearchBarWithSuggestions(
-                          word: word,
-                          controller: SearchController(),
-                        )
-                      : null,
-                ),
-                floatingActionButton: Button(
-                  word: word,
-                  showAIButtons: settings.aiExplainWord,
-                ),
-                body: settings.aiExplainWord
-                    ? AIExplainView(word: word)
-                    : buildWebView(snapshot.data![0]),
-              ),
-            );
-          }
-        } else {
-          final fromProcessText = !context.canPop();
+        if (!(snapshot.data!.isNotEmpty || settings.aiExplainWord)) {
           return Scaffold(
-            appBar: AppBar(
-              leading: BackButton(
-                onPressed: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    // When opened from context menu
-                    SystemNavigator.pop();
-                  }
-                },
-              ),
-            ),
+            appBar: AppBar(),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -772,42 +678,88 @@ class WordDisplay extends StatelessWidget {
                     AppLocalizations.of(context)!.notFound,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  Visibility(
-                    visible: fromProcessText,
-                    child: TextButton(
-                      onPressed: () {
-                        context.go("/");
-                        final model = Provider.of<HomeModel>(
-                          context,
-                          listen: false,
-                        );
-                        model.searchWord = word;
-                        model.focusSearchBar();
-                      },
-                      child: Text(AppLocalizations.of(context)!.editWord),
-                    ),
-                  ),
                 ],
               ),
             ),
           );
         }
+
+        final dictsLength = settings.aiExplainWord
+            ? snapshot.data!.length + 1
+            : snapshot.data!.length;
+        final showTab = dictsLength > 1;
+
+        if (!showTab) {
+          return ChangeNotifierProvider(
+            create: (_) => AIExplanationModel(),
+            child: Scaffold(
+              appBar: buildAppBar(context, showTab),
+              floatingActionButton: Button(
+                word: word,
+                showAIButtons: settings.aiExplainWord,
+              ),
+              body: settings.aiExplainWord
+                  ? AIExplainView(word: word)
+                  : buildWebView(snapshot.data![0]),
+            ),
+          );
+        }
+
+        if (settings.dictionarySwitchStyle == DictionarySwitchStyle.tag) {
+          return ChangeNotifierProvider(
+            create: (_) => AIExplanationModel(),
+            child: DefaultTabController(
+              initialIndex: 0,
+              length: dictsLength,
+              child: Builder(
+                builder: (context) {
+                  final tabController = DefaultTabController.of(context);
+                  return Scaffold(
+                    appBar: buildAppBar(context, showTab),
+                    floatingActionButton: ListenableBuilder(
+                      listenable: tabController,
+                      builder: (context, child) {
+                        final isAIExplainTabSelected =
+                            settings.aiExplainWord && tabController.index == 0;
+                        return Button(
+                          word: word,
+                          showAIButtons: isAIExplainTabSelected,
+                        );
+                      },
+                    ),
+                    body: Column(
+                      children: [
+                        Expanded(
+                          child: buildTabView(
+                            context,
+                            validDictIds: snapshot.data!,
+                          ),
+                        ),
+                        if (settings.tabBarPosition == TabBarPosition.bottom &&
+                            showTab)
+                          buildTabBar(context),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        }
+
+        return ChangeNotifierProvider(
+          create: (_) => AIExplanationModel(),
+          child: ExpansionWordDisplay(
+            word: word,
+            validDictIds: snapshot.data!,
+          ),
+        );
       },
     );
   }
 
   AppBar buildAppBar(BuildContext context, bool showTab) {
     return AppBar(
-      leading: BackButton(
-        onPressed: () {
-          if (context.canPop()) {
-            context.pop();
-          } else {
-            // When opened from context menu
-            SystemNavigator.pop();
-          }
-        },
-      ),
       title: settings.showSearchBarInWordDisplay
           ? WordSearchBarWithSuggestions(
               word: word,
@@ -929,6 +881,7 @@ class _ButtonState extends State<Button> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return FloatingActionButton.small(
+      heroTag: "readLoudly_$word",
       foregroundColor: colorScheme.primary,
       backgroundColor: colorScheme.primaryContainer,
       child: const Icon(Icons.volume_up),
@@ -947,6 +900,7 @@ class _ButtonState extends State<Button> {
       builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
         if (!snapshot.hasData) {
           return FloatingActionButton.small(
+            heroTag: "star_${widget.word}",
             foregroundColor: colorScheme.primary,
             backgroundColor: colorScheme.surface,
             child: const Icon(Icons.star_outline),
@@ -955,6 +909,7 @@ class _ButtonState extends State<Button> {
         }
 
         return FloatingActionButton.small(
+          heroTag: "star_${widget.word}",
           foregroundColor: colorScheme.primary,
           backgroundColor: colorScheme.primaryContainer,
           child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),
@@ -1078,6 +1033,7 @@ class RefreshAIExplainButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return FloatingActionButton.small(
+      heroTag: "refresh_ai_explain_$word",
       foregroundColor: colorScheme.primary,
       backgroundColor: colorScheme.primaryContainer,
       child: const Icon(Icons.refresh),
@@ -1124,6 +1080,7 @@ class EditAIExplainButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return FloatingActionButton.small(
+      heroTag: "edit_ai_explain_$word",
       foregroundColor: colorScheme.primary,
       backgroundColor: colorScheme.primaryContainer,
       child: const Icon(Icons.edit),
