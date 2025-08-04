@@ -13,7 +13,6 @@ import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
 import "package:file_selector/file_selector.dart";
-import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
@@ -109,6 +108,12 @@ class Mdict {
   Mdict({required this.path});
 
   Future<void> close() async {
+    await reader.close();
+
+    for (final readerResource in readerResources) {
+      await readerResource.close();
+    }
+
     if (type != 0) {
       return;
     }
@@ -321,7 +326,7 @@ class Mdict {
         offsetInfo.compressedSize,
       );
     } else {
-      return compute(reader.locate, word);
+      return await reader.locate(word);
     }
   }
 
@@ -339,7 +344,12 @@ class Mdict {
     } else {
       final resourceData = <ResourceData>[];
       for (final readerResource in readerResources) {
+        if (!readerResource.exist(key)) {
+          continue;
+        }
+
         final offsetInfo = await readerResource.locate(key);
+
         if (offsetInfo == null) {
           continue;
         }

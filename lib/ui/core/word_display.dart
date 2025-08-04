@@ -91,7 +91,9 @@ Future<NavigationActionPolicy?> Function(
     } else if (url.scheme == "sound") {
       final filename =
           Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
+
       final results = await dictManager.dicts[dictId]!.readResource(filename);
+
       for (final result in results) {
         final info = RecordOffsetInfo(
           result.key,
