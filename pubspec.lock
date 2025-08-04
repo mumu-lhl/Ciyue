@@ -308,11 +308,12 @@ packages:
   dict_reader:
     dependency: "direct main"
     description:
-      name: dict_reader
-      sha256: "6c408ca63a9a38ed64a49722daf64c91da4733ecaf3e3f78d21f910fe61416b0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.4.1"
+      path: "."
+      ref: "53e0ca42695599623dea2218db3e405c384c69bf"
+      resolved-ref: "53e0ca42695599623dea2218db3e405c384c69bf"
+      url: "https://github.com/mumu-lhl/dict_reader.git"
+    source: git
+    version: "1.5.1"
   dio:
     dependency: "direct main"
     description:
