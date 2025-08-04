@@ -77,7 +77,9 @@ class DictManager {
       final databasePath =
           join((await databaseDirectory()).path, "dictionary_$dictId.sqlite");
       final file = File(databasePath);
-      await file.delete();
+      if (await file.exists()) {
+        await file.delete();
+      }
     }
 
     if (toRemove.isNotEmpty) {
@@ -87,7 +89,7 @@ class DictManager {
 }
 
 class Mdict {
-  late final int id;
+  late int id;
   final String path;
   String? fontName;
   String? fontPath;
@@ -137,7 +139,8 @@ class Mdict {
     type = await dictionaryListDao.getType(id);
 
     reader = DictReader("$path.mdx");
-    await reader.init();
+    await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+    reader.initDict(readHeader: false);
 
     if (type == 0) {
       db = dictionaryDatabase(id);
@@ -146,7 +149,7 @@ class Mdict {
     final mddFile = File("$path.mdd");
     if (await mddFile.exists()) {
       final reader = DictReader(mddFile.path);
-      reader.init();
+      reader.initDict();
       readerResources.add(reader);
     }
 
@@ -154,7 +157,7 @@ class Mdict {
       final mddFile = File("$path.$i.mdd");
       if (await mddFile.exists()) {
         final reader = DictReader(mddFile.path);
-        reader.init();
+        reader.initDict();
         readerResources.add(reader);
       } else {
         break;
@@ -178,7 +181,7 @@ class Mdict {
 
   Future<void> initOnlyMetadata(int id) async {
     reader = DictReader("$path.mdx");
-    await reader.init();
+    await reader.initDict(readKeys: false, readRecordBlockInfo: false);
 
     final alias = await dictionaryListDao.getAlias(id);
     title = HtmlUnescape()
@@ -452,7 +455,7 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
     }
 
     final reader = DictReader(path);
-    await reader.init();
+    await reader.initDict();
 
     int? mddAudioListId;
     if (context.mounted) {

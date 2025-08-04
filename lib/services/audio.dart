@@ -41,7 +41,7 @@ Future<void> playSoundOfWord(
         }
 
         final reader = DictReader(mddAudio.path);
-        await reader.init(false);
+        await reader.initDict(readKeys: false, readRecordBlockInfo: false);
 
         final info = RecordOffsetInfo(word, audio.blockOffset,
             audio.startOffset, audio.endOffset, audio.compressedSize);
