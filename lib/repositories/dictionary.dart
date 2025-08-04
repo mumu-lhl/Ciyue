@@ -112,7 +112,6 @@ class Mdict {
   Future<void> close() async {
     await reader.close();
 
-
     for (final readerResource in readerResources) {
       await readerResource.close();
     }
