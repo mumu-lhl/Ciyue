@@ -73,8 +73,14 @@ QQ 群：`1057888678`
 
 感谢他们的赞助支持了词悦的开发！
 
+您可以在 [爱发电](https://afdian.com/a/mumulhl) 赞助，或者微信赞助码：
+
+<img height="300" src="./assets/wechat_pay.webp">
+
 ||
 |-|
+|爱发电用户_c3f76|
+|爱发电用户_8267c|
 |蕬縌玢沰|
 |爱发电用户_1b0db|
 |爱发电用户_nW9j|

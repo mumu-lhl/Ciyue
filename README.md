@@ -74,8 +74,14 @@ You can visit [Weblate](https://hosted.weblate.org/engage/ciyue/) to add languag
 
 Thanks to their sponsorship for supporting the development of Ciyue!
 
+You can donate at [Afdian](https://afdian.com/a/mumulhl), or wechat qr code:
+
+<img height="300" src="./assets/wechat_pay.webp">
+
 ||
 |-|
+|爱发电用户_c3f76|
+|爱发电用户_8267c|
 |蕬縌玢沰|
 |爱发电用户_1b0db|
 |爱发电用户_nW9j|
