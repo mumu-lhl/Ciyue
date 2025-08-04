@@ -112,8 +112,9 @@ class Mdict {
   Future<void> close() async {
     await reader.close();
 
-    for (final readResource in readerResources) {
-      await readResource.close();
+
+    for (final readerResource in readerResources) {
+      await readerResource.close();
     }
 
     if (type != 0) {
@@ -238,17 +239,18 @@ class Mdict {
   }
 
   Future<String> readWord(String word) async {
-    DictionaryData? data;
+    RecordOffsetInfo data;
 
-    data = await getOffset(word);
-    data ??= await getOffset(word.toLowerCase());
-
-    if (data == null) {
+    if (reader.exist(word)) {
+      data = (await getOffset(word))!;
+    } else if (reader.exist(word.toLowerCase())) {
+      data = (await getOffset(word.toLowerCase()))!;
+    } else {
       throw Exception("Word not found: $word");
     }
 
-    final info = RecordOffsetInfo(data.key, data.blockOffset, data.startOffset,
-        data.endOffset, data.compressedSize);
+    final info = RecordOffsetInfo(data.keyText, data.recordBlockOffset,
+        data.startOffset, data.endOffset, data.compressedSize);
 
     String content = await reader.readOneMdx(info);
 
@@ -262,8 +264,12 @@ class Mdict {
             "Linked word not found: ${content.replaceFirst("@@@LINK=", "")}");
       }
 
-      final newInfo = RecordOffsetInfo(newData.key, newData.blockOffset,
-          newData.startOffset, newData.endOffset, newData.compressedSize);
+      final newInfo = RecordOffsetInfo(
+          newData.keyText,
+          newData.recordBlockOffset,
+          newData.startOffset,
+          newData.endOffset,
+          newData.compressedSize);
       content = await reader.readOneMdx(newInfo);
     }
 
@@ -313,23 +319,18 @@ class Mdict {
     }
   }
 
-  Future<DictionaryData?> getOffset(String word) async {
+  Future<RecordOffsetInfo?> getOffset(String word) async {
     if (type == 0) {
-      return await db.getOffset(word);
-    } else {
-      final offsetInfo = await reader.locate(word);
-
-      if (offsetInfo == null) {
-        return null;
-      }
-
-      return DictionaryData(
-        key: offsetInfo.keyText,
-        blockOffset: offsetInfo.recordBlockOffset,
-        startOffset: offsetInfo.startOffset,
-        endOffset: offsetInfo.endOffset,
-        compressedSize: offsetInfo.compressedSize,
+      final offsetInfo = await db.getOffset(word);
+      return RecordOffsetInfo(
+        word,
+        offsetInfo.blockOffset,
+        offsetInfo.startOffset,
+        offsetInfo.endOffset,
+        offsetInfo.compressedSize,
       );
+    } else {
+      return await reader.locate(word);
     }
   }
 
@@ -337,7 +338,7 @@ class Mdict {
     if (type == 0) {
       return await db.wordExist(word);
     } else {
-      return await reader.locate(word) != null;
+      return reader.exist(word);
     }
   }
 
@@ -347,7 +348,12 @@ class Mdict {
     } else {
       final resourceData = <ResourceData>[];
       for (final readerResource in readerResources) {
+        if (!readerResource.exist(key)) {
+          continue;
+        }
+
         final offsetInfo = await readerResource.locate(key);
+
         if (offsetInfo == null) {
           continue;
         }
