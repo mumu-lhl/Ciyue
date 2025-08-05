@@ -299,7 +299,11 @@ class Mdict {
   }
 
   Future<List<String>> search(String query) async {
-    return reader.search(query, limit: 30);
+    try {
+      return reader.search(query, limit: 30);
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<RecordOffsetInfo?> getOffset(String word) async {
