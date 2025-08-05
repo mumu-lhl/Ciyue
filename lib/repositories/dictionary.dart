@@ -220,7 +220,13 @@ class Mdict {
 
   Future<void> initOnlyMetadata(int id) async {
     reader = DictReader("$path.mdx");
-    await reader.initDict(readRecordBlockInfo: false);
+
+    if (await hitCache(id, "mdx", reader)) {
+      await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+    } else {
+      await reader.initDict(readRecordBlockInfo: false);
+      reader.setOnRecordBlockInfoRead(saveCache(id, "mdx", reader));
+    }
 
     final alias = await dictionaryListDao.getAlias(id);
     title = HtmlUnescape()
