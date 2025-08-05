@@ -131,6 +131,7 @@ class _CiyueState extends State<Ciyue> {
   Widget buildMaterialApp(ColorScheme? lightColorScheme,
       ColorScheme? darkColorScheme, Locale? locale) {
     return SafeArea(
+      top: true,
       child: MaterialApp.router(
         title: "Ciyue",
         theme: ThemeData(colorScheme: lightColorScheme),
