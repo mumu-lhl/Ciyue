@@ -127,18 +127,61 @@ class Mdict {
     await dictionaryListDao.updateFont(id, path);
   }
 
+  void Function() saveCache(int id, String type, DictReader reader) {
+    return () async {
+      final cacheFileName = "dict_reader_${id.toString()}_$type.cache";
+      final cacheDir = await getApplicationCacheDirectory();
+      final cacheFile = File(join(cacheDir.path, cacheFileName));
+
+      if (await cacheFile.exists()) {
+        return;
+      }
+
+      final cacheData = reader.exportCacheAsString();
+      await cacheFile.writeAsString(cacheData);
+    };
+  }
+
+  Future<bool> hitCache(int id, String type, DictReader reader) async {
+    final cacheFileName = "dict_reader_${id.toString()}_$type.cache";
+    final cacheDir = await getApplicationCacheDirectory();
+    final cacheFile = File(join(cacheDir.path, cacheFileName));
+
+    if (!await cacheFile.exists()) {
+      return false;
+    }
+
+    try {
+      final cache = await cacheFile.readAsString();
+      reader.importCacheFromString(cache);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> init() async {
     id = await dictionaryListDao.getId(path);
     type = await dictionaryListDao.getType(id);
 
     reader = DictReader("$path.mdx");
     await reader.initDict(readKeys: false, readRecordBlockInfo: false);
-    reader.initDict(readHeader: false);
+    if (!await hitCache(id, "mdx", reader)) {
+      reader.initDict(readHeader: false);
+      reader.setOnRecordBlockInfoRead(saveCache(id, "mdx", reader));
+    }
 
     final mddFile = File("$path.mdd");
     if (await mddFile.exists()) {
       final reader = DictReader(mddFile.path);
-      reader.initDict();
+
+      if (!await hitCache(id, "mdd", reader)) {
+        reader.initDict();
+        reader.setOnRecordBlockInfoRead(saveCache(id, "mdd", reader));
+      } else {
+        await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+      }
+
       readerResources.add(reader);
     }
 
@@ -146,7 +189,14 @@ class Mdict {
       final mddFile = File("$path.$i.mdd");
       if (await mddFile.exists()) {
         final reader = DictReader(mddFile.path);
-        reader.initDict();
+
+        if (!await hitCache(id, "$i.mdd", reader)) {
+          reader.initDict();
+          reader.setOnRecordBlockInfoRead(saveCache(id, "$i.mdd", reader));
+        } else {
+          await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+        }
+
         readerResources.add(reader);
       } else {
         break;
@@ -170,7 +220,13 @@ class Mdict {
 
   Future<void> initOnlyMetadata(int id) async {
     reader = DictReader("$path.mdx");
-    await reader.initDict(readRecordBlockInfo: false);
+
+    if (await hitCache(id, "mdx", reader)) {
+      await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+    } else {
+      await reader.initDict(readRecordBlockInfo: false);
+      reader.setOnRecordBlockInfoRead(saveCache(id, "mdx", reader));
+    }
 
     final alias = await dictionaryListDao.getAlias(id);
     title = HtmlUnescape()
