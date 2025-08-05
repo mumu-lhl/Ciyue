@@ -128,22 +128,24 @@ class _CiyueState extends State<Ciyue> {
     }
   }
 
-  MaterialApp buildMaterialApp(ColorScheme? lightColorScheme,
+  Widget buildMaterialApp(ColorScheme? lightColorScheme,
       ColorScheme? darkColorScheme, Locale? locale) {
-    return MaterialApp.router(
-      title: "Ciyue",
-      theme: ThemeData(colorScheme: lightColorScheme),
-      darkTheme: ThemeData(colorScheme: darkColorScheme),
-      themeMode: settings.themeMode,
-      locale: locale,
-      localizationsDelegates: [
-        ...AppLocalizations.localizationsDelegates,
-        const SardinianlLocalizationDelegate(),
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      routerConfig: router,
-      debugShowCheckedModeBanner: false,
-      builder: FlutterSmartDialog.init(),
+    return SafeArea(
+      child: MaterialApp.router(
+        title: "Ciyue",
+        theme: ThemeData(colorScheme: lightColorScheme),
+        darkTheme: ThemeData(colorScheme: darkColorScheme),
+        themeMode: settings.themeMode,
+        locale: locale,
+        localizationsDelegates: [
+          ...AppLocalizations.localizationsDelegates,
+          const SardinianlLocalizationDelegate(),
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+        debugShowCheckedModeBanner: false,
+        builder: FlutterSmartDialog.init(),
+      ),
     );
   }
 
