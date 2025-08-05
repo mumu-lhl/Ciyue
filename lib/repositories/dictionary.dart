@@ -170,12 +170,21 @@ class Mdict {
 
   Future<void> initOnlyMetadata(int id) async {
     reader = DictReader("$path.mdx");
-    await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+    await reader.initDict(readRecordBlockInfo: false);
 
     final alias = await dictionaryListDao.getAlias(id);
     title = HtmlUnescape()
         .convert(reader.header["Title"] ?? alias ?? basename(path));
-    entriesTotal = reader.numEntries;
+
+    while (true) {
+      try {
+        entriesTotal = reader.numEntries;
+        break;
+      } catch (e) {
+        await Future.delayed(Duration(milliseconds: 200));
+        continue;
+      }
+    }
   }
 
   Future<List<int>?> _readResourceDesktop(String filename) async {
