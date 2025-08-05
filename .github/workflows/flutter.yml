@@ -40,7 +40,7 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          java-version: 21
+          java-version: 24
           distribution: "temurin"
 
       - name: Install dependencies
@@ -62,9 +62,6 @@ jobs:
         run: |
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 
-      - name: Build Common APK
-        run: flutter build apk --flavor dev
-
       - name: Build Full APK
         run: flutter build apk --flavor full-dev
 
@@ -73,7 +70,6 @@ jobs:
         with:
           name: Apk
           path: |
-            build/app/outputs/flutter-apk/app-dev-release.apk
             build/app/outputs/flutter-apk/app-full-dev-release.apk
 
   build-windows:
