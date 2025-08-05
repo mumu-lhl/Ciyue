@@ -82,11 +82,10 @@ Future<NavigationActionPolicy?> Function(
         return NavigationActionPolicy.CANCEL;
       }
 
-      final info = await dictManager.dicts[dictId]!.getOffset(word);
-      final data = await dictManager.dicts[dictId]!.reader.readOneMdx(info!);
+      final content = await dictManager.dicts[dictId]!.readWord(word);
 
       if (context.mounted) {
-        context.push("/word", extra: {"content": data, "word": info.keyText});
+        context.push("/word", extra: {"content": content, "word": word});
       }
     } else if (url.scheme == "sound") {
       final filename =
