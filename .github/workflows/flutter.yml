@@ -40,7 +40,7 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          java-version: 24
+          java-version: 21
           distribution: "temurin"
 
       - name: Install dependencies
