@@ -71,7 +71,7 @@ dependencies:
   logger: ^2.6.1
   translator: ^1.0.3+1
   talker: ^5.0.0-dev.11
-  talker_flutter: ^5.0.0-dev.11
+  talker_flutter: ^5.0.0-dev.12
   talker_dio_logger: ^5.0.0-dev.11
   flutter_smart_dialog: ^4.9.8+9
 
