@@ -352,7 +352,8 @@ class LocalResourcesPathHandler extends CustomPathHandler {
               data: data, contentType: lookupMimeType(path));
         }
 
-        for (final result in results) {
+        for (var i = 0; i < results.length;) {
+          final result = results[i];
           final info = RecordOffsetInfo(
             result.key,
             result.blockOffset,
@@ -370,7 +371,11 @@ class LocalResourcesPathHandler extends CustomPathHandler {
                   .readOneMdd(info) as Uint8List;
             }
             break;
+          } on FileSystemException catch (_) {
+            await Future.delayed(const Duration(milliseconds: 50));
+            continue;
           } catch (e) {
+            i++;
             continue;
           }
         }
