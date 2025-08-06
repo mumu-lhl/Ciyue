@@ -125,6 +125,156 @@ class DictionaryCard extends StatelessWidget {
     return false;
   }
 
+  void _showActionsDialog(BuildContext context, String title) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text(title),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () async {
+                if (await _checkAndDeleteDictionary(context)) {
+                  if (context.mounted) context.pop();
+                  return;
+                }
+                if (!context.mounted) return;
+                context.pop();
+                context.push("/properties",
+                    extra: {"path": dictionary.path, "id": dictionary.id});
+              },
+              child: ListTile(
+                leading: Icon(Icons.settings),
+                title: Text(AppLocalizations.of(context)!.properties),
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () async {
+                if (await _checkAndDeleteDictionary(context)) {
+                  if (context.mounted) context.pop();
+                  return;
+                }
+                // Existing remove logic
+                if (dictManager.contain(dictionary.id) && context.mounted) {
+                  final model = context.read<DictManagerModel>();
+                  await model.close(dictionary.id);
+
+                  final dictIds = [
+                    for (final dict in dictManager.dicts.values) dict.id
+                  ];
+                  dictManager.dictIds = dictIds;
+
+                  model.checkIsEmpty();
+
+                  await dictGroupDao.updateDictIds(
+                      dictManager.groupId, dictIds);
+                }
+
+                final tmpDict = Mdict(path: dictionary.path);
+                // No need to init if file is already gone, _checkAndDeleteDictionary handles it.
+                // If file exists, init will succeed.
+                await tmpDict.init();
+                await tmpDict.removeDictionary();
+                await tmpDict.close();
+
+                if (context.mounted) {
+                  context.read<ManageDictionariesModel>().update();
+                  context.pop();
+                }
+              },
+              child: ListTile(
+                leading: Icon(Icons.delete),
+                title: Text(AppLocalizations.of(context)!.remove),
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () async {
+                if (await _checkAndDeleteDictionary(context)) {
+                  if (context.mounted) context.pop();
+                  return;
+                }
+                if (!context.mounted) return;
+                context.pop();
+                context.push("/description/${dictionary.id}");
+              },
+              child: ListTile(
+                leading: Icon(Icons.info),
+                title: Text(AppLocalizations.of(context)!.description),
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () async {
+                if (await _checkAndDeleteDictionary(context)) {
+                  if (context.mounted) context.pop();
+                  return;
+                }
+                if (!context.mounted) return;
+                context.pop();
+                context.push("/settings/dictionary/${dictionary.id}");
+              },
+              child: ListTile(
+                leading: Icon(Icons.settings),
+                title: Text(AppLocalizations.of(context)!.settings),
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                context.pop();
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    final controller = TextEditingController();
+                    return AlertDialog(
+                      title: Text(AppLocalizations.of(context)!.titleAlias),
+                      content: TextField(
+                        controller: controller..text = title,
+                        autofocus: true,
+                        onSubmitted: (value) async {
+                          await _updateAlias(value, dictionary, context);
+                        },
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () async {
+                            if (dictManager.contain(dictionary.id)) {
+                              dictManager.dicts[dictionary.id]!
+                                  .setDefaultTitle();
+                              controller.text =
+                                  dictManager.dicts[dictionary.id]!.title;
+                            } else {
+                              final dict = Mdict(path: dictionary.path);
+                              await dict.initOnlyMetadata(dictionary.id);
+                              controller.text = dict.title;
+                            }
+                          },
+                          child: Text(AppLocalizations.of(context)!.default_),
+                        ),
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          child: Text(AppLocalizations.of(context)!.close),
+                        ),
+                        TextButton(
+                            onPressed: () async {
+                              await _updateAlias(
+                                  controller.text, dictionary, context);
+                            },
+                            child: Text(AppLocalizations.of(context)!.confirm)),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: ListTile(
+                leading: Icon(Icons.title),
+                title: Text(AppLocalizations.of(context)!.titleAlias),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -138,209 +288,67 @@ class DictionaryCard extends StatelessWidget {
       elevation: 0,
       clipBehavior: Clip.antiAlias,
       color: colorScheme.onInverseSurface,
-      child: GestureDetector(
-          onLongPress: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return SimpleDialog(
-                  title: Text(title),
-                  children: <Widget>[
-                    SimpleDialogOption(
-                      onPressed: () async {
-                        if (await _checkAndDeleteDictionary(context)) {
-                          if (context.mounted) context.pop();
-                          return;
-                        }
-                        if (!context.mounted) return;
-                        context.pop();
-                        context.push("/properties", extra: {
-                          "path": dictionary.path,
-                          "id": dictionary.id
-                        });
-                      },
-                      child: ListTile(
-                        leading: Icon(Icons.settings),
-                        title: Text(AppLocalizations.of(context)!.properties),
-                      ),
-                    ),
-                    SimpleDialogOption(
-                      onPressed: () async {
-                        if (await _checkAndDeleteDictionary(context)) {
-                          if (context.mounted) context.pop();
-                          return;
-                        }
-                        // Existing remove logic
-                        if (dictManager.contain(dictionary.id) &&
-                            context.mounted) {
-                          final model = context.read<DictManagerModel>();
-                          await model.close(dictionary.id);
-
-                          final dictIds = [
-                            for (final dict in dictManager.dicts.values) dict.id
-                          ];
-                          dictManager.dictIds = dictIds;
-
-                          model.checkIsEmpty();
-
-                          await dictGroupDao.updateDictIds(
-                              dictManager.groupId, dictIds);
-                        }
-
-                        final tmpDict = Mdict(path: dictionary.path);
-                        // No need to init if file is already gone, _checkAndDeleteDictionary handles it.
-                        // If file exists, init will succeed.
-                        await tmpDict.init();
-                        await tmpDict.removeDictionary();
-                        await tmpDict.close();
-
-                        if (context.mounted) {
-                          context.read<ManageDictionariesModel>().update();
-                          context.pop();
-                        }
-                      },
-                      child: ListTile(
-                        leading: Icon(Icons.delete),
-                        title: Text(AppLocalizations.of(context)!.remove),
-                      ),
-                    ),
-                    SimpleDialogOption(
-                      onPressed: () async {
-                        if (await _checkAndDeleteDictionary(context)) {
-                          if (context.mounted) context.pop();
-                          return;
-                        }
-                        if (!context.mounted) return;
-                        context.pop();
-                        context.push("/description/${dictionary.id}");
-                      },
-                      child: ListTile(
-                        leading: Icon(Icons.info),
-                        title: Text(AppLocalizations.of(context)!.description),
-                      ),
-                    ),
-                    SimpleDialogOption(
-                      onPressed: () async {
-                        if (await _checkAndDeleteDictionary(context)) {
-                          if (context.mounted) context.pop();
-                          return;
-                        }
-                        if (!context.mounted) return;
-                        context.pop();
-                        context.push("/settings/dictionary/${dictionary.id}");
-                      },
-                      child: ListTile(
-                        leading: Icon(Icons.settings),
-                        title: Text(AppLocalizations.of(context)!.settings),
-                      ),
-                    ),
-                    SimpleDialogOption(
-                      onPressed: () {
-                        context.pop();
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            final controller = TextEditingController();
-                            return AlertDialog(
-                              title: Text(
-                                  AppLocalizations.of(context)!.titleAlias),
-                              content: TextField(
-                                controller: controller..text = title,
-                                autofocus: true,
-                                onSubmitted: (value) async {
-                                  await _updateAlias(
-                                      value, dictionary, context);
-                                },
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () async {
-                                    if (dictManager.contain(dictionary.id)) {
-                                      dictManager.dicts[dictionary.id]!
-                                          .setDefaultTitle();
-                                      controller.text = dictManager
-                                          .dicts[dictionary.id]!.title;
-                                    } else {
-                                      final dict = Mdict(path: dictionary.path);
-                                      await dict
-                                          .initOnlyMetadata(dictionary.id);
-                                      controller.text = dict.title;
-                                    }
-                                  },
-                                  child: Text(
-                                      AppLocalizations.of(context)!.default_),
-                                ),
-                                TextButton(
-                                  onPressed: () => context.pop(),
-                                  child:
-                                      Text(AppLocalizations.of(context)!.close),
-                                ),
-                                TextButton(
-                                    onPressed: () async {
-                                      await _updateAlias(
-                                          controller.text, dictionary, context);
-                                    },
-                                    child: Text(
-                                        AppLocalizations.of(context)!.confirm)),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: ListTile(
-                        leading: Icon(Icons.title),
-                        title: Text(AppLocalizations.of(context)!.titleAlias),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-          child: CheckboxListTile(
-            title: Text(title),
-            value: dictManager.contain(dictionary.id),
-            secondary: ReorderableDragStartListener(
-                index: index,
-                child:
-                    IconButton(icon: Icon(Icons.reorder), onPressed: () => {})),
-            onChanged: (bool? value) async {
-              if (await _checkAndDeleteDictionary(context)) {
-                return;
-              }
-
-              if (!context.mounted) return;
-              final model = context.read<DictManagerModel>();
-
-              if (value == true) {
-                final oldDictionariesNumber = dictManager.dicts.length;
-
-                await model.add(dictionary.path);
-
-                if (oldDictionariesNumber == 0) {
-                  if (!context.mounted) return;
-
-                  final searchBarFocusNode =
-                      context.read<HomeModel>().searchBarFocusNode;
-
-                  void searchBarFocusListener() {
-                    if (searchBarFocusNode.hasFocus) {
-                      searchBarFocusNode.unfocus();
-                      searchBarFocusNode.removeListener(searchBarFocusListener);
-                    }
-                  }
-
-                  searchBarFocusNode.addListener(searchBarFocusListener);
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Row(
+          children: [
+            ReorderableDragStartListener(
+              index: index,
+              child: IconButton(
+                  icon: Icon(Icons.drag_handle), onPressed: () => {}),
+            ),
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _showActionsDialog(context, title),
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+            ),
+            Checkbox(
+              value: dictManager.contain(dictionary.id),
+              onChanged: (bool? value) async {
+                if (await _checkAndDeleteDictionary(context)) {
+                  return;
                 }
-              } else {
-                await model.close(dictionary.id);
-              }
 
-              model.checkIsEmpty();
+                if (!context.mounted) return;
+                final model = context.read<DictManagerModel>();
 
-              await model.updateDictIds();
-            },
-          )),
+                if (value == true) {
+                  final oldDictionariesNumber = dictManager.dicts.length;
+
+                  await model.add(dictionary.path);
+
+                  if (oldDictionariesNumber == 0) {
+                    if (!context.mounted) return;
+
+                    final searchBarFocusNode =
+                        context.read<HomeModel>().searchBarFocusNode;
+
+                    void searchBarFocusListener() {
+                      if (searchBarFocusNode.hasFocus) {
+                        searchBarFocusNode.unfocus();
+                        searchBarFocusNode
+                            .removeListener(searchBarFocusListener);
+                      }
+                    }
+
+                    searchBarFocusNode.addListener(searchBarFocusListener);
+                  }
+                } else {
+                  await model.close(dictionary.id);
+                }
+
+                model.checkIsEmpty();
+
+                await model.updateDictIds();
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
