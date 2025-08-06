@@ -547,13 +547,7 @@ class WebviewDisplayDescription extends StatelessWidget {
       html = HtmlUnescape().convert(html);
 
       return Scaffold(
-        appBar: AppBar(
-          leading: BackButton(
-            onPressed: () {
-              context.pop();
-            },
-          ),
-        ),
+        appBar: AppBar(),
         body: WebviewAndroid(
           content: html,
           dictId: dictId,
@@ -567,13 +561,7 @@ class WebviewDisplayDescription extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Scaffold(
-              appBar: AppBar(
-                leading: BackButton(
-                  onPressed: () {
-                    context.pop();
-                  },
-                ),
-              ),
+              appBar: AppBar(),
               body: WebviewAndroid(
                 content: snapshot.data!,
                 dictId: dictId,
@@ -590,7 +578,7 @@ class WebviewDisplayDescription extends StatelessWidget {
 
   Future<String> getDescriptionFromInactiveDict() async {
     final dict = Mdict(path: await dictionaryListDao.getPath(dictId));
-    await dict.init();
+    await dict.initOnlyMetadata(dict.id);
     final html = dict.reader.header["Description"]!;
     await dict.close();
     return HtmlUnescape().convert(html);
