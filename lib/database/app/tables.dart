@@ -13,6 +13,7 @@ class DictionaryList extends Table {
   TextColumn get alias => text().nullable()();
   TextColumn get fontPath => text().nullable()();
   IntColumn get id => integer().autoIncrement()();
+  IntColumn get order => integer().nullable()();
   TextColumn get path => text()();
   IntColumn get type => integer().withDefault(const Constant(0))();
 }

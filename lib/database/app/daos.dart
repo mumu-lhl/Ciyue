@@ -48,13 +48,35 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
     with _$DictionaryListDaoMixin {
   DictionaryListDao(super.attachedDatabase);
 
-  Future<int> add(String path) {
-    return into(dictionaryList).insert(
-        DictionaryListCompanion(path: Value(path), type: const Value(1)));
+  Future<int> add(String path) async {
+    final maxOrder = await (select(dictionaryList)
+          ..orderBy([
+            (t) => OrderingTerm(expression: t.order, mode: OrderingMode.desc)
+          ])
+          ..limit(1))
+        .getSingleOrNull();
+    final order = (maxOrder?.order ?? -1) + 1;
+
+    return into(dictionaryList).insert(DictionaryListCompanion(
+        path: Value(path), type: const Value(1), order: Value(order)));
   }
 
   Future<List<DictionaryListData>> all() {
-    return (select(dictionaryList)).get();
+    return (select(dictionaryList)
+          ..orderBy([(t) => OrderingTerm(expression: t.order)]))
+        .get();
+  }
+
+  Future<void> updateOrder(List<DictionaryListData> dictionaries) {
+    return batch((batch) {
+      for (var i = 0; i < dictionaries.length; i++) {
+        batch.update(
+          dictionaryList,
+          DictionaryListCompanion(order: Value(i)),
+          where: (t) => t.id.isValue(dictionaries[i].id),
+        );
+      }
+    });
   }
 
   Future<bool> dictionaryExist(String path) async {

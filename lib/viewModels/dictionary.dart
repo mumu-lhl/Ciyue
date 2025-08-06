@@ -47,7 +47,14 @@ class DictManagerModel extends ChangeNotifier {
   }
 
   Future<void> updateDictIds() async {
-    dictManager.dictIds = await dictGroupDao.getDictIds(dictManager.groupId);
+    final allDicts = await dictionaryListDao.all();
+    final activeDictIds = allDicts
+        .where((d) => dictManager.contain(d.id))
+        .map((d) => d.id)
+        .toList();
+
+    dictManager.dictIds = activeDictIds;
+    await dictGroupDao.updateDictIds(dictManager.groupId, activeDictIds);
 
     state += 1;
 

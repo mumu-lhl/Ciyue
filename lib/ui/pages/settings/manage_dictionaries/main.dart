@@ -336,13 +336,9 @@ class DictionaryCard extends StatelessWidget {
                 await model.close(dictionary.id);
               }
 
-              final dictIds = [
-                for (final dict in dictManager.dicts.values) dict.id,
-              ];
-              dictManager.dictIds = dictIds;
               model.checkIsEmpty();
 
-              await dictGroupDao.updateDictIds(dictManager.groupId, dictIds);
+              await model.updateDictIds();
             },
           )),
     );
@@ -541,59 +537,47 @@ class ManageDictionariesBody extends StatelessWidget {
       future: context.read<ManageDictionariesModel>().dictionaries,
       builder: (BuildContext context,
           AsyncSnapshot<List<DictionaryListData>> snapshot) {
-        final children = <Widget>[];
-
         if (snapshot.hasData) {
-          int index = 0;
           final dicts = snapshot.data!;
-          final dictsMap = {for (final dict in dicts) dict.id: dict};
-          for (final id in dictManager.dictIds) {
-            final dict = dictsMap[id]!;
-            children.add(DictionaryCard(
-                key: ValueKey(dict.id), dictionary: dict, index: index));
-            index += 1;
-          }
-          for (final dict in dicts) {
-            if (!dictManager.contain(dict.id)) {
-              children.add(DictionaryCard(
-                  key: ValueKey(dict.id), dictionary: dict, index: index));
-              index += 1;
-            }
-          }
-        }
-
-        if (children.isEmpty) {
-          return Center(
-              child: Text(
-            AppLocalizations.of(context)!.empty,
-            style: Theme.of(context).textTheme.titleLarge,
-          ));
-        } else {
-          return ReorderableListView(
-            buildDefaultDragHandles: false,
-            onReorder: (oldIndex, newIndex) async {
-              if (oldIndex < newIndex) {
-                newIndex -= 1;
-              }
-
-              final dicts =
-                  await context.read<ManageDictionariesModel>().dictionaries;
-              final dict = dicts.removeAt(oldIndex);
-              dicts.insert(newIndex, dict);
-              if (dictManager.contain(dict.id)) {
-                await dictGroupDao.updateDictIds(dictManager.groupId, [
-                  for (final dict in dicts)
-                    if (dictManager.contain(dict.id)) dict.id
-                ]);
-
-                if (context.mounted) {
-                  final model = context.read<DictManagerModel>();
-                  await model.updateDictIds();
+          if (dicts.isEmpty) {
+            return Center(
+                child: Text(
+              AppLocalizations.of(context)!.empty,
+              style: Theme.of(context).textTheme.titleLarge,
+            ));
+          } else {
+            return ReorderableListView(
+              buildDefaultDragHandles: false,
+              onReorder: (oldIndex, newIndex) {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
                 }
-              }
-            },
-            children: children,
-          );
+
+                final dict = dicts.removeAt(oldIndex);
+                dicts.insert(newIndex, dict);
+
+                context.read<ManageDictionariesModel>().updateWithList(dicts);
+
+                () async {
+                  await dictionaryListDao.updateOrder(dicts);
+
+                  if (context.mounted) {
+                    final model = context.read<DictManagerModel>();
+                    await model.updateDictIds();
+                  }
+                }();
+              },
+              children: [
+                for (int i = 0; i < dicts.length; i++)
+                  DictionaryCard(
+                      key: ValueKey(dicts[i].id),
+                      dictionary: dicts[i],
+                      index: i)
+              ],
+            );
+          }
+        } else {
+          return const Center(child: CircularProgressIndicator());
         }
       },
     );
@@ -605,6 +589,11 @@ class ManageDictionariesModel extends ChangeNotifier {
 
   void update() {
     dictionaries = dictionaryListDao.all();
+    notifyListeners();
+  }
+
+  void updateWithList(List<DictionaryListData> dicts) {
+    dictionaries = Future.value(dicts);
     notifyListeners();
   }
 }

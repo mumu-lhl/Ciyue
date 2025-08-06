@@ -97,10 +97,13 @@ class AppDatabase extends _$AppDatabase {
         from12To13: (m, schema) async {
           await m.addColumn(schema.dictionaryList, schema.dictionaryList.type);
         },
+        from13To14: (m, schema) async {
+          await m.addColumn(schema.dictionaryList, schema.dictionaryList.order);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 }

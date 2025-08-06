@@ -31,6 +31,12 @@ class $DictionaryListTable extends DictionaryList
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const drift.VerificationMeta _orderMeta =
+      const drift.VerificationMeta('order');
+  @override
+  late final drift.GeneratedColumn<int> order = drift.GeneratedColumn<int>(
+      'order', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const drift.VerificationMeta _pathMeta =
       const drift.VerificationMeta('path');
   @override
@@ -46,7 +52,8 @@ class $DictionaryListTable extends DictionaryList
       requiredDuringInsert: false,
       defaultValue: const drift.Constant(0));
   @override
-  List<drift.GeneratedColumn> get $columns => [alias, fontPath, id, path, type];
+  List<drift.GeneratedColumn> get $columns =>
+      [alias, fontPath, id, order, path, type];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -68,6 +75,10 @@ class $DictionaryListTable extends DictionaryList
     }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('order')) {
+      context.handle(
+          _orderMeta, order.isAcceptableOrUnknown(data['order']!, _orderMeta));
     }
     if (data.containsKey('path')) {
       context.handle(
@@ -94,6 +105,8 @@ class $DictionaryListTable extends DictionaryList
           .read(DriftSqlType.string, data['${effectivePrefix}font_path']),
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      order: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}order']),
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
       type: attachedDatabase.typeMapping
@@ -112,12 +125,14 @@ class DictionaryListData extends drift.DataClass
   final String? alias;
   final String? fontPath;
   final int id;
+  final int? order;
   final String path;
   final int type;
   const DictionaryListData(
       {this.alias,
       this.fontPath,
       required this.id,
+      this.order,
       required this.path,
       required this.type});
   @override
@@ -130,6 +145,9 @@ class DictionaryListData extends drift.DataClass
       map['font_path'] = drift.Variable<String>(fontPath);
     }
     map['id'] = drift.Variable<int>(id);
+    if (!nullToAbsent || order != null) {
+      map['order'] = drift.Variable<int>(order);
+    }
     map['path'] = drift.Variable<String>(path);
     map['type'] = drift.Variable<int>(type);
     return map;
@@ -144,6 +162,9 @@ class DictionaryListData extends drift.DataClass
           ? const drift.Value.absent()
           : drift.Value(fontPath),
       id: drift.Value(id),
+      order: order == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(order),
       path: drift.Value(path),
       type: drift.Value(type),
     );
@@ -156,6 +177,7 @@ class DictionaryListData extends drift.DataClass
       alias: serializer.fromJson<String?>(json['alias']),
       fontPath: serializer.fromJson<String?>(json['fontPath']),
       id: serializer.fromJson<int>(json['id']),
+      order: serializer.fromJson<int?>(json['order']),
       path: serializer.fromJson<String>(json['path']),
       type: serializer.fromJson<int>(json['type']),
     );
@@ -167,6 +189,7 @@ class DictionaryListData extends drift.DataClass
       'alias': serializer.toJson<String?>(alias),
       'fontPath': serializer.toJson<String?>(fontPath),
       'id': serializer.toJson<int>(id),
+      'order': serializer.toJson<int?>(order),
       'path': serializer.toJson<String>(path),
       'type': serializer.toJson<int>(type),
     };
@@ -176,12 +199,14 @@ class DictionaryListData extends drift.DataClass
           {drift.Value<String?> alias = const drift.Value.absent(),
           drift.Value<String?> fontPath = const drift.Value.absent(),
           int? id,
+          drift.Value<int?> order = const drift.Value.absent(),
           String? path,
           int? type}) =>
       DictionaryListData(
         alias: alias.present ? alias.value : this.alias,
         fontPath: fontPath.present ? fontPath.value : this.fontPath,
         id: id ?? this.id,
+        order: order.present ? order.value : this.order,
         path: path ?? this.path,
         type: type ?? this.type,
       );
@@ -190,6 +215,7 @@ class DictionaryListData extends drift.DataClass
       alias: data.alias.present ? data.alias.value : this.alias,
       fontPath: data.fontPath.present ? data.fontPath.value : this.fontPath,
       id: data.id.present ? data.id.value : this.id,
+      order: data.order.present ? data.order.value : this.order,
       path: data.path.present ? data.path.value : this.path,
       type: data.type.present ? data.type.value : this.type,
     );
@@ -201,6 +227,7 @@ class DictionaryListData extends drift.DataClass
           ..write('alias: $alias, ')
           ..write('fontPath: $fontPath, ')
           ..write('id: $id, ')
+          ..write('order: $order, ')
           ..write('path: $path, ')
           ..write('type: $type')
           ..write(')'))
@@ -208,7 +235,7 @@ class DictionaryListData extends drift.DataClass
   }
 
   @override
-  int get hashCode => Object.hash(alias, fontPath, id, path, type);
+  int get hashCode => Object.hash(alias, fontPath, id, order, path, type);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -216,6 +243,7 @@ class DictionaryListData extends drift.DataClass
           other.alias == this.alias &&
           other.fontPath == this.fontPath &&
           other.id == this.id &&
+          other.order == this.order &&
           other.path == this.path &&
           other.type == this.type);
 }
@@ -225,12 +253,14 @@ class DictionaryListCompanion
   final drift.Value<String?> alias;
   final drift.Value<String?> fontPath;
   final drift.Value<int> id;
+  final drift.Value<int?> order;
   final drift.Value<String> path;
   final drift.Value<int> type;
   const DictionaryListCompanion({
     this.alias = const drift.Value.absent(),
     this.fontPath = const drift.Value.absent(),
     this.id = const drift.Value.absent(),
+    this.order = const drift.Value.absent(),
     this.path = const drift.Value.absent(),
     this.type = const drift.Value.absent(),
   });
@@ -238,6 +268,7 @@ class DictionaryListCompanion
     this.alias = const drift.Value.absent(),
     this.fontPath = const drift.Value.absent(),
     this.id = const drift.Value.absent(),
+    this.order = const drift.Value.absent(),
     required String path,
     this.type = const drift.Value.absent(),
   }) : path = drift.Value(path);
@@ -245,6 +276,7 @@ class DictionaryListCompanion
     drift.Expression<String>? alias,
     drift.Expression<String>? fontPath,
     drift.Expression<int>? id,
+    drift.Expression<int>? order,
     drift.Expression<String>? path,
     drift.Expression<int>? type,
   }) {
@@ -252,6 +284,7 @@ class DictionaryListCompanion
       if (alias != null) 'alias': alias,
       if (fontPath != null) 'font_path': fontPath,
       if (id != null) 'id': id,
+      if (order != null) 'order': order,
       if (path != null) 'path': path,
       if (type != null) 'type': type,
     });
@@ -261,12 +294,14 @@ class DictionaryListCompanion
       {drift.Value<String?>? alias,
       drift.Value<String?>? fontPath,
       drift.Value<int>? id,
+      drift.Value<int?>? order,
       drift.Value<String>? path,
       drift.Value<int>? type}) {
     return DictionaryListCompanion(
       alias: alias ?? this.alias,
       fontPath: fontPath ?? this.fontPath,
       id: id ?? this.id,
+      order: order ?? this.order,
       path: path ?? this.path,
       type: type ?? this.type,
     );
@@ -284,6 +319,9 @@ class DictionaryListCompanion
     if (id.present) {
       map['id'] = drift.Variable<int>(id.value);
     }
+    if (order.present) {
+      map['order'] = drift.Variable<int>(order.value);
+    }
     if (path.present) {
       map['path'] = drift.Variable<String>(path.value);
     }
@@ -299,6 +337,7 @@ class DictionaryListCompanion
           ..write('alias: $alias, ')
           ..write('fontPath: $fontPath, ')
           ..write('id: $id, ')
+          ..write('order: $order, ')
           ..write('path: $path, ')
           ..write('type: $type')
           ..write(')'))
@@ -2528,6 +2567,7 @@ typedef $$DictionaryListTableCreateCompanionBuilder = DictionaryListCompanion
   drift.Value<String?> alias,
   drift.Value<String?> fontPath,
   drift.Value<int> id,
+  drift.Value<int?> order,
   required String path,
   drift.Value<int> type,
 });
@@ -2536,6 +2576,7 @@ typedef $$DictionaryListTableUpdateCompanionBuilder = DictionaryListCompanion
   drift.Value<String?> alias,
   drift.Value<String?> fontPath,
   drift.Value<int> id,
+  drift.Value<int?> order,
   drift.Value<String> path,
   drift.Value<int> type,
 });
@@ -2558,6 +2599,9 @@ class $$DictionaryListTableFilterComposer
 
   drift.ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => drift.ColumnFilters(column));
 
   drift.ColumnFilters<String> get path => $composableBuilder(
       column: $table.path, builder: (column) => drift.ColumnFilters(column));
@@ -2585,6 +2629,9 @@ class $$DictionaryListTableOrderingComposer
   drift.ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => drift.ColumnOrderings(column));
 
+  drift.ColumnOrderings<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => drift.ColumnOrderings(column));
+
   drift.ColumnOrderings<String> get path => $composableBuilder(
       column: $table.path, builder: (column) => drift.ColumnOrderings(column));
 
@@ -2609,6 +2656,9 @@ class $$DictionaryListTableAnnotationComposer
 
   drift.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
 
   drift.GeneratedColumn<String> get path =>
       $composableBuilder(column: $table.path, builder: (column) => column);
@@ -2648,6 +2698,7 @@ class $$DictionaryListTableTableManager extends drift.RootTableManager<
             drift.Value<String?> alias = const drift.Value.absent(),
             drift.Value<String?> fontPath = const drift.Value.absent(),
             drift.Value<int> id = const drift.Value.absent(),
+            drift.Value<int?> order = const drift.Value.absent(),
             drift.Value<String> path = const drift.Value.absent(),
             drift.Value<int> type = const drift.Value.absent(),
           }) =>
@@ -2655,6 +2706,7 @@ class $$DictionaryListTableTableManager extends drift.RootTableManager<
             alias: alias,
             fontPath: fontPath,
             id: id,
+            order: order,
             path: path,
             type: type,
           ),
@@ -2662,6 +2714,7 @@ class $$DictionaryListTableTableManager extends drift.RootTableManager<
             drift.Value<String?> alias = const drift.Value.absent(),
             drift.Value<String?> fontPath = const drift.Value.absent(),
             drift.Value<int> id = const drift.Value.absent(),
+            drift.Value<int?> order = const drift.Value.absent(),
             required String path,
             drift.Value<int> type = const drift.Value.absent(),
           }) =>
@@ -2669,6 +2722,7 @@ class $$DictionaryListTableTableManager extends drift.RootTableManager<
             alias: alias,
             fontPath: fontPath,
             id: id,
+            order: order,
             path: path,
             type: type,
           ),
