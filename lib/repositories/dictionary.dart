@@ -137,7 +137,7 @@ class Mdict {
         return;
       }
 
-      final cacheData = reader.exportCacheAsString();
+      final cacheData = await reader.exportCacheAsString();
       await cacheFile.writeAsString(cacheData);
     };
   }
@@ -292,41 +292,41 @@ class Mdict {
   }
 
   Future<String> readWord(String word) async {
-    RecordOffsetInfo data;
+    List<RecordOffsetInfo> data;
 
     if (reader.exist(word)) {
-      data = (await getOffset(word))!;
+      data = await locateAll(word);
     } else if (reader.exist(word.toLowerCase())) {
-      data = (await getOffset(word.toLowerCase()))!;
+      data = await locateAll(word.toLowerCase());
     } else {
       throw Exception("Word not found: $word");
     }
 
-    final info = RecordOffsetInfo(data.keyText, data.recordBlockOffset,
-        data.startOffset, data.endOffset, data.compressedSize);
+    final contents = <String>[];
+    for (final info in data) {
+      contents.add(await reader.readOneMdx(info));
+    }
 
-    String content = await reader.readOneMdx(info);
+    final content = contents.join();
 
     if (content.startsWith("@@@LINK=")) {
-      final newData = await getOffset(content
+      contents.clear();
+
+      final newData = await locateAll(content
           .replaceFirst("@@@LINK=", "")
           .replaceAll(RegExp(r"[\n\r\x00]"), "")
           .trimRight());
-      if (newData == null) {
+      if (newData.isEmpty) {
         throw Exception(
             "Linked word not found: ${content.replaceFirst("@@@LINK=", "")}");
       }
 
-      final newInfo = RecordOffsetInfo(
-          newData.keyText,
-          newData.recordBlockOffset,
-          newData.startOffset,
-          newData.endOffset,
-          newData.compressedSize);
-      content = await reader.readOneMdx(newInfo);
+      for (final info in newData) {
+        contents.add(await reader.readOneMdx(info));
+      }
     }
 
-    return content;
+    return contents.join();
   }
 
   Future<void> removeDictionary() async {
@@ -371,8 +371,8 @@ class Mdict {
     }
   }
 
-  Future<RecordOffsetInfo?> getOffset(String word) async {
-    return await reader.locate(word);
+  Future<List<RecordOffsetInfo>> locateAll(String word) async {
+    return await reader.locateAll(word);
   }
 
   Future<bool> wordExist(String word) async {
