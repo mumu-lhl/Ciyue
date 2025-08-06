@@ -147,7 +147,8 @@ class Mdict {
     final cacheDir = await getApplicationCacheDirectory();
     final cacheFile = File(join(cacheDir.path, cacheFileName));
 
-    if (!await cacheFile.exists()) {
+    final cacheExist = await cacheFile.exists();
+    if (!cacheExist) {
       return false;
     }
 
@@ -156,6 +157,9 @@ class Mdict {
       reader.importCacheFromString(cache);
       return true;
     } catch (_) {
+      if (cacheExist) {
+        await cacheFile.delete();
+      }
       return false;
     }
   }
