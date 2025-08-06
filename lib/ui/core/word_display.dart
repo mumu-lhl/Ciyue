@@ -203,14 +203,7 @@ class _ExpansionWordDisplayState extends State<ExpansionWordDisplay> {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              // When opened from context menu
-              SystemNavigator.pop();
-            }
-          },
+          onPressed: () => context.go("/"),
         ),
         title: settings.showSearchBarInWordDisplay
             ? WordSearchBarWithSuggestions(
@@ -766,6 +759,9 @@ class WordDisplay extends StatelessWidget {
 
   AppBar buildAppBar(BuildContext context, bool showTab) {
     return AppBar(
+      leading: BackButton(
+        onPressed: () => context.go("/"),
+      ),
       title: settings.showSearchBarInWordDisplay
           ? WordSearchBarWithSuggestions(
               word: word,
