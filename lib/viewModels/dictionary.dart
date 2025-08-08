@@ -19,8 +19,8 @@ class DictManagerModel extends ChangeNotifier {
     }
   }
 
-  Future<void> add(String path) async {
-    await dictManager.add(path);
+  Future<void> add(int id, String path) async {
+    await dictManager.add(id, path);
 
     update();
   }

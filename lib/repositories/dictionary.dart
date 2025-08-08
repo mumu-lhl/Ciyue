@@ -33,10 +33,10 @@ class DictManager {
 
   bool get isEmpty => dicts.isEmpty;
 
-  Future<void> add(String path) async {
+  Future<void> add(int id, String path) async {
     final dict = Mdict(path: path);
-    await dict.init();
-    dicts[dict.id] = dict;
+    dict.init();
+    dicts[id] = dict;
   }
 
   Future<void> _clear() async {
@@ -65,7 +65,7 @@ class DictManager {
     for (int i = 0; i < paths.length; i++) {
       // Avoid the mdict that has been removed
       try {
-        await add(paths[i]);
+        await add(dictIds[i], paths[i]);
       } catch (_) {
         await dictionaryListDao.remove(paths[i]);
         toRemove.add(i);
@@ -169,7 +169,27 @@ class Mdict {
     type = await dictionaryListDao.getType(id);
 
     reader = DictReader("$path.mdx");
+
     await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+
+    initDictReaders();
+
+    final fontPath = await dictionaryListDao.getFontPath(id);
+    customFont(fontPath);
+
+    final alias = await dictionaryListDao.getAlias(id);
+    title = HtmlUnescape().convert(alias ?? reader.header["Title"] ?? "");
+    // If title in header is empty, use basename(path)
+    if (title == "") {
+      title = basename(path);
+    }
+
+    if (Platform.isWindows) {
+      await _startServer();
+    }
+  }
+
+  Future<void> initDictReaders() async {
     if (!await hitCache(id, "mdx", reader)) {
       reader.initDict(readHeader: false);
       reader.setOnRecordBlockInfoRead(saveCache(id, "mdx", reader));
@@ -205,20 +225,6 @@ class Mdict {
       } else {
         break;
       }
-    }
-
-    final fontPath = await dictionaryListDao.getFontPath(id);
-    customFont(fontPath);
-
-    final alias = await dictionaryListDao.getAlias(id);
-    title = HtmlUnescape().convert(alias ?? reader.header["Title"] ?? "");
-    // If title in header is empty, use basename(path)
-    if (title == "") {
-      title = basename(path);
-    }
-
-    if (Platform.isWindows) {
-      await _startServer();
     }
   }
 

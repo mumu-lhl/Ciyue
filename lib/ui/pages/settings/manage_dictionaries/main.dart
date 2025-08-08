@@ -319,7 +319,7 @@ class DictionaryCard extends StatelessWidget {
                 if (value == true) {
                   final oldDictionariesNumber = dictManager.dicts.length;
 
-                  await model.add(dictionary.path);
+                  await model.add(dictionary.id, dictionary.path);
 
                   if (oldDictionariesNumber == 0) {
                     if (!context.mounted) return;

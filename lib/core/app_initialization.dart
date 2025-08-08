@@ -18,6 +18,8 @@ import "package:shared_preferences/shared_preferences.dart";
 Future<void> initApp() async {
   talker.info("Initializing application...");
 
+  final stopWatch = Stopwatch()..start();
+
   await initPrefs();
 
   int? groupId = prefs.getInt("currentDictionaryGroupId");
@@ -32,8 +34,8 @@ Future<void> initApp() async {
 
   packageInfo = await PackageInfo.fromPlatform();
 
-  await wordbookTagsDao.loadTagsOrder();
-  await wordbookTagsDao.existTag();
+  wordbookTagsDao.loadTagsOrder();
+  wordbookTagsDao.existTag();
 
   if (Platform.isAndroid) {
     PlatformMethod.initHandler();
@@ -73,6 +75,10 @@ Future<void> initApp() async {
       await ChangelogService.markChangelogShown();
     }
   });
+
+  stopWatch.stop();
+
+  talker.info("Ciyue spent ${stopWatch.elapsedMilliseconds} ms initializing.");
 
   Future.microtask(() async {
     if (Platform.isAndroid) {
