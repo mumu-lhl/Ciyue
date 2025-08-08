@@ -70,6 +70,7 @@ void floatingWindow(List<String> args) async {
     ChangeNotifierProvider(create: (_) => HomeModel()),
     ChangeNotifierProvider(create: (_) => DictManagerModel()),
     ChangeNotifierProvider(create: (_) => HistoryModel()),
+    ChangeNotifierProvider(create: (_) => AudioModel()..init()),
   ], child: Ciyue(isFloatingWindow: true)));
 }
 

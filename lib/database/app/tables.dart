@@ -10,7 +10,7 @@ class DictGroup extends Table {
 /// 0: Old way, needs database to store dictionary info.
 /// 1: New way, does not need database to store dictionary info.
 class DictionaryList extends Table {
-  TextColumn get alias => text().nullable()();
+  TextColumn get title => text().nullable()();
   TextColumn get fontPath => text().nullable()();
   IntColumn get id => integer().autoIncrement()();
   IntColumn get order => integer().nullable()();

@@ -48,7 +48,7 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
     with _$DictionaryListDaoMixin {
   DictionaryListDao(super.attachedDatabase);
 
-  Future<int> add(String path) async {
+  Future<int> add(String path, String title) async {
     final maxOrder = await (select(dictionaryList)
           ..orderBy([
             (t) => OrderingTerm(expression: t.order, mode: OrderingMode.desc)
@@ -58,7 +58,10 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
     final order = (maxOrder?.order ?? -1) + 1;
 
     return into(dictionaryList).insert(DictionaryListCompanion(
-        path: Value(path), type: const Value(1), order: Value(order)));
+        path: Value(path),
+        title: Value(title),
+        type: const Value(1),
+        order: Value(order)));
   }
 
   Future<List<DictionaryListData>> all() {
@@ -85,11 +88,11 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
         .isNotEmpty;
   }
 
-  Future<String?> getAlias(int id) async {
+  Future<String?> getTitle(int id) async {
     final result = await (select(dictionaryList)
           ..where((t) => t.id.isValue(id)))
         .getSingleOrNull();
-    return result?.alias;
+    return result?.title;
   }
 
   Future<String?> getFontPath(int id) async {
@@ -114,9 +117,9 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
     return (delete(dictionaryList)..where((t) => t.path.isValue(path))).go();
   }
 
-  Future<int> updateAlias(int id, String? alias) {
+  Future<int> updateTitle(int id, String? alias) {
     return (update(dictionaryList)..where((t) => t.id.isValue(id)))
-        .write(DictionaryListCompanion(alias: Value(alias)));
+        .write(DictionaryListCompanion(title: Value(alias)));
   }
 
   Future<int> updateFont(int id, String? fontPath) {
