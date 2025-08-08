@@ -93,6 +93,10 @@ class ModelProviderManager {
         displayedName: "OpenAI",
         apiUrl: "https://api.openai.com/v1/chat/completions",
         models: [
+          ModelInfo("gpt-5-mini", "GPT-5 mini"),
+          ModelInfo("gpt-5-nano", "GPT-5 nano"),
+          ModelInfo("gpt-5-chat-latest", "GPT-5 Chat"),
+          ModelInfo("gpt-5", "GPT-5"),
           ModelInfo("gpt-4o-mini", "GPT-4o mini"),
           ModelInfo("gpt-4.1-mini", "GPT-4.1 mini"),
           ModelInfo("gpt-4.1-nano", "GPT-4.1 nano"),
