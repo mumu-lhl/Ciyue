@@ -106,7 +106,18 @@ class Mdict {
   static const maxBatchSize = 50000;
   static const maxLoadingCount = 5000;
 
+  bool isLoading = true;
+
   Mdict({required this.path});
+
+  Future<void> add() async {
+    reader = DictReader("$path.mdx");
+    await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+
+    title = reader.header["Title"] ?? basename(path);
+
+    await dictionaryListDao.add(path, title);
+  }
 
   Future<void> close() async {
     await reader.close();
@@ -139,6 +150,10 @@ class Mdict {
 
       final cacheData = await reader.exportCacheAsString();
       await cacheFile.writeAsString(cacheData);
+
+      if (type == "mdx") {
+        isLoading = false;
+      }
     };
   }
 
@@ -154,7 +169,12 @@ class Mdict {
 
     try {
       final cache = await cacheFile.readAsString();
-      reader.importCacheFromString(cache);
+      reader.importCacheFromString(cache).then((_) {
+        if (type == "mdx") {
+          isLoading = false;
+        }
+      });
+
       return true;
     } catch (_) {
       if (cacheExist) {
@@ -177,12 +197,9 @@ class Mdict {
     final fontPath = await dictionaryListDao.getFontPath(id);
     customFont(fontPath);
 
-    final alias = await dictionaryListDao.getAlias(id);
-    title = HtmlUnescape().convert(alias ?? reader.header["Title"] ?? "");
-    // If title in header is empty, use basename(path)
-    if (title == "") {
-      title = basename(path);
-    }
+    final title = await dictionaryListDao.getTitle(id);
+    this.title = HtmlUnescape()
+        .convert(title ?? reader.header["Title"] ?? basename(path));
 
     if (Platform.isWindows) {
       await _startServer();
@@ -238,18 +255,18 @@ class Mdict {
       reader.setOnRecordBlockInfoRead(saveCache(id, "mdx", reader));
     }
 
-    final alias = await dictionaryListDao.getAlias(id);
-    title = HtmlUnescape()
-        .convert(reader.header["Title"] ?? alias ?? basename(path));
+    await waitForLoading();
 
-    while (true) {
-      try {
-        entriesTotal = reader.numEntries;
-        break;
-      } catch (e) {
-        await Future.delayed(Duration(milliseconds: 200));
-        continue;
-      }
+    final title = await dictionaryListDao.getTitle(id);
+    this.title = HtmlUnescape()
+        .convert(title ?? reader.header["Title"] ?? basename(path));
+
+    entriesTotal = reader.numEntries;
+  }
+
+  Future<void> waitForLoading() async {
+    while (isLoading) {
+      await Future.delayed(Duration(milliseconds: 40));
     }
   }
 
@@ -302,6 +319,8 @@ class Mdict {
   }
 
   Future<String> readWord(String word) async {
+    await waitForLoading();
+
     List<RecordOffsetInfo> data;
 
     if (reader.exist(word)) {
@@ -374,6 +393,8 @@ class Mdict {
   }
 
   Future<List<String>> search(String query) async {
+    await waitForLoading();
+
     try {
       return reader.search(query, limit: 30);
     } catch (e) {
@@ -382,11 +403,21 @@ class Mdict {
   }
 
   Future<List<RecordOffsetInfo>> locateAll(String word) async {
+    await waitForLoading();
+
     return await reader.locateAll(word);
   }
 
   Future<bool> wordExist(String word) async {
-    return reader.exist(word);
+    await waitForLoading();
+
+    if (reader.exist(word)) {
+      return true;
+    } else if (reader.exist(word.toLowerCase())) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   Future<List<ResourceData>> readResource(String key) async {
@@ -471,7 +502,8 @@ Future<void> selectMdx(BuildContext context, List<String> paths) async {
     }
 
     try {
-      await dictionaryListDao.add(pathNoExtension);
+      final dict = Mdict(path: pathNoExtension);
+      await dict.add();
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
       if (context.mounted) {

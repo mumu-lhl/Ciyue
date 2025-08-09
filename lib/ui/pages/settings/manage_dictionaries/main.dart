@@ -278,10 +278,13 @@ class DictionaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final title = dictionary.alias ??
-        (dictManager.contain(dictionary.id)
-            ? dictManager.dicts[dictionary.id]!.title
-            : basename(dictionary.path));
+
+    final String title;
+    if (dictionary.title != null) {
+      title = dictionary.title!;
+    } else {
+      title = basename(dictionary.path);
+    }
 
     return Card(
       key: ValueKey(dictionary.id),
@@ -358,7 +361,7 @@ class DictionaryCard extends StatelessWidget {
       if (dictManager.contain(dictionary.id)) {
         dictManager.dicts[dictionary.id]!.title = value;
       }
-      await dictionaryListDao.updateAlias(dictionary.id, value);
+      await dictionaryListDao.updateTitle(dictionary.id, value);
       if (context.mounted) {
         context.read<ManageDictionariesModel>().update();
         context.pop();
