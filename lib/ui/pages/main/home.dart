@@ -220,6 +220,10 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final model = context.watch<HistoryModel>();
 
+    if (!dictManager.isEmpty || settings.aiExplainWord) {
+      return SizedBox.shrink();
+    }
+
     if (model.isSelecting) {
       return AppBar(
         title: Text(
@@ -326,43 +330,40 @@ class HomeBody extends StatelessWidget {
     context.select<HomeModel, int>((value) => value.state);
     context.select<DictManagerModel, bool>((value) => value.isEmpty);
 
-    final locale = AppLocalizations.of(context);
-
-    if (dictManager.isEmpty && !settings.aiExplainWord) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(locale!.addDictionary),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              child: Text(locale.recommendedDictionaries),
-              onPressed: () async {
-                await launchUrl(Uri.parse(
-                    "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
-              },
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              child: const Text("FreeMDict Cloud"),
-              onPressed: () async {
-                await launchUrl(Uri.parse(
-                    "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs"));
-              },
-            ),
-          ],
-        ),
-      );
-    } else {
-      return Column(
+    return Expanded(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const ActionButtons(),
           const HistoryLabel(),
           const HistoryList(),
+          const BottomSearchBar(),
         ],
-      );
+      ),
+    );
+  }
+}
+
+class BottomSearchBar extends StatelessWidget {
+  const BottomSearchBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!settings.searchBarInAppBar) {
+      return Selector<DictManagerModel, bool>(
+          selector: (_, model) => model.isEmpty,
+          builder: (_, isEmpty, __) {
+            if (isEmpty) {
+              const SizedBox.shrink();
+            }
+
+            return const Padding(
+                padding:
+                    EdgeInsets.only(left: 20, right: 20, bottom: 10, top: 10),
+                child: HomeSearchBar());
+          });
+    } else {
+      return SizedBox.shrink();
     }
   }
 }
@@ -467,28 +468,13 @@ class HomeScreen extends StatelessWidget {
     context.select<DictManagerModel, bool>((value) => value.isEmpty);
     final historyModel = context.watch<HistoryModel>();
 
+    if (dictManager.isEmpty && !settings.aiExplainWord) {
+      return RecommendedDictionaries();
+    }
+
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: (!dictManager.isEmpty || settings.aiExplainWord)
-            ? const HomeAppBar()
-            : const SizedBox.shrink(),
-      ),
-      body: Column(
-        children: [
-          const Expanded(child: HomeBody()),
-          if (!settings.searchBarInAppBar)
-            Selector<DictManagerModel, bool>(
-                selector: (_, model) => model.isEmpty,
-                builder: (_, isEmpty, __) => isEmpty
-                    ? const SizedBox.shrink()
-                    : const Padding(
-                        padding: EdgeInsets.only(
-                            left: 20, right: 20, bottom: 10, top: 10),
-                        child: HomeSearchBar(),
-                      )),
-        ],
-      ),
+      appBar: const HomeAppBar(),
+      body: const HomeBody(),
       drawer: historyModel.isSelecting ? null : const HomeDrawer(),
       // floatingActionButton: FloatingActionButton(
       //   heroTag: "chatButton",
@@ -497,6 +483,43 @@ class HomeScreen extends StatelessWidget {
       //   },
       //   child: const Icon(Icons.chat),
       // ),
+    );
+  }
+}
+
+class RecommendedDictionaries extends StatelessWidget {
+  const RecommendedDictionaries({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(locale!.addDictionary),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            child: Text(locale.recommendedDictionaries),
+            onPressed: () async {
+              await launchUrl(Uri.parse(
+                  "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
+            },
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            child: const Text("FreeMDict Cloud"),
+            onPressed: () async {
+              await launchUrl(Uri.parse(
+                  "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs"));
+            },
+          ),
+        ],
+      ),
     );
   }
 }
