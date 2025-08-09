@@ -656,7 +656,6 @@ class _WordDisplayState extends State<WordDisplay> {
   @override
   Widget build(BuildContext context) {
     if (validDictIds.isEmpty) {
-      talker.debug("123");
       return Scaffold(
         appBar: buildAppBar(context, false),
         body: Center(
@@ -665,8 +664,6 @@ class _WordDisplayState extends State<WordDisplay> {
         )),
       );
     }
-
-    talker.debug(validDictIds);
 
     if (!(validDictIds.isNotEmpty || settings.aiExplainWord)) {
       return Scaffold(
