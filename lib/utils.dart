@@ -1,6 +1,7 @@
 import "dart:io";
 
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:device_info_plus/device_info_plus.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:path_provider/path_provider.dart";
@@ -26,7 +27,16 @@ Future<bool> requestManageExternalStorage(BuildContext context) async {
   final isGranted = await Permission.manageExternalStorage.isGranted;
   if (isGranted) return true;
 
-  final status = await Permission.manageExternalStorage.request();
+  final deviceInfo = DeviceInfoPlugin();
+  final androidInfo = await deviceInfo.androidInfo;
+
+  final PermissionStatus status;
+  if (androidInfo.version.sdkInt >= 33) {
+    status = await Permission.manageExternalStorage.request();
+  } else {
+    status = await Permission.storage.request();
+  }
+
   if (status.isGranted) {
     return true;
   } else {
