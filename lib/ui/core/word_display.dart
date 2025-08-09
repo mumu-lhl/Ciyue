@@ -244,7 +244,9 @@ Widget _buildWebView(String word, int id, bool isExpansion) {
           return FakeWebViewByAI(html: snapshot.data!);
         }
       } else {
-        return const SizedBox.shrink();
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
       }
     },
   );
@@ -755,9 +757,6 @@ class _WordDisplayState extends State<WordDisplay> {
 
   AppBar buildAppBar(BuildContext context, bool showTab) {
     return AppBar(
-      leading: BackButton(
-        onPressed: () => context.go("/"),
-      ),
       title: settings.showSearchBarInWordDisplay
           ? WordSearchBarWithSuggestions(
               word: widget.word,
