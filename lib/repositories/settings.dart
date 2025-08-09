@@ -25,6 +25,7 @@ class _Settings {
   late DictionarySwitchStyle dictionarySwitchStyle;
 
   late bool autoRemoveSearchWord;
+  late bool autoFocusSearch;
 
   late bool secureScreen;
 
@@ -57,6 +58,7 @@ class _Settings {
     exportPath = prefs.getString("exportPath");
 
     autoRemoveSearchWord = prefs.getBool("autoRemoveSearchWord") ?? false;
+    autoFocusSearch = prefs.getBool("autoFocusSearch") ?? false;
 
     secureScreen = prefs.getBool("secureScreen") ?? false;
 

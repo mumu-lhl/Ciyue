@@ -343,5 +343,7 @@
   "logs": "日志",
   "@logs": {},
   "pressAgainToExit": "再按一次退出",
-  "@pressAgainToExit": {}
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "自动聚焦搜索栏",
+  "@autoFocusSearch": {}
 }

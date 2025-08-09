@@ -149,6 +149,7 @@ Future<void> initPrefs() async {
     "isRichOutput",
     "enableTranslationHistory",
     "enableWritingCheckHistory",
+    "autoFocusSearch"
   }));
 
   talker.info("Shared preferences initialized successfully.");

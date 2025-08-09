@@ -343,5 +343,7 @@
   "wechat": "WeChat",
   "@wechat": {},
   "pressAgainToExit": "Press back again to exit",
-  "@pressAgainToExit": {}
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "Auto Focus Search Bar",
+  "@autoFocusSearch": {}
 }

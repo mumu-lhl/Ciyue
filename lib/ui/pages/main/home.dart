@@ -449,7 +449,7 @@ class HomeSearchBar extends StatelessWidget {
         controller: model.searchController,
         focusNode: model.searchBarFocusNode,
         isHome: true,
-        autoFocus: true,
+        autoFocus: settings.autoFocusSearch,
       ),
     );
   }
@@ -600,6 +600,20 @@ class _MoreOptionsDialogState extends State<MoreOptionsDialog> {
               }
             },
             title: Text(AppLocalizations.of(context)!.autoRemoveSearchWord),
+          ),
+        ),
+        SimpleDialogOption(
+          child: CheckboxListTile(
+            value: settings.autoFocusSearch,
+            onChanged: (value) async {
+              if (value != null) {
+                settings.autoFocusSearch = value;
+                await prefs.setBool("autoFocusSearch", value);
+                if (context.mounted) context.read<HomeModel>().update();
+                setState(() {});
+              }
+            },
+            title: Text(AppLocalizations.of(context)!.autoFocusSearch),
           ),
         ),
       ],
