@@ -220,10 +220,6 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final model = context.watch<HistoryModel>();
 
-    if (!dictManager.isEmpty || settings.aiExplainWord) {
-      return SizedBox.shrink();
-    }
-
     if (model.isSelecting) {
       return AppBar(
         title: Text(
@@ -363,7 +359,7 @@ class BottomSearchBar extends StatelessWidget {
                 child: HomeSearchBar());
           });
     } else {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
   }
 }
@@ -473,7 +469,12 @@ class HomeScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: const HomeAppBar(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: (!dictManager.isEmpty || settings.aiExplainWord)
+            ? const HomeAppBar()
+            : const SizedBox.shrink(),
+      ),
       body: const HomeBody(),
       drawer: historyModel.isSelecting ? null : const HomeDrawer(),
       // floatingActionButton: FloatingActionButton(
