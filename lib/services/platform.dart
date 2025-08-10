@@ -5,6 +5,7 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/ui/pages/main/main.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:flutter/services.dart";
@@ -81,7 +82,13 @@ class PlatformMethod {
     if (directory == null) {
       return;
     }
-    await _platform.invokeMethod("updateDictionaries", directory);
+
+    if (!isFullFlavor()) {
+      await _platform.invokeMethod("updateDictionaries", directory);
+    } else {
+      final paths = await findMdxFilesOnAndroid(directory);
+      selectMdx(navigatorKey.currentContext!, paths);
+    }
   }
 
   static Future<void> writeFile(Map<String, String?> info) async {
