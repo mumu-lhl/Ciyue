@@ -280,7 +280,7 @@ class DictionaryCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     final String title;
-    if (dictionary.title != null || dictionary.title != "") {
+    if (dictionary.title != null && dictionary.title != "") {
       title = dictionary.title!;
     } else {
       title = basename(dictionary.path);
