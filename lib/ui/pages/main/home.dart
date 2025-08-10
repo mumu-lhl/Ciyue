@@ -326,16 +326,14 @@ class HomeBody extends StatelessWidget {
     context.select<HomeModel, int>((value) => value.state);
     context.select<DictManagerModel, bool>((value) => value.isEmpty);
 
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const ActionButtons(),
-          const HistoryLabel(),
-          const HistoryList(),
-          const BottomSearchBar(),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const ActionButtons(),
+        const HistoryLabel(),
+        const HistoryList(),
+        const BottomSearchBar(),
+      ],
     );
   }
 }

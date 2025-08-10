@@ -557,34 +557,40 @@ class ManageDictionariesBody extends StatelessWidget {
               style: Theme.of(context).textTheme.titleLarge,
             ));
           } else {
-            return ReorderableListView(
-              buildDefaultDragHandles: false,
-              onReorder: (oldIndex, newIndex) {
-                if (oldIndex < newIndex) {
-                  newIndex -= 1;
-                }
-
-                final dict = dicts.removeAt(oldIndex);
-                dicts.insert(newIndex, dict);
-
-                context.read<ManageDictionariesModel>().updateWithList(dicts);
-
-                () async {
-                  await dictionaryListDao.updateOrder(dicts);
-
-                  if (context.mounted) {
-                    final model = context.read<DictManagerModel>();
-                    await model.updateDictIds();
+            return Padding(
+              padding: const EdgeInsets.only(
+                left: 8.0,
+                right: 8.0,
+              ),
+              child: ReorderableListView(
+                buildDefaultDragHandles: false,
+                onReorder: (oldIndex, newIndex) {
+                  if (oldIndex < newIndex) {
+                    newIndex -= 1;
                   }
-                }();
-              },
-              children: [
-                for (int i = 0; i < dicts.length; i++)
-                  DictionaryCard(
-                      key: ValueKey(dicts[i].id),
-                      dictionary: dicts[i],
-                      index: i)
-              ],
+
+                  final dict = dicts.removeAt(oldIndex);
+                  dicts.insert(newIndex, dict);
+
+                  context.read<ManageDictionariesModel>().updateWithList(dicts);
+
+                  () async {
+                    await dictionaryListDao.updateOrder(dicts);
+
+                    if (context.mounted) {
+                      final model = context.read<DictManagerModel>();
+                      await model.updateDictIds();
+                    }
+                  }();
+                },
+                children: [
+                  for (int i = 0; i < dicts.length; i++)
+                    DictionaryCard(
+                        key: ValueKey(dicts[i].id),
+                        dictionary: dicts[i],
+                        index: i)
+                ],
+              ),
             );
           }
         } else {
