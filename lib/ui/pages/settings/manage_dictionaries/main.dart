@@ -619,10 +619,11 @@ class ManageDictionariesPageState extends State<ManageDictionariesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: BackButton(), actions: [
-        if (Platform.isAndroid) UpdateButton(),
-        InfoButton(),
-        AddButton(),
+      appBar: AppBar(actions: [
+        const GroupButton(),
+        if (Platform.isAndroid) const UpdateButton(),
+        const InfoButton(),
+        const AddButton(),
       ]),
       body: Center(
         child: ConstrainedBox(
@@ -635,17 +636,25 @@ class ManageDictionariesPageState extends State<ManageDictionariesPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: UniqueKey(),
+    );
+  }
+}
+
+class GroupButton extends StatelessWidget {
+  const GroupButton({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
         onPressed: () {
           showDialog(
             context: context,
             builder: (context) => GroupDialog(),
           );
         },
-        child: const Icon(Icons.group),
-      ),
-    );
+        icon: Icon(Icons.group));
   }
 }
 
