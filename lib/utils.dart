@@ -24,31 +24,34 @@ bool isLargeScreen(BuildContext context) {
 }
 
 Future<bool> requestManageExternalStorage(BuildContext context) async {
-  final isGranted = await Permission.manageExternalStorage.isGranted;
-  if (isGranted) return true;
-
   final deviceInfo = DeviceInfoPlugin();
   final androidInfo = await deviceInfo.androidInfo;
 
   final PermissionStatus status;
-  if (androidInfo.version.sdkInt >= 33) {
+  if (androidInfo.version.sdkInt >= 30) {
+    final isGranted = await Permission.manageExternalStorage.isGranted;
+    if (isGranted) return true;
+
     status = await Permission.manageExternalStorage.request();
   } else {
+    final isGranted = await Permission.storage.isGranted;
+    if (isGranted) return true;
+
     status = await Permission.storage.request();
   }
 
   if (status.isGranted) {
     return true;
-  } else {
-    if (context.mounted) {
-      ToastService.show(
-        AppLocalizations.of(context)!.permissionDenied,
-        context,
-        type: ToastType.error,
-      );
-    }
-    return false;
   }
+
+  if (context.mounted) {
+    ToastService.show(
+      AppLocalizations.of(context)!.permissionDenied,
+      context,
+      type: ToastType.error,
+    );
+  }
+  return false;
 }
 
 bool isFullFlavor() {
