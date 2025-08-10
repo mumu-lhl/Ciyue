@@ -54,7 +54,9 @@ class AddHistoryToWordbookDialog extends StatelessWidget {
         TextButton(
           child: Text(AppLocalizations.of(context)!.remove),
           onPressed: () async {
-            await wordbookDao.removeWordWithAllTags(item.word);
+            await context
+                .read<WordbookModel>()
+                .removeWordWithAllTags(item.word);
             if (context.mounted) {
               context.pop(true);
               context.read<WordbookModel>().updateWordList();
@@ -65,20 +67,24 @@ class AddHistoryToWordbookDialog extends StatelessWidget {
           child: Text(AppLocalizations.of(context)!.confirm),
           onPressed: () async {
             if (!await wordbookDao.wordExist(item.word)) {
-              await wordbookDao.addWord(item.word);
+              if (!context.mounted) return;
+              await context.read<WordbookModel>().add(item.word);
             }
+
+            if (!context.mounted) return;
 
             for (final tag in toAdd) {
-              await wordbookDao.addWord(item.word, tag: tag);
+              await context.read<WordbookModel>().add(item.word, tag: tag);
             }
 
+            if (!context.mounted) return;
+
             for (final tag in toDel) {
-              await wordbookDao.removeWord(item.word, tag: tag);
+              await context.read<WordbookModel>().delete(item.word, tag: tag);
             }
 
             if (context.mounted) {
               context.pop(true);
-              context.read<WordbookModel>().updateWordList();
             }
           },
         ),
@@ -158,9 +164,13 @@ class HistoryList extends StatelessWidget {
                 }
 
                 if (await wordbookDao.wordExist(item.word)) {
-                  await wordbookDao.removeWord(item.word);
+                  if (!context.mounted) return null;
+
+                  await context.read<WordbookModel>().delete(item.word);
                 } else {
-                  await wordbookDao.addWord(item.word);
+                  if (!context.mounted) return null;
+
+                  await context.read<WordbookModel>().add(item.word);
                 }
                 if (context.mounted) {
                   context.read<WordbookModel>().updateWordList();

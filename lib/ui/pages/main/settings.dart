@@ -2,8 +2,10 @@ import "dart:io";
 
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/badges.dart";
+import "package:ciyue/viewModels/wordbook.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:provider/provider.dart";
 
 class AboutPageListTile extends StatelessWidget {
   const AboutPageListTile({
@@ -128,6 +130,45 @@ class LoggerPageListTile extends StatelessWidget {
   }
 }
 
+class _WordbookStats extends StatelessWidget {
+  const _WordbookStats();
+
+  @override
+  Widget build(BuildContext context) {
+    final totalWordCount =
+        context.select((WordbookModel vm) => vm.totalWordCount);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
+          ),
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Total Words in Wordbook",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              Text(
+                totalWordCount.toString(),
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -135,6 +176,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: [
+        const _WordbookStats(),
         const ManageDictionariesPageListTile(),
         const AiSettingsPageListTile(),
         const AudioSettingsPageListTile(),

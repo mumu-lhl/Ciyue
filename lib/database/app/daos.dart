@@ -174,8 +174,14 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
-  // ignore: avoid_init_to_null
-  Future<int> addWord(String word, {int? tag = null}) {
+  Future<int> countTotalWords() async {
+    final count = countAll();
+    final query = selectOnly(wordbook)..addColumns([count]);
+    final result = await query.getSingle();
+    return result.read(count) ?? 0;
+  }
+
+  Future<int> addWord(String word, {int? tag}) {
     return into(wordbook).insert(WordbookCompanion(
         tag: Value(tag), word: Value(word), createdAt: Value(DateTime.now())));
   }
@@ -185,9 +191,7 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<WordbookData>> getAllWordsWithTag(
-      // ignore: avoid_init_to_null
-      {int? tag = null,
-      bool skipTagged = false}) {
+      {int? tag, bool skipTagged = false}) {
     if (tag == null) {
       if (skipTagged) {
         final subquery = selectOnly(wordbook)
@@ -234,8 +238,7 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     return query.get();
   }
 
-  // ignore: avoid_init_to_null
-  Future<int> removeWord(String word, {int? tag = null}) {
+  Future<int> removeWord(String word, {int? tag}) {
     if (tag == null) {
       return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
     } else {

@@ -4,9 +4,11 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/services/backup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/wordbook.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:provider/provider.dart";
 
 class AutoExport extends StatelessWidget {
   const AutoExport({super.key});
@@ -109,7 +111,8 @@ class LegacyImport extends StatelessWidget {
           tagsData.add(WordbookTag.fromJson(i));
         }
 
-        await wordbookDao.addAllWords(wordsData);
+        if (!context.mounted) return;
+        await context.read<WordbookModel>().addAllWords(wordsData);
         await wordbookTagsDao.addAllTags(tagsData);
       },
     );

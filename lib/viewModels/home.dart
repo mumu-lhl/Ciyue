@@ -1,8 +1,11 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/viewModels/history_view_model.dart";
+import "package:ciyue/viewModels/wordbook.dart";
 import "package:flutter/material.dart";
+import "package:provider/provider.dart";
 
 class HistoryModel extends HistoryViewModel<HistoryData> {
   bool get enableHistory => settings.enableHistory;
@@ -41,9 +44,13 @@ class HistoryModel extends HistoryViewModel<HistoryData> {
     final existWords = await wordbookDao.wordsExist(words);
     for (final word in words) {
       if (existWords.contains(word)) {
-        await wordbookDao.removeWord(word);
+        await Provider.of<WordbookModel>(navigatorKey.currentContext!,
+                listen: false)
+            .delete(word);
       } else {
-        await wordbookDao.addWord(word);
+        await Provider.of<WordbookModel>(navigatorKey.currentContext!,
+                listen: false)
+            .add(word);
       }
     }
     clearSelection();

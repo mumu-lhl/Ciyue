@@ -913,15 +913,12 @@ class _ButtonState extends State<Button> {
           onPressed: () async {
             Future<void> star() async {
               if (snapshot.data!) {
-                await wordbookDao.removeWord(widget.word);
+                await context.read<WordbookModel>().delete(widget.word);
               } else {
-                await wordbookDao.addWord(widget.word);
+                await context.read<WordbookModel>().add(widget.word);
               }
 
               await autoExport();
-              if (context.mounted) {
-                context.read<WordbookModel>().updateWordList();
-              }
               checkStared();
             }
 
@@ -953,11 +950,12 @@ class _ButtonState extends State<Button> {
                       TextButton(
                         child: Text(locale.remove),
                         onPressed: () async {
-                          await wordbookDao.removeWordWithAllTags(widget.word);
+                          await context
+                              .read<WordbookModel>()
+                              .removeWordWithAllTags(widget.word);
 
                           if (context.mounted) {
                             context.pop();
-                            context.read<WordbookModel>().updateWordList();
                           }
 
                           await autoExport();
@@ -969,20 +967,29 @@ class _ButtonState extends State<Button> {
                         child: Text(locale.confirm),
                         onPressed: () async {
                           if (!snapshot.data!) {
-                            await wordbookDao.addWord(widget.word);
+                            await context
+                                .read<WordbookModel>()
+                                .add(widget.word);
                           }
+
+                          if (!context.mounted) return;
 
                           for (final tag in toAdd) {
-                            await wordbookDao.addWord(widget.word, tag: tag);
+                            await context
+                                .read<WordbookModel>()
+                                .add(widget.word, tag: tag);
                           }
 
+                          if (!context.mounted) return;
+
                           for (final tag in toDel) {
-                            await wordbookDao.removeWord(widget.word, tag: tag);
+                            await context
+                                .read<WordbookModel>()
+                                .delete(widget.word, tag: tag);
                           }
 
                           if (context.mounted) {
                             context.pop();
-                            context.read<WordbookModel>().updateWordList();
                           }
 
                           await autoExport();

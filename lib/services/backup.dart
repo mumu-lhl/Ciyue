@@ -2,11 +2,14 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/app_router.dart";
 import "package:ciyue/models/backup/backup.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/viewModels/wordbook.dart";
 import "package:file_selector/file_selector.dart";
 import "package:path/path.dart";
+import "package:provider/provider.dart";
 
 class Backup {
   static const version = 1;
@@ -66,7 +69,9 @@ class Backup {
     final Map<String, dynamic> content = jsonDecode(await xFile.readAsString());
     final backupData = BackupData.fromJson(content);
 
-    await wordbookDao.addAllWords(backupData.wordbookWords);
+    await Provider.of<WordbookModel>(navigatorKey.currentContext!,
+            listen: false)
+        .addAllWords(backupData.wordbookWords);
     await wordbookTagsDao.addAllTags(backupData.wordbookTags);
   }
 }
