@@ -184,6 +184,18 @@ class Mdict {
     }
   }
 
+  Future<void> _getTitle() async {
+    final titleInDatabase = await dictionaryListDao.getTitle(id);
+    final title = HtmlUnescape()
+        .convert(titleInDatabase ?? reader.header["Title"] ?? basename(path));
+
+    if (title == "") {
+      this.title = basename(path);
+    } else {
+      this.title = title;
+    }
+  }
+
   Future<void> init() async {
     id = await dictionaryListDao.getId(path);
     type = await dictionaryListDao.getType(id);
@@ -197,9 +209,7 @@ class Mdict {
     final fontPath = await dictionaryListDao.getFontPath(id);
     customFont(fontPath);
 
-    final title = await dictionaryListDao.getTitle(id);
-    this.title = HtmlUnescape()
-        .convert(title ?? reader.header["Title"] ?? basename(path));
+    await _getTitle();
 
     if (Platform.isWindows) {
       await _startServer();
@@ -257,9 +267,7 @@ class Mdict {
 
     await waitForLoading();
 
-    final title = await dictionaryListDao.getTitle(id);
-    this.title = HtmlUnescape()
-        .convert(title ?? reader.header["Title"] ?? basename(path));
+    await _getTitle();
 
     entriesTotal = reader.numEntries;
   }
