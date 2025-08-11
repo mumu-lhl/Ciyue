@@ -20,6 +20,7 @@ import "package:ciyue/ui/pages/settings/privacy_policy.dart";
 import "package:ciyue/ui/pages/settings/terms_of_service.dart";
 import "package:ciyue/ui/pages/settings/update.dart";
 import "package:ciyue/ui/pages/settings/logs.dart";
+import "package:ciyue/ui/pages/settings/wordbook_stats.dart";
 import "package:ciyue/ui/core/ai_explanation_edit_page.dart";
 import "package:flutter/material.dart";
 import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
@@ -151,6 +152,10 @@ final router = GoRouter(
     GoRoute(
       path: "/chat",
       builder: (context, state) => const ChatPage(),
+    ),
+    GoRoute(
+      path: "/settings/wordbook_stats",
+      builder: (context, state) => const WordbookStatsPage(),
     ),
   ],
 );
