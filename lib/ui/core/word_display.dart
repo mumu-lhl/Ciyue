@@ -131,6 +131,17 @@ Future<NavigationActionPolicy?> Function(
   };
 }
 
+Widget? _buildTitle(String word) {
+  if (settings.showSearchBarInWordDisplay) {
+    return WordSearchBarWithSuggestions(
+      word: word,
+      controller: SearchController(),
+    );
+  } else {
+    return null;
+  }
+}
+
 class ExpansionWordDisplay extends StatefulWidget {
   final String word;
   final List<int> validDictIds;
@@ -205,12 +216,7 @@ class _ExpansionWordDisplayState extends State<ExpansionWordDisplay> {
         leading: BackButton(
           onPressed: () => context.go("/"),
         ),
-        title: settings.showSearchBarInWordDisplay
-            ? WordSearchBarWithSuggestions(
-                word: widget.word,
-                controller: SearchController(),
-              )
-            : null,
+        title: _buildTitle(widget.word),
       ),
       floatingActionButton: Button(
         word: widget.word,
@@ -757,12 +763,10 @@ class _WordDisplayState extends State<WordDisplay> {
 
   AppBar buildAppBar(BuildContext context, bool showTab) {
     return AppBar(
-      title: settings.showSearchBarInWordDisplay
-          ? WordSearchBarWithSuggestions(
-              word: widget.word,
-              controller: SearchController(),
-            )
-          : null,
+      leading: BackButton(
+        onPressed: () => context.go("/"),
+      ),
+      title: _buildTitle(widget.word),
       bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
           ? buildTabBar(context)
           : null,
