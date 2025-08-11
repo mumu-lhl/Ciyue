@@ -15,13 +15,7 @@ import "package:package_info_plus/package_info_plus.dart";
 import "package:path_provider/path_provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
-Future<void> initApp() async {
-  talker.info("Initializing application...");
-
-  final stopWatch = Stopwatch()..start();
-
-  await initPrefs();
-
+Future<void> initGroup() async {
   int? groupId = prefs.getInt("currentDictionaryGroupId");
   if (groupId == null) {
     groupId = await dictGroupDao.addGroup("Default", []);
@@ -29,10 +23,18 @@ Future<void> initApp() async {
   }
   await dictManager.setCurrentGroup(groupId);
   dictManager.groups = await dictGroupDao.getAllGroups();
+}
+
+Future<void> initApp() async {
+  talker.info("Initializing application...");
+
+  final stopWatch = Stopwatch()..start();
+
+  await initPrefs();
+
+  initGroup();
 
   flutterTts = FlutterTts();
-
-  packageInfo = await PackageInfo.fromPlatform();
 
   wordbookTagsDao.loadTagsOrder();
   wordbookTagsDao.existTag();
@@ -53,10 +55,6 @@ Future<void> initApp() async {
     accentColor = await DynamicColorPlugin.getAccentColor();
   }
 
-  if (settings.autoUpdate) {
-    Updater.autoUpdate();
-  }
-
   if (settings.ttsEngine != null) flutterTts.setEngine(settings.ttsEngine!);
   if (settings.ttsLanguage != null) {
     flutterTts.setLanguage(settings.ttsLanguage!);
@@ -64,6 +62,13 @@ Future<void> initApp() async {
 
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     final locale = Localizations.localeOf(navigatorKey.currentContext!);
+
+    packageInfo = await PackageInfo.fromPlatform();
+
+    if (settings.autoUpdate) {
+      Updater.autoUpdate();
+    }
+
     if (await ChangelogService.shouldShowChangelog(locale)) {
       final String changelogContent =
           await ChangelogService.getChangelogContent(locale);
