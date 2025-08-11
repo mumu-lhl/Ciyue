@@ -1,8 +1,11 @@
+import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/ui/pages/translate/translate_page.dart";
 import "package:ciyue/ui/pages/main/home.dart";
 import "package:ciyue/ui/pages/main/settings.dart";
 import "package:ciyue/ui/pages/main/wordbook.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:flutter/material.dart";
 import "package:ciyue/services/toast.dart";
@@ -25,6 +28,7 @@ class MainPage {
 }
 
 class _HomeState extends State<Home> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   late String searchWord;
   var _currentIndex = 0;
   DateTime? _lastPressedAt;
@@ -48,10 +52,18 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final ratio = MediaQuery.sizeOf(context).aspectRatio;
+    final historyModel = context.watch<HistoryModel>();
+    context.select<DictManagerModel, bool>((value) => value.isEmpty);
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? _) {
         if (didPop) {
+          return;
+        }
+
+        if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+          Navigator.pop(context);
           return;
         }
 
@@ -71,6 +83,18 @@ class _HomeState extends State<Home> {
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
+          key: _scaffoldKey,
+          appBar: _currentIndex == 0
+              ? PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: (!dictManager.isEmpty || settings.aiExplainWord)
+                      ? const HomeAppBar()
+                      : const SizedBox.shrink(),
+                )
+              : null,
+          drawer: _currentIndex == 0 && !historyModel.isSelecting
+              ? const HomeDrawer()
+              : null,
           body: ratio > 1.0
               ? Row(
                   children: [

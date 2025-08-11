@@ -470,29 +470,12 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     context.select<HomeModel, int>((value) => value.state);
     context.select<DictManagerModel, bool>((value) => value.isEmpty);
-    final historyModel = context.watch<HistoryModel>();
 
     if (dictManager.isEmpty && !settings.aiExplainWord) {
       return RecommendedDictionaries();
     }
 
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: (!dictManager.isEmpty || settings.aiExplainWord)
-            ? const HomeAppBar()
-            : const SizedBox.shrink(),
-      ),
-      body: const HomeBody(),
-      drawer: historyModel.isSelecting ? null : const HomeDrawer(),
-      // floatingActionButton: FloatingActionButton(
-      //   heroTag: "chatButton",
-      //   onPressed: () {
-      //     context.push("/chat");
-      //   },
-      //   child: const Icon(Icons.chat),
-      // ),
-    );
+    return const HomeBody();
   }
 }
 
