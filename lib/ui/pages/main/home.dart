@@ -228,6 +228,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.select<HomeModel, int>((value) => value.state);
     final model = context.watch<HistoryModel>();
 
     if (model.isSelecting) {
@@ -353,6 +354,8 @@ class BottomSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.select<HomeModel, int>((value) => value.state);
+
     if (!settings.searchBarInAppBar) {
       return Selector<DictManagerModel, bool>(
           selector: (_, model) => model.isEmpty,
