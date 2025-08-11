@@ -314,7 +314,7 @@
   "@resetToDefault": {},
   "writingCheckPromptTitle": "Solicitud de comprobación de escritura",
   "@writingCheckPromptTitle": {},
-  "writingCheckPromptHelper": "Puede utilizar $text en su solicitud.",
+  "writingCheckPromptHelper": "Puede utilizar $text y $targetLanguage en su solicitud.",
   "@writingCheckPromptHelper": {},
   "logs": "Registros",
   "@logs": {},
@@ -349,5 +349,9 @@
   "sponsorCodes": "Códigos de patrocinador",
   "@sponsorCodes": {},
   "wechat": "WeChat",
-  "@wechat": {}
+  "@wechat": {},
+  "pressAgainToExit": "Presiona atrás nuevamente para salir",
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "Barra de búsqueda de enfoque automático",
+  "@autoFocusSearch": {}
 }
