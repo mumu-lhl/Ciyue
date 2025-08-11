@@ -2,7 +2,6 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
 import "package:go_router/go_router.dart";
 import "package:intl/intl.dart";
 import "package:url_launcher/url_launcher.dart";
