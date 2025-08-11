@@ -230,7 +230,7 @@ class Mdict {
         reader.initDict();
         reader.setOnRecordBlockInfoRead(saveCache(id, "mdd", reader));
       } else {
-        await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+        reader.initDict(readKeys: false, readRecordBlockInfo: false);
       }
 
       readerResources.add(reader);
@@ -245,7 +245,7 @@ class Mdict {
           reader.initDict();
           reader.setOnRecordBlockInfoRead(saveCache(id, "$i.mdd", reader));
         } else {
-          await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+          reader.initDict(readKeys: false, readRecordBlockInfo: false);
         }
 
         readerResources.add(reader);
