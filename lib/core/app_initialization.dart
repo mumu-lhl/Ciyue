@@ -8,11 +8,13 @@ import "package:ciyue/services/changelog.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/ui/core/changelog_dialog.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:path_provider/path_provider.dart";
+import "package:provider/provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 Future<void> initGroup() async {
@@ -23,6 +25,13 @@ Future<void> initGroup() async {
   }
   await dictManager.setCurrentGroup(groupId);
   dictManager.groups = await dictGroupDao.getAllGroups();
+
+  try {
+    Provider.of<HomeModel>(navigatorKey.currentContext!, listen: false)
+        .update();
+  } catch (e) {
+    talker.error(e);
+  }
 }
 
 Future<void> initApp() async {

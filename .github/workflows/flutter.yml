@@ -62,8 +62,14 @@ jobs:
         run: |
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 
+      - name: Get build info
+        id: build_info
+        run: |
+          echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+
       - name: Build Full APK
-        run: flutter build apk --flavor full-dev
+        run: flutter build apk --flavor full-dev --dart-define=DEV=true --dart-define=GIT_COMMIT_HASH=${{ steps.build_info.outputs.hash }} --dart-define=BUILD_TIMESTAMP=${{ steps.build_info.outputs.timestamp }}
 
       - name: Upload
         uses: actions/upload-artifact@v4
@@ -84,8 +90,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Get build info
+        id: build_info
+        shell: pwsh
+        run: |
+          echo "hash=$(git rev-parse --short HEAD)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          $timestamp = [int64](((Get-Date).ToUniversalTime()) - (Get-Date "1970-01-01")).TotalSeconds
+          echo "timestamp=$timestamp" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
       - name: Build exe
-        run: flutter build windows
+        run: flutter build windows --dart-define=DEV=true --dart-define=GIT_COMMIT_HASH=${{ steps.build_info.outputs.hash }} --dart-define=BUILD_TIMESTAMP=${{ steps.build_info.outputs.timestamp }}
 
       - name: Copy DLLs
         run: |
@@ -114,8 +128,14 @@ jobs:
           sudo apt install -y libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
           flutter pub get
 
+      - name: Get build info
+        id: build_info
+        run: |
+          echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+
       - name: Build
-        run: flutter build linux
+        run: flutter build linux --dart-define=DEV=true --dart-define=GIT_COMMIT_HASH=${{ steps.build_info.outputs.hash }} --dart-define=BUILD_TIMESTAMP=${{ steps.build_info.outputs.timestamp }}
 
       - name: Upload
         uses: actions/upload-artifact@v4

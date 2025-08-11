@@ -2,7 +2,9 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:go_router/go_router.dart";
+import "package:intl/intl.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:ciyue/services/changelog.dart";
 import "package:ciyue/ui/core/changelog_dialog.dart";
@@ -373,9 +375,31 @@ class AboutPageListTile extends StatelessWidget {
     return AboutListTile(
       icon: const Icon(Icons.info),
       applicationName: packageInfo.appName,
-      applicationVersion: "${packageInfo.version} (${packageInfo.buildNumber})",
+      applicationVersion: _getApplicationVersion(),
       applicationLegalese: "\u{a9} 2024-2025 Mumulhl and contributors",
     );
+  }
+
+  String _getApplicationVersion() {
+    final isDev = const bool.hasEnvironment("DEV");
+    if (isDev) {
+      final commitHash = const String.fromEnvironment("GIT_COMMIT_HASH");
+      final timestampString = const String.fromEnvironment("BUILD_TIMESTAMP");
+
+      if (timestampString.isNotEmpty) {
+        final timestamp = int.tryParse(timestampString);
+        if (timestamp != null) {
+          final date =
+              DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true)
+                  .toLocal();
+          return "${packageInfo.version} Dev ($commitHash) ${DateFormat("yyyy-MM-dd-HH:mm:ss").format(date)}";
+        }
+      }
+
+      return "${packageInfo.version} Dev ($commitHash)";
+    }
+
+    return "${packageInfo.version} (${packageInfo.buildNumber})";
   }
 }
 
