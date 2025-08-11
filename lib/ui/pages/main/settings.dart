@@ -148,20 +148,24 @@ class _WordbookStats extends StatelessWidget {
           ),
           borderRadius: const BorderRadius.all(Radius.circular(12)),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Total Words in Wordbook",
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              Text(
-                totalWordCount.toString(),
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ],
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push("/settings/wordbook_stats"),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.totalWordsInWordbook,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                Text(
+                  totalWordCount.toString(),
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ],
+            ),
           ),
         ),
       ),

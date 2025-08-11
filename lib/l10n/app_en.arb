@@ -345,5 +345,11 @@
   "pressAgainToExit": "Press back again to exit",
   "@pressAgainToExit": {},
   "autoFocusSearch": "Auto Focus Search Bar",
-  "@autoFocusSearch": {}
+  "@autoFocusSearch": {},
+  "wordbookStats": "Wordbook Stats",
+  "@wordbookStats": {},
+  "month": "Month",
+  "@month": {},
+  "totalWordsInWordbook": "Total Words in Wordbook",
+  "@totalWordsInWordbook": {}
 }

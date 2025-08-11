@@ -345,5 +345,11 @@
   "pressAgainToExit": "再按一次退出",
   "@pressAgainToExit": {},
   "autoFocusSearch": "自动聚焦搜索栏",
-  "@autoFocusSearch": {}
+  "@autoFocusSearch": {},
+  "wordbookStats": "词汇统计",
+  "@wordbookStats": {},
+  "month": "月",
+  "@month": {},
+  "totalWordsInWordbook": "词汇本总词数",
+  "@totalWordsInWordbook": {}
 }
