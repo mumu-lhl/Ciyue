@@ -86,6 +86,7 @@ class PlatformMethod {
     if (!isFullFlavor()) {
       await _platform.invokeMethod("updateDictionaries", directory);
     } else {
+      showLoadingDialog(navigatorKey.currentContext!);
       final paths = await findMdxFilesOnAndroid(directory);
       selectMdx(navigatorKey.currentContext!, paths);
     }
