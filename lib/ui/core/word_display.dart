@@ -211,13 +211,18 @@ class _ExpansionWordDisplayState extends State<ExpansionWordDisplay> {
     final isAIExplainTabSelected =
         settings.aiExplainWord && _isExpanded.isNotEmpty && _isExpanded[0];
 
+    final searchBar = _buildTitle(widget.word);
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
           onPressed: () => context.go("/"),
         ),
-        title: _buildTitle(widget.word),
+        title: settings.searchBarInAppBar ? searchBar : null,
       ),
+      bottomNavigationBar: (!settings.searchBarInAppBar && searchBar != null)
+          ? BottomAppBar(child: searchBar)
+          : null,
       floatingActionButton: Button(
         word: widget.word,
         showAIButtons: isAIExplainTabSelected,
@@ -664,8 +669,12 @@ class _WordDisplayState extends State<WordDisplay> {
   @override
   Widget build(BuildContext context) {
     if (validDictIds.isEmpty) {
+      final searchBar = _buildTitle(widget.word);
       return Scaffold(
-        appBar: buildAppBar(context, false),
+        appBar: buildAppBar(context, false, title: searchBar),
+        bottomNavigationBar: (!settings.searchBarInAppBar && searchBar != null)
+            ? BottomAppBar(child: searchBar)
+            : null,
         body: Center(
             child: CircularProgressIndicator(
           color: Theme.of(context).colorScheme.primary,
@@ -695,10 +704,15 @@ class _WordDisplayState extends State<WordDisplay> {
     final showTab = dictsLength > 1;
 
     if (!showTab) {
+      final searchBar = _buildTitle(widget.word);
       return ChangeNotifierProvider(
         create: (_) => AIExplanationModel(),
         child: Scaffold(
-          appBar: buildAppBar(context, showTab),
+          appBar: buildAppBar(context, showTab, title: searchBar),
+          bottomNavigationBar:
+              (!settings.searchBarInAppBar && searchBar != null)
+                  ? BottomAppBar(child: searchBar)
+                  : null,
           floatingActionButton: Button(
             word: widget.word,
             showAIButtons: settings.aiExplainWord,
@@ -719,8 +733,10 @@ class _WordDisplayState extends State<WordDisplay> {
           child: Builder(
             builder: (context) {
               final tabController = DefaultTabController.of(context);
+              final searchBar = _buildTitle(widget.word);
+
               return Scaffold(
-                appBar: buildAppBar(context, showTab),
+                appBar: buildAppBar(context, showTab, title: searchBar),
                 floatingActionButton: ListenableBuilder(
                   listenable: tabController,
                   builder: (context, child) {
@@ -743,6 +759,8 @@ class _WordDisplayState extends State<WordDisplay> {
                     if (settings.tabBarPosition == TabBarPosition.bottom &&
                         showTab)
                       buildTabBar(context),
+                    if (!settings.searchBarInAppBar && searchBar != null)
+                      searchBar
                   ],
                 ),
               );
@@ -761,12 +779,12 @@ class _WordDisplayState extends State<WordDisplay> {
     );
   }
 
-  AppBar buildAppBar(BuildContext context, bool showTab) {
+  AppBar buildAppBar(BuildContext context, bool showTab, {Widget? title}) {
     return AppBar(
       leading: BackButton(
         onPressed: () => context.go("/"),
       ),
-      title: _buildTitle(widget.word),
+      title: settings.searchBarInAppBar ? title : null,
       bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
           ? buildTabBar(context)
           : null,
