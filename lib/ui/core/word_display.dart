@@ -724,7 +724,7 @@ class _WordDisplayState extends State<WordDisplay> {
       );
     }
 
-    if (settings.dictionarySwitchStyle == DictionarySwitchStyle.tag) {
+    if (settings.dictionarySwitchStyle == DictionarySwitchStyle.tab) {
       return ChangeNotifierProvider(
         create: (_) => AIExplanationModel(),
         child: DefaultTabController(

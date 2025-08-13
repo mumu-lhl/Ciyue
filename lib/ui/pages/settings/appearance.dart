@@ -367,8 +367,8 @@ class _DictionarySwitchStyleSelectorState
               child: Text(locale.expansion),
             ),
             PopupMenuItem(
-              value: DictionarySwitchStyle.tag,
-              child: Text(locale.tag),
+              value: DictionarySwitchStyle.tab,
+              child: Text(locale.tab),
             ),
           ],
         );
