@@ -351,5 +351,7 @@
   "month": "月",
   "@month": {},
   "totalWordsInWordbook": "词汇本总词数",
-  "@totalWordsInWordbook": {}
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "开机自启动",
+  "@launchAtStartup": {}
 }

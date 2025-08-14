@@ -3,8 +3,10 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/platform.dart";
+import "package:ciyue/services/startup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/badges.dart";
+import "package:ciyue/utils.dart";
 import "package:flutter/material.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:path_provider/path_provider.dart";
@@ -95,6 +97,7 @@ class OtherSettingsPage extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 500),
           child: ListView(
             children: [
+              if (isDesktop()) const LaunchAtStartupSwitch(),
               if (Platform.isAndroid) ...[
                 const SecureScreenSwitch(),
                 const NotificationSwitch(),
@@ -178,6 +181,30 @@ class _AdvanceSwitchState extends State<AdvanceSwitch> {
         setState(() {});
       },
       secondary: const Icon(Icons.settings),
+    );
+  }
+}
+
+class LaunchAtStartupSwitch extends StatefulWidget {
+  const LaunchAtStartupSwitch({super.key});
+
+  @override
+  State<LaunchAtStartupSwitch> createState() => _LaunchAtStartupSwitchState();
+}
+
+class _LaunchAtStartupSwitchState extends State<LaunchAtStartupSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context);
+    return SwitchListTile(
+      title: Text(locale!.launchAtStartup),
+      value: settings.launchAtStartup,
+      onChanged: (value) async {
+        await settings.setLaunchAtStartup(value);
+        await StartupService.setLaunchAtStartup(value);
+        setState(() {});
+      },
+      secondary: const Icon(Icons.computer),
     );
   }
 }

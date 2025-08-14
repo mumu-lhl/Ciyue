@@ -6,8 +6,10 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/changelog.dart";
 import "package:ciyue/services/platform.dart";
+import "package:ciyue/services/startup.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/ui/core/changelog_dialog.dart";
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
@@ -113,6 +115,10 @@ Future<void> initApp() async {
       windowsWebview2Directory = (await getApplicationCacheDirectory()).path;
     }
 
+    if (isDesktop()) {
+      StartupService.init();
+    }
+
     talker.info("Application initialized successfully.");
   });
 }
@@ -163,7 +169,8 @@ Future<void> initPrefs() async {
     "isRichOutput",
     "enableTranslationHistory",
     "enableWritingCheckHistory",
-    "autoFocusSearch"
+    "autoFocusSearch",
+    "launchAtStartup",
   }));
 
   talker.info("Shared preferences initialized successfully.");
