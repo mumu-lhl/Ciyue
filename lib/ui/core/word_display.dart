@@ -671,15 +671,23 @@ class _WordDisplayState extends State<WordDisplay> {
   Widget build(BuildContext context) {
     if (_loading && validDictIds.isEmpty) {
       final searchBar = _buildTitle(widget.word);
+
+      final firstLoadedDictId = dictManager.dictIds.firstWhere(
+        (id) => dictManager.dicts[id]!.isLoading == false,
+        orElse: () => -1,
+      );
+
       return Scaffold(
         appBar: buildAppBar(context, false, title: searchBar),
         bottomNavigationBar: (!settings.searchBarInAppBar && searchBar != null)
             ? BottomAppBar(child: searchBar)
             : null,
-        body: Center(
-            child: CircularProgressIndicator(
-          color: Theme.of(context).colorScheme.primary,
-        )),
+        body: firstLoadedDictId != -1
+            ? buildWebView(firstLoadedDictId)
+            : Center(
+                child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              )),
       );
     }
 
