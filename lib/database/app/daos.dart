@@ -238,6 +238,13 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     return query.get();
   }
 
+  Future<List<WordbookData>> searchWords(String query) {
+    return (select(wordbook)
+          ..where((t) => t.word.like("$query%"))
+          ..limit(40))
+        .get();
+  }
+
   Future<int> removeWord(String word, {int? tag}) {
     if (tag == null) {
       return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
