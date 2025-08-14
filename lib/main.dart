@@ -18,10 +18,13 @@ import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:provider/provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
+import "package:tray_manager/tray_manager.dart";
+import "package:window_manager/window_manager.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,7 +86,7 @@ class Ciyue extends StatefulWidget {
   State<Ciyue> createState() => _CiyueState();
 }
 
-class _CiyueState extends State<Ciyue> {
+class _CiyueState extends State<Ciyue> with TrayListener {
   @override
   Widget build(BuildContext context) {
     if (widget.isFloatingWindow) {
@@ -153,9 +156,36 @@ class _CiyueState extends State<Ciyue> {
 
   @override
   void initState() {
+    trayManager.addListener(this);
     super.initState();
 
     refreshAll = refresh;
+  }
+
+  @override
+  void dispose() {
+    trayManager.removeListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onTrayIconMouseDown() {
+    trayManager.popUpContextMenu();
+  }
+
+  @override
+  void onTrayIconRightMouseDown() {
+    trayManager.popUpContextMenu();
+  }
+
+  @override
+  void onTrayMenuItemClick(MenuItem menuItem) {
+    if (menuItem.key == "show_window") {
+      windowManager.show();
+      windowManager.focus();
+    } else if (menuItem.key == "exit_app") {
+      SystemNavigator.pop();
+    }
   }
 
   void refresh() {
