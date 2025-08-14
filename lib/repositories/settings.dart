@@ -7,7 +7,7 @@ final settings = _Settings();
 
 enum TabBarPosition { top, bottom }
 
-enum DictionarySwitchStyle { expansion, tab }
+enum DictionarySwitchStyle { expansion, tag }
 
 class _Settings {
   late bool autoExport;
