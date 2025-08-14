@@ -13,7 +13,9 @@ import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:flutter_tts/flutter_tts.dart";
+import "package:hotkey_manager/hotkey_manager.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:path_provider/path_provider.dart";
 import "package:provider/provider.dart";
@@ -141,6 +143,32 @@ Future<void> initApp() async {
 
     if (isDesktop()) {
       StartupService.init();
+
+      await hotKeyManager.unregisterAll();
+
+      final hotKey = HotKey(
+        key: PhysicalKeyboardKey.keyM,
+        modifiers: [HotKeyModifier.control, HotKeyModifier.shift],
+        scope: HotKeyScope.system,
+      );
+      await hotKeyManager.register(
+        hotKey,
+        keyDownHandler: (hotKey) async {
+          final isVisible = await windowManager.isVisible();
+          if (isVisible) {
+            final isMinimized = await windowManager.isMinimized();
+            if (isMinimized) {
+              windowManager.restore();
+              windowManager.focus();
+            } else {
+              windowManager.minimize();
+            }
+          } else {
+            windowManager.show();
+            windowManager.focus();
+          }
+        },
+      );
 
       await windowManager.ensureInitialized();
 
