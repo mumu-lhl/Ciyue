@@ -351,5 +351,7 @@
   "month": "Month",
   "@month": {},
   "totalWordsInWordbook": "Total Words in Wordbook",
-  "@totalWordsInWordbook": {}
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "Launch at Startup",
+  "@launchAtStartup": {}
 }

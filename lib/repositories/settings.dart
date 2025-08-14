@@ -51,7 +51,10 @@ class _Settings {
   late bool enableTranslationHistory;
   late bool enableWritingCheckHistory;
 
+  late bool launchAtStartup;
+
   _Settings() {
+    launchAtStartup = prefs.getBool("launchAtStartup") ?? false;
     autoExport = prefs.getBool("autoExport") ?? false;
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
     exportDirectory = prefs.getString("exportDirectory");
@@ -209,5 +212,10 @@ class _Settings {
   Future<void> setEnableWritingCheckHistory(bool value) async {
     enableWritingCheckHistory = value;
     await prefs.setBool("enableWritingCheckHistory", value);
+  }
+
+  Future<void> setLaunchAtStartup(bool value) async {
+    launchAtStartup = value;
+    await prefs.setBool("launchAtStartup", value);
   }
 }
