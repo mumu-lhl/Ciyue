@@ -68,6 +68,16 @@ jobs:
           echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           echo "timestamp=$(date +%s)" >> $GITHUB_OUTPUT
 
+      - name: Cache Flutter Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .dart_tool
+            build
+          key: ${{ runner.os }}-build-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
       - name: Build Full APK
         run: flutter build apk --flavor full-dev --dart-define=DEV=true --dart-define=GIT_COMMIT_HASH=${{ steps.build_info.outputs.hash }} --dart-define=BUILD_TIMESTAMP=${{ steps.build_info.outputs.timestamp }}
 
@@ -97,6 +107,16 @@ jobs:
           echo "hash=$(git rev-parse --short HEAD)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           $timestamp = [int64](((Get-Date).ToUniversalTime()) - (Get-Date "1970-01-01")).TotalSeconds
           echo "timestamp=$timestamp" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Cache Flutter Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .dart_tool
+            build
+          key: ${{ runner.os }}-build-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
 
       - name: Build exe
         run: flutter build windows --dart-define=DEV=true --dart-define=GIT_COMMIT_HASH=${{ steps.build_info.outputs.hash }} --dart-define=BUILD_TIMESTAMP=${{ steps.build_info.outputs.timestamp }}
