@@ -658,6 +658,7 @@ class WordDisplay extends StatefulWidget {
 
 class _WordDisplayState extends State<WordDisplay> {
   List<int> validDictIds = [];
+  bool _loading = true;
 
   @override
   void initState() {
@@ -668,7 +669,7 @@ class _WordDisplayState extends State<WordDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    if (validDictIds.isEmpty) {
+    if (_loading && validDictIds.isEmpty) {
       final searchBar = _buildTitle(widget.word);
       return Scaffold(
         appBar: buildAppBar(context, false, title: searchBar),
@@ -682,7 +683,7 @@ class _WordDisplayState extends State<WordDisplay> {
       );
     }
 
-    if (!(validDictIds.isNotEmpty || settings.aiExplainWord)) {
+    if (!_loading && validDictIds.isEmpty && !settings.aiExplainWord) {
       return Scaffold(
         appBar: AppBar(),
         body: Center(
@@ -851,11 +852,17 @@ class _WordDisplayState extends State<WordDisplay> {
   Future<void> _validDictionaryIds() async {
     for (final id in dictManager.dictIds) {
       if (await dictManager.dicts[id]!.wordExist(widget.word)) {
-        validDictIds.add(id);
+        if (!mounted) return;
+        setState(() {
+          validDictIds.add(id);
+        });
       }
     }
 
-    setState(() {});
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+    });
   }
 }
 
