@@ -53,6 +53,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     final ratio = MediaQuery.sizeOf(context).aspectRatio;
     final historyModel = context.watch<HistoryModel>();
+    context.select<HomeModel, int>((value) => value.state);
     context.select<DictManagerModel, bool>((value) => value.isEmpty);
 
     return PopScope(

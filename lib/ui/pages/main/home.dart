@@ -228,7 +228,6 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.select<HomeModel, int>((value) => value.state);
     final model = context.watch<HistoryModel>();
 
     if (model.isSelecting) {
