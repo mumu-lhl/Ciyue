@@ -36,3 +36,6 @@ mixin _$TranslateHistoryDaoMixin on DatabaseAccessor<AppDatabase> {
   $TranslateHistoryTable get translateHistory =>
       attachedDatabase.translateHistory;
 }
+mixin _$OpenRecordsDaoMixin on DatabaseAccessor<AppDatabase> {
+  $OpenRecordsTable get openRecords => attachedDatabase.openRecords;
+}

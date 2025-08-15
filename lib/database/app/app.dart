@@ -28,6 +28,7 @@ AppDatabase appDatabase() {
     AiExplanations,
     WritingCheckHistory,
     TranslateHistory,
+    OpenRecords,
   ],
   daos: [
     DictionaryListDao,
@@ -40,6 +41,7 @@ AppDatabase appDatabase() {
     AiExplanationDao,
     WritingCheckHistoryDao,
     TranslateHistoryDao,
+    OpenRecordsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -89,10 +91,13 @@ class AppDatabase extends _$AppDatabase {
       }, from14To15: (m, schema) async {
         await m.renameColumn(
             schema.dictionaryList, "alias", schema.dictionaryList.title);
+      }, from15To16: (m, schema) async {
+        await m.create(schema.openRecords);
+        await m.create(schema.idxOpenRecords);
       }),
     );
   }
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 }

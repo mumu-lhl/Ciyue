@@ -7,6 +7,7 @@ import "package:ciyue/core/ciyue_error.dart";
 import "package:ciyue/core/localization_delegates.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
+import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
@@ -54,6 +55,9 @@ void main() async {
       ChangeNotifierProvider(create: (_) => SelectionTextViewModel()),
       Provider(create: (_) => WritingCheckHistoryDao(mainDatabase)),
       Provider(create: (_) => TranslateHistoryDao(mainDatabase)),
+      Provider(
+        create: (_) => OpenRecordsRepository(),
+      )
     ], child: const Ciyue()));
   } catch (e) {
     runApp(MaterialApp(home: CiyueError(error: e)));
@@ -74,6 +78,9 @@ void floatingWindow(List<String> args) async {
     ChangeNotifierProvider(create: (_) => DictManagerModel()),
     ChangeNotifierProvider(create: (_) => HistoryModel()),
     ChangeNotifierProvider(create: (_) => AudioModel()..init()),
+    Provider(
+      create: (_) => OpenRecordsRepository(),
+    )
   ], child: Ciyue(isFloatingWindow: true)));
 }
 

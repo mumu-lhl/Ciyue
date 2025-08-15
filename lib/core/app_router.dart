@@ -1,4 +1,5 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/ui/pages/chat/chat.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check_history.dart";
@@ -47,7 +48,13 @@ final router = GoRouter(
       path: "/word",
       builder: (context, state) {
         final extra = state.extra as Map<String, String>;
-        return WordDisplay(word: extra["word"]!);
+
+        final word = extra["word"]!;
+        Provider.of<OpenRecordsRepository>(navigatorKey.currentContext!,
+                listen: false)
+            .add(word);
+
+        return WordDisplay(word: word);
       },
     ),
     GoRoute(
