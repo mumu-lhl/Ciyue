@@ -530,4 +530,8 @@ class OpenRecordsDao extends DatabaseAccessor<AppDatabase>
       createdAt: Value(DateTime.now()),
     ));
   }
+
+  Future<List<OpenRecord>> getAll() {
+    return select(openRecords).get();
+  }
 }

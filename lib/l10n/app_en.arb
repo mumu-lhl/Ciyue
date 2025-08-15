@@ -353,5 +353,7 @@
   "totalWordsInWordbook": "Total Words in Wordbook",
   "@totalWordsInWordbook": {},
   "launchAtStartup": "Launch at Startup",
-  "@launchAtStartup": {}
+  "@launchAtStartup": {},
+  "openRecordStats": "Open Record Stats",
+  "@openRecordStats": {}
 }
