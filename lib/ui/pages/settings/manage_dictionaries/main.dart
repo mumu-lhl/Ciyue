@@ -24,9 +24,9 @@ Future<void> addGroup(String value, BuildContext context) async {
     if (context.mounted) {
       final model = context.read<DictManagerModel>();
       await model.updateGroupList();
-    }
-    if (context.mounted) {
-      context.pop();
+      if (context.mounted) {
+        context.pop();
+      }
     }
   }
 }
@@ -418,26 +418,30 @@ class GroupDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(AppLocalizations.of(context)!.manageGroups),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final group in dictManager.groups)
-            RadioListTile(
-              title: Text(group.name == "Default"
-                  ? AppLocalizations.of(context)!.default_
-                  : group.name),
-              value: group.id,
-              groupValue: dictManager.groupId,
-              secondary: GroupDeleteButton(group: group),
-              onChanged: (int? groupId) async {
-                if (groupId != dictManager.groupId) {
-                  final model = context.read<DictManagerModel>();
-                  await model.setCurrentGroup(groupId!);
-                }
-                if (context.mounted) context.pop();
-              },
-            ),
-        ],
+      content: RadioGroup(
+        groupValue: dictManager.groupId,
+        onChanged: (int? groupId) async {
+          if (groupId != null && groupId != dictManager.groupId) {
+            final model = context.read<DictManagerModel>();
+            await model.setCurrentGroup(groupId);
+          }
+          if (context.mounted) {
+            context.pop();
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final group in dictManager.groups)
+              RadioListTile(
+                title: Text(group.name == "Default"
+                    ? AppLocalizations.of(context)!.default_
+                    : group.name),
+                value: group.id,
+                secondary: GroupDeleteButton(group: group),
+              ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
