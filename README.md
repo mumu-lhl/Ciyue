@@ -74,7 +74,7 @@ You can visit [Weblate](https://hosted.weblate.org/engage/ciyue/) to add languag
 
 Thanks to their sponsorship for supporting the development of Ciyue!
 
-You can donate at [Afdian](https://afdian.com/a/mumulhl), or wechat qr code:
+You can donate at [Afdian](https://afdian.com/a/mumulhl), [Unifans](https://app.unifans.io/c/mumulhl) (Global), or wechat qr code:
 
 <img height="300" src="./assets/wechat_pay.webp">
 

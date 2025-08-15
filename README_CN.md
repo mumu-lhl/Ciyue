@@ -73,7 +73,7 @@ QQ 群：`1057888678`
 
 感谢他们的赞助支持了词悦的开发！
 
-您可以在 [爱发电](https://afdian.com/a/mumulhl) 赞助，或者微信赞助码：
+您可以在 [爱发电](https://afdian.com/a/mumulhl)，[引力圈](https://app.unifans.io/c/mumulhl) (全球) 赞助，或者微信赞助码：
 
 <img height="300" src="./assets/wechat_pay.webp">
 
