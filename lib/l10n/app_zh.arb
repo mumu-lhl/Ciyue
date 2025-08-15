@@ -353,5 +353,7 @@
   "totalWordsInWordbook": "词汇本总词数",
   "@totalWordsInWordbook": {},
   "launchAtStartup": "开机自启动",
-  "@launchAtStartup": {}
+  "@launchAtStartup": {},
+  "openRecordStats": "查阅记录统计",
+  "@openRecordStats": {}
 }

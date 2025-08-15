@@ -71,3 +71,10 @@ class TranslateHistory extends Table {
   TextColumn get inputText => text()();
   DateTimeColumn get createdAt => dateTime()();
 }
+
+@TableIndex(name: "idx_open_records", columns: {#word, #createdAt})
+class OpenRecords extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get word => text()();
+  DateTimeColumn get createdAt => dateTime()();
+}

@@ -518,3 +518,20 @@ class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
         .go();
   }
 }
+
+@DriftAccessor(tables: [OpenRecords])
+class OpenRecordsDao extends DatabaseAccessor<AppDatabase>
+    with _$OpenRecordsDaoMixin {
+  OpenRecordsDao(super.attachedDatabase);
+
+  Future<void> add(String word) async {
+    await into(openRecords).insert(OpenRecordsCompanion(
+      word: Value(word),
+      createdAt: Value(DateTime.now()),
+    ));
+  }
+
+  Future<List<OpenRecord>> getAll() {
+    return select(openRecords).get();
+  }
+}

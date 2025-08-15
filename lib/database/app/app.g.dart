@@ -2498,6 +2498,228 @@ class TranslateHistoryCompanion
   }
 }
 
+class $OpenRecordsTable extends OpenRecords
+    with drift.TableInfo<$OpenRecordsTable, OpenRecord> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OpenRecordsTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _idMeta =
+      const drift.VerificationMeta('id');
+  @override
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const drift.VerificationMeta _wordMeta =
+      const drift.VerificationMeta('word');
+  @override
+  late final drift.GeneratedColumn<String> word = drift.GeneratedColumn<String>(
+      'word', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const drift.VerificationMeta _createdAtMeta =
+      const drift.VerificationMeta('createdAt');
+  @override
+  late final drift.GeneratedColumn<DateTime> createdAt =
+      drift.GeneratedColumn<DateTime>('created_at', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<drift.GeneratedColumn> get $columns => [id, word, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'open_records';
+  @override
+  drift.VerificationContext validateIntegrity(
+      drift.Insertable<OpenRecord> instance,
+      {bool isInserting = false}) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('word')) {
+      context.handle(
+          _wordMeta, word.isAcceptableOrUnknown(data['word']!, _wordMeta));
+    } else if (isInserting) {
+      context.missing(_wordMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
+  @override
+  OpenRecord map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OpenRecord(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      word: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $OpenRecordsTable createAlias(String alias) {
+    return $OpenRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class OpenRecord extends drift.DataClass
+    implements drift.Insertable<OpenRecord> {
+  final int id;
+  final String word;
+  final DateTime createdAt;
+  const OpenRecord(
+      {required this.id, required this.word, required this.createdAt});
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['word'] = drift.Variable<String>(word);
+    map['created_at'] = drift.Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  OpenRecordsCompanion toCompanion(bool nullToAbsent) {
+    return OpenRecordsCompanion(
+      id: drift.Value(id),
+      word: drift.Value(word),
+      createdAt: drift.Value(createdAt),
+    );
+  }
+
+  factory OpenRecord.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return OpenRecord(
+      id: serializer.fromJson<int>(json['id']),
+      word: serializer.fromJson<String>(json['word']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'word': serializer.toJson<String>(word),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  OpenRecord copyWith({int? id, String? word, DateTime? createdAt}) =>
+      OpenRecord(
+        id: id ?? this.id,
+        word: word ?? this.word,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  OpenRecord copyWithCompanion(OpenRecordsCompanion data) {
+    return OpenRecord(
+      id: data.id.present ? data.id.value : this.id,
+      word: data.word.present ? data.word.value : this.word,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OpenRecord(')
+          ..write('id: $id, ')
+          ..write('word: $word, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, word, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OpenRecord &&
+          other.id == this.id &&
+          other.word == this.word &&
+          other.createdAt == this.createdAt);
+}
+
+class OpenRecordsCompanion extends drift.UpdateCompanion<OpenRecord> {
+  final drift.Value<int> id;
+  final drift.Value<String> word;
+  final drift.Value<DateTime> createdAt;
+  const OpenRecordsCompanion({
+    this.id = const drift.Value.absent(),
+    this.word = const drift.Value.absent(),
+    this.createdAt = const drift.Value.absent(),
+  });
+  OpenRecordsCompanion.insert({
+    this.id = const drift.Value.absent(),
+    required String word,
+    required DateTime createdAt,
+  })  : word = drift.Value(word),
+        createdAt = drift.Value(createdAt);
+  static drift.Insertable<OpenRecord> custom({
+    drift.Expression<int>? id,
+    drift.Expression<String>? word,
+    drift.Expression<DateTime>? createdAt,
+  }) {
+    return drift.RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (word != null) 'word': word,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  OpenRecordsCompanion copyWith(
+      {drift.Value<int>? id,
+      drift.Value<String>? word,
+      drift.Value<DateTime>? createdAt}) {
+    return OpenRecordsCompanion(
+      id: id ?? this.id,
+      word: word ?? this.word,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (id.present) {
+      map['id'] = drift.Variable<int>(id.value);
+    }
+    if (word.present) {
+      map['word'] = drift.Variable<String>(word.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = drift.Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OpenRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('word: $word, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2514,6 +2736,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
       $WritingCheckHistoryTable(this);
   late final $TranslateHistoryTable translateHistory =
       $TranslateHistoryTable(this);
+  late final $OpenRecordsTable openRecords = $OpenRecordsTable(this);
   late final drift.Index idxWordbook = drift.Index('idx_wordbook',
       'CREATE INDEX idx_wordbook ON wordbook (word, created_at)');
   late final drift.Index idxWordbookTags = drift.Index('idx_wordbook_tags',
@@ -2523,6 +2746,8 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
       'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")');
   late final drift.Index idxAiExplanations = drift.Index('idx_ai_explanations',
       'CREATE INDEX idx_ai_explanations ON ai_explanations (word)');
+  late final drift.Index idxOpenRecords = drift.Index('idx_open_records',
+      'CREATE INDEX idx_open_records ON open_records (word, created_at)');
   late final DictionaryListDao dictionaryListDao =
       DictionaryListDao(this as AppDatabase);
   late final WordbookDao wordbookDao = WordbookDao(this as AppDatabase);
@@ -2540,6 +2765,8 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
       WritingCheckHistoryDao(this as AppDatabase);
   late final TranslateHistoryDao translateHistoryDao =
       TranslateHistoryDao(this as AppDatabase);
+  late final OpenRecordsDao openRecordsDao =
+      OpenRecordsDao(this as AppDatabase);
   @override
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
@@ -2555,10 +2782,12 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
         aiExplanations,
         writingCheckHistory,
         translateHistory,
+        openRecords,
         idxWordbook,
         idxWordbookTags,
         idxMddAudioResource,
-        idxAiExplanations
+        idxAiExplanations,
+        idxOpenRecords
       ];
 }
 
@@ -4077,6 +4306,146 @@ typedef $$TranslateHistoryTableProcessedTableManager
         ),
         TranslateHistoryData,
         drift.PrefetchHooks Function()>;
+typedef $$OpenRecordsTableCreateCompanionBuilder = OpenRecordsCompanion
+    Function({
+  drift.Value<int> id,
+  required String word,
+  required DateTime createdAt,
+});
+typedef $$OpenRecordsTableUpdateCompanionBuilder = OpenRecordsCompanion
+    Function({
+  drift.Value<int> id,
+  drift.Value<String> word,
+  drift.Value<DateTime> createdAt,
+});
+
+class $$OpenRecordsTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $OpenRecordsTable> {
+  $$OpenRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt,
+      builder: (column) => drift.ColumnFilters(column));
+}
+
+class $$OpenRecordsTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $OpenRecordsTable> {
+  $$OpenRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt,
+      builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$OpenRecordsTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $OpenRecordsTable> {
+  $$OpenRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get word =>
+      $composableBuilder(column: $table.word, builder: (column) => column);
+
+  drift.GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$OpenRecordsTableTableManager extends drift.RootTableManager<
+    _$AppDatabase,
+    $OpenRecordsTable,
+    OpenRecord,
+    $$OpenRecordsTableFilterComposer,
+    $$OpenRecordsTableOrderingComposer,
+    $$OpenRecordsTableAnnotationComposer,
+    $$OpenRecordsTableCreateCompanionBuilder,
+    $$OpenRecordsTableUpdateCompanionBuilder,
+    (
+      OpenRecord,
+      drift.BaseReferences<_$AppDatabase, $OpenRecordsTable, OpenRecord>
+    ),
+    OpenRecord,
+    drift.PrefetchHooks Function()> {
+  $$OpenRecordsTableTableManager(_$AppDatabase db, $OpenRecordsTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$OpenRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$OpenRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$OpenRecordsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            drift.Value<String> word = const drift.Value.absent(),
+            drift.Value<DateTime> createdAt = const drift.Value.absent(),
+          }) =>
+              OpenRecordsCompanion(
+            id: id,
+            word: word,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            required String word,
+            required DateTime createdAt,
+          }) =>
+              OpenRecordsCompanion.insert(
+            id: id,
+            word: word,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$OpenRecordsTableProcessedTableManager = drift.ProcessedTableManager<
+    _$AppDatabase,
+    $OpenRecordsTable,
+    OpenRecord,
+    $$OpenRecordsTableFilterComposer,
+    $$OpenRecordsTableOrderingComposer,
+    $$OpenRecordsTableAnnotationComposer,
+    $$OpenRecordsTableCreateCompanionBuilder,
+    $$OpenRecordsTableUpdateCompanionBuilder,
+    (
+      OpenRecord,
+      drift.BaseReferences<_$AppDatabase, $OpenRecordsTable, OpenRecord>
+    ),
+    OpenRecord,
+    drift.PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4101,4 +4470,6 @@ class $AppDatabaseManager {
       $$WritingCheckHistoryTableTableManager(_db, _db.writingCheckHistory);
   $$TranslateHistoryTableTableManager get translateHistory =>
       $$TranslateHistoryTableTableManager(_db, _db.translateHistory);
+  $$OpenRecordsTableTableManager get openRecords =>
+      $$OpenRecordsTableTableManager(_db, _db.openRecords);
 }
