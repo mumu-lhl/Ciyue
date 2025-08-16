@@ -858,6 +858,10 @@ class _WordDisplayState extends State<WordDisplay> {
   }
 
   Future<void> _validDictionaryIds() async {
+    while (dictManager.dictIds.isEmpty) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+
     for (final id in dictManager.dictIds) {
       if (await dictManager.dicts[id]!.wordExist(widget.word)) {
         if (!mounted) return;
