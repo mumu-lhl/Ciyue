@@ -71,15 +71,16 @@ class _WordSearchBarWithSuggestionsState
           },
           suggestionsBuilder:
               (BuildContext context, SearchController controller) async {
-            if (controller.text.isEmpty) {
+            final searchWord = controller.text.trimRight();
+
+            if (searchWord.isEmpty) {
               return [const SizedBox.shrink()];
             }
 
-            final searchResult =
-                await Searcher(controller.text).getSearchResult();
+            final searchResult = await Searcher(searchWord).getSearchResult();
 
             if (settings.aiExplainWord) {
-              searchResult.insert(0, controller.text);
+              searchResult.insert(0, searchWord);
             }
 
             return searchResult.map((e) => ListTile(
