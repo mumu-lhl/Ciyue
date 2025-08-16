@@ -27,8 +27,8 @@ class AISettingsViewModel with ChangeNotifier {
     }
 
     final config = settings.getAiProviderConfig(_provider);
-    modelController.text = config["model"]!;
-    apiKeyController.text = config["apiKey"]!;
+    modelController.text = config["model"] ?? "";
+    apiKeyController.text = config["apiKey"] ?? "";
     apiUrlController.text = settings.aiAPIUrl;
 
     final currentProvider = ModelProviderManager.modelProviders[_provider]!;
@@ -58,7 +58,7 @@ class AISettingsViewModel with ChangeNotifier {
     prefs.setString("aiProvider", newProvider);
 
     final config = settings.getAiProviderConfig(_provider);
-    modelController.text = config["model"]!;
+    modelController.text = config["model"] ?? "";
     final currentProvider = ModelProviderManager.modelProviders[_provider] ??
         ModelProviderManager.modelProviders.values.first;
     if (!currentProvider.models
@@ -66,7 +66,12 @@ class AISettingsViewModel with ChangeNotifier {
         !currentProvider.allowCustomModel) {
       modelController.text = currentProvider.models[0].originName;
     }
-    apiKeyController.text = config["apiKey"]!;
+    apiKeyController.text = config["apiKey"] ?? "";
+
+    if (ModelProviderManager.modelProviders[_provider]!.allowCustomAPIUrl) {
+      apiUrlController.text = settings.aiAPIUrl;
+    }
+
     notifyListeners();
   }
 

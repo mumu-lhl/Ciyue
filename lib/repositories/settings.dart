@@ -150,6 +150,10 @@ class _Settings {
   }
 
   Future<void> setAiAPIUrl(String apiUrl) async {
+    if (aiProviderConfigs[aiProvider] == null) {
+      aiProviderConfigs[aiProvider] = {};
+    }
+
     aiProviderConfigs[aiProvider]!["apiUrl"] = apiUrl;
     await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
   }
