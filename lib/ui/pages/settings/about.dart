@@ -95,6 +95,7 @@ class DiscordUrl extends StatelessWidget {
 
 class SponsorListTile extends StatelessWidget {
   static const sponsorUri = "https://afdian.com/a/mumulhl";
+  static const unifansSponsorUri = "https://app.unifans.io/c/mumulhl";
 
   const SponsorListTile({
     super.key,
@@ -162,74 +163,16 @@ class SponsorListTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: cs.primaryContainer,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.volunteer_activism,
-                            color: cs.onPrimaryContainer,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                "爱发电 Afdian",
-                                style: TextStyle(fontWeight: FontWeight.w600),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                SponsorListTile.sponsorUri,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                const _SponsorLinkCard(
+                  iconData: Icons.volunteer_activism,
+                  title: "爱发电 Afdian",
+                  uri: SponsorListTile.sponsorUri,
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () {
-                          launchUrl(
-                            Uri.parse(SponsorListTile.sponsorUri),
-                            mode: LaunchMode.externalApplication,
-                          );
-                        },
-                        icon: const Icon(Icons.open_in_new),
-                        label: Text(AppLocalizations.of(context)!.openLink),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () =>
-                            addToClipboard(context, SponsorListTile.sponsorUri),
-                        icon: const Icon(Icons.copy_rounded),
-                        label: Text(AppLocalizations.of(context)!.copyLink),
-                      ),
-                    ),
-                  ],
+                const _SponsorLinkCard(
+                  iconData: Icons.public,
+                  title: "引力圈 Unifans (Global)",
+                  uri: SponsorListTile.unifansSponsorUri,
                 ),
                 const SizedBox(height: 32),
                 Text(
@@ -267,6 +210,99 @@ class SponsorListTile extends StatelessWidget {
         leading: const Icon(Icons.favorite),
         onTap: () => showSponsorSheet(context),
         onLongPress: () => addToClipboard(context, sponsorUri));
+  }
+}
+
+class _SponsorLinkCard extends StatelessWidget {
+  final IconData iconData;
+  final String title;
+  final String uri;
+
+  const _SponsorLinkCard({
+    required this.iconData,
+    required this.title,
+    required this.uri,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final localizations = AppLocalizations.of(context)!;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    iconData,
+                    color: cs.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        uri,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: () {
+                  launchUrl(
+                    Uri.parse(uri),
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+                icon: const Icon(Icons.open_in_new),
+                label: Text(localizations.openLink),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => addToClipboard(context, uri),
+                icon: const Icon(Icons.copy_rounded),
+                label: Text(localizations.copyLink),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }
 
