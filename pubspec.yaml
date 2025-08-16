@@ -55,8 +55,8 @@ dependencies:
   dynamic_color: ^1.8.1
   flutter_tts:
     git:
-      url: https://github.com/Metaildust/flutter_tts.git
-      ref: 50e6993a3f9aa547b88f4de4cc801cabc1b5ff25
+      url: https://github.com/mumu-lhl/flutter_tts.git
+      ref: 79009e7045382c5cf57142ecbb735e17cbbd58cd
   package_info_plus: ^8.3.1
   url_launcher: ^6.3.2
   file_selector: ^1.0.3
