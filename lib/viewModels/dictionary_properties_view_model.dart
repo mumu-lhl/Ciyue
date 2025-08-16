@@ -27,9 +27,6 @@ class DictionaryPropertiesViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchProperties(String path, int id) async {
-    _isLoading = true;
-    notifyListeners();
-
     try {
       final dict = Mdict(path: path);
       await dict.initOnlyMetadata(id);

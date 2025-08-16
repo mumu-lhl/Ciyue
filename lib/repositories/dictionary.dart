@@ -256,6 +256,8 @@ class Mdict {
   }
 
   Future<void> initOnlyMetadata(int id) async {
+    this.id = id;
+
     reader = DictReader("$path.mdx");
 
     if (await hitCache(id, "mdx", reader)) {
