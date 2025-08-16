@@ -1,7 +1,9 @@
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/ui/pages/main/home/app_bar.dart";
+import "package:ciyue/ui/pages/main/home/drawer.dart";
+import "package:ciyue/ui/pages/main/home/scaffold.dart";
 import "package:ciyue/ui/pages/translate/translate_page.dart";
-import "package:ciyue/ui/pages/main/home.dart";
 import "package:ciyue/ui/pages/main/settings.dart";
 import "package:ciyue/ui/pages/main/wordbook.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
