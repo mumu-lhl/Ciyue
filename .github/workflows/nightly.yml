@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 env:
-  FLUTTER_VERSION: 3.35.1
+  FLUTTER_VERSION: 3.32.8
 
 jobs:
   check-activity:
