@@ -28,7 +28,7 @@ class AiTranslateSettingsPage extends StatelessWidget {
                           labelText: AppLocalizations.of(context)!.outputType,
                           border: const OutlineInputBorder(),
                         ),
-                        initialValue: viewModel.isRichOutput,
+                        value: viewModel.isRichOutput,
                         items: [
                           DropdownMenuItem(
                             value: true,
@@ -54,7 +54,7 @@ class AiTranslateSettingsPage extends StatelessWidget {
                               AppLocalizations.of(context)!.translationProvider,
                           border: const OutlineInputBorder(),
                         ),
-                        initialValue: viewModel.translationProvider,
+                        value: viewModel.translationProvider,
                         items: [
                           const DropdownMenuItem(
                             value: "ai",
