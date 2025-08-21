@@ -353,5 +353,15 @@
   "pressAgainToExit": "Presiona atrás nuevamente para salir",
   "@pressAgainToExit": {},
   "autoFocusSearch": "Barra de búsqueda de enfoque automático",
-  "@autoFocusSearch": {}
+  "@autoFocusSearch": {},
+  "wordbookStats": "Estadísticas del libro de palabras",
+  "@wordbookStats": {},
+  "month": "Mes",
+  "@month": {},
+  "totalWordsInWordbook": "Total de palabras en el libro de palabras",
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "Lanzar al inicio",
+  "@launchAtStartup": {},
+  "openRecordStats": "Abrir estadísticas de registro",
+  "@openRecordStats": {}
 }

@@ -348,6 +348,20 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "ஸ்பான்சர் குறியீடுகள்",
   "@sponsorCodes": {},
-  "wechat": "வீசாட்",
-  "@wechat": {}
+    "wechat": "வீசாட்",
+  "@wechat": {},
+  "pressAgainToExit": "வெளியேற மீண்டும் அழுத்தவும்",
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "தானியங்கு ஃபோகஸ் தேடல் பட்டி",
+  "@autoFocusSearch": {},
+  "wordbookStats": "வார்த்தை புத்தக புள்ளிவிவரங்கள்",
+  "@wordbookStats": {},
+  "month": "மாதம்",
+  "@month": {},
+  "totalWordsInWordbook": "வார்த்தை புத்தகத்தில் உள்ள மொத்த வார்த்தைகள்",
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "தொடக்கத்தில் தொடங்கவும்",
+  "@launchAtStartup": {},
+  "openRecordStats": "பதிவு புள்ளிவிவரங்களைத் திறக்கவும்",
+  "@openRecordStats": {}
 }

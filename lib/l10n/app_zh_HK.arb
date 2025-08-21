@@ -348,6 +348,20 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "贊助碼",
   "@sponsorCodes": {},
-  "wechat": "微信",
-  "@wechat": {}
+    "wechat": "微信",
+  "@wechat": {},
+  "pressAgainToExit": "再按一次退出",
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "自動對焦搜索欄",
+  "@autoFocusSearch": {},
+  "wordbookStats": "單詞本統計",
+  "@wordbookStats": {},
+  "month": "月",
+  "@month": {},
+  "totalWordsInWordbook": "單詞本中的總單詞數",
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "啟動時啟動",
+  "@launchAtStartup": {},
+  "openRecordStats": "打開記錄統計",
+  "@openRecordStats": {}
 }

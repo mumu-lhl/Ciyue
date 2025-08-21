@@ -357,5 +357,11 @@
   "wordbookStats": "শব্দকোষ পরিসংখ্যান",
   "@wordbookStats": {},
   "totalWordsInWordbook": "শব্দকোষে মোট শব্দ",
-  "@totalWordsInWordbook": {}
+  "@totalWordsInWordbook": {},
+  "month": "মাস",
+  "@month": {},
+  "launchAtStartup": "স্টার্টআপে লঞ্চ করুন",
+  "@launchAtStartup": {},
+  "openRecordStats": "রেকর্ড পরিসংখ্যান খুলুন",
+  "@openRecordStats": {}
 }

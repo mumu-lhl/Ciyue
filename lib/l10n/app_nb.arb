@@ -348,6 +348,20 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "Sponsorkoder",
   "@sponsorCodes": {},
-  "wechat": "WeChat",
-  "@wechat": {}
+    "wechat": "WeChat",
+  "@wechat": {},
+  "pressAgainToExit": "Trykk igjen for å avslutte",
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "Autofokus søkefelt",
+  "@autoFocusSearch": {},
+  "wordbookStats": "Ordbokstatistikk",
+  "@wordbookStats": {},
+  "month": "Måned",
+  "@month": {},
+  "totalWordsInWordbook": "Totalt antall ord i ordboken",
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "Start ved oppstart",
+  "@launchAtStartup": {},
+  "openRecordStats": "Åpne poststatistikk",
+  "@openRecordStats": {}
 }

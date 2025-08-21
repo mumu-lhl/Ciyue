@@ -348,6 +348,20 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "Коды спонсоров",
   "@sponsorCodes": {},
-  "wechat": "WeChat",
-  "@wechat": {}
+    "wechat": "WeChat",
+  "@wechat": {},
+  "pressAgainToExit": "Нажмите еще раз, чтобы выйти",
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "Панель поиска с автофокусом",
+  "@autoFocusSearch": {},
+  "wordbookStats": "Статистика словарного запаса",
+  "@wordbookStats": {},
+  "month": "Месяц",
+  "@month": {},
+  "totalWordsInWordbook": "Всего слов в словаре",
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "Запускать при запуске",
+  "@launchAtStartup": {},
+  "openRecordStats": "Открыть статистику записей",
+  "@openRecordStats": {}
 }

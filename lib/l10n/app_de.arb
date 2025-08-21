@@ -348,6 +348,20 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "Sponsoren-Codes",
   "@sponsorCodes": {},
-  "wechat": "WeChat",
-  "@wechat": {}
+    "wechat": "WeChat",
+  "@wechat": {},
+  "pressAgainToExit": "Drücken Sie erneut, um zu beenden",
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "Suchleiste mit Autofokus",
+  "@autoFocusSearch": {},
+  "wordbookStats": "Wortbuch-Statistiken",
+  "@wordbookStats": {},
+  "month": "Monat",
+  "@month": {},
+  "totalWordsInWordbook": "Gesamtzahl der Wörter im Wortbuch",
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "Beim Start starten",
+  "@launchAtStartup": {},
+  "openRecordStats": "Datensatzstatistik öffnen",
+  "@openRecordStats": {}
 }

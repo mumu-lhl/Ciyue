@@ -348,6 +348,20 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "Còdighes de patrotzìniu",
   "@sponsorCodes": {},
-  "wechat": "WeChat",
-  "@wechat": {}
+    "wechat": "WeChat",
+  "@wechat": {},
+  "pressAgainToExit": "Preme torra pro essire",
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "Barra de chirca cun focus automàticu",
+  "@autoFocusSearch": {},
+  "wordbookStats": "Statìsticas de su libru de paràulas",
+  "@wordbookStats": {},
+  "month": "Mese",
+  "@month": {},
+  "totalWordsInWordbook": "Paràulas totales in su libru de paràulas",
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "Avia a s'aviu",
+  "@launchAtStartup": {},
+  "openRecordStats": "Abre sas istatìsticas de registratzione",
+  "@openRecordStats": {}
 }

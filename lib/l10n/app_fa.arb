@@ -348,6 +348,20 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "کدهای حامی",
   "@sponsorCodes": {},
-  "wechat": "وی‌چت",
-  "@wechat": {}
+    "wechat": "وی‌چت",
+  "@wechat": {},
+  "pressAgainToExit": "برای خروج دوباره فشار دهید",
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "نوار جستجوی فوکوس خودکار",
+  "@autoFocusSearch": {},
+  "wordbookStats": "آمار کتاب واژه",
+  "@wordbookStats": {},
+  "month": "ماه",
+  "@month": {},
+  "totalWordsInWordbook": "کل کلمات در کتاب واژه",
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "راه اندازی در هنگام راه اندازی",
+  "@launchAtStartup": {},
+  "openRecordStats": "باز کردن آمار رکورد",
+  "@openRecordStats": {}
 }

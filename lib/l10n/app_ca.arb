@@ -348,6 +348,20 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "Codis de patrocinador",
   "@sponsorCodes": {},
-  "wechat": "WeChat",
-  "@wechat": {}
+    "wechat": "WeChat",
+  "@wechat": {},
+  "pressAgainToExit": "Premeu de nou per sortir",
+  "@pressAgainToExit": {},
+  "autoFocusSearch": "Barra de cerca d'enfocament automàtic",
+  "@autoFocusSearch": {},
+  "wordbookStats": "Estadístiques del llibre de paraules",
+  "@wordbookStats": {},
+  "month": "Mes",
+  "@month": {},
+  "totalWordsInWordbook": "Total de paraules al llibre de paraules",
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "Inicia a l'inici",
+  "@launchAtStartup": {},
+  "openRecordStats": "Obre les estadístiques de registre",
+  "@openRecordStats": {}
 }

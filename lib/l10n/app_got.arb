@@ -342,6 +342,18 @@
   "@tab": {},
   "advanceSwitchDescription": "𐌲𐌰𐌻𐌰𐌲𐌾𐌰𐌽 𐌳𐌿 𐌱𐌰𐌽𐌳𐍅𐌾𐌰𐌽 𐌼𐌰𐌽𐌰𐌲𐌹𐌶𐌴𐌹𐌽𐍃 𐌻𐌰𐌲𐌴𐌹𐌽𐌹𐌽𐍃 𐌼𐌰𐌷𐍄𐌴",
   "@advanceSwitchDescription": {},
-  "backup": "𐌰𐌽𐌸𐌰𐍂𐌰 𐌲𐌰𐍆𐌰𐍃𐍄𐌰𐌹𐌽𐍃",
-  "@backup": {}
+    "backup": "𐌰𐌽𐌸𐌰𐍂𐌰 𐌲𐌰𐍆𐌰𐍃𐍄𐌰𐌹𐌽𐍃",
+  "@backup": {},
+  "autoFocusSearch": "𐍃𐌹𐌻𐌱𐌰𐍄𐌰𐌿𐌾𐌰𐌽𐌳𐍉 𐍃𐍉𐌺𐌽𐌹-𐌰𐌽𐍃",
+  "@autoFocusSearch": {},
+  "wordbookStats": "𐍅𐌰𐌿𐍂𐌳𐌰𐌱𐍉𐌺𐍉 𐍃𐍄𐌰𐍄𐌹𐍃𐍄𐌹𐌺𐌰",
+  "@wordbookStats": {},
+  "month": "𐌼𐌴𐌽𐍉𐌸𐍃",
+  "@month": {},
+  "totalWordsInWordbook": "𐍆𐌹𐌻𐌿 𐍅𐌰𐌿𐍂𐌳𐌴 𐌹𐌽 𐍅𐌰𐌿𐍂𐌳𐌰𐌱𐍉𐌺𐍉𐌼",
+  "@totalWordsInWordbook": {},
+  "launchAtStartup": "𐌿𐍃𐌼𐌴𐍂𐌴𐌹𐌽𐍃 𐌰𐍄 𐌿𐍃𐌼𐌴𐍂𐌴𐌹𐌽𐌰𐌹",
+  "@launchAtStartup": {},
+  "openRecordStats": "𐌿𐍃𐌻𐌿𐌺 𐍃𐍄𐌰𐍄𐌹𐍃𐍄𐌹𐌺𐌰 𐌲𐌰𐌼𐌴𐌻𐌴𐌹𐌽𐌰𐌹𐍃",
+  "@openRecordStats": {}
 }
