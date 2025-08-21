@@ -11,8 +11,7 @@ class DictManagerModel extends ChangeNotifier {
   bool checkIsEmpty() {
     if (dictManager.isEmpty != isEmpty) {
       isEmpty = dictManager.isEmpty;
-      notifyListeners();
-
+      Future.microtask(() => notifyListeners());
       return true;
     } else {
       return false;

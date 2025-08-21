@@ -31,6 +31,9 @@ class DictManager {
   List<int> dictIds = [];
   int groupId = 0;
 
+  bool _isLoading = true;
+  bool get isLoading => _isLoading;
+
   bool get isEmpty => dicts.isEmpty;
 
   Future<void> add(int id, String path) async {
@@ -53,6 +56,8 @@ class DictManager {
   bool contain(int id) => dicts.keys.contains(id);
 
   Future<void> setCurrentGroup(int id) async {
+    _isLoading = true;
+
     await _clear();
 
     groupId = id;
@@ -85,6 +90,8 @@ class DictManager {
     if (toRemove.isNotEmpty) {
       await dictGroupDao.updateDictIds(groupId, dictIds);
     }
+
+    _isLoading = false;
   }
 }
 

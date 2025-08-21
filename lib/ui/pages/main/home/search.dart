@@ -6,18 +6,37 @@ import "package:ciyue/ui/core/search_bar.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
 
-class BottomSearchBar extends StatelessWidget {
+class BottomSearchBar extends StatefulWidget {
   const BottomSearchBar({super.key});
+
+  @override
+  State<BottomSearchBar> createState() => _BottomSearchBarState();
+}
+
+class _BottomSearchBarState extends State<BottomSearchBar> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _waitForLoading();
+  }
 
   @override
   Widget build(BuildContext context) {
     context.select<HomeModel, int>((value) => value.state);
 
-    if (!settings.searchBarInAppBar) {
+    if (_isLoading) {
+      return const SizedBox.shrink();
+    }
+
+    if (!settings.searchBarInAppBar || settings.aiExplainWord) {
+      context.read<DictManagerModel>().checkIsEmpty();
+
       return Selector<DictManagerModel, bool>(
           selector: (_, model) => model.isEmpty,
           builder: (_, isEmpty, __) {
-            if (isEmpty) {
+            if (isEmpty && !settings.aiExplainWord) {
               return const SizedBox.shrink();
             }
 
@@ -29,6 +48,16 @@ class BottomSearchBar extends StatelessWidget {
     } else {
       return const SizedBox.shrink();
     }
+  }
+
+  Future<void> _waitForLoading() async {
+    while (dictManager.isLoading) {
+      await Future.delayed(Duration(milliseconds: 40));
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 }
 
