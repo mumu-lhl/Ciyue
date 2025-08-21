@@ -94,7 +94,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.28.1
   build_runner: ^2.7.0
-  test: ^1.25.15
+  test: ^1.26.2
   freezed: ^3.2.0
 
 # For information on the generic Dart part of this file, see the
