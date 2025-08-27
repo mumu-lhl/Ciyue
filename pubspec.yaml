@@ -70,7 +70,7 @@ dependencies:
   permission_handler: ^12.0.1
   logger: ^2.6.1
   translator: ^1.0.3+1
-  talker: ^5.0.0-dev.16
+  talker: ^5.0.0
   talker_flutter: ^5.0.0-dev.16
   talker_dio_logger: ^5.0.0-dev.16
   flutter_smart_dialog: ^4.9.8+9
