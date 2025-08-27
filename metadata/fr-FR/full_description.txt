@@ -3,13 +3,8 @@ Ciyue est un simple dictionnaire mdict.
 Fonctionnalités:
 
 * 📄 Lit les formats MDX/MDD
-
-* 🔍 Recherche et affichage multi-dictionnaires 
-
+* 🔍 Recherche et affichage multi-dictionnaires
 * 🎨 Compatible avec Material You
-
 * 🌐 Traduction avec IA (OpenAI, Gemini, Deepseek...)
-
-* 🔈 Fonction de prononciation 
-
-* 🔖Carnet de mots personalisable
+* 🔈 Fonction de prononciation
+* 🔖 Carnet de mots personnalisable
