@@ -186,5 +186,21 @@
         }
     },
     "update": "Mettre à jour",
-    "@update": {}
+    "@update": {},
+    "noUpdateAvailable": "Pas de mise à jour disponible",
+    "@noUpdateAvailable": {},
+    "updateCheckFailed": "Échec de la recherche des mises à jour",
+    "@updateCheckFailed": {},
+    "includePrerelease": "Inclure les mises à jour préliminaires",
+    "@includePrerelease": {},
+    "checkingForUpdates": "Recherche de mises à jour...",
+    "@checkingForUpdates": {},
+    "aiExplainWordPrompt": "Expliquer le mot en requête",
+    "@aiExplainWordPrompt": {},
+    "customExplainPromptHelper": "Vous pouvez utiliser $word et $targetLanguage dans votre requête.",
+    "@customExplainPromptHelper": {},
+    "aiTranslatePrompt": "Traduction de la requête par l'IA",
+    "@aiTranslatePrompt": {},
+    "customTranslatePromptHelper": "Vous pouvez utiliser $sourceLanguage, $targetLanguage, et $text dans votre requête.",
+    "@customTranslatePromptHelper": {}
 }
