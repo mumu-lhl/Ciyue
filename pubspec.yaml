@@ -43,7 +43,7 @@ dependencies:
       url: https://github.com/mumu-lhl/dict_reader.git
       ref: af687fb3c30f36d3e7679b0eeb6c2b993c5300a8
   shared_preferences: ^2.5.3
-  go_router: ^16.2.0
+  go_router: ^16.2.1
   flutter_inappwebview: ^6.1.5
   path: ^1.9.1
   path_provider: ^2.1.5
