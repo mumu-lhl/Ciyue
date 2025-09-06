@@ -43,7 +43,7 @@ dependencies:
       url: https://github.com/mumu-lhl/dict_reader.git
       ref: af687fb3c30f36d3e7679b0eeb6c2b993c5300a8
   shared_preferences: ^2.5.3
-  go_router: ^16.2.0
+  go_router: ^16.2.1
   flutter_inappwebview: ^6.1.5
   path: ^1.9.1
   path_provider: ^2.1.5
@@ -63,14 +63,14 @@ dependencies:
   html_unescape: ^2.0.0
   flutter_local_notifications: ^19.4.1
   dio: ^5.9.0
-  gpt_markdown: ^1.1.2
-  provider: ^6.1.5
+  gpt_markdown: ^1.1.3
+  provider: ^6.1.5+1
   freezed_annotation: ^3.1.0
-  audioplayers: ^6.5.0
+  audioplayers: ^6.5.1
   permission_handler: ^12.0.1
   logger: ^2.6.1
-  translator: ^1.0.3+1
-  talker: ^5.0.0-dev.16
+  translator: ^1.0.4+1
+  talker: ^5.0.0
   talker_flutter: ^5.0.0
   talker_dio_logger: ^5.0.0
   flutter_smart_dialog: ^4.9.8+9
@@ -92,9 +92,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  drift_dev: ^2.28.1
-  build_runner: ^2.7.0
-  test: ^1.25.15
+  drift_dev: ^2.28.2
+  build_runner: ^2.7.1
+  test: ^1.26.2
   freezed: ^3.2.0
 
 # For information on the generic Dart part of this file, see the

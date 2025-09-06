@@ -157,7 +157,7 @@ class TTSEngines extends StatelessWidget {
         TitleText(AppLocalizations.of(context)!.ttsEngines),
         SizedBox(height: 12),
         DropdownButtonFormField<String>(
-          value: settings.ttsEngine ?? ttsEngines.first,
+          initialValue: settings.ttsEngine ?? ttsEngines.first,
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)!.ttsEngines,
             border: OutlineInputBorder(),
@@ -199,7 +199,7 @@ class TTSLanguages extends StatelessWidget {
         TitleText(AppLocalizations.of(context)!.ttsLanguages),
         SizedBox(height: 12),
         DropdownButtonFormField<String>(
-          value: settings.ttsLanguage ?? _defaultLanguage(),
+          initialValue: settings.ttsLanguage ?? _defaultLanguage(),
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)!.ttsLanguages,
             border: OutlineInputBorder(),
