@@ -61,7 +61,7 @@ dependencies:
   url_launcher: ^6.3.2
   file_selector: ^1.0.3
   html_unescape: ^2.0.0
-  flutter_local_notifications: ^19.4.1
+  flutter_local_notifications: ^19.4.2
   dio: ^5.9.0
   gpt_markdown: ^1.1.4
   provider: ^6.1.5+1
