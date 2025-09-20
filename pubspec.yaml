@@ -95,7 +95,7 @@ dev_dependencies:
   drift_dev: ^2.28.2
   build_runner: ^2.7.1
   test: ^1.26.2
-  freezed: ^3.2.0
+  freezed: ^3.2.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
