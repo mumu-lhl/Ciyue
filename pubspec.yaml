@@ -57,7 +57,7 @@ dependencies:
     git:
       url: https://github.com/mumu-lhl/flutter_tts.git
       ref: 79009e7045382c5cf57142ecbb735e17cbbd58cd
-  package_info_plus: ^8.3.1
+  package_info_plus: ^9.0.0
   url_launcher: ^6.3.2
   file_selector: ^1.0.3
   html_unescape: ^2.0.0
