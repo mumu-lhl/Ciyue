@@ -366,10 +366,10 @@ packages:
     dependency: "direct main"
     description:
       name: drift_flutter
-      sha256: b52bd710f809db11e25259d429d799d034ba1c5224ce6a73fe8419feb980d44c
+      sha256: b7534bf320aac5213259aac120670ba67b63a1fd010505babc436ff86083818f
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.6"
+    version: "0.2.7"
   dynamic_color:
     dependency: "direct main"
     description:
