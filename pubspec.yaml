@@ -59,7 +59,7 @@ dependencies:
       ref: 79009e7045382c5cf57142ecbb735e17cbbd58cd
   package_info_plus: ^9.0.0
   url_launcher: ^6.3.2
-  file_selector: ^1.0.3
+  file_selector: ^1.0.4
   html_unescape: ^2.0.0
   flutter_local_notifications: ^19.4.2
   dio: ^5.9.0
