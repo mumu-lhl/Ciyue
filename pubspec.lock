@@ -1440,10 +1440,10 @@ packages:
     dependency: "direct main"
     description:
       name: talker_dio_logger
-      sha256: "20cc3bc9820fa73040f23e27d5d86462e590ddf02c43d0a801c56bf5ecc68922"
+      sha256: "35699be0353164916db4e6cfdeae390da53b5b1e364ee78fc0ef4c1c46cd3f46"
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.0"
+    version: "5.0.1"
   talker_flutter:
     dependency: "direct main"
     description:
