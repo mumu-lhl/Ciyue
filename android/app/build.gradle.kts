@@ -122,7 +122,7 @@ dependencies {
     implementation("androidx.documentfile:documentfile:1.1.0")
 }
 
-val abiCodes = mapOf("x86_64" to 1, "armeabi-v7a" to 2, "arm64-v8a" to 3, "universal" to 4)
+val abiCodes = mapOf("x86_64" to -3, "armeabi-v7a" to 1, "arm64-v8a" to 1, "universal" to 4)
 
 androidComponents {
     onVariants { variant ->
