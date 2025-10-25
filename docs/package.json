@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "vitepress": "^1.6.4",
-    "esbuild": ">=0.25.10"
+    "esbuild": ">=0.25.11"
   },
   "scripts": {
     "docs:dev": "vitepress dev",
