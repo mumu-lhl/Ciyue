@@ -74,7 +74,7 @@ dependencies:
   talker_flutter: ^5.1.7
   talker_dio_logger: ^5.1.8
   flutter_smart_dialog: ^4.9.8+9
-  device_info_plus: ^12.2.0
+  device_info_plus: ^12.3.0
   table_calendar: ^3.2.0
   launch_at_startup: ^0.5.1
   tray_manager: ^0.5.2
