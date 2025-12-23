@@ -125,10 +125,10 @@ packages:
     dependency: transitive
     description:
       name: build
-      sha256: ce76b1d48875e3233fde17717c23d1f60a91cc631597e49a400c89b475395b1d
+      sha256: c1668065e9ba04752570ad7e038288559d1e2ca5c6d0131c0f5f55e39e777413
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.0"
+    version: "4.0.3"
   build_config:
     dependency: transitive
     description:
@@ -145,30 +145,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.4"
-  build_resolvers:
-    dependency: transitive
-    description:
-      name: build_resolvers
-      sha256: d1d57f7807debd7349b4726a19fd32ec8bc177c71ad0febf91a20f84cd2d4b46
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.3"
   build_runner:
     dependency: "direct dev"
     description:
       name: build_runner
-      sha256: b24597fceb695969d47025c958f3837f9f0122e237c6a22cb082a5ac66c3ca30
+      sha256: "110c56ef29b5eb367b4d17fc79375fa8c18a6cd7acd92c05bb3986c17a079057"
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.1"
-  build_runner_core:
-    dependency: transitive
-    description:
-      name: build_runner_core
-      sha256: "066dda7f73d8eb48ba630a55acb50c4a84a2e6b453b1cb4567f581729e794f7b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.3.1"
+    version: "2.10.4"
   built_collection:
     dependency: transitive
     description:
@@ -1312,10 +1296,10 @@ packages:
     dependency: transitive
     description:
       name: source_gen
-      sha256: "7b19d6ba131c6eb98bfcbf8d56c1a7002eba438af2e7ae6f8398b2b0f4f381e3"
+      sha256: "07b277b67e0096c45196cbddddf2d8c6ffc49342e88bf31d460ce04605ddac75"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.0"
+    version: "4.1.1"
   source_map_stack_trace:
     dependency: transitive
     description:
@@ -1500,14 +1484,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.10.1"
-  timing:
-    dependency: transitive
-    description:
-      name: timing
-      sha256: "62ee18aca144e4a9f29d212f5a4c6a053be252b895ab14b5821996cff4ed90fe"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.2"
   translator:
     dependency: "direct main"
     description:
