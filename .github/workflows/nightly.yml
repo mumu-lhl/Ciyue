@@ -270,6 +270,12 @@ jobs:
           DELIMITER
           EOF
 
+      - name: Delete existing nightly release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete nightly --cleanup-tag -y || true
+
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/*,Linux/*"
