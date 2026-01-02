@@ -227,7 +227,7 @@ jobs:
 
       - name: Build msix
         run: |
-          fastforge package --platform windows --targets msix
+          fastforge package --platform windows --targets msix --skip-clean
           mv dist/*/*.msix .
           mv *.msix ciyue-installer.msix
 
