@@ -1408,10 +1408,10 @@ packages:
     dependency: "direct main"
     description:
       name: talker
-      sha256: e5d4f7cce6a639037e551660ae1b93b451f107e78dabcc9f89fc52ffeb6d63d5
+      sha256: "201912ce7d762fd3acc6e49f61328abd121ff7eb8093b0ad6e5835c941322343"
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.9"
+    version: "5.1.10"
   talker_dio_logger:
     dependency: "direct main"
     description:
@@ -1432,10 +1432,10 @@ packages:
     dependency: transitive
     description:
       name: talker_logger
-      sha256: "0c9f37cd17012e5f45986007340de95e9ebccb7a64c5375919cb27e2f0cc60ee"
+      sha256: "9603aa89d570b9090e0b204fefc9a61a8d77ecab3fe76de7b70374c63bbc558b"
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.9"
+    version: "5.1.10"
   term_glyph:
     dependency: transitive
     description:
