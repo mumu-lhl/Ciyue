@@ -146,7 +146,10 @@ class _CiyueState extends State<Ciyue> with TrayListener {
       child: MaterialApp.router(
         title: "Ciyue",
         theme: ThemeData(colorScheme: lightColorScheme),
-        darkTheme: ThemeData(colorScheme: darkColorScheme),
+        darkTheme: ThemeData(
+            colorScheme: darkColorScheme ??
+                ColorScheme.fromSeed(
+                    seedColor: Colors.blue, brightness: Brightness.dark)),
         themeMode: settings.themeMode,
         locale: locale,
         localizationsDelegates: [
