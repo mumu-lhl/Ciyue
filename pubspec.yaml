@@ -36,7 +36,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   # cupertino_icons: ^1.0.8
-  drift: ^2.30.0
+  drift: ^2.30.1
   drift_flutter: ^0.2.8
   dict_reader:
     git:
@@ -70,9 +70,9 @@ dependencies:
   permission_handler: ^12.0.1
   logger: ^2.6.2
   translator: ^1.0.4+1
-  talker: ^5.1.9
-  talker_flutter: ^5.1.9
-  talker_dio_logger: ^5.1.9
+  talker: ^5.1.12
+  talker_flutter: ^5.1.12
+  talker_dio_logger: ^5.1.12
   flutter_smart_dialog: ^4.9.8+9
   device_info_plus: ^12.3.0
   table_calendar: ^3.2.0
@@ -92,8 +92,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  drift_dev: ^2.30.0
-  build_runner: ^2.10.4
+  drift_dev: ^2.30.1
+  build_runner: ^2.10.5
   test: ^1.26.3
   freezed: ^3.2.3
 
