@@ -76,12 +76,14 @@ class DefaultBackupFileHandler implements BackupFileHandler {
 class BackupService {
   final WordbookDao wordbookDao;
   final WordbookTagsDao wordbookTagsDao;
+  final HistoryDao historyDao;
   final BackupFileHandler fileHandler;
   final WordbookModel? _wordbookModel;
 
   BackupService({
     required this.wordbookDao,
     required this.wordbookTagsDao,
+    required this.historyDao,
     required this.fileHandler,
     WordbookModel? wordbookModel,
   }) : _wordbookModel = wordbookModel;
@@ -93,13 +95,15 @@ class BackupService {
     String? exportPath,
   }) async {
     final words = await wordbookDao.getAllWords(),
-        tags = await wordbookTagsDao.getAllTags();
+        tags = await wordbookTagsDao.getAllTags(),
+        history = await historyDao.getAllHistory();
 
-    if (words.isNotEmpty) {
+    if (words.isNotEmpty || history.isNotEmpty) {
       final backupData = BackupData(
         version: Backup.version,
         wordbookWords: words,
         wordbookTags: tags,
+        history: history.map((e) => e.word).toList(),
       );
       final jsonContent = backupData.toJson();
 
@@ -140,6 +144,11 @@ class BackupService {
 
     await wordbookModel.addAllWords(backupData.wordbookWords);
     await wordbookTagsDao.addAllTags(backupData.wordbookTags);
+
+    // Import history: add from oldest to newest to preserve order (since addHistory adds to top)
+    for (final word in backupData.history.reversed) {
+      await historyDao.addHistory(word);
+    }
   }
 }
 
@@ -150,6 +159,7 @@ class Backup {
     final service = BackupService(
       wordbookDao: wordbookDao,
       wordbookTagsDao: wordbookTagsDao,
+      historyDao: historyDao,
       fileHandler: DefaultBackupFileHandler(),
     );
     await service.export(
@@ -164,6 +174,7 @@ class Backup {
     final service = BackupService(
       wordbookDao: wordbookDao,
       wordbookTagsDao: wordbookTagsDao,
+      historyDao: historyDao,
       fileHandler: DefaultBackupFileHandler(),
     );
     await service.import();

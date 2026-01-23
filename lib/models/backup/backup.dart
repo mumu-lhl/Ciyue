@@ -6,11 +6,13 @@ class BackupData {
   final int version;
   final List<WordbookData> wordbookWords;
   final List<WordbookTag> wordbookTags;
+  final List<String> history;
 
   BackupData({
     required this.version,
     required this.wordbookWords,
     required this.wordbookTags,
+    this.history = const [],
   });
 
   factory BackupData.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class BackupData {
       wordbookTags: (json["wordbookTags"] as List<dynamic>)
           .map((e) => WordbookTag.fromJson(e as Map<String, dynamic>))
           .toList(),
+      history: (json["history"] as List<dynamic>?)?.cast<String>() ?? [],
     );
   }
 
@@ -30,6 +33,8 @@ class BackupData {
       "version": version,
       "wordbookWords": wordbookWords.map((e) => e.toJson()).toList(),
       "wordbookTags": wordbookTags.map((e) => e.toJson()).toList(),
+      "history": history,
     });
   }
 }
+
