@@ -98,12 +98,11 @@ void main() {
         exportDirectory: '/dir',
       );
 
-      verify(mockFileHandler.writeAutoExportAndroid(
-              '/dir', 'test.json', any))
+      verify(mockFileHandler.writeAutoExportAndroid('/dir', 'test.json', any))
           .called(1);
     });
 
-     test('should auto export on Desktop', () async {
+    test('should auto export on Desktop', () async {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => words);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => tags);
       when(mockFileHandler.isAndroid).thenReturn(false);
@@ -116,21 +115,18 @@ void main() {
         exportPath: '/path/test.json',
       );
 
-      verify(mockFileHandler.writeAutoExportDesktop(
-              '/path/test.json', any))
+      verify(mockFileHandler.writeAutoExportDesktop('/path/test.json', any))
           .called(1);
     });
   });
 
   group('BackupService Import', () {
     test('should import data correctly', () async {
-      final jsonContent = jsonEncode({
-        "version": 1,
-        "wordbookWords": [],
-        "wordbookTags": []
-      });
+      final jsonContent =
+          jsonEncode({"version": 1, "wordbookWords": [], "wordbookTags": []});
 
-      when(mockFileHandler.readImportFile()).thenAnswer((_) async => jsonContent);
+      when(mockFileHandler.readImportFile())
+          .thenAnswer((_) async => jsonContent);
       when(mockWordbookModel.addAllWords(any)).thenAnswer((_) async {});
       when(mockWordbookTagsDao.addAllTags(any)).thenAnswer((_) async {});
 
