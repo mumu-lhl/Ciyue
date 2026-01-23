@@ -36,15 +36,24 @@ A mdict dictionary with Android/Windows/Linux support.
 
 ### Arch Linux
 
-You can install Ciyue from the [AUR](https://aur.archlinux.org/packages/ciyue) or [archlinuxcn](https://github.com/archlinuxcn/repo/tree/master/archlinuxcn/ciyue) repository.
+You can install Ciyue from the [AUR](https://aur.archlinux.org/packages/ciyue) or [archlinuxcn](https://github.com/archlinuxcn/repo/tree/master/archlinuxcn/ciyue) repository via your choice of [AUR helpers](https://wiki.archlinux.org/title/AUR_helpers).
 
 ```bash
-# yay
 yay -S ciyue
-
-# paru
-paru -S ciyue
 ```
+
+### AppImage
+
+- Install via [AppMan](https://github.com/ivan-hc/AppMan) (rootless)
+
+  ```bash
+  appman -i ciyue
+  ```
+- Install via [AM](https://github.com/ivan-hc/AM)
+
+  ```bash
+  am -i ciyue
+  ```
 
 ## Recommended Dictionaries
 
