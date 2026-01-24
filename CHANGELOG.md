@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
+## [1.21.0](https://github.com/mumu-lhl/Ciyue/compare/v1.20.1..v1.21.0) - 2026-01-24
+
+### Features
+
+- Support selective backup: choose specific data (wordbook, history, etc.) to include in backups
+
+### Bugs
+
+- Fix applying CSS files in dictionary content
+- Fix dark mode on Android <13
+
 ## [1.19.0](https://github.com/mumu-lhl/Ciyue/compare/v1.18.0..v1.19.0) - 2025-08-01
 
 ### Features
