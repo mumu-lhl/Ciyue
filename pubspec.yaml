@@ -81,6 +81,15 @@ dependencies:
   window_manager: ^0.5.1
   hotkey_manager: ^0.2.3
   fuzzy: ^0.5.1
+  flutter_riverpod: ^3.2.0
+  riverpod: ^3.2.0
+
+dependency_overrides:
+  hotkey_manager_linux:
+    git:
+      path: packages/hotkey_manager_linux
+      url: https://github.com/gepbird/hotkey_manager.git
+      ref: fix-build-failure
 
 dev_dependencies:
   flutter_test:

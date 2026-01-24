@@ -3,6 +3,7 @@ import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
+import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/models/backup/backup.dart";
 import "package:ciyue/services/platform.dart";
@@ -96,24 +97,33 @@ class BackupService {
     required String exportFileName,
     String? exportDirectory,
     String? exportPath,
+    bool wordbook = true,
+    bool searchHistory = true,
+    bool writingCheckHistory = true,
+    bool translateHistory = true,
   }) async {
-    final words = await wordbookDao.getAllWords(),
-        tags = await wordbookTagsDao.getAllTags(),
-        history = await historyDao.getAllHistory(),
-        writingCheckHistory = await writingCheckHistoryDao.getAllHistory(),
-        translateHistory = await translateHistoryDao.getAllHistory();
+    final words = wordbook ? await wordbookDao.getAllWords() : <WordbookData>[],
+        tags = wordbook ? await wordbookTagsDao.getAllTags() : <WordbookTag>[],
+        history =
+            searchHistory ? await historyDao.getAllHistory() : <HistoryData>[],
+        writingCheckHistoryData = writingCheckHistory
+            ? await writingCheckHistoryDao.getAllHistory()
+            : <WritingCheckHistoryData>[],
+        translateHistoryData = translateHistory
+            ? await translateHistoryDao.getAllHistory()
+            : <TranslateHistoryData>[];
 
     if (words.isNotEmpty ||
         history.isNotEmpty ||
-        writingCheckHistory.isNotEmpty ||
-        translateHistory.isNotEmpty) {
+        writingCheckHistoryData.isNotEmpty ||
+        translateHistoryData.isNotEmpty) {
       final backupData = BackupData(
         version: Backup.version,
         wordbookWords: words,
         wordbookTags: tags,
         history: history.map((e) => e.word).toList(),
-        writingCheckHistory: writingCheckHistory,
-        translateHistory: translateHistory,
+        writingCheckHistory: writingCheckHistoryData,
+        translateHistory: translateHistoryData,
       );
       final jsonContent = backupData.toJson();
 
@@ -167,7 +177,13 @@ class BackupService {
 class Backup {
   static const version = 1;
 
-  static Future<void> export(bool autoExport) async {
+  static Future<void> export(
+    bool autoExport, {
+    bool wordbook = true,
+    bool searchHistory = true,
+    bool writingCheckHistory = true,
+    bool translateHistory = true,
+  }) async {
     final service = BackupService(
       wordbookDao: wordbookDao,
       wordbookTagsDao: wordbookTagsDao,
@@ -181,6 +197,10 @@ class Backup {
       exportFileName: settings.exportFileName,
       exportDirectory: settings.exportDirectory,
       exportPath: settings.exportPath,
+      wordbook: wordbook,
+      searchHistory: searchHistory,
+      writingCheckHistory: writingCheckHistory,
+      translateHistory: translateHistory,
     );
   }
 
