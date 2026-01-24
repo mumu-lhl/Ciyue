@@ -180,6 +180,7 @@ class WebviewDisplayDescription extends StatelessWidget {
     if (dictManager.dicts.containsKey(dictId)) {
       html = dictManager.dicts[dictId]!.reader.header["Description"]!;
       html = HtmlUnescape().convert(html);
+      html = dictManager.dicts[dictId]!.wrapContentWithResources(html);
 
       return Scaffold(
         appBar: AppBar(),
@@ -214,9 +215,11 @@ class WebviewDisplayDescription extends StatelessWidget {
   Future<String> getDescriptionFromInactiveDict() async {
     final dict = Mdict(path: await dictionaryListDao.getPath(dictId));
     await dict.initOnlyMetadata(dict.id);
-    final html = dict.reader.header["Description"]!;
+    var html = dict.reader.header["Description"]!;
+    html = HtmlUnescape().convert(html);
+    html = dict.wrapContentWithResources(html);
     await dict.close();
-    return HtmlUnescape().convert(html);
+    return html;
   }
 }
 

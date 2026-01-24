@@ -107,6 +107,9 @@ class Mdict {
 
   late final int type;
 
+  bool hasCss = false;
+  bool hasJs = false;
+
   late HttpServer? server;
   late int port;
 
@@ -218,6 +221,8 @@ class Mdict {
 
     await _getTitle();
 
+    await _checkResources();
+
     if (Platform.isWindows) {
       await _startServer();
     }
@@ -262,6 +267,30 @@ class Mdict {
     }
   }
 
+  Future<void> _checkResources() async {
+    final name = basename(path);
+    final cssName = "$name.css";
+    final jsName = "$name.js";
+
+    // Check filesystem
+    final cssFile = File("${dirname(path)}/$cssName");
+    hasCss = await cssFile.exists();
+    final jsFile = File("${dirname(path)}/$jsName");
+    hasJs = await jsFile.exists();
+
+    // Check MDD
+    if (!hasCss || !hasJs) {
+      if (!hasCss) {
+        final results = await readResource(cssName);
+        hasCss = results.isNotEmpty;
+      }
+      if (!hasJs) {
+        final results = await readResource(jsName);
+        hasJs = results.isNotEmpty;
+      }
+    }
+  }
+
   Future<void> initOnlyMetadata(int id) async {
     this.id = id;
 
@@ -277,6 +306,8 @@ class Mdict {
     await waitForLoading();
 
     await _getTitle();
+
+    await _checkResources();
 
     entriesTotal = reader.numEntries;
   }
@@ -372,7 +403,20 @@ class Mdict {
       }
     }
 
-    return contents.join();
+    return wrapContentWithResources(contents.join());
+  }
+
+  String wrapContentWithResources(String content) {
+    final name = basename(path);
+    final encodedName = Uri.encodeComponent(name);
+    String header = "";
+    if (hasCss) {
+      header += '<link rel="stylesheet" href="$encodedName.css">\n';
+    }
+    if (hasJs) {
+      header += '<script src="$encodedName.js"></script>\n';
+    }
+    return header + content;
   }
 
   Future<void> removeDictionary() async {
@@ -439,12 +483,29 @@ class Mdict {
 
   Future<List<ResourceData>> readResource(String key) async {
     final resourceData = <ResourceData>[];
+
+    final normalizedKey = key.replaceAll("/", "\\");
+    final keysToTry = [
+      normalizedKey,
+      normalizedKey.startsWith("\\")
+          ? normalizedKey.substring(1)
+          : "\\$normalizedKey",
+    ];
+
     for (final readerResource in readerResources) {
-      if (!readerResource.exist(key)) {
+      String? foundKey;
+      for (final k in keysToTry) {
+        if (readerResource.exist(k)) {
+          foundKey = k;
+          break;
+        }
+      }
+
+      if (foundKey == null) {
         continue;
       }
 
-      final offsetInfo = await readerResource.locate(key);
+      final offsetInfo = await readerResource.locate(foundKey);
 
       if (offsetInfo == null) {
         continue;
