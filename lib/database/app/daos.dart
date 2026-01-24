@@ -169,9 +169,17 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   WordbookDao(super.attachedDatabase);
 
   Future<void> addAllWords(List<WordbookData> data) async {
-    await batch((batch) {
-      batch.insertAll(wordbook, data);
-    });
+    final existing = await getAllWords();
+    final existingSet = existing.map((e) => "${e.word}_${e.tag}").toSet();
+
+    final toInsert =
+        data.where((e) => !existingSet.contains("${e.word}_${e.tag}")).toList();
+
+    if (toInsert.isNotEmpty) {
+      await batch((batch) {
+        batch.insertAll(wordbook, toInsert);
+      });
+    }
   }
 
   Future<int> countTotalWords() async {
@@ -458,6 +466,26 @@ class WritingCheckHistoryDao extends DatabaseAccessor<AppDatabase>
     );
   }
 
+  Future<void> addAllHistory(List<WritingCheckHistoryData> data) async {
+    final existing = await getAllHistory();
+    final existingSet = existing
+        .map((e) =>
+            "${e.inputText}_${e.outputText}_${e.createdAt.millisecondsSinceEpoch}")
+        .toSet();
+
+    final toInsert = data.where((e) {
+      final key =
+          "${e.inputText}_${e.outputText}_${e.createdAt.millisecondsSinceEpoch}";
+      return !existingSet.contains(key);
+    }).toList();
+
+    if (toInsert.isNotEmpty) {
+      await batch((batch) {
+        batch.insertAll(writingCheckHistory, toInsert);
+      });
+    }
+  }
+
   Future<List<WritingCheckHistoryData>> getAllHistory() {
     return (select(writingCheckHistory)
           ..orderBy(
@@ -491,6 +519,20 @@ class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
         createdAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  Future<void> addAllHistory(List<TranslateHistoryData> data) async {
+    final existing = await getAllHistory();
+    final existingSet = existing.map((e) => e.inputText).toSet();
+
+    final toInsert =
+        data.where((e) => !existingSet.contains(e.inputText)).toList();
+
+    if (toInsert.isNotEmpty) {
+      await batch((batch) {
+        batch.insertAll(translateHistory, toInsert);
+      });
+    }
   }
 
   Future<List<TranslateHistoryData>> getAllHistory() {

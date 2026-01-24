@@ -20,12 +20,29 @@ void main() {
         const WordbookTag(id: 1, tag: 'tag1'),
       ];
       final history = ['history1', 'history2'];
+      final writingCheckHistory = [
+        WritingCheckHistoryData(
+          id: 1,
+          inputText: 'input',
+          outputText: 'output',
+          createdAt: now,
+        )
+      ];
+      final translateHistory = [
+        TranslateHistoryData(
+          id: 1,
+          inputText: 'input',
+          createdAt: now,
+        )
+      ];
 
       final backupData = BackupData(
         version: 1,
         wordbookWords: words,
         wordbookTags: tags,
         history: history,
+        writingCheckHistory: writingCheckHistory,
+        translateHistory: translateHistory,
       );
 
       final jsonString = backupData.toJson();
@@ -35,6 +52,8 @@ void main() {
       expect(decoded['wordbookWords'].length, 1);
       expect(decoded['wordbookTags'].length, 1);
       expect(decoded['history'].length, 2);
+      expect(decoded['writingCheckHistory'].length, 1);
+      expect(decoded['translateHistory'].length, 1);
 
       // Verify word data
       final wordJson = decoded['wordbookWords'][0];
@@ -54,6 +73,8 @@ void main() {
 
       expect(importedData.wordbookTags.first.tag, 'tag1');
       expect(importedData.history, equals(history));
+      expect(importedData.writingCheckHistory.first.inputText, 'input');
+      expect(importedData.translateHistory.first.inputText, 'input');
     });
   });
 }

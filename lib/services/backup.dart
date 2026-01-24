@@ -77,6 +77,8 @@ class BackupService {
   final WordbookDao wordbookDao;
   final WordbookTagsDao wordbookTagsDao;
   final HistoryDao historyDao;
+  final WritingCheckHistoryDao writingCheckHistoryDao;
+  final TranslateHistoryDao translateHistoryDao;
   final BackupFileHandler fileHandler;
   final WordbookModel? _wordbookModel;
 
@@ -84,6 +86,8 @@ class BackupService {
     required this.wordbookDao,
     required this.wordbookTagsDao,
     required this.historyDao,
+    required this.writingCheckHistoryDao,
+    required this.translateHistoryDao,
     required this.fileHandler,
     WordbookModel? wordbookModel,
   }) : _wordbookModel = wordbookModel;
@@ -96,14 +100,21 @@ class BackupService {
   }) async {
     final words = await wordbookDao.getAllWords(),
         tags = await wordbookTagsDao.getAllTags(),
-        history = await historyDao.getAllHistory();
+        history = await historyDao.getAllHistory(),
+        writingCheckHistory = await writingCheckHistoryDao.getAllHistory(),
+        translateHistory = await translateHistoryDao.getAllHistory();
 
-    if (words.isNotEmpty || history.isNotEmpty) {
+    if (words.isNotEmpty ||
+        history.isNotEmpty ||
+        writingCheckHistory.isNotEmpty ||
+        translateHistory.isNotEmpty) {
       final backupData = BackupData(
         version: Backup.version,
         wordbookWords: words,
         wordbookTags: tags,
         history: history.map((e) => e.word).toList(),
+        writingCheckHistory: writingCheckHistory,
+        translateHistory: translateHistory,
       );
       final jsonContent = backupData.toJson();
 
@@ -149,6 +160,8 @@ class BackupService {
     for (final word in backupData.history.reversed) {
       await historyDao.addHistory(word);
     }
+    await writingCheckHistoryDao.addAllHistory(backupData.writingCheckHistory);
+    await translateHistoryDao.addAllHistory(backupData.translateHistory);
   }
 }
 
@@ -160,6 +173,8 @@ class Backup {
       wordbookDao: wordbookDao,
       wordbookTagsDao: wordbookTagsDao,
       historyDao: historyDao,
+      writingCheckHistoryDao: writingCheckHistoryDao,
+      translateHistoryDao: translateHistoryDao,
       fileHandler: DefaultBackupFileHandler(),
     );
     await service.export(
@@ -175,6 +190,8 @@ class Backup {
       wordbookDao: wordbookDao,
       wordbookTagsDao: wordbookTagsDao,
       historyDao: historyDao,
+      writingCheckHistoryDao: writingCheckHistoryDao,
+      translateHistoryDao: translateHistoryDao,
       fileHandler: DefaultBackupFileHandler(),
     );
     await service.import();

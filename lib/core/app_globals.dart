@@ -25,5 +25,7 @@ final mddAudioListDao = MddAudioListDao(mainDatabase);
 final mddAudioResourceDao = MddAudioResourceDao(mainDatabase);
 final wordbookDao = WordbookDao(mainDatabase);
 final wordbookTagsDao = WordbookTagsDao(mainDatabase);
+final writingCheckHistoryDao = WritingCheckHistoryDao(mainDatabase);
+final translateHistoryDao = TranslateHistoryDao(mainDatabase);
 
 final talker = TalkerFlutter.init();

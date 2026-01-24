@@ -9,12 +9,21 @@ import 'package:mockito/mockito.dart';
 
 import 'backup_test.mocks.dart';
 
-@GenerateMocks(
-    [WordbookDao, WordbookTagsDao, HistoryDao, BackupFileHandler, WordbookModel])
+@GenerateMocks([
+  WordbookDao,
+  WordbookTagsDao,
+  HistoryDao,
+  WritingCheckHistoryDao,
+  TranslateHistoryDao,
+  BackupFileHandler,
+  WordbookModel
+])
 void main() {
   late MockWordbookDao mockWordbookDao;
   late MockWordbookTagsDao mockWordbookTagsDao;
   late MockHistoryDao mockHistoryDao;
+  late MockWritingCheckHistoryDao mockWritingCheckHistoryDao;
+  late MockTranslateHistoryDao mockTranslateHistoryDao;
   late MockBackupFileHandler mockFileHandler;
   late MockWordbookModel mockWordbookModel;
   late BackupService backupService;
@@ -23,6 +32,8 @@ void main() {
     mockWordbookDao = MockWordbookDao();
     mockWordbookTagsDao = MockWordbookTagsDao();
     mockHistoryDao = MockHistoryDao();
+    mockWritingCheckHistoryDao = MockWritingCheckHistoryDao();
+    mockTranslateHistoryDao = MockTranslateHistoryDao();
     mockFileHandler = MockBackupFileHandler();
     mockWordbookModel = MockWordbookModel();
 
@@ -30,6 +41,8 @@ void main() {
       wordbookDao: mockWordbookDao,
       wordbookTagsDao: mockWordbookTagsDao,
       historyDao: mockHistoryDao,
+      writingCheckHistoryDao: mockWritingCheckHistoryDao,
+      translateHistoryDao: mockTranslateHistoryDao,
       fileHandler: mockFileHandler,
       wordbookModel: mockWordbookModel,
     );
@@ -45,11 +58,29 @@ void main() {
     ];
     final tags = [const WordbookTag(id: 1, tag: 'tag1')];
     final history = [const HistoryData(id: 1, word: 'history1')];
+    final writingCheckHistory = [
+      WritingCheckHistoryData(
+        id: 1,
+        inputText: 'input',
+        outputText: 'output',
+        createdAt: DateTime.now(),
+      )
+    ];
+    final translateHistory = [
+      TranslateHistoryData(
+        id: 1,
+        inputText: 'input',
+        createdAt: DateTime.now(),
+      )
+    ];
 
     test('should do nothing if no words or history to export', () async {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => []);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => []);
       when(mockHistoryDao.getAllHistory()).thenAnswer((_) async => []);
+      when(mockWritingCheckHistoryDao.getAllHistory())
+          .thenAnswer((_) async => []);
+      when(mockTranslateHistoryDao.getAllHistory()).thenAnswer((_) async => []);
 
       await backupService.export(
         autoExport: false,
@@ -66,6 +97,10 @@ void main() {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => words);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => tags);
       when(mockHistoryDao.getAllHistory()).thenAnswer((_) async => history);
+      when(mockWritingCheckHistoryDao.getAllHistory())
+          .thenAnswer((_) async => writingCheckHistory);
+      when(mockTranslateHistoryDao.getAllHistory())
+          .thenAnswer((_) async => translateHistory);
       when(mockFileHandler.isAndroid).thenReturn(true);
       when(mockFileHandler.writeManualExportAndroid(any))
           .thenAnswer((_) async {});
@@ -82,6 +117,10 @@ void main() {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => words);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => tags);
       when(mockHistoryDao.getAllHistory()).thenAnswer((_) async => history);
+      when(mockWritingCheckHistoryDao.getAllHistory())
+          .thenAnswer((_) async => writingCheckHistory);
+      when(mockTranslateHistoryDao.getAllHistory())
+          .thenAnswer((_) async => translateHistory);
       when(mockFileHandler.isAndroid).thenReturn(false);
       when(mockFileHandler.writeManualExportDesktop(any))
           .thenAnswer((_) async {});
@@ -98,6 +137,10 @@ void main() {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => words);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => tags);
       when(mockHistoryDao.getAllHistory()).thenAnswer((_) async => history);
+      when(mockWritingCheckHistoryDao.getAllHistory())
+          .thenAnswer((_) async => writingCheckHistory);
+      when(mockTranslateHistoryDao.getAllHistory())
+          .thenAnswer((_) async => translateHistory);
       when(mockFileHandler.isAndroid).thenReturn(true);
       when(mockFileHandler.writeAutoExportAndroid(any, any, any))
           .thenAnswer((_) async {});
@@ -116,6 +159,10 @@ void main() {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => words);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => tags);
       when(mockHistoryDao.getAllHistory()).thenAnswer((_) async => history);
+      when(mockWritingCheckHistoryDao.getAllHistory())
+          .thenAnswer((_) async => writingCheckHistory);
+      when(mockTranslateHistoryDao.getAllHistory())
+          .thenAnswer((_) async => translateHistory);
       when(mockFileHandler.isAndroid).thenReturn(false);
       when(mockFileHandler.writeAutoExportDesktop(any, any))
           .thenAnswer((_) async {});
@@ -137,7 +184,9 @@ void main() {
         "version": 1,
         "wordbookWords": [],
         "wordbookTags": [],
-        "history": ["history1", "history2"]
+        "history": ["history1", "history2"],
+        "writingCheckHistory": [],
+        "translateHistory": []
       });
 
       when(mockFileHandler.readImportFile())
@@ -145,6 +194,9 @@ void main() {
       when(mockWordbookModel.addAllWords(any)).thenAnswer((_) async {});
       when(mockWordbookTagsDao.addAllTags(any)).thenAnswer((_) async {});
       when(mockHistoryDao.addHistory(any)).thenAnswer((_) async => 1);
+      when(mockWritingCheckHistoryDao.addAllHistory(any))
+          .thenAnswer((_) async {});
+      when(mockTranslateHistoryDao.addAllHistory(any)).thenAnswer((_) async {});
 
       await backupService.import();
 
@@ -153,6 +205,8 @@ void main() {
       // History should be added in reverse order: history2 then history1
       verify(mockHistoryDao.addHistory("history2")).called(1);
       verify(mockHistoryDao.addHistory("history1")).called(1);
+      verify(mockWritingCheckHistoryDao.addAllHistory(any)).called(1);
+      verify(mockTranslateHistoryDao.addAllHistory(any)).called(1);
     });
 
     test('should do nothing if file selection canceled', () async {
@@ -164,4 +218,3 @@ void main() {
     });
   });
 }
-

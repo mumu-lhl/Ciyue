@@ -257,6 +257,50 @@ class _FakeHistoryDaoManager_20 extends _i1.SmartFake
         );
 }
 
+class _Fake$WritingCheckHistoryTable_21 extends _i1.SmartFake
+    implements _i2.$WritingCheckHistoryTable {
+  _Fake$WritingCheckHistoryTable_21(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeWritingCheckHistoryDaoManager_22 extends _i1.SmartFake
+    implements _i5.WritingCheckHistoryDaoManager {
+  _FakeWritingCheckHistoryDaoManager_22(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$TranslateHistoryTable_23 extends _i1.SmartFake
+    implements _i2.$TranslateHistoryTable {
+  _Fake$TranslateHistoryTable_23(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeTranslateHistoryDaoManager_24 extends _i1.SmartFake
+    implements _i5.TranslateHistoryDaoManager {
+  _FakeTranslateHistoryDaoManager_24(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [WordbookDao].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -1880,6 +1924,1379 @@ class MockHistoryDao extends _i1.Mock implements _i5.HistoryDao {
         returnValue: _i6.Future<void>.value(),
         returnValueForMissingStub: _i6.Future<void>.value(),
       ) as _i6.Future<void>);
+
+  @override
+  _i6.Stream<T> createStream<T extends Object>(
+          _i4.QueryStreamFetcher<T>? stmt) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createStream,
+          [stmt],
+        ),
+        returnValue: _i6.Stream<T>.empty(),
+      ) as _i6.Stream<T>);
+
+  @override
+  T alias<T, D>(
+    _i3.ResultSetImplementation<T, D>? table,
+    String? alias,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #alias,
+          [
+            table,
+            alias,
+          ],
+        ),
+        returnValue: _i7.dummyValue<T>(
+          this,
+          Invocation.method(
+            #alias,
+            [
+              table,
+              alias,
+            ],
+          ),
+        ),
+      ) as T);
+
+  @override
+  void markTablesUpdated(Iterable<_i3.TableInfo<_i3.Table, dynamic>>? tables) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #markTablesUpdated,
+          [tables],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyUpdates(Set<_i3.TableUpdate>? updates) => super.noSuchMethod(
+        Invocation.method(
+          #notifyUpdates,
+          [updates],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i6.Stream<Set<_i3.TableUpdate>> tableUpdates(
+          [_i3.TableUpdateQuery? query = const _i3.TableUpdateQuery.any()]) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #tableUpdates,
+          [query],
+        ),
+        returnValue: _i6.Stream<Set<_i3.TableUpdate>>.empty(),
+      ) as _i6.Stream<Set<_i3.TableUpdate>>);
+
+  @override
+  _i6.Future<T> doWhenOpened<T>(
+          _i6.FutureOr<T> Function(_i3.QueryExecutor)? fn) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #doWhenOpened,
+          [fn],
+        ),
+        returnValue: _i7.ifNotNull(
+              _i7.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #doWhenOpened,
+                  [fn],
+                ),
+              ),
+              (T v) => _i6.Future<T>.value(v),
+            ) ??
+            _FakeFuture_8<T>(
+              this,
+              Invocation.method(
+                #doWhenOpened,
+                [fn],
+              ),
+            ),
+      ) as _i6.Future<T>);
+
+  @override
+  _i3.InsertStatement<T, D> into<T extends _i3.Table, D>(
+          _i3.TableInfo<T, D>? table) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #into,
+          [table],
+        ),
+        returnValue: _FakeInsertStatement_9<T, D>(
+          this,
+          Invocation.method(
+            #into,
+            [table],
+          ),
+        ),
+      ) as _i3.InsertStatement<T, D>);
+
+  @override
+  _i3.UpdateStatement<Tbl, R> update<Tbl extends _i3.Table, R>(
+          _i3.TableInfo<Tbl, R>? table) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #update,
+          [table],
+        ),
+        returnValue: _FakeUpdateStatement_10<Tbl, R>(
+          this,
+          Invocation.method(
+            #update,
+            [table],
+          ),
+        ),
+      ) as _i3.UpdateStatement<Tbl, R>);
+
+  @override
+  _i3.SimpleSelectStatement<T, R> select<T extends _i3.HasResultSet, R>(
+    _i3.ResultSetImplementation<T, R>? table, {
+    bool? distinct = false,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #select,
+          [table],
+          {#distinct: distinct},
+        ),
+        returnValue: _FakeSimpleSelectStatement_11<T, R>(
+          this,
+          Invocation.method(
+            #select,
+            [table],
+            {#distinct: distinct},
+          ),
+        ),
+      ) as _i3.SimpleSelectStatement<T, R>);
+
+  @override
+  _i3.JoinedSelectStatement<T, R> selectOnly<T extends _i3.HasResultSet, R>(
+    _i3.ResultSetImplementation<T, R>? table, {
+    bool? distinct = false,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #selectOnly,
+          [table],
+          {#distinct: distinct},
+        ),
+        returnValue: _FakeJoinedSelectStatement_12<T, R>(
+          this,
+          Invocation.method(
+            #selectOnly,
+            [table],
+            {#distinct: distinct},
+          ),
+        ),
+      ) as _i3.JoinedSelectStatement<T, R>);
+
+  @override
+  _i3.BaseSelectStatement<_i3.TypedResult> selectExpressions(
+          Iterable<_i3.Expression<Object>>? columns) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #selectExpressions,
+          [columns],
+        ),
+        returnValue: _FakeBaseSelectStatement_13<_i3.TypedResult>(
+          this,
+          Invocation.method(
+            #selectExpressions,
+            [columns],
+          ),
+        ),
+      ) as _i3.BaseSelectStatement<_i3.TypedResult>);
+
+  @override
+  _i3.DeleteStatement<T, D> delete<T extends _i3.Table, D>(
+          _i3.TableInfo<T, D>? table) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #delete,
+          [table],
+        ),
+        returnValue: _FakeDeleteStatement_14<T, D>(
+          this,
+          Invocation.method(
+            #delete,
+            [table],
+          ),
+        ),
+      ) as _i3.DeleteStatement<T, D>);
+
+  @override
+  _i6.Future<int> customUpdate(
+    String? query, {
+    List<_i3.Variable<Object>>? variables = const [],
+    Set<_i3.ResultSetImplementation<dynamic, dynamic>>? updates,
+    _i3.UpdateKind? updateKind,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customUpdate,
+          [query],
+          {
+            #variables: variables,
+            #updates: updates,
+            #updateKind: updateKind,
+          },
+        ),
+        returnValue: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
+
+  @override
+  _i6.Future<int> customInsert(
+    String? query, {
+    List<_i3.Variable<Object>>? variables = const [],
+    Set<_i3.ResultSetImplementation<dynamic, dynamic>>? updates,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customInsert,
+          [query],
+          {
+            #variables: variables,
+            #updates: updates,
+          },
+        ),
+        returnValue: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
+
+  @override
+  _i6.Future<List<_i3.QueryRow>> customWriteReturning(
+    String? query, {
+    List<_i3.Variable<Object>>? variables = const [],
+    Set<_i3.ResultSetImplementation<dynamic, dynamic>>? updates,
+    _i3.UpdateKind? updateKind,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customWriteReturning,
+          [query],
+          {
+            #variables: variables,
+            #updates: updates,
+            #updateKind: updateKind,
+          },
+        ),
+        returnValue: _i6.Future<List<_i3.QueryRow>>.value(<_i3.QueryRow>[]),
+      ) as _i6.Future<List<_i3.QueryRow>>);
+
+  @override
+  _i3.Selectable<_i3.QueryRow> customSelect(
+    String? query, {
+    List<_i3.Variable<Object>>? variables = const [],
+    Set<_i3.ResultSetImplementation<dynamic, dynamic>>? readsFrom = const {},
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customSelect,
+          [query],
+          {
+            #variables: variables,
+            #readsFrom: readsFrom,
+          },
+        ),
+        returnValue: _FakeSelectable_15<_i3.QueryRow>(
+          this,
+          Invocation.method(
+            #customSelect,
+            [query],
+            {
+              #variables: variables,
+              #readsFrom: readsFrom,
+            },
+          ),
+        ),
+      ) as _i3.Selectable<_i3.QueryRow>);
+
+  @override
+  _i3.Selectable<_i3.QueryRow> customSelectQuery(
+    String? query, {
+    List<_i3.Variable<Object>>? variables = const [],
+    Set<_i3.ResultSetImplementation<dynamic, dynamic>>? readsFrom = const {},
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customSelectQuery,
+          [query],
+          {
+            #variables: variables,
+            #readsFrom: readsFrom,
+          },
+        ),
+        returnValue: _FakeSelectable_15<_i3.QueryRow>(
+          this,
+          Invocation.method(
+            #customSelectQuery,
+            [query],
+            {
+              #variables: variables,
+              #readsFrom: readsFrom,
+            },
+          ),
+        ),
+      ) as _i3.Selectable<_i3.QueryRow>);
+
+  @override
+  _i6.Future<void> customStatement(
+    String? statement, [
+    List<dynamic>? args,
+  ]) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customStatement,
+          [
+            statement,
+            args,
+          ],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<T> transaction<T>(
+    _i6.Future<T> Function()? action, {
+    bool? requireNew = false,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #transaction,
+          [action],
+          {#requireNew: requireNew},
+        ),
+        returnValue: _i7.ifNotNull(
+              _i7.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #transaction,
+                  [action],
+                  {#requireNew: requireNew},
+                ),
+              ),
+              (T v) => _i6.Future<T>.value(v),
+            ) ??
+            _FakeFuture_8<T>(
+              this,
+              Invocation.method(
+                #transaction,
+                [action],
+                {#requireNew: requireNew},
+              ),
+            ),
+      ) as _i6.Future<T>);
+
+  @override
+  _i6.Future<T> exclusively<T>(_i6.Future<T> Function()? action) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #exclusively,
+          [action],
+        ),
+        returnValue: _i7.ifNotNull(
+              _i7.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #exclusively,
+                  [action],
+                ),
+              ),
+              (T v) => _i6.Future<T>.value(v),
+            ) ??
+            _FakeFuture_8<T>(
+              this,
+              Invocation.method(
+                #exclusively,
+                [action],
+              ),
+            ),
+      ) as _i6.Future<T>);
+
+  @override
+  _i6.Future<void> batch(_i6.FutureOr<void> Function(_i3.Batch)? runInBatch) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #batch,
+          [runInBatch],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<T> runWithInterceptor<T>(
+    _i6.Future<T> Function()? action, {
+    required _i3.QueryInterceptor? interceptor,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #runWithInterceptor,
+          [action],
+          {#interceptor: interceptor},
+        ),
+        returnValue: _i7.ifNotNull(
+              _i7.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #runWithInterceptor,
+                  [action],
+                  {#interceptor: interceptor},
+                ),
+              ),
+              (T v) => _i6.Future<T>.value(v),
+            ) ??
+            _FakeFuture_8<T>(
+              this,
+              Invocation.method(
+                #runWithInterceptor,
+                [action],
+                {#interceptor: interceptor},
+              ),
+            ),
+      ) as _i6.Future<T>);
+
+  @override
+  _i3.GenerationContext $write(
+    _i3.Component? component, {
+    bool? hasMultipleTables,
+    int? startIndex,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #$write,
+          [component],
+          {
+            #hasMultipleTables: hasMultipleTables,
+            #startIndex: startIndex,
+          },
+        ),
+        returnValue: _FakeGenerationContext_16(
+          this,
+          Invocation.method(
+            #$write,
+            [component],
+            {
+              #hasMultipleTables: hasMultipleTables,
+              #startIndex: startIndex,
+            },
+          ),
+        ),
+      ) as _i3.GenerationContext);
+
+  @override
+  _i3.GenerationContext $writeInsertable(
+    _i3.TableInfo<_i3.Table, dynamic>? table,
+    _i3.Insertable<dynamic>? insertable, {
+    int? startIndex,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #$writeInsertable,
+          [
+            table,
+            insertable,
+          ],
+          {#startIndex: startIndex},
+        ),
+        returnValue: _FakeGenerationContext_16(
+          this,
+          Invocation.method(
+            #$writeInsertable,
+            [
+              table,
+              insertable,
+            ],
+            {#startIndex: startIndex},
+          ),
+        ),
+      ) as _i3.GenerationContext);
+
+  @override
+  String $expandVar(
+    int? start,
+    int? amount,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #$expandVar,
+          [
+            start,
+            amount,
+          ],
+        ),
+        returnValue: _i7.dummyValue<String>(
+          this,
+          Invocation.method(
+            #$expandVar,
+            [
+              start,
+              amount,
+            ],
+          ),
+        ),
+      ) as String);
+
+  @override
+  _i6.Future<void> close() => (super.noSuchMethod(
+        Invocation.method(
+          #close,
+          [],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+}
+
+/// A class which mocks [WritingCheckHistoryDao].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockWritingCheckHistoryDao extends _i1.Mock
+    implements _i5.WritingCheckHistoryDao {
+  MockWritingCheckHistoryDao() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.AppDatabase get attachedDatabase => (super.noSuchMethod(
+        Invocation.getter(#attachedDatabase),
+        returnValue: _FakeAppDatabase_0(
+          this,
+          Invocation.getter(#attachedDatabase),
+        ),
+      ) as _i2.AppDatabase);
+
+  @override
+  _i3.DatabaseConnection get connection => (super.noSuchMethod(
+        Invocation.getter(#connection),
+        returnValue: _FakeDatabaseConnection_1(
+          this,
+          Invocation.getter(#connection),
+        ),
+      ) as _i3.DatabaseConnection);
+
+  @override
+  _i3.DriftDatabaseOptions get options => (super.noSuchMethod(
+        Invocation.getter(#options),
+        returnValue: _FakeDriftDatabaseOptions_2(
+          this,
+          Invocation.getter(#options),
+        ),
+      ) as _i3.DriftDatabaseOptions);
+
+  @override
+  _i3.SqlTypes get typeMapping => (super.noSuchMethod(
+        Invocation.getter(#typeMapping),
+        returnValue: _i7.dummyValue<_i3.SqlTypes>(
+          this,
+          Invocation.getter(#typeMapping),
+        ),
+      ) as _i3.SqlTypes);
+
+  @override
+  _i3.QueryExecutor get executor => (super.noSuchMethod(
+        Invocation.getter(#executor),
+        returnValue: _FakeQueryExecutor_3(
+          this,
+          Invocation.getter(#executor),
+        ),
+      ) as _i3.QueryExecutor);
+
+  @override
+  _i4.StreamQueryStore get streamQueries => (super.noSuchMethod(
+        Invocation.getter(#streamQueries),
+        returnValue: _FakeStreamQueryStore_4(
+          this,
+          Invocation.getter(#streamQueries),
+        ),
+      ) as _i4.StreamQueryStore);
+
+  @override
+  _i3.DatabaseConnectionUser get resolvedEngine => (super.noSuchMethod(
+        Invocation.getter(#resolvedEngine),
+        returnValue: _FakeDatabaseConnectionUser_5(
+          this,
+          Invocation.getter(#resolvedEngine),
+        ),
+      ) as _i3.DatabaseConnectionUser);
+
+  @override
+  _i2.$WritingCheckHistoryTable get writingCheckHistory => (super.noSuchMethod(
+        Invocation.getter(#writingCheckHistory),
+        returnValue: _Fake$WritingCheckHistoryTable_21(
+          this,
+          Invocation.getter(#writingCheckHistory),
+        ),
+      ) as _i2.$WritingCheckHistoryTable);
+
+  @override
+  _i5.WritingCheckHistoryDaoManager get managers => (super.noSuchMethod(
+        Invocation.getter(#managers),
+        returnValue: _FakeWritingCheckHistoryDaoManager_22(
+          this,
+          Invocation.getter(#managers),
+        ),
+      ) as _i5.WritingCheckHistoryDaoManager);
+
+  @override
+  _i6.Future<int> addHistory(
+    String? inputText,
+    String? outputText,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addHistory,
+          [
+            inputText,
+            outputText,
+          ],
+        ),
+        returnValue: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
+
+  @override
+  _i6.Future<void> addAllHistory(List<_i2.WritingCheckHistoryData>? data) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addAllHistory,
+          [data],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<List<_i2.WritingCheckHistoryData>> getAllHistory() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getAllHistory,
+          [],
+        ),
+        returnValue: _i6.Future<List<_i2.WritingCheckHistoryData>>.value(
+            <_i2.WritingCheckHistoryData>[]),
+      ) as _i6.Future<List<_i2.WritingCheckHistoryData>>);
+
+  @override
+  _i6.Future<void> clearHistory() => (super.noSuchMethod(
+        Invocation.method(
+          #clearHistory,
+          [],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> deleteHistory(int? id) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteHistory,
+          [id],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> deleteHistories(List<int>? ids) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteHistories,
+          [ids],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Stream<T> createStream<T extends Object>(
+          _i4.QueryStreamFetcher<T>? stmt) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createStream,
+          [stmt],
+        ),
+        returnValue: _i6.Stream<T>.empty(),
+      ) as _i6.Stream<T>);
+
+  @override
+  T alias<T, D>(
+    _i3.ResultSetImplementation<T, D>? table,
+    String? alias,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #alias,
+          [
+            table,
+            alias,
+          ],
+        ),
+        returnValue: _i7.dummyValue<T>(
+          this,
+          Invocation.method(
+            #alias,
+            [
+              table,
+              alias,
+            ],
+          ),
+        ),
+      ) as T);
+
+  @override
+  void markTablesUpdated(Iterable<_i3.TableInfo<_i3.Table, dynamic>>? tables) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #markTablesUpdated,
+          [tables],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyUpdates(Set<_i3.TableUpdate>? updates) => super.noSuchMethod(
+        Invocation.method(
+          #notifyUpdates,
+          [updates],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i6.Stream<Set<_i3.TableUpdate>> tableUpdates(
+          [_i3.TableUpdateQuery? query = const _i3.TableUpdateQuery.any()]) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #tableUpdates,
+          [query],
+        ),
+        returnValue: _i6.Stream<Set<_i3.TableUpdate>>.empty(),
+      ) as _i6.Stream<Set<_i3.TableUpdate>>);
+
+  @override
+  _i6.Future<T> doWhenOpened<T>(
+          _i6.FutureOr<T> Function(_i3.QueryExecutor)? fn) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #doWhenOpened,
+          [fn],
+        ),
+        returnValue: _i7.ifNotNull(
+              _i7.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #doWhenOpened,
+                  [fn],
+                ),
+              ),
+              (T v) => _i6.Future<T>.value(v),
+            ) ??
+            _FakeFuture_8<T>(
+              this,
+              Invocation.method(
+                #doWhenOpened,
+                [fn],
+              ),
+            ),
+      ) as _i6.Future<T>);
+
+  @override
+  _i3.InsertStatement<T, D> into<T extends _i3.Table, D>(
+          _i3.TableInfo<T, D>? table) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #into,
+          [table],
+        ),
+        returnValue: _FakeInsertStatement_9<T, D>(
+          this,
+          Invocation.method(
+            #into,
+            [table],
+          ),
+        ),
+      ) as _i3.InsertStatement<T, D>);
+
+  @override
+  _i3.UpdateStatement<Tbl, R> update<Tbl extends _i3.Table, R>(
+          _i3.TableInfo<Tbl, R>? table) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #update,
+          [table],
+        ),
+        returnValue: _FakeUpdateStatement_10<Tbl, R>(
+          this,
+          Invocation.method(
+            #update,
+            [table],
+          ),
+        ),
+      ) as _i3.UpdateStatement<Tbl, R>);
+
+  @override
+  _i3.SimpleSelectStatement<T, R> select<T extends _i3.HasResultSet, R>(
+    _i3.ResultSetImplementation<T, R>? table, {
+    bool? distinct = false,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #select,
+          [table],
+          {#distinct: distinct},
+        ),
+        returnValue: _FakeSimpleSelectStatement_11<T, R>(
+          this,
+          Invocation.method(
+            #select,
+            [table],
+            {#distinct: distinct},
+          ),
+        ),
+      ) as _i3.SimpleSelectStatement<T, R>);
+
+  @override
+  _i3.JoinedSelectStatement<T, R> selectOnly<T extends _i3.HasResultSet, R>(
+    _i3.ResultSetImplementation<T, R>? table, {
+    bool? distinct = false,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #selectOnly,
+          [table],
+          {#distinct: distinct},
+        ),
+        returnValue: _FakeJoinedSelectStatement_12<T, R>(
+          this,
+          Invocation.method(
+            #selectOnly,
+            [table],
+            {#distinct: distinct},
+          ),
+        ),
+      ) as _i3.JoinedSelectStatement<T, R>);
+
+  @override
+  _i3.BaseSelectStatement<_i3.TypedResult> selectExpressions(
+          Iterable<_i3.Expression<Object>>? columns) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #selectExpressions,
+          [columns],
+        ),
+        returnValue: _FakeBaseSelectStatement_13<_i3.TypedResult>(
+          this,
+          Invocation.method(
+            #selectExpressions,
+            [columns],
+          ),
+        ),
+      ) as _i3.BaseSelectStatement<_i3.TypedResult>);
+
+  @override
+  _i3.DeleteStatement<T, D> delete<T extends _i3.Table, D>(
+          _i3.TableInfo<T, D>? table) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #delete,
+          [table],
+        ),
+        returnValue: _FakeDeleteStatement_14<T, D>(
+          this,
+          Invocation.method(
+            #delete,
+            [table],
+          ),
+        ),
+      ) as _i3.DeleteStatement<T, D>);
+
+  @override
+  _i6.Future<int> customUpdate(
+    String? query, {
+    List<_i3.Variable<Object>>? variables = const [],
+    Set<_i3.ResultSetImplementation<dynamic, dynamic>>? updates,
+    _i3.UpdateKind? updateKind,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customUpdate,
+          [query],
+          {
+            #variables: variables,
+            #updates: updates,
+            #updateKind: updateKind,
+          },
+        ),
+        returnValue: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
+
+  @override
+  _i6.Future<int> customInsert(
+    String? query, {
+    List<_i3.Variable<Object>>? variables = const [],
+    Set<_i3.ResultSetImplementation<dynamic, dynamic>>? updates,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customInsert,
+          [query],
+          {
+            #variables: variables,
+            #updates: updates,
+          },
+        ),
+        returnValue: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
+
+  @override
+  _i6.Future<List<_i3.QueryRow>> customWriteReturning(
+    String? query, {
+    List<_i3.Variable<Object>>? variables = const [],
+    Set<_i3.ResultSetImplementation<dynamic, dynamic>>? updates,
+    _i3.UpdateKind? updateKind,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customWriteReturning,
+          [query],
+          {
+            #variables: variables,
+            #updates: updates,
+            #updateKind: updateKind,
+          },
+        ),
+        returnValue: _i6.Future<List<_i3.QueryRow>>.value(<_i3.QueryRow>[]),
+      ) as _i6.Future<List<_i3.QueryRow>>);
+
+  @override
+  _i3.Selectable<_i3.QueryRow> customSelect(
+    String? query, {
+    List<_i3.Variable<Object>>? variables = const [],
+    Set<_i3.ResultSetImplementation<dynamic, dynamic>>? readsFrom = const {},
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customSelect,
+          [query],
+          {
+            #variables: variables,
+            #readsFrom: readsFrom,
+          },
+        ),
+        returnValue: _FakeSelectable_15<_i3.QueryRow>(
+          this,
+          Invocation.method(
+            #customSelect,
+            [query],
+            {
+              #variables: variables,
+              #readsFrom: readsFrom,
+            },
+          ),
+        ),
+      ) as _i3.Selectable<_i3.QueryRow>);
+
+  @override
+  _i3.Selectable<_i3.QueryRow> customSelectQuery(
+    String? query, {
+    List<_i3.Variable<Object>>? variables = const [],
+    Set<_i3.ResultSetImplementation<dynamic, dynamic>>? readsFrom = const {},
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customSelectQuery,
+          [query],
+          {
+            #variables: variables,
+            #readsFrom: readsFrom,
+          },
+        ),
+        returnValue: _FakeSelectable_15<_i3.QueryRow>(
+          this,
+          Invocation.method(
+            #customSelectQuery,
+            [query],
+            {
+              #variables: variables,
+              #readsFrom: readsFrom,
+            },
+          ),
+        ),
+      ) as _i3.Selectable<_i3.QueryRow>);
+
+  @override
+  _i6.Future<void> customStatement(
+    String? statement, [
+    List<dynamic>? args,
+  ]) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #customStatement,
+          [
+            statement,
+            args,
+          ],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<T> transaction<T>(
+    _i6.Future<T> Function()? action, {
+    bool? requireNew = false,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #transaction,
+          [action],
+          {#requireNew: requireNew},
+        ),
+        returnValue: _i7.ifNotNull(
+              _i7.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #transaction,
+                  [action],
+                  {#requireNew: requireNew},
+                ),
+              ),
+              (T v) => _i6.Future<T>.value(v),
+            ) ??
+            _FakeFuture_8<T>(
+              this,
+              Invocation.method(
+                #transaction,
+                [action],
+                {#requireNew: requireNew},
+              ),
+            ),
+      ) as _i6.Future<T>);
+
+  @override
+  _i6.Future<T> exclusively<T>(_i6.Future<T> Function()? action) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #exclusively,
+          [action],
+        ),
+        returnValue: _i7.ifNotNull(
+              _i7.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #exclusively,
+                  [action],
+                ),
+              ),
+              (T v) => _i6.Future<T>.value(v),
+            ) ??
+            _FakeFuture_8<T>(
+              this,
+              Invocation.method(
+                #exclusively,
+                [action],
+              ),
+            ),
+      ) as _i6.Future<T>);
+
+  @override
+  _i6.Future<void> batch(_i6.FutureOr<void> Function(_i3.Batch)? runInBatch) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #batch,
+          [runInBatch],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<T> runWithInterceptor<T>(
+    _i6.Future<T> Function()? action, {
+    required _i3.QueryInterceptor? interceptor,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #runWithInterceptor,
+          [action],
+          {#interceptor: interceptor},
+        ),
+        returnValue: _i7.ifNotNull(
+              _i7.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #runWithInterceptor,
+                  [action],
+                  {#interceptor: interceptor},
+                ),
+              ),
+              (T v) => _i6.Future<T>.value(v),
+            ) ??
+            _FakeFuture_8<T>(
+              this,
+              Invocation.method(
+                #runWithInterceptor,
+                [action],
+                {#interceptor: interceptor},
+              ),
+            ),
+      ) as _i6.Future<T>);
+
+  @override
+  _i3.GenerationContext $write(
+    _i3.Component? component, {
+    bool? hasMultipleTables,
+    int? startIndex,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #$write,
+          [component],
+          {
+            #hasMultipleTables: hasMultipleTables,
+            #startIndex: startIndex,
+          },
+        ),
+        returnValue: _FakeGenerationContext_16(
+          this,
+          Invocation.method(
+            #$write,
+            [component],
+            {
+              #hasMultipleTables: hasMultipleTables,
+              #startIndex: startIndex,
+            },
+          ),
+        ),
+      ) as _i3.GenerationContext);
+
+  @override
+  _i3.GenerationContext $writeInsertable(
+    _i3.TableInfo<_i3.Table, dynamic>? table,
+    _i3.Insertable<dynamic>? insertable, {
+    int? startIndex,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #$writeInsertable,
+          [
+            table,
+            insertable,
+          ],
+          {#startIndex: startIndex},
+        ),
+        returnValue: _FakeGenerationContext_16(
+          this,
+          Invocation.method(
+            #$writeInsertable,
+            [
+              table,
+              insertable,
+            ],
+            {#startIndex: startIndex},
+          ),
+        ),
+      ) as _i3.GenerationContext);
+
+  @override
+  String $expandVar(
+    int? start,
+    int? amount,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #$expandVar,
+          [
+            start,
+            amount,
+          ],
+        ),
+        returnValue: _i7.dummyValue<String>(
+          this,
+          Invocation.method(
+            #$expandVar,
+            [
+              start,
+              amount,
+            ],
+          ),
+        ),
+      ) as String);
+
+  @override
+  _i6.Future<void> close() => (super.noSuchMethod(
+        Invocation.method(
+          #close,
+          [],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+}
+
+/// A class which mocks [TranslateHistoryDao].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockTranslateHistoryDao extends _i1.Mock
+    implements _i5.TranslateHistoryDao {
+  MockTranslateHistoryDao() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.AppDatabase get attachedDatabase => (super.noSuchMethod(
+        Invocation.getter(#attachedDatabase),
+        returnValue: _FakeAppDatabase_0(
+          this,
+          Invocation.getter(#attachedDatabase),
+        ),
+      ) as _i2.AppDatabase);
+
+  @override
+  _i3.DatabaseConnection get connection => (super.noSuchMethod(
+        Invocation.getter(#connection),
+        returnValue: _FakeDatabaseConnection_1(
+          this,
+          Invocation.getter(#connection),
+        ),
+      ) as _i3.DatabaseConnection);
+
+  @override
+  _i3.DriftDatabaseOptions get options => (super.noSuchMethod(
+        Invocation.getter(#options),
+        returnValue: _FakeDriftDatabaseOptions_2(
+          this,
+          Invocation.getter(#options),
+        ),
+      ) as _i3.DriftDatabaseOptions);
+
+  @override
+  _i3.SqlTypes get typeMapping => (super.noSuchMethod(
+        Invocation.getter(#typeMapping),
+        returnValue: _i7.dummyValue<_i3.SqlTypes>(
+          this,
+          Invocation.getter(#typeMapping),
+        ),
+      ) as _i3.SqlTypes);
+
+  @override
+  _i3.QueryExecutor get executor => (super.noSuchMethod(
+        Invocation.getter(#executor),
+        returnValue: _FakeQueryExecutor_3(
+          this,
+          Invocation.getter(#executor),
+        ),
+      ) as _i3.QueryExecutor);
+
+  @override
+  _i4.StreamQueryStore get streamQueries => (super.noSuchMethod(
+        Invocation.getter(#streamQueries),
+        returnValue: _FakeStreamQueryStore_4(
+          this,
+          Invocation.getter(#streamQueries),
+        ),
+      ) as _i4.StreamQueryStore);
+
+  @override
+  _i3.DatabaseConnectionUser get resolvedEngine => (super.noSuchMethod(
+        Invocation.getter(#resolvedEngine),
+        returnValue: _FakeDatabaseConnectionUser_5(
+          this,
+          Invocation.getter(#resolvedEngine),
+        ),
+      ) as _i3.DatabaseConnectionUser);
+
+  @override
+  _i2.$TranslateHistoryTable get translateHistory => (super.noSuchMethod(
+        Invocation.getter(#translateHistory),
+        returnValue: _Fake$TranslateHistoryTable_23(
+          this,
+          Invocation.getter(#translateHistory),
+        ),
+      ) as _i2.$TranslateHistoryTable);
+
+  @override
+  _i5.TranslateHistoryDaoManager get managers => (super.noSuchMethod(
+        Invocation.getter(#managers),
+        returnValue: _FakeTranslateHistoryDaoManager_24(
+          this,
+          Invocation.getter(#managers),
+        ),
+      ) as _i5.TranslateHistoryDaoManager);
+
+  @override
+  _i6.Future<int> addHistory(String? inputText) => (super.noSuchMethod(
+        Invocation.method(
+          #addHistory,
+          [inputText],
+        ),
+        returnValue: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
+
+  @override
+  _i6.Future<void> addAllHistory(List<_i2.TranslateHistoryData>? data) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addAllHistory,
+          [data],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<List<_i2.TranslateHistoryData>> getAllHistory() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getAllHistory,
+          [],
+        ),
+        returnValue: _i6.Future<List<_i2.TranslateHistoryData>>.value(
+            <_i2.TranslateHistoryData>[]),
+      ) as _i6.Future<List<_i2.TranslateHistoryData>>);
+
+  @override
+  _i6.Future<void> clearHistory() => (super.noSuchMethod(
+        Invocation.method(
+          #clearHistory,
+          [],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> deleteHistory(int? id) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteHistory,
+          [id],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> deleteHistories(List<int>? ids) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteHistories,
+          [ids],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<int> deleteHistoryByInputText(String? inputText) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deleteHistoryByInputText,
+          [inputText],
+        ),
+        returnValue: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
 
   @override
   _i6.Stream<T> createStream<T extends Object>(
