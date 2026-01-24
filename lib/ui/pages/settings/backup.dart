@@ -4,6 +4,8 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/services/backup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/pages/settings/backup/export_dialog.dart";
+import "package:ciyue/ui/pages/settings/backup/export_state.dart";
 import "package:ciyue/viewModels/wordbook.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter/material.dart";
@@ -57,7 +59,21 @@ class Export extends StatelessWidget {
     return ListTile(
       leading: Icon(Icons.file_upload),
       title: Text(AppLocalizations.of(context)!.export),
-      onTap: () => Backup.export(false),
+      onTap: () async {
+        final options = await showDialog<ExportOptions>(
+          context: context,
+          builder: (context) => const ExportOptionsDialog(),
+        );
+        if (options != null) {
+          Backup.export(
+            false,
+            wordbook: options.wordbook,
+            searchHistory: options.searchHistory,
+            writingCheckHistory: options.writingCheckHistory,
+            translateHistory: options.translateHistory,
+          );
+        }
+      },
     );
   }
 }

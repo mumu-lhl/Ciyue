@@ -21,7 +21,8 @@ import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
-import "package:provider/provider.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:provider/provider.dart" as provider;
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
 import "package:tray_manager/tray_manager.dart";
@@ -44,21 +45,25 @@ void main() async {
 
     await initApp();
 
-    runApp(MultiProvider(providers: [
-      ChangeNotifierProvider(create: (_) => WordbookModel()),
-      ChangeNotifierProvider(create: (_) => HomeModel()),
-      ChangeNotifierProvider(create: (_) => DictManagerModel()),
-      ChangeNotifierProvider(create: (_) => HistoryModel()),
-      ChangeNotifierProvider(create: (_) => ManageDictionariesModel()),
-      ChangeNotifierProvider(create: (_) => AudioModel()..init()),
-      ChangeNotifierProvider(create: (_) => AIPrompts()),
-      ChangeNotifierProvider(create: (_) => SelectionTextViewModel()),
-      Provider(create: (_) => WritingCheckHistoryDao(mainDatabase)),
-      Provider(create: (_) => TranslateHistoryDao(mainDatabase)),
-      Provider(
-        create: (_) => OpenRecordsRepository(),
-      )
-    ], child: const Ciyue()));
+    runApp(ProviderScope(
+      child: provider.MultiProvider(providers: [
+        provider.ChangeNotifierProvider(create: (_) => WordbookModel()),
+        provider.ChangeNotifierProvider(create: (_) => HomeModel()),
+        provider.ChangeNotifierProvider(create: (_) => DictManagerModel()),
+        provider.ChangeNotifierProvider(create: (_) => HistoryModel()),
+        provider.ChangeNotifierProvider(
+            create: (_) => ManageDictionariesModel()),
+        provider.ChangeNotifierProvider(create: (_) => AudioModel()..init()),
+        provider.ChangeNotifierProvider(create: (_) => AIPrompts()),
+        provider.ChangeNotifierProvider(
+            create: (_) => SelectionTextViewModel()),
+        provider.Provider(create: (_) => WritingCheckHistoryDao(mainDatabase)),
+        provider.Provider(create: (_) => TranslateHistoryDao(mainDatabase)),
+        provider.Provider(
+          create: (_) => OpenRecordsRepository(),
+        )
+      ], child: const Ciyue()),
+    ));
   } catch (e) {
     runApp(MaterialApp(home: CiyueError(error: e)));
   }
@@ -72,16 +77,18 @@ void floatingWindow(List<String> args) async {
 
   searchWordFromProcessText = args[0];
 
-  runApp(MultiProvider(providers: [
-    ChangeNotifierProvider(create: (_) => WordbookModel()),
-    ChangeNotifierProvider(create: (_) => HomeModel()),
-    ChangeNotifierProvider(create: (_) => DictManagerModel()),
-    ChangeNotifierProvider(create: (_) => HistoryModel()),
-    ChangeNotifierProvider(create: (_) => AudioModel()..init()),
-    Provider(
-      create: (_) => OpenRecordsRepository(),
-    )
-  ], child: Ciyue(isFloatingWindow: true)));
+  runApp(ProviderScope(
+    child: provider.MultiProvider(providers: [
+      provider.ChangeNotifierProvider(create: (_) => WordbookModel()),
+      provider.ChangeNotifierProvider(create: (_) => HomeModel()),
+      provider.ChangeNotifierProvider(create: (_) => DictManagerModel()),
+      provider.ChangeNotifierProvider(create: (_) => HistoryModel()),
+      provider.ChangeNotifierProvider(create: (_) => AudioModel()..init()),
+      provider.Provider(
+        create: (_) => OpenRecordsRepository(),
+      )
+    ], child: Ciyue(isFloatingWindow: true)),
+  ));
 }
 
 class Ciyue extends StatefulWidget {

@@ -596,6 +596,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.4"
+  flutter_riverpod:
+    dependency: "direct main"
+    description:
+      name: flutter_riverpod
+      sha256: a3cd0547353c1990bf5ad64f73143e5ce7a780409639559ad83a743ff3b945e4
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.0"
   flutter_smart_dialog:
     dependency: "direct main"
     description:
@@ -720,12 +728,13 @@ packages:
     source: hosted
     version: "0.2.3"
   hotkey_manager_linux:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: hotkey_manager_linux
-      sha256: "83676bda8210a3377bc6f1977f193bc1dbdd4c46f1bdd02875f44b6eff9a8473"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/hotkey_manager_linux"
+      ref: fix-build-failure
+      resolved-ref: "1b31e3ca4ab017ee72f54a7065b2073a88403d61"
+      url: "https://github.com/gepbird/hotkey_manager.git"
+    source: git
     version: "0.2.0"
   hotkey_manager_macos:
     dependency: transitive
@@ -1167,6 +1176,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
+  riverpod:
+    dependency: "direct main"
+    description:
+      name: riverpod
+      sha256: "9026676260f31bb5279cc5e59ca292145d8bab4aabede9aa2555c2a626ec66f1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.0"
   screen_retriever:
     dependency: transitive
     description:
@@ -1396,6 +1413,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.1"
+  state_notifier:
+    dependency: transitive
+    description:
+      name: state_notifier
+      sha256: b8677376aa54f2d7c58280d5a007f9e8774f1968d1fb1c096adcb4792fba29bb
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   stream_channel:
     dependency: transitive
     description:
