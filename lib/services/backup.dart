@@ -3,7 +3,6 @@ import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
-import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/models/backup/backup.dart";
 import "package:ciyue/services/platform.dart";

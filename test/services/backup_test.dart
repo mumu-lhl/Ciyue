@@ -1,13 +1,13 @@
-import 'dart:convert';
-import 'package:ciyue/database/app/app.dart';
-import 'package:ciyue/database/app/daos.dart';
-import 'package:ciyue/services/backup.dart';
-import 'package:ciyue/viewModels/wordbook.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import "dart:convert";
+import "package:ciyue/database/app/app.dart";
+import "package:ciyue/database/app/daos.dart";
+import "package:ciyue/services/backup.dart";
+import "package:ciyue/viewModels/wordbook.dart";
+import "package:flutter_test/flutter_test.dart";
+import "package:mockito/annotations.dart";
+import "package:mockito/mockito.dart";
 
-import 'backup_test.mocks.dart';
+import "backup_test.mocks.dart";
 
 @GenerateMocks([
   WordbookDao,
@@ -48,33 +48,33 @@ void main() {
     );
   });
 
-  group('BackupService Export', () {
+  group("BackupService Export", () {
     final words = [
       WordbookData(
         createdAt: DateTime.now(),
         tag: 1,
-        word: 'test',
+        word: "test",
       )
     ];
-    final tags = [const WordbookTag(id: 1, tag: 'tag1')];
-    final history = [const HistoryData(id: 1, word: 'history1')];
+    final tags = [const WordbookTag(id: 1, tag: "tag1")];
+    final history = [const HistoryData(id: 1, word: "history1")];
     final writingCheckHistory = [
       WritingCheckHistoryData(
         id: 1,
-        inputText: 'input',
-        outputText: 'output',
+        inputText: "input",
+        outputText: "output",
         createdAt: DateTime.now(),
       )
     ];
     final translateHistory = [
       TranslateHistoryData(
         id: 1,
-        inputText: 'input',
+        inputText: "input",
         createdAt: DateTime.now(),
       )
     ];
 
-    test('should do nothing if no words or history to export', () async {
+    test("should do nothing if no words or history to export", () async {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => []);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => []);
       when(mockHistoryDao.getAllHistory()).thenAnswer((_) async => []);
@@ -84,7 +84,7 @@ void main() {
 
       await backupService.export(
         autoExport: false,
-        exportFileName: 'test',
+        exportFileName: "test",
       );
 
       verify(mockWordbookDao.getAllWords()).called(1);
@@ -93,7 +93,7 @@ void main() {
       verifyNever(mockFileHandler.writeManualExportDesktop(any));
     });
 
-    test('should export manually on Android', () async {
+    test("should export manually on Android", () async {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => words);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => tags);
       when(mockHistoryDao.getAllHistory()).thenAnswer((_) async => history);
@@ -107,13 +107,13 @@ void main() {
 
       await backupService.export(
         autoExport: false,
-        exportFileName: 'test',
+        exportFileName: "test",
       );
 
       verify(mockFileHandler.writeManualExportAndroid(any)).called(1);
     });
 
-    test('should export manually on Desktop', () async {
+    test("should export manually on Desktop", () async {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => words);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => tags);
       when(mockHistoryDao.getAllHistory()).thenAnswer((_) async => history);
@@ -127,13 +127,13 @@ void main() {
 
       await backupService.export(
         autoExport: false,
-        exportFileName: 'test',
+        exportFileName: "test",
       );
 
       verify(mockFileHandler.writeManualExportDesktop(any)).called(1);
     });
 
-    test('should auto export on Android', () async {
+    test("should auto export on Android", () async {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => words);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => tags);
       when(mockHistoryDao.getAllHistory()).thenAnswer((_) async => history);
@@ -147,15 +147,15 @@ void main() {
 
       await backupService.export(
         autoExport: true,
-        exportFileName: 'test',
-        exportDirectory: '/dir',
+        exportFileName: "test",
+        exportDirectory: "/dir",
       );
 
-      verify(mockFileHandler.writeAutoExportAndroid('/dir', 'test.json', any))
+      verify(mockFileHandler.writeAutoExportAndroid("/dir", "test.json", any))
           .called(1);
     });
 
-    test('should auto export on Desktop', () async {
+    test("should auto export on Desktop", () async {
       when(mockWordbookDao.getAllWords()).thenAnswer((_) async => words);
       when(mockWordbookTagsDao.getAllTags()).thenAnswer((_) async => tags);
       when(mockHistoryDao.getAllHistory()).thenAnswer((_) async => history);
@@ -169,17 +169,17 @@ void main() {
 
       await backupService.export(
         autoExport: true,
-        exportFileName: 'test',
-        exportPath: '/path/test.json',
+        exportFileName: "test",
+        exportPath: "/path/test.json",
       );
 
-      verify(mockFileHandler.writeAutoExportDesktop('/path/test.json', any))
+      verify(mockFileHandler.writeAutoExportDesktop("/path/test.json", any))
           .called(1);
     });
   });
 
-  group('BackupService Import', () {
-    test('should import data correctly', () async {
+  group("BackupService Import", () {
+    test("should import data correctly", () async {
       final jsonContent = jsonEncode({
         "version": 1,
         "wordbookWords": [],
@@ -209,7 +209,7 @@ void main() {
       verify(mockTranslateHistoryDao.addAllHistory(any)).called(1);
     });
 
-    test('should do nothing if file selection canceled', () async {
+    test("should do nothing if file selection canceled", () async {
       when(mockFileHandler.readImportFile()).thenAnswer((_) async => null);
 
       await backupService.import();

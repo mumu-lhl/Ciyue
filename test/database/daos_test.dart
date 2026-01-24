@@ -1,8 +1,8 @@
-import 'package:ciyue/database/app/app.dart';
-import 'package:ciyue/database/app/daos.dart';
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:flutter_test/flutter_test.dart';
+import "package:ciyue/database/app/app.dart";
+import "package:ciyue/database/app/daos.dart";
+import "package:drift/drift.dart";
+import "package:drift/native.dart";
+import "package:flutter_test/flutter_test.dart";
 
 void main() {
   late AppDatabase database;
@@ -22,20 +22,20 @@ void main() {
     await database.close();
   });
 
-  group('WordbookDao', () {
-    test('addAllWords should avoid duplicates based on word and tag', () async {
+  group("WordbookDao", () {
+    test("addAllWords should avoid duplicates based on word and tag", () async {
       // 1. Insert an initial record
-      await wordbookDao.addWord('apple', tag: 1);
+      await wordbookDao.addWord("apple", tag: 1);
 
       final now = DateTime.now();
       // 2. Prepare import data
       final newWords = [
         // Duplicate: same word and tag (should be skipped)
-        WordbookData(word: 'apple', tag: 1, createdAt: now),
+        WordbookData(word: "apple", tag: 1, createdAt: now),
         // New: same word but different tag (should be inserted)
-        WordbookData(word: 'apple', tag: 2, createdAt: now),
+        WordbookData(word: "apple", tag: 2, createdAt: now),
         // New: different word (should be inserted)
-        WordbookData(word: 'banana', tag: 1, createdAt: now),
+        WordbookData(word: "banana", tag: 1, createdAt: now),
       ];
 
       // 3. Perform batch add
@@ -51,26 +51,26 @@ void main() {
       expect(allWords.length, 3);
 
       // Verify duplicate was not added (count remains 1 for apple/tag:1)
-      expect(allWords.where((w) => w.word == 'apple' && w.tag == 1).length, 1);
+      expect(allWords.where((w) => w.word == "apple" && w.tag == 1).length, 1);
 
       // Verify new records were added
-      expect(allWords.where((w) => w.word == 'apple' && w.tag == 2).length, 1);
-      expect(allWords.where((w) => w.word == 'banana').length, 1);
+      expect(allWords.where((w) => w.word == "apple" && w.tag == 2).length, 1);
+      expect(allWords.where((w) => w.word == "banana").length, 1);
     });
   });
 
-  group('TranslateHistoryDao', () {
-    test('addAllHistory should avoid duplicates based on inputText', () async {
+  group("TranslateHistoryDao", () {
+    test("addAllHistory should avoid duplicates based on inputText", () async {
       // 1. Insert an initial record
-      await translateHistoryDao.addHistory('hello');
+      await translateHistoryDao.addHistory("hello");
 
       final now = DateTime.now();
       // 2. Prepare import data
       final newHistory = [
         // Duplicate: same inputText (should be skipped)
-        TranslateHistoryData(id: 100, inputText: 'hello', createdAt: now),
+        TranslateHistoryData(id: 100, inputText: "hello", createdAt: now),
         // New: different inputText (should be inserted)
-        TranslateHistoryData(id: 101, inputText: 'world', createdAt: now),
+        TranslateHistoryData(id: 101, inputText: "world", createdAt: now),
       ];
 
       // 3. Perform batch add
@@ -82,12 +82,12 @@ void main() {
       // Expect 2 records: 'hello' and 'world'
       expect(allHistory.length, 2);
       expect(
-          allHistory.map((e) => e.inputText), containsAll(['hello', 'world']));
+          allHistory.map((e) => e.inputText), containsAll(["hello", "world"]));
     });
   });
 
-  group('WritingCheckHistoryDao', () {
-    test('addAllHistory should avoid duplicates based on content matches',
+  group("WritingCheckHistoryDao", () {
+    test("addAllHistory should avoid duplicates based on content matches",
         () async {
       final now = DateTime.fromMillisecondsSinceEpoch(1000000);
 
@@ -95,8 +95,8 @@ void main() {
       await database
           .into(database.writingCheckHistory)
           .insert(WritingCheckHistoryCompanion(
-            inputText: Value('input1'),
-            outputText: Value('output1'),
+            inputText: Value("input1"),
+            outputText: Value("output1"),
             createdAt: Value(now),
           ));
 
@@ -105,20 +105,20 @@ void main() {
         // Duplicate: Exact match on input, output, and time (should be skipped)
         WritingCheckHistoryData(
             id: 100,
-            inputText: 'input1',
-            outputText: 'output1',
+            inputText: "input1",
+            outputText: "output1",
             createdAt: now),
         // New: Different output (should be inserted)
         WritingCheckHistoryData(
             id: 101,
-            inputText: 'input1',
-            outputText: 'output2',
+            inputText: "input1",
+            outputText: "output2",
             createdAt: now),
         // New: Different time (should be inserted)
         WritingCheckHistoryData(
             id: 102,
-            inputText: 'input1',
-            outputText: 'output1',
+            inputText: "input1",
+            outputText: "output1",
             createdAt: now.add(const Duration(seconds: 1))),
       ];
 
@@ -138,8 +138,8 @@ void main() {
       // Verify the duplicate logic by counting entries with original content
       final originalContentCount = allHistory
           .where((e) =>
-              e.inputText == 'input1' &&
-              e.outputText == 'output1' &&
+              e.inputText == "input1" &&
+              e.outputText == "output1" &&
               e.createdAt.millisecondsSinceEpoch == now.millisecondsSinceEpoch)
           .length;
 
