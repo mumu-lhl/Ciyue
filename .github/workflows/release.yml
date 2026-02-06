@@ -175,7 +175,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update -y
-          sudo apt install -y libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-bad libayatana-appindicator3-dev libkeybinder-3.0-dev libwpewebkit-1.0-dev
+          sudo apt install -y libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-bad libayatana-appindicator3-dev libkeybinder-3.0-dev
           flutter pub get
 
       - name: Build Linux
