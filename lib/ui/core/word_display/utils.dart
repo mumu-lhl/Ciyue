@@ -26,7 +26,7 @@ Widget buildWebView(String word, int id, bool isExpansion) {
         if (Platform.isAndroid) {
           return WebviewAndroid(
               content: snapshot.data!, dictId: id, isExpansion: isExpansion);
-        } else if (Platform.isWindows) {
+        } else if (Platform.isWindows || Platform.isLinux) {
           return WebviewWindows(content: snapshot.data!, dictId: id);
         } else {
           return FakeWebViewByAI(html: snapshot.data!);
