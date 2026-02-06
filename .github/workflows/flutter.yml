@@ -165,6 +165,190 @@ jobs:
           sudo apt install -y libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-bad libayatana-appindicator3-dev libkeybinder-3.0-dev
           flutter pub get
 
+      - name: Build WPE WebKit
+        run: |
+          sudo apt-get install -y \
+            build-essential cmake ninja-build meson pkg-config \
+            ruby ruby-dev python3 python3-pip \
+            gperf unifdef
+
+          # GLib (required)
+          sudo apt-get install -y libglib2.0-dev
+
+          # Networking and security (required)
+          sudo apt-get install -y \
+            libsoup-3.0-dev \
+            libssl-dev libgnutls28-dev \
+            libsecret-1-dev \
+            libgcrypt20-dev libtasn1-dev
+
+          # Graphics and rendering (required)
+          sudo apt-get install -y \
+            libepoxy-dev \
+            libegl1-mesa-dev libgles2-mesa-dev \
+            libxkbcommon-dev
+
+          # Image and font processing (required)
+          sudo apt-get install -y \
+            libjpeg-dev libpng-dev libwebp-dev \
+            libharfbuzz-dev libharfbuzz-icu0 libfreetype6-dev libfontconfig1-dev
+
+          # Text and internationalization (required)
+          sudo apt-get install -y \
+            libicu-dev libxml2-dev \
+            libhyphen-dev libenchant-2-dev
+
+          # Media and audio (required for ENABLE_VIDEO and ENABLE_WEB_AUDIO)
+          sudo apt-get install -y \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
+            libgstreamer-plugins-bad1.0-dev \
+            gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+
+          # Database and storage (required)
+          sudo apt-get install -y libsqlite3-dev
+
+          sudo apt-get install -y \
+            libjxl-dev \
+            libavif-dev \
+            libwoff-dev \
+            libopenjp2-7-dev
+
+          # Color management
+          sudo apt-get install -y liblcms2-dev
+
+          # Accessibility
+          sudo apt-get install -y libatk1.0-dev libatk-bridge2.0-dev
+
+          # Graphics/GPU (required for USE_GBM and USE_LIBDRM)
+          sudo apt-get install -y libdrm-dev libgbm-dev
+
+          # Debugging
+          # sudo apt-get install -y libbacktrace-dev
+
+          # Speech synthesis (choose one)
+          sudo apt-get install -y flite1-dev  # Flite (default)
+          # OR: sudo apt-get install -y libspiel-dev  # LibSpiel (alternative)
+
+          # XSLT
+          sudo apt-get install -y libxslt1-dev
+
+          # GObject introspection & documentation
+          sudo apt-get install -y gobject-introspection libgirepository1.0-dev
+          pip3 install gi-docgen
+
+          # Systemd logging
+          sudo apt-get install -y libsystemd-dev
+
+          # Sandboxing
+          sudo apt-get install -y bubblewrap xdg-dbus-proxy libseccomp-dev
+
+          # Gamepad support
+          sudo apt-get install -y libmanette-0.2-dev libevdev-dev
+
+          # WebRTC with GStreamer
+          sudo apt-get install -y gstreamer1.0-plugins-bad
+
+          # WPE Platform DRM (for ENABLE_WPE_PLATFORM_DRM)
+          sudo apt-get install -y libinput-dev libudev-dev
+
+          # WPE Platform Wayland (for ENABLE_WPE_PLATFORM_WAYLAND)
+          sudo apt-get install -y libwayland-dev wayland-protocols
+
+          # Create a working directory
+          mkdir -p ~/wpe-build && cd ~/wpe-build
+
+          # Set installation prefix (use /usr/local or a custom path)
+          export WPE_PREFIX=/usr/local
+
+          # === 1. Build libwpe ===
+          wget https://wpewebkit.org/releases/libwpe-1.16.3.tar.xz
+          tar xf libwpe-1.16.3.tar.xz
+          cd libwpe-1.16.3
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=$WPE_PREFIX
+          ninja -C build
+          sudo ninja -C build install
+          cd ..
+
+          # === 2. Build WPEBackend-fdo (OPTIONAL - only for legacy fallback) ===
+          # Skip this step if you enable ENABLE_WPE_PLATFORM in step 3.
+          # Only needed for older WPE WebKit builds or as a fallback.
+          # wget https://wpewebkit.org/releases/wpebackend-fdo-1.16.1.tar.xz
+          # tar xf wpebackend-fdo-1.16.1.tar.xz
+          # cd wpebackend-fdo-1.16.1
+          # meson setup build \
+          #   --prefix=$WPE_PREFIX \
+          #   --buildtype=release
+          # ninja -C build
+          # sudo ninja -C build install
+          # cd ..
+
+          # === 3. Build WPE WebKit ===
+          # This is the largest component and takes significant time/resources
+          wget https://wpewebkit.org/releases/wpewebkit-2.50.4.tar.xz
+          tar xf wpewebkit-2.50.4.tar.xz
+          cd wpewebkit-2.50.4
+
+          # Configure with recommended options for flutter_inappwebview
+          # See "Optional Features and Dependencies" section above for all flags
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=$WPE_PREFIX \
+            -DPORT=WPE \
+            -DENABLE_DOCUMENTATION=OFF \
+            -DENABLE_INTROSPECTION=OFF \
+            -DENABLE_BUBBLEWRAP_SANDBOX=ON \
+            -DENABLE_WEBDRIVER=OFF \
+            -DENABLE_MINIBROWSER=OFF \
+            -DUSE_AVIF=ON \
+            -DUSE_WOFF2=ON \
+            -DUSE_JPEGXL=ON \
+            -DENABLE_WPE_PLATFORM=ON \
+            -DENABLE_WPE_PLATFORM_HEADLESS=ON \
+            -DUSE_LIBBACKTRACE=OFF
+
+          # The last two flags enable the modern WPEPlatform backend (recommended).
+          # If omitted, the plugin will fall back to legacy WPEBackend-FDO.
+
+          # If you're missing optional dependencies, disable them:
+          #   -DUSE_JPEGXL=OFF           # if libjxl-dev not installed
+          #   -DUSE_AVIF=OFF             # if libavif-dev not installed
+          #   -DUSE_WOFF2=OFF            # if libwoff-dev not installed
+          #   -DUSE_LCMS=OFF             # if liblcms2-dev not installed
+          #   -DENABLE_SPEECH_SYNTHESIS=OFF  # if flite1-dev not installed
+          #   -DUSE_ATK=OFF              # if libatk1.0-dev not installed
+          #   -DENABLE_JOURNALD_LOG=OFF  # if libsystemd-dev not installed
+
+          # Build (use -j to limit parallelism if you have limited RAM)
+          # Each WebKit build process uses ~1.5GB RAM
+          ninja -C build -j$(nproc)
+
+          # Install
+          sudo ninja -C build install
+          cd ..
+
+          # === 4. Update library cache ===
+          sudo ldconfig
+
+          # === 5. Create the default backend symlink (OPTIONAL - only for legacy fallback) ===
+          # WPE looks for libWPEBackend-default.so
+          ARCH=$(uname -m)
+          if [ -f "$WPE_PREFIX/lib/${ARCH}-linux-gnu/libWPEBackend-fdo-1.0.so.1" ]; then
+            sudo ln -sf "$WPE_PREFIX/lib/${ARCH}-linux-gnu/libWPEBackend-fdo-1.0.so.1" \
+              "$WPE_PREFIX/lib/libWPEBackend-default.so"
+          elif [ -f "$WPE_PREFIX/lib/aarch64-linux-gnu/libWPEBackend-fdo-1.0.so.1" ]; then
+            sudo ln -sf "$WPE_PREFIX/lib/aarch64-linux-gnu/libWPEBackend-fdo-1.0.so.1" \
+              "$WPE_PREFIX/lib/libWPEBackend-default.so"
+          elif [ -f "$WPE_PREFIX/lib/x86_64-linux-gnu/libWPEBackend-fdo-1.0.so.1" ]; then
+            sudo ln -sf "$WPE_PREFIX/lib/x86_64-linux-gnu/libWPEBackend-fdo-1.0.so.1" \
+              "$WPE_PREFIX/lib/libWPEBackend-default.so"
+          elif [ -f "$WPE_PREFIX/lib/libWPEBackend-fdo-1.0.so.1" ]; then
+            sudo ln -sf "$WPE_PREFIX/lib/libWPEBackend-fdo-1.0.so.1" \
+              "$WPE_PREFIX/lib/libWPEBackend-default.so"
+          fi
+
       - name: Get build info
         id: build_info
         run: |

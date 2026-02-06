@@ -1,5 +1,3 @@
-import "dart:io";
-
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/app_router.dart";
@@ -11,6 +9,7 @@ import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -119,7 +118,7 @@ class _CiyueState extends State<Ciyue> with TrayListener {
       }
     }
 
-    if (!Platform.isWindows) {
+    if (!isDesktop()) {
       return DynamicColorBuilder(
         builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
           ColorScheme? lightColorScheme;

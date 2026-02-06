@@ -223,7 +223,7 @@ class Mdict {
 
     await _checkResources();
 
-    if (Platform.isWindows) {
+    if (Platform.isWindows || Platform.isLinux) {
       await _startServer();
     }
   }
