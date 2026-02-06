@@ -106,17 +106,18 @@ class PlatformMethod {
     const InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);
 
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+    await flutterLocalNotificationsPlugin.initialize(
+        settings: initializationSettings,
         onDidReceiveNotificationResponse:
             (NotificationResponse notificationResponse) {
-      router.go("/");
-      MainPage.setScreenIndex(0);
+          router.go("/");
+          MainPage.setScreenIndex(0);
 
-      final model =
-          Provider.of<HomeModel>(navigatorKey.currentContext!, listen: false);
-      model.searchWord = "";
-      model.focusSearchBar();
-    });
+          final model = Provider.of<HomeModel>(navigatorKey.currentContext!,
+              listen: false);
+          model.searchWord = "";
+          model.focusSearchBar();
+        });
   }
 
   static Future<void> createPersistentNotification(bool create) async {
@@ -134,13 +135,13 @@ class PlatformMethod {
       const NotificationDetails notificationDetails =
           NotificationDetails(android: androidNotificationDetails);
       await flutterLocalNotificationsPlugin.show(
-        0,
-        "Ciyue",
-        "Ciyue is running in the background",
-        notificationDetails,
+        id: 0,
+        title: "Ciyue",
+        body: "Ciyue is running in the background",
+        notificationDetails: notificationDetails,
       );
     } else {
-      await flutterLocalNotificationsPlugin.cancel(0);
+      await flutterLocalNotificationsPlugin.cancel(id: 0);
     }
   }
 }

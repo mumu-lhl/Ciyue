@@ -36,14 +36,14 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   # cupertino_icons: ^1.0.8
-  drift: ^2.30.1
+  drift: ^2.31.0
   drift_flutter: ^0.2.8
   dict_reader:
     git:
       url: https://github.com/mumu-lhl/dict_reader.git
       ref: af687fb3c30f36d3e7679b0eeb6c2b993c5300a8
   shared_preferences: ^2.5.4
-  go_router: ^17.0.1
+  go_router: ^17.1.0
   flutter_inappwebview: ^6.1.5
   path: ^1.9.1
   path_provider: ^2.1.5
@@ -61,7 +61,7 @@ dependencies:
   url_launcher: ^6.3.2
   file_selector: ^1.1.0
   html_unescape: ^2.0.0
-  flutter_local_notifications: ^19.5.0
+  flutter_local_notifications: ^20.0.0
   dio: ^5.9.1
   gpt_markdown: ^1.1.5
   provider: ^6.1.5+1
@@ -81,8 +81,8 @@ dependencies:
   window_manager: ^0.5.1
   hotkey_manager: ^0.2.3
   fuzzy: ^0.5.1
-  flutter_riverpod: ^3.2.0
-  riverpod: ^3.2.0
+  flutter_riverpod: ^3.2.1
+  riverpod: ^3.2.1
 
 dependency_overrides:
   hotkey_manager_linux:
@@ -101,8 +101,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  drift_dev: ^2.30.1
-  build_runner: ^2.10.5
+  drift_dev: ^2.31.0
+  build_runner: ^2.11.0
   test: ^1.26.3
   freezed: ^3.2.3
   mockito: ^5.6.3
