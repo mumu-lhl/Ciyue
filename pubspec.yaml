@@ -53,15 +53,12 @@ dependencies:
   intl: ^0.20.2
   flutter_launcher_icons: ^0.14.4
   dynamic_color: ^1.8.1
-  flutter_tts:
-    git:
-      url: https://github.com/mumu-lhl/flutter_tts.git
-      ref: 79009e7045382c5cf57142ecbb735e17cbbd58cd
+  flutter_tts: ^4.2.5
   package_info_plus: ^9.0.0
   url_launcher: ^6.3.2
   file_selector: ^1.1.0
   html_unescape: ^2.0.0
-  flutter_local_notifications: ^20.0.0
+  flutter_local_notifications: ^20.1.0
   dio: ^5.9.1
   gpt_markdown: ^1.1.5
   provider: ^6.1.5+1
@@ -102,9 +99,9 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   drift_dev: ^2.31.0
-  build_runner: ^2.11.0
-  test: ^1.26.3
-  freezed: ^3.2.3
+  build_runner: ^2.11.1
+  test: ^1.28.0
+  freezed: ^3.2.5
   mockito: ^5.6.3
 
 # For information on the generic Dart part of this file, see the
