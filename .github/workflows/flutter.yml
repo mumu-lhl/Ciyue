@@ -153,14 +153,14 @@ jobs:
     name: Build Linux
     runs-on: ubuntu-latest
     container:
-      image: debian:trixie
+      image: archlinux:base-devel
     steps:
       - uses: actions/checkout@v4
 
       - name: Install pre dependencies
         run: |
-          apt-get update -y
-          apt-get install -y jq curl xz-utils git
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm jq git clang cmake ninja
 
       - uses: subosito/flutter-action@v2
         with:
@@ -169,7 +169,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get install -y libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-bad libayatana-appindicator3-dev libkeybinder-3.0-dev libwpewebkit-2.0-dev
+          pacman -S --noconfirm gtk3 gstreamer libayatana-appindicator libkeybinder3 wpewebkit
+          git config --global --add safe.directory /__t/flutter/*
           flutter pub get
 
       - name: Get build info
@@ -179,7 +180,7 @@ jobs:
           echo "timestamp=$(date +%s)" >> $GITHUB_OUTPUT
 
       - name: Build
-        run: HAVE_WPE_BACKEND_LEGACY=1 flutter build linux --dart-define=DEV=true --dart-define=GIT_COMMIT_HASH=${{ steps.build_info.outputs.hash }} --dart-define=BUILD_TIMESTAMP=${{ steps.build_info.outputs.timestamp }}
+        run: flutter build linux --dart-define=DEV=true --dart-define=GIT_COMMIT_HASH=${{ steps.build_info.outputs.hash }} --dart-define=BUILD_TIMESTAMP=${{ steps.build_info.outputs.timestamp }}
 
       - name: Upload
         uses: actions/upload-artifact@v4
