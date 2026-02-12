@@ -208,7 +208,15 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        handleProcessTextIntent(intent)
+    }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleProcessTextIntent(intent)
+    }
+
+    private fun handleProcessTextIntent(intent: Intent?) {
         if (intent?.action == Intent.ACTION_PROCESS_TEXT) {
             val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString() ?: ""
             methodChannel?.invokeMethod("processText", text)

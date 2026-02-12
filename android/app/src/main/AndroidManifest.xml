@@ -16,7 +16,6 @@
             android:exported="true"
             android:hardwareAccelerated="true"
             android:launchMode="singleTop"
-            android:taskAffinity=""
             android:theme="@style/LaunchTheme"
             android:windowSoftInputMode="adjustResize">
             <!-- Specifies an Android theme to apply to this Activity as soon as
@@ -35,6 +34,7 @@
             android:name=".FloatingWindowActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
+            android:taskAffinity="org.eu.mumulhl.ciyue.floating"
             android:theme="@style/Theme.Transparent"
             android:windowSoftInputMode="adjustResize"
             android:exported="false"

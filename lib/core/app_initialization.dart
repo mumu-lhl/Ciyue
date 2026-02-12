@@ -47,6 +47,7 @@ Future<void> initApp() async {
 
   await initPrefs();
 
+  // No waiting to save time.
   initGroup();
 
   flutterTts = FlutterTts();
@@ -68,11 +69,6 @@ Future<void> initApp() async {
 
   if (isDesktop()) {
     accentColor = await DynamicColorPlugin.getAccentColor();
-  }
-
-  if (settings.ttsEngine != null) flutterTts.setEngine(settings.ttsEngine!);
-  if (settings.ttsLanguage != null) {
-    flutterTts.setLanguage(settings.ttsLanguage!);
   }
 
   WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -123,18 +119,44 @@ Future<void> initApp() async {
   talker.info("Ciyue spent ${stopWatch.elapsedMilliseconds} ms initializing.");
 
   Future.microtask(() async {
+    if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
+      // Add a delay to avoid ConcurrentModificationException in onInit on Android
+      // and other potential early initialization issues on other platforms.
+      await Future.delayed(const Duration(milliseconds: 1000));
+    }
+
+    try {
+      if (Platform.isAndroid && settings.ttsEngine != null) {
+        await flutterTts.setEngine(settings.ttsEngine!);
+      }
+      if (settings.ttsLanguage != null) {
+        await flutterTts.setLanguage(settings.ttsLanguage!);
+      }
+    } catch (e) {
+      talker.error("Failed to set TTS engine or language: $e");
+    }
+
     if (Platform.isAndroid) {
-      ttsEngines = await flutterTts.getEngines;
+      try {
+        ttsEngines = await flutterTts.getEngines;
+      } catch (e) {
+        talker.error("Failed to get TTS engines: $e");
+      }
     }
 
     if (!Platform.isLinux) {
-      final List<dynamic> originalTTSLanguages = await flutterTts.getLanguages;
-      for (final language in originalTTSLanguages) {
-        if (language is String) {
-          ttsLanguages.add(language);
+      try {
+        final List<dynamic> originalTTSLanguages =
+            await flutterTts.getLanguages;
+        for (final language in originalTTSLanguages) {
+          if (language is String) {
+            ttsLanguages.add(language);
+          }
         }
+        ttsLanguages.sort((a, b) => a.toString().compareTo(b.toString()));
+      } catch (e) {
+        talker.error("Failed to get TTS languages: $e");
       }
-      ttsLanguages.sort((a, b) => a.toString().compareTo(b.toString()));
     }
 
     if (Platform.isWindows) {
@@ -200,6 +222,8 @@ Future<void> initPrefs() async {
     "autoRemoveSearchWord",
     "language",
     "themeMode",
+    "enableDynamicColor",
+    "themeSeedColor",
     "tagsOrder",
     "secureScreen",
     "searchBarInAppBar",

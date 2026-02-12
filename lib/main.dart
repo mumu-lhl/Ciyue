@@ -118,6 +118,16 @@ class _CiyueState extends State<Ciyue> with TrayListener {
       }
     }
 
+    if (!settings.enableDynamicColor) {
+      final Color seedColor = settings.themeSeedColor;
+      final ColorScheme lightColorScheme =
+          ColorScheme.fromSeed(seedColor: seedColor);
+      final ColorScheme darkColorScheme = ColorScheme.fromSeed(
+          seedColor: seedColor, brightness: Brightness.dark);
+
+      return buildMaterialApp(lightColorScheme, darkColorScheme, locale);
+    }
+
     if (!isDesktop()) {
       return DynamicColorBuilder(
         builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
