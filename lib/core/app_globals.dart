@@ -13,7 +13,7 @@ late final SharedPreferencesWithCache prefs;
 late final VoidCallback refreshAll;
 late final FlutterTts flutterTts;
 String searchWordFromProcessText = "";
-late final List<dynamic> ttsEngines;
+List<dynamic> ttsEngines = [];
 final List<dynamic> ttsLanguages = [];
 String? windowsWebview2Directory;
 
