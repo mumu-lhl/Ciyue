@@ -157,8 +157,8 @@ class TTSEngines extends StatelessWidget {
         TitleText(AppLocalizations.of(context)!.ttsEngines),
         SizedBox(height: 12),
         DropdownButtonFormField<String>(
-          initialValue:
-              settings.ttsEngine ?? (ttsEngines.isNotEmpty ? ttsEngines.first : null),
+          initialValue: settings.ttsEngine ??
+              (ttsEngines.isNotEmpty ? ttsEngines.first : null),
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)!.ttsEngines,
             border: OutlineInputBorder(),

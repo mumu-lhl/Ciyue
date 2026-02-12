@@ -9,6 +9,7 @@ import "appearance/more_options_button_switch.dart";
 import "appearance/searchbar_in_word_display_switch.dart";
 import "appearance/searchbar_location_selector.dart";
 import "appearance/tab_bar_position_selector.dart";
+import "appearance/theme_color_settings_section.dart";
 import "appearance/theme_selector.dart";
 
 class AppearanceSettingsPage extends StatelessWidget {
@@ -27,6 +28,7 @@ class AppearanceSettingsPage extends StatelessWidget {
             children: [
               const LanguageSelector(),
               const ThemeSelector(),
+              const ThemeColorSettingsSection(),
               const DictionarySwitchStyleSelector(),
               const SearchbarLocationSelector(),
               const TabBarPositionSelector(),

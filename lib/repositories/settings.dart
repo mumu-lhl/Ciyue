@@ -16,6 +16,8 @@ class _Settings {
   late String? exportPath;
 
   late ThemeMode themeMode;
+  late bool enableDynamicColor;
+  late Color themeSeedColor;
   String? language;
   late bool searchBarInAppBar;
   late TabBarPosition tabBarPosition;
@@ -66,6 +68,9 @@ class _Settings {
     secureScreen = prefs.getBool("secureScreen") ?? false;
 
     language = prefs.getString("language") ?? "system";
+    enableDynamicColor = prefs.getBool("enableDynamicColor") ?? true;
+    final int? themeSeedColorValue = prefs.getInt("themeSeedColor");
+    themeSeedColor = Color(themeSeedColorValue ?? Colors.blue.toARGB32());
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
@@ -156,6 +161,16 @@ class _Settings {
 
     aiProviderConfigs[aiProvider]!["apiUrl"] = apiUrl;
     await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
+  }
+
+  Future<void> setEnableDynamicColor(bool value) async {
+    enableDynamicColor = value;
+    await prefs.setBool("enableDynamicColor", value);
+  }
+
+  Future<void> setThemeSeedColor(Color color) async {
+    themeSeedColor = color;
+    await prefs.setInt("themeSeedColor", color.toARGB32());
   }
 
   Future<void> setTabBarPosition(TabBarPosition position) async {

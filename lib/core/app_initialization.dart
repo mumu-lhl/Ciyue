@@ -222,6 +222,8 @@ Future<void> initPrefs() async {
     "autoRemoveSearchWord",
     "language",
     "themeMode",
+    "enableDynamicColor",
+    "themeSeedColor",
     "tagsOrder",
     "secureScreen",
     "searchBarInAppBar",
