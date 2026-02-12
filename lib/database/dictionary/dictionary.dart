@@ -27,6 +27,7 @@ class DictionaryDatabase extends _$DictionaryDatabase {
       },
       onUpgrade: stepByStep(
         from1To2: (m, schema) async {
+          // ignore: experimental_member_use
           await m.alterTable(TableMigration(schema.wordbook));
         },
         from2To3: (m, schema) async {
