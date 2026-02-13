@@ -7,9 +7,6 @@ on:
       - "docs/**"
   pull_request:
 
-env:
-  FLUTTER_VERSION: 3.41.0
-
 jobs:
   check:
     name: Check
@@ -18,7 +15,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version: ${{ vars.FLUTTER_VERSION }}
           cache: true
 
       - name: Install dependencies
@@ -37,7 +34,7 @@ jobs:
     uses: ./.github/workflows/android-build.yml
     secrets: inherit
     with:
-      flutter_version: "3.41.0"
+      flutter_version: ${{ vars.FLUTTER_VERSION }}
       workflow_profile: ci
       build_mode: ci_full_dev
       artifact_name: Apk
@@ -50,7 +47,7 @@ jobs:
   build-windows:
     uses: ./.github/workflows/windows-build.yml
     with:
-      flutter_version: "3.41.0"
+      flutter_version: ${{ vars.FLUTTER_VERSION }}
       workflow_profile: ci
       artifact_name: Windows
       enable_build_cache: true
@@ -61,7 +58,7 @@ jobs:
   build-linux:
     uses: ./.github/workflows/linux-build.yml
     with:
-      flutter_version: "3.41.0"
+      flutter_version: ${{ vars.FLUTTER_VERSION }}
       workflow_profile: ci
       artifact_name: Linux
       include_metadata_defines: true

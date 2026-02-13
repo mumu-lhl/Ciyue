@@ -16,7 +16,7 @@ jobs:
     uses: ./.github/workflows/android-build.yml
     secrets: inherit
     with:
-      flutter_version: "3.41.0"
+      flutter_version: ${{ vars.FLUTTER_VERSION }}
       workflow_profile: release
       build_mode: release_common
       artifact_name: APK
@@ -26,7 +26,7 @@ jobs:
     uses: ./.github/workflows/android-build.yml
     secrets: inherit
     with:
-      flutter_version: "3.41.0"
+      flutter_version: ${{ vars.FLUTTER_VERSION }}
       workflow_profile: release
       build_mode: release_full
       artifact_name: APK-FULL
@@ -35,7 +35,7 @@ jobs:
   build-windows:
     uses: ./.github/workflows/windows-build.yml
     with:
-      flutter_version: "3.41.0"
+      flutter_version: ${{ vars.FLUTTER_VERSION }}
       workflow_profile: release
       artifact_name: Windows
       package_release_artifacts: true
@@ -44,7 +44,7 @@ jobs:
   build-linux:
     uses: ./.github/workflows/linux-build.yml
     with:
-      flutter_version: "3.41.0"
+      flutter_version: ${{ vars.FLUTTER_VERSION }}
       workflow_profile: release
       artifact_name: Linux
       package_release_artifacts: true

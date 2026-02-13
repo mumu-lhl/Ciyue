@@ -64,16 +64,17 @@ jobs:
       - name: Build Windows
         shell: pwsh
         run: |
-          $extraArgs = ""
+          $extraArgs = @()
           if ("${{ inputs.include_dev_define }}" -eq "true") {
-            $extraArgs = "$extraArgs --dart-define=DEV=true"
+            $extraArgs += "--dart-define=DEV=true"
           }
           if ("${{ inputs.include_metadata_defines }}" -eq "true") {
             $hash = git rev-parse --short HEAD
             $timestamp = [int64](((Get-Date).ToUniversalTime()) - (Get-Date "1970-01-01")).TotalSeconds
-            $extraArgs = "$extraArgs --dart-define=GIT_COMMIT_HASH=$hash --dart-define=BUILD_TIMESTAMP=$timestamp"
+            $extraArgs += "--dart-define=GIT_COMMIT_HASH=$hash"
+            $extraArgs += "--dart-define=BUILD_TIMESTAMP=$timestamp"
           }
-          flutter build windows $extraArgs
+          flutter build windows @extraArgs
 
       - name: Copy DLLs
         run: |
