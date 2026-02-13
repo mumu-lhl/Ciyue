@@ -13,152 +13,33 @@ env:
 
 jobs:
   build-android:
-    name: Build Android (Common)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-
-      - uses: actions/setup-java@v4
-        with:
-          java-version: 21
-          distribution: "temurin"
-
-      - name: Decode Keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-
-      - name: Create key.properties
-        run: |
-          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build Android
-        run: |
-          flutter build apk
-          flutter build apk --split-per-abi --target-platform=android-arm64
-          flutter build apk --split-per-abi --target-platform=android-arm
-          flutter build apk --split-per-abi --target-platform=android-x64
-
-      - name: Rename .apk
-        run: |
-          cd build/app/outputs/flutter-apk
-          mv app-common-release.apk ciyue-universal-release.apk
-          mv app-armeabi-v7a-common-release.apk ciyue-armeabi-v7a-release.apk
-          mv app-arm64-v8a-common-release.apk ciyue-arm64-v8a-release.apk
-          mv app-x86_64-common-release.apk ciyue-x86_64-release.apk
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: APK
-          path: build/app/outputs/flutter-apk/ciyue-*-release.apk
+    uses: ./.github/workflows/android-build.yml
+    secrets: inherit
+    with:
+      flutter_version: "3.41.0"
+      workflow_profile: release
+      build_mode: release_common
+      artifact_name: APK
+      signing_required: true
 
   build-android-full:
-    name: Build Android (Full)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-
-      - uses: actions/setup-java@v4
-        with:
-          java-version: 21
-          distribution: "temurin"
-
-      - name: Decode Keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-
-      - name: Create key.properties
-        run: |
-          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build Android
-        run: |
-          flutter build apk --flavor=full
-          flutter build apk --flavor=full --split-per-abi --target-platform=android-arm64
-          flutter build apk --flavor=full --split-per-abi --target-platform=android-arm
-          flutter build apk --flavor=full --split-per-abi --target-platform=android-x64
-
-      - name: Rename .apk
-        run: |
-          cd build/app/outputs/flutter-apk
-          mv app-full-release.apk ciyue-universal-full.apk
-          mv app-armeabi-v7a-full-release.apk ciyue-armeabi-v7a-full.apk
-          mv app-arm64-v8a-full-release.apk ciyue-arm64-v8a-full.apk
-          mv app-x86_64-full-release.apk ciyue-x86_64-full.apk
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: APK-FULL
-          path: build/app/outputs/flutter-apk/ciyue-*-full.apk
+    uses: ./.github/workflows/android-build.yml
+    secrets: inherit
+    with:
+      flutter_version: "3.41.0"
+      workflow_profile: release
+      build_mode: release_full
+      artifact_name: APK-FULL
+      signing_required: true
 
   build-windows:
-    name: Build Windows
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build Windows
-        run: flutter build windows
-
-      - name: Copy DLLs
-        run: |
-          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\vcruntime140.dll" build/windows/x64/runner/Release/
-          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\vcruntime140_1.dll" build/windows/x64/runner/Release/
-          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\msvcp140.dll" build/windows/x64/runner/Release/
-
-      - name: Install Inno Setup
-        run: choco install innosetup -y
-
-      - name: Compression
-        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath ciyue-windows.zip
-
-      - name: Install fastforge
-        run: dart pub global activate fastforge
-
-      - name: Build exe
-        run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" inno_setup.iss
-
-      - name: Build msix
-        run: |
-          fastforge package --platform windows --targets msix
-          mv dist/*/*.msix .
-          mv *.msix ciyue-installer.msix
-
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: Windows
-          path: |
-            ciyue-installer.exe
-            ciyue-installer.msix
-            ciyue-windows.zip
+    uses: ./.github/workflows/windows-build.yml
+    with:
+      flutter_version: "3.41.0"
+      workflow_profile: release
+      artifact_name: Windows
+      package_release_artifacts: true
+      msix_skip_clean: false
 
   build-linux:
     uses: ./.github/workflows/linux-build.yml

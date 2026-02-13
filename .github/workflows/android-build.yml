@@ -1,0 +1,189 @@
+name: Android Build
+
+on:
+  workflow_call:
+    inputs:
+      flutter_version:
+        required: true
+        type: string
+      workflow_profile:
+        required: false
+        type: string
+        default: "ci"
+      build_mode:
+        required: true
+        type: string
+      artifact_name:
+        required: false
+        type: string
+        default: "APK"
+      enable_build_cache:
+        required: false
+        type: boolean
+        default: false
+      enable_gradle_cache:
+        required: false
+        type: boolean
+        default: false
+      signing_required:
+        required: false
+        type: boolean
+        default: true
+      include_metadata_defines:
+        required: false
+        type: boolean
+        default: false
+      include_dev_define:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-android:
+    name: Build Android (${{ inputs.workflow_profile }}-${{ inputs.build_mode }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter_version }}
+          cache: true
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: "temurin"
+
+      - name: Install dependencies
+        run: |
+          sudo apt install -y libsqlite3-dev
+          flutter pub get
+
+      - name: Validate signing secrets
+        if: ${{ inputs.signing_required }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEY_PROPERTIES" ]; then
+            echo "Missing KEYSTORE_BASE64 or KEY_PROPERTIES secrets for required Android signing."
+            exit 1
+          fi
+
+      - name: Decode Keystore (required)
+        if: ${{ inputs.signing_required }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+
+      - name: Decode Keystore (optional)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        if: ${{ !inputs.signing_required && env.KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+
+      - name: Create key.properties (required)
+        if: ${{ inputs.signing_required }}
+        run: |
+          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+
+      - name: Create key.properties (optional)
+        env:
+          KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
+        if: ${{ !inputs.signing_required && env.KEY_PROPERTIES != '' }}
+        run: |
+          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+
+      - name: Cache Flutter Build
+        if: ${{ inputs.enable_build_cache }}
+        uses: actions/cache@v5
+        with:
+          path: |
+            .dart_tool
+            build
+          key: ${{ runner.os }}-build-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      - name: Cache Gradle
+        if: ${{ inputs.enable_gradle_cache }}
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build Android
+        shell: bash
+        run: |
+          case "${{ inputs.build_mode }}" in
+            ci_full_dev)
+              EXTRA_ARGS=""
+              if [[ "${{ inputs.include_dev_define }}" == "true" ]]; then
+                EXTRA_ARGS="$EXTRA_ARGS --dart-define=DEV=true"
+              fi
+              if [[ "${{ inputs.include_metadata_defines }}" == "true" ]]; then
+                EXTRA_ARGS="$EXTRA_ARGS --dart-define=GIT_COMMIT_HASH=$(git rev-parse --short HEAD) --dart-define=BUILD_TIMESTAMP=$(date +%s)"
+              fi
+              flutter build apk --flavor full-dev $EXTRA_ARGS
+              ;;
+            release_common)
+              flutter build apk
+              flutter build apk --split-per-abi --target-platform=android-arm64
+              flutter build apk --split-per-abi --target-platform=android-arm
+              flutter build apk --split-per-abi --target-platform=android-x64
+              ;;
+            release_full)
+              flutter build apk --flavor=full
+              flutter build apk --flavor=full --split-per-abi --target-platform=android-arm64
+              flutter build apk --flavor=full --split-per-abi --target-platform=android-arm
+              flutter build apk --flavor=full --split-per-abi --target-platform=android-x64
+              ;;
+            *)
+              echo "Unsupported build_mode: ${{ inputs.build_mode }}"
+              exit 1
+              ;;
+          esac
+
+      - name: Rename common APKs
+        if: ${{ inputs.build_mode == 'release_common' }}
+        run: |
+          cd build/app/outputs/flutter-apk
+          mv app-common-release.apk ciyue-universal-release.apk
+          mv app-armeabi-v7a-common-release.apk ciyue-armeabi-v7a-release.apk
+          mv app-arm64-v8a-common-release.apk ciyue-arm64-v8a-release.apk
+          mv app-x86_64-common-release.apk ciyue-x86_64-release.apk
+
+      - name: Rename full APKs
+        if: ${{ inputs.build_mode == 'release_full' }}
+        run: |
+          cd build/app/outputs/flutter-apk
+          mv app-full-release.apk ciyue-universal-full.apk
+          mv app-armeabi-v7a-full-release.apk ciyue-armeabi-v7a-full.apk
+          mv app-arm64-v8a-full-release.apk ciyue-arm64-v8a-full.apk
+          mv app-x86_64-full-release.apk ciyue-x86_64-full.apk
+
+      - name: Upload CI APK
+        if: ${{ inputs.build_mode == 'ci_full_dev' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: build/app/outputs/flutter-apk/app-full-dev-release.apk
+
+      - name: Upload common release APKs
+        if: ${{ inputs.build_mode == 'release_common' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: build/app/outputs/flutter-apk/ciyue-*-release.apk
+
+      - name: Upload full release APKs
+        if: ${{ inputs.build_mode == 'release_full' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: build/app/outputs/flutter-apk/ciyue-*-full.apk
