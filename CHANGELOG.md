@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
+---
+## [1.22.0](https://github.com/cocogitto/cocogitto/compare/v1.21.0..1.22.0) - 2026-02-13
+
+### Bug Fixes
+
+- **(Android)** fix TTS error during initialization - ([cbfeb7b](https://github.com/cocogitto/cocogitto/commit/cbfeb7b261d5b7a931e8aba01869aad6839eba32)) - Mumulhl
+- **(ci)** fix analyse error - ([d8f7df0](https://github.com/cocogitto/cocogitto/commit/d8f7df0db03347cce61b7877ee9d43bb74ec91fd)) - Mumulhl
+- **(ci)** fix linux - ([5abf14f](https://github.com/cocogitto/cocogitto/commit/5abf14fa7c18f553e53e17b47ee8e85e83dbae18)) - Mumulhl
+- CI - ([60aff9f](https://github.com/cocogitto/cocogitto/commit/60aff9f151f3566e5616319674e11325b095f973)) - Mumulhl
+- prevent multiple app instances when receiving text lookup intents - ([20195a7](https://github.com/cocogitto/cocogitto/commit/20195a73e1c72f7cb3c83ac3e6b23321744f3595)) - Donald H.
+
+### Features
+
+- **(settings)** add dynamic color toggle and advanced theme color picker - ([ed3b8a8](https://github.com/cocogitto/cocogitto/commit/ed3b8a84882c6155189e1d96faaed3def8b889fa)) - Mumulhl
+- **(translation)** translated using Weblate (French) - ([09b7645](https://github.com/cocogitto/cocogitto/commit/09b7645718c5b550d4ca44298762d701f9925311)) - SBS1313
+
+### Miscellaneous Chores
+
+- **(ci)** update flutter version - ([6b09c6a](https://github.com/cocogitto/cocogitto/commit/6b09c6ad7cdd029cdb5e0ffe06f768cad2a1b242)) - Mumulhl
+- **(ci)** update actions - ([7eefef1](https://github.com/cocogitto/cocogitto/commit/7eefef140923c465c830dec3d647380f27d3bc51)) - Mumulhl
+- **(ci)** refactor linux build - ([e872a09](https://github.com/cocogitto/cocogitto/commit/e872a094a3a0b32e2be3d18414a39625c2533241)) - Mumulhl
+- **(ci)** refactor android and windows build - ([14d9cb9](https://github.com/cocogitto/cocogitto/commit/14d9cb98393b75c37bf38929de908c482ca4f156)) - Mumulhl
+- **(ci)** create WPE symlinks on Linux - ([9f42b97](https://github.com/cocogitto/cocogitto/commit/9f42b970d5409f9489a7dd7f100c200295ef3c7f)) - Mumulhl
+- **(ci)** fix executable - ([dbb0eee](https://github.com/cocogitto/cocogitto/commit/dbb0eee57bb850542fdbf79dd32a6396feb120df)) - Mumulhl
+- **(deps)** update - ([cc2bcbe](https://github.com/cocogitto/cocogitto/commit/cc2bcbef03451786a63d9d95264d480459d283df)) - Mumulhl
+- add git cliff - ([d6f9354](https://github.com/cocogitto/cocogitto/commit/d6f93548c26b6577a26c746910e7665c6444698c)) - Mumulhl
+- add AGENTS.md - ([e351f4b](https://github.com/cocogitto/cocogitto/commit/e351f4bf0b1c3585be2c2ce9929bb5aca3d55f9c)) - Mumulhl
+- remove pnpm-lock.yaml - ([ce16363](https://github.com/cocogitto/cocogitto/commit/ce16363732018113b235115f51472f22274f3fd3)) - Mumulhl
+
+### Refactoring
+
+- **(ci)** centralize Flutter version via vars.FLUTTER_VERSION - ([aa9e2d3](https://github.com/cocogitto/cocogitto/commit/aa9e2d3b2a39437e94700e320fa9843a5d59b31d)) - Mumulhl
+- **(settings)** streamline theme seed presets and annotate color names - ([9de79cc](https://github.com/cocogitto/cocogitto/commit/9de79ccf9c43baf9fb02a1e27c3e06298ff3746e)) - Mumulhl
+
+### Build
+
+- **(deps)** bump talker from 5.1.12 to 5.1.13 - ([d8c2dd2](https://github.com/cocogitto/cocogitto/commit/d8c2dd2fd95432ce788b2778caca3bb248067dad)) - dependabot[bot]
+- **(deps)** bump talker_dio_logger from 5.1.12 to 5.1.13 - ([24b9618](https://github.com/cocogitto/cocogitto/commit/24b9618f4c6e994aafd943deee285929e7ccde63)) - dependabot[bot]
+- **(deps)** bump talker_flutter from 5.1.12 to 5.1.13 - ([c0358de](https://github.com/cocogitto/cocogitto/commit/c0358de4b091e9d6d25a453e30562de6fb84de31)) - dependabot[bot]
+- **(deps)** bump dio from 5.9.0 to 5.9.1 - ([d630ed0](https://github.com/cocogitto/cocogitto/commit/d630ed083575e1486dc727217b214b64359bb33f)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.27.2 to 0.27.3 in /docs - ([5201349](https://github.com/cocogitto/cocogitto/commit/5201349c79423723cbcd93872579a8fcef47986b)) - dependabot[bot]
+
 ## [1.21.0](https://github.com/mumu-lhl/Ciyue/compare/v1.20.1..v1.21.0) - 2026-01-24
 
 ### Features
