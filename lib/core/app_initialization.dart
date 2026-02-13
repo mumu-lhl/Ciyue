@@ -67,7 +67,7 @@ Future<void> initApp() async {
     }
   }
 
-  if (Platform.isWindows) {
+  if (isDesktop()) {
     accentColor = await DynamicColorPlugin.getAccentColor();
   }
 

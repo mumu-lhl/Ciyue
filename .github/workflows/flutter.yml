@@ -152,8 +152,16 @@ jobs:
   build-linux:
     name: Build Linux
     runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
     steps:
       - uses: actions/checkout@v6
+
+      - name: Install pre dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm jq git clang cmake ninja
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -161,8 +169,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt update -y
-          sudo apt install -y libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-bad libayatana-appindicator3-dev libkeybinder-3.0-dev
+          pacman -S --noconfirm gtk3 gstreamer libayatana-appindicator libkeybinder3 wpewebkit
+          git config --global --add safe.directory /__t/flutter/*
           flutter pub get
 
       - name: Get build info
