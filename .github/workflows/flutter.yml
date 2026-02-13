@@ -150,40 +150,10 @@ jobs:
           path: build/windows/x64/runner/Release/
 
   build-linux:
-    name: Build Linux
-    runs-on: ubuntu-latest
-    container:
-      image: archlinux:base-devel
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Install pre dependencies
-        run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm jq git clang cmake ninja
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-
-      - name: Install dependencies
-        run: |
-          pacman -S --noconfirm gtk3 gstreamer libayatana-appindicator libkeybinder3 wpewebkit
-          git config --global --add safe.directory /__t/flutter/*
-          flutter pub get
-
-      - name: Get build info
-        id: build_info
-        run: |
-          echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "timestamp=$(date +%s)" >> $GITHUB_OUTPUT
-
-      - name: Build
-        run: flutter build linux --dart-define=DEV=true --dart-define=GIT_COMMIT_HASH=${{ steps.build_info.outputs.hash }} --dart-define=BUILD_TIMESTAMP=${{ steps.build_info.outputs.timestamp }}
-
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: Linux
-          path: build/linux/x64/release/bundle/
+    uses: ./.github/workflows/linux-build.yml
+    with:
+      flutter_version: "3.41.0"
+      workflow_profile: ci
+      artifact_name: Linux
+      include_metadata_defines: true
+      include_dev_define: true

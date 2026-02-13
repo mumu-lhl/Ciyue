@@ -241,59 +241,14 @@ jobs:
             ciyue-windows.zip
 
   build-linux:
-    name: Build Linux
     needs: check-activity
     if: needs.check-activity.outputs.should_run == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-
-      - name: Install dependencies
-        run: |
-          sudo apt update -y
-          sudo apt install -y libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-bad libayatana-appindicator3-dev libkeybinder-3.0-dev libwpewebkit-1.0-dev
-          flutter pub get
-
-      - name: Build Linux
-        run: flutter build linux
-
-      - name: Compression
-        run: tar -cJvf ciyue-linux.tar.xz build/linux/x64/release/bundle/*
-
-      - name: Prepare to Package
-        run: |
-          sudo apt install locate
-          wget -O appimagetool "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
-          chmod +x appimagetool
-          mv appimagetool /usr/local/bin/
-          dart pub global activate fastforge
-
-      - name: Build AppImage
-        run: |
-          fastforge package --platform linux --targets appimage --skip-clean
-          mv dist/*/*.AppImage .
-          mv *.AppImage Ciyue-latest-x86_64.AppImage
-
-      - name: Build Deb
-        run: |
-          fastforge package --platform linux --targets deb --skip-clean
-          mv dist/*/*.deb .
-          mv *.deb ciyue-x86_64.deb
-
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: Linux
-          path: |
-            ciyue-linux.tar.xz
-            Ciyue-latest-x86_64.AppImage
-            ciyue-x86_64.deb
+    uses: ./.github/workflows/linux-build.yml
+    with:
+      flutter_version: "3.41.0"
+      workflow_profile: nightly
+      artifact_name: Linux
+      package_release_artifacts: true
 
   release:
     name: Release

@@ -1,0 +1,112 @@
+name: Linux Build
+
+on:
+  workflow_call:
+    inputs:
+      flutter_version:
+        required: true
+        type: string
+      workflow_profile:
+        required: false
+        type: string
+        default: "ci"
+      artifact_name:
+        required: false
+        type: string
+        default: "Linux"
+      include_metadata_defines:
+        required: false
+        type: boolean
+        default: false
+      include_dev_define:
+        required: false
+        type: boolean
+        default: false
+      package_release_artifacts:
+        required: false
+        type: boolean
+        default: false
+      extra_build_args:
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  build-linux:
+    name: Build Linux (${{ inputs.workflow_profile }})
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install pre dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm jq git clang cmake ninja wget
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter_version }}
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          pacman -S --noconfirm gtk3 gstreamer libayatana-appindicator libkeybinder3 wpewebkit
+          git config --global --add safe.directory /__t/flutter/*
+          flutter pub get
+
+      - name: Build Linux
+        shell: bash
+        run: |
+          BUILD_ARGS="${{ inputs.extra_build_args }}"
+          if [[ "${{ inputs.include_dev_define }}" == "true" ]]; then
+            BUILD_ARGS="$BUILD_ARGS --dart-define=DEV=true"
+          fi
+          if [[ "${{ inputs.include_metadata_defines }}" == "true" ]]; then
+            BUILD_ARGS="$BUILD_ARGS --dart-define=GIT_COMMIT_HASH=$(git rev-parse --short HEAD) --dart-define=BUILD_TIMESTAMP=$(date +%s)"
+          fi
+          flutter build linux $BUILD_ARGS
+
+      - name: Compression
+        if: ${{ inputs.package_release_artifacts }}
+        run: tar -cJvf ciyue-linux.tar.xz build/linux/x64/release/bundle/*
+
+      - name: Prepare to Package
+        if: ${{ inputs.package_release_artifacts }}
+        run: |
+          wget -O appimagetool "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x appimagetool
+          mv appimagetool /usr/local/bin/
+          dart pub global activate fastforge
+
+      - name: Build AppImage
+        if: ${{ inputs.package_release_artifacts }}
+        run: |
+          fastforge package --platform linux --targets appimage --skip-clean
+          mv dist/*/*.AppImage .
+          mv *.AppImage Ciyue-latest-x86_64.AppImage
+
+      - name: Build Deb
+        if: ${{ inputs.package_release_artifacts }}
+        run: |
+          fastforge package --platform linux --targets deb --skip-clean
+          mv dist/*/*.deb .
+          mv *.deb ciyue-x86_64.deb
+
+      - name: Upload bundle
+        if: ${{ !inputs.package_release_artifacts }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: build/linux/x64/release/bundle/
+
+      - name: Upload release artifacts
+        if: ${{ inputs.package_release_artifacts }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: |
+            ciyue-linux.tar.xz
+            Ciyue-latest-x86_64.AppImage
+            ciyue-x86_64.deb
