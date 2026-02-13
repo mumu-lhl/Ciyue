@@ -1,0 +1,129 @@
+name: Windows Build
+
+on:
+  workflow_call:
+    inputs:
+      flutter_version:
+        required: true
+        type: string
+      workflow_profile:
+        required: false
+        type: string
+        default: "ci"
+      artifact_name:
+        required: false
+        type: string
+        default: "Windows"
+      enable_build_cache:
+        required: false
+        type: boolean
+        default: false
+      include_metadata_defines:
+        required: false
+        type: boolean
+        default: false
+      include_dev_define:
+        required: false
+        type: boolean
+        default: false
+      package_release_artifacts:
+        required: false
+        type: boolean
+        default: false
+      msix_skip_clean:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-windows:
+    name: Build Windows (${{ inputs.workflow_profile }})
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter_version }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Cache Flutter Build
+        if: ${{ inputs.enable_build_cache }}
+        uses: actions/cache@v5
+        with:
+          path: |
+            .dart_tool
+            build
+          key: ${{ runner.os }}-build-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      - name: Build Windows
+        shell: pwsh
+        run: |
+          $extraArgs = @()
+          if ("${{ inputs.include_dev_define }}" -eq "true") {
+            $extraArgs += "--dart-define=DEV=true"
+          }
+          if ("${{ inputs.include_metadata_defines }}" -eq "true") {
+            $hash = git rev-parse --short HEAD
+            $timestamp = [int64](((Get-Date).ToUniversalTime()) - (Get-Date "1970-01-01")).TotalSeconds
+            $extraArgs += "--dart-define=GIT_COMMIT_HASH=$hash"
+            $extraArgs += "--dart-define=BUILD_TIMESTAMP=$timestamp"
+          }
+          flutter build windows @extraArgs
+
+      - name: Copy DLLs
+        run: |
+          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\vcruntime140.dll" build/windows/x64/runner/Release/
+          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\vcruntime140_1.dll" build/windows/x64/runner/Release/
+          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\msvcp140.dll" build/windows/x64/runner/Release/
+
+      - name: Upload runtime bundle
+        if: ${{ !inputs.package_release_artifacts }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: build/windows/x64/runner/Release/
+
+      - name: Install Inno Setup
+        if: ${{ inputs.package_release_artifacts }}
+        run: choco install innosetup -y
+
+      - name: Compression
+        if: ${{ inputs.package_release_artifacts }}
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath ciyue-windows.zip
+
+      - name: Install fastforge
+        if: ${{ inputs.package_release_artifacts }}
+        run: dart pub global activate fastforge
+
+      - name: Build exe
+        if: ${{ inputs.package_release_artifacts }}
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" inno_setup.iss
+
+      - name: Build msix
+        if: ${{ inputs.package_release_artifacts }}
+        shell: pwsh
+        run: |
+          $skipClean = ""
+          if ("${{ inputs.msix_skip_clean }}" -eq "true") {
+            $skipClean = " --skip-clean"
+          }
+          Invoke-Expression "fastforge package --platform windows --targets msix$skipClean"
+          mv dist/*/*.msix .
+          mv *.msix ciyue-installer.msix
+
+      - name: Upload release artifacts
+        if: ${{ inputs.package_release_artifacts }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: |
+            ciyue-installer.exe
+            ciyue-installer.msix
+            ciyue-windows.zip
