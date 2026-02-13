@@ -43,7 +43,7 @@ jobs:
       - name: Install pre dependencies
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm jq git clang cmake ninja wget
+          pacman -S --noconfirm jq git clang cmake ninja wget patchelf
 
       - uses: subosito/flutter-action@v2
         with:
@@ -71,8 +71,21 @@ jobs:
       - name: Create WPE symlinks
         run: |
           cd build/linux/x64/release/bundle/lib/
-          ln -s libwpe-1.0.so.* libwpe-1.0.so.1
-          ln -s libWPEWebKit-2.0.so.* libWPEWebKit-2.0.so.1
+          mv libwpe-1.0.so.* libwpe-1.0.so.1
+          mv libWPEWebKit-2.0.so.* libWPEWebKit-2.0.so.1
+
+      - name: Bundle Libraries
+        run: |
+          BUNDLE_LIB_DIR="build/linux/x64/release/bundle/lib"
+
+          cp /usr/lib/libicui18n.so.78 "$BUNDLE_LIB_DIR/"
+          cp /usr/lib/libicuuc.so.78 "$BUNDLE_LIB_DIR/"
+          cp /usr/lib/libjpeg.so.8 "$BUNDLE_LIB_DIR/"
+          cp /usr/lib/libxml2.so.16 "$BUNDLE_LIB_DIR/"
+          cp /usr/lib/libicudata.so.78 "$BUNDLE_LIB_DIR/"
+
+          cd build/linux/x64/release/bundle
+          patchelf --force-rpath --set-rpath '$ORIGIN/lib' ciyue
 
       - name: Compression
         if: ${{ inputs.package_release_artifacts }}
