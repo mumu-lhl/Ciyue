@@ -68,6 +68,12 @@ jobs:
           fi
           flutter build linux $BUILD_ARGS
 
+      - name: Create WPE symlinks
+        run: |
+          cd build/linux/x64/release/bundle/lib/
+          ln -s libwpe-1.0.so.* libwpe-1.0.so.1
+          ln -s libWPEWebKit-2.0.so.* libWPEWebKit-2.0.so.1
+
       - name: Compression
         if: ${{ inputs.package_release_artifacts }}
         run: tar -cJvf ciyue-linux.tar.xz build/linux/x64/release/bundle/*
