@@ -9,3 +9,6 @@ icon:
 
 count-codes:
     tokei lib/ -e "*.g.dart" -e "*.steps.dart" -e "app_localizations*.dart"
+
+build-appimage:
+    ./tools/build_appimage.sh

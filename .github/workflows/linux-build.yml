@@ -97,14 +97,13 @@ jobs:
           wget -O appimagetool "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool
           mv appimagetool /usr/local/bin/
-          dart pub global activate fastforge
 
       - name: Build AppImage
         if: ${{ inputs.package_release_artifacts }}
         run: |
-          fastforge package --platform linux --targets appimage --skip-clean
-          mv dist/*/*.AppImage .
-          mv *.AppImage Ciyue-latest-x86_64.AppImage
+          ./tools/build_appimage.sh
+          mv Ciyue-x86_64.AppImage Ciyue-latest-x86_64.AppImage
+          mv Ciyue-x86_64.AppImage.zsync Ciyue-latest-x86_64.AppImage.zsync
 
       - name: Build Deb
         if: ${{ inputs.package_release_artifacts }}
@@ -128,4 +127,5 @@ jobs:
           path: |
             ciyue-linux.tar.xz
             Ciyue-latest-x86_64.AppImage
+            *.zsync
             ciyue-x86_64.deb

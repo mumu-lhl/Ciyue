@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Ciyue
+Exec=ciyue %U
+Icon=ciyue
+Categories=Education;Languages;
+Comment=A simple mdict dictionary
+Terminal=false
+StartupWMClass=ciyue

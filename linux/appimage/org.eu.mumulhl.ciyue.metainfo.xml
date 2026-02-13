@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.eu.mumulhl.ciyue</id>
+  
+  <name>Ciyue</name>
+  <summary>A simple mdict dictionary</summary>
+  
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <developer id="org.eu.mumulhl">
+    <name>mumu-lhl</name>
+  </developer>
+
+  <url type="homepage">https://github.com/mumu-lhl/Ciyue</url>
+  <url type="bugtracker">https://github.com/mumu-lhl/Ciyue/issues</url>
+  <url type="vcs-browser">https://github.com/mumu-lhl/Ciyue</url>
+  
+  <description>
+    <p>
+      Ciyue is a comprehensive dictionary application built with Flutter. It supports MDX/MDD dictionary formats and offers a modern user experience with Material You design.
+    </p>
+    <ul>
+      <li>Support MDX/MDD dictionary formats</li>
+      <li>Multiple dictionaries search and display</li>
+      <li>Material You dynamic colors support</li>
+      <li>AI-powered translation and word explanation</li>
+      <li>Text-to-speech (TTS) support</li>
+      <li>Word book and history management</li>
+    </ul>
+  </description>
+  
+  <launchable type="desktop-id">org.eu.mumulhl.ciyue.desktop</launchable>
+  
+  <icon type="stock">ciyue</icon>
+  
+  <categories>
+    <category>Education</category>
+    <category>Languages</category>
+  </categories>
+  
+  <provides>
+    <binary>ciyue</binary>
+  </provides>
+
+  <content_rating type="oars-1.1" />
+</component>

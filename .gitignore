@@ -52,6 +52,7 @@ lib/src/generated/i18n/*
 # AppImage
 *.AppImage
 *.AppImage.zsync
+appimagetool
 
 # VS Code
 .vscode/settings.json
