@@ -127,26 +127,18 @@ class ThemeColorSettingsSection extends ConsumerWidget {
     Color currentColor,
   ) {
     const presetColors = <Color>[
-      Color(0xFF2196F3),
-      Color(0xFF1E88E5),
-      Color(0xFF0D47A1),
-      Color(0xFF26A69A),
-      Color(0xFF00ACC1),
-      Color(0xFF43A047),
-      Color(0xFF7CB342),
-      Color(0xFFC0CA33),
-      Color(0xFFFFC107),
-      Color(0xFFF4511E),
-      Color(0xFFFF7043),
-      Color(0xFFE53935),
-      Color(0xFFD81B60),
-      Color(0xFF8E24AA),
-      Color(0xFF5E35B1),
-      Color(0xFF00897B),
-      Color(0xFF6D4C41),
-      Color(0xFF546E7A),
-      Color(0xFF3949AB),
-      Color(0xFF111827),
+      Color(0xFF2196F3), // Blue
+      Color(0xFF00ACC1), // Cyan
+      Color(0xFF43A047), // Green
+      Color(0xFFC0CA33), // Lime
+      Color(0xFFFFC107), // Amber
+      Color(0xFFF4511E), // Deep Orange
+      Color(0xFFE53935), // Red
+      Color(0xFFD81B60), // Pink
+      Color(0xFF8E24AA), // Purple
+      Color(0xFF3949AB), // Indigo
+      Color(0xFF6D4C41), // Brown
+      Color(0xFF546E7A), // Blue Grey
     ];
 
     return showModalBottomSheet<Color>(
