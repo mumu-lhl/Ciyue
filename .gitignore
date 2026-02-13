@@ -55,3 +55,6 @@ lib/src/generated/i18n/*
 
 # VS Code
 .vscode/settings.json
+
+# fastforge
+dist/
