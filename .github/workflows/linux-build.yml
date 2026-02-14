@@ -116,10 +116,16 @@ jobs:
           mv dist/*/*.deb .
           mv *.deb ciyue-x86_64.deb
 
+      - name: Install yay
+        run: |
+          git clone https://aur.archlinux.org/yay-bin.git
+          cd yay-bin
+          makepkg -si
+
       - name: Build rpm
         if: ${{ inputs.package_release_artifacts }}
         run: |
-          pacman -S --noconfirm rpmdevtools
+          yay -S --noconfirm rpmdevtools
           ./tools/build_rpm.sh
           mv ciyue-*.x86_64.rpm ciyue.x86_64.rpm
 
