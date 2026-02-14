@@ -31,12 +31,24 @@ class _WordDisplayState extends State<WordDisplay> {
   }
 
   @override
+  void didUpdateWidget(WordDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.word != widget.word) {
+      setState(() {
+        validDictIds = [];
+        _loading = true;
+      });
+      _validDictionaryIds();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_loading && validDictIds.isEmpty) {
       final searchBar = buildTitle(widget.word);
 
       final firstLoadedDictId = dictManager.dictIds.firstWhere(
-        (id) => dictManager.dicts[id]!.isLoading == false,
+        (id) => dictManager.dicts[id]?.isLoading == false,
         orElse: () => -1,
       );
 
@@ -221,12 +233,21 @@ class _WordDisplayState extends State<WordDisplay> {
   }
 
   Future<void> _validDictionaryIds() async {
-    while (dictManager.dictIds.isEmpty) {
+    while (dictManager.isLoading) {
       await Future.delayed(const Duration(milliseconds: 50));
     }
 
+    if (widget.word.isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+      });
+      return;
+    }
+
     for (final id in dictManager.dictIds) {
-      if (await dictManager.dicts[id]!.wordExist(widget.word)) {
+      final dict = dictManager.dicts[id];
+      if (dict != null && await dict.wordExist(widget.word)) {
         if (!mounted) return;
         setState(() {
           validDictIds.add(id);

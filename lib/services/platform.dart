@@ -30,7 +30,7 @@ class PlatformMethod {
           final text = call.arguments as String;
 
           // Navigate to search result with the text
-          router.go("/word", extra: {"word": text});
+          router.push("/word", extra: {"word": text});
           break;
 
         case "inputDirectory":
