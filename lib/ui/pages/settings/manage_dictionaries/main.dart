@@ -56,7 +56,9 @@ class AddButton extends StatelessWidget {
                 text: AppLocalizations.of(context)!.loading);
 
             final paths = await findMdxFilesOnAndroid(path);
-            if (context.mounted) await selectMdx(context, paths);
+            if (context.mounted) {
+              await selectMdx(context, paths, closeLoadingWhenEmpty: true);
+            }
             return;
           }
 

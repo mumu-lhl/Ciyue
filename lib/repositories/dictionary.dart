@@ -578,7 +578,15 @@ class Mdict {
   }
 }
 
-Future<void> selectMdx(BuildContext context, List<String> paths) async {
+Future<void> selectMdx(BuildContext context, List<String> paths,
+    {bool closeLoadingWhenEmpty = false}) async {
+  if (paths.isEmpty) {
+    if (closeLoadingWhenEmpty && context.mounted) {
+      context.pop();
+    }
+    return;
+  }
+
   for (final path in paths) {
     final pathNoExtension = setExtension(path, "");
 
@@ -603,7 +611,7 @@ Future<void> selectMdx(BuildContext context, List<String> paths) async {
     continue;
   }
 
-  if (paths.isNotEmpty && context.mounted) {
+  if (context.mounted) {
     context.read<ManageDictionariesModel>().update();
     context.pop();
   }

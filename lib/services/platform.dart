@@ -38,7 +38,8 @@ class PlatformMethod {
               "dictionariesDirectory", call.arguments as String);
 
           final mdxFiles = await findMdxFilesOnAndroid(null);
-          await selectMdx(navigatorKey.currentContext!, mdxFiles);
+          await selectMdx(navigatorKey.currentContext!, mdxFiles,
+              closeLoadingWhenEmpty: true);
 
           break;
 
@@ -88,7 +89,8 @@ class PlatformMethod {
     } else {
       showLoadingDialog(navigatorKey.currentContext!);
       final paths = await findMdxFilesOnAndroid(directory);
-      selectMdx(navigatorKey.currentContext!, paths);
+      selectMdx(navigatorKey.currentContext!, paths,
+          closeLoadingWhenEmpty: true);
     }
   }
 
