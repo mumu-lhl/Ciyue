@@ -111,7 +111,7 @@ class Mdict {
   bool hasJs = false;
 
   late HttpServer? server;
-  late int port;
+  int port = 0;
 
   static const maxBatchSize = 50000;
   static const maxLoadingCount = 5000;
@@ -127,6 +127,7 @@ class Mdict {
     title = reader.header["Title"] ?? basename(path);
 
     await dictionaryListDao.add(path, title);
+    isLoading = false;
   }
 
   Future<void> close() async {
@@ -183,6 +184,12 @@ class Mdict {
         if (type == "mdx") {
           isLoading = false;
         }
+      }, onError: (e) {
+        if (type == "mdx") {
+          isLoading = false;
+        }
+        talker.error("Failed to import cache for $id ($type): $e");
+        cacheFile.delete().catchError((_) => cacheFile);
       });
 
       return true;
@@ -230,8 +237,8 @@ class Mdict {
 
   Future<void> initDictReaders() async {
     if (!await hitCache(id, "mdx", reader)) {
-      reader.initDict(readHeader: false);
       reader.setOnRecordBlockInfoRead(saveCache(id, "mdx", reader));
+      reader.initDict(readHeader: false);
     }
 
     final mddFile = File("$path.mdd");
@@ -239,8 +246,8 @@ class Mdict {
       final reader = DictReader(mddFile.path);
 
       if (!await hitCache(id, "mdd", reader)) {
-        reader.initDict();
         reader.setOnRecordBlockInfoRead(saveCache(id, "mdd", reader));
+        reader.initDict();
       } else {
         reader.initDict(readKeys: false, readRecordBlockInfo: false);
       }
@@ -254,8 +261,8 @@ class Mdict {
         final reader = DictReader(mddFile.path);
 
         if (!await hitCache(id, "$i.mdd", reader)) {
-          reader.initDict();
           reader.setOnRecordBlockInfoRead(saveCache(id, "$i.mdd", reader));
+          reader.initDict();
         } else {
           reader.initDict(readKeys: false, readRecordBlockInfo: false);
         }
@@ -528,7 +535,7 @@ class Mdict {
 
   Future<void> _startServer() async {
     try {
-      server = await HttpServer.bind("localhost", 0);
+      server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       port = server!.port;
       talker.info("HTTP server started on port $port");
 

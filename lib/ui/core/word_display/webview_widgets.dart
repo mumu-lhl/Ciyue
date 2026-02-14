@@ -1,4 +1,5 @@
 import "dart:convert";
+import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/dictionary.dart";
@@ -236,11 +237,47 @@ class WebviewWindows extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final port = dictManager.dicts[dictId]!.port;
-    final url = "http://localhost:$port/";
+
+    if (port == 0) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final url = "http://127.0.0.1:$port/";
 
     final Uint8List postData = Uint8List.fromList(
       utf8.encode(json.encode({"content": content})),
     );
+
+    final isLightTheme = settings.themeMode == ThemeMode.light ||
+        settings.themeMode == ThemeMode.system &&
+            MediaQuery.of(context).platformBrightness == Brightness.light;
+
+    final webviewSettings = InAppWebViewSettings(
+      useWideViewPort: false,
+      algorithmicDarkeningAllowed: !isLightTheme,
+      resourceCustomSchemes: ["entry", "sound"],
+      transparentBackground: true,
+    );
+
+    if (Platform.isLinux) {
+      return InAppWebView(
+        initialSettings: webviewSettings,
+        initialUrlRequest: URLRequest(
+          url: WebUri(url),
+          method: "POST",
+          body: postData,
+        ),
+        initialData: InAppWebViewInitialData(
+          data: content,
+          baseUrl: WebUri(url),
+        ),
+        onLoadResourceWithCustomScheme:
+            onLoadResourceWithCustomSchemeWarpper(dictId),
+        shouldOverrideUrlLoading:
+            shouldOverrideUrlLoadingWarpper(dictId, context),
+      );
+    }
+
     return FutureBuilder(
       future: WebViewEnvironment.create(
         settings: WebViewEnvironmentSettings(
@@ -248,9 +285,10 @@ class WebviewWindows extends StatelessWidget {
         ),
       ),
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
+        if (snapshot.hasData || snapshot.hasError) {
           return InAppWebView(
             webViewEnvironment: snapshot.data,
+            initialSettings: webviewSettings,
             initialUrlRequest: URLRequest(
               url: WebUri(url),
               method: "POST",
