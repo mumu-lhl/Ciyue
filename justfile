@@ -15,3 +15,6 @@ build-appimage:
 
 build-rpm:
     ./tools/build_rpm.sh
+
+build-deb:
+    ./tools/build_deb.sh

@@ -102,15 +102,12 @@ jobs:
           mv Ciyue-x86_64.AppImage Ciyue-latest-x86_64.AppImage
           mv Ciyue-x86_64.AppImage.zsync Ciyue-latest-x86_64.AppImage.zsync
 
-      - name: Install fastforge
-        run: dart pub global activate fastforge
-
       - name: Build Deb
         if: ${{ inputs.package_release_artifacts }}
         run: |
           pacman -S --noconfirm dpkg
-          fastforge package --platform linux --targets deb --skip-clean
-          mv dist/*/*.deb .
+
+          ./tools/build_deb.sh
           mv *.deb ciyue-x86_64.deb
 
       - name: Install rpmdevtools
@@ -125,7 +122,7 @@ jobs:
             makepkg -si --noconfirm
           "
 
-          sudo -u builder bash -c "yay -S --noconfirm rpmdevtools"
+          sudo -u builder bash -c "yay -S --noconfirm pod2man rpmdevtools"
       - name: Build rpm
         if: ${{ inputs.package_release_artifacts }}
         run: |

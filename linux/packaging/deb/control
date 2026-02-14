@@ -1,0 +1,10 @@
+Package: @BINARY_NAME@
+Version: @VERSION@
+Section: utils
+Priority: optional
+Architecture: @ARCH@
+Maintainer: Mumulhl <mumulhl.666@gmail.com>
+Installed-Size: @INSTALLED_SIZE@
+Depends: libgtk-3-0, libglib2.0-0, libstdc++6, libayatana-appindicator3-1
+Description: A comprehensive dictionary application built with Flutter.
+ Support MDX/MDD formats and offers a modern user experience with Material You design.

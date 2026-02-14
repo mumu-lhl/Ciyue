@@ -62,3 +62,6 @@ dist/
 
 # rpm
 *.rpm
+
+# deb
+*.deb
