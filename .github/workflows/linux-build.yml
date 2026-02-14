@@ -119,8 +119,11 @@ jobs:
       - name: Install yay
         run: |
           git clone https://aur.archlinux.org/yay-bin.git
+
+          chown -R nobody:nobody yay-bin
+
           cd yay-bin
-          makepkg -si
+          runuser -u nobody -- makepkg
 
       - name: Build rpm
         if: ${{ inputs.package_release_artifacts }}
