@@ -9,7 +9,8 @@ ICON_PATH="assets/icon.png"
 BUILD_DIR="build/linux/x64/release"
 BUNDLE_DIR="$BUILD_DIR/bundle"
 APPDIR="$BUILD_DIR/AppDir"
-ASSETS_DIR="linux/appimage"
+ASSETS_DIR="linux/packaging/appimage"
+PACKAGING_DIR="linux/packaging"
 
 # Ensure we are in the project root
 cd "$(dirname "$0")/.."
@@ -28,12 +29,12 @@ cp -r "$BUNDLE_DIR/"* "$APPDIR/"
 
 echo "=== 2. Copying Metadata Files ==="
 # Desktop file (Root for AppImage)
-cp "$ASSETS_DIR/$APP_ID.desktop" "$APPDIR/"
+cp "$PACKAGING_DIR/$APP_ID.desktop" "$APPDIR/"
 ln -sf "$APP_ID.desktop" "$APPDIR/$BINARY_NAME.desktop"
 
 # Desktop file (Standard path for AppStream validation)
 mkdir -p "$APPDIR/usr/share/applications"
-cp "$ASSETS_DIR/$APP_ID.desktop" "$APPDIR/usr/share/applications/"
+cp "$PACKAGING_DIR/$APP_ID.desktop" "$APPDIR/usr/share/applications/"
 
 # Icon (Standard path)
 mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
@@ -47,7 +48,7 @@ chmod +x "$APPDIR/AppRun"
 
 # Metainfo
 mkdir -p "$APPDIR/usr/share/metainfo"
-cp "$ASSETS_DIR/org.eu.mumulhl.ciyue.metainfo.xml" "$APPDIR/usr/share/metainfo/org.eu.mumulhl.ciyue.appdata.xml"
+cp "linux/packaging/org.eu.mumulhl.ciyue.metainfo.xml" "$APPDIR/usr/share/metainfo/org.eu.mumulhl.ciyue.appdata.xml"
 
 echo "=== 3. Getting appimagetool ==="
 if [ ! -x "appimagetool" ]; then
@@ -58,7 +59,7 @@ fi
 
 echo "=== 4. Building AppImage ==="
 export ARCH=x86_64
-# -u defines the update information. 
+# -u defines the update information.
 # You can change this string to your actual update server/GitHub repo.
 UPDATE_INFO="gh-releases-zsync|mumu-lhl|Ciyue|latest|Ciyue-latest-x86_64.AppImage.zsync"
 

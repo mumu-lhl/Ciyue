@@ -12,3 +12,6 @@ count-codes:
 
 build-appimage:
     ./tools/build_appimage.sh
+
+build-rpm:
+    ./tools/build_rpm.sh

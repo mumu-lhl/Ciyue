@@ -40,6 +40,8 @@ The project uses `justfile` to manage common development tasks.
 | **Migrations** | `just make-migrations` | Generates database migrations using Drift. |
 | **Icons** | `just icon` | Generates app launcher icons. |
 | **Count Code** | `just count-codes` | Counts lines of code excluding generated files. |
+| **Package AppImage** | `just build-appimage` | Builds a Linux AppImage. |
+| **Package RPM** | `just build-rpm` | Builds a Linux RPM package. |
 
 ### Standard Flutter Commands
 *   **Run:** `flutter run`
