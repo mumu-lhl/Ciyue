@@ -91,16 +91,13 @@ jobs:
         if: ${{ inputs.package_release_artifacts }}
         run: tar -cJvf ciyue-linux.tar.xz build/linux/x64/release/bundle/*
 
-      - name: Prepare to Package
+      - name: Build AppImage
         if: ${{ inputs.package_release_artifacts }}
         run: |
           wget -O appimagetool "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool
           mv appimagetool /usr/local/bin/
 
-      - name: Build AppImage
-        if: ${{ inputs.package_release_artifacts }}
-        run: |
           ./tools/build_appimage.sh
           mv Ciyue-x86_64.AppImage Ciyue-latest-x86_64.AppImage
           mv Ciyue-x86_64.AppImage.zsync Ciyue-latest-x86_64.AppImage.zsync
@@ -118,12 +115,14 @@ jobs:
 
       - name: Install yay
         run: |
-          git clone https://aur.archlinux.org/yay-bin.git
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
 
-          chown -R nobody:nobody yay-bin
-
-          cd yay-bin
-          runuser -u nobody -- makepkg
+          sudo -u builder bash -c "
+            cd /home/builder && \
+            git clone https://aur.archlinux.org/yay-bin.git && \
+            cd yay-bin && \
+            makepkg -si --noconfirm
 
       - name: Build rpm
         if: ${{ inputs.package_release_artifacts }}
