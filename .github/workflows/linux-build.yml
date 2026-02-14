@@ -111,6 +111,7 @@ jobs:
       - name: Build Deb
         if: ${{ inputs.package_release_artifacts }}
         run: |
+          pacman -S --noconfirm dpkg
           fastforge package --platform linux --targets deb --skip-clean
           mv dist/*/*.deb .
           mv *.deb ciyue-x86_64.deb
