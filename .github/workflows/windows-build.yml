@@ -97,10 +97,6 @@ jobs:
         if: ${{ inputs.package_release_artifacts }}
         run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath ciyue-windows.zip
 
-      - name: Install fastforge
-        if: ${{ inputs.package_release_artifacts }}
-        run: dart pub global activate fastforge
-
       - name: Build exe
         if: ${{ inputs.package_release_artifacts }}
         run: |
