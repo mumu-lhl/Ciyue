@@ -106,18 +106,6 @@ jobs:
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" inno_setup.iss
 
-      - name: Build msix
-        if: ${{ inputs.package_release_artifacts }}
-        shell: pwsh
-        run: |
-          $skipClean = ""
-          if ("${{ inputs.msix_skip_clean }}" -eq "true") {
-            $skipClean = " --skip-clean"
-          }
-          Invoke-Expression "fastforge package --platform windows --targets msix$skipClean"
-          mv dist/*/*.msix .
-          mv *.msix ciyue-installer.msix
-
       - name: Upload release artifacts
         if: ${{ inputs.package_release_artifacts }}
         uses: actions/upload-artifact@v4
@@ -125,5 +113,4 @@ jobs:
           name: ${{ inputs.artifact_name }}
           path: |
             ciyue-installer.exe
-            ciyue-installer.msix
             ciyue-windows.zip
