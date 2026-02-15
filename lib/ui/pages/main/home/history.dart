@@ -119,7 +119,7 @@ class HistoryList extends StatelessWidget {
                   if (model.isSelecting) {
                     model.toggleSelection(item.id);
                   } else {
-                    context.push("/word", extra: {"word": item.word});
+                    context.push("/word/${Uri.encodeComponent(item.word)}");
                   }
                 },
                 onLongPress: () {

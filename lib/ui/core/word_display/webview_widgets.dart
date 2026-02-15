@@ -75,7 +75,7 @@ class _WebviewAndroidState extends State<WebviewAndroid> {
           id: 2,
           title: locale.lookup,
           action: () async {
-            context.push("/word", extra: {"word": selectedText});
+            context.push("/word/${Uri.encodeComponent(selectedText)}");
           },
         ),
         ContextMenuItem(

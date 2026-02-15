@@ -68,10 +68,8 @@ Future<NavigationActionPolicy?> Function(
         return NavigationActionPolicy.CANCEL;
       }
 
-      final content = await dictManager.dicts[dictId]!.readWord(word);
-
       if (context.mounted) {
-        context.push("/word", extra: {"content": content, "word": word});
+        context.push("/word/${Uri.encodeComponent(word)}");
       }
     } else if (url.scheme == "sound") {
       final filename =

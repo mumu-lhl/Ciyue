@@ -15,7 +15,7 @@ class LookupMenuItem extends ContextMenuButtonItem {
           onPressed: () async {
             final String text = textToLookup;
             if (text.isNotEmpty && context.mounted) {
-              context.push("/word", extra: {"word": text});
+              context.push("/word/${Uri.encodeComponent(text)}");
             }
             ContextMenuController.removeAny();
           },

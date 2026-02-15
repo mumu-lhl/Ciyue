@@ -79,7 +79,8 @@ class WordView extends StatelessWidget {
                           model.selectWord(data);
                         } else {
                           if (context.mounted) {
-                            context.push("/word", extra: {"word": data.word});
+                            context.push(
+                                "/word/${Uri.encodeComponent(data.word)}");
                           }
                         }
                       },

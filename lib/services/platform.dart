@@ -28,9 +28,10 @@ class PlatformMethod {
       switch (call.method) {
         case "processText":
           final text = call.arguments as String;
+          searchWordFromProcessText = text;
 
           // Navigate to search result with the text
-          router.push("/word", extra: {"word": text});
+          router.go("/word/${Uri.encodeComponent(text)}");
           break;
 
         case "inputDirectory":
@@ -62,6 +63,12 @@ class PlatformMethod {
           settings.exportDirectory = directory;
           prefs.setString("exportDirectory", directory);
           break;
+      }
+    });
+
+    _platform.invokeMethod<String>("getPendingProcessText").then((text) {
+      if (text != null && text.isNotEmpty) {
+        router.go("/word/${Uri.encodeComponent(text)}");
       }
     });
   }

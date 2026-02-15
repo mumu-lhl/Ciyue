@@ -66,7 +66,7 @@ class _WordSearchBarWithSuggestionsState
           viewOnSubmitted: (String word) {
             if (widget.controller.text.isNotEmpty) {
               context.read<HistoryModel>().addHistory(word);
-              context.push("/word", extra: {"word": word});
+              context.push("/word/${Uri.encodeComponent(word)}");
             }
           },
           suggestionsBuilder:
@@ -88,7 +88,7 @@ class _WordSearchBarWithSuggestionsState
                   trailing: const Icon(Icons.arrow_forward),
                   onTap: () {
                     context.read<HistoryModel>().addHistory(e);
-                    context.push("/word", extra: {"word": e});
+                    context.push("/word/${Uri.encodeComponent(e)}");
 
                     if (widget.isHome && settings.autoRemoveSearchWord) {
                       controller.text = "";

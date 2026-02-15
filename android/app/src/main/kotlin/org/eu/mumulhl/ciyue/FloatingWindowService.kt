@@ -16,9 +16,15 @@ class FloatingWindowService : Service() {
     }
 
     private var flutterEngine: FlutterEngine? = null
+    private lateinit var configurator: EngineConfigurator
+
+    override fun onCreate() {
+        super.onCreate()
+        configurator = EngineConfigurator(this)
+    }
 
     override fun onBind(intent: Intent?): IBinder? {
-        return null // This is a started service, not a bound service
+        return null
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -29,6 +35,9 @@ class FloatingWindowService : Service() {
 
         if (flutterEngine == null) {
             flutterEngine = FlutterEngine(this).apply {
+                configurator.configure(this)
+                configurator.handleProcessText(text)
+                
                 dartExecutor.executeDartEntrypoint(
                     DartExecutor.DartEntrypoint(
                         FlutterInjector.instance().flutterLoader().findAppBundlePath(),
@@ -37,9 +46,11 @@ class FloatingWindowService : Service() {
                 )
             }
             FlutterEngineCache.getInstance().put(ENGINE_ID, flutterEngine)
+        } else {
+            configurator.configure(flutterEngine!!)
+            configurator.handleProcessText(text)
         }
 
-        // Start the transparent activity
         val activityIntent = Intent(this, FloatingWindowActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }

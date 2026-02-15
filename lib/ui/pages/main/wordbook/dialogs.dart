@@ -83,7 +83,7 @@ class _SearchWordDialogState extends State<SearchWordDialog> {
                         title: Text(word),
                         onTap: () {
                           Navigator.of(context).pop();
-                          context.push("/word", extra: {"word": word});
+                          context.push("/word/${Uri.encodeComponent(word)}");
                         },
                       );
                     },

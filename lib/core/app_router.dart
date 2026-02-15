@@ -45,14 +45,12 @@ final router = GoRouter(
       },
     ),
     GoRoute(
-      path: "/word",
+      path: "/word/:word",
       builder: (context, state) {
-        final extra = state.extra as Map<String, String>;
-
-        final word = extra["word"]!;
+        final word = state.pathParameters["word"];
         Provider.of<OpenRecordsRepository>(navigatorKey.currentContext!,
                 listen: false)
-            .add(word);
+            .add(word!);
 
         return WordDisplay(word: word);
       },

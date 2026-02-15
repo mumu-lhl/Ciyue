@@ -15,8 +15,6 @@ import java.io.File
 
 class MainActivity : FlutterActivity() {
     companion object {
-        const val CHANNEL = "org.eu.mumulhl.ciyue"
-
         const val OPEN_DICTIONARY_DOCUMENT_TREE = 0
         const val CREATE_FILE = 1
         const val GET_DIRECTORY = 2
@@ -24,9 +22,7 @@ class MainActivity : FlutterActivity() {
         const val OPEN_AUDIO_DOCUMENT_TREE = 4
     }
 
-    var methodChannel: MethodChannel? = null
-
-    var exportContent = ""
+    private lateinit var configurator: EngineConfigurator
 
     private fun openDirectory() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
@@ -49,24 +45,6 @@ class MainActivity : FlutterActivity() {
     private fun getDirectory() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         startActivityForResult(intent, GET_DIRECTORY)
-    }
-
-    private fun writeFile(directory: String, filename: String, content: String) {
-        val directoryFile = DocumentFile.fromTreeUri(context, directory.toUri())
-        val file = directoryFile!!.findFile(filename)
-        if (file == null) {
-            val newFile = directoryFile.createFile("application/json", filename)
-            newFile!!.uri.let { context.contentResolver.openOutputStream(it) }.use { outputStream ->
-                outputStream!!.write(content.toByteArray())
-            }
-
-        } else {
-            file.delete()
-            val newFile = directoryFile.createFile("application/json", filename)
-            newFile!!.uri.let { context.contentResolver.openOutputStream(it) }.use { outputStream ->
-                outputStream!!.write(content.toByteArray())
-            }
-        }
     }
 
     private fun setSecureFlag(secure: Boolean) {
@@ -101,50 +79,16 @@ class MainActivity : FlutterActivity() {
             contentResolver.takePersistableUriPermission(
                 uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
-            methodChannel!!.invokeMethod("getDirectory", uri.toString())
+            configurator.methodChannel!!.invokeMethod("getDirectory", uri.toString())
         }
     }
 
     private fun createFileHandler(data: Intent?) {
         data?.data?.also { uri ->
             contentResolver.openOutputStream(uri)?.use { outputStream ->
-                outputStream.write(exportContent.toByteArray())
-                exportContent = ""
+                outputStream.write(configurator.exportContent.toByteArray())
+                configurator.exportContent = ""
             }
-        }
-    }
-
-    private fun copy(source: DocumentFile, target: File) {
-        if (!target.exists()) {
-            target.mkdirs()
-        }
-        source.listFiles().forEach { file ->
-            if (file.isFile) {
-                BufferedInputStream(contentResolver.openInputStream(file.uri)).use { input ->
-                    BufferedOutputStream(
-                        File(
-                            target,
-                            file.name ?: ""
-                        ).outputStream()
-                    ).use { output ->
-                        input.copyTo(output)
-                    }
-                }
-            } else {
-                copy(file, File(target, file.name ?: ""))
-            }
-        }
-    }
-
-    private fun copyDirectory(uri: Uri, destination: String) {
-        methodChannel!!.invokeMethod("showLoadingDialog", null)
-
-        val documents = DocumentFile.fromTreeUri(applicationContext, uri)!!
-        copy(documents, File(filesDir, destination))
-
-        when (destination) {
-            "dictionaries" -> methodChannel!!.invokeMethod("inputDirectory", uri.toString())
-            "audios" -> methodChannel!!.invokeMethod("inputAudioDirectory", uri.toString())
         }
     }
 
@@ -154,72 +98,44 @@ class MainActivity : FlutterActivity() {
             contentResolver.takePersistableUriPermission(
                 uri, takeFlags
             )
-            copyDirectory(uri, destination)
+            configurator.copyDirectory(uri, destination)
+        }
+    }
+
+    private fun ensureConfigurator() {
+        if (!::configurator.isInitialized) {
+            configurator = EngineConfigurator(this)
+            configurator.callback = object : EngineConfigurator.Callback {
+                override fun onOpenDirectory() = openDirectory()
+                override fun onOpenAudioDirectory() = openAudioDirectory()
+                override fun onCreateFile() = createFile()
+                override fun onGetDirectory() = getDirectory()
+            }
         }
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-
-        methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).apply {
-            setMethodCallHandler { call, result ->
-                when (call.method) {
-                    "openDirectory" -> {
-                        openDirectory()
-                    }
-
-                    "openAudioDirectory" -> {
-                        openAudioDirectory()
-                    }
-
-                    "createFile" -> {
-                        exportContent = call.arguments as String
-                        createFile()
-                    }
-
-                    "getDirectory" -> {
-                        getDirectory()
-                    }
-
-                    "writeFile" -> {
-                        val arguments = call.arguments as Map<*, *>
-                        writeFile(
-                            arguments["directory"] as String,
-                            arguments["filename"] as String,
-                            arguments["content"] as String
-                        )
-                    }
-
-                    "setSecureFlag" -> {
-                        setSecureFlag(call.arguments as Boolean)
-                    }
-
-                    "updateDictionaries" -> {
-                        val uri = (call.arguments as String).toUri()
-                        copyDirectory(uri, "dictionaries")
-                    }
-
-                    else -> result.notImplemented()
-                }
-                result.success(0)
-            }
-        }
+        ensureConfigurator()
+        configurator.configure(flutterEngine)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ensureConfigurator()
         handleProcessTextIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         handleProcessTextIntent(intent)
     }
 
     private fun handleProcessTextIntent(intent: Intent?) {
         if (intent?.action == Intent.ACTION_PROCESS_TEXT) {
             val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString() ?: ""
-            methodChannel?.invokeMethod("processText", text)
+            configurator.handleProcessText(text)
         }
     }
 }

@@ -7,6 +7,7 @@ import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/utils.dart";
@@ -73,6 +74,7 @@ void floatingWindow(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await initApp();
+  PlatformMethod.initHandler();
 
   searchWordFromProcessText = args[0];
 
@@ -103,7 +105,7 @@ class _CiyueState extends State<Ciyue> with TrayListener {
   @override
   Widget build(BuildContext context) {
     if (widget.isFloatingWindow) {
-      router.go("/word", extra: {"word": searchWordFromProcessText});
+      router.go("/word/${Uri.encodeComponent(searchWordFromProcessText)}");
     }
 
     Locale? locale;

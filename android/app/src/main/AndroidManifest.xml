@@ -38,6 +38,7 @@
             android:theme="@style/Theme.Transparent"
             android:windowSoftInputMode="adjustResize"
             android:exported="false"
+            android:launchMode="singleTop"
             />
         <activity
             android:name=".ProcessTextActivity"
