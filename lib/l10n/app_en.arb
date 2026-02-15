@@ -367,5 +367,9 @@
   "launchAtStartup": "Launch at Startup",
   "@launchAtStartup": {},
   "openRecordStats": "Open Record Stats",
-  "@openRecordStats": {}
+  "@openRecordStats": {},
+  "showWindow": "Show Window",
+  "@showWindow": {},
+  "exitApp": "Exit App",
+  "@exitApp": {}
 }

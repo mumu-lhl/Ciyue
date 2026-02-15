@@ -218,5 +218,8 @@ class _CiyueState extends State<Ciyue> with TrayListener {
 
   void refresh() {
     setState(() {});
+    if (isDesktop()) {
+      initTrayMenu();
+    }
   }
 }

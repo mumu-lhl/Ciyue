@@ -367,5 +367,9 @@
   "launchAtStartup": "开机自启动",
   "@launchAtStartup": {},
   "openRecordStats": "查阅记录统计",
-  "@openRecordStats": {}
+  "@openRecordStats": {},
+  "showWindow": "显示窗口",
+  "@showWindow": {},
+  "exitApp": "退出应用",
+  "@exitApp": {}
 }

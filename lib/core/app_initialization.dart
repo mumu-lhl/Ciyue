@@ -8,6 +8,7 @@ import "package:ciyue/services/changelog.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/startup.dart";
 import "package:ciyue/services/updater.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/changelog_dialog.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -37,6 +38,33 @@ Future<void> initGroup() async {
         .update();
   } catch (e) {
     talker.error(e);
+  }
+}
+
+Future<void> initTrayMenu() async {
+  if (isDesktop()) {
+    final context = navigatorKey.currentContext!;
+    final l10n = AppLocalizations.of(context)!;
+
+    trayManager.setIcon(
+      Platform.isWindows
+          ? "windows/runner/resources/app_icon.ico"
+          : "assets/icon.png",
+    );
+    Menu menu = Menu(
+      items: [
+        MenuItem(
+          key: "show_window",
+          label: l10n.showWindow,
+        ),
+        MenuItem.separator(),
+        MenuItem(
+          key: "exit_app",
+          label: l10n.exitApp,
+        ),
+      ],
+    );
+    trayManager.setContextMenu(menu);
   }
 }
 
@@ -72,29 +100,10 @@ Future<void> initApp() async {
   }
 
   WidgetsBinding.instance.addPostFrameCallback((_) async {
-    final locale = Localizations.localeOf(navigatorKey.currentContext!);
+    final context = navigatorKey.currentContext!;
+    final locale = Localizations.localeOf(context);
 
-    if (isDesktop()) {
-      trayManager.setIcon(
-        Platform.isWindows
-            ? "windows/runner/resources/app_icon.ico"
-            : "assets/icon.png",
-      );
-      Menu menu = Menu(
-        items: [
-          MenuItem(
-            key: "show_window",
-            label: "Show Window",
-          ),
-          MenuItem.separator(),
-          MenuItem(
-            key: "exit_app",
-            label: "Exit App",
-          ),
-        ],
-      );
-      trayManager.setContextMenu(menu);
-    }
+    await initTrayMenu();
 
     packageInfo = await PackageInfo.fromPlatform();
 
