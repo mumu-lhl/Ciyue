@@ -1,6 +1,7 @@
 import "dart:io";
 
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/wordbook.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
@@ -183,7 +184,8 @@ class SettingsScreen extends StatelessWidget {
         const ManageDictionariesPageListTile(),
         const AiSettingsPageListTile(),
         const AudioSettingsPageListTile(),
-        if (Platform.isAndroid) const ManageStorageListTile(),
+        if (Platform.isAndroid && !isFullFlavor())
+          const ManageStorageListTile(),
         const AppearanceSettingsPageListTile(),
         const HistoryPageListTile(),
         const BackupPageListTile(),
