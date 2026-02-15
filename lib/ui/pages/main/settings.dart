@@ -232,14 +232,7 @@ class _AudioSettingsPageListTileState extends State<AudioSettingsPageListTile> {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.volume_up),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(AppLocalizations.of(context)!.audioSettings),
-          const SizedBox(width: 8),
-          BaseBadge(text: "New!"),
-        ],
-      ),
+      title: Text(AppLocalizations.of(context)!.audioSettings),
       onTap: () => context.push("/settings/audio"),
     );
   }
