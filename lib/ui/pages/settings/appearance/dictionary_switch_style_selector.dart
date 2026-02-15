@@ -16,38 +16,28 @@ class _DictionarySwitchStyleSelectorState
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
 
-    return InkWell(
-      onTapUp: (tapUpDetails) async {
-        final selected = await showMenu<DictionarySwitchStyle>(
-          context: context,
-          position: RelativeRect.fromLTRB(
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
+    return ListTile(
+      leading: const Icon(Icons.style),
+      title: Text(locale.dictionarySwitchStyle),
+      trailing: SegmentedButton<DictionarySwitchStyle>(
+        segments: [
+          ButtonSegment(
+            value: DictionarySwitchStyle.expansion,
+            label: Text(locale.expansion),
           ),
-          initialValue: settings.dictionarySwitchStyle,
-          items: [
-            PopupMenuItem(
-              value: DictionarySwitchStyle.expansion,
-              child: Text(locale.expansion),
-            ),
-            PopupMenuItem(
-              value: DictionarySwitchStyle.tag,
-              child: Text(locale.tab),
-            ),
-          ],
-        );
-
-        if (selected != null && selected != settings.dictionarySwitchStyle) {
-          await settings.setDictionarySwitchStyle(selected);
-          setState(() {});
-        }
-      },
-      child: ListTile(
-        leading: const Icon(Icons.style),
-        title: Text(locale.dictionarySwitchStyle),
-        trailing: const Icon(Icons.keyboard_arrow_down),
+          ButtonSegment(
+            value: DictionarySwitchStyle.tag,
+            label: Text(locale.tab),
+          ),
+        ],
+        selected: {settings.dictionarySwitchStyle},
+        onSelectionChanged: (selected) async {
+          if (selected.first != settings.dictionarySwitchStyle) {
+            await settings.setDictionarySwitchStyle(selected.first);
+            setState(() {});
+          }
+        },
+        showSelectedIcon: false,
       ),
     );
   }

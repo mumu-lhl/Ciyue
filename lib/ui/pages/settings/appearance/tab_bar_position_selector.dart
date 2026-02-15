@@ -14,38 +14,28 @@ class _TabBarPositionSelectorState extends State<TabBarPositionSelector> {
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
 
-    return InkWell(
-      onTapUp: (tapUpDetails) async {
-        final selected = await showMenu<TabBarPosition>(
-          context: context,
-          position: RelativeRect.fromLTRB(
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
+    return ListTile(
+      leading: const Icon(Icons.tab),
+      title: Text(locale.tabBarPosition),
+      trailing: SegmentedButton<TabBarPosition>(
+        segments: [
+          ButtonSegment(
+            value: TabBarPosition.top,
+            label: Text(locale.top),
           ),
-          initialValue: settings.tabBarPosition,
-          items: [
-            PopupMenuItem(
-              value: TabBarPosition.top,
-              child: Text(locale.top),
-            ),
-            PopupMenuItem(
-              value: TabBarPosition.bottom,
-              child: Text(locale.bottom),
-            ),
-          ],
-        );
-
-        if (selected != null && selected != settings.tabBarPosition) {
-          await settings.setTabBarPosition(selected);
-          setState(() {});
-        }
-      },
-      child: ListTile(
-        leading: const Icon(Icons.tab),
-        title: Text(locale.tabBarPosition),
-        trailing: const Icon(Icons.keyboard_arrow_down),
+          ButtonSegment(
+            value: TabBarPosition.bottom,
+            label: Text(locale.bottom),
+          ),
+        ],
+        selected: {settings.tabBarPosition},
+        onSelectionChanged: (selected) async {
+          if (selected.first != settings.tabBarPosition) {
+            await settings.setTabBarPosition(selected.first);
+            setState(() {});
+          }
+        },
+        showSelectedIcon: false,
       ),
     );
   }

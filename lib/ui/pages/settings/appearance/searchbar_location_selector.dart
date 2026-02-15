@@ -16,37 +16,27 @@ class SearchbarLocationSelector extends StatefulWidget {
 class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
   @override
   Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
+    final locale = AppLocalizations.of(context)!;
 
-    return InkWell(
-      onTapUp: (tapUpDetails) async {
-        final searchBarLocationSelected = await showMenu(
-          context: context,
-          position: RelativeRect.fromLTRB(
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-          ),
-          initialValue: settings.searchBarInAppBar,
-          items: [
-            PopupMenuItem(value: true, child: Text(locale.top)),
-            PopupMenuItem(value: false, child: Text(locale.bottom)),
-          ],
-        );
-
-        if (searchBarLocationSelected != null) {
-          settings.searchBarInAppBar = searchBarLocationSelected;
-          await prefs.setBool("searchBarInAppBar", searchBarLocationSelected);
-
-          if (context.mounted) context.read<HomeModel>().update();
-          setState(() {});
-        }
-      },
-      child: ListTile(
-        leading: const Icon(Icons.search),
-        title: Text(locale!.searchBarLocation),
-        trailing: const Icon(Icons.keyboard_arrow_down),
+    return ListTile(
+      leading: const Icon(Icons.search),
+      title: Text(locale.searchBarLocation),
+      trailing: SegmentedButton<bool>(
+        segments: [
+          ButtonSegment(value: true, label: Text(locale.top)),
+          ButtonSegment(value: false, label: Text(locale.bottom)),
+        ],
+        selected: {settings.searchBarInAppBar},
+        onSelectionChanged: (selected) async {
+          final newValue = selected.first;
+          if (newValue != settings.searchBarInAppBar) {
+            settings.searchBarInAppBar = newValue;
+            await prefs.setBool("searchBarInAppBar", newValue);
+            if (context.mounted) context.read<HomeModel>().update();
+            setState(() {});
+          }
+        },
+        showSelectedIcon: false,
       ),
     );
   }
