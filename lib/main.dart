@@ -65,7 +65,7 @@ void main() async {
       ], child: const Ciyue()),
     ));
   } catch (e) {
-    runApp(MaterialApp(home: CiyueError(error: e)));
+    runApp(ProviderScope(child: MaterialApp(home: CiyueError(error: e))));
   }
 }
 

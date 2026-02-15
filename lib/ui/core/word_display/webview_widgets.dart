@@ -2,8 +2,8 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
-import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
@@ -13,11 +13,12 @@ import "package:flutter/gestures.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
-import "package:provider/provider.dart";
+import "package:provider/provider.dart" as legacy_provider;
 
-class WebviewAndroid extends StatefulWidget {
+class WebviewAndroid extends ConsumerStatefulWidget {
   final String content;
   final int dictId;
   final bool isExpansion;
@@ -30,14 +31,17 @@ class WebviewAndroid extends StatefulWidget {
   });
 
   @override
-  State<WebviewAndroid> createState() => _WebviewAndroidState();
+  ConsumerState<WebviewAndroid> createState() => _WebviewAndroidState();
 }
 
-class _WebviewAndroidState extends State<WebviewAndroid> {
-  double height = 0;
-
+class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(settingsProvider);
+    final dictManager = ref.watch(dictManagerProvider);
+    final heights = ref.watch(webviewHeightsProvider);
+    final height = heights[widget.dictId] ?? 0;
+
     final isLightTheme = settings.themeMode == ThemeMode.light ||
         settings.themeMode == ThemeMode.system &&
             MediaQuery.of(context).platformBrightness == Brightness.light;
@@ -86,7 +90,8 @@ class _WebviewAndroidState extends State<WebviewAndroid> {
             if (context.mounted) {
               await playSoundOfWord(
                 selectedText,
-                context.read<AudioModel>().mddAudioList,
+                legacy_provider.Provider.of<AudioModel>(context, listen: false)
+                    .mddAudioList,
               );
             }
           },
@@ -125,9 +130,9 @@ class _WebviewAndroidState extends State<WebviewAndroid> {
             handlerName: "WebViewHeight",
             callback: (args) {
               double newHeight = args[0].toDouble();
-              setState(() {
-                height = newHeight;
-              });
+              ref
+                  .read(webviewHeightsProvider.notifier)
+                  .setHeight(widget.dictId, newHeight);
             },
           );
         }
@@ -170,13 +175,14 @@ document.body.style.fontFamily = 'Custom Font';
   }
 }
 
-class WebviewDisplayDescription extends StatelessWidget {
+class WebviewDisplayDescription extends ConsumerWidget {
   final int dictId;
 
   const WebviewDisplayDescription({super.key, required this.dictId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dictManager = ref.watch(dictManagerProvider);
     String html;
     if (dictManager.dicts.containsKey(dictId)) {
       html = dictManager.dicts[dictId]!.reader.header["Description"]!;
@@ -224,7 +230,7 @@ class WebviewDisplayDescription extends StatelessWidget {
   }
 }
 
-class WebviewWindows extends StatelessWidget {
+class WebviewWindows extends ConsumerWidget {
   final String content;
   final int dictId;
 
@@ -235,7 +241,9 @@ class WebviewWindows extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dictManager = ref.watch(dictManagerProvider);
+    final settings = ref.watch(settingsProvider);
     final port = dictManager.dicts[dictId]!.port;
 
     if (port == 0) {

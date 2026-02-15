@@ -3,13 +3,13 @@ import "dart:convert";
 import "package:ciyue/core/app_globals.dart";
 import "package:flutter/material.dart";
 
-final settings = _Settings();
+final settings = Settings();
 
 enum TabBarPosition { top, bottom }
 
 enum DictionarySwitchStyle { expansion, tag }
 
-class _Settings {
+class Settings {
   late bool autoExport;
   late String exportFileName;
   late String? exportDirectory;
@@ -55,7 +55,7 @@ class _Settings {
 
   late bool launchAtStartup;
 
-  _Settings() {
+  Settings() {
     launchAtStartup = prefs.getBool("launchAtStartup") ?? false;
     autoExport = prefs.getBool("autoExport") ?? false;
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
