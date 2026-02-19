@@ -370,6 +370,8 @@
   "@openRecordStats": {},
   "showWindow": "显示窗口",
   "@showWindow": {},
+  "noDictionariesFound": "未找到词典",
+  "@noDictionariesFound": {},
   "exitApp": "退出应用",
   "@exitApp": {}
 }

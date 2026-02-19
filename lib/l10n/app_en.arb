@@ -370,6 +370,8 @@
   "@openRecordStats": {},
   "showWindow": "Show Window",
   "@showWindow": {},
+  "noDictionariesFound": "No dictionaries found",
+  "@noDictionariesFound": {},
   "exitApp": "Exit App",
   "@exitApp": {}
 }
