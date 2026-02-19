@@ -491,13 +491,19 @@ class Mdict {
   Future<List<ResourceData>> readResource(String key) async {
     final resourceData = <ResourceData>[];
 
-    final normalizedKey = key.replaceAll("/", "\\");
-    final keysToTry = [
-      normalizedKey,
-      normalizedKey.startsWith("\\")
-          ? normalizedKey.substring(1)
-          : "\\$normalizedKey",
-    ];
+    final slashKey = key.replaceAll("\\", "/");
+    final backslashKey = key.replaceAll("/", "\\");
+    final keysToTry = <String>{
+      key,
+      slashKey,
+      backslashKey,
+      if (key.startsWith("/") || key.startsWith("\\")) key.substring(1),
+      if (slashKey.startsWith("/")) slashKey.substring(1),
+      if (backslashKey.startsWith("\\")) backslashKey.substring(1),
+      if (!key.startsWith("/") && !key.startsWith("\\")) "/$key",
+      if (!slashKey.startsWith("/")) "/$slashKey",
+      if (!backslashKey.startsWith("\\")) "\\$backslashKey",
+    }.toList();
 
     for (final readerResource in readerResources) {
       String? foundKey;
