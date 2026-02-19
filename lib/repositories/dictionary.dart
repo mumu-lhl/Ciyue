@@ -584,6 +584,11 @@ Future<void> selectMdx(BuildContext context, List<String> paths,
     if (closeLoadingWhenEmpty && context.mounted) {
       context.pop();
     }
+    if (context.mounted) {
+      ToastService.show(
+          AppLocalizations.of(context)!.noDictionariesFound, context,
+          type: ToastType.info);
+    }
     return;
   }
 
