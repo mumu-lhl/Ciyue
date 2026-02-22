@@ -50,6 +50,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
       algorithmicDarkeningAllowed: !isLightTheme,
       resourceCustomSchemes: ["entry", "sound"],
       transparentBackground: true,
+      useHybridComposition: true,
       webViewAssetLoader: WebViewAssetLoader(
         domain: "ciyue.internal",
         httpAllowed: true,
