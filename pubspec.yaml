@@ -36,7 +36,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   # cupertino_icons: ^1.0.8
   drift: ^2.31.0
-  drift_flutter: ^0.2.8
+  drift_flutter: ^0.3.0
   dict_reader:
     git:
       url: https://github.com/mumu-lhl/dict_reader.git
