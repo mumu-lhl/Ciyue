@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [1.22.2](https://github.com/mumu-lhl/Ciyue/compare/v1.22.1..1.22.2) - 2026-03-02
+
+### Bug Fixes
+
+- **(dict)** restore MDX sound resource lookup for slash/backslash key variants - ([4d2bf28](https://github.com/mumu-lhl/Ciyue/commit/4d2bf2834c39333fc9b89ee86f1ef05cf1947483)) - Mumulhl
+
+### Features
+
+- **(translation)** translated using Weblate (Russian) - ([f0d6b8f](https://github.com/mumu-lhl/Ciyue/commit/f0d6b8fb3bb95fccf45b3dcbd15bcea5f3fe16f0)) - Xapitonov
+- **(translation)** translated using Weblate (Russian) - ([c3b8a91](https://github.com/mumu-lhl/Ciyue/commit/c3b8a91523f3316ef8837c4457073ce5dbaec52a)) - Xapitonov
+
+### Miscellaneous Chores
+
+- **(ci)** update flutter version to 3.41.2 - ([d0fe55f](https://github.com/mumu-lhl/Ciyue/commit/d0fe55f235492e7e620d953f650a9bb73f74029c)) - Mumulhl
+
+### Build
+
+- **(deps)** bump rollup - ([1c027db](https://github.com/mumu-lhl/Ciyue/commit/1c027db72e577a636e19ab8a7d3e1fa5a7672b5a)) - dependabot[bot]
+
+---
 ## [1.22.0](https://github.com/mumu-lhl/Ciyue/compare/v1.21.0..1.22.0) - 2026-02-23
 
 ### Bug Fixes
