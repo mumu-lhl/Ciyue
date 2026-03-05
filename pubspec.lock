@@ -891,10 +891,10 @@ packages:
     dependency: transitive
     description:
       name: matcher
-      sha256: "12956d0ad8390bbcc63ca2e1469c0619946ccb52809807067a7020d57e647aa6"
+      sha256: dc0b7dc7651697ea4ff3e69ef44b0407ea32c487a39fff6a4004fa585e901861
       url: "https://pub.dev"
     source: hosted
-    version: "0.12.18"
+    version: "0.12.19"
   material_color_utilities:
     dependency: transitive
     description:
@@ -1480,10 +1480,10 @@ packages:
     dependency: "direct main"
     description:
       name: talker
-      sha256: f98494dd64c62f21d4b92ccb8b7145003c7cc93030988cb3ad8048601ee71dfb
+      sha256: "46a60c6014a870a71ab8e3fa22f9580a8d36faf9b39431dcf124940601c0c266"
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.14"
+    version: "5.1.15"
   talker_dio_logger:
     dependency: "direct main"
     description:
@@ -1496,18 +1496,18 @@ packages:
     dependency: "direct main"
     description:
       name: talker_flutter
-      sha256: "6a807972565dc7d5bacfb6a980efa0f766bfdbacac5660adf150aa386c440052"
+      sha256: "7e1819c505cdcbf2cf6497410b8fa3b33d170e6f137716bd278940c0e509f414"
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.13"
+    version: "5.1.15"
   talker_logger:
     dependency: transitive
     description:
       name: talker_logger
-      sha256: cf58477217f02aaf7450f74ca081c633a151e5132203ead02520a403db8ecf21
+      sha256: "70112d016d7b978ccb7ef0b0f4941e0f0b0de88d80589db43143cea1d744eae0"
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.14"
+    version: "5.1.15"
   term_glyph:
     dependency: transitive
     description:
@@ -1520,26 +1520,26 @@ packages:
     dependency: "direct dev"
     description:
       name: test
-      sha256: "54c516bbb7cee2754d327ad4fca637f78abfc3cbcc5ace83b3eda117e42cd71a"
+      sha256: "280d6d890011ca966ad08df7e8a4ddfab0fb3aa49f96ed6de56e3521347a9ae7"
       url: "https://pub.dev"
     source: hosted
-    version: "1.29.0"
+    version: "1.30.0"
   test_api:
     dependency: transitive
     description:
       name: test_api
-      sha256: "93167629bfc610f71560ab9312acdda4959de4df6fac7492c89ff0d3886f6636"
+      sha256: "8161c84903fd860b26bfdefb7963b3f0b68fee7adea0f59ef805ecca346f0c7a"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.9"
+    version: "0.7.10"
   test_core:
     dependency: transitive
     description:
       name: test_core
-      sha256: "394f07d21f0f2255ec9e3989f21e54d3c7dc0e6e9dbce160e5a9c1a6be0e2943"
+      sha256: "0381bd1585d1a924763c308100f2138205252fb90c9d4eeaf28489ee65ccde51"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.15"
+    version: "0.6.16"
   timezone:
     dependency: transitive
     description:
