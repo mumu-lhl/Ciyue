@@ -616,10 +616,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_smart_dialog
-      sha256: "0852df132cb03fd8fc5144eb404c31eb7eb50c22aecb1cc2504f2f598090d756"
+      sha256: "506e8e0420e96a5df51d7bf348ccd3398de6bf1978bdb7a72bbf14e08dc01ceb"
       url: "https://pub.dev"
     source: hosted
-    version: "4.9.8+9"
+    version: "5.0.1"
   flutter_svg:
     dependency: transitive
     description:
