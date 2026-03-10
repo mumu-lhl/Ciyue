@@ -62,7 +62,7 @@ dependencies:
   gpt_markdown: ^1.1.5
   provider: ^6.1.5+1
   freezed_annotation: ^3.1.0
-  audioplayers: ^6.5.1
+  audioplayers: ^6.6.0
   permission_handler: ^12.0.1
   logger: ^2.6.2
   translator: ^1.0.4+1
