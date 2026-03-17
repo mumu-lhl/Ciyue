@@ -64,7 +64,7 @@ dependencies:
   freezed_annotation: ^3.1.0
   audioplayers: ^6.6.0
   permission_handler: ^12.0.1
-  logger: ^2.6.2
+  logger: ^2.7.0
   translator: ^1.0.4+1
   talker: ^5.1.14
   talker_flutter: ^5.1.15
