@@ -44,6 +44,7 @@ jobs:
         run: |
           pacman -Syu --noconfirm
           pacman -S --noconfirm jq git clang cmake ninja wget patchelf
+          git config --global --add safe.directory '*'
 
       - uses: subosito/flutter-action@v2
         with:
@@ -53,7 +54,6 @@ jobs:
       - name: Install dependencies
         run: |
           pacman -S --noconfirm gtk3 gstreamer libayatana-appindicator libkeybinder3 wpewebkit
-          git config --global --add safe.directory /__t/flutter/*
           flutter pub get
 
       - name: Build Linux
