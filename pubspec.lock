@@ -1496,10 +1496,10 @@ packages:
     dependency: "direct main"
     description:
       name: talker_flutter
-      sha256: "7e1819c505cdcbf2cf6497410b8fa3b33d170e6f137716bd278940c0e509f414"
+      sha256: "54cbbf852101721664faf4a05639fd2fdefdc37178327990abea00390690d4bc"
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.15"
+    version: "5.1.16"
   talker_logger:
     dependency: transitive
     description:
