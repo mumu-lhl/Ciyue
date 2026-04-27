@@ -68,7 +68,7 @@ dependencies:
   translator: ^1.0.4+1
   talker: ^5.1.16
   talker_flutter: ^5.1.16
-  talker_dio_logger: ^5.1.16
+  talker_dio_logger: ^5.1.17
   flutter_smart_dialog: ^5.1.0
   device_info_plus: ^12.4.0
   table_calendar: ^3.2.0
