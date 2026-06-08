@@ -70,6 +70,42 @@ jobs:
           pacman -S --noconfirm gtk3 gstreamer libayatana-appindicator libkeybinder3 wpewebkit
           flutter pub get
 
+      - name: Patch flutter_inappwebview for archived WPEWebKit
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          pub_cache = Path.home() / ".pub-cache"
+          candidates = sorted(pub_cache.glob("hosted/*/flutter_inappwebview_linux-*/linux/in_app_webview"))
+          if not candidates:
+              raise SystemExit("flutter_inappwebview_linux package not found in pub cache")
+
+          plugin_dir = candidates[-1]
+          settings = plugin_dir / "in_app_webview_settings.cc"
+          webview = plugin_dir / "in_app_webview.cc"
+
+          replacements = {
+              settings: {
+                  """  if (!webRTCUdpPortsRange.empty()) {\n    webkit_settings_set_webrtc_udp_ports_range(settings, webRTCUdpPortsRange.c_str());\n  }""": """#if WEBKIT_CHECK_VERSION(2, 48, 0)\n  if (!webRTCUdpPortsRange.empty()) {\n    webkit_settings_set_webrtc_udp_ports_range(settings, webRTCUdpPortsRange.c_str());\n  }\n#endif""",
+                  """  webkit_settings_set_enable_2d_canvas_acceleration(settings, enable2DCanvasAcceleration);""": """#if WEBKIT_CHECK_VERSION(2, 46, 0)\n  webkit_settings_set_enable_2d_canvas_acceleration(settings, enable2DCanvasAcceleration);\n#endif""",
+              },
+              webview: {
+                  """  WebKitColor color;\n  gboolean hasColor = webkit_web_view_get_theme_color(webview_, &color);""": """#if !WEBKIT_CHECK_VERSION(2, 50, 0)\n  return std::nullopt;\n#else\n  WebKitColor color;\n  gboolean hasColor = webkit_web_view_get_theme_color(webview_, &color);""",
+                  """  if (a == 255) {\n    snprintf(hexColor, sizeof(hexColor), \"#%02X%02X%02X\", r, g, b);\n  } else {\n    snprintf(hexColor, sizeof(hexColor), \"#%02X%02X%02X%02X\", r, g, b, a);\n  }\n  \n  return std::string(hexColor);\n}""": """  if (a == 255) {\n    snprintf(hexColor, sizeof(hexColor), \"#%02X%02X%02X\", r, g, b);\n  } else {\n    snprintf(hexColor, sizeof(hexColor), \"#%02X%02X%02X%02X\", r, g, b, a);\n  }\n  \n  return std::string(hexColor);\n#endif\n}""",
+              },
+          }
+
+          for path, file_replacements in replacements.items():
+              text = path.read_text()
+              for old, new in file_replacements.items():
+                  if old not in text:
+                      raise SystemExit(f"expected snippet not found in {path}: {old!r}")
+                  text = text.replace(old, new, 1)
+              path.write_text(text)
+
+          print(f"Patched {plugin_dir}")
+          PY
+
       - name: Build Linux
         shell: bash
         run: |
