@@ -48,8 +48,16 @@ jobs:
       - name: Install pre dependencies
         run: |
           printf 'Server = https://archive.archlinux.org/repos/%s/$repo/os/$arch\n' "$ARCHLINUX_ARCHIVE_DATE" > /etc/pacman.d/mirrorlist
-          pacman -Syyuu --noconfirm
-          pacman -S --noconfirm jq git clang cmake ninja wget patchelf
+          # The current archlinux:base-devel image has a newer keyring than the
+          # archive snapshot. Signature verification fails for some historical
+          # packages with disabled/expired keys, so disable package signatures
+          # only for this disposable CI container before downgrading.
+          sed -i \
+            -e 's/^SigLevel[[:space:]]*=.*/SigLevel = Never/' \
+            -e 's/^LocalFileSigLevel[[:space:]]*=.*/LocalFileSigLevel = Never/' \
+            /etc/pacman.conf
+          pacman -Syyuu --noconfirm --disable-download-timeout --overwrite '*'
+          pacman -S --noconfirm --disable-download-timeout --overwrite '*' jq git clang cmake ninja wget patchelf
           git config --global --add safe.directory '*'
 
       - uses: subosito/flutter-action@v2
