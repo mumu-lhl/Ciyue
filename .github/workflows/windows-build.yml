@@ -93,10 +93,33 @@ jobs:
           flutter build windows @extraArgs
 
       - name: Copy DLLs
+        shell: pwsh
         run: |
-          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\vcruntime140.dll" build/windows/x64/runner/Release/
-          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\vcruntime140_1.dll" build/windows/x64/runner/Release/
-          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\msvcp140.dll" build/windows/x64/runner/Release/
+          # Do not hard-code the Visual Studio year or MSVC redist version.
+          # windows-latest may point at VS 2026 while older runners used VS 2022.
+          $releaseDir = "build/windows/x64/runner/Release"
+          $crtRoots = @(
+            "C:\Program Files\Microsoft Visual Studio\2026\Enterprise\VC\Redist\MSVC",
+            "C:\Program Files\Microsoft Visual Studio\2026\BuildTools\VC\Redist\MSVC",
+            "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC",
+            "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC\Redist\MSVC"
+          )
+          $crtDir = $crtRoots |
+            Where-Object { Test-Path $_ } |
+            ForEach-Object { Get-ChildItem $_ -Directory | Sort-Object Name -Descending | Select-Object -First 1 } |
+            Select-Object -First 1
+          if (-not $crtDir) {
+            throw "Could not find a Visual Studio MSVC redistributable directory"
+          }
+          $crtPath = Join-Path $crtDir.FullName "x64/Microsoft.VC143.CRT"
+          Write-Host "Using MSVC CRT redist from $crtPath"
+          foreach ($dll in @("vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll")) {
+            $source = Join-Path $crtPath $dll
+            if (-not (Test-Path $source)) {
+              throw "Missing required MSVC CRT DLL: $source"
+            }
+            Copy-Item $source $releaseDir
+          }
 
       - name: Upload runtime bundle
         if: ${{ !inputs.package_release_artifacts }}
