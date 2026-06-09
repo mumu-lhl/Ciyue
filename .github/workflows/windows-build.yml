@@ -83,6 +83,13 @@ jobs:
             $extraArgs += "--dart-define=GIT_COMMIT_HASH=$hash"
             $extraArgs += "--dart-define=BUILD_TIMESTAMP=$timestamp"
           }
+
+          # VS 2026 / MSVC 14.51 turns use of <experimental/coroutine> into
+          # STL1011 static assertion failures. Some transitive Flutter Windows
+          # plugins still include those headers, so suppress the compatibility
+          # warning globally until the upstream plugins move to C++20 <coroutine>.
+          $env:CL = "/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS $env:CL"
+
           flutter build windows @extraArgs
 
       - name: Copy DLLs
