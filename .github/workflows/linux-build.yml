@@ -84,24 +84,50 @@ jobs:
           settings = plugin_dir / "in_app_webview_settings.cc"
           webview = plugin_dir / "in_app_webview.cc"
 
+          def replace_once(text, old, new, path):
+              if new in text:
+                  return text
+              if old not in text:
+                  raise SystemExit(f"expected snippet not found in {path}: {old!r}")
+              return text.replace(old, new, 1)
+
+          def patch_theme_color_guard(text, path):
+              guard_start = """#if !WEBKIT_CHECK_VERSION(2, 50, 0)\n  return std::nullopt;\n#else\n  WebKitColor color;"""
+              if guard_start not in text:
+                  text = replace_once(
+                      text,
+                      """  WebKitColor color;\n  gboolean hasColor = webkit_web_view_get_theme_color(webview_, &color);""",
+                      """#if !WEBKIT_CHECK_VERSION(2, 50, 0)\n  return std::nullopt;\n#else\n  WebKitColor color;\n  gboolean hasColor = webkit_web_view_get_theme_color(webview_, &color);""",
+                      path,
+                  )
+
+              guard_pos = text.find(guard_start)
+              return_pos = text.find("return std::string(hexColor);", guard_pos)
+              if return_pos == -1:
+                  raise SystemExit(f"theme color return not found in {path}")
+
+              endif_pos = text.find("#endif", return_pos)
+              close_pos = text.find("\n}", return_pos)
+              if close_pos == -1:
+                  raise SystemExit(f"theme color function close not found in {path}")
+              if endif_pos == -1 or endif_pos > close_pos:
+                  text = text[:close_pos] + "\n#endif" + text[close_pos:]
+              return text
+
           replacements = {
               settings: {
                   """  if (!webRTCUdpPortsRange.empty()) {\n    webkit_settings_set_webrtc_udp_ports_range(settings, webRTCUdpPortsRange.c_str());\n  }""": """#if WEBKIT_CHECK_VERSION(2, 48, 0)\n  if (!webRTCUdpPortsRange.empty()) {\n    webkit_settings_set_webrtc_udp_ports_range(settings, webRTCUdpPortsRange.c_str());\n  }\n#endif""",
                   """  webkit_settings_set_enable_2d_canvas_acceleration(settings, enable2DCanvasAcceleration);""": """#if WEBKIT_CHECK_VERSION(2, 46, 0)\n  webkit_settings_set_enable_2d_canvas_acceleration(settings, enable2DCanvasAcceleration);\n#endif""",
-              },
-              webview: {
-                  """  WebKitColor color;\n  gboolean hasColor = webkit_web_view_get_theme_color(webview_, &color);""": """#if !WEBKIT_CHECK_VERSION(2, 50, 0)\n  return std::nullopt;\n#else\n  WebKitColor color;\n  gboolean hasColor = webkit_web_view_get_theme_color(webview_, &color);""",
-                  """  if (a == 255) {\n    snprintf(hexColor, sizeof(hexColor), \"#%02X%02X%02X\", r, g, b);\n  } else {\n    snprintf(hexColor, sizeof(hexColor), \"#%02X%02X%02X%02X\", r, g, b, a);\n  }\n  \n  return std::string(hexColor);\n}""": """  if (a == 255) {\n    snprintf(hexColor, sizeof(hexColor), \"#%02X%02X%02X\", r, g, b);\n  } else {\n    snprintf(hexColor, sizeof(hexColor), \"#%02X%02X%02X%02X\", r, g, b, a);\n  }\n  \n  return std::string(hexColor);\n#endif\n}""",
               },
           }
 
           for path, file_replacements in replacements.items():
               text = path.read_text()
               for old, new in file_replacements.items():
-                  if old not in text:
-                      raise SystemExit(f"expected snippet not found in {path}: {old!r}")
-                  text = text.replace(old, new, 1)
+                  text = replace_once(text, old, new, path)
               path.write_text(text)
+
+          webview.write_text(patch_theme_color_guard(webview.read_text(), webview))
 
           print(f"Patched {plugin_dir}")
           PY
