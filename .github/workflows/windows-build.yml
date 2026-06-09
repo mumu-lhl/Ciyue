@@ -61,6 +61,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-
 
+      - name: Clean stale Windows CMake cache
+        shell: pwsh
+        run: |
+          # The restored build cache may contain a CMake generator from an older
+          # GitHub runner image (for example VS 2022). windows-latest is moving
+          # to windows-2025-vs2026, whose generator is VS 2026, and CMake refuses
+          # to reuse a build directory created by a different generator.
+          Remove-Item -Recurse -Force build/windows -ErrorAction SilentlyContinue
+
       - name: Build Windows
         shell: pwsh
         run: |
