@@ -96,28 +96,53 @@ jobs:
         shell: pwsh
         run: |
           # Do not hard-code the Visual Studio year or MSVC redist version.
-          # windows-latest may point at VS 2026 while older runners used VS 2022.
+          # windows-latest is moving to windows-2025-vs2026, and that image may
+          # omit the older VS2022 redist directory that this workflow used to copy
+          # from. Prefer redist CRT directories when present, but fall back to the
+          # runner's installed x64 CRT DLLs so CI artifacts can still be uploaded.
           $releaseDir = "build/windows/x64/runner/Release"
-          $crtRoots = @(
-            "C:\Program Files\Microsoft Visual Studio\2026\Enterprise\VC\Redist\MSVC",
-            "C:\Program Files\Microsoft Visual Studio\2026\BuildTools\VC\Redist\MSVC",
-            "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC",
-            "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC\Redist\MSVC"
-          )
-          $crtDir = $crtRoots |
-            Where-Object { Test-Path $_ } |
-            ForEach-Object { Get-ChildItem $_ -Directory | Sort-Object Name -Descending | Select-Object -First 1 } |
-            Select-Object -First 1
-          if (-not $crtDir) {
-            throw "Could not find a Visual Studio MSVC redistributable directory"
+          $dllNames = @("vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll")
+
+          $visualStudioRoots = @()
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio/Installer/vswhere.exe"
+          if (Test-Path $vswhere) {
+            $visualStudioRoots += & $vswhere -all -products * -property installationPath
           }
-          $crtPath = Join-Path $crtDir.FullName "x64/Microsoft.VC143.CRT"
-          Write-Host "Using MSVC CRT redist from $crtPath"
-          foreach ($dll in @("vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll")) {
-            $source = Join-Path $crtPath $dll
-            if (-not (Test-Path $source)) {
-              throw "Missing required MSVC CRT DLL: $source"
+          $visualStudioRoots += @(
+            "C:\Program Files\Microsoft Visual Studio\2026\Enterprise",
+            "C:\Program Files\Microsoft Visual Studio\2026\BuildTools",
+            "C:\Program Files\Microsoft Visual Studio\2022\Enterprise",
+            "C:\Program Files\Microsoft Visual Studio\2022\BuildTools"
+          )
+
+          $candidateDirs = @()
+          foreach ($vsRoot in ($visualStudioRoots | Where-Object { $_ } | Select-Object -Unique)) {
+            $redistRoot = Join-Path $vsRoot "VC/Redist/MSVC"
+            if (Test-Path $redistRoot) {
+              $candidateDirs += Get-ChildItem $redistRoot -Directory |
+                Sort-Object Name -Descending |
+                ForEach-Object { Get-ChildItem (Join-Path $_.FullName "x64") -Directory -Filter "Microsoft.VC*.CRT" -ErrorAction SilentlyContinue }
             }
+          }
+          $candidateDirs += Join-Path $env:SystemRoot "System32"
+
+          foreach ($dll in $dllNames) {
+            $source = $null
+            foreach ($dir in $candidateDirs) {
+              $path = Join-Path $dir $dll
+              if (Test-Path $path) {
+                $source = $path
+                break
+              }
+            }
+            if (-not $source) {
+              $source = Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio",(Join-Path $env:SystemRoot "System32") -Filter $dll -Recurse -ErrorAction SilentlyContinue |
+                Select-Object -First 1 -ExpandProperty FullName
+            }
+            if (-not $source) {
+              throw "Missing required MSVC CRT DLL: $dll"
+            }
+            Write-Host "Copying $dll from $source"
             Copy-Item $source $releaseDir
           }
 
