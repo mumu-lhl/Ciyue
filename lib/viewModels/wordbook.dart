@@ -235,9 +235,6 @@ class WordbookModel extends ChangeNotifier {
 
   Future<void> reorderTags(
       int oldIndex, int newIndex, List<WordbookTag> tagsDisplay) async {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
     final tag = tagsDisplay.removeAt(oldIndex);
     tagsDisplay.insert(newIndex, tag);
 

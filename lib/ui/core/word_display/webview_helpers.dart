@@ -13,6 +13,12 @@ import "package:go_router/go_router.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 
+NavigationActionPolicy navigationPolicyForUrl(WebUri url) {
+  return url.scheme == "entry" || url.scheme == "sound"
+      ? NavigationActionPolicy.CANCEL
+      : NavigationActionPolicy.ALLOW;
+}
+
 Future<CustomSchemeResponse?> Function(
         InAppWebViewController controller, WebResourceRequest request)
     onLoadResourceWithCustomSchemeWarpper(int dictId) {
@@ -111,7 +117,7 @@ Future<NavigationActionPolicy?> Function(
       }
     }
 
-    return NavigationActionPolicy.CANCEL;
+    return navigationPolicyForUrl(url);
   };
 }
 

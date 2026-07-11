@@ -82,6 +82,8 @@ dependencies:
   riverpod: ^3.2.1
 
 dependency_overrides:
+  flutter_inappwebview_linux:
+    path: packages/flutter_inappwebview_linux
   hotkey_manager_linux:
     git:
       path: packages/hotkey_manager_linux

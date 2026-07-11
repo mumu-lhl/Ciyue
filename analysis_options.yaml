@@ -36,6 +36,7 @@ analyzer:
     - "lib/src/generated/**"
     - "drift_schemas/**"
     - "metadata/**"
+    - "packages/flutter_inappwebview_linux/**"
     - ".github/**"
     - ".dart_tool/**"
     - ".idea/**"

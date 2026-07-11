@@ -18,6 +18,24 @@ import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:provider/provider.dart" as legacy_provider;
 
+typedef LinuxWebViewLoad = ({
+  InAppWebViewInitialData deferredData,
+  InAppWebViewInitialData? initialData,
+});
+
+LinuxWebViewLoad linuxWebViewLoad(
+  String content,
+  String baseUrl,
+) {
+  return (
+    deferredData: InAppWebViewInitialData(
+      data: content,
+      baseUrl: WebUri(baseUrl),
+    ),
+    initialData: null,
+  );
+}
+
 class WebviewAndroid extends ConsumerStatefulWidget {
   final String content;
   final int dictId;
@@ -269,21 +287,22 @@ class WebviewWindows extends ConsumerWidget {
     );
 
     if (Platform.isLinux) {
+      final load = linuxWebViewLoad(content, url);
       return InAppWebView(
         initialSettings: webviewSettings,
-        initialUrlRequest: URLRequest(
-          url: WebUri(url),
-          method: "POST",
-          body: postData,
-        ),
-        initialData: InAppWebViewInitialData(
-          data: content,
-          baseUrl: WebUri(url),
-        ),
+        initialData: load.initialData,
         onLoadResourceWithCustomScheme:
             onLoadResourceWithCustomSchemeWarpper(dictId),
         shouldOverrideUrlLoading:
             shouldOverrideUrlLoadingWarpper(dictId, context),
+        onWebViewCreated: (controller) async {
+          await controller.loadData(
+            data: load.deferredData.data,
+            mimeType: load.deferredData.mimeType,
+            encoding: load.deferredData.encoding,
+            baseUrl: load.deferredData.baseUrl,
+          );
+        },
       );
     }
 

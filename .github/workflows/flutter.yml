@@ -22,7 +22,7 @@ jobs:
         run: flutter pub get
 
       - name: Format
-        run: find . -name '*.dart' -not -path './lib/src/generated/i18n/*' | xargs dart format --output=none --set-exit-if-changed
+        run: find . -name '*.dart' -not -path './lib/src/generated/i18n/*' -not -path './packages/flutter_inappwebview_linux/*' | xargs dart format --output=none --set-exit-if-changed
 
       - name: Analyze
         run: flutter analyze

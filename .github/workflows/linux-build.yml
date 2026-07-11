@@ -75,12 +75,15 @@ jobs:
           python3 <<'PY'
           from pathlib import Path
 
-          pub_cache = Path.home() / ".pub-cache"
-          candidates = sorted(pub_cache.glob("hosted/*/flutter_inappwebview_linux-*/linux/in_app_webview"))
-          if not candidates:
-              raise SystemExit("flutter_inappwebview_linux package not found in pub cache")
-
-          plugin_dir = candidates[-1]
+          vendored = Path("packages/flutter_inappwebview_linux/linux/in_app_webview")
+          if vendored.is_dir():
+              plugin_dir = vendored
+          else:
+              pub_cache = Path.home() / ".pub-cache"
+              candidates = sorted(pub_cache.glob("hosted/*/flutter_inappwebview_linux-*/linux/in_app_webview"))
+              if not candidates:
+                  raise SystemExit("flutter_inappwebview_linux package not found")
+              plugin_dir = candidates[-1]
           settings = plugin_dir / "in_app_webview_settings.cc"
           webview = plugin_dir / "in_app_webview.cc"
 

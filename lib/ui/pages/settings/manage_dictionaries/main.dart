@@ -570,11 +570,7 @@ class ManageDictionariesBody extends StatelessWidget {
               ),
               child: ReorderableListView(
                 buildDefaultDragHandles: false,
-                onReorder: (oldIndex, newIndex) {
-                  if (oldIndex < newIndex) {
-                    newIndex -= 1;
-                  }
-
+                onReorderItem: (oldIndex, newIndex) {
                   final dict = dicts.removeAt(oldIndex);
                   dicts.insert(newIndex, dict);
 

@@ -56,7 +56,7 @@ class AudioItems extends StatelessWidget {
             );
           }
         },
-        onReorder: (oldIndex, newIndex) {
+        onReorderItem: (oldIndex, newIndex) {
           if (oldIndex >= mddAudioList.length ||
               newIndex >= mddAudioList.length) {
             return;

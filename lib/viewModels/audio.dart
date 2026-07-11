@@ -46,9 +46,6 @@ class AudioModel extends ChangeNotifier {
   }
 
   void reorderMddAudio(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
     final MddAudioListData item = mddAudioList.removeAt(oldIndex);
     mddAudioList.insert(newIndex, item);
     mddAudioListState++;

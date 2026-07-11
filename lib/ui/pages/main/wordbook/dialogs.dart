@@ -266,7 +266,7 @@ class _TagListDialogState extends State<TagListDialog> {
         child: ReorderableListView(
           buildDefaultDragHandles: false,
           shrinkWrap: true,
-          onReorder: (oldIndex, newIndex) async {
+          onReorderItem: (oldIndex, newIndex) async {
             await model.reorderTags(oldIndex, newIndex, widget.tagsDisplay);
             setState(() {});
           },
