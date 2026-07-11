@@ -55,9 +55,11 @@ class Settings {
   late bool enableWritingCheckHistory;
 
   late bool launchAtStartup;
+  late int flashcardDailyNewLimit;
 
   Settings() {
     launchAtStartup = prefs.getBool("launchAtStartup") ?? false;
+    flashcardDailyNewLimit = prefs.getInt("flashcardDailyNewLimit") ?? 20;
     autoExport = prefs.getBool("autoExport") ?? false;
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
     exportDirectory = prefs.getString("exportDirectory");
@@ -243,5 +245,10 @@ class Settings {
   Future<void> setLaunchAtStartup(bool value) async {
     launchAtStartup = value;
     await prefs.setBool("launchAtStartup", value);
+  }
+
+  Future<void> setFlashcardDailyNewLimit(int value) async {
+    flashcardDailyNewLimit = value.clamp(0, 9999);
+    await prefs.setInt("flashcardDailyNewLimit", flashcardDailyNewLimit);
   }
 }

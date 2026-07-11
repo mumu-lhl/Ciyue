@@ -29,6 +29,8 @@ import "package:go_router/go_router.dart";
 import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:ciyue/ui/pages/settings/storage_management.dart";
 import "package:ciyue/viewModels/storage_management.dart";
+import "package:ciyue/ui/pages/flashcards/study_page.dart";
+import "package:ciyue/ui/pages/flashcards/settings.dart";
 import "package:provider/provider.dart";
 import "package:talker_flutter/talker_flutter.dart";
 
@@ -161,6 +163,16 @@ final router = GoRouter(
     GoRoute(
       path: "/settings/wordbook_stats",
       builder: (context, state) => const WordbookStatsPage(),
+    ),
+    GoRoute(
+      path: "/flashcards/review",
+      builder: (context, state) => FlashcardStudyPage(
+        tag: int.tryParse(state.uri.queryParameters["tag"] ?? ""),
+      ),
+    ),
+    GoRoute(
+      path: "/settings/flashcards",
+      builder: (context, state) => const FlashcardSettingsPage(),
     ),
   ],
 );

@@ -188,6 +188,11 @@ class SettingsScreen extends StatelessWidget {
           const ManageStorageListTile(),
         const AppearanceSettingsPageListTile(),
         const HistoryPageListTile(),
+        ListTile(
+          leading: const Icon(Icons.style),
+          title: const Text("Flashcards"),
+          onTap: () => context.push("/settings/flashcards"),
+        ),
         const BackupPageListTile(),
         const UpdatePageListTile(),
         const OtherPageListTile(),

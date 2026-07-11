@@ -2720,6 +2720,754 @@ class OpenRecordsCompanion extends drift.UpdateCompanion<OpenRecord> {
   }
 }
 
+class $FlashcardsTable extends Flashcards
+    with drift.TableInfo<$FlashcardsTable, Flashcard> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FlashcardsTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _wordMeta =
+      const drift.VerificationMeta('word');
+  @override
+  late final drift.GeneratedColumn<String> word = drift.GeneratedColumn<String>(
+      'word', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const drift.VerificationMeta _stateMeta =
+      const drift.VerificationMeta('state');
+  @override
+  late final drift.GeneratedColumn<int> state = drift.GeneratedColumn<int>(
+      'state', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const drift.VerificationMeta _stepMeta =
+      const drift.VerificationMeta('step');
+  @override
+  late final drift.GeneratedColumn<int> step = drift.GeneratedColumn<int>(
+      'step', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const drift.VerificationMeta _stabilityMeta =
+      const drift.VerificationMeta('stability');
+  @override
+  late final drift.GeneratedColumn<double> stability =
+      drift.GeneratedColumn<double>('stability', aliasedName, true,
+          type: DriftSqlType.double, requiredDuringInsert: false);
+  static const drift.VerificationMeta _difficultyMeta =
+      const drift.VerificationMeta('difficulty');
+  @override
+  late final drift.GeneratedColumn<double> difficulty =
+      drift.GeneratedColumn<double>('difficulty', aliasedName, true,
+          type: DriftSqlType.double, requiredDuringInsert: false);
+  static const drift.VerificationMeta _dueMeta =
+      const drift.VerificationMeta('due');
+  @override
+  late final drift.GeneratedColumn<DateTime> due =
+      drift.GeneratedColumn<DateTime>('due', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const drift.VerificationMeta _lastReviewMeta =
+      const drift.VerificationMeta('lastReview');
+  @override
+  late final drift.GeneratedColumn<DateTime> lastReview =
+      drift.GeneratedColumn<DateTime>('last_review', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const drift.VerificationMeta _introducedAtMeta =
+      const drift.VerificationMeta('introducedAt');
+  @override
+  late final drift.GeneratedColumn<DateTime> introducedAt =
+      drift.GeneratedColumn<DateTime>('introduced_at', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<drift.GeneratedColumn> get $columns =>
+      [word, state, step, stability, difficulty, due, lastReview, introducedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'flashcards';
+  @override
+  drift.VerificationContext validateIntegrity(
+      drift.Insertable<Flashcard> instance,
+      {bool isInserting = false}) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('word')) {
+      context.handle(
+          _wordMeta, word.isAcceptableOrUnknown(data['word']!, _wordMeta));
+    } else if (isInserting) {
+      context.missing(_wordMeta);
+    }
+    if (data.containsKey('state')) {
+      context.handle(
+          _stateMeta, state.isAcceptableOrUnknown(data['state']!, _stateMeta));
+    } else if (isInserting) {
+      context.missing(_stateMeta);
+    }
+    if (data.containsKey('step')) {
+      context.handle(
+          _stepMeta, step.isAcceptableOrUnknown(data['step']!, _stepMeta));
+    }
+    if (data.containsKey('stability')) {
+      context.handle(_stabilityMeta,
+          stability.isAcceptableOrUnknown(data['stability']!, _stabilityMeta));
+    }
+    if (data.containsKey('difficulty')) {
+      context.handle(
+          _difficultyMeta,
+          difficulty.isAcceptableOrUnknown(
+              data['difficulty']!, _difficultyMeta));
+    }
+    if (data.containsKey('due')) {
+      context.handle(
+          _dueMeta, due.isAcceptableOrUnknown(data['due']!, _dueMeta));
+    } else if (isInserting) {
+      context.missing(_dueMeta);
+    }
+    if (data.containsKey('last_review')) {
+      context.handle(
+          _lastReviewMeta,
+          lastReview.isAcceptableOrUnknown(
+              data['last_review']!, _lastReviewMeta));
+    }
+    if (data.containsKey('introduced_at')) {
+      context.handle(
+          _introducedAtMeta,
+          introducedAt.isAcceptableOrUnknown(
+              data['introduced_at']!, _introducedAtMeta));
+    } else if (isInserting) {
+      context.missing(_introducedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {word};
+  @override
+  Flashcard map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Flashcard(
+      word: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      state: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}state'])!,
+      step: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}step']),
+      stability: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}stability']),
+      difficulty: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}difficulty']),
+      due: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}due'])!,
+      lastReview: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_review']),
+      introducedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}introduced_at'])!,
+    );
+  }
+
+  @override
+  $FlashcardsTable createAlias(String alias) {
+    return $FlashcardsTable(attachedDatabase, alias);
+  }
+}
+
+class Flashcard extends drift.DataClass implements drift.Insertable<Flashcard> {
+  final String word;
+  final int state;
+  final int? step;
+  final double? stability;
+  final double? difficulty;
+  final DateTime due;
+  final DateTime? lastReview;
+  final DateTime introducedAt;
+  const Flashcard(
+      {required this.word,
+      required this.state,
+      this.step,
+      this.stability,
+      this.difficulty,
+      required this.due,
+      this.lastReview,
+      required this.introducedAt});
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['word'] = drift.Variable<String>(word);
+    map['state'] = drift.Variable<int>(state);
+    if (!nullToAbsent || step != null) {
+      map['step'] = drift.Variable<int>(step);
+    }
+    if (!nullToAbsent || stability != null) {
+      map['stability'] = drift.Variable<double>(stability);
+    }
+    if (!nullToAbsent || difficulty != null) {
+      map['difficulty'] = drift.Variable<double>(difficulty);
+    }
+    map['due'] = drift.Variable<DateTime>(due);
+    if (!nullToAbsent || lastReview != null) {
+      map['last_review'] = drift.Variable<DateTime>(lastReview);
+    }
+    map['introduced_at'] = drift.Variable<DateTime>(introducedAt);
+    return map;
+  }
+
+  FlashcardsCompanion toCompanion(bool nullToAbsent) {
+    return FlashcardsCompanion(
+      word: drift.Value(word),
+      state: drift.Value(state),
+      step: step == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(step),
+      stability: stability == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(stability),
+      difficulty: difficulty == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(difficulty),
+      due: drift.Value(due),
+      lastReview: lastReview == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(lastReview),
+      introducedAt: drift.Value(introducedAt),
+    );
+  }
+
+  factory Flashcard.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return Flashcard(
+      word: serializer.fromJson<String>(json['word']),
+      state: serializer.fromJson<int>(json['state']),
+      step: serializer.fromJson<int?>(json['step']),
+      stability: serializer.fromJson<double?>(json['stability']),
+      difficulty: serializer.fromJson<double?>(json['difficulty']),
+      due: serializer.fromJson<DateTime>(json['due']),
+      lastReview: serializer.fromJson<DateTime?>(json['lastReview']),
+      introducedAt: serializer.fromJson<DateTime>(json['introducedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'word': serializer.toJson<String>(word),
+      'state': serializer.toJson<int>(state),
+      'step': serializer.toJson<int?>(step),
+      'stability': serializer.toJson<double?>(stability),
+      'difficulty': serializer.toJson<double?>(difficulty),
+      'due': serializer.toJson<DateTime>(due),
+      'lastReview': serializer.toJson<DateTime?>(lastReview),
+      'introducedAt': serializer.toJson<DateTime>(introducedAt),
+    };
+  }
+
+  Flashcard copyWith(
+          {String? word,
+          int? state,
+          drift.Value<int?> step = const drift.Value.absent(),
+          drift.Value<double?> stability = const drift.Value.absent(),
+          drift.Value<double?> difficulty = const drift.Value.absent(),
+          DateTime? due,
+          drift.Value<DateTime?> lastReview = const drift.Value.absent(),
+          DateTime? introducedAt}) =>
+      Flashcard(
+        word: word ?? this.word,
+        state: state ?? this.state,
+        step: step.present ? step.value : this.step,
+        stability: stability.present ? stability.value : this.stability,
+        difficulty: difficulty.present ? difficulty.value : this.difficulty,
+        due: due ?? this.due,
+        lastReview: lastReview.present ? lastReview.value : this.lastReview,
+        introducedAt: introducedAt ?? this.introducedAt,
+      );
+  Flashcard copyWithCompanion(FlashcardsCompanion data) {
+    return Flashcard(
+      word: data.word.present ? data.word.value : this.word,
+      state: data.state.present ? data.state.value : this.state,
+      step: data.step.present ? data.step.value : this.step,
+      stability: data.stability.present ? data.stability.value : this.stability,
+      difficulty:
+          data.difficulty.present ? data.difficulty.value : this.difficulty,
+      due: data.due.present ? data.due.value : this.due,
+      lastReview:
+          data.lastReview.present ? data.lastReview.value : this.lastReview,
+      introducedAt: data.introducedAt.present
+          ? data.introducedAt.value
+          : this.introducedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Flashcard(')
+          ..write('word: $word, ')
+          ..write('state: $state, ')
+          ..write('step: $step, ')
+          ..write('stability: $stability, ')
+          ..write('difficulty: $difficulty, ')
+          ..write('due: $due, ')
+          ..write('lastReview: $lastReview, ')
+          ..write('introducedAt: $introducedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      word, state, step, stability, difficulty, due, lastReview, introducedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Flashcard &&
+          other.word == this.word &&
+          other.state == this.state &&
+          other.step == this.step &&
+          other.stability == this.stability &&
+          other.difficulty == this.difficulty &&
+          other.due == this.due &&
+          other.lastReview == this.lastReview &&
+          other.introducedAt == this.introducedAt);
+}
+
+class FlashcardsCompanion extends drift.UpdateCompanion<Flashcard> {
+  final drift.Value<String> word;
+  final drift.Value<int> state;
+  final drift.Value<int?> step;
+  final drift.Value<double?> stability;
+  final drift.Value<double?> difficulty;
+  final drift.Value<DateTime> due;
+  final drift.Value<DateTime?> lastReview;
+  final drift.Value<DateTime> introducedAt;
+  final drift.Value<int> rowid;
+  const FlashcardsCompanion({
+    this.word = const drift.Value.absent(),
+    this.state = const drift.Value.absent(),
+    this.step = const drift.Value.absent(),
+    this.stability = const drift.Value.absent(),
+    this.difficulty = const drift.Value.absent(),
+    this.due = const drift.Value.absent(),
+    this.lastReview = const drift.Value.absent(),
+    this.introducedAt = const drift.Value.absent(),
+    this.rowid = const drift.Value.absent(),
+  });
+  FlashcardsCompanion.insert({
+    required String word,
+    required int state,
+    this.step = const drift.Value.absent(),
+    this.stability = const drift.Value.absent(),
+    this.difficulty = const drift.Value.absent(),
+    required DateTime due,
+    this.lastReview = const drift.Value.absent(),
+    required DateTime introducedAt,
+    this.rowid = const drift.Value.absent(),
+  })  : word = drift.Value(word),
+        state = drift.Value(state),
+        due = drift.Value(due),
+        introducedAt = drift.Value(introducedAt);
+  static drift.Insertable<Flashcard> custom({
+    drift.Expression<String>? word,
+    drift.Expression<int>? state,
+    drift.Expression<int>? step,
+    drift.Expression<double>? stability,
+    drift.Expression<double>? difficulty,
+    drift.Expression<DateTime>? due,
+    drift.Expression<DateTime>? lastReview,
+    drift.Expression<DateTime>? introducedAt,
+    drift.Expression<int>? rowid,
+  }) {
+    return drift.RawValuesInsertable({
+      if (word != null) 'word': word,
+      if (state != null) 'state': state,
+      if (step != null) 'step': step,
+      if (stability != null) 'stability': stability,
+      if (difficulty != null) 'difficulty': difficulty,
+      if (due != null) 'due': due,
+      if (lastReview != null) 'last_review': lastReview,
+      if (introducedAt != null) 'introduced_at': introducedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FlashcardsCompanion copyWith(
+      {drift.Value<String>? word,
+      drift.Value<int>? state,
+      drift.Value<int?>? step,
+      drift.Value<double?>? stability,
+      drift.Value<double?>? difficulty,
+      drift.Value<DateTime>? due,
+      drift.Value<DateTime?>? lastReview,
+      drift.Value<DateTime>? introducedAt,
+      drift.Value<int>? rowid}) {
+    return FlashcardsCompanion(
+      word: word ?? this.word,
+      state: state ?? this.state,
+      step: step ?? this.step,
+      stability: stability ?? this.stability,
+      difficulty: difficulty ?? this.difficulty,
+      due: due ?? this.due,
+      lastReview: lastReview ?? this.lastReview,
+      introducedAt: introducedAt ?? this.introducedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (word.present) {
+      map['word'] = drift.Variable<String>(word.value);
+    }
+    if (state.present) {
+      map['state'] = drift.Variable<int>(state.value);
+    }
+    if (step.present) {
+      map['step'] = drift.Variable<int>(step.value);
+    }
+    if (stability.present) {
+      map['stability'] = drift.Variable<double>(stability.value);
+    }
+    if (difficulty.present) {
+      map['difficulty'] = drift.Variable<double>(difficulty.value);
+    }
+    if (due.present) {
+      map['due'] = drift.Variable<DateTime>(due.value);
+    }
+    if (lastReview.present) {
+      map['last_review'] = drift.Variable<DateTime>(lastReview.value);
+    }
+    if (introducedAt.present) {
+      map['introduced_at'] = drift.Variable<DateTime>(introducedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = drift.Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlashcardsCompanion(')
+          ..write('word: $word, ')
+          ..write('state: $state, ')
+          ..write('step: $step, ')
+          ..write('stability: $stability, ')
+          ..write('difficulty: $difficulty, ')
+          ..write('due: $due, ')
+          ..write('lastReview: $lastReview, ')
+          ..write('introducedAt: $introducedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FlashcardReviewLogsTable extends FlashcardReviewLogs
+    with drift.TableInfo<$FlashcardReviewLogsTable, FlashcardReviewLog> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FlashcardReviewLogsTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _idMeta =
+      const drift.VerificationMeta('id');
+  @override
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const drift.VerificationMeta _wordMeta =
+      const drift.VerificationMeta('word');
+  @override
+  late final drift.GeneratedColumn<String> word = drift.GeneratedColumn<String>(
+      'word', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const drift.VerificationMeta _ratingMeta =
+      const drift.VerificationMeta('rating');
+  @override
+  late final drift.GeneratedColumn<int> rating = drift.GeneratedColumn<int>(
+      'rating', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const drift.VerificationMeta _reviewedAtMeta =
+      const drift.VerificationMeta('reviewedAt');
+  @override
+  late final drift.GeneratedColumn<DateTime> reviewedAt =
+      drift.GeneratedColumn<DateTime>('reviewed_at', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const drift.VerificationMeta _durationMsMeta =
+      const drift.VerificationMeta('durationMs');
+  @override
+  late final drift.GeneratedColumn<int> durationMs = drift.GeneratedColumn<int>(
+      'duration_ms', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  @override
+  List<drift.GeneratedColumn> get $columns =>
+      [id, word, rating, reviewedAt, durationMs];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'flashcard_review_logs';
+  @override
+  drift.VerificationContext validateIntegrity(
+      drift.Insertable<FlashcardReviewLog> instance,
+      {bool isInserting = false}) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('word')) {
+      context.handle(
+          _wordMeta, word.isAcceptableOrUnknown(data['word']!, _wordMeta));
+    } else if (isInserting) {
+      context.missing(_wordMeta);
+    }
+    if (data.containsKey('rating')) {
+      context.handle(_ratingMeta,
+          rating.isAcceptableOrUnknown(data['rating']!, _ratingMeta));
+    } else if (isInserting) {
+      context.missing(_ratingMeta);
+    }
+    if (data.containsKey('reviewed_at')) {
+      context.handle(
+          _reviewedAtMeta,
+          reviewedAt.isAcceptableOrUnknown(
+              data['reviewed_at']!, _reviewedAtMeta));
+    } else if (isInserting) {
+      context.missing(_reviewedAtMeta);
+    }
+    if (data.containsKey('duration_ms')) {
+      context.handle(
+          _durationMsMeta,
+          durationMs.isAcceptableOrUnknown(
+              data['duration_ms']!, _durationMsMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
+  @override
+  FlashcardReviewLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FlashcardReviewLog(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      word: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      rating: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}rating'])!,
+      reviewedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}reviewed_at'])!,
+      durationMs: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}duration_ms']),
+    );
+  }
+
+  @override
+  $FlashcardReviewLogsTable createAlias(String alias) {
+    return $FlashcardReviewLogsTable(attachedDatabase, alias);
+  }
+}
+
+class FlashcardReviewLog extends drift.DataClass
+    implements drift.Insertable<FlashcardReviewLog> {
+  final int id;
+  final String word;
+  final int rating;
+  final DateTime reviewedAt;
+  final int? durationMs;
+  const FlashcardReviewLog(
+      {required this.id,
+      required this.word,
+      required this.rating,
+      required this.reviewedAt,
+      this.durationMs});
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['word'] = drift.Variable<String>(word);
+    map['rating'] = drift.Variable<int>(rating);
+    map['reviewed_at'] = drift.Variable<DateTime>(reviewedAt);
+    if (!nullToAbsent || durationMs != null) {
+      map['duration_ms'] = drift.Variable<int>(durationMs);
+    }
+    return map;
+  }
+
+  FlashcardReviewLogsCompanion toCompanion(bool nullToAbsent) {
+    return FlashcardReviewLogsCompanion(
+      id: drift.Value(id),
+      word: drift.Value(word),
+      rating: drift.Value(rating),
+      reviewedAt: drift.Value(reviewedAt),
+      durationMs: durationMs == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(durationMs),
+    );
+  }
+
+  factory FlashcardReviewLog.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return FlashcardReviewLog(
+      id: serializer.fromJson<int>(json['id']),
+      word: serializer.fromJson<String>(json['word']),
+      rating: serializer.fromJson<int>(json['rating']),
+      reviewedAt: serializer.fromJson<DateTime>(json['reviewedAt']),
+      durationMs: serializer.fromJson<int?>(json['durationMs']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'word': serializer.toJson<String>(word),
+      'rating': serializer.toJson<int>(rating),
+      'reviewedAt': serializer.toJson<DateTime>(reviewedAt),
+      'durationMs': serializer.toJson<int?>(durationMs),
+    };
+  }
+
+  FlashcardReviewLog copyWith(
+          {int? id,
+          String? word,
+          int? rating,
+          DateTime? reviewedAt,
+          drift.Value<int?> durationMs = const drift.Value.absent()}) =>
+      FlashcardReviewLog(
+        id: id ?? this.id,
+        word: word ?? this.word,
+        rating: rating ?? this.rating,
+        reviewedAt: reviewedAt ?? this.reviewedAt,
+        durationMs: durationMs.present ? durationMs.value : this.durationMs,
+      );
+  FlashcardReviewLog copyWithCompanion(FlashcardReviewLogsCompanion data) {
+    return FlashcardReviewLog(
+      id: data.id.present ? data.id.value : this.id,
+      word: data.word.present ? data.word.value : this.word,
+      rating: data.rating.present ? data.rating.value : this.rating,
+      reviewedAt:
+          data.reviewedAt.present ? data.reviewedAt.value : this.reviewedAt,
+      durationMs:
+          data.durationMs.present ? data.durationMs.value : this.durationMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlashcardReviewLog(')
+          ..write('id: $id, ')
+          ..write('word: $word, ')
+          ..write('rating: $rating, ')
+          ..write('reviewedAt: $reviewedAt, ')
+          ..write('durationMs: $durationMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, word, rating, reviewedAt, durationMs);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FlashcardReviewLog &&
+          other.id == this.id &&
+          other.word == this.word &&
+          other.rating == this.rating &&
+          other.reviewedAt == this.reviewedAt &&
+          other.durationMs == this.durationMs);
+}
+
+class FlashcardReviewLogsCompanion
+    extends drift.UpdateCompanion<FlashcardReviewLog> {
+  final drift.Value<int> id;
+  final drift.Value<String> word;
+  final drift.Value<int> rating;
+  final drift.Value<DateTime> reviewedAt;
+  final drift.Value<int?> durationMs;
+  const FlashcardReviewLogsCompanion({
+    this.id = const drift.Value.absent(),
+    this.word = const drift.Value.absent(),
+    this.rating = const drift.Value.absent(),
+    this.reviewedAt = const drift.Value.absent(),
+    this.durationMs = const drift.Value.absent(),
+  });
+  FlashcardReviewLogsCompanion.insert({
+    this.id = const drift.Value.absent(),
+    required String word,
+    required int rating,
+    required DateTime reviewedAt,
+    this.durationMs = const drift.Value.absent(),
+  })  : word = drift.Value(word),
+        rating = drift.Value(rating),
+        reviewedAt = drift.Value(reviewedAt);
+  static drift.Insertable<FlashcardReviewLog> custom({
+    drift.Expression<int>? id,
+    drift.Expression<String>? word,
+    drift.Expression<int>? rating,
+    drift.Expression<DateTime>? reviewedAt,
+    drift.Expression<int>? durationMs,
+  }) {
+    return drift.RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (word != null) 'word': word,
+      if (rating != null) 'rating': rating,
+      if (reviewedAt != null) 'reviewed_at': reviewedAt,
+      if (durationMs != null) 'duration_ms': durationMs,
+    });
+  }
+
+  FlashcardReviewLogsCompanion copyWith(
+      {drift.Value<int>? id,
+      drift.Value<String>? word,
+      drift.Value<int>? rating,
+      drift.Value<DateTime>? reviewedAt,
+      drift.Value<int?>? durationMs}) {
+    return FlashcardReviewLogsCompanion(
+      id: id ?? this.id,
+      word: word ?? this.word,
+      rating: rating ?? this.rating,
+      reviewedAt: reviewedAt ?? this.reviewedAt,
+      durationMs: durationMs ?? this.durationMs,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (id.present) {
+      map['id'] = drift.Variable<int>(id.value);
+    }
+    if (word.present) {
+      map['word'] = drift.Variable<String>(word.value);
+    }
+    if (rating.present) {
+      map['rating'] = drift.Variable<int>(rating.value);
+    }
+    if (reviewedAt.present) {
+      map['reviewed_at'] = drift.Variable<DateTime>(reviewedAt.value);
+    }
+    if (durationMs.present) {
+      map['duration_ms'] = drift.Variable<int>(durationMs.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlashcardReviewLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('word: $word, ')
+          ..write('rating: $rating, ')
+          ..write('reviewedAt: $reviewedAt, ')
+          ..write('durationMs: $durationMs')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2737,6 +3485,9 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final $TranslateHistoryTable translateHistory =
       $TranslateHistoryTable(this);
   late final $OpenRecordsTable openRecords = $OpenRecordsTable(this);
+  late final $FlashcardsTable flashcards = $FlashcardsTable(this);
+  late final $FlashcardReviewLogsTable flashcardReviewLogs =
+      $FlashcardReviewLogsTable(this);
   late final drift.Index idxWordbook = drift.Index('idx_wordbook',
       'CREATE INDEX idx_wordbook ON wordbook (word, created_at)');
   late final drift.Index idxWordbookTags = drift.Index('idx_wordbook_tags',
@@ -2748,6 +3499,11 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
       'CREATE INDEX idx_ai_explanations ON ai_explanations (word)');
   late final drift.Index idxOpenRecords = drift.Index('idx_open_records',
       'CREATE INDEX idx_open_records ON open_records (word, created_at)');
+  late final drift.Index idxFlashcardsDue = drift.Index('idx_flashcards_due',
+      'CREATE INDEX idx_flashcards_due ON flashcards (due)');
+  late final drift.Index idxFlashcardReviewLogsWord = drift.Index(
+      'idx_flashcard_review_logs_word',
+      'CREATE INDEX idx_flashcard_review_logs_word ON flashcard_review_logs (word)');
   late final DictionaryListDao dictionaryListDao =
       DictionaryListDao(this as AppDatabase);
   late final WordbookDao wordbookDao = WordbookDao(this as AppDatabase);
@@ -2767,6 +3523,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
       TranslateHistoryDao(this as AppDatabase);
   late final OpenRecordsDao openRecordsDao =
       OpenRecordsDao(this as AppDatabase);
+  late final FlashcardDao flashcardDao = FlashcardDao(this as AppDatabase);
   @override
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
@@ -2783,11 +3540,15 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
         writingCheckHistory,
         translateHistory,
         openRecords,
+        flashcards,
+        flashcardReviewLogs,
         idxWordbook,
         idxWordbookTags,
         idxMddAudioResource,
         idxAiExplanations,
-        idxOpenRecords
+        idxOpenRecords,
+        idxFlashcardsDue,
+        idxFlashcardReviewLogsWord
       ];
 }
 
@@ -4446,6 +5207,410 @@ typedef $$OpenRecordsTableProcessedTableManager = drift.ProcessedTableManager<
     ),
     OpenRecord,
     drift.PrefetchHooks Function()>;
+typedef $$FlashcardsTableCreateCompanionBuilder = FlashcardsCompanion Function({
+  required String word,
+  required int state,
+  drift.Value<int?> step,
+  drift.Value<double?> stability,
+  drift.Value<double?> difficulty,
+  required DateTime due,
+  drift.Value<DateTime?> lastReview,
+  required DateTime introducedAt,
+  drift.Value<int> rowid,
+});
+typedef $$FlashcardsTableUpdateCompanionBuilder = FlashcardsCompanion Function({
+  drift.Value<String> word,
+  drift.Value<int> state,
+  drift.Value<int?> step,
+  drift.Value<double?> stability,
+  drift.Value<double?> difficulty,
+  drift.Value<DateTime> due,
+  drift.Value<DateTime?> lastReview,
+  drift.Value<DateTime> introducedAt,
+  drift.Value<int> rowid,
+});
+
+class $$FlashcardsTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $FlashcardsTable> {
+  $$FlashcardsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get state => $composableBuilder(
+      column: $table.state, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get step => $composableBuilder(
+      column: $table.step, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<double> get stability => $composableBuilder(
+      column: $table.stability,
+      builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<double> get difficulty => $composableBuilder(
+      column: $table.difficulty,
+      builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<DateTime> get due => $composableBuilder(
+      column: $table.due, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<DateTime> get lastReview => $composableBuilder(
+      column: $table.lastReview,
+      builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<DateTime> get introducedAt => $composableBuilder(
+      column: $table.introducedAt,
+      builder: (column) => drift.ColumnFilters(column));
+}
+
+class $$FlashcardsTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $FlashcardsTable> {
+  $$FlashcardsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get state => $composableBuilder(
+      column: $table.state, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get step => $composableBuilder(
+      column: $table.step, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<double> get stability => $composableBuilder(
+      column: $table.stability,
+      builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<double> get difficulty => $composableBuilder(
+      column: $table.difficulty,
+      builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<DateTime> get due => $composableBuilder(
+      column: $table.due, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<DateTime> get lastReview => $composableBuilder(
+      column: $table.lastReview,
+      builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<DateTime> get introducedAt => $composableBuilder(
+      column: $table.introducedAt,
+      builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$FlashcardsTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $FlashcardsTable> {
+  $$FlashcardsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<String> get word =>
+      $composableBuilder(column: $table.word, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get step =>
+      $composableBuilder(column: $table.step, builder: (column) => column);
+
+  drift.GeneratedColumn<double> get stability =>
+      $composableBuilder(column: $table.stability, builder: (column) => column);
+
+  drift.GeneratedColumn<double> get difficulty => $composableBuilder(
+      column: $table.difficulty, builder: (column) => column);
+
+  drift.GeneratedColumn<DateTime> get due =>
+      $composableBuilder(column: $table.due, builder: (column) => column);
+
+  drift.GeneratedColumn<DateTime> get lastReview => $composableBuilder(
+      column: $table.lastReview, builder: (column) => column);
+
+  drift.GeneratedColumn<DateTime> get introducedAt => $composableBuilder(
+      column: $table.introducedAt, builder: (column) => column);
+}
+
+class $$FlashcardsTableTableManager extends drift.RootTableManager<
+    _$AppDatabase,
+    $FlashcardsTable,
+    Flashcard,
+    $$FlashcardsTableFilterComposer,
+    $$FlashcardsTableOrderingComposer,
+    $$FlashcardsTableAnnotationComposer,
+    $$FlashcardsTableCreateCompanionBuilder,
+    $$FlashcardsTableUpdateCompanionBuilder,
+    (
+      Flashcard,
+      drift.BaseReferences<_$AppDatabase, $FlashcardsTable, Flashcard>
+    ),
+    Flashcard,
+    drift.PrefetchHooks Function()> {
+  $$FlashcardsTableTableManager(_$AppDatabase db, $FlashcardsTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FlashcardsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FlashcardsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FlashcardsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            drift.Value<String> word = const drift.Value.absent(),
+            drift.Value<int> state = const drift.Value.absent(),
+            drift.Value<int?> step = const drift.Value.absent(),
+            drift.Value<double?> stability = const drift.Value.absent(),
+            drift.Value<double?> difficulty = const drift.Value.absent(),
+            drift.Value<DateTime> due = const drift.Value.absent(),
+            drift.Value<DateTime?> lastReview = const drift.Value.absent(),
+            drift.Value<DateTime> introducedAt = const drift.Value.absent(),
+            drift.Value<int> rowid = const drift.Value.absent(),
+          }) =>
+              FlashcardsCompanion(
+            word: word,
+            state: state,
+            step: step,
+            stability: stability,
+            difficulty: difficulty,
+            due: due,
+            lastReview: lastReview,
+            introducedAt: introducedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String word,
+            required int state,
+            drift.Value<int?> step = const drift.Value.absent(),
+            drift.Value<double?> stability = const drift.Value.absent(),
+            drift.Value<double?> difficulty = const drift.Value.absent(),
+            required DateTime due,
+            drift.Value<DateTime?> lastReview = const drift.Value.absent(),
+            required DateTime introducedAt,
+            drift.Value<int> rowid = const drift.Value.absent(),
+          }) =>
+              FlashcardsCompanion.insert(
+            word: word,
+            state: state,
+            step: step,
+            stability: stability,
+            difficulty: difficulty,
+            due: due,
+            lastReview: lastReview,
+            introducedAt: introducedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$FlashcardsTableProcessedTableManager = drift.ProcessedTableManager<
+    _$AppDatabase,
+    $FlashcardsTable,
+    Flashcard,
+    $$FlashcardsTableFilterComposer,
+    $$FlashcardsTableOrderingComposer,
+    $$FlashcardsTableAnnotationComposer,
+    $$FlashcardsTableCreateCompanionBuilder,
+    $$FlashcardsTableUpdateCompanionBuilder,
+    (
+      Flashcard,
+      drift.BaseReferences<_$AppDatabase, $FlashcardsTable, Flashcard>
+    ),
+    Flashcard,
+    drift.PrefetchHooks Function()>;
+typedef $$FlashcardReviewLogsTableCreateCompanionBuilder
+    = FlashcardReviewLogsCompanion Function({
+  drift.Value<int> id,
+  required String word,
+  required int rating,
+  required DateTime reviewedAt,
+  drift.Value<int?> durationMs,
+});
+typedef $$FlashcardReviewLogsTableUpdateCompanionBuilder
+    = FlashcardReviewLogsCompanion Function({
+  drift.Value<int> id,
+  drift.Value<String> word,
+  drift.Value<int> rating,
+  drift.Value<DateTime> reviewedAt,
+  drift.Value<int?> durationMs,
+});
+
+class $$FlashcardReviewLogsTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $FlashcardReviewLogsTable> {
+  $$FlashcardReviewLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get rating => $composableBuilder(
+      column: $table.rating, builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<DateTime> get reviewedAt => $composableBuilder(
+      column: $table.reviewedAt,
+      builder: (column) => drift.ColumnFilters(column));
+
+  drift.ColumnFilters<int> get durationMs => $composableBuilder(
+      column: $table.durationMs,
+      builder: (column) => drift.ColumnFilters(column));
+}
+
+class $$FlashcardReviewLogsTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $FlashcardReviewLogsTable> {
+  $$FlashcardReviewLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<String> get word => $composableBuilder(
+      column: $table.word, builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get rating => $composableBuilder(
+      column: $table.rating,
+      builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<DateTime> get reviewedAt => $composableBuilder(
+      column: $table.reviewedAt,
+      builder: (column) => drift.ColumnOrderings(column));
+
+  drift.ColumnOrderings<int> get durationMs => $composableBuilder(
+      column: $table.durationMs,
+      builder: (column) => drift.ColumnOrderings(column));
+}
+
+class $$FlashcardReviewLogsTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $FlashcardReviewLogsTable> {
+  $$FlashcardReviewLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get word =>
+      $composableBuilder(column: $table.word, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get rating =>
+      $composableBuilder(column: $table.rating, builder: (column) => column);
+
+  drift.GeneratedColumn<DateTime> get reviewedAt => $composableBuilder(
+      column: $table.reviewedAt, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get durationMs => $composableBuilder(
+      column: $table.durationMs, builder: (column) => column);
+}
+
+class $$FlashcardReviewLogsTableTableManager extends drift.RootTableManager<
+    _$AppDatabase,
+    $FlashcardReviewLogsTable,
+    FlashcardReviewLog,
+    $$FlashcardReviewLogsTableFilterComposer,
+    $$FlashcardReviewLogsTableOrderingComposer,
+    $$FlashcardReviewLogsTableAnnotationComposer,
+    $$FlashcardReviewLogsTableCreateCompanionBuilder,
+    $$FlashcardReviewLogsTableUpdateCompanionBuilder,
+    (
+      FlashcardReviewLog,
+      drift.BaseReferences<_$AppDatabase, $FlashcardReviewLogsTable,
+          FlashcardReviewLog>
+    ),
+    FlashcardReviewLog,
+    drift.PrefetchHooks Function()> {
+  $$FlashcardReviewLogsTableTableManager(
+      _$AppDatabase db, $FlashcardReviewLogsTable table)
+      : super(drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FlashcardReviewLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FlashcardReviewLogsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FlashcardReviewLogsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            drift.Value<String> word = const drift.Value.absent(),
+            drift.Value<int> rating = const drift.Value.absent(),
+            drift.Value<DateTime> reviewedAt = const drift.Value.absent(),
+            drift.Value<int?> durationMs = const drift.Value.absent(),
+          }) =>
+              FlashcardReviewLogsCompanion(
+            id: id,
+            word: word,
+            rating: rating,
+            reviewedAt: reviewedAt,
+            durationMs: durationMs,
+          ),
+          createCompanionCallback: ({
+            drift.Value<int> id = const drift.Value.absent(),
+            required String word,
+            required int rating,
+            required DateTime reviewedAt,
+            drift.Value<int?> durationMs = const drift.Value.absent(),
+          }) =>
+              FlashcardReviewLogsCompanion.insert(
+            id: id,
+            word: word,
+            rating: rating,
+            reviewedAt: reviewedAt,
+            durationMs: durationMs,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$FlashcardReviewLogsTableProcessedTableManager
+    = drift.ProcessedTableManager<
+        _$AppDatabase,
+        $FlashcardReviewLogsTable,
+        FlashcardReviewLog,
+        $$FlashcardReviewLogsTableFilterComposer,
+        $$FlashcardReviewLogsTableOrderingComposer,
+        $$FlashcardReviewLogsTableAnnotationComposer,
+        $$FlashcardReviewLogsTableCreateCompanionBuilder,
+        $$FlashcardReviewLogsTableUpdateCompanionBuilder,
+        (
+          FlashcardReviewLog,
+          drift.BaseReferences<_$AppDatabase, $FlashcardReviewLogsTable,
+              FlashcardReviewLog>
+        ),
+        FlashcardReviewLog,
+        drift.PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4472,4 +5637,8 @@ class $AppDatabaseManager {
       $$TranslateHistoryTableTableManager(_db, _db.translateHistory);
   $$OpenRecordsTableTableManager get openRecords =>
       $$OpenRecordsTableTableManager(_db, _db.openRecords);
+  $$FlashcardsTableTableManager get flashcards =>
+      $$FlashcardsTableTableManager(_db, _db.flashcards);
+  $$FlashcardReviewLogsTableTableManager get flashcardReviewLogs =>
+      $$FlashcardReviewLogsTableTableManager(_db, _db.flashcardReviewLogs);
 }

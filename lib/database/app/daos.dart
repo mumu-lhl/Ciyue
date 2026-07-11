@@ -163,6 +163,189 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
   }
 }
 
+@DriftAccessor(tables: [Flashcards, FlashcardReviewLogs, Wordbook])
+class FlashcardDao extends DatabaseAccessor<AppDatabase>
+    with _$FlashcardDaoMixin {
+  FlashcardDao(super.attachedDatabase);
+
+  Future<Flashcard?> getCard(String word) {
+    return (select(flashcards)..where((row) => row.word.equals(word)))
+        .getSingleOrNull();
+  }
+
+  Future<List<Flashcard>> getDueCards({
+    required DateTime now,
+    int? tag,
+  }) async {
+    final activeWords = await _activeWords(tag: tag);
+    if (activeWords.isEmpty) return [];
+    return (select(flashcards)
+          ..where((row) =>
+              row.word.isIn(activeWords) & row.due.isSmallerOrEqualValue(now))
+          ..orderBy([(row) => OrderingTerm(expression: row.due)]))
+        .get();
+  }
+
+  Future<List<String>> getNewWords({required int limit, int? tag}) async {
+    if (limit <= 0) return [];
+    final query = select(wordbook)
+      ..orderBy([(row) => OrderingTerm(expression: row.createdAt)]);
+    if (tag != null) query.where((row) => row.tag.equals(tag));
+    final words = await query.get();
+    final existing =
+        (await select(flashcards).get()).map((e) => e.word).toSet();
+    final result = <String>[];
+    for (final entry in words) {
+      if (!existing.contains(entry.word) && !result.contains(entry.word)) {
+        result.add(entry.word);
+        if (result.length == limit) break;
+      }
+    }
+    return result;
+  }
+
+  Future<int> countIntroduced({
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    final expression = flashcards.word.count();
+    final query = selectOnly(flashcards)
+      ..addColumns([expression])
+      ..where(flashcards.introducedAt.isBiggerOrEqualValue(start) &
+          flashcards.introducedAt.isSmallerThanValue(end));
+    return (await query.getSingle()).read(expression) ?? 0;
+  }
+
+  Future<void> putCard({
+    required String word,
+    required int state,
+    int? step,
+    double? stability,
+    double? difficulty,
+    required DateTime due,
+    DateTime? lastReview,
+    required DateTime introducedAt,
+  }) {
+    return into(flashcards).insertOnConflictUpdate(FlashcardsCompanion(
+      word: Value(word),
+      state: Value(state),
+      step: Value(step),
+      stability: Value(stability),
+      difficulty: Value(difficulty),
+      due: Value(due),
+      lastReview: Value(lastReview),
+      introducedAt: Value(introducedAt),
+    ));
+  }
+
+  Future<int> addReviewLog({
+    required String word,
+    required int rating,
+    required DateTime reviewedAt,
+    int? durationMs,
+  }) {
+    return into(flashcardReviewLogs).insert(FlashcardReviewLogsCompanion(
+      word: Value(word),
+      rating: Value(rating),
+      reviewedAt: Value(reviewedAt),
+      durationMs: Value(durationMs),
+    ));
+  }
+
+  Future<int> saveReview({
+    required Flashcard card,
+    required int rating,
+    required DateTime reviewedAt,
+    int? durationMs,
+  }) {
+    return transaction(() async {
+      await putCard(
+        word: card.word,
+        state: card.state,
+        step: card.step,
+        stability: card.stability,
+        difficulty: card.difficulty,
+        due: card.due,
+        lastReview: card.lastReview,
+        introducedAt: card.introducedAt,
+      );
+      return addReviewLog(
+        word: card.word,
+        rating: rating,
+        reviewedAt: reviewedAt,
+        durationMs: durationMs,
+      );
+    });
+  }
+
+  Future<void> undoReview({
+    required Flashcard previousCard,
+    required int logId,
+  }) {
+    return transaction(() async {
+      await putCard(
+        word: previousCard.word,
+        state: previousCard.state,
+        step: previousCard.step,
+        stability: previousCard.stability,
+        difficulty: previousCard.difficulty,
+        due: previousCard.due,
+        lastReview: previousCard.lastReview,
+        introducedAt: previousCard.introducedAt,
+      );
+      await deleteReviewLog(logId);
+    });
+  }
+
+  Future<void> deleteReviewLog(int id) async {
+    await (delete(flashcardReviewLogs)..where((row) => row.id.equals(id))).go();
+  }
+
+  Future<List<FlashcardReviewLog>> getReviewLogs() =>
+      (select(flashcardReviewLogs)
+            ..orderBy([(row) => OrderingTerm.desc(row.reviewedAt)]))
+          .get();
+
+  Future<int> countReviews({
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    final expression = flashcardReviewLogs.id.count();
+    final query = selectOnly(flashcardReviewLogs)
+      ..addColumns([expression])
+      ..where(flashcardReviewLogs.reviewedAt.isBiggerOrEqualValue(start) &
+          flashcardReviewLogs.reviewedAt.isSmallerThanValue(end));
+    return (await query.getSingle()).read(expression) ?? 0;
+  }
+
+  Future<List<Flashcard>> getAllCards() => select(flashcards).get();
+
+  Future<void> addAllCards(List<Flashcard> cards) => batch((batch) {
+        batch.insertAllOnConflictUpdate(flashcards, cards);
+      });
+
+  Future<void> addAllReviewLogs(List<FlashcardReviewLog> logs) =>
+      batch((batch) {
+        for (final log in logs) {
+          batch.insert(
+            flashcardReviewLogs,
+            FlashcardReviewLogsCompanion.insert(
+              word: log.word,
+              rating: log.rating,
+              reviewedAt: log.reviewedAt,
+              durationMs: Value(log.durationMs),
+            ),
+          );
+        }
+      });
+
+  Future<List<String>> _activeWords({int? tag}) async {
+    final query = select(wordbook);
+    if (tag != null) query.where((row) => row.tag.equals(tag));
+    return (await query.get()).map((row) => row.word).toSet().toList();
+  }
+}
+
 @DriftAccessor(tables: [Wordbook])
 class WordbookDao extends DatabaseAccessor<AppDatabase>
     with _$WordbookDaoMixin {

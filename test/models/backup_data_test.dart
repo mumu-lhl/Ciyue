@@ -35,6 +35,27 @@ void main() {
           createdAt: now,
         )
       ];
+      final flashcards = [
+        Flashcard(
+          word: "test",
+          state: 1,
+          step: null,
+          stability: 3,
+          difficulty: 4,
+          due: now,
+          lastReview: now,
+          introducedAt: now,
+        ),
+      ];
+      final flashcardReviewLogs = [
+        FlashcardReviewLog(
+          id: 1,
+          word: "test",
+          rating: 2,
+          reviewedAt: now,
+          durationMs: 500,
+        ),
+      ];
 
       final backupData = BackupData(
         version: 1,
@@ -43,6 +64,8 @@ void main() {
         history: history,
         writingCheckHistory: writingCheckHistory,
         translateHistory: translateHistory,
+        flashcards: flashcards,
+        flashcardReviewLogs: flashcardReviewLogs,
       );
 
       final jsonString = backupData.toJson();
@@ -54,6 +77,8 @@ void main() {
       expect(decoded["history"].length, 2);
       expect(decoded["writingCheckHistory"].length, 1);
       expect(decoded["translateHistory"].length, 1);
+      expect(decoded["flashcards"].length, 1);
+      expect(decoded["flashcardReviewLogs"].length, 1);
 
       // Verify word data
       final wordJson = decoded["wordbookWords"][0];
@@ -75,6 +100,19 @@ void main() {
       expect(importedData.history, equals(history));
       expect(importedData.writingCheckHistory.first.inputText, "input");
       expect(importedData.translateHistory.first.inputText, "input");
+      expect(importedData.flashcards.single.word, "test");
+      expect(importedData.flashcardReviewLogs.single.rating, 2);
+    });
+
+    test("old backup defaults flashcard data to empty lists", () {
+      final imported = BackupData.fromJson({
+        "version": 1,
+        "wordbookWords": <Object>[],
+        "wordbookTags": <Object>[],
+      });
+
+      expect(imported.flashcards, isEmpty);
+      expect(imported.flashcardReviewLogs, isEmpty);
     });
   });
 }

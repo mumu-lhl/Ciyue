@@ -78,3 +78,27 @@ class OpenRecords extends Table {
   TextColumn get word => text()();
   DateTimeColumn get createdAt => dateTime()();
 }
+
+@TableIndex(name: "idx_flashcards_due", columns: {#due})
+class Flashcards extends Table {
+  TextColumn get word => text()();
+  IntColumn get state => integer()();
+  IntColumn get step => integer().nullable()();
+  RealColumn get stability => real().nullable()();
+  RealColumn get difficulty => real().nullable()();
+  DateTimeColumn get due => dateTime()();
+  DateTimeColumn get lastReview => dateTime().nullable()();
+  DateTimeColumn get introducedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {word};
+}
+
+@TableIndex(name: "idx_flashcard_review_logs_word", columns: {#word})
+class FlashcardReviewLogs extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get word => text()();
+  IntColumn get rating => integer()();
+  DateTimeColumn get reviewedAt => dateTime()();
+  IntColumn get durationMs => integer().nullable()();
+}

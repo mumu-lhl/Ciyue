@@ -9,6 +9,8 @@ class BackupData {
   final List<String> history;
   final List<WritingCheckHistoryData> writingCheckHistory;
   final List<TranslateHistoryData> translateHistory;
+  final List<Flashcard> flashcards;
+  final List<FlashcardReviewLog> flashcardReviewLogs;
 
   BackupData({
     required this.version,
@@ -17,6 +19,8 @@ class BackupData {
     this.history = const [],
     this.writingCheckHistory = const [],
     this.translateHistory = const [],
+    this.flashcards = const [],
+    this.flashcardReviewLogs = const [],
   });
 
   factory BackupData.fromJson(Map<String, dynamic> json) {
@@ -39,6 +43,15 @@ class BackupData {
                   TranslateHistoryData.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      flashcards: (json["flashcards"] as List<dynamic>?)
+              ?.map((e) => Flashcard.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      flashcardReviewLogs: (json["flashcardReviewLogs"] as List<dynamic>?)
+              ?.map(
+                  (e) => FlashcardReviewLog.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -51,6 +64,9 @@ class BackupData {
       "writingCheckHistory":
           writingCheckHistory.map((e) => e.toJson()).toList(),
       "translateHistory": translateHistory.map((e) => e.toJson()).toList(),
+      "flashcards": flashcards.map((e) => e.toJson()).toList(),
+      "flashcardReviewLogs":
+          flashcardReviewLogs.map((e) => e.toJson()).toList(),
     });
   }
 }

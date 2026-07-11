@@ -29,6 +29,8 @@ AppDatabase appDatabase() {
     WritingCheckHistory,
     TranslateHistory,
     OpenRecords,
+    Flashcards,
+    FlashcardReviewLogs,
   ],
   daos: [
     DictionaryListDao,
@@ -42,6 +44,7 @@ AppDatabase appDatabase() {
     WritingCheckHistoryDao,
     TranslateHistoryDao,
     OpenRecordsDao,
+    FlashcardDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -95,10 +98,15 @@ class AppDatabase extends _$AppDatabase {
       }, from15To16: (m, schema) async {
         await m.create(schema.openRecords);
         await m.create(schema.idxOpenRecords);
+      }, from16To17: (m, schema) async {
+        await m.create(schema.flashcards);
+        await m.create(schema.idxFlashcardsDue);
+        await m.create(schema.flashcardReviewLogs);
+        await m.create(schema.idxFlashcardReviewLogsWord);
       }),
     );
   }
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 }

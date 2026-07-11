@@ -12,27 +12,35 @@ class DictionaryList extends Table
   DictionaryList(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: 'NULL');
   late final GeneratedColumn<String> fontPath = GeneratedColumn<String>(
       'font_path', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: 'NULL');
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<int> order = GeneratedColumn<int>(
       'order', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NULL');
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
       'path', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<int> type = GeneratedColumn<int>(
       'type', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL DEFAULT 0',
       defaultValue: const CustomExpression('0'));
   @override
   List<GeneratedColumn> get $columns =>
@@ -67,6 +75,9 @@ class DictionaryList extends Table
   DictionaryList createAlias(String alias) {
     return DictionaryList(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class DictionaryListData extends DataClass
@@ -296,15 +307,21 @@ class Wordbook extends Table with TableInfo<Wordbook, WordbookData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Wordbook(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
       'created_at', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<int> tag = GeneratedColumn<int>(
       'tag', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NULL');
   late final GeneratedColumn<String> word = GeneratedColumn<String>(
       'word', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [createdAt, tag, word];
   @override
@@ -319,7 +336,7 @@ class Wordbook extends Table with TableInfo<Wordbook, WordbookData> {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WordbookData(
       createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}created_at'])!,
       tag: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}tag']),
       word: attachedDatabase.typeMapping
@@ -331,17 +348,20 @@ class Wordbook extends Table with TableInfo<Wordbook, WordbookData> {
   Wordbook createAlias(String alias) {
     return Wordbook(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class WordbookData extends DataClass implements Insertable<WordbookData> {
-  final DateTime createdAt;
+  final int createdAt;
   final int? tag;
   final String word;
   const WordbookData({required this.createdAt, this.tag, required this.word});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['created_at'] = Variable<DateTime>(createdAt);
+    map['created_at'] = Variable<int>(createdAt);
     if (!nullToAbsent || tag != null) {
       map['tag'] = Variable<int>(tag);
     }
@@ -361,7 +381,7 @@ class WordbookData extends DataClass implements Insertable<WordbookData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return WordbookData(
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
       tag: serializer.fromJson<int?>(json['tag']),
       word: serializer.fromJson<String>(json['word']),
     );
@@ -370,14 +390,14 @@ class WordbookData extends DataClass implements Insertable<WordbookData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'createdAt': serializer.toJson<int>(createdAt),
       'tag': serializer.toJson<int?>(tag),
       'word': serializer.toJson<String>(word),
     };
   }
 
   WordbookData copyWith(
-          {DateTime? createdAt,
+          {int? createdAt,
           Value<int?> tag = const Value.absent(),
           String? word}) =>
       WordbookData(
@@ -415,7 +435,7 @@ class WordbookData extends DataClass implements Insertable<WordbookData> {
 }
 
 class WordbookCompanion extends UpdateCompanion<WordbookData> {
-  final Value<DateTime> createdAt;
+  final Value<int> createdAt;
   final Value<int?> tag;
   final Value<String> word;
   final Value<int> rowid;
@@ -426,14 +446,14 @@ class WordbookCompanion extends UpdateCompanion<WordbookData> {
     this.rowid = const Value.absent(),
   });
   WordbookCompanion.insert({
-    required DateTime createdAt,
+    required int createdAt,
     this.tag = const Value.absent(),
     required String word,
     this.rowid = const Value.absent(),
   })  : createdAt = Value(createdAt),
         word = Value(word);
   static Insertable<WordbookData> custom({
-    Expression<DateTime>? createdAt,
+    Expression<int>? createdAt,
     Expression<int>? tag,
     Expression<String>? word,
     Expression<int>? rowid,
@@ -447,7 +467,7 @@ class WordbookCompanion extends UpdateCompanion<WordbookData> {
   }
 
   WordbookCompanion copyWith(
-      {Value<DateTime>? createdAt,
+      {Value<int>? createdAt,
       Value<int?>? tag,
       Value<String>? word,
       Value<int>? rowid}) {
@@ -463,7 +483,7 @@ class WordbookCompanion extends UpdateCompanion<WordbookData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
+      map['created_at'] = Variable<int>(createdAt.value);
     }
     if (tag.present) {
       map['tag'] = Variable<int>(tag.value);
@@ -500,13 +520,12 @@ class WordbookTags extends Table
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String> tag = GeneratedColumn<String>(
       'tag', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+      $customConstraints: 'NOT NULL UNIQUE');
   @override
   List<GeneratedColumn> get $columns => [id, tag];
   @override
@@ -531,6 +550,9 @@ class WordbookTags extends Table
   WordbookTags createAlias(String alias) {
     return WordbookTags(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class WordbookTagsData extends DataClass
@@ -660,11 +682,12 @@ class History extends Table with TableInfo<History, HistoryData> {
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String> word = GeneratedColumn<String>(
       'word', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [id, word];
   @override
@@ -689,6 +712,9 @@ class History extends Table with TableInfo<History, HistoryData> {
   History createAlias(String alias) {
     return History(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class HistoryData extends DataClass implements Insertable<HistoryData> {
@@ -812,19 +838,20 @@ class DictGroup extends Table with TableInfo<DictGroup, DictGroupData> {
   DictGroup(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<String> dictIds = GeneratedColumn<String>(
       'dict_ids', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+      $customConstraints: 'NOT NULL UNIQUE');
   @override
   List<GeneratedColumn> get $columns => [dictIds, id, name];
   @override
@@ -851,6 +878,9 @@ class DictGroup extends Table with TableInfo<DictGroup, DictGroupData> {
   DictGroup createAlias(String alias) {
     return DictGroup(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class DictGroupData extends DataClass implements Insertable<DictGroupData> {
@@ -1003,17 +1033,22 @@ class MddAudioList extends Table
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
       'path', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<int> order = GeneratedColumn<int>(
       'order', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [id, path, title, order];
   @override
@@ -1042,6 +1077,9 @@ class MddAudioList extends Table
   MddAudioList createAlias(String alias) {
     return MddAudioList(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class MddAudioListData extends DataClass
@@ -1219,22 +1257,34 @@ class MddAudioResource extends Table
   MddAudioResource(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> blockOffset = GeneratedColumn<int>(
       'block_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<int> compressedSize = GeneratedColumn<int>(
       'compressed_size', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<int> endOffset = GeneratedColumn<int>(
       'end_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<String> key = GeneratedColumn<String>(
       'key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<int> mddAudioListId = GeneratedColumn<int>(
       'mdd_audio_list_id', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<int> startOffset = GeneratedColumn<int>(
       'start_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [
         blockOffset,
@@ -1274,6 +1324,9 @@ class MddAudioResource extends Table
   MddAudioResource createAlias(String alias) {
     return MddAudioResource(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class MddAudioResourceData extends DataClass
@@ -1521,10 +1574,12 @@ class AiExplanations extends Table
       'word', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+      $customConstraints: 'NOT NULL UNIQUE');
   late final GeneratedColumn<String> explanation = GeneratedColumn<String>(
       'explanation', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [word, explanation];
   @override
@@ -1549,6 +1604,9 @@ class AiExplanations extends Table
   AiExplanations createAlias(String alias) {
     return AiExplanations(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class AiExplanationsData extends DataClass
@@ -1693,17 +1751,22 @@ class WritingCheckHistory extends Table
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String> inputText = GeneratedColumn<String>(
       'input_text', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   late final GeneratedColumn<String> outputText = GeneratedColumn<String>(
       'output_text', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
       'created_at', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [id, inputText, outputText, createdAt];
   @override
@@ -1725,7 +1788,7 @@ class WritingCheckHistory extends Table
       outputText: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}output_text'])!,
       createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}created_at'])!,
     );
   }
 
@@ -1733,6 +1796,9 @@ class WritingCheckHistory extends Table
   WritingCheckHistory createAlias(String alias) {
     return WritingCheckHistory(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class WritingCheckHistoryData extends DataClass
@@ -1740,7 +1806,7 @@ class WritingCheckHistoryData extends DataClass
   final int id;
   final String inputText;
   final String outputText;
-  final DateTime createdAt;
+  final int createdAt;
   const WritingCheckHistoryData(
       {required this.id,
       required this.inputText,
@@ -1752,7 +1818,7 @@ class WritingCheckHistoryData extends DataClass
     map['id'] = Variable<int>(id);
     map['input_text'] = Variable<String>(inputText);
     map['output_text'] = Variable<String>(outputText);
-    map['created_at'] = Variable<DateTime>(createdAt);
+    map['created_at'] = Variable<int>(createdAt);
     return map;
   }
 
@@ -1772,7 +1838,7 @@ class WritingCheckHistoryData extends DataClass
       id: serializer.fromJson<int>(json['id']),
       inputText: serializer.fromJson<String>(json['inputText']),
       outputText: serializer.fromJson<String>(json['outputText']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
     );
   }
   @override
@@ -1782,15 +1848,12 @@ class WritingCheckHistoryData extends DataClass
       'id': serializer.toJson<int>(id),
       'inputText': serializer.toJson<String>(inputText),
       'outputText': serializer.toJson<String>(outputText),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'createdAt': serializer.toJson<int>(createdAt),
     };
   }
 
   WritingCheckHistoryData copyWith(
-          {int? id,
-          String? inputText,
-          String? outputText,
-          DateTime? createdAt}) =>
+          {int? id, String? inputText, String? outputText, int? createdAt}) =>
       WritingCheckHistoryData(
         id: id ?? this.id,
         inputText: inputText ?? this.inputText,
@@ -1835,7 +1898,7 @@ class WritingCheckHistoryCompanion
   final Value<int> id;
   final Value<String> inputText;
   final Value<String> outputText;
-  final Value<DateTime> createdAt;
+  final Value<int> createdAt;
   const WritingCheckHistoryCompanion({
     this.id = const Value.absent(),
     this.inputText = const Value.absent(),
@@ -1846,7 +1909,7 @@ class WritingCheckHistoryCompanion
     this.id = const Value.absent(),
     required String inputText,
     required String outputText,
-    required DateTime createdAt,
+    required int createdAt,
   })  : inputText = Value(inputText),
         outputText = Value(outputText),
         createdAt = Value(createdAt);
@@ -1854,7 +1917,7 @@ class WritingCheckHistoryCompanion
     Expression<int>? id,
     Expression<String>? inputText,
     Expression<String>? outputText,
-    Expression<DateTime>? createdAt,
+    Expression<int>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1868,7 +1931,7 @@ class WritingCheckHistoryCompanion
       {Value<int>? id,
       Value<String>? inputText,
       Value<String>? outputText,
-      Value<DateTime>? createdAt}) {
+      Value<int>? createdAt}) {
     return WritingCheckHistoryCompanion(
       id: id ?? this.id,
       inputText: inputText ?? this.inputText,
@@ -1890,7 +1953,7 @@ class WritingCheckHistoryCompanion
       map['output_text'] = Variable<String>(outputText.value);
     }
     if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
+      map['created_at'] = Variable<int>(createdAt.value);
     }
     return map;
   }
@@ -1918,14 +1981,17 @@ class TranslateHistory extends Table
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String> inputText = GeneratedColumn<String>(
       'input_text', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
       'created_at', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [id, inputText, createdAt];
   @override
@@ -1944,7 +2010,7 @@ class TranslateHistory extends Table
       inputText: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}input_text'])!,
       createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}created_at'])!,
     );
   }
 
@@ -1952,13 +2018,16 @@ class TranslateHistory extends Table
   TranslateHistory createAlias(String alias) {
     return TranslateHistory(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class TranslateHistoryData extends DataClass
     implements Insertable<TranslateHistoryData> {
   final int id;
   final String inputText;
-  final DateTime createdAt;
+  final int createdAt;
   const TranslateHistoryData(
       {required this.id, required this.inputText, required this.createdAt});
   @override
@@ -1966,7 +2035,7 @@ class TranslateHistoryData extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['input_text'] = Variable<String>(inputText);
-    map['created_at'] = Variable<DateTime>(createdAt);
+    map['created_at'] = Variable<int>(createdAt);
     return map;
   }
 
@@ -1984,7 +2053,7 @@ class TranslateHistoryData extends DataClass
     return TranslateHistoryData(
       id: serializer.fromJson<int>(json['id']),
       inputText: serializer.fromJson<String>(json['inputText']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
     );
   }
   @override
@@ -1993,12 +2062,11 @@ class TranslateHistoryData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'inputText': serializer.toJson<String>(inputText),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'createdAt': serializer.toJson<int>(createdAt),
     };
   }
 
-  TranslateHistoryData copyWith(
-          {int? id, String? inputText, DateTime? createdAt}) =>
+  TranslateHistoryData copyWith({int? id, String? inputText, int? createdAt}) =>
       TranslateHistoryData(
         id: id ?? this.id,
         inputText: inputText ?? this.inputText,
@@ -2036,7 +2104,7 @@ class TranslateHistoryData extends DataClass
 class TranslateHistoryCompanion extends UpdateCompanion<TranslateHistoryData> {
   final Value<int> id;
   final Value<String> inputText;
-  final Value<DateTime> createdAt;
+  final Value<int> createdAt;
   const TranslateHistoryCompanion({
     this.id = const Value.absent(),
     this.inputText = const Value.absent(),
@@ -2045,13 +2113,13 @@ class TranslateHistoryCompanion extends UpdateCompanion<TranslateHistoryData> {
   TranslateHistoryCompanion.insert({
     this.id = const Value.absent(),
     required String inputText,
-    required DateTime createdAt,
+    required int createdAt,
   })  : inputText = Value(inputText),
         createdAt = Value(createdAt);
   static Insertable<TranslateHistoryData> custom({
     Expression<int>? id,
     Expression<String>? inputText,
-    Expression<DateTime>? createdAt,
+    Expression<int>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2061,7 +2129,7 @@ class TranslateHistoryCompanion extends UpdateCompanion<TranslateHistoryData> {
   }
 
   TranslateHistoryCompanion copyWith(
-      {Value<int>? id, Value<String>? inputText, Value<DateTime>? createdAt}) {
+      {Value<int>? id, Value<String>? inputText, Value<int>? createdAt}) {
     return TranslateHistoryCompanion(
       id: id ?? this.id,
       inputText: inputText ?? this.inputText,
@@ -2079,7 +2147,7 @@ class TranslateHistoryCompanion extends UpdateCompanion<TranslateHistoryData> {
       map['input_text'] = Variable<String>(inputText.value);
     }
     if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
+      map['created_at'] = Variable<int>(createdAt.value);
     }
     return map;
   }
@@ -2105,14 +2173,17 @@ class OpenRecords extends Table with TableInfo<OpenRecords, OpenRecordsData> {
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String> word = GeneratedColumn<String>(
       'word', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
       'created_at', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [id, word, createdAt];
   @override
@@ -2131,7 +2202,7 @@ class OpenRecords extends Table with TableInfo<OpenRecords, OpenRecordsData> {
       word: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
       createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}created_at'])!,
     );
   }
 
@@ -2139,12 +2210,15 @@ class OpenRecords extends Table with TableInfo<OpenRecords, OpenRecordsData> {
   OpenRecords createAlias(String alias) {
     return OpenRecords(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class OpenRecordsData extends DataClass implements Insertable<OpenRecordsData> {
   final int id;
   final String word;
-  final DateTime createdAt;
+  final int createdAt;
   const OpenRecordsData(
       {required this.id, required this.word, required this.createdAt});
   @override
@@ -2152,7 +2226,7 @@ class OpenRecordsData extends DataClass implements Insertable<OpenRecordsData> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['word'] = Variable<String>(word);
-    map['created_at'] = Variable<DateTime>(createdAt);
+    map['created_at'] = Variable<int>(createdAt);
     return map;
   }
 
@@ -2170,7 +2244,7 @@ class OpenRecordsData extends DataClass implements Insertable<OpenRecordsData> {
     return OpenRecordsData(
       id: serializer.fromJson<int>(json['id']),
       word: serializer.fromJson<String>(json['word']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
     );
   }
   @override
@@ -2179,11 +2253,11 @@ class OpenRecordsData extends DataClass implements Insertable<OpenRecordsData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'word': serializer.toJson<String>(word),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'createdAt': serializer.toJson<int>(createdAt),
     };
   }
 
-  OpenRecordsData copyWith({int? id, String? word, DateTime? createdAt}) =>
+  OpenRecordsData copyWith({int? id, String? word, int? createdAt}) =>
       OpenRecordsData(
         id: id ?? this.id,
         word: word ?? this.word,
@@ -2221,7 +2295,7 @@ class OpenRecordsData extends DataClass implements Insertable<OpenRecordsData> {
 class OpenRecordsCompanion extends UpdateCompanion<OpenRecordsData> {
   final Value<int> id;
   final Value<String> word;
-  final Value<DateTime> createdAt;
+  final Value<int> createdAt;
   const OpenRecordsCompanion({
     this.id = const Value.absent(),
     this.word = const Value.absent(),
@@ -2230,13 +2304,13 @@ class OpenRecordsCompanion extends UpdateCompanion<OpenRecordsData> {
   OpenRecordsCompanion.insert({
     this.id = const Value.absent(),
     required String word,
-    required DateTime createdAt,
+    required int createdAt,
   })  : word = Value(word),
         createdAt = Value(createdAt);
   static Insertable<OpenRecordsData> custom({
     Expression<int>? id,
     Expression<String>? word,
-    Expression<DateTime>? createdAt,
+    Expression<int>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2246,7 +2320,7 @@ class OpenRecordsCompanion extends UpdateCompanion<OpenRecordsData> {
   }
 
   OpenRecordsCompanion copyWith(
-      {Value<int>? id, Value<String>? word, Value<DateTime>? createdAt}) {
+      {Value<int>? id, Value<String>? word, Value<int>? createdAt}) {
     return OpenRecordsCompanion(
       id: id ?? this.id,
       word: word ?? this.word,
@@ -2264,7 +2338,7 @@ class OpenRecordsCompanion extends UpdateCompanion<OpenRecordsData> {
       map['word'] = Variable<String>(word.value);
     }
     if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
+      map['created_at'] = Variable<int>(createdAt.value);
     }
     return map;
   }
@@ -2280,8 +2354,653 @@ class OpenRecordsCompanion extends UpdateCompanion<OpenRecordsData> {
   }
 }
 
-class DatabaseAtV16 extends GeneratedDatabase {
-  DatabaseAtV16(QueryExecutor e) : super(e);
+class Flashcards extends Table with TableInfo<Flashcards, FlashcardsData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Flashcards(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> word = GeneratedColumn<String>(
+      'word', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<int> state = GeneratedColumn<int>(
+      'state', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<int> step = GeneratedColumn<int>(
+      'step', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NULL');
+  late final GeneratedColumn<double> stability = GeneratedColumn<double>(
+      'stability', aliasedName, true,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      $customConstraints: 'NULL');
+  late final GeneratedColumn<double> difficulty = GeneratedColumn<double>(
+      'difficulty', aliasedName, true,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      $customConstraints: 'NULL');
+  late final GeneratedColumn<int> due = GeneratedColumn<int>(
+      'due', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<int> lastReview = GeneratedColumn<int>(
+      'last_review', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NULL');
+  late final GeneratedColumn<int> introducedAt = GeneratedColumn<int>(
+      'introduced_at', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  @override
+  List<GeneratedColumn> get $columns =>
+      [word, state, step, stability, difficulty, due, lastReview, introducedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'flashcards';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {word};
+  @override
+  FlashcardsData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FlashcardsData(
+      word: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      state: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}state'])!,
+      step: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}step']),
+      stability: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}stability']),
+      difficulty: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}difficulty']),
+      due: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}due'])!,
+      lastReview: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}last_review']),
+      introducedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}introduced_at'])!,
+    );
+  }
+
+  @override
+  Flashcards createAlias(String alias) {
+    return Flashcards(attachedDatabase, alias);
+  }
+
+  @override
+  List<String> get customConstraints => const ['PRIMARY KEY(word)'];
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class FlashcardsData extends DataClass implements Insertable<FlashcardsData> {
+  final String word;
+  final int state;
+  final int? step;
+  final double? stability;
+  final double? difficulty;
+  final int due;
+  final int? lastReview;
+  final int introducedAt;
+  const FlashcardsData(
+      {required this.word,
+      required this.state,
+      this.step,
+      this.stability,
+      this.difficulty,
+      required this.due,
+      this.lastReview,
+      required this.introducedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['word'] = Variable<String>(word);
+    map['state'] = Variable<int>(state);
+    if (!nullToAbsent || step != null) {
+      map['step'] = Variable<int>(step);
+    }
+    if (!nullToAbsent || stability != null) {
+      map['stability'] = Variable<double>(stability);
+    }
+    if (!nullToAbsent || difficulty != null) {
+      map['difficulty'] = Variable<double>(difficulty);
+    }
+    map['due'] = Variable<int>(due);
+    if (!nullToAbsent || lastReview != null) {
+      map['last_review'] = Variable<int>(lastReview);
+    }
+    map['introduced_at'] = Variable<int>(introducedAt);
+    return map;
+  }
+
+  FlashcardsCompanion toCompanion(bool nullToAbsent) {
+    return FlashcardsCompanion(
+      word: Value(word),
+      state: Value(state),
+      step: step == null && nullToAbsent ? const Value.absent() : Value(step),
+      stability: stability == null && nullToAbsent
+          ? const Value.absent()
+          : Value(stability),
+      difficulty: difficulty == null && nullToAbsent
+          ? const Value.absent()
+          : Value(difficulty),
+      due: Value(due),
+      lastReview: lastReview == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastReview),
+      introducedAt: Value(introducedAt),
+    );
+  }
+
+  factory FlashcardsData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FlashcardsData(
+      word: serializer.fromJson<String>(json['word']),
+      state: serializer.fromJson<int>(json['state']),
+      step: serializer.fromJson<int?>(json['step']),
+      stability: serializer.fromJson<double?>(json['stability']),
+      difficulty: serializer.fromJson<double?>(json['difficulty']),
+      due: serializer.fromJson<int>(json['due']),
+      lastReview: serializer.fromJson<int?>(json['lastReview']),
+      introducedAt: serializer.fromJson<int>(json['introducedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'word': serializer.toJson<String>(word),
+      'state': serializer.toJson<int>(state),
+      'step': serializer.toJson<int?>(step),
+      'stability': serializer.toJson<double?>(stability),
+      'difficulty': serializer.toJson<double?>(difficulty),
+      'due': serializer.toJson<int>(due),
+      'lastReview': serializer.toJson<int?>(lastReview),
+      'introducedAt': serializer.toJson<int>(introducedAt),
+    };
+  }
+
+  FlashcardsData copyWith(
+          {String? word,
+          int? state,
+          Value<int?> step = const Value.absent(),
+          Value<double?> stability = const Value.absent(),
+          Value<double?> difficulty = const Value.absent(),
+          int? due,
+          Value<int?> lastReview = const Value.absent(),
+          int? introducedAt}) =>
+      FlashcardsData(
+        word: word ?? this.word,
+        state: state ?? this.state,
+        step: step.present ? step.value : this.step,
+        stability: stability.present ? stability.value : this.stability,
+        difficulty: difficulty.present ? difficulty.value : this.difficulty,
+        due: due ?? this.due,
+        lastReview: lastReview.present ? lastReview.value : this.lastReview,
+        introducedAt: introducedAt ?? this.introducedAt,
+      );
+  FlashcardsData copyWithCompanion(FlashcardsCompanion data) {
+    return FlashcardsData(
+      word: data.word.present ? data.word.value : this.word,
+      state: data.state.present ? data.state.value : this.state,
+      step: data.step.present ? data.step.value : this.step,
+      stability: data.stability.present ? data.stability.value : this.stability,
+      difficulty:
+          data.difficulty.present ? data.difficulty.value : this.difficulty,
+      due: data.due.present ? data.due.value : this.due,
+      lastReview:
+          data.lastReview.present ? data.lastReview.value : this.lastReview,
+      introducedAt: data.introducedAt.present
+          ? data.introducedAt.value
+          : this.introducedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlashcardsData(')
+          ..write('word: $word, ')
+          ..write('state: $state, ')
+          ..write('step: $step, ')
+          ..write('stability: $stability, ')
+          ..write('difficulty: $difficulty, ')
+          ..write('due: $due, ')
+          ..write('lastReview: $lastReview, ')
+          ..write('introducedAt: $introducedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      word, state, step, stability, difficulty, due, lastReview, introducedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FlashcardsData &&
+          other.word == this.word &&
+          other.state == this.state &&
+          other.step == this.step &&
+          other.stability == this.stability &&
+          other.difficulty == this.difficulty &&
+          other.due == this.due &&
+          other.lastReview == this.lastReview &&
+          other.introducedAt == this.introducedAt);
+}
+
+class FlashcardsCompanion extends UpdateCompanion<FlashcardsData> {
+  final Value<String> word;
+  final Value<int> state;
+  final Value<int?> step;
+  final Value<double?> stability;
+  final Value<double?> difficulty;
+  final Value<int> due;
+  final Value<int?> lastReview;
+  final Value<int> introducedAt;
+  final Value<int> rowid;
+  const FlashcardsCompanion({
+    this.word = const Value.absent(),
+    this.state = const Value.absent(),
+    this.step = const Value.absent(),
+    this.stability = const Value.absent(),
+    this.difficulty = const Value.absent(),
+    this.due = const Value.absent(),
+    this.lastReview = const Value.absent(),
+    this.introducedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FlashcardsCompanion.insert({
+    required String word,
+    required int state,
+    this.step = const Value.absent(),
+    this.stability = const Value.absent(),
+    this.difficulty = const Value.absent(),
+    required int due,
+    this.lastReview = const Value.absent(),
+    required int introducedAt,
+    this.rowid = const Value.absent(),
+  })  : word = Value(word),
+        state = Value(state),
+        due = Value(due),
+        introducedAt = Value(introducedAt);
+  static Insertable<FlashcardsData> custom({
+    Expression<String>? word,
+    Expression<int>? state,
+    Expression<int>? step,
+    Expression<double>? stability,
+    Expression<double>? difficulty,
+    Expression<int>? due,
+    Expression<int>? lastReview,
+    Expression<int>? introducedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (word != null) 'word': word,
+      if (state != null) 'state': state,
+      if (step != null) 'step': step,
+      if (stability != null) 'stability': stability,
+      if (difficulty != null) 'difficulty': difficulty,
+      if (due != null) 'due': due,
+      if (lastReview != null) 'last_review': lastReview,
+      if (introducedAt != null) 'introduced_at': introducedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FlashcardsCompanion copyWith(
+      {Value<String>? word,
+      Value<int>? state,
+      Value<int?>? step,
+      Value<double?>? stability,
+      Value<double?>? difficulty,
+      Value<int>? due,
+      Value<int?>? lastReview,
+      Value<int>? introducedAt,
+      Value<int>? rowid}) {
+    return FlashcardsCompanion(
+      word: word ?? this.word,
+      state: state ?? this.state,
+      step: step ?? this.step,
+      stability: stability ?? this.stability,
+      difficulty: difficulty ?? this.difficulty,
+      due: due ?? this.due,
+      lastReview: lastReview ?? this.lastReview,
+      introducedAt: introducedAt ?? this.introducedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (word.present) {
+      map['word'] = Variable<String>(word.value);
+    }
+    if (state.present) {
+      map['state'] = Variable<int>(state.value);
+    }
+    if (step.present) {
+      map['step'] = Variable<int>(step.value);
+    }
+    if (stability.present) {
+      map['stability'] = Variable<double>(stability.value);
+    }
+    if (difficulty.present) {
+      map['difficulty'] = Variable<double>(difficulty.value);
+    }
+    if (due.present) {
+      map['due'] = Variable<int>(due.value);
+    }
+    if (lastReview.present) {
+      map['last_review'] = Variable<int>(lastReview.value);
+    }
+    if (introducedAt.present) {
+      map['introduced_at'] = Variable<int>(introducedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlashcardsCompanion(')
+          ..write('word: $word, ')
+          ..write('state: $state, ')
+          ..write('step: $step, ')
+          ..write('stability: $stability, ')
+          ..write('difficulty: $difficulty, ')
+          ..write('due: $due, ')
+          ..write('lastReview: $lastReview, ')
+          ..write('introducedAt: $introducedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class FlashcardReviewLogs extends Table
+    with TableInfo<FlashcardReviewLogs, FlashcardReviewLogsData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  FlashcardReviewLogs(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
+  late final GeneratedColumn<String> word = GeneratedColumn<String>(
+      'word', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<int> rating = GeneratedColumn<int>(
+      'rating', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<int> reviewedAt = GeneratedColumn<int>(
+      'reviewed_at', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<int> durationMs = GeneratedColumn<int>(
+      'duration_ms', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NULL');
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, word, rating, reviewedAt, durationMs];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'flashcard_review_logs';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FlashcardReviewLogsData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FlashcardReviewLogsData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      word: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      rating: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}rating'])!,
+      reviewedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}reviewed_at'])!,
+      durationMs: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}duration_ms']),
+    );
+  }
+
+  @override
+  FlashcardReviewLogs createAlias(String alias) {
+    return FlashcardReviewLogs(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class FlashcardReviewLogsData extends DataClass
+    implements Insertable<FlashcardReviewLogsData> {
+  final int id;
+  final String word;
+  final int rating;
+  final int reviewedAt;
+  final int? durationMs;
+  const FlashcardReviewLogsData(
+      {required this.id,
+      required this.word,
+      required this.rating,
+      required this.reviewedAt,
+      this.durationMs});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['word'] = Variable<String>(word);
+    map['rating'] = Variable<int>(rating);
+    map['reviewed_at'] = Variable<int>(reviewedAt);
+    if (!nullToAbsent || durationMs != null) {
+      map['duration_ms'] = Variable<int>(durationMs);
+    }
+    return map;
+  }
+
+  FlashcardReviewLogsCompanion toCompanion(bool nullToAbsent) {
+    return FlashcardReviewLogsCompanion(
+      id: Value(id),
+      word: Value(word),
+      rating: Value(rating),
+      reviewedAt: Value(reviewedAt),
+      durationMs: durationMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(durationMs),
+    );
+  }
+
+  factory FlashcardReviewLogsData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FlashcardReviewLogsData(
+      id: serializer.fromJson<int>(json['id']),
+      word: serializer.fromJson<String>(json['word']),
+      rating: serializer.fromJson<int>(json['rating']),
+      reviewedAt: serializer.fromJson<int>(json['reviewedAt']),
+      durationMs: serializer.fromJson<int?>(json['durationMs']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'word': serializer.toJson<String>(word),
+      'rating': serializer.toJson<int>(rating),
+      'reviewedAt': serializer.toJson<int>(reviewedAt),
+      'durationMs': serializer.toJson<int?>(durationMs),
+    };
+  }
+
+  FlashcardReviewLogsData copyWith(
+          {int? id,
+          String? word,
+          int? rating,
+          int? reviewedAt,
+          Value<int?> durationMs = const Value.absent()}) =>
+      FlashcardReviewLogsData(
+        id: id ?? this.id,
+        word: word ?? this.word,
+        rating: rating ?? this.rating,
+        reviewedAt: reviewedAt ?? this.reviewedAt,
+        durationMs: durationMs.present ? durationMs.value : this.durationMs,
+      );
+  FlashcardReviewLogsData copyWithCompanion(FlashcardReviewLogsCompanion data) {
+    return FlashcardReviewLogsData(
+      id: data.id.present ? data.id.value : this.id,
+      word: data.word.present ? data.word.value : this.word,
+      rating: data.rating.present ? data.rating.value : this.rating,
+      reviewedAt:
+          data.reviewedAt.present ? data.reviewedAt.value : this.reviewedAt,
+      durationMs:
+          data.durationMs.present ? data.durationMs.value : this.durationMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlashcardReviewLogsData(')
+          ..write('id: $id, ')
+          ..write('word: $word, ')
+          ..write('rating: $rating, ')
+          ..write('reviewedAt: $reviewedAt, ')
+          ..write('durationMs: $durationMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, word, rating, reviewedAt, durationMs);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FlashcardReviewLogsData &&
+          other.id == this.id &&
+          other.word == this.word &&
+          other.rating == this.rating &&
+          other.reviewedAt == this.reviewedAt &&
+          other.durationMs == this.durationMs);
+}
+
+class FlashcardReviewLogsCompanion
+    extends UpdateCompanion<FlashcardReviewLogsData> {
+  final Value<int> id;
+  final Value<String> word;
+  final Value<int> rating;
+  final Value<int> reviewedAt;
+  final Value<int?> durationMs;
+  const FlashcardReviewLogsCompanion({
+    this.id = const Value.absent(),
+    this.word = const Value.absent(),
+    this.rating = const Value.absent(),
+    this.reviewedAt = const Value.absent(),
+    this.durationMs = const Value.absent(),
+  });
+  FlashcardReviewLogsCompanion.insert({
+    this.id = const Value.absent(),
+    required String word,
+    required int rating,
+    required int reviewedAt,
+    this.durationMs = const Value.absent(),
+  })  : word = Value(word),
+        rating = Value(rating),
+        reviewedAt = Value(reviewedAt);
+  static Insertable<FlashcardReviewLogsData> custom({
+    Expression<int>? id,
+    Expression<String>? word,
+    Expression<int>? rating,
+    Expression<int>? reviewedAt,
+    Expression<int>? durationMs,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (word != null) 'word': word,
+      if (rating != null) 'rating': rating,
+      if (reviewedAt != null) 'reviewed_at': reviewedAt,
+      if (durationMs != null) 'duration_ms': durationMs,
+    });
+  }
+
+  FlashcardReviewLogsCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? word,
+      Value<int>? rating,
+      Value<int>? reviewedAt,
+      Value<int?>? durationMs}) {
+    return FlashcardReviewLogsCompanion(
+      id: id ?? this.id,
+      word: word ?? this.word,
+      rating: rating ?? this.rating,
+      reviewedAt: reviewedAt ?? this.reviewedAt,
+      durationMs: durationMs ?? this.durationMs,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (word.present) {
+      map['word'] = Variable<String>(word.value);
+    }
+    if (rating.present) {
+      map['rating'] = Variable<int>(rating.value);
+    }
+    if (reviewedAt.present) {
+      map['reviewed_at'] = Variable<int>(reviewedAt.value);
+    }
+    if (durationMs.present) {
+      map['duration_ms'] = Variable<int>(durationMs.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlashcardReviewLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('word: $word, ')
+          ..write('rating: $rating, ')
+          ..write('reviewedAt: $reviewedAt, ')
+          ..write('durationMs: $durationMs')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class DatabaseAtV17 extends GeneratedDatabase {
+  DatabaseAtV17(QueryExecutor e) : super(e);
   late final DictionaryList dictionaryList = DictionaryList(this);
   late final Wordbook wordbook = Wordbook(this);
   late final WordbookTags wordbookTags = WordbookTags(this);
@@ -2294,6 +3013,9 @@ class DatabaseAtV16 extends GeneratedDatabase {
       WritingCheckHistory(this);
   late final TranslateHistory translateHistory = TranslateHistory(this);
   late final OpenRecords openRecords = OpenRecords(this);
+  late final Flashcards flashcards = Flashcards(this);
+  late final FlashcardReviewLogs flashcardReviewLogs =
+      FlashcardReviewLogs(this);
   late final Index idxWordbook = Index('idx_wordbook',
       'CREATE INDEX idx_wordbook ON wordbook (word, created_at)');
   late final Index idxWordbookTags = Index('idx_wordbook_tags',
@@ -2304,6 +3026,11 @@ class DatabaseAtV16 extends GeneratedDatabase {
       'CREATE INDEX idx_ai_explanations ON ai_explanations (word)');
   late final Index idxOpenRecords = Index('idx_open_records',
       'CREATE INDEX idx_open_records ON open_records (word, created_at)');
+  late final Index idxFlashcardsDue = Index('idx_flashcards_due',
+      'CREATE INDEX idx_flashcards_due ON flashcards (due)');
+  late final Index idxFlashcardReviewLogsWord = Index(
+      'idx_flashcard_review_logs_word',
+      'CREATE INDEX idx_flashcard_review_logs_word ON flashcard_review_logs (word)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2320,12 +3047,16 @@ class DatabaseAtV16 extends GeneratedDatabase {
         writingCheckHistory,
         translateHistory,
         openRecords,
+        flashcards,
+        flashcardReviewLogs,
         idxWordbook,
         idxWordbookTags,
         idxMddAudioResource,
         idxAiExplanations,
-        idxOpenRecords
+        idxOpenRecords,
+        idxFlashcardsDue,
+        idxFlashcardReviewLogsWord
       ];
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 }

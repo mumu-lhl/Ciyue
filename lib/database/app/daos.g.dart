@@ -40,6 +40,26 @@ class HistoryDaoManager {
       $$HistoryTableTableManager(_db.attachedDatabase, _db.history);
 }
 
+mixin _$FlashcardDaoMixin on DatabaseAccessor<AppDatabase> {
+  $FlashcardsTable get flashcards => attachedDatabase.flashcards;
+  $FlashcardReviewLogsTable get flashcardReviewLogs =>
+      attachedDatabase.flashcardReviewLogs;
+  $WordbookTable get wordbook => attachedDatabase.wordbook;
+  FlashcardDaoManager get managers => FlashcardDaoManager(this);
+}
+
+class FlashcardDaoManager {
+  final _$FlashcardDaoMixin _db;
+  FlashcardDaoManager(this._db);
+  $$FlashcardsTableTableManager get flashcards =>
+      $$FlashcardsTableTableManager(_db.attachedDatabase, _db.flashcards);
+  $$FlashcardReviewLogsTableTableManager get flashcardReviewLogs =>
+      $$FlashcardReviewLogsTableTableManager(
+          _db.attachedDatabase, _db.flashcardReviewLogs);
+  $$WordbookTableTableManager get wordbook =>
+      $$WordbookTableTableManager(_db.attachedDatabase, _db.wordbook);
+}
+
 mixin _$WordbookDaoMixin on DatabaseAccessor<AppDatabase> {
   $WordbookTable get wordbook => attachedDatabase.wordbook;
   WordbookDaoManager get managers => WordbookDaoManager(this);

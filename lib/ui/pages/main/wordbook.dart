@@ -8,6 +8,7 @@ import "package:ciyue/viewModels/wordbook.dart";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
+import "package:ciyue/ui/pages/flashcards/overview_card.dart";
 
 class WordBookScreen extends StatefulWidget {
   const WordBookScreen({super.key});
@@ -136,6 +137,13 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Selector<WordbookModel, int?>(
+          selector: (context, model) => model.selectedTag,
+          builder: (context, tag, child) => FlashcardOverviewCard(
+            key: ValueKey(tag),
+            tag: tag,
+          ),
+        ),
         Selector<WordbookModel, (Future<List<WordbookTag>>, int?)>(
           selector: (context, model) => (model.tags, model.selectedTag),
           builder: (context, value, child) {

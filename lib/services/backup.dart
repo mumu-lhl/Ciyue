@@ -79,6 +79,7 @@ class BackupService {
   final HistoryDao historyDao;
   final WritingCheckHistoryDao writingCheckHistoryDao;
   final TranslateHistoryDao translateHistoryDao;
+  final FlashcardDao? flashcardDao;
   final BackupFileHandler fileHandler;
   final WordbookModel? _wordbookModel;
 
@@ -88,6 +89,7 @@ class BackupService {
     required this.historyDao,
     required this.writingCheckHistoryDao,
     required this.translateHistoryDao,
+    this.flashcardDao,
     required this.fileHandler,
     WordbookModel? wordbookModel,
   }) : _wordbookModel = wordbookModel;
@@ -112,6 +114,12 @@ class BackupService {
         translateHistoryData = translateHistory
             ? await translateHistoryDao.getAllHistory()
             : <TranslateHistoryData>[];
+    final flashcards = wordbook && flashcardDao != null
+        ? await flashcardDao!.getAllCards()
+        : <Flashcard>[];
+    final flashcardReviewLogs = wordbook && flashcardDao != null
+        ? await flashcardDao!.getReviewLogs()
+        : <FlashcardReviewLog>[];
 
     if (words.isNotEmpty ||
         history.isNotEmpty ||
@@ -124,6 +132,8 @@ class BackupService {
         history: history.map((e) => e.word).toList(),
         writingCheckHistory: writingCheckHistoryData,
         translateHistory: translateHistoryData,
+        flashcards: flashcards,
+        flashcardReviewLogs: flashcardReviewLogs,
       );
       final jsonContent = backupData.toJson();
 
@@ -171,11 +181,13 @@ class BackupService {
     }
     await writingCheckHistoryDao.addAllHistory(backupData.writingCheckHistory);
     await translateHistoryDao.addAllHistory(backupData.translateHistory);
+    await flashcardDao?.addAllCards(backupData.flashcards);
+    await flashcardDao?.addAllReviewLogs(backupData.flashcardReviewLogs);
   }
 }
 
 class Backup {
-  static const version = 1;
+  static const version = 2;
 
   static Future<void> export(
     bool autoExport, {
@@ -190,6 +202,7 @@ class Backup {
       historyDao: historyDao,
       writingCheckHistoryDao: writingCheckHistoryDao,
       translateHistoryDao: translateHistoryDao,
+      flashcardDao: flashcardDao,
       fileHandler: DefaultBackupFileHandler(),
     );
     await service.export(
@@ -211,6 +224,7 @@ class Backup {
       historyDao: historyDao,
       writingCheckHistoryDao: writingCheckHistoryDao,
       translateHistoryDao: translateHistoryDao,
+      flashcardDao: flashcardDao,
       fileHandler: DefaultBackupFileHandler(),
     );
     await service.import();

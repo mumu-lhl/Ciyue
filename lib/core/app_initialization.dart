@@ -219,58 +219,62 @@ Future<void> initApp() async {
   });
 }
 
+const preferencesAllowList = <String>{
+  "currentDictionaryGroupId",
+  "exportDirectory",
+  "autoExport",
+  "exportFileName",
+  "autoRemoveSearchWord",
+  "language",
+  "themeMode",
+  "enableDynamicColor",
+  "pureBlackDarkMode",
+  "themeSeedColor",
+  "tagsOrder",
+  "secureScreen",
+  "searchBarInAppBar",
+  "showSidebarIcon",
+  "dictionariesDirectory",
+  "exportPath",
+  "notification",
+  "showMoreOptionsButton",
+  "skipTaggedWord",
+  "aiProvider",
+  "aiProviderConfigs",
+  "aiExplainWord",
+  "includePrereleaseUpdates",
+
+  // AI Prompts
+  "customExplainPrompt",
+  "customTranslatePrompt",
+  "customWritingCheckPrompt",
+
+  "tabBarPosition",
+  "showSearchBarInWordDisplay",
+  "autoUpdate",
+  "ttsEngine",
+  "ttsLanguage",
+  "audioDirectory",
+  "advance",
+  "enableHistory",
+  "versionCode",
+  "dictionarySwitchStyle",
+  "translationProvider",
+  "deeplxUrl",
+  "isRichOutput",
+  "enableTranslationHistory",
+  "enableWritingCheckHistory",
+  "autoFocusSearch",
+  "launchAtStartup",
+  "flashcardDailyNewLimit",
+};
+
 Future<void> initPrefs() async {
   talker.info("Initializing shared preferences...");
 
   prefs = await SharedPreferencesWithCache.create(
-      cacheOptions: const SharedPreferencesWithCacheOptions(allowList: {
-    "currentDictionaryGroupId",
-    "exportDirectory",
-    "autoExport",
-    "exportFileName",
-    "autoRemoveSearchWord",
-    "language",
-    "themeMode",
-    "enableDynamicColor",
-    "pureBlackDarkMode",
-    "themeSeedColor",
-    "tagsOrder",
-    "secureScreen",
-    "searchBarInAppBar",
-    "showSidebarIcon",
-    "dictionariesDirectory",
-    "exportPath",
-    "notification",
-    "showMoreOptionsButton",
-    "skipTaggedWord",
-    "aiProvider",
-    "aiProviderConfigs",
-    "aiExplainWord",
-    "includePrereleaseUpdates",
-
-    // AI Prompts
-    "customExplainPrompt",
-    "customTranslatePrompt",
-    "customWritingCheckPrompt",
-
-    "tabBarPosition",
-    "showSearchBarInWordDisplay",
-    "autoUpdate",
-    "ttsEngine",
-    "ttsLanguage",
-    "audioDirectory",
-    "advance",
-    "enableHistory",
-    "versionCode",
-    "dictionarySwitchStyle",
-    "translationProvider",
-    "deeplxUrl",
-    "isRichOutput",
-    "enableTranslationHistory",
-    "enableWritingCheckHistory",
-    "autoFocusSearch",
-    "launchAtStartup",
-  }));
+      cacheOptions: const SharedPreferencesWithCacheOptions(
+          allowList: preferencesAllowList));
 
   talker.info("Shared preferences initialized successfully.");
 }
