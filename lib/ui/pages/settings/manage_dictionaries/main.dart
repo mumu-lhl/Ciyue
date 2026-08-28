@@ -32,9 +32,7 @@ Future<void> addGroup(String value, BuildContext context) async {
 }
 
 class AddButton extends StatelessWidget {
-  const AddButton({
-    super.key,
-  });
+  const AddButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +50,10 @@ class AddButton extends StatelessWidget {
             await prefs.setString("dictionariesDirectory", path);
 
             if (!context.mounted) return;
-            showLoadingDialog(context,
-                text: AppLocalizations.of(context)!.loading);
+            showLoadingDialog(
+              context,
+              text: AppLocalizations.of(context)!.loading,
+            );
 
             final paths = await findMdxFilesOnAndroid(path);
             if (context.mounted) {
@@ -87,23 +87,30 @@ class DictionaryCard extends StatelessWidget {
     if (!await mdxFile.exists()) {
       if (context.mounted) {
         ToastService.show(
-            AppLocalizations.of(context)!.dictionaryFileNotFound, context,
-            type: ToastType.error);
+          AppLocalizations.of(context)!.dictionaryFileNotFound,
+          context,
+          type: ToastType.error,
+        );
       }
 
       // Ensure it's removed from dictionaryListDao
       await dictionaryListDao.remove(dictionary.path);
 
       // Try to delete the associated dictionary database file
-      final databasePath = join((await databaseDirectory()).path,
-          "dictionary_${dictionary.id}.sqlite");
+      final databasePath = join(
+        (await databaseDirectory()).path,
+        "dictionary_${dictionary.id}.sqlite",
+      );
       final dbFile = File(databasePath);
       if (await dbFile.exists()) {
         try {
           await dbFile.delete();
         } catch (e) {
-          talker.error("Failed to delete dictionary database file: $e", e,
-              StackTrace.current);
+          talker.error(
+            "Failed to delete dictionary database file: $e",
+            e,
+            StackTrace.current,
+          );
         }
       }
 
@@ -142,8 +149,10 @@ class DictionaryCard extends StatelessWidget {
                 }
                 if (!context.mounted) return;
                 context.pop();
-                context.push("/properties",
-                    extra: {"path": dictionary.path, "id": dictionary.id});
+                context.push(
+                  "/properties",
+                  extra: {"path": dictionary.path, "id": dictionary.id},
+                );
               },
               child: ListTile(
                 leading: Icon(Icons.settings),
@@ -162,14 +171,16 @@ class DictionaryCard extends StatelessWidget {
                   await model.close(dictionary.id);
 
                   final dictIds = [
-                    for (final dict in dictManager.dicts.values) dict.id
+                    for (final dict in dictManager.dicts.values) dict.id,
                   ];
                   dictManager.dictIds = dictIds;
 
                   model.checkIsEmpty();
 
                   await dictGroupDao.updateDictIds(
-                      dictManager.groupId, dictIds);
+                    dictManager.groupId,
+                    dictIds,
+                  );
                 }
 
                 final tmpDict = Mdict(path: dictionary.path);
@@ -258,11 +269,15 @@ class DictionaryCard extends StatelessWidget {
                           child: Text(AppLocalizations.of(context)!.close),
                         ),
                         TextButton(
-                            onPressed: () async {
-                              await _updateAlias(
-                                  controller.text, dictionary, context);
-                            },
-                            child: Text(AppLocalizations.of(context)!.confirm)),
+                          onPressed: () async {
+                            await _updateAlias(
+                              controller.text,
+                              dictionary,
+                              context,
+                            );
+                          },
+                          child: Text(AppLocalizations.of(context)!.confirm),
+                        ),
                       ],
                     );
                   },
@@ -302,7 +317,9 @@ class DictionaryCard extends StatelessWidget {
             ReorderableDragStartListener(
               index: index,
               child: IconButton(
-                  icon: Icon(Icons.drag_handle), onPressed: () => {}),
+                icon: Icon(Icons.drag_handle),
+                onPressed: () => {},
+              ),
             ),
             Expanded(
               child: GestureDetector(
@@ -331,14 +348,16 @@ class DictionaryCard extends StatelessWidget {
                   if (oldDictionariesNumber == 0) {
                     if (!context.mounted) return;
 
-                    final searchBarFocusNode =
-                        context.read<HomeModel>().searchBarFocusNode;
+                    final searchBarFocusNode = context
+                        .read<HomeModel>()
+                        .searchBarFocusNode;
 
                     void searchBarFocusListener() {
                       if (searchBarFocusNode.hasFocus) {
                         searchBarFocusNode.unfocus();
-                        searchBarFocusNode
-                            .removeListener(searchBarFocusListener);
+                        searchBarFocusNode.removeListener(
+                          searchBarFocusListener,
+                        );
                       }
                     }
 
@@ -360,7 +379,10 @@ class DictionaryCard extends StatelessWidget {
   }
 
   Future<void> _updateAlias(
-      String value, DictionaryListData dictionary, BuildContext context) async {
+    String value,
+    DictionaryListData dictionary,
+    BuildContext context,
+  ) async {
     if (value.isNotEmpty) {
       if (dictManager.contain(dictionary.id)) {
         dictManager.dicts[dictionary.id]!.title = value;
@@ -377,10 +399,7 @@ class DictionaryCard extends StatelessWidget {
 class GroupDeleteButton extends StatelessWidget {
   final DictGroupData group;
 
-  const GroupDeleteButton({
-    super.key,
-    required this.group,
-  });
+  const GroupDeleteButton({super.key, required this.group});
 
   @override
   Widget build(BuildContext context) {
@@ -396,10 +415,12 @@ class GroupDeleteButton extends StatelessWidget {
         if (group.id == dictManager.groupId) {
           if (group.id == dictManager.groups.last.id) {
             await model.setCurrentGroup(
-                dictManager.groups[dictManager.groups.length - 2].id);
+              dictManager.groups[dictManager.groups.length - 2].id,
+            );
           } else {
-            final index =
-                dictManager.groups.indexWhere((g) => g.id == group.id);
+            final index = dictManager.groups.indexWhere(
+              (g) => g.id == group.id,
+            );
             await model.setCurrentGroup(dictManager.groups[index + 1].id);
           }
         }
@@ -414,9 +435,7 @@ class GroupDeleteButton extends StatelessWidget {
 }
 
 class GroupDialog extends StatelessWidget {
-  const GroupDialog({
-    super.key,
-  });
+  const GroupDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -438,9 +457,11 @@ class GroupDialog extends StatelessWidget {
           children: [
             for (final group in dictManager.groups)
               RadioListTile(
-                title: Text(group.name == "Default"
-                    ? AppLocalizations.of(context)!.default_
-                    : group.name),
+                title: Text(
+                  group.name == "Default"
+                      ? AppLocalizations.of(context)!.default_
+                      : group.name,
+                ),
                 value: group.id,
                 secondary: GroupDeleteButton(group: group),
               ),
@@ -474,10 +495,11 @@ class GroupDialog extends StatelessWidget {
                       child: Text(AppLocalizations.of(context)!.close),
                     ),
                     TextButton(
-                        onPressed: () async {
-                          await addGroup(controller.text, context);
-                        },
-                        child: Text(AppLocalizations.of(context)!.add)),
+                      onPressed: () async {
+                        await addGroup(controller.text, context);
+                      },
+                      child: Text(AppLocalizations.of(context)!.add),
+                    ),
                   ],
                 );
               },
@@ -491,9 +513,7 @@ class GroupDialog extends StatelessWidget {
 }
 
 class InfoButton extends StatelessWidget {
-  const InfoButton({
-    super.key,
-  });
+  const InfoButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -509,16 +529,23 @@ class InfoButton extends StatelessWidget {
               children: [
                 ListTile(
                   title: Text(
-                      AppLocalizations.of(context)!.recommendedDictionaries),
+                    AppLocalizations.of(context)!.recommendedDictionaries,
+                  ),
                   trailing: const Icon(Icons.open_in_new),
-                  onTap: () => launchUrl(Uri.parse(
-                      "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries")),
+                  onTap: () => launchUrl(
+                    Uri.parse(
+                      "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries",
+                    ),
+                  ),
                 ),
                 ListTile(
                   title: const Text("FreeMDict Cloud"),
                   trailing: const Icon(Icons.open_in_new),
-                  onTap: () => launchUrl(Uri.parse(
-                      "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs")),
+                  onTap: () => launchUrl(
+                    Uri.parse(
+                      "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs",
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -543,64 +570,67 @@ class ManageDictionariesPage extends StatefulWidget {
 }
 
 class ManageDictionariesBody extends StatelessWidget {
-  const ManageDictionariesBody({
-    super.key,
-  });
+  const ManageDictionariesBody({super.key});
 
   @override
   Widget build(BuildContext context) {
     context.select<ManageDictionariesModel, Future<List<DictionaryListData>>>(
-        (model) => model.dictionaries);
+      (model) => model.dictionaries,
+    );
 
     return FutureBuilder(
       future: context.read<ManageDictionariesModel>().dictionaries,
-      builder: (BuildContext context,
-          AsyncSnapshot<List<DictionaryListData>> snapshot) {
-        if (snapshot.hasData) {
-          final dicts = snapshot.data!;
-          if (dicts.isEmpty) {
-            return Center(
-                child: Text(
-              AppLocalizations.of(context)!.empty,
-              style: Theme.of(context).textTheme.titleLarge,
-            ));
-          } else {
-            return Padding(
-              padding: const EdgeInsets.only(
-                left: 8.0,
-                right: 8.0,
-              ),
-              child: ReorderableListView(
-                buildDefaultDragHandles: false,
-                onReorderItem: (oldIndex, newIndex) {
-                  final dict = dicts.removeAt(oldIndex);
-                  dicts.insert(newIndex, dict);
+      builder:
+          (
+            BuildContext context,
+            AsyncSnapshot<List<DictionaryListData>> snapshot,
+          ) {
+            if (snapshot.hasData) {
+              final dicts = snapshot.data!;
+              if (dicts.isEmpty) {
+                return Center(
+                  child: Text(
+                    AppLocalizations.of(context)!.empty,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                );
+              } else {
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                  child: ReorderableListView(
+                    buildDefaultDragHandles: false,
+                    onReorderItem: (oldIndex, newIndex) {
+                      final dict = dicts.removeAt(oldIndex);
+                      dicts.insert(newIndex, dict);
 
-                  context.read<ManageDictionariesModel>().updateWithList(dicts);
+                      context.read<ManageDictionariesModel>().updateWithList(
+                        dicts,
+                      );
 
-                  () async {
-                    await dictionaryListDao.updateOrder(dicts);
+                      () async {
+                        await dictionaryListDao.updateOrder(dicts);
 
-                    if (context.mounted) {
-                      final model = context.read<DictManagerModel>();
-                      await model.updateDictIds();
-                    }
-                  }();
-                },
-                children: [
-                  for (int i = 0; i < dicts.length; i++)
-                    DictionaryCard(
-                        key: ValueKey(dicts[i].id),
-                        dictionary: dicts[i],
-                        index: i)
-                ],
-              ),
-            );
-          }
-        } else {
-          return const Center(child: CircularProgressIndicator());
-        }
-      },
+                        if (context.mounted) {
+                          final model = context.read<DictManagerModel>();
+                          await model.updateDictIds();
+                        }
+                      }();
+                    },
+                    children: [
+                      for (int i = 0; i < dicts.length; i++)
+                        DictionaryCard(
+                          key: ValueKey(dicts[i].id),
+                          dictionary: dicts[i],
+                          index: i,
+                        ),
+                    ],
+                  ),
+                );
+              }
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
     );
   }
 }
@@ -623,12 +653,14 @@ class ManageDictionariesPageState extends State<ManageDictionariesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(actions: [
-        const GroupButton(),
-        if (Platform.isAndroid) const UpdateButton(),
-        const InfoButton(),
-        const AddButton(),
-      ]),
+      appBar: AppBar(
+        actions: [
+          const GroupButton(),
+          if (Platform.isAndroid) const UpdateButton(),
+          const InfoButton(),
+          const AddButton(),
+        ],
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
@@ -645,27 +677,21 @@ class ManageDictionariesPageState extends State<ManageDictionariesPage> {
 }
 
 class GroupButton extends StatelessWidget {
-  const GroupButton({
-    super.key,
-  });
+  const GroupButton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) => GroupDialog(),
-          );
-        },
-        icon: Icon(Icons.group));
+      onPressed: () {
+        showDialog(context: context, builder: (context) => GroupDialog());
+      },
+      icon: Icon(Icons.group),
+    );
   }
 }
 
 class UpdateButton extends StatelessWidget {
-  const UpdateButton({
-    super.key,
-  });
+  const UpdateButton({super.key});
 
   @override
   Widget build(BuildContext context) {

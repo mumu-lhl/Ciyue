@@ -23,10 +23,7 @@ typedef LinuxWebViewLoad = ({
   InAppWebViewInitialData? initialData,
 });
 
-LinuxWebViewLoad linuxWebViewLoad(
-  String content,
-  String baseUrl,
-) {
+LinuxWebViewLoad linuxWebViewLoad(String content, String baseUrl) {
   return (
     deferredData: InAppWebViewInitialData(
       data: content,
@@ -60,7 +57,8 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
     final heights = ref.watch(webviewHeightsProvider);
     final height = heights[widget.dictId] ?? 0;
 
-    final isLightTheme = settings.themeMode == ThemeMode.light ||
+    final isLightTheme =
+        settings.themeMode == ThemeMode.light ||
         settings.themeMode == ThemeMode.system &&
             MediaQuery.of(context).platformBrightness == Brightness.light;
     final webviewSettings = InAppWebViewSettings(
@@ -73,7 +71,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         domain: "ciyue.internal",
         httpAllowed: true,
         pathHandlers: [
-          LocalResourcesPathHandler(path: "/", dictId: widget.dictId)
+          LocalResourcesPathHandler(path: "/", dictId: widget.dictId),
         ],
       ),
     );
@@ -109,8 +107,10 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
             if (context.mounted) {
               await playSoundOfWord(
                 selectedText,
-                legacy_provider.Provider.of<AudioModel>(context, listen: false)
-                    .mddAudioList,
+                legacy_provider.Provider.of<AudioModel>(
+                  context,
+                  listen: false,
+                ).mddAudioList,
               );
             }
           },
@@ -133,14 +133,18 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
           Factory<VerticalDragGestureRecognizer>(
             () => VerticalDragGestureRecognizer(),
           ),
-        Factory<LongPressGestureRecognizer>(() => LongPressGestureRecognizer(
-              duration: Duration(milliseconds: 200),
-            )),
+        Factory<LongPressGestureRecognizer>(
+          () =>
+              LongPressGestureRecognizer(duration: Duration(milliseconds: 200)),
+        ),
       },
-      onLoadResourceWithCustomScheme:
-          onLoadResourceWithCustomSchemeWarpper(widget.dictId),
-      shouldOverrideUrlLoading:
-          shouldOverrideUrlLoadingWarpper(widget.dictId, context),
+      onLoadResourceWithCustomScheme: onLoadResourceWithCustomSchemeWarpper(
+        widget.dictId,
+      ),
+      shouldOverrideUrlLoading: shouldOverrideUrlLoadingWarpper(
+        widget.dictId,
+        context,
+      ),
       onWebViewCreated: (controller) async {
         webViewController = controller;
 
@@ -157,7 +161,8 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         }
       },
       onPageCommitVisible: (controller, url) async {
-        controller.evaluateJavascript(source: """
+        controller.evaluateJavascript(
+          source: """
 var lastHeight = 0;
 function checkHeight() {
   var currentHeight = document.body.scrollHeight;
@@ -168,11 +173,13 @@ function checkHeight() {
   requestAnimationFrame(checkHeight);
 }
 checkHeight();
-""");
+""",
+        );
 
         if (dictManager.dicts[widget.dictId]!.fontName != null) {
           await controller.evaluateJavascript(
-            source: """
+            source:
+                """
 const font = new FontFace('Custom Font', 'url(/${dictManager.dicts[widget.dictId]!.fontName})');
 font.load();
 document.fonts.add(font);
@@ -184,10 +191,7 @@ document.body.style.fontFamily = 'Custom Font';
     );
 
     if (widget.isExpansion) {
-      return SizedBox(
-        height: height,
-        child: webview,
-      );
+      return SizedBox(height: height, child: webview);
     } else {
       return webview;
     }
@@ -245,11 +249,7 @@ class WebviewDisplayDescription extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(),
-      body: WebviewAndroid(
-        content: html,
-        dictId: dictId,
-        isExpansion: false,
-      ),
+      body: WebviewAndroid(content: html, dictId: dictId, isExpansion: false),
     );
   }
 
@@ -290,7 +290,8 @@ class WebviewWindows extends ConsumerWidget {
       utf8.encode(json.encode({"content": content})),
     );
 
-    final isLightTheme = settings.themeMode == ThemeMode.light ||
+    final isLightTheme =
+        settings.themeMode == ThemeMode.light ||
         settings.themeMode == ThemeMode.system &&
             MediaQuery.of(context).platformBrightness == Brightness.light;
 
@@ -306,10 +307,13 @@ class WebviewWindows extends ConsumerWidget {
       return InAppWebView(
         initialSettings: webviewSettings,
         initialData: load.initialData,
-        onLoadResourceWithCustomScheme:
-            onLoadResourceWithCustomSchemeWarpper(dictId),
-        shouldOverrideUrlLoading:
-            shouldOverrideUrlLoadingWarpper(dictId, context),
+        onLoadResourceWithCustomScheme: onLoadResourceWithCustomSchemeWarpper(
+          dictId,
+        ),
+        shouldOverrideUrlLoading: shouldOverrideUrlLoadingWarpper(
+          dictId,
+          context,
+        ),
         onWebViewCreated: (controller) async {
           await controller.loadData(
             data: load.deferredData.data,
@@ -343,8 +347,10 @@ class WebviewWindows extends ConsumerWidget {
             ),
             onLoadResourceWithCustomScheme:
                 onLoadResourceWithCustomSchemeWarpper(dictId),
-            shouldOverrideUrlLoading:
-                shouldOverrideUrlLoadingWarpper(dictId, context),
+            shouldOverrideUrlLoading: shouldOverrideUrlLoadingWarpper(
+              dictId,
+              context,
+            ),
           );
         }
         return const Center(child: CircularProgressIndicator());

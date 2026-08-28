@@ -12,12 +12,15 @@ class SettingsDictionaryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(leading: BackButton(
+      appBar: AppBar(
+        leading: BackButton(
           onPressed: () {
             context.pop();
           },
-        )),
-        body: _Body(dictId: dictId));
+        ),
+      ),
+      body: _Body(dictId: dictId),
+    );
   }
 }
 
@@ -64,8 +67,9 @@ class _BodyState extends State<_Body> {
           subtitle: fontPathSubtitle,
           trailing: removeButton,
           onTap: () async {
-            final typeGroup =
-                XTypeGroup(extensions: ["ttf", "otf", "woff", "woff2"]);
+            final typeGroup = XTypeGroup(
+              extensions: ["ttf", "otf", "woff", "woff2"],
+            );
             final xFile = await openFile(acceptedTypeGroups: [typeGroup]);
             if (xFile == null) {
               return;
@@ -75,7 +79,7 @@ class _BodyState extends State<_Body> {
               customFont(xFile.path);
             });
           },
-        )
+        ),
       ],
     );
   }

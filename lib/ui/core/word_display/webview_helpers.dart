@@ -18,31 +18,36 @@ NavigationActionPolicy navigationPolicyForUrl(WebUri url) {
 }
 
 Future<CustomSchemeResponse?> Function(
-        InAppWebViewController controller, WebResourceRequest request)
-    onLoadResourceWithCustomSchemeWarpper(int dictId) {
+  InAppWebViewController controller,
+  WebResourceRequest request,
+)
+onLoadResourceWithCustomSchemeWarpper(int dictId) {
   return (controller, request) async {
     final url = request.url;
     if (url.scheme == "sound") {
-      final filename =
-          Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
+      final filename = Uri.decodeFull(url.toString())
+          .replaceFirst("sound://", "");
       final results = await dictManager.dicts[dictId]!.readResource(filename);
       for (final result in results) {
         final info = result.offsetInfo;
         try {
           final Uint8List data;
           if (result.part == null) {
-            data = await dictManager.dicts[dictId]!.readerResources[0]
-                .readOneMdd(info) as Uint8List;
+            data =
+                await dictManager.dicts[dictId]!.readerResources[0].readOneMdd(
+                  info,
+                ) as Uint8List;
           } else {
-            data = await dictManager
-                .dicts[dictId]!.readerResources[result.part!]
-                .readOneMdd(info) as Uint8List;
+            data =
+                await dictManager.dicts[dictId]!.readerResources[result.part!]
+                        .readOneMdd(info)
+                    as Uint8List;
           }
-          talker.info(
-            "Playing sound (2): $filename",
-          );
+          talker.info("Playing sound (2): $filename");
           return CustomSchemeResponse(
-              contentType: lookupMimeType(filename)!, data: data);
+            contentType: lookupMimeType(filename)!,
+            data: data,
+          );
         } catch (e) {
           continue;
         }
@@ -55,7 +60,8 @@ Future<CustomSchemeResponse?> Function(
 Future<NavigationActionPolicy?> Function(
   InAppWebViewController controller,
   NavigationAction navigationAction,
-) shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
+)
+shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
   return (controller, navigationAction) async {
     final url = navigationAction.request.url;
     final word = Uri.decodeFull(url.toString().replaceFirst("entry://", ""));
@@ -70,8 +76,8 @@ Future<NavigationActionPolicy?> Function(
         context.push("/word/${Uri.encodeComponent(word)}");
       }
     } else if (url.scheme == "sound") {
-      final filename =
-          Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
+      final filename = Uri.decodeFull(url.toString())
+          .replaceFirst("sound://", "");
 
       final results = await dictManager.dicts[dictId]!.readResource(filename);
 
@@ -80,12 +86,15 @@ Future<NavigationActionPolicy?> Function(
         final Uint8List data;
         try {
           if (result.part == null) {
-            data = await dictManager.dicts[dictId]!.readerResources[0]
-                .readOneMdd(info) as Uint8List;
+            data =
+                await dictManager.dicts[dictId]!.readerResources[0].readOneMdd(
+                  info,
+                ) as Uint8List;
           } else {
-            data = await dictManager
-                .dicts[dictId]!.readerResources[result.part!]
-                .readOneMdd(info) as Uint8List;
+            data =
+                await dictManager.dicts[dictId]!.readerResources[result.part!]
+                        .readOneMdd(info)
+                    as Uint8List;
           }
         } catch (e) {
           talker.error(
@@ -96,9 +105,7 @@ Future<NavigationActionPolicy?> Function(
         }
 
         await playSound(data, lookupMimeType(filename)!);
-        talker.info(
-          "Playing sound (1): $filename",
-        );
+        talker.info("Playing sound (1): $filename");
         return NavigationActionPolicy.CANCEL;
       }
     }
@@ -156,7 +163,9 @@ class LocalResourcesPathHandler extends CustomPathHandler {
           );
           data = await file.readAsBytes();
           return WebResourceResponse(
-              data: data, contentType: lookupMimeType(path));
+            data: data,
+            contentType: lookupMimeType(path),
+          );
         }
 
         for (var i = 0; i < results.length;) {
@@ -164,12 +173,15 @@ class LocalResourcesPathHandler extends CustomPathHandler {
           final info = result.offsetInfo;
           try {
             if (result.part == null) {
-              data = await dictManager.dicts[dictId]!.readerResources[0]
-                  .readOneMdd(info) as Uint8List;
+              data =
+                  await dictManager.dicts[dictId]!.readerResources[0]
+                          .readOneMdd(info)
+                      as Uint8List;
             } else {
-              data = await dictManager
-                  .dicts[dictId]!.readerResources[result.part!]
-                  .readOneMdd(info) as Uint8List;
+              data =
+                  await dictManager.dicts[dictId]!.readerResources[result.part!]
+                          .readOneMdd(info)
+                      as Uint8List;
             }
             break;
           } on FileSystemException catch (_) {

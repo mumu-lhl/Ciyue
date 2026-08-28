@@ -11,8 +11,9 @@ import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 
 Future<List<String>> findMddAudioFilesOnAndroid(String? directory) async {
-  final documentsDir = Directory(directory ??
-      join((await getApplicationSupportDirectory()).path, "audios"));
+  final documentsDir = Directory(
+    directory ?? join((await getApplicationSupportDirectory()).path, "audios"),
+  );
   final mddFiles = <String>[];
   await findAllFileByExtension(documentsDir, mddFiles, "mdd");
   return mddFiles;
@@ -28,13 +29,17 @@ Future<void> playSound(Uint8List audio, String mimeType) async {
 }
 
 Future<void> playSoundOfWord(
-    String word, List<MddAudioListData> mddAudioList) async {
+  String word,
+  List<MddAudioListData> mddAudioList,
+) async {
   if (mddAudioList.isNotEmpty) {
     final player = AudioPlayer();
 
     for (final mddAudio in mddAudioList) {
       final audios = await mddAudioResourceDao.getByKeyAndMddAudioID(
-          "$word.spx", mddAudio.id);
+        "$word.spx",
+        mddAudio.id,
+      );
       for (final audio in audios!) {
         if (setExtension(audio.key, "") != word) {
           continue;

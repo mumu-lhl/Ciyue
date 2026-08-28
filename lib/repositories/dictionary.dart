@@ -72,7 +72,10 @@ class DictManager {
   }
 
   Future<void> _observeInitialization(
-      int id, String path, Future<void> initialization) async {
+    int id,
+    String path,
+    Future<void> initialization,
+  ) async {
     try {
       await initialization;
     } catch (e, stackTrace) {
@@ -127,8 +130,10 @@ class DictManager {
 
       for (final i in toRemove.reversed) {
         final dictId = dictIds.removeAt(i);
-        final databasePath =
-            join((await databaseDirectory()).path, "dictionary_$dictId.sqlite");
+        final databasePath = join(
+          (await databaseDirectory()).path,
+          "dictionary_$dictId.sqlite",
+        );
         final file = File(databasePath);
         if (await file.exists()) {
           await file.delete();
@@ -263,7 +268,8 @@ class Mdict {
       readers.add(reader.close());
     }
     readers.addAll(
-        readerResources.map((readerResource) => readerResource.close()));
+      readerResources.map((readerResource) => readerResource.close()),
+    );
     await Future.wait(readers);
   }
 
@@ -292,11 +298,7 @@ class Mdict {
         final cacheData = await reader.exportCacheAsString();
         await cacheFile.writeAsString(cacheData, flush: true);
       } catch (e, stackTrace) {
-        talker.error(
-          "Failed to save cache for $id ($type): $e",
-          e,
-          stackTrace,
-        );
+        talker.error("Failed to save cache for $id ($type): $e", e, stackTrace);
       }
     };
   }
@@ -315,11 +317,7 @@ class Mdict {
       await reader.importCacheFromString(cache);
       return true;
     } catch (e, stackTrace) {
-      talker.error(
-        "Failed to import cache for $id ($type): $e",
-        e,
-        stackTrace,
-      );
+      talker.error("Failed to import cache for $id ($type): $e", e, stackTrace);
       try {
         await cacheFile.delete();
       } catch (_) {
@@ -331,8 +329,9 @@ class Mdict {
 
   Future<void> _getTitle() async {
     final titleInDatabase = await dictionaryListDao.getTitle(id);
-    final title = HtmlUnescape()
-        .convert(titleInDatabase ?? reader.header["Title"] ?? basename(path));
+    final title = HtmlUnescape().convert(
+      titleInDatabase ?? reader.header["Title"] ?? basename(path),
+    );
 
     if (title == "") {
       this.title = basename(path);
@@ -377,13 +376,16 @@ class Mdict {
       try {
         if (!await hitCache(id, cacheType, resourceReader)) {
           resourceReader.setOnRecordBlockInfoRead(
-              saveCache(id, cacheType, resourceReader));
+            saveCache(id, cacheType, resourceReader),
+          );
           await resourceReader.initDict();
         } else {
           // importCache opens the file in current dict_reader versions. Keep
           // this no-op initialization for compatibility with older versions.
           await resourceReader.initDict(
-              readKeys: false, readRecordBlockInfo: false);
+            readKeys: false,
+            readRecordBlockInfo: false,
+          );
         }
         readerResources.add(resourceReader);
       } catch (_) {
@@ -397,7 +399,7 @@ class Mdict {
       await loadMddReader(mddFile, "mdd");
     }
 
-    for (var i = 1;; i++) {
+    for (var i = 1; ; i++) {
       final mddFile = File("$path.$i.mdd");
       if (!await mddFile.exists()) {
         break;
@@ -489,8 +491,9 @@ class Mdict {
               if (result.part == null) {
                 data = await readerResources[0].readOneMdd(info) as Uint8List;
               } else {
-                data = await readerResources[result.part!].readOneMdd(info)
-                    as Uint8List;
+                data = await readerResources[result.part!].readOneMdd(
+                  info,
+                ) as Uint8List;
               }
               break;
             } catch (e) {
@@ -532,13 +535,16 @@ class Mdict {
     if (content.startsWith("@@@LINK=")) {
       contents.clear();
 
-      final newData = await locateAll(content
-          .replaceFirst("@@@LINK=", "")
-          .replaceAll(RegExp(r"[\n\r\x00]"), "")
-          .trimRight());
+      final newData = await locateAll(
+        content
+            .replaceFirst("@@@LINK=", "")
+            .replaceAll(RegExp(r"[\n\r\x00]"), "")
+            .trimRight(),
+      );
       if (newData.isEmpty) {
         throw Exception(
-            "Linked word not found: ${content.replaceFirst("@@@LINK=", "")}");
+          "Linked word not found: ${content.replaceFirst("@@@LINK=", "")}",
+        );
       }
 
       for (final info in newData) {
@@ -564,12 +570,15 @@ class Mdict {
 
   Future<void> removeDictionary({int? dictionaryId}) async {
     final removeId = dictionaryId ?? id;
-    final removeType =
-        dictionaryId == null ? type : await dictionaryListDao.getType(removeId);
+    final removeType = dictionaryId == null
+        ? type
+        : await dictionaryListDao.getType(removeId);
 
     if (removeType == 0) {
-      final databasePath =
-          join((await databaseDirectory()).path, "dictionary_$removeId.sqlite");
+      final databasePath = join(
+        (await databaseDirectory()).path,
+        "dictionary_$removeId.sqlite",
+      );
       final file = File(databasePath);
       await file.delete();
     }
@@ -585,7 +594,7 @@ class Mdict {
         await mddFile.delete();
       }
 
-      for (var i = 1;; i++) {
+      for (var i = 1; ; i++) {
         final mddFile = File("$path.$i.mdd");
         if (await mddFile.exists()) {
           await mddFile.delete();
@@ -666,10 +675,9 @@ class Mdict {
 
       final part = readerResources.indexOf(readerResource);
 
-      resourceData.add(MddResourceData(
-        offsetInfo: offsetInfo,
-        part: part == -1 ? null : part,
-      ));
+      resourceData.add(
+        MddResourceData(offsetInfo: offsetInfo, part: part == -1 ? null : part),
+      );
     }
 
     return resourceData;
@@ -723,16 +731,21 @@ class Mdict {
   }
 }
 
-Future<void> selectMdx(BuildContext context, List<String> paths,
-    {bool closeLoadingWhenEmpty = false}) async {
+Future<void> selectMdx(
+  BuildContext context,
+  List<String> paths, {
+  bool closeLoadingWhenEmpty = false,
+}) async {
   if (paths.isEmpty) {
     if (closeLoadingWhenEmpty && context.mounted) {
       context.pop();
     }
     if (context.mounted) {
       ToastService.show(
-          AppLocalizations.of(context)!.noDictionariesFound, context,
-          type: ToastType.info);
+        AppLocalizations.of(context)!.noDictionariesFound,
+        context,
+        type: ToastType.info,
+      );
     }
     return;
   }
@@ -750,10 +763,16 @@ Future<void> selectMdx(BuildContext context, List<String> paths,
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
       if (context.mounted) {
-        ToastService.show(AppLocalizations.of(context)!.notSupport, context,
-            type: ToastType.error);
-        talker.error("Failed to add dictionary: $pathNoExtension, error: $e", e,
-            StackTrace.current);
+        ToastService.show(
+          AppLocalizations.of(context)!.notSupport,
+          context,
+          type: ToastType.error,
+        );
+        talker.error(
+          "Failed to add dictionary: $pathNoExtension, error: $e",
+          e,
+          StackTrace.current,
+        );
       }
     } finally {
       await dict.close();
@@ -783,8 +802,10 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
       if (context.mounted) {
         final title =
             reader.header["Title"] ?? setExtension(basename(path), "");
-        mddAudioListId =
-            await context.read<AudioModel>().addMddAudio(path, title);
+        mddAudioListId = await context.read<AudioModel>().addMddAudio(
+          path,
+          title,
+        );
       }
 
       final resources = <MddAudioResourceCompanion>[];
@@ -800,18 +821,20 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
 
         if (loadingCount == Mdict.maxLoadingCount) {
           LoadingDialogContentState.updateText(
-              AppLocalizations.of(navigatorKey.currentContext!)!
-                  .addingResource(info.keyText));
+            AppLocalizations.of(navigatorKey.currentContext!)!
+                .addingResource(info.keyText),
+          );
           loadingCount = 0;
         }
 
         final data = MddAudioResourceCompanion(
-            key: Value(info.keyText),
-            blockOffset: Value(info.recordBlockOffset),
-            startOffset: Value(info.startOffset),
-            endOffset: Value(info.endOffset),
-            compressedSize: Value(info.compressedSize),
-            mddAudioListId: Value(mddAudioListId!));
+          key: Value(info.keyText),
+          blockOffset: Value(info.recordBlockOffset),
+          startOffset: Value(info.startOffset),
+          endOffset: Value(info.endOffset),
+          compressedSize: Value(info.compressedSize),
+          mddAudioListId: Value(mddAudioListId!),
+        );
         resources.add(data);
 
         number++;
@@ -855,7 +878,10 @@ Future<void> selectMdxOrMddOnDesktop(BuildContext context, bool isMdx) async {
 }
 
 Future<void> findAllFileByExtension(
-    Directory startDir, List<String> output, String extension) async {
+  Directory startDir,
+  List<String> output,
+  String extension,
+) async {
   final entities = await startDir.list().toList();
   for (final entity in entities) {
     if (entity is File) {
@@ -869,8 +895,10 @@ Future<void> findAllFileByExtension(
 }
 
 Future<List<String>> findMdxFilesOnAndroid(String? directory) async {
-  final documentsDir = Directory(directory ??
-      join((await getApplicationSupportDirectory()).path, "dictionaries"));
+  final documentsDir = Directory(
+    directory ??
+        join((await getApplicationSupportDirectory()).path, "dictionaries"),
+  );
   final mdxFiles = <String>[];
   await findAllFileByExtension(documentsDir, mdxFiles, "mdx");
 

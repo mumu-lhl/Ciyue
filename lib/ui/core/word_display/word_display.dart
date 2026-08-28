@@ -59,8 +59,8 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               appBar: buildAppBar(context, showTab, title: searchBar),
               bottomNavigationBar:
                   (!settings.searchBarInAppBar && searchBar != null)
-                      ? BottomAppBar(child: searchBar)
-                      : null,
+                  ? BottomAppBar(child: searchBar)
+                  : null,
               floatingActionButton: Button(
                 word: widget.word,
                 showAIButtons: settings.aiExplainWord,
@@ -108,7 +108,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                             showTab)
                           buildTabBar(context),
                         if (!settings.searchBarInAppBar && searchBar != null)
-                          searchBar
+                          searchBar,
                       ],
                     ),
                   );
@@ -138,8 +138,8 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           appBar: buildAppBar(context, false, title: searchBar),
           bottomNavigationBar:
               (!settings.searchBarInAppBar && searchBar != null)
-                  ? BottomAppBar(child: searchBar)
-                  : null,
+              ? BottomAppBar(child: searchBar)
+              : null,
           body: firstLoadedDictId != -1
               ? _buildWebView(firstLoadedDictId)
               : Center(
@@ -159,9 +159,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   AppBar buildAppBar(BuildContext context, bool showTab, {Widget? title}) {
     final settings = ref.watch(settingsProvider);
     return AppBar(
-      leading: BackButton(
-        onPressed: () => context.go("/"),
-      ),
+      leading: BackButton(onPressed: () => context.go("/")),
       title: settings.searchBarInAppBar ? title : null,
       bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
           ? buildTabBar(context)
@@ -211,17 +209,15 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           child: AIExplainView(
             word: widget.word,
             key: ValueKey(
-              legacy_provider.Provider.of<AIExplanationModel>(context,
-                      listen: false)
-                  .refreshKey,
+              legacy_provider.Provider.of<AIExplanationModel>(
+                context,
+                listen: false,
+              ).refreshKey,
             ),
           ),
         ),
       for (final id in validDictIds)
-        KeepAliveWidget(
-          key: ValueKey("dict_$id"),
-          child: _buildWebView(id),
-        ),
+        KeepAliveWidget(key: ValueKey("dict_$id"), child: _buildWebView(id)),
     ];
     return TabBarView(children: children);
   }
