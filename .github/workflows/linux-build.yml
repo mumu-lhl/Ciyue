@@ -40,11 +40,13 @@ jobs:
       # rolling registry tag cannot silently raise the glibc build baseline.
       image: docker.io/archlinux/archlinux@sha256:5d1e369287cc90a15fcdc82bb362b206742676912bb8110411b5be24ab45bbca
     env:
-      # Keep the complete package set on a pre-GLIBC_2.42 snapshot so release
-      # artifacts remain usable on older distributions such as Ubuntu 24.04 /
-      # KDE neon.
+      # Keep the complete package set on a GLIBC 2.39 snapshot. This stays
+      # within the GLIBC 2.35-2.41 compatibility range while retaining the
+      # compatible WPEWebKit 2.44.2 stack.
       ARCHLINUX_ARCHIVE_DATE: 2024/07/01
-      ARCHLINUX_PACKAGE_SET: 2024-07-01-v1
+      ARCHLINUX_PACKAGE_SET: 2024-07-01-glibc-2.39-v1
+      ARCHLINUX_GLIBC_VERSION: "2.39"
+      ARCHLINUX_GLIBC_PACKAGE_VERSION: "2.39+r52+gf8e4623421-1"
     steps:
       - uses: actions/checkout@v6
 
@@ -77,12 +79,15 @@ jobs:
             --noconfirm --disable-download-timeout
           pacman --config /tmp/pacman-ci.conf -S --needed \
             --noconfirm --disable-download-timeout \
+            "glibc=$ARCHLINUX_GLIBC_PACKAGE_VERSION" \
             curl dpkg git jq clang cmake ninja patchelf python rpm-tools \
             unzip wget xz gtk3 gstreamer libayatana-appindicator \
             libkeybinder3 libsecret wpewebkit
 
           git config --global --add safe.directory '*'
           pacman -Q glibc wpewebkit libwpe wpebackend-fdo
+          test "$(pacman -Q glibc | awk '{print $2}')" = "$ARCHLINUX_GLIBC_PACKAGE_VERSION"
+          test "$(getconf GNU_LIBC_VERSION | awk '{print $2}')" = "$ARCHLINUX_GLIBC_VERSION"
           test "$(pkg-config --modversion wpe-webkit-2.0)" = "2.44.2"
           rm -f /tmp/pacman-ci.conf
 
