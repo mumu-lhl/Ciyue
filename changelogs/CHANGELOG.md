@@ -1,25 +1,17 @@
-## Bug Fixes
+---
+## [1.23.0](https://github.com/mumu-lhl/Ciyue/compare/v1.22.2..v1.23.0) - 2026-08-28
 
-- **(android)** close dictionary import loading dialog when no mdx files are found - ([f2cb2c2](https://github.com/cocogitto/cocogitto/commit/f2cb2c2b2cbb20f9105bd07d8b672dae5f74a291)) - Mumulhl
-- **(android)** webview on floating window - ([0009604](https://github.com/cocogitto/cocogitto/commit/00096041db4a8abd530e8049c2317a5c7a9d1551)) - Mumulhl
-- resolve search hang and Linux WebView issues - ([050010b](https://github.com/cocogitto/cocogitto/commit/050010b285f6cb0673b64da1dabc1c46ef6d8a0d)) - Mumulhl
-- resolve PROCESS_TEXT issue where repeated searches failed to update - ([d507f5c](https://github.com/cocogitto/cocogitto/commit/d507f5c24653f2901c97cb4a387d6d38a8910e42)) - Mumulhl
+### Bug Fixes
 
-## Features
+- **(android)** update compile sdk - ([641379f](https://github.com/mumu-lhl/Ciyue/commit/641379fc09e0582b69f736f8b5864ae5fd8045cf)) - Mumulhl
+- **(dictionary)** load indexes in background - ([a2d8758](https://github.com/mumu-lhl/Ciyue/commit/a2d87582f4befc30595400dc5534d85babcac6cc)) - Mumulhl
+- **(linux)** restore WebView rendering (#715) - ([fec7ed8](https://github.com/mumu-lhl/Ciyue/commit/fec7ed81be066e1e92acae43fd4e495698123544)) - Mumulhl
+- **(linux)** preserve AppImage data paths - ([81b9ca9](https://github.com/mumu-lhl/Ciyue/commit/81b9ca93cffc7902c047d9ba8a443a30643e5783)) - Mumulhl
+- lower Linux release glibc baseline (#700) - ([96690a6](https://github.com/mumu-lhl/Ciyue/commit/96690a6e2e5bfc05cb8473380f659641a7bd6076)) - Mumulhl
+- add keybinder deb dependency (#701) - ([7449737](https://github.com/mumu-lhl/Ciyue/commit/7449737d723b49246f4cee3d3a0122209cbbf00)) - Mumulhl
+- support Flutter 3.47.2 builds - ([467d316](https://github.com/mumu-lhl/Ciyue/commit/467d316fb9a98fd03df8e172c09a1d1545371ffa)) - Mumulhl
 
-- **(theme)** add pure black AMOLED dark mode toggle - ([65ecb53](https://github.com/cocogitto/cocogitto/commit/65ecb531ff0ed6d15e52570f704cace4c2277b91)) - Mumulhl
-- internationalize tray menu labels - ([88d1b23](https://github.com/cocogitto/cocogitto/commit/88d1b238916be64c5ea7491dfd7aedd0de2930e7)) - Mumulhl
-- notice users when no dictionaries are found - ([7de85a4](https://github.com/cocogitto/cocogitto/commit/7de85a4b05613948f1997524bd037d13efd3e34f)) - Mumulhl
+### Features
 
-## Miscellaneous Chores
-
-- **(release)** disable msix - ([7e98509](https://github.com/cocogitto/cocogitto/commit/7e98509fc92d812fb4ed5760414c48d8fd4d1aeb)) - Mumulhl
-- remove fastforge - ([4c58120](https://github.com/cocogitto/cocogitto/commit/4c58120f5b7aeb4ea90f3e9ce3c0225480489793)) - Mumulhl
-
-## Refactoring
-
-- **(settings)** audio settings are not new - ([fc5b896](https://github.com/cocogitto/cocogitto/commit/fc5b89683e1088c27066992e520e434dd3f91528)) - Mumulhl
-- **(ui)** refactor appearance settings ui - ([b56118d](https://github.com/cocogitto/cocogitto/commit/b56118d43164d66a6c9108e357d7225062d90d3d)) - Mumulhl
-- **(ui)** manage storage should be shown when is non-full flavor - ([4ebd62a](https://github.com/cocogitto/cocogitto/commit/4ebd62a39dad2675231f4cb308ff35b0e0425d4b)) - Mumulhl
-- refactor webview - ([4db32ee](https://github.com/cocogitto/cocogitto/commit/4db32eea8c539f38f42f673354411fe5a8fc1f30)) - Mumulhl
-
+- **(flashcards)** add spaced repetition (#714) - ([b087271](https://github.com/mumu-lhl/Ciyue/commit/b087271f5d81c702d92e0c0d6810042917bdfb9f)) - Mumulhl
+- **(translation)** translated using Weblate (Chinese (Traditional Han script)) (#698) - ([e08f401](https://github.com/mumu-lhl/Ciyue/commit/e08f40168589fff9a3220b15d4244bd76bdcb386)) - Weblate (bot)

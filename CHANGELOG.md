@@ -3,7 +3,103 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [1.22.2](https://github.com/mumu-lhl/Ciyue/compare/v1.22.1..1.22.2) - 2026-03-02
+## [1.23.0](https://github.com/mumu-lhl/Ciyue/compare/v1.22.2..v1.23.0) - 2026-08-28
+
+### Bug Fixes
+
+- **(android)** update compile sdk - ([641379f](https://github.com/mumu-lhl/Ciyue/commit/641379fc09e0582b69f736f8b5864ae5fd8045cf)) - Mumulhl
+- **(dictionary)** load indexes in background - ([a2d8758](https://github.com/mumu-lhl/Ciyue/commit/a2d87582f4befc30595400dc5534d85babcac6cc)) - Mumulhl
+- **(docs)** resolve vite and postcss vulnerabilities - ([6d4d56a](https://github.com/mumu-lhl/Ciyue/commit/6d4d56aab1346f1869836db7046d4810eeeaaaf4)) - Mumulhl
+- **(linux)** restore WebView rendering (#715) - ([fec7ed8](https://github.com/mumu-lhl/Ciyue/commit/fec7ed81be066e1e92acae43fd4e495698123544)) - Mumulhl
+- **(linux)** preserve AppImage data paths - ([81b9ca9](https://github.com/mumu-lhl/Ciyue/commit/81b9ca93cffc7902c047d9ba8a443a30643e5783)) - Mumulhl
+- lower Linux release glibc baseline (#700) - ([96690a6](https://github.com/mumu-lhl/Ciyue/commit/96690a6e2e5bfc05cb8473380f659641a7bd6076)) - Mumulhl
+- add keybinder deb dependency (#701) - ([7449737](https://github.com/mumu-lhl/Ciyue/commit/74497376d723b49246f4cee3d3a0122209cbbf00)) - Mumulhl
+- support Flutter 3.47.2 builds - ([467d316](https://github.com/mumu-lhl/Ciyue/commit/467d316fb9a98fd03df8e172c09a1d1545371ffa)) - Mumulhl
+
+### Documentation
+
+- clarify formatter scope - ([f65cb82](https://github.com/mumu-lhl/Ciyue/commit/f65cb82f72e4b29767109017d943b9647d222e96)) - Mumulhl
+
+### Features
+
+- **(flashcards)** add spaced repetition (#714) - ([b087271](https://github.com/mumu-lhl/Ciyue/commit/b087271f5d81c702d92e0c0d6810042917bdfb9f)) - Mumulhl
+- **(translation)** translated using Weblate (Chinese (Traditional Han script)) (#698) - ([e08f401](https://github.com/mumu-lhl/Ciyue/commit/e08f40168589fff9a3220b15d4244bd76bdcb386)) - Weblate (bot)
+
+### Miscellaneous Chores
+
+- **(build)** fix android - ([d6f65c7](https://github.com/mumu-lhl/Ciyue/commit/d6f65c757f3375b67ef957abe5eec6163ad9295d)) - Mumulhl
+- **(ci)** update flutter version to 3.41.3 - ([9b6fd85](https://github.com/mumu-lhl/Ciyue/commit/9b6fd858d7672140fe5e7813ebd7309edcbe8b3c)) - Mumulhl
+- **(ci)** update flutter version to 3.41.4 - ([1770ec8](https://github.com/mumu-lhl/Ciyue/commit/1770ec86e209406b615f2e70b7006d12d328b058)) - Mumulhl
+- **(ci)** update flutter version to 3.41.6 - ([513b2f4](https://github.com/mumu-lhl/Ciyue/commit/513b2f4dbe81660d72391e182c80cfe06d242820)) - Mumulhl
+- **(ci)** fix linux build - ([f15b213](https://github.com/mumu-lhl/Ciyue/commit/f15b213dcb1edd063f20d92150ebe68b67a7facb)) - Mumulhl
+- **(deps)** update - ([efafb58](https://github.com/mumu-lhl/Ciyue/commit/efafb588bcc8fdf0af6a3acf54e4562dc00b8fb9)) - Mumulhl
+- update flutter version - ([fff2b38](https://github.com/mumu-lhl/Ciyue/commit/fff2b38b3b5469d3e6c997f9a00bd6b10c5f6f4a)) - Mumulhl
+- migrate to material_ui - ([fe1e0a0](https://github.com/mumu-lhl/Ciyue/commit/fe1e0a002f62b9d62a42869e3289e6d1181150f1)) - Mumulhl
+
+### Style
+
+- format dictionary reader changes - ([7ac3934](https://github.com/mumu-lhl/Ciyue/commit/7ac39346547e7533d0cac43f748d62e85d4c62cb)) - Mumulhl
+- format - ([e51c60e](https://github.com/mumu-lhl/Ciyue/commit/e51c60edb81a585771d69ed3a9672702b0511ddc)) - Mumulhl
+
+### Build
+
+- **(deps)** bump talker from 5.1.13 to 5.1.14 - ([031d66b](https://github.com/mumu-lhl/Ciyue/commit/031d66b0a4e310e6274c5258aa27cb23dcc9637b)) - dependabot[bot]
+- **(deps)** bump talker_dio_logger from 5.1.13 to 5.1.14 - ([52dc434](https://github.com/mumu-lhl/Ciyue/commit/52dc43408a772ea70e3faa705882c26c0d6b89e5)) - dependabot[bot]
+- **(deps)** bump dio from 5.9.1 to 5.9.2 - ([0066589](https://github.com/mumu-lhl/Ciyue/commit/00665895c6beda157d3fdfe89058c1c1de18e520)) - dependabot[bot]
+- **(deps)** bump drift_flutter from 0.2.8 to 0.3.0 - ([a93a061](https://github.com/mumu-lhl/Ciyue/commit/a93a061945cef8077284f77f2515627c1f2f99dc)) - dependabot[bot]
+- **(deps)** bump talker_flutter from 5.1.13 to 5.1.14 - ([e5d7941](https://github.com/mumu-lhl/Ciyue/commit/e5d79418f544282f0307c9dd3d5d1ab105430838)) - dependabot[bot]
+- **(deps)** bump flutter_smart_dialog from 4.9.8+9 to 5.0.1 - ([e9ff834](https://github.com/mumu-lhl/Ciyue/commit/e9ff834de8ee8dd4f84e8007a0ccf46cf6e849ae)) - dependabot[bot]
+- **(deps)** bump flutter_local_notifications from 20.1.0 to 21.0.0 - ([e5b4619](https://github.com/mumu-lhl/Ciyue/commit/e5b461907c5140b1fb10e6cdc626d613bd22f3c5)) - dependabot[bot]
+- **(deps)** bump flutter_riverpod from 3.2.1 to 3.3.1 - ([4008d60](https://github.com/mumu-lhl/Ciyue/commit/4008d60e9fccff9cbcc04ae2ea0456d85d57345f)) - dependabot[bot]
+- **(deps)** bump audioplayers from 6.5.1 to 6.6.0 - ([1c0512e](https://github.com/mumu-lhl/Ciyue/commit/1c0512ebd90e3a790117814609212757e929d6cf)) - dependabot[bot]
+- **(deps)** bump talker_dio_logger from 5.1.14 to 5.1.15 (#665) - ([f9a559f](https://github.com/mumu-lhl/Ciyue/commit/f9a559f2ba96bdd9b565c339667cdd9070478b1b)) - dependabot[bot]
+- **(deps)** bump build_runner from 2.11.1 to 2.12.2 (#668) - ([edc80f6](https://github.com/mumu-lhl/Ciyue/commit/edc80f63e5e70060f503c480981e11f095a565c4)) - dependabot[bot]
+- **(deps)** bump flutter_smart_dialog from 5.0.1 to 5.1.0 (#667) - ([cb2d199](https://github.com/mumu-lhl/Ciyue/commit/cb2d199c0d1e0e44da1958b8e5d07cc690dfdb92)) - dependabot[bot]
+- **(deps)** bump logger from 2.6.2 to 2.7.0 (#669) - ([5204d03](https://github.com/mumu-lhl/Ciyue/commit/5204d03179afefb050291e65329f8f4ab6a27111)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.32.0 to 2.32.1 (#670) - ([c319740](https://github.com/mumu-lhl/Ciyue/commit/c319740a6fb4a39af06f612f51a64d1c79a6eda2)) - dependabot[bot]
+- **(deps)** bump build_runner from 2.12.2 to 2.13.1 (#671) - ([0e0135d](https://github.com/mumu-lhl/Ciyue/commit/0e0135d6121ded7c7740110b1a4dc1b711a846da)) - dependabot[bot]
+- **(deps)** bump drift from 2.32.0 to 2.32.1 (#672) - ([b0eca3d](https://github.com/mumu-lhl/Ciyue/commit/b0eca3d6dbd4beabee5b93858758bc58cad9c04b)) - dependabot[bot]
+- **(deps)** bump talker from 5.1.15 to 5.1.16 (#673) - ([347cb8e](https://github.com/mumu-lhl/Ciyue/commit/347cb8e4f04b823454308c843bf827b432e8df5e)) - dependabot[bot]
+- **(deps)** bump shared_preferences from 2.5.4 to 2.5.5 (#674) - ([fec052a](https://github.com/mumu-lhl/Ciyue/commit/fec052af288f2c715cef17ff225e89483143965f)) - dependabot[bot]
+- **(deps)** bump device_info_plus from 12.3.0 to 12.4.0 (#675) - ([f55fc36](https://github.com/mumu-lhl/Ciyue/commit/f55fc368822003bbf34787e679deb99a20e9b344)) - dependabot[bot]
+- **(deps)** bump mockito from 5.6.3 to 5.6.4 (#677) - ([8795907](https://github.com/mumu-lhl/Ciyue/commit/8795907c33b4ceacf6748d2fff37465734297623)) - dependabot[bot]
+- **(deps)** bump talker_flutter from 5.1.15 to 5.1.16 (#676) - ([294c394](https://github.com/mumu-lhl/Ciyue/commit/294c3947fbc1ee8c4617f2093500037600601b48)) - dependabot[bot]
+- **(deps)** bump talker_dio_logger from 5.1.15 to 5.1.16 (#678) - ([250dafb](https://github.com/mumu-lhl/Ciyue/commit/250dafbe87959d54ecb80fb80ccab95a928332a7)) - dependabot[bot]
+- **(deps)** bump gpt_markdown from 1.1.5 to 1.1.6 (#679) - ([a42d469](https://github.com/mumu-lhl/Ciyue/commit/a42d46942052d5947d6ce81a97d10986d31243ca)) - dependabot[bot]
+- **(deps)** bump go_router from 17.1.0 to 17.2.0 (#681) - ([59cd2a5](https://github.com/mumu-lhl/Ciyue/commit/59cd2a5670ca84c80aa2cecc3a299a91c83870d2)) - dependabot[bot]
+- **(deps)** bump package_info_plus from 9.0.0 to 9.0.1 (#682) - ([a27c686](https://github.com/mumu-lhl/Ciyue/commit/a27c6862c17ca63ede559a62b6583d9ebf9cf02a)) - dependabot[bot]
+- **(deps)** bump go_router from 17.2.0 to 17.2.2 (#685) - ([801fbf3](https://github.com/mumu-lhl/Ciyue/commit/801fbf3ca7315d646e5eb73f65649ed18774f972)) - dependabot[bot]
+- **(deps)** bump talker_dio_logger from 5.1.16 to 5.1.17 (#687) - ([10d4747](https://github.com/mumu-lhl/Ciyue/commit/10d474790183e503bc30d5cc3c47db2fa38b6559)) - dependabot[bot]
+- **(deps)** bump talker from 5.1.16 to 5.1.17 (#688) - ([34adff8](https://github.com/mumu-lhl/Ciyue/commit/34adff8b7ce35c59a348442a37033e001181f756)) - dependabot[bot]
+- **(deps)** bump build_runner from 2.13.1 to 2.14.1 (#689) - ([6bf6538](https://github.com/mumu-lhl/Ciyue/commit/6bf6538e50836cab192b1e4411b1f8efe7f58bd8)) - dependabot[bot]
+- **(deps)** merge PR #691 - ([32fc411](https://github.com/mumu-lhl/Ciyue/commit/32fc411a9e981f50803d1e08917396ef42f15a14)) - dependabot[bot]
+- **(deps)** merge PR #692 - ([2c32604](https://github.com/mumu-lhl/Ciyue/commit/2c326049672fa3b8c87ed95a4b920ded2c2940c4)) - dependabot[bot]
+- **(deps)** merge PR #694 - ([7654c22](https://github.com/mumu-lhl/Ciyue/commit/7654c2226c9326ad1676456cd3d455b2be5037b2)) - dependabot[bot]
+- **(deps)** merge PR #696 - ([c03c419](https://github.com/mumu-lhl/Ciyue/commit/c03c41922491703cbb9df97cb280d3f7eeda1eb8)) - dependabot[bot]
+- **(deps)** bump permission_handler from 12.0.1 to 12.0.3 (#702) - ([c3b884b](https://github.com/mumu-lhl/Ciyue/commit/c3b884be24c08490e4001c5962a24542b06953dd)) - dependabot[bot]
+- **(deps)** bump go_router from 17.2.3 to 17.3.0 (#703) - ([f0cbec1](https://github.com/mumu-lhl/Ciyue/commit/f0cbec19127320009dc4ebe9f87395579d31ebc2)) - dependabot[bot]
+- **(deps)** bump flutter_local_notifications from 21.0.0 to 22.0.0 (#705) - ([d77b5b6](https://github.com/mumu-lhl/Ciyue/commit/d77b5b61455563ea19e4c1ed654309791ab821d8)) - dependabot[bot]
+- **(deps)** bump audioplayers from 6.6.0 to 6.7.1 (#704) - ([04b874d](https://github.com/mumu-lhl/Ciyue/commit/04b874dbf965bd2f265f07ad74e56fdec4759845)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.27.3 to 0.27.4 in /docs (#666) - ([4ce81a6](https://github.com/mumu-lhl/Ciyue/commit/4ce81a6b85b14bfc5718bd22221f680ccbb0b965)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.27.4 to 0.28.0 in /docs (#680) - ([81e4699](https://github.com/mumu-lhl/Ciyue/commit/81e4699a7b4573186df8b12483779775d8a51347)) - dependabot[bot]
+
+### Ci
+
+- **(linux)** pin Arch build environment - ([48670ad](https://github.com/mumu-lhl/Ciyue/commit/48670ad11faab902b2cf3ebec4b1f84c292481c4)) - Mumulhl
+- make Linux WebKit patch resilient - ([fc2aa4d](https://github.com/mumu-lhl/Ciyue/commit/fc2aa4d0e2ee1cbb80d066cd41d25c4a34f8badd)) - Mumulhl
+- clean stale Windows CMake cache - ([288d730](https://github.com/mumu-lhl/Ciyue/commit/288d7305d2f69168c8ec0a4a76be2358fb15d68e)) - Mumulhl
+- suppress VS 2026 coroutine deprecation error - ([f3746b0](https://github.com/mumu-lhl/Ciyue/commit/f3746b0fa0590f0afe44bb9bbffdb6926b267001)) - Mumulhl
+- find Windows MSVC redistributables dynamically - ([5c8b835](https://github.com/mumu-lhl/Ciyue/commit/5c8b8353066dd57efe89ca76921e18b41f215c80)) - Mumulhl
+- fall back to runner CRT DLLs on Windows - ([3decaef](https://github.com/mumu-lhl/Ciyue/commit/3decaef76330696305d2ffa6bc47968113542279)) - Mumulhl
+- fix lock threads - ([5e67f55](https://github.com/mumu-lhl/Ciyue/commit/5e67f55b6bfb3a023fcf3942f6be15c77e8d780b)) - Mumulhl
+- pin Flutter 3.44.6 - ([9f460d0](https://github.com/mumu-lhl/Ciyue/commit/9f460d07814114d4b82f58b3559952424b94fe4c)) - Mumulhl
+
+### Merge
+
+- integrate dictionary reader loading - ([885b214](https://github.com/mumu-lhl/Ciyue/commit/885b214caeaef650c53950aa7fe994ca08be6c55)) - Mumulhl
+
+---
+## [1.22.2](https://github.com/mumu-lhl/Ciyue/compare/v1.22.1..v1.22.2) - 2026-03-02
 
 ### Bug Fixes
 
@@ -23,94 +119,394 @@ All notable changes to this project will be documented in this file. See [conven
 - **(deps)** bump rollup - ([1c027db](https://github.com/mumu-lhl/Ciyue/commit/1c027db72e577a636e19ab8a7d3e1fa5a7672b5a)) - dependabot[bot]
 
 ---
-## [1.22.0](https://github.com/mumu-lhl/Ciyue/compare/v1.21.0..1.22.0) - 2026-02-23
+## [1.22.0](https://github.com/mumu-lhl/Ciyue/compare/v1.22.0-beta.1..v1.22.0) - 2026-02-23
 
 ### Bug Fixes
 
-- **(android)** close dictionary import loading dialog when no mdx files are found - ([f2cb2c2](https://github.com/cocogitto/cocogitto/commit/f2cb2c2b2cbb20f9105bd07d8b672dae5f74a291)) - Mumulhl
-- **(android)** webview on floating window - ([0009604](https://github.com/cocogitto/cocogitto/commit/00096041db4a8abd530e8049c2317a5c7a9d1551)) - Mumulhl
-- resolve search hang and Linux WebView issues - ([050010b](https://github.com/cocogitto/cocogitto/commit/050010b285f6cb0673b64da1dabc1c46ef6d8a0d)) - Mumulhl
-- resolve PROCESS_TEXT issue where repeated searches failed to update - ([d507f5c](https://github.com/cocogitto/cocogitto/commit/d507f5c24653f2901c97cb4a387d6d38a8910e42)) - Mumulhl
+- **(android)** close dictionary import loading dialog when no mdx files are found - ([f2cb2c2](https://github.com/mumu-lhl/Ciyue/commit/f2cb2c2b2cbb20f9105bd07d8b672dae5f74a291)) - Mumulhl
+- **(android)** webview on floating window - ([0009604](https://github.com/mumu-lhl/Ciyue/commit/00096041db4a8abd530e8049c2317a5c7a9d1551)) - Mumulhl
+- resolve search hang and Linux WebView issues - ([050010b](https://github.com/mumu-lhl/Ciyue/commit/050010b285f6cb0673b64da1dabc1c46ef6d8a0d)) - Mumulhl
+- resolve PROCESS_TEXT issue where repeated searches failed to update - ([d507f5c](https://github.com/mumu-lhl/Ciyue/commit/d507f5c24653f2901c97cb4a387d6d38a8910e42)) - Mumulhl
 
 ### Features
 
-- **(theme)** add pure black AMOLED dark mode toggle - ([65ecb53](https://github.com/cocogitto/cocogitto/commit/65ecb531ff0ed6d15e52570f704cace4c2277b91)) - Mumulhl
-- internationalize tray menu labels - ([88d1b23](https://github.com/cocogitto/cocogitto/commit/88d1b238916be64c5ea7491dfd7aedd0de2930e7)) - Mumulhl
-- notice users when no dictionaries are found - ([7de85a4](https://github.com/cocogitto/cocogitto/commit/7de85a4b05613948f1997524bd037d13efd3e34f)) - Mumulhl
+- **(theme)** add pure black AMOLED dark mode toggle - ([65ecb53](https://github.com/mumu-lhl/Ciyue/commit/65ecb531ff0ed6d15e52570f704cace4c2277b91)) - Mumulhl
+- internationalize tray menu labels - ([88d1b23](https://github.com/mumu-lhl/Ciyue/commit/88d1b238916be64c5ea7491dfd7aedd0de2930e7)) - Mumulhl
+- notice users when no dictionaries are found - ([7de85a4](https://github.com/mumu-lhl/Ciyue/commit/7de85a4b05613948f1997524bd037d13efd3e34f)) - Mumulhl
 
 ### Miscellaneous Chores
 
-- **(release)** disable msix - ([7e98509](https://github.com/cocogitto/cocogitto/commit/7e98509fc92d812fb4ed5760414c48d8fd4d1aeb)) - Mumulhl
-- remove fastforge - ([4c58120](https://github.com/cocogitto/cocogitto/commit/4c58120f5b7aeb4ea90f3e9ce3c0225480489793)) - Mumulhl
+- **(release)** disable msix - ([7e98509](https://github.com/mumu-lhl/Ciyue/commit/7e98509fc92d812fb4ed5760414c48d8fd4d1aeb)) - Mumulhl
+- remove fastforge - ([4c58120](https://github.com/mumu-lhl/Ciyue/commit/4c58120f5b7aeb4ea90f3e9ce3c0225480489793)) - Mumulhl
 
 ### Refactoring
 
-- **(settings)** audio settings are not new - ([fc5b896](https://github.com/cocogitto/cocogitto/commit/fc5b89683e1088c27066992e520e434dd3f91528)) - Mumulhl
-- **(ui)** refactor appearance settings ui - ([b56118d](https://github.com/cocogitto/cocogitto/commit/b56118d43164d66a6c9108e357d7225062d90d3d)) - Mumulhl
-- **(ui)** manage storage should be shown when is non-full flavor - ([4ebd62a](https://github.com/cocogitto/cocogitto/commit/4ebd62a39dad2675231f4cb308ff35b0e0425d4b)) - Mumulhl
-- refactor webview - ([4db32ee](https://github.com/cocogitto/cocogitto/commit/4db32eea8c539f38f42f673354411fe5a8fc1f30)) - Mumulhl
+- **(settings)** audio settings are not new - ([fc5b896](https://github.com/mumu-lhl/Ciyue/commit/fc5b89683e1088c27066992e520e434dd3f91528)) - Mumulhl
+- **(ui)** refactor appearance settings ui - ([b56118d](https://github.com/mumu-lhl/Ciyue/commit/b56118d43164d66a6c9108e357d7225062d90d3d)) - Mumulhl
+- **(ui)** manage storage should be shown when is non-full flavor - ([4ebd62a](https://github.com/mumu-lhl/Ciyue/commit/4ebd62a39dad2675231f4cb308ff35b0e0425d4b)) - Mumulhl
+- refactor webview - ([4db32ee](https://github.com/mumu-lhl/Ciyue/commit/4db32eea8c539f38f42f673354411fe5a8fc1f30)) - Mumulhl
 
+---
+## [1.22.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.21.0..v1.22.0-beta.1) - 2026-02-14
+
+### Bug Fixes
+
+- **(Android)** fix TTS error during initialization - ([cbfeb7b](https://github.com/mumu-lhl/Ciyue/commit/cbfeb7b261d5b7a931e8aba01869aad6839eba32)) - Mumulhl
+- **(ci)** fix analyse error - ([d8f7df0](https://github.com/mumu-lhl/Ciyue/commit/d8f7df0db03347cce61b7877ee9d43bb74ec91fd)) - Mumulhl
+- **(ci)** fix linux - ([5abf14f](https://github.com/mumu-lhl/Ciyue/commit/5abf14fa7c18f553e53e17b47ee8e85e83dbae18)) - Mumulhl
+- CI - ([60aff9f](https://github.com/mumu-lhl/Ciyue/commit/60aff9f151f3566e5616319674e11325b095f973)) - Mumulhl
+- prevent multiple app instances when receiving text lookup intents - ([20195a7](https://github.com/mumu-lhl/Ciyue/commit/20195a73e1c72f7cb3c83ac3e6b23321744f3595)) - Donald H.
+
+### Features
+
+- **(settings)** add dynamic color toggle and advanced theme color picker - ([ed3b8a8](https://github.com/mumu-lhl/Ciyue/commit/ed3b8a84882c6155189e1d96faaed3def8b889fa)) - Mumulhl
+- **(translation)** translated using Weblate (French) - ([09b7645](https://github.com/mumu-lhl/Ciyue/commit/09b7645718c5b550d4ca44298762d701f9925311)) - SBS1313
+
+### Miscellaneous Chores
+
+- **(build)** update appimage packaging - ([4259fb1](https://github.com/mumu-lhl/Ciyue/commit/4259fb10ecaa336235570881f540680af1c5c6c9)) - Mumulhl
+- **(ci)** update flutter version - ([6b09c6a](https://github.com/mumu-lhl/Ciyue/commit/6b09c6ad7cdd029cdb5e0ffe06f768cad2a1b242)) - Mumulhl
+- **(ci)** update actions - ([7eefef1](https://github.com/mumu-lhl/Ciyue/commit/7eefef140923c465c830dec3d647380f27d3bc51)) - Mumulhl
+- **(ci)** refactor linux build - ([e872a09](https://github.com/mumu-lhl/Ciyue/commit/e872a094a3a0b32e2be3d18414a39625c2533241)) - Mumulhl
+- **(ci)** refactor android and windows build - ([14d9cb9](https://github.com/mumu-lhl/Ciyue/commit/14d9cb98393b75c37bf38929de908c482ca4f156)) - Mumulhl
+- **(ci)** create WPE symlinks on Linux - ([9f42b97](https://github.com/mumu-lhl/Ciyue/commit/9f42b970d5409f9489a7dd7f100c200295ef3c7f)) - Mumulhl
+- **(ci)** fix executable - ([dbb0eee](https://github.com/mumu-lhl/Ciyue/commit/dbb0eee57bb850542fdbf79dd32a6396feb120df)) - Mumulhl
+- **(ci)** fix deb packaging - ([99897dd](https://github.com/mumu-lhl/Ciyue/commit/99897dd268d1ed9b7eb5339237652cd0b07d4c16)) - Mumulhl
+- **(ci)** fix installing rpmdevtools - ([5a080fc](https://github.com/mumu-lhl/Ciyue/commit/5a080fc540bfbb924600a5dca459861e83f1669f)) - Mumulhl
+- **(ci)** fix installing yay - ([61b073e](https://github.com/mumu-lhl/Ciyue/commit/61b073e2a267901d3724203cb504a1a77e251dea)) - Mumulhl
+- **(ci)** fix installing yay - ([7786784](https://github.com/mumu-lhl/Ciyue/commit/77867846440eaa30f7cf79b185ff6c5991092c34)) - Mumulhl
+- **(ci)** fix installing yay - ([c0e6cf8](https://github.com/mumu-lhl/Ciyue/commit/c0e6cf870898d730cd81753ccfe9056f7527749c)) - Mumulhl
+- **(ci)** fix installing rpmdevtools - ([5c8ef5f](https://github.com/mumu-lhl/Ciyue/commit/5c8ef5f65bdd221c211154e0aae138cb289f704b)) - Mumulhl
+- **(ci)** deb packaging - ([491c7c6](https://github.com/mumu-lhl/Ciyue/commit/491c7c619d0fdf4d40514d8a7853bd38b6d93748)) - Mumulhl
+- **(deps)** update - ([cc2bcbe](https://github.com/mumu-lhl/Ciyue/commit/cc2bcbef03451786a63d9d95264d480459d283df)) - Mumulhl
+- **(docs)** update package manager - ([8ce1aaa](https://github.com/mumu-lhl/Ciyue/commit/8ce1aaa9c40f0e7cd0e3b2257df741702dcd39af)) - Mumulhl
+- **(release)** support rpm - ([02a6b2d](https://github.com/mumu-lhl/Ciyue/commit/02a6b2d5e6f697bf2252d0ad9cd3dece5f6aa0d2)) - Mumulhl
+- **(release)** fix building rpm - ([be181c6](https://github.com/mumu-lhl/Ciyue/commit/be181c6f473f6d82309a7fbd952464019a0c7abb)) - Mumulhl
+- add git cliff - ([d6f9354](https://github.com/mumu-lhl/Ciyue/commit/d6f93548c26b6577a26c746910e7665c6444698c)) - Mumulhl
+- add AGENTS.md - ([e351f4b](https://github.com/mumu-lhl/Ciyue/commit/e351f4bf0b1c3585be2c2ce9929bb5aca3d55f9c)) - Mumulhl
+- remove pnpm-lock.yaml - ([ce16363](https://github.com/mumu-lhl/Ciyue/commit/ce16363732018113b235115f51472f22274f3fd3)) - Mumulhl
+- add dist/ to .gitignore - ([766e6ab](https://github.com/mumu-lhl/Ciyue/commit/766e6abcd5f8ec365ca0843faa6d339ef732ae44)) - Mumulhl
+
+### Refactoring
+
+- **(ci)** centralize Flutter version via vars.FLUTTER_VERSION - ([aa9e2d3](https://github.com/mumu-lhl/Ciyue/commit/aa9e2d3b2a39437e94700e320fa9843a5d59b31d)) - Mumulhl
+- **(settings)** streamline theme seed presets and annotate color names - ([9de79cc](https://github.com/mumu-lhl/Ciyue/commit/9de79ccf9c43baf9fb02a1e27c3e06298ff3746e)) - Mumulhl
+
+### Build
+
+- **(deps)** bump talker from 5.1.12 to 5.1.13 - ([d8c2dd2](https://github.com/mumu-lhl/Ciyue/commit/d8c2dd2fd95432ce788b2778caca3bb248067dad)) - dependabot[bot]
+- **(deps)** bump talker_dio_logger from 5.1.12 to 5.1.13 - ([24b9618](https://github.com/mumu-lhl/Ciyue/commit/24b9618f4c6e994aafd943deee285929e7ccde63)) - dependabot[bot]
+- **(deps)** bump talker_flutter from 5.1.12 to 5.1.13 - ([c0358de](https://github.com/mumu-lhl/Ciyue/commit/c0358de4b091e9d6d25a453e30562de6fb84de31)) - dependabot[bot]
+- **(deps)** bump dio from 5.9.0 to 5.9.1 - ([d630ed0](https://github.com/mumu-lhl/Ciyue/commit/d630ed083575e1486dc727217b214b64359bb33f)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.27.2 to 0.27.3 in /docs - ([5201349](https://github.com/mumu-lhl/Ciyue/commit/5201349c79423723cbcd93872579a8fcef47986b)) - dependabot[bot]
+
+---
 ## [1.21.0](https://github.com/mumu-lhl/Ciyue/compare/v1.20.1..v1.21.0) - 2026-01-24
 
-### Features
+### CI
 
-- Support selective backup: choose specific data (wordbook, history, etc.) to include in backups
-
-### Bugs
-
-- Fix applying CSS files in dictionary content
-- Fix dark mode on Android <13
-
-## [1.19.0](https://github.com/mumu-lhl/Ciyue/compare/v1.18.0..v1.19.0) - 2025-08-01
+- Upgrade flutter to 3.35.3 - ([c5c0c64](https://github.com/mumu-lhl/Ciyue/commit/c5c0c643bbc0ed59218f0a478674bc625a084ce5)) - Mumulhl
 
 ### Features
 
-- Audio settings are now officially available
-- Support in-dictionary audio playback
-- Support importing multiple .mdd files (e.g., xxx.1.mdd, xxx.2.mdd, xxx.3.mdd)
-- Add Google Translate and DeepLX as translation providers
-- Add history for translation and writing check
-- Add logs page
-- Support multi-select on search history for bulk delete, add to wordbook, and remove from wordbook
+- **(translation)** translated using Weblate (French) - ([85500db](https://github.com/mumu-lhl/Ciyue/commit/85500dbaff10a0ee0ece688140e034dbfa09d039)) - SBS1313
+- **(translation)** translated using Weblate (French) - ([f7c5709](https://github.com/mumu-lhl/Ciyue/commit/f7c570936401b27bdb2e7789f5f8865e7fcefc33)) - SBS1313
+- **(translation)** translated using Weblate (French) - ([127737b](https://github.com/mumu-lhl/Ciyue/commit/127737b1ef3213803e2588f8f7ce8561ee6e5dbb)) - SBS1313
+- **(translation)** translated using Weblate (French) - ([06fd729](https://github.com/mumu-lhl/Ciyue/commit/06fd7292674cba74a8e852642969f260d2bd2a7e)) - SBS1313
+- **(translation)** added translation using Weblate (Ukrainian) - ([cbc9957](https://github.com/mumu-lhl/Ciyue/commit/cbc99578f1164dee6ff66382dcd9f4b64a9b54f9)) - Максим Горпиніч
 
-### Bugs
+### Build
 
-- Fix misaligned inputs for API Key and AI Model on the AI Settings page
+- **(deps)** bump talker_dio_logger from 5.0.1 to 5.0.2 - ([bfb8149](https://github.com/mumu-lhl/Ciyue/commit/bfb8149c39ca8c875a44644cdd9321327536ea30)) - dependabot[bot]
+- **(deps)** bump flutter_local_notifications from 19.4.2 to 19.5.0 - ([7b3a5f8](https://github.com/mumu-lhl/Ciyue/commit/7b3a5f85f27434011ba3b7139cb8640a86a1a574)) - dependabot[bot]
+- **(deps)** bump go_router from 16.2.4 to 16.3.0 - ([347ee9c](https://github.com/mumu-lhl/Ciyue/commit/347ee9c0e825516dbd86e2938bca863e9f5b285f)) - dependabot[bot]
+- **(deps)** bump tray_manager from 0.5.1 to 0.5.2 - ([12c754e](https://github.com/mumu-lhl/Ciyue/commit/12c754e623ce4044fd658467fc6692ebe10fd468)) - dependabot[bot]
+- **(deps)** bump go_router from 16.3.0 to 17.0.0 - ([6aa7269](https://github.com/mumu-lhl/Ciyue/commit/6aa7269d546f8bd4414cb99857d792e7f170a821)) - dependabot[bot]
+- **(deps)** bump mdast-util-to-hast - ([85686a8](https://github.com/mumu-lhl/Ciyue/commit/85686a8ef0172c577cd98174443c88d5b9809219)) - dependabot[bot]
+- **(deps)** bump talker from 5.0.2 to 5.1.0 - ([a4be208](https://github.com/mumu-lhl/Ciyue/commit/a4be2089fb37926b283f050da15df469b9f023fa)) - dependabot[bot]
+- **(deps)** bump file_selector from 1.0.4 to 1.1.0 - ([a67621b](https://github.com/mumu-lhl/Ciyue/commit/a67621bbceda04e9940546a0a6dbae181d6447b1)) - dependabot[bot]
+- **(deps)** bump talker_dio_logger from 5.0.2 to 5.1.0 - ([d963e82](https://github.com/mumu-lhl/Ciyue/commit/d963e828b4c17c3e3de7eab705527ee71d44855c)) - dependabot[bot]
+- **(deps)** bump talker_flutter from 5.0.2 to 5.1.0 - ([7922ccd](https://github.com/mumu-lhl/Ciyue/commit/7922ccd1f9b0f057a6e24043129c1c17af58d3b5)) - dependabot[bot]
+- **(deps)** bump go_router from 17.0.0 to 17.0.1 - ([8c0543c](https://github.com/mumu-lhl/Ciyue/commit/8c0543c4e77c142a0d08bc74baf2abf6f289fcf7)) - dependabot[bot]
+- **(deps)** bump talker_dio_logger from 5.1.0 to 5.1.8 - ([29e9f99](https://github.com/mumu-lhl/Ciyue/commit/29e9f996c3b30455d3d0cfa180574917fa123390)) - dependabot[bot]
+- **(deps)** bump drift_flutter from 0.2.7 to 0.2.8 - ([753b7e5](https://github.com/mumu-lhl/Ciyue/commit/753b7e5fc1b7c613f9ac79199b85b5009c47de95)) - dependabot[bot]
+- **(deps)** bump preact - ([9dde24e](https://github.com/mumu-lhl/Ciyue/commit/9dde24e4cad094aad9bc598064232589e40a86e1)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.25.11 to 0.27.0 in /docs - ([65a0db5](https://github.com/mumu-lhl/Ciyue/commit/65a0db5f2b10b9438345a796bd59422f834945d6)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.27.0 to 0.27.1 in /docs - ([a76b6b8](https://github.com/mumu-lhl/Ciyue/commit/a76b6b897f81fcf93f20954da8c8ac1b0714382c)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.27.1 to 0.27.2 in /docs - ([c501aec](https://github.com/mumu-lhl/Ciyue/commit/c501aec78bef03db8535a79bde8d9d149bea5967)) - dependabot[bot]
+
+---
+## [1.20.1](https://github.com/mumu-lhl/Ciyue/compare/v1.20.0..v1.20.1) - 2025-08-25
+
+### Features
+
+- **(translation)** added translation using Weblate (French) - ([6b53cad](https://github.com/mumu-lhl/Ciyue/commit/6b53cad30a2241d55076dce81ca7177558e4bab1)) - SBS1313
+- **(translation)** translated using Weblate (French) - ([2876c0a](https://github.com/mumu-lhl/Ciyue/commit/2876c0af5f9ef6c04f5b68c682e834f446c9066c)) - SBS1313
+
+---
+## [1.20.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/nightly..v1.20.0-beta.1) - 2025-08-16
+
+### CI
+
+- If there is no new commit, do not release - ([7c191fe](https://github.com/mumu-lhl/Ciyue/commit/7c191fe94321f54f4f28ae020a3e671ff73de42d)) - Mumulhl
+- Fix nightly release cron - ([00637b8](https://github.com/mumu-lhl/Ciyue/commit/00637b885874f5383a53048f2d1981d72833ce0e)) - Mumulhl
+- Speed building up - ([cdc01ce](https://github.com/mumu-lhl/Ciyue/commit/cdc01ce8eaed8da6a1f86083ab351070ec43a976)) - Mumulhl
+- Fix linux build - ([b8c9e43](https://github.com/mumu-lhl/Ciyue/commit/b8c9e43a964c4d748f0ad08e7934226efac52a8d)) - Mumulhl
+- Add gradle cache - ([c8906e7](https://github.com/mumu-lhl/Ciyue/commit/c8906e7eb81b305c1508bd8dac2d2d64552bbfc3)) - Mumulhl
+- Fix nightly release - ([11a5469](https://github.com/mumu-lhl/Ciyue/commit/11a5469b1327c9146c8051cfb95c45c6a311886a)) - Mumulhl
+- Fix android build - ([76f3631](https://github.com/mumu-lhl/Ciyue/commit/76f3631f7467973af948f271baaad38eb102dcff)) - Mumulhl
+- Fix windows build - ([91b4f74](https://github.com/mumu-lhl/Ciyue/commit/91b4f7462a8658fafcdd8f9a81aeede997fdd38a)) - Mumulhl
+
+### Features
+
+- **(translation)** translated using Weblate (Spanish) - ([0a582d0](https://github.com/mumu-lhl/Ciyue/commit/0a582d02041e3e7dc84638bed45a674b1240ae4e)) - Elías Fuentes
+- **(translation)** translated using Weblate (Bengali) - ([1d2a211](https://github.com/mumu-lhl/Ciyue/commit/1d2a211979908b7e3eec2c3fe24b0da652723c02)) - Ekramul Reza
+
+### Perf
+
+- Reduce initialization time - ([919d6cc](https://github.com/mumu-lhl/Ciyue/commit/919d6cc2c068c0f37db7ded858827f1b6670791c)) - Mumulhl
+- Reduce initialization time - ([1588203](https://github.com/mumu-lhl/Ciyue/commit/1588203461e481929d3e8c7c8bd95b12140e3f4d)) - Mumulhl
+- Speed up word display - ([6a28287](https://github.com/mumu-lhl/Ciyue/commit/6a28287f9aa13341127c8b23a29d4085d0b8a5da)) - Mumulhl
+- Faster word displaying - ([308c669](https://github.com/mumu-lhl/Ciyue/commit/308c669e3509144d479b288dc49e5535e46c82c4)) - Mumulhl
+
+---
+## [nightly](https://github.com/mumu-lhl/Ciyue/compare/v1.19.1..nightly) - 2025-08-10
+
+### Android
+
+- Fix ndk version - ([a606ab4](https://github.com/mumu-lhl/Ciyue/commit/a606ab480e761bbe17b93bf2d816a99e7021caee)) - Mumulhl
+
+### CI
+
+- Nightly Release - ([2068593](https://github.com/mumu-lhl/Ciyue/commit/2068593cf455490a34b92bb30fdadfd0d4758543)) - Mumulhl
+
+### Full
+
+- Fix request storage permission on below Android 13 - ([4665d67](https://github.com/mumu-lhl/Ciyue/commit/4665d67fcc3484f53c440c0556e9383ba02f75f5)) - Mumulhl
+
+### Perf
+
+- Reduce initialization time - ([5665f37](https://github.com/mumu-lhl/Ciyue/commit/5665f376da7dbf3481233a3fb2e100cca0f052f3)) - Mumulhl
 
 ### UI
 
-- Redesign AI Settings page
-- Redesign Translate page
+- Fix home search bar - ([ce78662](https://github.com/mumu-lhl/Ciyue/commit/ce78662fd786f1722b3253eebbb84320e356d19b)) - Mumulhl
+- Fix title display - ([4c9ab53](https://github.com/mumu-lhl/Ciyue/commit/4c9ab538c7681beeea8fb3e16a8de216e38dc33e)) - Mumulhl
+- Fix home page display - ([686a3e4](https://github.com/mumu-lhl/Ciyue/commit/686a3e43b222b035c6f9d99301f267f7edb88936)) - Mumulhl
+- Fix dictionary name - ([09495a2](https://github.com/mumu-lhl/Ciyue/commit/09495a23575766c32744454867d55f6e69aec904)) - Mumulhl
 
+---
+## [1.19.1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.1-beta.1..v1.19.1) - 2025-08-07
+
+### CI
+
+- Remove common build from flutter.yml - ([c5a3475](https://github.com/mumu-lhl/Ciyue/commit/c5a3475b033644e346ee0e18c15d8739eba2e91a)) - Mumulhl
+
+### Features
+
+- **(translation)** translated using Weblate (Gothic) - ([722a768](https://github.com/mumu-lhl/Ciyue/commit/722a7689aeb9f3fff571f23d30ceda6eb457f4bc)) - Roel v
+
+### UI
+
+- Refactor DictionaryCard interaction and layout - ([728db31](https://github.com/mumu-lhl/Ciyue/commit/728db312959cf480205da79fa874f705572a0744)) - Mumulhl
+
+---
+## [1.19.1-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0..v1.19.1-beta.1) - 2025-08-04
+
+### Android
+
+- Remove unused import - ([86bec37](https://github.com/mumu-lhl/Ciyue/commit/86bec3729dd741a5cdd24f910a42bbf347343c14)) - Mumulhl
+
+### CI
+
+- Generate release notes and set prerelease - ([01b735b](https://github.com/mumu-lhl/Ciyue/commit/01b735bae475f0550d291ec6509d8bcc8839e3c4)) - Mumulhl
+- Fix uploading asset - ([eb930d7](https://github.com/mumu-lhl/Ciyue/commit/eb930d79c0fb48303466b6b55c8897cabc822485)) - Mumulhl
+
+### Features
+
+- **(translation)** added translation using Weblate (Gothic) - ([5d25ddb](https://github.com/mumu-lhl/Ciyue/commit/5d25ddb0d9ef5395afe5ba7cbcff6e3df401c951)) - Roel v
+- **(translation)** translated using Weblate (Gothic) - ([bd4c12d](https://github.com/mumu-lhl/Ciyue/commit/bd4c12d8f4135964d7e96f9289b90a3aa5d3be91)) - Roel v
+
+### Perf
+
+- Reduce initialization time - ([f9d48a6](https://github.com/mumu-lhl/Ciyue/commit/f9d48a6131572a8f0f6adb5db4bc4f65972bccd7)) - Mumulhl
+- Speed loading word display page up - ([1cee3be](https://github.com/mumu-lhl/Ciyue/commit/1cee3be0af120bb3fa0c65ef054deb85543c3266)) - Mumulhl
+- Improve reading resource speed - ([f0dd515](https://github.com/mumu-lhl/Ciyue/commit/f0dd515cdb59737aed3b4417eb4025cd36a9f247)) - Mumulhl
+
+### UI
+
+- Use flutter_smart_dialog to provide toast - ([7b14eea](https://github.com/mumu-lhl/Ciyue/commit/7b14eea02ae75039cefaff82b9ea1df84c7ede40)) - Mumulhl
+
+---
+## [1.19.0](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-beta.3..v1.19.0) - 2025-08-02
+
+### CI
+
+- Build full apk - ([24398d0](https://github.com/mumu-lhl/Ciyue/commit/24398d08d85b557508fcc1608651c22c6dc185b0)) - Mumulhl
+
+---
+## [1.19.0-beta.2](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-beta.1..v1.19.0-beta.2) - 2025-08-01
+
+### Features
+
+- **(translation)** translated using Weblate (Norwegian Bokmål) - ([937a29c](https://github.com/mumu-lhl/Ciyue/commit/937a29c7a18101f0594758ca98ea4b3d3f0b179d)) - Anonymous
+- **(translation)** translated using Weblate (Russian) - ([7d3471e](https://github.com/mumu-lhl/Ciyue/commit/7d3471e5226378d483bb85209391b86efb545b30)) - Anonymous
+- **(translation)** translated using Weblate (Persian) - ([8419aa8](https://github.com/mumu-lhl/Ciyue/commit/8419aa8613c9f4e8c49339617326a17118dbd0c9)) - Anonymous
+- **(translation)** translated using Weblate (German) - ([c521db9](https://github.com/mumu-lhl/Ciyue/commit/c521db9259d20d47c339615bbb80043af86f56fb)) - Anonymous
+- **(translation)** translated using Weblate (Spanish) - ([7328117](https://github.com/mumu-lhl/Ciyue/commit/732811724d5e720e4466cf8056234cc146ab797e)) - Anonymous
+- **(translation)** translated using Weblate (Catalan) - ([3ff4285](https://github.com/mumu-lhl/Ciyue/commit/3ff428522ce7ce4cd957451df6b832b50419051e)) - Anonymous
+
+### UI
+
+- Fix API Key and AI Model input form - ([0cfe276](https://github.com/mumu-lhl/Ciyue/commit/0cfe276cbc51e7a44a06414e9e35143b963abea0)) - Mumulhl
+
+---
+## [1.19.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-alpha.2-2..v1.19.0-beta.1) - 2025-07-30
+
+### Miscellaneous Chores
+
+- **(deps)** bump flutter_local_notifications from 19.3.1 to 19.4.0 - ([a184d73](https://github.com/mumu-lhl/Ciyue/commit/a184d733a024f14fd87dc9840b0815c58602044c)) - dependabot[bot]
+
+### UI
+
+- refactor AI settings page - ([bb8a84d](https://github.com/mumu-lhl/Ciyue/commit/bb8a84de0bbb22e36bdf3ee9eab05837a669c003)) - Mumulhl
+
+---
+## [1.19.0-alpha.2-2](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-alpha.2-1..v1.19.0-alpha.2-2) - 2025-07-26
+
+### CI
+
+- Fix installing fastforge - ([90274a1](https://github.com/mumu-lhl/Ciyue/commit/90274a1f1dfbb6a4f0996623e99c513b5ceafb07)) - Mumulhl
+
+---
+## [1.19.0-alpha.2-1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-alpha.2..v1.19.0-alpha.2-1) - 2025-07-26
+
+### CI
+
+- Fix no msix - ([0ee658b](https://github.com/mumu-lhl/Ciyue/commit/0ee658bcdce726b6b526b9c759c904a691b8d4ac)) - Mumulhl
+
+---
+## [1.19.0-alpha.2](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-alpha.1-1..v1.19.0-alpha.2) - 2025-07-26
+
+### CI
+
+- Support msix - ([206450d](https://github.com/mumu-lhl/Ciyue/commit/206450d254af075c91b734f24e8a57b6c41c3fd8)) - Mumulhl
+
+---
+## [1.19.0-alpha.1-1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-alpha.1..v1.19.0-alpha.1-1) - 2025-07-22
+
+### Miscellaneous Chores
+
+- **(deps)** bump drift_flutter from 0.2.4 to 0.2.5 - ([49159aa](https://github.com/mumu-lhl/Ciyue/commit/49159aabc02139acd8171bc4e1b4ced0c95ba581)) - dependabot[bot]
+
+---
+## [1.19.0-alpha.1](https://github.com/mumu-lhl/Ciyue/compare/v1.18.0..v1.19.0-alpha.1) - 2025-07-22
+
+### Miscellaneous Chores
+
+- **(deps)** bump freezed from 3.1.0 to 3.2.0 - ([6dd5b9d](https://github.com/mumu-lhl/Ciyue/commit/6dd5b9d71c63a606a0654b1fff1bf61db00e6e1f)) - dependabot[bot]
+- **(deps)** bump logger from 2.6.0 to 2.6.1 - ([8358bc4](https://github.com/mumu-lhl/Ciyue/commit/8358bc449531dd9ec5fa9ecf32c4255d4daaab58)) - dependabot[bot]
+- **(deps)** bump flutter_local_notifications from 19.3.0 to 19.3.1 - ([508caab](https://github.com/mumu-lhl/Ciyue/commit/508caabf696c3a0479a794466f68eb212aef8ea4)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.25.6 to 0.25.8 in /docs - ([3b6081c](https://github.com/mumu-lhl/Ciyue/commit/3b6081c8ba8d3ca299eeb274031288ac98ff815e)) - dependabot[bot]
+
+---
 ## [1.18.0](https://github.com/mumu-lhl/Ciyue/compare/v1.17.0..v1.18.0) - 2025-07-20
 
-### Features
+### CI
 
-* Auto pop up keyboard in main search tab
-* Add storage management
-* Add multiselectmode on wordbook page
-* Add writing check
-
-### Bugs
-
-* Fix add word to wordbook on home page
-
-## [1.17.0] - 2025-07-06
+- need build-android-full for release - ([bcfb5c6](https://github.com/mumu-lhl/Ciyue/commit/bcfb5c69b11ea1caa70fbb6880fa93411f8ae666)) - Mumulhl
 
 ### Features
 
-* Show changelog after updating
-* Cache AI Explanation
+- **(translation)** translated using Weblate (Bengali) - ([5721910](https://github.com/mumu-lhl/Ciyue/commit/572191035354839248b0f7f796f3dc8344c7793a)) - Ekramul Reza
+- **(translation)** translated using Weblate (Bengali) - ([ca1b5a1](https://github.com/mumu-lhl/Ciyue/commit/ca1b5a1bbaf826f8c732c5de46c817493c4f9377)) - Ekramul Reza
+- **(translation)** translated using Weblate (Bengali) - ([8be092c](https://github.com/mumu-lhl/Ciyue/commit/8be092cb055937d3058bb62d23e6f13283fb4152)) - Ekramul Reza
 
-### UI
+### Miscellaneous Chores
 
-* Refactor settings page
+- **(deps)** bump freezed and freezed_annotation - ([87cfca3](https://github.com/mumu-lhl/Ciyue/commit/87cfca3baacebff9097b1eeb9f2cdc0324db8253)) - dependabot[bot]
+- **(deps)** bump go_router from 15.2.4 to 16.0.0 - ([8471baf](https://github.com/mumu-lhl/Ciyue/commit/8471baf69e1e0ef1b2a4a54646471371604efd6c)) - dependabot[bot]
+- **(deps)** bump permission_handler from 12.0.0+1 to 12.0.1 - ([66b009a](https://github.com/mumu-lhl/Ciyue/commit/66b009ac0f3bf12624a8f1072cfa53e2bfb90477)) - dependabot[bot]
+- **(deps)** bump gpt_markdown from 1.1.1 to 1.1.2 - ([e70cca3](https://github.com/mumu-lhl/Ciyue/commit/e70cca3fb1f76ac63c303010b27034b45030592e)) - dependabot[bot]
+- **(deps)** bump url_launcher from 6.3.1 to 6.3.2 - ([885605b](https://github.com/mumu-lhl/Ciyue/commit/885605bd88a1c39a596f66666ea74f8416fe5d07)) - dependabot[bot]
+- **(deps)** bump drift from 2.27.0 to 2.28.0 - ([e002479](https://github.com/mumu-lhl/Ciyue/commit/e0024791620764a7124f2cc1aecf6c25cb2171e3)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.27.0 to 2.28.0 - ([4549ceb](https://github.com/mumu-lhl/Ciyue/commit/4549ceb5f8a0b99fc138d30cb7576b441fcedd71)) - dependabot[bot]
+- **(deps)** bump url_launcher from 6.3.1 to 6.3.2 - ([5f5a407](https://github.com/mumu-lhl/Ciyue/commit/5f5a407be888e9087a91123d50f5805f5c29b5a6)) - dependabot[bot]
+- **(deps)** bump drift from 2.27.0 to 2.28.0 - ([80568b6](https://github.com/mumu-lhl/Ciyue/commit/80568b66b127e525906f96c05c1a03c1355014ee)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.27.0 to 2.28.0 - ([1b0a218](https://github.com/mumu-lhl/Ciyue/commit/1b0a218193f9e4b3cbdabf26cdb6a50ef2009b54)) - dependabot[bot]
+- **(deps)** bump url_launcher from 6.3.1 to 6.3.2 - ([1aa8268](https://github.com/mumu-lhl/Ciyue/commit/1aa8268a967331dabc1b198d014a3fdf82d21cef)) - dependabot[bot]
+- **(deps)** bump drift from 2.27.0 to 2.28.0 - ([53d6cdf](https://github.com/mumu-lhl/Ciyue/commit/53d6cdf8a21a91da225b7f5245f0c063a1cd7452)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.27.0 to 2.28.0 - ([d899bda](https://github.com/mumu-lhl/Ciyue/commit/d899bda0ebb32e268b609509d461146758ad217b)) - dependabot[bot]
+- **(deps-dev)** bump esbuild from 0.25.5 to 0.25.6 in /docs - ([72ee5e6](https://github.com/mumu-lhl/Ciyue/commit/72ee5e6c77ae0813126ce24255bff602accd079a)) - dependabot[bot]
 
-### Bugs
+---
+## [1.17.0](https://github.com/mumu-lhl/Ciyue/compare/v1.17.0-beta.1..v1.17.0) - 2025-07-06
 
-* Fix adding dictionaries repeatly by refresh button
-* Fix show not support dictionary wrongly
+### Miscellaneous Chores
 
+- **(deps)** bump gpt_markdown from 1.1.0 to 1.1.1 - ([e85e660](https://github.com/mumu-lhl/Ciyue/commit/e85e6607b26bae11c41b6e99bd93c9d6f1901acf)) - dependabot[bot]
+
+---
+## [1.17.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0..v1.17.0-beta.1) - 2025-06-28
+
+### Bug Fixes
+
+- fix typo - ([4a59bf9](https://github.com/mumu-lhl/Ciyue/commit/4a59bf9609b90d325ebbaf0ec05dc04b88412f65)) - Mumulhl
+
+### Documentation
+
+- add archlinux installation - ([2b7b322](https://github.com/mumu-lhl/Ciyue/commit/2b7b3222b75ed86827f2dca25ac376cfa8432aed)) - Mumulhl
+
+### Features
+
+- **(ai translate)** add Bulgarian - ([20da4fc](https://github.com/mumu-lhl/Ciyue/commit/20da4fcc0e24a47ec7c3391940f61d0a6878b9e9)) - Mumulhl
+- **(model)** update gemini 2.5 pro preview to 06-05 - ([d0db088](https://github.com/mumu-lhl/Ciyue/commit/d0db0888146751e074a6b77f6a4608b49ee85ae1)) - Mumulhl
+- **(model)** add new gemini models - ([42fce75](https://github.com/mumu-lhl/Ciyue/commit/42fce7563ff6b1adea8fc77879d7ed63c49cb2ee)) - Mumulhl
+- **(settings)** allow to enable history - ([6e6da08](https://github.com/mumu-lhl/Ciyue/commit/6e6da087fae693a27e02a2a49e56cd334dc89aba)) - Mumulhl
+- **(translation)** translated using Weblate (Bengali) - ([ea09e25](https://github.com/mumu-lhl/Ciyue/commit/ea09e255f2cb5598811f3698af92635a30aa6592)) - Ekramul Reza
+- **(translation)** translated using Weblate (Bengali) - ([838edff](https://github.com/mumu-lhl/Ciyue/commit/838edffc1338ad40a2a9c0d00115ea8fd191a758)) - Ekramul Reza
+- **(translation)** translated using Weblate (Bengali) - ([7f2018a](https://github.com/mumu-lhl/Ciyue/commit/7f2018a08b990c16401fc43362b338208a1c02b9)) - Ekramul Reza
+- **(translation)** translated using Weblate (Chinese (Simplified Han script)) - ([8058d29](https://github.com/mumu-lhl/Ciyue/commit/8058d29d7e0f1a3c5bcf6953d8b523174298a81b)) - Integral
+- add cline workflow for translating arb files - ([6f9d740](https://github.com/mumu-lhl/Ciyue/commit/6f9d74008d6fd84d0d1c6c4072c2b47f9fa71044)) - Mumulhl
+- full flavor - ([70b0393](https://github.com/mumu-lhl/Ciyue/commit/70b0393aeaa9386a6ac2a360f5d00134331c2f0d)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(dependabot)** check updates for gradle - ([083ab64](https://github.com/mumu-lhl/Ciyue/commit/083ab6475179eefa2d8e57be39765ddad87046cc)) - Mumulhl
+- **(dependabot)** fix typo - ([9413125](https://github.com/mumu-lhl/Ciyue/commit/9413125b5baf9a4e09dd0b9489e294b927d076aa)) - Mumulhl
+- **(dependabot)** correct gradle schedule configuration - ([ca73616](https://github.com/mumu-lhl/Ciyue/commit/ca736169e99f2593fc7f887c6512ad4a9fafb585)) - Mumulhl
+- **(deps)** bump flutter_lints from 5.0.0 to 6.0.0 - ([fe3c2f5](https://github.com/mumu-lhl/Ciyue/commit/fe3c2f5cbe523992fb110a307e5693fc3f687bed)) - dependabot[bot]
+- **(deps)** update pubspec.lock - ([3e23446](https://github.com/mumu-lhl/Ciyue/commit/3e23446d3649100368b410eab71cbc8b415006dc)) - Mumulhl
+- **(deps)** bump go_router from 15.1.2 to 15.1.3 - ([862093c](https://github.com/mumu-lhl/Ciyue/commit/862093c8b4c996d5f5d9ec1cb749dbbd205218d4)) - dependabot[bot]
+- **(deps)** bump flutter_launcher_icons from 0.14.3 to 0.14.4 - ([e7ce29e](https://github.com/mumu-lhl/Ciyue/commit/e7ce29e2495ed291e87832220041c86f41b3cca5)) - dependabot[bot]
+- **(deps)** bump gpt_markdown from 1.0.19 to 1.0.20 - ([a0c2f8d](https://github.com/mumu-lhl/Ciyue/commit/a0c2f8d0ee357a0ea40d281ba94005656dc1b5de)) - dependabot[bot]
+- **(deps)** bump go_router from 15.1.3 to 15.2.0 - ([42a2e64](https://github.com/mumu-lhl/Ciyue/commit/42a2e64c5e1609987f43a73a0be9933e5dd8c1a8)) - dependabot[bot]
+- **(deps)** bump drift from 2.26.1 to 2.27.0 - ([1fb85b9](https://github.com/mumu-lhl/Ciyue/commit/1fb85b9614ae8866ad41eac39690bdd34a86e8e7)) - dependabot[bot]
+- **(deps)** bump build_runner from 2.4.15 to 2.5.0 - ([6298d2f](https://github.com/mumu-lhl/Ciyue/commit/6298d2f9d738952cbc17c6b7df7410943ffc0c95)) - dependabot[bot]
+- **(deps)** bump audioplayers from 6.4.0 to 6.5.0 - ([efa3737](https://github.com/mumu-lhl/Ciyue/commit/efa37372b79e25b7453d3025924d722d32dba1ed)) - dependabot[bot]
+- **(deps)** update - ([7e80b23](https://github.com/mumu-lhl/Ciyue/commit/7e80b237602104e97382f1e7fa5f32cde55a88ee)) - Mumulhl
+- **(deps-dev)** bump esbuild from 0.25.4 to 0.25.5 in /docs - ([ecf8998](https://github.com/mumu-lhl/Ciyue/commit/ecf8998ae2ed9b005f38e2ef5cef0131aaeec7c3)) - dependabot[bot]
+- **(justfile)** add count-codes recipe - ([45b0a2d](https://github.com/mumu-lhl/Ciyue/commit/45b0a2dcae31a1bdb266394be0c00f9472647aff)) - Mumulhl
+- **(release)** add full flavor - ([64e5932](https://github.com/mumu-lhl/Ciyue/commit/64e593294103fe693c4def3934c9a56aa74642c6)) - Mumulhl
+- **(release)** upgrade flutter to 3.32.2 - ([0f607e8](https://github.com/mumu-lhl/Ciyue/commit/0f607e8cf34bc1e8e211bb4d16f8d10edbd3fd0c)) - Mumulhl
+- ignore .vscode/settings - ([028707a](https://github.com/mumu-lhl/Ciyue/commit/028707acfaddf93d83d3377a78f0807f802b9194)) - Mumulhl
+- ignore AI config - ([39aa2f5](https://github.com/mumu-lhl/Ciyue/commit/39aa2f58f9d875873fefff740aefdf57cd165622)) - Mumulhl
+- ignore clinerules - ([e831420](https://github.com/mumu-lhl/Ciyue/commit/e831420e6bc70a48c92c634a18d212c4369924d7)) - Mumulhl
+- remove .clinerules/ - ([ec89097](https://github.com/mumu-lhl/Ciyue/commit/ec89097652481af4110a435dd1f12b1d459b303c)) - Mumulhl
+
+### Refactoring
+
+- **(architecture)** move files - ([87fd935](https://github.com/mumu-lhl/Ciyue/commit/87fd935115596346fe7ae535f01f706a0c02529a)) - Mumulhl
+- **(backup)** change version type from String to int for BackupData and Backup class - ([e3898ed](https://github.com/mumu-lhl/Ciyue/commit/e3898edd68f16b6b26400c4638e13e2f8d586141)) - Mumulhl
+- **(ui)** move backup options - ([a0d5daf](https://github.com/mumu-lhl/Ciyue/commit/a0d5daf5f92faeffa1c8df3465d76bdd8d8622b2)) - Mumulhl
+- **(ui)** enhance settings page - ([0b16ada](https://github.com/mumu-lhl/Ciyue/commit/0b16ada6870f2c2abc7b15169f0b81d4fa41bbc1)) - Mumulhl
+- **(ui)** move language and theme selector to appearance page - ([1d62d46](https://github.com/mumu-lhl/Ciyue/commit/1d62d4630208112654e2172a16567e449071d3af)) - Mumulhl
+- refactor main.dart - ([7b909c3](https://github.com/mumu-lhl/Ciyue/commit/7b909c37699d42a35e1951f7ebd0dc0a7589b5de)) - Mumulhl
+- move localization_delegates.dart - ([ab0ec26](https://github.com/mumu-lhl/Ciyue/commit/ab0ec266ef7567c4864aa001cde4deac24bf1d67)) - Mumulhl
+
+### Fea
+
+- **(ui)** add advance settings option to enable more options - ([5064b07](https://github.com/mumu-lhl/Ciyue/commit/5064b0737e71ac214a2f83de9c5e86e98521ab0b)) - Mumulhl
 
 ---
 ## [1.16.0-beta.4](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0-beta.3..v1.16.0-beta.4) - 2025-05-31
@@ -1011,9 +1407,9 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Miscellaneous Chores
 
-- **(deps)** bump drift_dev from 2.22.1 to 2.23.0 ([#97](https://github.com/mumu-lhl/Ciyue/issues/97)) - ([668a5d5](https://github.com/mumu-lhl/Ciyue/commit/668a5d513978622ba0ed8e3266ff93003ba83722)) - dependabot[bot]
-- **(deps)** bump flutter_tts from 4.2.0 to 4.2.1 ([#98](https://github.com/mumu-lhl/Ciyue/issues/98)) - ([fc6b4e9](https://github.com/mumu-lhl/Ciyue/commit/fc6b4e97ced9d2cfc04b69c1341aa081fa514655)) - dependabot[bot]
-- **(deps)** bump drift_flutter from 0.2.3 to 0.2.4 ([#100](https://github.com/mumu-lhl/Ciyue/issues/100)) - ([330a4b9](https://github.com/mumu-lhl/Ciyue/commit/330a4b92aa40ff1a338f269d29d36c6e0ebf880c)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.22.1 to 2.23.0 (#97) - ([668a5d5](https://github.com/mumu-lhl/Ciyue/commit/668a5d513978622ba0ed8e3266ff93003ba83722)) - dependabot[bot]
+- **(deps)** bump flutter_tts from 4.2.0 to 4.2.1 (#98) - ([fc6b4e9](https://github.com/mumu-lhl/Ciyue/commit/fc6b4e97ced9d2cfc04b69c1341aa081fa514655)) - dependabot[bot]
+- **(deps)** bump drift_flutter from 0.2.3 to 0.2.4 (#100) - ([330a4b9](https://github.com/mumu-lhl/Ciyue/commit/330a4b92aa40ff1a338f269d29d36c6e0ebf880c)) - dependabot[bot]
 
 ### Style
 
@@ -1046,7 +1442,7 @@ All notable changes to this project will be documented in this file. See [conven
 ### Features
 
 - look up history - ([fdaa3a8](https://github.com/mumu-lhl/Ciyue/commit/fdaa3a85c32f5478b5cb4a11faf8b3a5d961bb05)) - Mumulhl
-- look up history ([#101](https://github.com/mumu-lhl/Ciyue/issues/101)) - ([4affaec](https://github.com/mumu-lhl/Ciyue/commit/4affaecdcd03f035206bd29e5fa30a98f9a0abbd)) - Mumulhl
+- look up history (#101) - ([4affaec](https://github.com/mumu-lhl/Ciyue/commit/4affaecdcd03f035206bd29e5fa30a98f9a0abbd)) - Mumulhl
 
 ### Refactoring
 
@@ -1080,9 +1476,9 @@ All notable changes to this project will be documented in this file. See [conven
 ### Miscellaneous Chores
 
 - **(ci)** update flutter version - ([b93d6a3](https://github.com/mumu-lhl/Ciyue/commit/b93d6a3a49c128b7d1986a78da6979a8d1318450)) - Mumulhl
-- **(deps)** bump build_runner from 2.4.13 to 2.4.14 ([#91](https://github.com/mumu-lhl/Ciyue/issues/91)) - ([45e1290](https://github.com/mumu-lhl/Ciyue/commit/45e1290f125e5d3c26efa6b4e79e5f2375011b1c)) - dependabot[bot]
-- **(deps)** bump shared_preferences from 2.3.3 to 2.3.4 ([#92](https://github.com/mumu-lhl/Ciyue/issues/92)) - ([c79bb61](https://github.com/mumu-lhl/Ciyue/commit/c79bb618af8b1dae175e43e37667cab753956aad)) - dependabot[bot]
-- **(deps)** bump drift_flutter from 0.2.2 to 0.2.3 ([#93](https://github.com/mumu-lhl/Ciyue/issues/93)) - ([59c8ca5](https://github.com/mumu-lhl/Ciyue/commit/59c8ca5f966eb94ebe017a5c2ae00517fd56fe6d)) - dependabot[bot]
+- **(deps)** bump build_runner from 2.4.13 to 2.4.14 (#91) - ([45e1290](https://github.com/mumu-lhl/Ciyue/commit/45e1290f125e5d3c26efa6b4e79e5f2375011b1c)) - dependabot[bot]
+- **(deps)** bump shared_preferences from 2.3.3 to 2.3.4 (#92) - ([c79bb61](https://github.com/mumu-lhl/Ciyue/commit/c79bb618af8b1dae175e43e37667cab753956aad)) - dependabot[bot]
+- **(deps)** bump drift_flutter from 0.2.2 to 0.2.3 (#93) - ([59c8ca5](https://github.com/mumu-lhl/Ciyue/commit/59c8ca5f966eb94ebe017a5c2ae00517fd56fe6d)) - dependabot[bot]
 
 ### Refactoring
 
@@ -1102,9 +1498,9 @@ All notable changes to this project will be documented in this file. See [conven
 
 - **(ci)** update flutter version - ([a844d36](https://github.com/mumu-lhl/Ciyue/commit/a844d36e610bd68c181c55c87d05e8fb0893168c)) - Mumulhl
 - **(ci)** update flutter version - ([c8fc5f6](https://github.com/mumu-lhl/Ciyue/commit/c8fc5f6619f1a877058331d95b1f2b3bd852eb78)) - Mumulhl
-- **(deps)** bump test from 1.25.7 to 1.25.8 ([#86](https://github.com/mumu-lhl/Ciyue/issues/86)) - ([a9a644c](https://github.com/mumu-lhl/Ciyue/commit/a9a644c222d348e0f58ecc6aa632e4dacf4129f2)) - dependabot[bot]
-- **(deps)** bump device_info_plus from 11.1.1 to 11.2.0 ([#85](https://github.com/mumu-lhl/Ciyue/issues/85)) - ([c2b9a5c](https://github.com/mumu-lhl/Ciyue/commit/c2b9a5c3d4a17089d8517c5d39610b949ba9736f)) - dependabot[bot]
-- **(deps)** bump package_info_plus from 8.1.1 to 8.1.2 ([#84](https://github.com/mumu-lhl/Ciyue/issues/84)) - ([1691ad2](https://github.com/mumu-lhl/Ciyue/commit/1691ad21dd37abcc862259c3ef4484fd35d27cbf)) - dependabot[bot]
+- **(deps)** bump test from 1.25.7 to 1.25.8 (#86) - ([a9a644c](https://github.com/mumu-lhl/Ciyue/commit/a9a644c222d348e0f58ecc6aa632e4dacf4129f2)) - dependabot[bot]
+- **(deps)** bump device_info_plus from 11.1.1 to 11.2.0 (#85) - ([c2b9a5c](https://github.com/mumu-lhl/Ciyue/commit/c2b9a5c3d4a17089d8517c5d39610b949ba9736f)) - dependabot[bot]
+- **(deps)** bump package_info_plus from 8.1.1 to 8.1.2 (#84) - ([1691ad2](https://github.com/mumu-lhl/Ciyue/commit/1691ad21dd37abcc862259c3ef4484fd35d27cbf)) - dependabot[bot]
 
 ---
 ## [0.14.0](https://github.com/mumu-lhl/Ciyue/compare/v0.13.1..v0.14.0) - 2024-12-08
@@ -1116,11 +1512,11 @@ All notable changes to this project will be documented in this file. See [conven
 ### Miscellaneous Chores
 
 - **(ci)** modify the cron of the thread locker - ([c7858c7](https://github.com/mumu-lhl/Ciyue/commit/c7858c7f7decb12ae9ebb54e32f681a7497b4f8a)) - Mumulhl
-- **(deps)** bump drift from 2.21.0 to 2.22.1 ([#70](https://github.com/mumu-lhl/Ciyue/issues/70)) - ([6382f9d](https://github.com/mumu-lhl/Ciyue/commit/6382f9db68a215c8b3082900fa35e0c80ab65f6b)) - dependabot[bot]
-- **(deps)** bump drift_flutter from 0.2.1 to 0.2.2 ([#71](https://github.com/mumu-lhl/Ciyue/issues/71)) - ([7d93618](https://github.com/mumu-lhl/Ciyue/commit/7d93618c95721d296eea57898b57a9309b0a2c3b)) - dependabot[bot]
-- **(deps)** bump flutter_launcher_icons from 0.14.1 to 0.14.2 ([#75](https://github.com/mumu-lhl/Ciyue/issues/75)) - ([34c9484](https://github.com/mumu-lhl/Ciyue/commit/34c9484bd1bf73495e0b5526fee8d11e0d0fad3b)) - dependabot[bot]
-- **(deps)** bump go_router from 14.6.1 to 14.6.2 ([#76](https://github.com/mumu-lhl/Ciyue/issues/76)) - ([8956e09](https://github.com/mumu-lhl/Ciyue/commit/8956e0962ec1973b8794c878a85d2243bc9e2b3c)) - dependabot[bot]
-- **(deps)** bump drift_dev from 2.22.0 to 2.22.1 ([#77](https://github.com/mumu-lhl/Ciyue/issues/77)) - ([f892345](https://github.com/mumu-lhl/Ciyue/commit/f892345c5703508c79cc7a1f7d38aea958d99a5a)) - dependabot[bot]
+- **(deps)** bump drift from 2.21.0 to 2.22.1 (#70) - ([6382f9d](https://github.com/mumu-lhl/Ciyue/commit/6382f9db68a215c8b3082900fa35e0c80ab65f6b)) - dependabot[bot]
+- **(deps)** bump drift_flutter from 0.2.1 to 0.2.2 (#71) - ([7d93618](https://github.com/mumu-lhl/Ciyue/commit/7d93618c95721d296eea57898b57a9309b0a2c3b)) - dependabot[bot]
+- **(deps)** bump flutter_launcher_icons from 0.14.1 to 0.14.2 (#75) - ([34c9484](https://github.com/mumu-lhl/Ciyue/commit/34c9484bd1bf73495e0b5526fee8d11e0d0fad3b)) - dependabot[bot]
+- **(deps)** bump go_router from 14.6.1 to 14.6.2 (#76) - ([8956e09](https://github.com/mumu-lhl/Ciyue/commit/8956e0962ec1973b8794c878a85d2243bc9e2b3c)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.22.0 to 2.22.1 (#77) - ([f892345](https://github.com/mumu-lhl/Ciyue/commit/f892345c5703508c79cc7a1f7d38aea958d99a5a)) - dependabot[bot]
 - **(deps)** update - ([da53695](https://github.com/mumu-lhl/Ciyue/commit/da53695c2fa06c269456a4b13bf95d08f0779fc7)) - Mumulhl
 
 ### Refactoring
@@ -1138,15 +1534,15 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Miscellaneous Chores
 
-- **(deps)** bump go_router from 14.6.0 to 14.6.1 ([#63](https://github.com/mumu-lhl/Ciyue/issues/63)) - ([c420a74](https://github.com/mumu-lhl/Ciyue/commit/c420a74d15f5d8a7288101781d556aca7f915a1a)) - dependabot[bot]
+- **(deps)** bump go_router from 14.6.0 to 14.6.1 (#63) - ([c420a74](https://github.com/mumu-lhl/Ciyue/commit/c420a74d15f5d8a7288101781d556aca7f915a1a)) - dependabot[bot]
 - **(deps)** remove useless dependent - ([63c8f8c](https://github.com/mumu-lhl/Ciyue/commit/63c8f8cae9c54abf129ebf2ca18355cda419cbf5)) - Mumulhl
-- **(translation)** translated using Weblate (Sardinian) ([#62](https://github.com/mumu-lhl/Ciyue/issues/62)) - ([3afb036](https://github.com/mumu-lhl/Ciyue/commit/3afb03638a0ec872e3f0b008500136b919fa665d)) - Weblate (bot)
-- configuring automatically generated release notes ([#66](https://github.com/mumu-lhl/Ciyue/issues/66)) - ([316fe4a](https://github.com/mumu-lhl/Ciyue/commit/316fe4a6ec3c165ee778aa7419bb0ea5c026ff49)) - Mumulhl
+- **(translation)** translated using Weblate (Sardinian) (#62) - ([3afb036](https://github.com/mumu-lhl/Ciyue/commit/3afb03638a0ec872e3f0b008500136b919fa665d)) - Weblate (bot)
+- configuring automatically generated release notes (#66) - ([316fe4a](https://github.com/mumu-lhl/Ciyue/commit/316fe4a6ec3c165ee778aa7419bb0ea5c026ff49)) - Mumulhl
 - disable generating release changelog by git-cliff - ([f33d701](https://github.com/mumu-lhl/Ciyue/commit/f33d7012e8119a01e689d9789463bf0d500c28b7)) - Mumulhl
 
 ### Refactoring
 
-- display no result when search word not in the dict ([#65](https://github.com/mumu-lhl/Ciyue/issues/65)) - ([c49c224](https://github.com/mumu-lhl/Ciyue/commit/c49c22432c07de739413cb2a0443f3172102f187)) - Mumulhl
+- display no result when search word not in the dict (#65) - ([c49c224](https://github.com/mumu-lhl/Ciyue/commit/c49c22432c07de739413cb2a0443f3172102f187)) - Mumulhl
 - refactor path - ([c215604](https://github.com/mumu-lhl/Ciyue/commit/c2156043dfd81c58aee4fd75467cb5c5972338a8)) - Mumulhl
 - refactor settings - ([ba08d6d](https://github.com/mumu-lhl/Ciyue/commit/ba08d6d5cce1bc199975020c0b02c6350ccc7f3d)) - Mumulhl
 - webview display - ([5adffbe](https://github.com/mumu-lhl/Ciyue/commit/5adffbeb18820925a8d4115aa7d9076dcee6fd76)) - Mumulhl
@@ -1156,7 +1552,7 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Features
 
-- support share text menu ([#60](https://github.com/mumu-lhl/Ciyue/issues/60)) - ([a61f863](https://github.com/mumu-lhl/Ciyue/commit/a61f86345b31ed3c387cb84b2fcd4b9787102813)) - Mumulhl
+- support share text menu (#60) - ([a61f863](https://github.com/mumu-lhl/Ciyue/commit/a61f86345b31ed3c387cb84b2fcd4b9787102813)) - Mumulhl
 
 ### Miscellaneous Chores
 
@@ -1167,26 +1563,26 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Features
 
-- support context menu ([#55](https://github.com/mumu-lhl/Ciyue/issues/55)) - ([043c8a3](https://github.com/mumu-lhl/Ciyue/commit/043c8a3dcc299f7ee22044b38a1002279f2f2c78)) - Mumulhl
+- support context menu (#55) - ([043c8a3](https://github.com/mumu-lhl/Ciyue/commit/043c8a3dcc299f7ee22044b38a1002279f2f2c78)) - Mumulhl
 
 ### Miscellaneous Chores
 
-- **(deps)** bump shared_preferences from 2.3.2 to 2.3.3 ([#47](https://github.com/mumu-lhl/Ciyue/issues/47)) - ([4a43577](https://github.com/mumu-lhl/Ciyue/commit/4a43577cd3506b07921dc2ddc1865aa4091df398)) - dependabot[bot]
-- **(deps)** bump package_info_plus from 8.1.0 to 8.1.1 ([#48](https://github.com/mumu-lhl/Ciyue/issues/48)) - ([9ed4eae](https://github.com/mumu-lhl/Ciyue/commit/9ed4eae9223d797072591af74248540da94f3f2c)) - dependabot[bot]
-- **(deps)** bump flutter_tts from 4.0.2 to 4.1.0 ([#50](https://github.com/mumu-lhl/Ciyue/issues/50)) - ([9820df4](https://github.com/mumu-lhl/Ciyue/commit/9820df4bebb62062624b152b8b16a0deb53b96ee)) - dependabot[bot]
-- **(deps)** bump go_router from 14.3.0 to 14.6.0 ([#53](https://github.com/mumu-lhl/Ciyue/issues/53)) - ([c4dac51](https://github.com/mumu-lhl/Ciyue/commit/c4dac51bbdad39167233573d352c70d463079fbd)) - dependabot[bot]
-- **(deps)** bump device_info_plus from 11.1.0 to 11.1.1 ([#51](https://github.com/mumu-lhl/Ciyue/issues/51)) - ([a1935be](https://github.com/mumu-lhl/Ciyue/commit/a1935be5dff7c681796724761a069b674ecfadfa)) - dependabot[bot]
-- **(deps)** bump flutter_tts from 4.1.0 to 4.2.0 ([#54](https://github.com/mumu-lhl/Ciyue/issues/54)) - ([58d95d2](https://github.com/mumu-lhl/Ciyue/commit/58d95d2e307076cb473a7ea83dc0c6d508610ff8)) - dependabot[bot]
+- **(deps)** bump shared_preferences from 2.3.2 to 2.3.3 (#47) - ([4a43577](https://github.com/mumu-lhl/Ciyue/commit/4a43577cd3506b07921dc2ddc1865aa4091df398)) - dependabot[bot]
+- **(deps)** bump package_info_plus from 8.1.0 to 8.1.1 (#48) - ([9ed4eae](https://github.com/mumu-lhl/Ciyue/commit/9ed4eae9223d797072591af74248540da94f3f2c)) - dependabot[bot]
+- **(deps)** bump flutter_tts from 4.0.2 to 4.1.0 (#50) - ([9820df4](https://github.com/mumu-lhl/Ciyue/commit/9820df4bebb62062624b152b8b16a0deb53b96ee)) - dependabot[bot]
+- **(deps)** bump go_router from 14.3.0 to 14.6.0 (#53) - ([c4dac51](https://github.com/mumu-lhl/Ciyue/commit/c4dac51bbdad39167233573d352c70d463079fbd)) - dependabot[bot]
+- **(deps)** bump device_info_plus from 11.1.0 to 11.1.1 (#51) - ([a1935be](https://github.com/mumu-lhl/Ciyue/commit/a1935be5dff7c681796724761a069b674ecfadfa)) - dependabot[bot]
+- **(deps)** bump flutter_tts from 4.1.0 to 4.2.0 (#54) - ([58d95d2](https://github.com/mumu-lhl/Ciyue/commit/58d95d2e307076cb473a7ea83dc0c6d508610ff8)) - dependabot[bot]
 - **(deps)** update - ([c252820](https://github.com/mumu-lhl/Ciyue/commit/c2528202f09ffc67a74c09d5a82340dd867ad2ef)) - Mumulhl
 
 ### Refactoring
 
-- order wordbook ([#56](https://github.com/mumu-lhl/Ciyue/issues/56)) - ([d9e6cf6](https://github.com/mumu-lhl/Ciyue/commit/d9e6cf672ef3ab0ff43dfa7d503807682c38e0fb)) - Mumulhl
+- order wordbook (#56) - ([d9e6cf6](https://github.com/mumu-lhl/Ciyue/commit/d9e6cf672ef3ab0ff43dfa7d503807682c38e0fb)) - Mumulhl
 - reduce code - ([047dd2c](https://github.com/mumu-lhl/Ciyue/commit/047dd2c8ae4656919a52db0d92f414110116a7cd)) - Mumulhl
 
 ### Style
 
-- new icon and remove splash screen ([#57](https://github.com/mumu-lhl/Ciyue/issues/57)) - ([28302b3](https://github.com/mumu-lhl/Ciyue/commit/28302b386628601f5dda57323f82ba9642569537)) - Mumulhl
+- new icon and remove splash screen (#57) - ([28302b3](https://github.com/mumu-lhl/Ciyue/commit/28302b386628601f5dda57323f82ba9642569537)) - Mumulhl
 
 ---
 ## [0.11.2](https://github.com/mumu-lhl/Ciyue/compare/v0.11.1..v0.11.2) - 2024-11-10
@@ -1208,7 +1604,7 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Miscellaneous Chores
 
-- **(translation)** translations update from Hosted Weblate ([#44](https://github.com/mumu-lhl/Ciyue/issues/44)) - ([7b7eff9](https://github.com/mumu-lhl/Ciyue/commit/7b7eff98ffe413aebf97ce697e13f244848ebbb4)) - Weblate (bot)
+- **(translation)** translations update from Hosted Weblate (#44) - ([7b7eff9](https://github.com/mumu-lhl/Ciyue/commit/7b7eff98ffe413aebf97ce697e13f244848ebbb4)) - Weblate (bot)
 
 ---
 ## [0.11.0](https://github.com/mumu-lhl/Ciyue/compare/v0.10.1..v0.11.0) - 2024-11-01
@@ -1216,12 +1612,12 @@ All notable changes to this project will be documented in this file. See [conven
 ### Features
 
 - **(language)** support Русский - ([239ac59](https://github.com/mumu-lhl/Ciyue/commit/239ac597097d6bc944a720abbc396a760852f149)) - Mumulhl
-- tag word in wordbook ([#42](https://github.com/mumu-lhl/Ciyue/issues/42)) - ([d9f7242](https://github.com/mumu-lhl/Ciyue/commit/d9f72420c88e9c8b2c4d7ca41fa05b5936b44d4e)) - Mumulhl
+- tag word in wordbook (#42) - ([d9f7242](https://github.com/mumu-lhl/Ciyue/commit/d9f72420c88e9c8b2c4d7ca41fa05b5936b44d4e)) - Mumulhl
 
 ### Miscellaneous Chores
 
 - **(ci)** add test - ([cfba288](https://github.com/mumu-lhl/Ciyue/commit/cfba288782a80b9b1a06bad36c67633f2235039e)) - Mumulhl
-- **(deps)** bump drift_dev from 2.21.1 to 2.21.2 ([#39](https://github.com/mumu-lhl/Ciyue/issues/39)) - ([4e0d327](https://github.com/mumu-lhl/Ciyue/commit/4e0d3279fb242f334fd7cdac7f6076776730144d)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.21.1 to 2.21.2 (#39) - ([4e0d327](https://github.com/mumu-lhl/Ciyue/commit/4e0d3279fb242f334fd7cdac7f6076776730144d)) - dependabot[bot]
 - **(deps)** update - ([54b9bd4](https://github.com/mumu-lhl/Ciyue/commit/54b9bd4f20347f731f7195b76d8524bc2bad797a)) - Mumulhl
 - **(deps)** update - ([038b813](https://github.com/mumu-lhl/Ciyue/commit/038b813c27958477501746ff06c51a41f79a66b9)) - Mumulhl
 
@@ -1234,7 +1630,7 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Miscellaneous Chores
 
-- **(deps)** bump flutter_native_splash from 2.4.1 to 2.4.2 ([#36](https://github.com/mumu-lhl/Ciyue/issues/36)) - ([3c19293](https://github.com/mumu-lhl/Ciyue/commit/3c19293089bb39e1aa9e45e0141d3d37bd07fba9)) - dependabot[bot]
+- **(deps)** bump flutter_native_splash from 2.4.1 to 2.4.2 (#36) - ([3c19293](https://github.com/mumu-lhl/Ciyue/commit/3c19293089bb39e1aa9e45e0141d3d37bd07fba9)) - dependabot[bot]
 - **(deps)** update - ([6940076](https://github.com/mumu-lhl/Ciyue/commit/6940076786178f77bc33757198adda46d01079a8)) - Mumulhl
 - **(deps)** update - ([e358127](https://github.com/mumu-lhl/Ciyue/commit/e358127dce1bf78a0d7d180613013e021ec3b6d4)) - Mumulhl
 - modify abi codes - ([b959e62](https://github.com/mumu-lhl/Ciyue/commit/b959e62c28f279eba5e8b251efde09b50a062078)) - Mumulhl
@@ -1256,8 +1652,8 @@ All notable changes to this project will be documented in this file. See [conven
 
 - **(ci)** disable build appbundle for release - ([92279a2](https://github.com/mumu-lhl/Ciyue/commit/92279a2eb00bb44a9c5cb8139475e41c26b64b5e)) - Mumulhl
 - **(deps)** update - ([2ebc6ba](https://github.com/mumu-lhl/Ciyue/commit/2ebc6ba7f58333400f74f034c7471dd4682cc835)) - Mumulhl
-- **(deps)** bump mime from 1.0.6 to 2.0.0 ([#31](https://github.com/mumu-lhl/Ciyue/issues/31)) - ([93d53a3](https://github.com/mumu-lhl/Ciyue/commit/93d53a30c9e943436f65fcc69ef1a921e3c8d85b)) - dependabot[bot]
-- **(deps)** bump go_router from 14.2.9 to 14.3.0 ([#30](https://github.com/mumu-lhl/Ciyue/issues/30)) - ([0f99fc2](https://github.com/mumu-lhl/Ciyue/commit/0f99fc2602b124056d50f78d579c222309b70d8a)) - dependabot[bot]
+- **(deps)** bump mime from 1.0.6 to 2.0.0 (#31) - ([93d53a3](https://github.com/mumu-lhl/Ciyue/commit/93d53a30c9e943436f65fcc69ef1a921e3c8d85b)) - dependabot[bot]
+- **(deps)** bump go_router from 14.2.9 to 14.3.0 (#30) - ([0f99fc2](https://github.com/mumu-lhl/Ciyue/commit/0f99fc2602b124056d50f78d579c222309b70d8a)) - dependabot[bot]
 - **(deps)** update - ([08ba2fc](https://github.com/mumu-lhl/Ciyue/commit/08ba2fce4ea88076cddd50134cec4c588fa9cc24)) - Mumulhl
 - **(deps)** update - ([c2e92d8](https://github.com/mumu-lhl/Ciyue/commit/c2e92d8fa5da477d2ac469eef65fe43949b5f585)) - Mumulhl
 - regenerate g.dart files - ([ceb8e5f](https://github.com/mumu-lhl/Ciyue/commit/ceb8e5fd9c75904e30e188b9af241b19084ad17f)) - Mumulhl
@@ -1288,11 +1684,11 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Features
 
-- add export and import to wordbook ([#25](https://github.com/mumu-lhl/Ciyue/issues/25)) - ([47fca75](https://github.com/mumu-lhl/Ciyue/commit/47fca75635dcb93ed0c9ed0ab680467ba8646fed)) - Mumulhl
+- add export and import to wordbook (#25) - ([47fca75](https://github.com/mumu-lhl/Ciyue/commit/47fca75635dcb93ed0c9ed0ab680467ba8646fed)) - Mumulhl
 - add viewing description to manage dictionaries - ([bf74358](https://github.com/mumu-lhl/Ciyue/commit/bf74358f716cb6b40d5aa5e870a5cb1a30178ca9)) - Mumulhl
 - support scan dictionaries under a path - ([0ac77a2](https://github.com/mumu-lhl/Ciyue/commit/0ac77a2e94660834ad815adac6250727fc575e72)) - Mumulhl
-- new icon and support adaptive icon ([#27](https://github.com/mumu-lhl/Ciyue/issues/27)) - ([be0211a](https://github.com/mumu-lhl/Ciyue/commit/be0211a16e586a7ab858317044add643d9f7a656)) - Mumulhl
-- support custom font ([#28](https://github.com/mumu-lhl/Ciyue/issues/28)) - ([36eeefc](https://github.com/mumu-lhl/Ciyue/commit/36eeefcc608a2171784b8fcb77b2df057329660c)) - Mumulhl
+- new icon and support adaptive icon (#27) - ([be0211a](https://github.com/mumu-lhl/Ciyue/commit/be0211a16e586a7ab858317044add643d9f7a656)) - Mumulhl
+- support custom font (#28) - ([36eeefc](https://github.com/mumu-lhl/Ciyue/commit/36eeefcc608a2171784b8fcb77b2df057329660c)) - Mumulhl
 - show empty when there is nothing in page - ([e3fee9d](https://github.com/mumu-lhl/Ciyue/commit/e3fee9dbfc55ead7dcff272a1c6317d43b410d18)) - Mumulhl
 
 ### Miscellaneous Chores
@@ -1302,11 +1698,11 @@ All notable changes to this project will be documented in this file. See [conven
 - **(ci)** remove useless code - ([4a5a1d6](https://github.com/mumu-lhl/Ciyue/commit/4a5a1d65073cf2ad00a1e27cf33d8148d8d0b81b)) - Mumulhl
 - **(ci)** update flutter version - ([3315034](https://github.com/mumu-lhl/Ciyue/commit/331503432d112f5c86ca8930ac5045bf11a6b866)) - Mumulhl
 - **(ci)** update java version - ([ab09a2b](https://github.com/mumu-lhl/Ciyue/commit/ab09a2bf192d3d18ca2f666fcc7a5405d7291dcc)) - Mumulhl
-- **(deps)** bump flutter_inappwebview from 6.0.0 to 6.1.0+1 ([#20](https://github.com/mumu-lhl/Ciyue/issues/20)) - ([5858af4](https://github.com/mumu-lhl/Ciyue/commit/5858af41801ff55c09bdbc6c00f816aa922e2688)) - dependabot[bot]
-- **(deps)** bump flutter_launcher_icons from 0.13.1 to 0.14.0 ([#19](https://github.com/mumu-lhl/Ciyue/issues/19)) - ([b92dc5c](https://github.com/mumu-lhl/Ciyue/commit/b92dc5c6200daabe46b433539d0a66fc1776cae1)) - dependabot[bot]
-- **(deps)** bump flutter_launcher_icons from 0.14.0 to 0.14.1 ([#21](https://github.com/mumu-lhl/Ciyue/issues/21)) - ([d3c647f](https://github.com/mumu-lhl/Ciyue/commit/d3c647fe2f379763748957cb566c920bfb063e47)) - dependabot[bot]
+- **(deps)** bump flutter_inappwebview from 6.0.0 to 6.1.0+1 (#20) - ([5858af4](https://github.com/mumu-lhl/Ciyue/commit/5858af41801ff55c09bdbc6c00f816aa922e2688)) - dependabot[bot]
+- **(deps)** bump flutter_launcher_icons from 0.13.1 to 0.14.0 (#19) - ([b92dc5c](https://github.com/mumu-lhl/Ciyue/commit/b92dc5c6200daabe46b433539d0a66fc1776cae1)) - dependabot[bot]
+- **(deps)** bump flutter_launcher_icons from 0.14.0 to 0.14.1 (#21) - ([d3c647f](https://github.com/mumu-lhl/Ciyue/commit/d3c647fe2f379763748957cb566c920bfb063e47)) - dependabot[bot]
 - **(deps)** update - ([85ad1ea](https://github.com/mumu-lhl/Ciyue/commit/85ad1ea59069bd5f94a4f391df46fc2e4167d8de)) - Mumulhl
-- **(deps)** bump flutter_lints from 4.0.0 to 5.0.0 ([#23](https://github.com/mumu-lhl/Ciyue/issues/23)) - ([0dc525f](https://github.com/mumu-lhl/Ciyue/commit/0dc525ff629722e1bc10745893caba6693533b32)) - dependabot[bot]
+- **(deps)** bump flutter_lints from 4.0.0 to 5.0.0 (#23) - ([0dc525f](https://github.com/mumu-lhl/Ciyue/commit/0dc525ff629722e1bc10745893caba6693533b32)) - dependabot[bot]
 - **(deps)** update - ([10f3488](https://github.com/mumu-lhl/Ciyue/commit/10f34888a1a0465d88df8e0870b18941ff6b6e78)) - Mumulhl
 - **(deps)** update dict_reader - ([810e74e](https://github.com/mumu-lhl/Ciyue/commit/810e74e11ea2b94c95f47f56332acad753a857c3)) - Mumulhl
 - **(deps)** update - ([e6fe39a](https://github.com/mumu-lhl/Ciyue/commit/e6fe39aaa9949a2dcd8d627586347f3c115daeb2)) - Mumulhl
@@ -1344,10 +1740,10 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Miscellaneous Chores
 
-- **(deps)** bump drift_dev from 2.20.1 to 2.20.2 ([#11](https://github.com/mumu-lhl/Ciyue/issues/11)) - ([2369709](https://github.com/mumu-lhl/Ciyue/commit/2369709bdf8961ccd69fe9487fe07469c0020347)) - dependabot[bot]
-- **(deps)** bump drift from 2.20.0 to 2.20.1 ([#10](https://github.com/mumu-lhl/Ciyue/issues/10)) - ([03fd19a](https://github.com/mumu-lhl/Ciyue/commit/03fd19aaf153b8e54cfe7ad84f599b306dee85d5)) - dependabot[bot]
-- **(deps)** bump drift from 2.20.0 to 2.20.2 ([#13](https://github.com/mumu-lhl/Ciyue/issues/13)) - ([43b9403](https://github.com/mumu-lhl/Ciyue/commit/43b9403569807b4acd017488911b89ba6abc6f05)) - dependabot[bot]
-- **(deps)** bump drift_dev from 2.20.2 to 2.20.3 ([#14](https://github.com/mumu-lhl/Ciyue/issues/14)) - ([8643ba3](https://github.com/mumu-lhl/Ciyue/commit/8643ba3db12419663097b657e77f72471f57cbfa)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.20.1 to 2.20.2 (#11) - ([2369709](https://github.com/mumu-lhl/Ciyue/commit/2369709bdf8961ccd69fe9487fe07469c0020347)) - dependabot[bot]
+- **(deps)** bump drift from 2.20.0 to 2.20.1 (#10) - ([03fd19a](https://github.com/mumu-lhl/Ciyue/commit/03fd19aaf153b8e54cfe7ad84f599b306dee85d5)) - dependabot[bot]
+- **(deps)** bump drift from 2.20.0 to 2.20.2 (#13) - ([43b9403](https://github.com/mumu-lhl/Ciyue/commit/43b9403569807b4acd017488911b89ba6abc6f05)) - dependabot[bot]
+- **(deps)** bump drift_dev from 2.20.2 to 2.20.3 (#14) - ([8643ba3](https://github.com/mumu-lhl/Ciyue/commit/8643ba3db12419663097b657e77f72471f57cbfa)) - dependabot[bot]
 - **(workflow)** fix workflow for pr - ([4656bb4](https://github.com/mumu-lhl/Ciyue/commit/4656bb4424420c8b7d9a4ff783036a5ff47bcb14)) - Mumulhl
 - update pubspec.lock - ([f41d4d6](https://github.com/mumu-lhl/Ciyue/commit/f41d4d63880b812ddbea5f488d81d626eee9092a)) - Mumulhl
 
@@ -1436,7 +1832,7 @@ All notable changes to this project will be documented in this file. See [conven
 ### Documentation
 
 - **(readme)** add Translation status - ([b2565f0](https://github.com/mumu-lhl/Ciyue/commit/b2565f0f25ea283247fc1efa445e1ca3d6803059)) - Mumulhl
-- **(readme)** update install ([#4](https://github.com/mumu-lhl/Ciyue/issues/4)) - ([4add0df](https://github.com/mumu-lhl/Ciyue/commit/4add0df3c588d06c0738b3bd8e1e4ea5ae34076c)) - Poussinou
+- **(readme)** update install (#4) - ([4add0df](https://github.com/mumu-lhl/Ciyue/commit/4add0df3c588d06c0738b3bd8e1e4ea5ae34076c)) - Poussinou
 - **(readme)** update install in README_CN.md - ([043b3e5](https://github.com/mumu-lhl/Ciyue/commit/043b3e5db7df8350c2a030bff9a452bf1be02f55)) - Mumulhl
 - **(readme)** remove 'Github Releases' in README_CN.md - ([183114e](https://github.com/mumu-lhl/Ciyue/commit/183114e81725e4d08db8f732c2a90d6c6ffe2309)) - Mumulhl
 - **(readme)** add contributor - ([ab9529f](https://github.com/mumu-lhl/Ciyue/commit/ab9529f4d895ecb1261c22e185ce9a267435d849)) - Mumulhl
