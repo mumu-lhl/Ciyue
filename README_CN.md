@@ -45,6 +45,14 @@ yay -S ciyue
 paru -S ciyue
 ```
 
+### Flatpak
+
+从 release 下载 `ciyue-x86_64.flatpak`，然后安装：
+
+```bash
+flatpak install --user ./ciyue-x86_64.flatpak
+```
+
 ## 推荐词典
 
 见 [Wiki](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries)。

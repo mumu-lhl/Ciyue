@@ -1,0 +1,56 @@
+name: Flatpak Build
+
+on:
+  workflow_call:
+
+jobs:
+  build-flatpak:
+    name: Build Flatpak
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-25.08
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download Linux bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: Linux
+          path: downloaded-linux
+
+      - name: Prepare Flatpak bundle
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p flatpak/bundle
+          tar -xJf downloaded-linux/ciyue-linux.tar.xz \
+            -C flatpak/bundle --strip-components=5
+
+          test -x flatpak/bundle/ciyue
+          test -x flatpak/bundle/ciyue.bin
+          test -x flatpak/bundle/lib/wpe-webkit-2.0/WPENetworkProcess
+          test -x flatpak/bundle/lib/wpe-webkit-2.0/WPEWebProcess
+          test -n "$(find flatpak/bundle/lib -maxdepth 1 \
+            \( -type f -o -type l \) -name 'libWPEWebKit-2.0.so.*' -print -quit)"
+          test -n "$(find flatpak/bundle/lib -maxdepth 1 \
+            \( -type f -o -type l \) -name 'libwpe-1.0.so.*' -print -quit)"
+          test -n "$(find flatpak/bundle/lib -maxdepth 1 \
+            \( -type f -o -type l \) -name 'libWPEBackend-fdo-1.0.so.*' -print -quit)"
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: flatpak/org.eu.mumulhl.ciyue.yml
+          bundle: ciyue-x86_64.flatpak
+          branch: stable
+          cache: false
+          upload-artifact: false
+          verbose: true
+
+      - name: Upload Flatpak artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flatpak
+          path: ciyue-x86_64.flatpak
+          if-no-files-found: error

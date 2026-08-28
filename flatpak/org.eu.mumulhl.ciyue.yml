@@ -1,0 +1,45 @@
+app-id: org.eu.mumulhl.ciyue
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+command: ciyue
+branch: stable
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=dri
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.secrets
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --filesystem=xdg-config/autostart:create
+
+modules:
+  # The Linux release workflow prepares this directory from the Flutter bundle.
+  # It already contains WPE WebKit, its backend, and its WebKit helper process,
+  # so the Flatpak does not depend on a WebKit runtime extension.
+  - name: ciyue
+    buildsystem: simple
+    build-commands:
+      - install -d /app/ciyue
+      - cp -a ./. /app/ciyue/
+      - install -d /app/bin /app/share/applications /app/share/metainfo
+      - ln -s ../ciyue/ciyue /app/bin/ciyue
+      - sed -e "s/Icon=ciyue/Icon=org.eu.mumulhl.ciyue/" ciyue.desktop > /app/share/applications/org.eu.mumulhl.ciyue.desktop
+      - sed -e "s#<icon type=\"stock\">ciyue</icon>#<icon type=\"stock\">org.eu.mumulhl.ciyue</icon>#" ciyue.metainfo.xml > /app/share/metainfo/org.eu.mumulhl.ciyue.metainfo.xml
+      - install -Dm644 ciyue.png /app/share/icons/hicolor/256x256/apps/org.eu.mumulhl.ciyue.png
+    sources:
+      - type: dir
+        path: bundle
+      - type: file
+        path: ../linux/packaging/org.eu.mumulhl.ciyue.desktop
+        dest-filename: ciyue.desktop
+      - type: file
+        path: ../linux/packaging/org.eu.mumulhl.ciyue.metainfo.xml
+        dest-filename: ciyue.metainfo.xml
+      - type: file
+        path: ../assets/icon.png
+        dest-filename: ciyue.png

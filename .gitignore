@@ -65,3 +65,11 @@ dist/
 
 # deb
 *.deb
+
+# Flatpak
+*.flatpak
+.flatpak-builder/
+flatpak/bundle/
+flatpak_app/
+downloaded-linux/
+repo/
