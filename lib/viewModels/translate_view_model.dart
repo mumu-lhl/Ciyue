@@ -4,7 +4,7 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/translation.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 class AiTranslateViewModel extends ChangeNotifier {

@@ -4,7 +4,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/selection_modal.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/setting_selection_chip.dart";
 import "package:ciyue/viewModels/ai_settings_view_model.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 class ProviderSetting extends StatelessWidget {

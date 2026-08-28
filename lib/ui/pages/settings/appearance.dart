@@ -1,6 +1,6 @@
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 import "appearance/dictionary_switch_style_selector.dart";
 import "appearance/drawer_icon_switch.dart";

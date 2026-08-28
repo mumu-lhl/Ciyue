@@ -6,7 +6,7 @@ import "package:ciyue/ui/pages/translate/translate_history_page.dart";
 import "package:ciyue/ui/pages/translate/translate_settings_page.dart";
 import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:ciyue/viewModels/translate_view_model.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 import "package:provider/provider.dart";
 

@@ -1,6 +1,6 @@
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 class ChatMessage {
   final String text;

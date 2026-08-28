@@ -3,7 +3,7 @@ import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/viewModels/home.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 class AISettingsViewModel with ChangeNotifier {
   late String _provider;

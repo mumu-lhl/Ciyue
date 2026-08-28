@@ -1,5 +1,5 @@
 import "package:ciyue/database/app/app.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 class TagsList extends StatefulWidget {
   final List<WordbookTag> tags;

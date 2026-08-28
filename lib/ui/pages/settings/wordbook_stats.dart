@@ -3,7 +3,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/stats_calendar.dart";
 import "package:ciyue/viewModels/open_record_stats_viewmodel.dart";
 import "package:ciyue/viewModels/wordbook_stats_view_model.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 class WordbookStatsPage extends StatelessWidget {

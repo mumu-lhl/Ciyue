@@ -1,5 +1,5 @@
 import "package:ciyue/services/flashcard_scheduler.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 SnackBar buildRatingSavedSnackBar({required VoidCallback onUndo}) {
   return SnackBar(

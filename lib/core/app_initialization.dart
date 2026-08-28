@@ -13,7 +13,7 @@ import "package:ciyue/ui/core/changelog_dialog.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:dynamic_color/dynamic_color.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
 import "package:flutter_tts/flutter_tts.dart";
 import "package:hotkey_manager/hotkey_manager.dart";

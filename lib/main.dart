@@ -18,7 +18,7 @@ import "package:ciyue/viewModels/wordbook.dart";
 import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
 import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -192,6 +192,8 @@ class _CiyueState extends State<Ciyue> with TrayListener {
       darkScheme = resolvedDarkColorScheme;
     }
 
+    final smartDialogBuilder = FlutterSmartDialog.init();
+
     return SafeArea(
       top: false,
       child: MaterialApp.router(
@@ -201,13 +203,22 @@ class _CiyueState extends State<Ciyue> with TrayListener {
         themeMode: settings.themeMode,
         locale: locale,
         localizationsDelegates: [
-          ...AppLocalizations.localizationsDelegates,
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
           const SardinianlLocalizationDelegate(),
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
         debugShowCheckedModeBanner: false,
-        builder: FlutterSmartDialog.init(),
+        builder: (BuildContext context, Widget? child) {
+          // Some dependencies still use package:flutter/material.dart.
+          // Keep their legacy ThemeData and MaterialLocalizations working
+          // while they are migrated to package:material_ui.
+          // ignore: deprecated_member_use
+          return MaterialUiCompatibilityBridge(
+            child: smartDialogBuilder(context, child),
+          );
+        },
       ),
     );
   }

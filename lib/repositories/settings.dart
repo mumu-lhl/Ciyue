@@ -1,7 +1,7 @@
 import "dart:convert";
 
 import "package:ciyue/core/app_globals.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 final settings = Settings();
 

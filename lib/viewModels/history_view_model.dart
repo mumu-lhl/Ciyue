@@ -1,4 +1,4 @@
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 abstract class HistoryViewModel<T> extends ChangeNotifier {
   bool _isLoading = true;

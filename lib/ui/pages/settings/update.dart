@@ -4,7 +4,7 @@ import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/update_available.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 class UpdateSettingsPage extends StatelessWidget {
   const UpdateSettingsPage({super.key});

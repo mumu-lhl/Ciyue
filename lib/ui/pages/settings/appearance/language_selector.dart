@@ -1,7 +1,7 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 class LanguageSelector extends StatefulWidget {
   const LanguageSelector({super.key});

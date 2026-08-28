@@ -4,7 +4,7 @@ import "package:ciyue/models/updater/updater.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/ui/core/update_available.dart";
 import "package:ciyue/core/http_client.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 class Updater {
   static Future<void> autoUpdate() async {

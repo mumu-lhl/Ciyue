@@ -5,7 +5,7 @@ import "package:ciyue/services/flashcard_study_service.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/pages/flashcards/providers.dart";
 import "package:ciyue/ui/pages/flashcards/rating_buttons.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 

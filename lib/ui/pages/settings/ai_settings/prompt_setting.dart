@@ -1,6 +1,6 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/title_text.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 class PromptSetting extends StatelessWidget {
   const PromptSetting({

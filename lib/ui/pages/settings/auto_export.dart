@@ -5,7 +5,7 @@ import "package:ciyue/services/platform.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:file_selector/file_selector.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 
 class AutoExportSettingsPage extends StatelessWidget {

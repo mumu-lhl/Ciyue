@@ -4,7 +4,7 @@ import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/models/translation_result.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 import "package:ciyue/core/http_client.dart";
 import "package:provider/provider.dart";

@@ -4,7 +4,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/text_buttons.dart";
 import "package:ciyue/viewModels/wordbook.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 

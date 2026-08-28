@@ -8,7 +8,7 @@ import "package:ciyue/ui/pages/settings/ai_settings/model_setting.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/prompt_setting.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/provider_setting.dart";
 import "package:ciyue/viewModels/ai_settings_view_model.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 class AiSettingsPage extends StatelessWidget {

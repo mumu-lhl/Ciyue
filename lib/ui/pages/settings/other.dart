@@ -7,7 +7,7 @@ import "package:ciyue/services/startup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/badges.dart";
 import "package:ciyue/utils.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
 import "package:path_provider/path_provider.dart";
 

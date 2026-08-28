@@ -1,6 +1,6 @@
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/repositories/settings.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 
 class AIMarkdown extends StatefulWidget {

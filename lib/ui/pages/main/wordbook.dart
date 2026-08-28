@@ -5,7 +5,7 @@ import "package:ciyue/ui/core/date_divider.dart";
 import "package:ciyue/ui/pages/main/wordbook/app_bar.dart";
 import "package:ciyue/ui/pages/main/wordbook/floating_action_buttons.dart";
 import "package:ciyue/viewModels/wordbook.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 import "package:ciyue/ui/pages/flashcards/overview_card.dart";

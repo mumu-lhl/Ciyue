@@ -4,7 +4,7 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/viewModels/history_view_model.dart";
 import "package:ciyue/viewModels/wordbook.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 class HistoryModel extends HistoryViewModel<HistoryData> {

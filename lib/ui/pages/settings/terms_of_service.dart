@@ -1,4 +1,4 @@
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 

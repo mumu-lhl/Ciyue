@@ -10,7 +10,7 @@ import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/gestures.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";

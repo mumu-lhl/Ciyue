@@ -1,7 +1,7 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/title_text.dart";
 import "package:ciyue/viewModels/ai_settings_view_model.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 class AIAPIUrl extends StatelessWidget {

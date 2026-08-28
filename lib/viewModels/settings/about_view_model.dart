@@ -3,7 +3,7 @@ import "package:ciyue/services/changelog.dart";
 import "package:ciyue/ui/core/changelog_dialog.dart";
 import "package:ciyue/ui/pages/settings/about/sponsor_sheet.dart";
 import "package:ciyue/utils.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:intl/intl.dart";
 import "package:url_launcher/url_launcher.dart";

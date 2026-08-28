@@ -2,7 +2,7 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/history_page.dart";
 import "package:ciyue/viewModels/translate_history_view_model.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:intl/intl.dart";
 import "package:provider/provider.dart";
 

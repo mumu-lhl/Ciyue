@@ -3,7 +3,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/custom_context_menu.dart";
 import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:ciyue/viewModels/writing_check.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 import "package:provider/provider.dart";

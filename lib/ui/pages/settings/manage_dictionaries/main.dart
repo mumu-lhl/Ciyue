@@ -11,7 +11,7 @@ import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:file_selector/file_selector.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
 import "package:provider/provider.dart";

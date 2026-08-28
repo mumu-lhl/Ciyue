@@ -3,7 +3,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/core/search_bar.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 class BottomSearchBar extends StatefulWidget {

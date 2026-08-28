@@ -8,7 +8,7 @@ import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/wordbook.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 

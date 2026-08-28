@@ -1,6 +1,6 @@
 import "package:ciyue/services/translation.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
 class LanguagePicker extends StatefulWidget {
   const LanguagePicker({
