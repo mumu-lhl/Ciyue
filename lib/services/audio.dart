@@ -5,7 +5,7 @@ import "package:audioplayers/audioplayers.dart";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/dictionary.dart";
-import "package:dict_reader/dict_reader.dart";
+import "package:ciyue/services/mdd_reader_pool.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
@@ -40,11 +40,12 @@ Future<void> playSoundOfWord(
           continue;
         }
 
-        final reader = DictReader(mddAudio.path);
-        await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+        final reader = await mddReaderFor(mddAudio.path);
+        final info = await reader.locate(audio.key);
+        if (info == null) {
+          continue;
+        }
 
-        final info = RecordOffsetInfo(word, audio.blockOffset,
-            audio.startOffset, audio.endOffset, audio.compressedSize);
         final Uint8List data = await reader.readOneMdd(info) as Uint8List;
         final mimeType = lookupMimeType(audio.key);
         await player.setSourceBytes(data, mimeType: mimeType);

@@ -173,11 +173,9 @@ class DictionaryCard extends StatelessWidget {
                 }
 
                 final tmpDict = Mdict(path: dictionary.path);
-                // No need to init if file is already gone, _checkAndDeleteDictionary handles it.
-                // If file exists, init will succeed.
-                await tmpDict.init();
-                await tmpDict.removeDictionary();
-                await tmpDict.close();
+                // Removing a dictionary only needs its database id/type; do
+                // not scan the complete dictionary just to delete it.
+                await tmpDict.removeDictionary(dictionaryId: dictionary.id);
 
                 if (context.mounted) {
                   context.read<ManageDictionariesModel>().update();
@@ -245,8 +243,12 @@ class DictionaryCard extends StatelessWidget {
                                   dictManager.dicts[dictionary.id]!.title;
                             } else {
                               final dict = Mdict(path: dictionary.path);
-                              await dict.initOnlyMetadata(dictionary.id);
-                              controller.text = dict.title;
+                              try {
+                                await dict.initOnlyMetadata(dictionary.id);
+                                controller.text = dict.title;
+                              } finally {
+                                await dict.close();
+                              }
                             }
                           },
                           child: Text(AppLocalizations.of(context)!.default_),

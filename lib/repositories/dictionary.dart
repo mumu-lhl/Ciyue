@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:convert";
 import "dart:io";
 
@@ -21,9 +22,20 @@ import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 import "package:provider/provider.dart";
 
-import "../database/dictionary/dictionary.dart";
-
 final dictManager = DictManager();
+
+class MddResourceData {
+  final RecordOffsetInfo offsetInfo;
+  final int? part;
+
+  const MddResourceData({required this.offsetInfo, this.part});
+
+  String get key => offsetInfo.keyText;
+  int get blockOffset => offsetInfo.recordBlockOffset;
+  int get startOffset => offsetInfo.startOffset;
+  int get endOffset => offsetInfo.endOffset;
+  int get compressedSize => offsetInfo.compressedSize;
+}
 
 class DictManager {
   final Map<int, Mdict> dicts = {};
@@ -36,20 +48,55 @@ class DictManager {
 
   bool get isEmpty => dicts.isEmpty;
 
+  /// Registers a dictionary after its small header-only initialization.
+  ///
+  /// The expensive key/record/resource loading is started in the background.
+  /// Callers that need the dictionary to be ready should await the individual
+  /// [Mdict.waitForLoading] call instead.
   Future<void> add(int id, String path) async {
     final dict = Mdict(path: path);
-    dict.init();
+    try {
+      await dict.initMetadata();
+    } catch (e, stackTrace) {
+      try {
+        await dict.close();
+      } catch (_) {
+        // Preserve the initialization error.
+      }
+      Error.throwWithStackTrace(e, stackTrace);
+    }
+
     dicts[id] = dict;
+    final initialization = dict.init();
+    unawaited(_observeInitialization(id, path, initialization));
   }
 
-  Future<void> _clear() async {
-    for (final id in dictIds) {
-      await close(id);
+  Future<void> _observeInitialization(
+      int id, String path, Future<void> initialization) async {
+    try {
+      await initialization;
+    } catch (e, stackTrace) {
+      talker.error(
+        "Failed to initialize dictionary $id ($path): $e",
+        e,
+        stackTrace,
+      );
     }
   }
 
+  Future<void> _clear() async {
+    await Future.wait([for (final id in dictIds) close(id)]);
+  }
+
   Future<void> close(int id) async {
-    await dicts[id]!.close();
+    final dict = dicts[id];
+    if (dict == null) {
+      return;
+    }
+
+    // A dictionary may still be loading in the background. Do not make group
+    // switching wait for the complete index scan; close it when loading ends.
+    await dict.close(waitForLoading: false);
     dicts.remove(id);
   }
 
@@ -58,40 +105,52 @@ class DictManager {
   Future<void> setCurrentGroup(int id) async {
     _isLoading = true;
 
-    await _clear();
+    try {
+      await _clear();
 
-    groupId = id;
-    dictIds = await dictGroupDao.getDictIds(id);
-    final paths = [
-      for (final id in dictIds) await dictionaryListDao.getPath(id)
-    ];
+      groupId = id;
+      dictIds = await dictGroupDao.getDictIds(id);
+      final paths = await Future.wait([
+        for (final dictId in dictIds) dictionaryListDao.getPath(dictId),
+      ]);
 
-    final toRemove = <int>[];
-    for (int i = 0; i < paths.length; i++) {
-      // Avoid the mdict that has been removed
-      try {
-        await add(dictIds[i], paths[i]);
-      } catch (_) {
-        await dictionaryListDao.remove(paths[i]);
-        toRemove.add(i);
+      final added = await Future.wait([
+        for (var i = 0; i < paths.length; i++) _tryAdd(dictIds[i], paths[i]),
+      ]);
+      final toRemove = <int>[];
+      for (var i = 0; i < added.length; i++) {
+        if (!added[i]) {
+          await dictionaryListDao.remove(paths[i]);
+          toRemove.add(i);
+        }
       }
-    }
 
-    for (final i in toRemove.reversed) {
-      final dictId = dictIds.removeAt(i);
-      final databasePath =
-          join((await databaseDirectory()).path, "dictionary_$dictId.sqlite");
-      final file = File(databasePath);
-      if (await file.exists()) {
-        await file.delete();
+      for (final i in toRemove.reversed) {
+        final dictId = dictIds.removeAt(i);
+        final databasePath =
+            join((await databaseDirectory()).path, "dictionary_$dictId.sqlite");
+        final file = File(databasePath);
+        if (await file.exists()) {
+          await file.delete();
+        }
       }
-    }
 
-    if (toRemove.isNotEmpty) {
-      await dictGroupDao.updateDictIds(groupId, dictIds);
+      if (toRemove.isNotEmpty) {
+        await dictGroupDao.updateDictIds(groupId, dictIds);
+      }
+    } finally {
+      _isLoading = false;
     }
+  }
 
-    _isLoading = false;
+  Future<bool> _tryAdd(int id, String path) async {
+    try {
+      await add(id, path);
+      return true;
+    } catch (e, stackTrace) {
+      talker.error("Failed to add dictionary $id ($path): $e", e, stackTrace);
+      return false;
+    }
   }
 }
 
@@ -117,11 +176,36 @@ class Mdict {
   static const maxLoadingCount = 5000;
 
   bool isLoading = true;
+  Future<void>? _metadataInitialization;
+  Future<void>? _initialization;
+  Future<void>? _closeFuture;
+  bool _readerInitialized = false;
+  bool _serverInitialized = false;
+  Object? _initializationError;
+
+  bool get isReady =>
+      _initialization != null && !isLoading && _initializationError == null;
 
   Mdict({required this.path});
 
+  Future<void> initMetadata() =>
+      _metadataInitialization ??= _initializeMetadata();
+
+  Future<void> _initializeMetadata() async {
+    id = await dictionaryListDao.getId(path);
+    type = await dictionaryListDao.getType(id);
+
+    if (!_readerInitialized) {
+      reader = DictReader("$path.mdx");
+      _readerInitialized = true;
+    }
+    await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+    title = reader.header["Title"] ?? basename(path);
+  }
+
   Future<void> add() async {
     reader = DictReader("$path.mdx");
+    _readerInitialized = true;
     await reader.initDict(readKeys: false, readRecordBlockInfo: false);
 
     title = reader.header["Title"] ?? basename(path);
@@ -130,12 +214,57 @@ class Mdict {
     isLoading = false;
   }
 
-  Future<void> close() async {
-    await reader.close();
-
-    for (final readerResource in readerResources) {
-      await readerResource.close();
+  Future<void> close({bool waitForLoading = true}) {
+    final existing = _closeFuture;
+    if (existing != null) {
+      return waitForLoading ? existing : Future<void>.value();
     }
+
+    final closeFuture = _closeAfterInitialization();
+    _closeFuture = closeFuture;
+
+    // Group changes should not wait for a background dictionary scan. The
+    // cleanup future keeps the reader open until that scan has finished.
+    if (!waitForLoading && isLoading) {
+      unawaited(_observeClose(closeFuture));
+      return Future<void>.value();
+    }
+    return closeFuture;
+  }
+
+  Future<void> _observeClose(Future<void> closing) async {
+    try {
+      await closing;
+    } catch (e, stackTrace) {
+      talker.error("Failed to close dictionary $path: $e", e, stackTrace);
+    }
+  }
+
+  Future<void> _closeAfterInitialization() async {
+    final initialization = _initialization ?? _metadataInitialization;
+    if (initialization != null) {
+      try {
+        await initialization;
+      } catch (_) {
+        // Close partially initialized readers even when initialization failed.
+      }
+    }
+
+    if (_serverInitialized) {
+      try {
+        await server?.close(force: true);
+      } catch (_) {
+        // Continue closing dictionary readers.
+      }
+    }
+
+    final readers = <Future<void>>[];
+    if (_readerInitialized) {
+      readers.add(reader.close());
+    }
+    readers.addAll(
+        readerResources.map((readerResource) => readerResource.close()));
+    await Future.wait(readers);
   }
 
   Future<void> customFont(String? path) async {
@@ -159,11 +288,15 @@ class Mdict {
         return;
       }
 
-      final cacheData = await reader.exportCacheAsString();
-      await cacheFile.writeAsString(cacheData);
-
-      if (type == "mdx") {
-        isLoading = false;
+      try {
+        final cacheData = await reader.exportCacheAsString();
+        await cacheFile.writeAsString(cacheData, flush: true);
+      } catch (e, stackTrace) {
+        talker.error(
+          "Failed to save cache for $id ($type): $e",
+          e,
+          stackTrace,
+        );
       }
     };
   }
@@ -173,29 +306,24 @@ class Mdict {
     final cacheDir = await getApplicationCacheDirectory();
     final cacheFile = File(join(cacheDir.path, cacheFileName));
 
-    final cacheExist = await cacheFile.exists();
-    if (!cacheExist) {
+    if (!await cacheFile.exists()) {
       return false;
     }
 
     try {
       final cache = await cacheFile.readAsString();
-      reader.importCacheFromString(cache).then((_) {
-        if (type == "mdx") {
-          isLoading = false;
-        }
-      }, onError: (e) {
-        if (type == "mdx") {
-          isLoading = false;
-        }
-        talker.error("Failed to import cache for $id ($type): $e");
-        cacheFile.delete().catchError((_) => cacheFile);
-      });
-
+      await reader.importCacheFromString(cache);
       return true;
-    } catch (_) {
-      if (cacheExist) {
+    } catch (e, stackTrace) {
+      talker.error(
+        "Failed to import cache for $id ($type): $e",
+        e,
+        stackTrace,
+      );
+      try {
         await cacheFile.delete();
+      } catch (_) {
+        // The cache is optional; continue with a full dictionary scan.
       }
       return false;
     }
@@ -213,64 +341,68 @@ class Mdict {
     }
   }
 
-  Future<void> init() async {
-    id = await dictionaryListDao.getId(path);
-    type = await dictionaryListDao.getType(id);
+  Future<void> init() => _initialization ??= _initialize();
 
-    reader = DictReader("$path.mdx");
+  Future<void> _initialize() async {
+    try {
+      await initMetadata();
+      await initDictReaders();
 
-    await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+      final fontPath = await dictionaryListDao.getFontPath(id);
+      await customFont(fontPath);
 
-    initDictReaders();
+      await _getTitle();
 
-    final fontPath = await dictionaryListDao.getFontPath(id);
-    customFont(fontPath);
+      await _checkResources();
 
-    await _getTitle();
-
-    await _checkResources();
-
-    if (Platform.isWindows || Platform.isLinux) {
-      await _startServer();
+      if (Platform.isWindows || Platform.isLinux) {
+        await _startServer();
+      }
+    } catch (e) {
+      _initializationError = e;
+      rethrow;
+    } finally {
+      isLoading = false;
     }
   }
 
   Future<void> initDictReaders() async {
     if (!await hitCache(id, "mdx", reader)) {
       reader.setOnRecordBlockInfoRead(saveCache(id, "mdx", reader));
-      reader.initDict(readHeader: false);
+      await reader.initDict(readHeader: false);
+    }
+
+    Future<void> loadMddReader(File file, String cacheType) async {
+      final resourceReader = DictReader(file.path);
+      try {
+        if (!await hitCache(id, cacheType, resourceReader)) {
+          resourceReader.setOnRecordBlockInfoRead(
+              saveCache(id, cacheType, resourceReader));
+          await resourceReader.initDict();
+        } else {
+          // importCache opens the file in current dict_reader versions. Keep
+          // this no-op initialization for compatibility with older versions.
+          await resourceReader.initDict(
+              readKeys: false, readRecordBlockInfo: false);
+        }
+        readerResources.add(resourceReader);
+      } catch (_) {
+        await resourceReader.close();
+        rethrow;
+      }
     }
 
     final mddFile = File("$path.mdd");
     if (await mddFile.exists()) {
-      final reader = DictReader(mddFile.path);
-
-      if (!await hitCache(id, "mdd", reader)) {
-        reader.setOnRecordBlockInfoRead(saveCache(id, "mdd", reader));
-        reader.initDict();
-      } else {
-        reader.initDict(readKeys: false, readRecordBlockInfo: false);
-      }
-
-      readerResources.add(reader);
+      await loadMddReader(mddFile, "mdd");
     }
 
     for (var i = 1;; i++) {
       final mddFile = File("$path.$i.mdd");
-      if (await mddFile.exists()) {
-        final reader = DictReader(mddFile.path);
-
-        if (!await hitCache(id, "$i.mdd", reader)) {
-          reader.setOnRecordBlockInfoRead(saveCache(id, "$i.mdd", reader));
-          reader.initDict();
-        } else {
-          reader.initDict(readKeys: false, readRecordBlockInfo: false);
-        }
-
-        readerResources.add(reader);
-      } else {
+      if (!await mddFile.exists()) {
         break;
       }
+      await loadMddReader(mddFile, "$i.mdd");
     }
   }
 
@@ -300,26 +432,31 @@ class Mdict {
 
   Future<void> initOnlyMetadata(int id) async {
     this.id = id;
-
     reader = DictReader("$path.mdx");
+    _readerInitialized = true;
 
-    if (await hitCache(id, "mdx", reader)) {
-      await reader.initDict(readKeys: false, readRecordBlockInfo: false);
-    } else {
-      await reader.initDict(readRecordBlockInfo: false);
-      reader.setOnRecordBlockInfoRead(saveCache(id, "mdx", reader));
+    try {
+      if (await hitCache(id, "mdx", reader)) {
+        await reader.initDict(readKeys: false, readRecordBlockInfo: false);
+      } else {
+        await reader.initDict(readRecordBlockInfo: false);
+      }
+
+      await _getTitle();
+      await _checkResources();
+      entriesTotal = reader.numEntries;
+    } finally {
+      isLoading = false;
     }
-
-    await waitForLoading();
-
-    await _getTitle();
-
-    await _checkResources();
-
-    entriesTotal = reader.numEntries;
   }
 
   Future<void> waitForLoading() async {
+    final initialization = _initialization;
+    if (initialization != null) {
+      await initialization;
+      return;
+    }
+
     while (isLoading) {
       await Future.delayed(Duration(milliseconds: 40));
     }
@@ -330,8 +467,8 @@ class Mdict {
       return null;
     }
 
-    if (filename == fontName) {
-      final file = File(dictManager.dicts[id]!.fontPath!);
+    if (filename == fontName && fontPath != null) {
+      final file = File(fontPath!);
       final data = await file.readAsBytes();
       return data;
     }
@@ -347,8 +484,7 @@ class Mdict {
         try {
           final results = await readResource(filename);
           for (final result in results) {
-            final info = RecordOffsetInfo(result.key, result.blockOffset,
-                result.startOffset, result.endOffset, result.compressedSize);
+            final info = result.offsetInfo;
             try {
               if (result.part == null) {
                 data = await readerResources[0].readOneMdd(info) as Uint8List;
@@ -426,10 +562,14 @@ class Mdict {
     return header + content;
   }
 
-  Future<void> removeDictionary() async {
-    if (type == 0) {
+  Future<void> removeDictionary({int? dictionaryId}) async {
+    final removeId = dictionaryId ?? id;
+    final removeType =
+        dictionaryId == null ? type : await dictionaryListDao.getType(removeId);
+
+    if (removeType == 0) {
       final databasePath =
-          join((await databaseDirectory()).path, "dictionary_$id.sqlite");
+          join((await databaseDirectory()).path, "dictionary_$removeId.sqlite");
       final file = File(databasePath);
       await file.delete();
     }
@@ -488,8 +628,8 @@ class Mdict {
     }
   }
 
-  Future<List<ResourceData>> readResource(String key) async {
-    final resourceData = <ResourceData>[];
+  Future<List<MddResourceData>> readResource(String key) async {
+    final resourceData = <MddResourceData>[];
 
     final slashKey = key.replaceAll("\\", "/");
     final backslashKey = key.replaceAll("/", "\\");
@@ -526,12 +666,8 @@ class Mdict {
 
       final part = readerResources.indexOf(readerResource);
 
-      resourceData.add(ResourceData(
-        key: offsetInfo.keyText,
-        blockOffset: offsetInfo.recordBlockOffset,
-        startOffset: offsetInfo.startOffset,
-        endOffset: offsetInfo.endOffset,
-        compressedSize: offsetInfo.compressedSize,
+      resourceData.add(MddResourceData(
+        offsetInfo: offsetInfo,
         part: part == -1 ? null : part,
       ));
     }
@@ -542,6 +678,7 @@ class Mdict {
   Future<void> _startServer() async {
     try {
       server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      _serverInitialized = true;
       port = server!.port;
       talker.info("HTTP server started on port $port");
 
@@ -579,7 +716,9 @@ class Mdict {
         }
       });
     } catch (e) {
-      server?.close();
+      if (_serverInitialized) {
+        await server?.close(force: true);
+      }
     }
   }
 }
@@ -605,8 +744,8 @@ Future<void> selectMdx(BuildContext context, List<String> paths,
       continue;
     }
 
+    final dict = Mdict(path: pathNoExtension);
     try {
-      final dict = Mdict(path: pathNoExtension);
       await dict.add();
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
@@ -616,6 +755,8 @@ Future<void> selectMdx(BuildContext context, List<String> paths,
         talker.error("Failed to add dictionary: $pathNoExtension, error: $e", e,
             StackTrace.current);
       }
+    } finally {
+      await dict.close();
     }
 
     // Why? Don't know. Strange!
@@ -635,48 +776,53 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
     }
 
     final reader = DictReader(path);
-    await reader.initDict();
+    try {
+      await reader.initDict();
 
-    int? mddAudioListId;
-    if (context.mounted) {
-      final title = reader.header["Title"] ?? setExtension(basename(path), "");
-      mddAudioListId =
-          await context.read<AudioModel>().addMddAudio(path, title);
-    }
+      int? mddAudioListId;
+      if (context.mounted) {
+        final title =
+            reader.header["Title"] ?? setExtension(basename(path), "");
+        mddAudioListId =
+            await context.read<AudioModel>().addMddAudio(path, title);
+      }
 
-    final resources = <MddAudioResourceCompanion>[];
-    var number = 0;
-    var loadingCount = 0;
+      final resources = <MddAudioResourceCompanion>[];
+      var number = 0;
+      var loadingCount = 0;
 
-    await for (final info in reader.readWithOffset()) {
-      if (number == Mdict.maxBatchSize) {
-        number = 0;
+      await for (final info in reader.readWithOffset()) {
+        if (number == Mdict.maxBatchSize) {
+          number = 0;
+          await mddAudioResourceDao.add(resources);
+          resources.clear();
+        }
+
+        if (loadingCount == Mdict.maxLoadingCount) {
+          LoadingDialogContentState.updateText(
+              AppLocalizations.of(navigatorKey.currentContext!)!
+                  .addingResource(info.keyText));
+          loadingCount = 0;
+        }
+
+        final data = MddAudioResourceCompanion(
+            key: Value(info.keyText),
+            blockOffset: Value(info.recordBlockOffset),
+            startOffset: Value(info.startOffset),
+            endOffset: Value(info.endOffset),
+            compressedSize: Value(info.compressedSize),
+            mddAudioListId: Value(mddAudioListId!));
+        resources.add(data);
+
+        number++;
+        loadingCount++;
+      }
+
+      if (number > 0) {
         await mddAudioResourceDao.add(resources);
-        resources.clear();
       }
-
-      if (loadingCount == Mdict.maxLoadingCount) {
-        LoadingDialogContentState.updateText(
-            AppLocalizations.of(navigatorKey.currentContext!)!
-                .addingResource(info.keyText));
-        loadingCount = 0;
-      }
-
-      final data = MddAudioResourceCompanion(
-          key: Value(info.keyText),
-          blockOffset: Value(info.recordBlockOffset),
-          startOffset: Value(info.startOffset),
-          endOffset: Value(info.endOffset),
-          compressedSize: Value(info.compressedSize),
-          mddAudioListId: Value(mddAudioListId!));
-      resources.add(data);
-
-      number++;
-      loadingCount++;
-    }
-
-    if (number > 0) {
-      await mddAudioResourceDao.add(resources);
+    } finally {
+      await reader.close();
     }
   }
 

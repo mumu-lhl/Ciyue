@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/services/mdd_reader_pool.dart";
 import "package:flutter/material.dart";
 
 class AudioModel extends ChangeNotifier {
@@ -23,8 +24,10 @@ class AudioModel extends ChangeNotifier {
   }
 
   Future<void> removeMddAudio(int id) async {
+    final mddAudio = mddAudioList.firstWhere((element) => element.id == id);
+    await closeMddReader(mddAudio.path);
+
     if (Platform.isAndroid) {
-      final mddAudio = mddAudioList.firstWhere((element) => element.id == id);
       File(mddAudio.path).delete();
     }
 

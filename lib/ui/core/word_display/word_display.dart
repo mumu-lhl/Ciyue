@@ -130,7 +130,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         final settings = ref.watch(settingsProvider);
         final searchBar = buildTitle(widget.word, settings);
         final firstLoadedDictId = dictManager.dictIds.firstWhere(
-          (id) => dictManager.dicts[id]?.isLoading == false,
+          (id) => dictManager.dicts[id]?.isReady == true,
           orElse: () => -1,
         );
 

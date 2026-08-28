@@ -34,10 +34,9 @@ class _BodyState extends State<_Body> {
     if (dictManager.dicts.containsKey(widget.dictId)) {
       await dictManager.dicts[widget.dictId]!.customFont(path);
     } else {
-      final dict = Mdict(path: await dictionaryListDao.getPath(widget.dictId));
-      await dict.init();
-      await dict.customFont(path);
-      await dict.close();
+      // Updating the font only touches the database; do not initialize and
+      // scan an inactive dictionary just for this setting.
+      await dictionaryListDao.updateFont(widget.dictId, path);
     }
   }
 
