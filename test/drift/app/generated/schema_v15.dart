@@ -11,32 +11,61 @@ class DictionaryList extends Table
   final String? _alias;
   DictionaryList(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   late final GeneratedColumn<String> fontPath = GeneratedColumn<String>(
-      'font_path', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'font_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<int> order = GeneratedColumn<int>(
-      'order', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+    'order',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
-      'path', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> type = GeneratedColumn<int>(
-      'type', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const CustomExpression('0'));
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('0'),
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [title, fontPath, id, order, path, type];
+  List<GeneratedColumn> get $columns => [
+    title,
+    fontPath,
+    id,
+    order,
+    path,
+    type,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -48,18 +77,30 @@ class DictionaryList extends Table
   DictionaryListData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictionaryListData(
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title']),
-      fontPath: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}font_path']),
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      order: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}order']),
-      path: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
-      type: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}type'])!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      ),
+      fontPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}font_path'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      order: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order'],
+      ),
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}type'],
+      )!,
     );
   }
 
@@ -77,13 +118,14 @@ class DictionaryListData extends DataClass
   final int? order;
   final String path;
   final int type;
-  const DictionaryListData(
-      {this.title,
-      this.fontPath,
-      required this.id,
-      this.order,
-      required this.path,
-      required this.type});
+  const DictionaryListData({
+    this.title,
+    this.fontPath,
+    required this.id,
+    this.order,
+    required this.path,
+    required this.type,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -104,21 +146,25 @@ class DictionaryListData extends DataClass
 
   DictionaryListCompanion toCompanion(bool nullToAbsent) {
     return DictionaryListCompanion(
-      title:
-          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      title: title == null && nullToAbsent
+          ? const Value.absent()
+          : Value(title),
       fontPath: fontPath == null && nullToAbsent
           ? const Value.absent()
           : Value(fontPath),
       id: Value(id),
-      order:
-          order == null && nullToAbsent ? const Value.absent() : Value(order),
+      order: order == null && nullToAbsent
+          ? const Value.absent()
+          : Value(order),
       path: Value(path),
       type: Value(type),
     );
   }
 
-  factory DictionaryListData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory DictionaryListData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DictionaryListData(
       title: serializer.fromJson<String?>(json['title']),
@@ -142,21 +188,21 @@ class DictionaryListData extends DataClass
     };
   }
 
-  DictionaryListData copyWith(
-          {Value<String?> title = const Value.absent(),
-          Value<String?> fontPath = const Value.absent(),
-          int? id,
-          Value<int?> order = const Value.absent(),
-          String? path,
-          int? type}) =>
-      DictionaryListData(
-        title: title.present ? title.value : this.title,
-        fontPath: fontPath.present ? fontPath.value : this.fontPath,
-        id: id ?? this.id,
-        order: order.present ? order.value : this.order,
-        path: path ?? this.path,
-        type: type ?? this.type,
-      );
+  DictionaryListData copyWith({
+    Value<String?> title = const Value.absent(),
+    Value<String?> fontPath = const Value.absent(),
+    int? id,
+    Value<int?> order = const Value.absent(),
+    String? path,
+    int? type,
+  }) => DictionaryListData(
+    title: title.present ? title.value : this.title,
+    fontPath: fontPath.present ? fontPath.value : this.fontPath,
+    id: id ?? this.id,
+    order: order.present ? order.value : this.order,
+    path: path ?? this.path,
+    type: type ?? this.type,
+  );
   DictionaryListData copyWithCompanion(DictionaryListCompanion data) {
     return DictionaryListData(
       title: data.title.present ? data.title.value : this.title,
@@ -236,13 +282,14 @@ class DictionaryListCompanion extends UpdateCompanion<DictionaryListData> {
     });
   }
 
-  DictionaryListCompanion copyWith(
-      {Value<String?>? title,
-      Value<String?>? fontPath,
-      Value<int>? id,
-      Value<int?>? order,
-      Value<String>? path,
-      Value<int>? type}) {
+  DictionaryListCompanion copyWith({
+    Value<String?>? title,
+    Value<String?>? fontPath,
+    Value<int>? id,
+    Value<int?>? order,
+    Value<String>? path,
+    Value<int>? type,
+  }) {
     return DictionaryListCompanion(
       title: title ?? this.title,
       fontPath: fontPath ?? this.fontPath,
@@ -297,14 +344,26 @@ class Wordbook extends Table with TableInfo<Wordbook, WordbookData> {
   final String? _alias;
   Wordbook(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-      'created_at', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> tag = GeneratedColumn<int>(
-      'tag', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+    'tag',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   late final GeneratedColumn<String> word = GeneratedColumn<String>(
-      'word', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'word',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [createdAt, tag, word];
   @override
@@ -318,12 +377,18 @@ class Wordbook extends Table with TableInfo<Wordbook, WordbookData> {
   WordbookData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WordbookData(
-      createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
-      tag: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}tag']),
-      word: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      tag: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tag'],
+      ),
+      word: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}word'],
+      )!,
     );
   }
 
@@ -357,8 +422,10 @@ class WordbookData extends DataClass implements Insertable<WordbookData> {
     );
   }
 
-  factory WordbookData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory WordbookData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return WordbookData(
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -376,15 +443,15 @@ class WordbookData extends DataClass implements Insertable<WordbookData> {
     };
   }
 
-  WordbookData copyWith(
-          {DateTime? createdAt,
-          Value<int?> tag = const Value.absent(),
-          String? word}) =>
-      WordbookData(
-        createdAt: createdAt ?? this.createdAt,
-        tag: tag.present ? tag.value : this.tag,
-        word: word ?? this.word,
-      );
+  WordbookData copyWith({
+    DateTime? createdAt,
+    Value<int?> tag = const Value.absent(),
+    String? word,
+  }) => WordbookData(
+    createdAt: createdAt ?? this.createdAt,
+    tag: tag.present ? tag.value : this.tag,
+    word: word ?? this.word,
+  );
   WordbookData copyWithCompanion(WordbookCompanion data) {
     return WordbookData(
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -430,8 +497,8 @@ class WordbookCompanion extends UpdateCompanion<WordbookData> {
     this.tag = const Value.absent(),
     required String word,
     this.rowid = const Value.absent(),
-  })  : createdAt = Value(createdAt),
-        word = Value(word);
+  }) : createdAt = Value(createdAt),
+       word = Value(word);
   static Insertable<WordbookData> custom({
     Expression<DateTime>? createdAt,
     Expression<int>? tag,
@@ -446,11 +513,12 @@ class WordbookCompanion extends UpdateCompanion<WordbookData> {
     });
   }
 
-  WordbookCompanion copyWith(
-      {Value<DateTime>? createdAt,
-      Value<int?>? tag,
-      Value<String>? word,
-      Value<int>? rowid}) {
+  WordbookCompanion copyWith({
+    Value<DateTime>? createdAt,
+    Value<int?>? tag,
+    Value<String>? word,
+    Value<int>? rowid,
+  }) {
     return WordbookCompanion(
       createdAt: createdAt ?? this.createdAt,
       tag: tag ?? this.tag,
@@ -496,17 +564,24 @@ class WordbookTags extends Table
   final String? _alias;
   WordbookTags(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> tag = GeneratedColumn<String>(
-      'tag', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+    'tag',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   @override
   List<GeneratedColumn> get $columns => [id, tag];
   @override
@@ -520,10 +595,14 @@ class WordbookTags extends Table
   WordbookTagsData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WordbookTagsData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      tag: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}tag'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      tag: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tag'],
+      )!,
     );
   }
 
@@ -547,14 +626,13 @@ class WordbookTagsData extends DataClass
   }
 
   WordbookTagsCompanion toCompanion(bool nullToAbsent) {
-    return WordbookTagsCompanion(
-      id: Value(id),
-      tag: Value(tag),
-    );
+    return WordbookTagsCompanion(id: Value(id), tag: Value(tag));
   }
 
-  factory WordbookTagsData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory WordbookTagsData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return WordbookTagsData(
       id: serializer.fromJson<int>(json['id']),
@@ -570,10 +648,8 @@ class WordbookTagsData extends DataClass
     };
   }
 
-  WordbookTagsData copyWith({int? id, String? tag}) => WordbookTagsData(
-        id: id ?? this.id,
-        tag: tag ?? this.tag,
-      );
+  WordbookTagsData copyWith({int? id, String? tag}) =>
+      WordbookTagsData(id: id ?? this.id, tag: tag ?? this.tag);
   WordbookTagsData copyWithCompanion(WordbookTagsCompanion data) {
     return WordbookTagsData(
       id: data.id.present ? data.id.value : this.id,
@@ -622,10 +698,7 @@ class WordbookTagsCompanion extends UpdateCompanion<WordbookTagsData> {
   }
 
   WordbookTagsCompanion copyWith({Value<int>? id, Value<String>? tag}) {
-    return WordbookTagsCompanion(
-      id: id ?? this.id,
-      tag: tag ?? this.tag,
-    );
+    return WordbookTagsCompanion(id: id ?? this.id, tag: tag ?? this.tag);
   }
 
   @override
@@ -656,15 +729,23 @@ class History extends Table with TableInfo<History, HistoryData> {
   final String? _alias;
   History(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> word = GeneratedColumn<String>(
-      'word', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'word',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [id, word];
   @override
@@ -678,10 +759,14 @@ class History extends Table with TableInfo<History, HistoryData> {
   HistoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return HistoryData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      word: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      word: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}word'],
+      )!,
     );
   }
 
@@ -704,14 +789,13 @@ class HistoryData extends DataClass implements Insertable<HistoryData> {
   }
 
   HistoryCompanion toCompanion(bool nullToAbsent) {
-    return HistoryCompanion(
-      id: Value(id),
-      word: Value(word),
-    );
+    return HistoryCompanion(id: Value(id), word: Value(word));
   }
 
-  factory HistoryData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory HistoryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return HistoryData(
       id: serializer.fromJson<int>(json['id']),
@@ -727,10 +811,8 @@ class HistoryData extends DataClass implements Insertable<HistoryData> {
     };
   }
 
-  HistoryData copyWith({int? id, String? word}) => HistoryData(
-        id: id ?? this.id,
-        word: word ?? this.word,
-      );
+  HistoryData copyWith({int? id, String? word}) =>
+      HistoryData(id: id ?? this.id, word: word ?? this.word);
   HistoryData copyWithCompanion(HistoryCompanion data) {
     return HistoryData(
       id: data.id.present ? data.id.value : this.id,
@@ -777,10 +859,7 @@ class HistoryCompanion extends UpdateCompanion<HistoryData> {
   }
 
   HistoryCompanion copyWith({Value<int>? id, Value<String>? word}) {
-    return HistoryCompanion(
-      id: id ?? this.id,
-      word: word ?? this.word,
-    );
+    return HistoryCompanion(id: id ?? this.id, word: word ?? this.word);
   }
 
   @override
@@ -811,20 +890,31 @@ class DictGroup extends Table with TableInfo<DictGroup, DictGroupData> {
   final String? _alias;
   DictGroup(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<String> dictIds = GeneratedColumn<String>(
-      'dict_ids', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'dict_ids',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   @override
   List<GeneratedColumn> get $columns => [dictIds, id, name];
   @override
@@ -838,12 +928,18 @@ class DictGroup extends Table with TableInfo<DictGroup, DictGroupData> {
   DictGroupData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictGroupData(
-      dictIds: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}dict_ids'])!,
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      dictIds: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dict_ids'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
     );
   }
 
@@ -857,8 +953,11 @@ class DictGroupData extends DataClass implements Insertable<DictGroupData> {
   final String dictIds;
   final int id;
   final String name;
-  const DictGroupData(
-      {required this.dictIds, required this.id, required this.name});
+  const DictGroupData({
+    required this.dictIds,
+    required this.id,
+    required this.name,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -876,8 +975,10 @@ class DictGroupData extends DataClass implements Insertable<DictGroupData> {
     );
   }
 
-  factory DictGroupData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory DictGroupData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DictGroupData(
       dictIds: serializer.fromJson<String>(json['dictIds']),
@@ -943,8 +1044,8 @@ class DictGroupCompanion extends UpdateCompanion<DictGroupData> {
     required String dictIds,
     this.id = const Value.absent(),
     required String name,
-  })  : dictIds = Value(dictIds),
-        name = Value(name);
+  }) : dictIds = Value(dictIds),
+       name = Value(name);
   static Insertable<DictGroupData> custom({
     Expression<String>? dictIds,
     Expression<int>? id,
@@ -957,8 +1058,11 @@ class DictGroupCompanion extends UpdateCompanion<DictGroupData> {
     });
   }
 
-  DictGroupCompanion copyWith(
-      {Value<String>? dictIds, Value<int>? id, Value<String>? name}) {
+  DictGroupCompanion copyWith({
+    Value<String>? dictIds,
+    Value<int>? id,
+    Value<String>? name,
+  }) {
     return DictGroupCompanion(
       dictIds: dictIds ?? this.dictIds,
       id: id ?? this.id,
@@ -999,21 +1103,37 @@ class MddAudioList extends Table
   final String? _alias;
   MddAudioList(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
-      'path', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> order = GeneratedColumn<int>(
-      'order', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [id, path, title, order];
   @override
@@ -1027,14 +1147,22 @@ class MddAudioList extends Table
   MddAudioListData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return MddAudioListData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      path: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      order: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}order'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      order: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order'],
+      )!,
     );
   }
 
@@ -1050,11 +1178,12 @@ class MddAudioListData extends DataClass
   final String path;
   final String title;
   final int order;
-  const MddAudioListData(
-      {required this.id,
-      required this.path,
-      required this.title,
-      required this.order});
+  const MddAudioListData({
+    required this.id,
+    required this.path,
+    required this.title,
+    required this.order,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1074,8 +1203,10 @@ class MddAudioListData extends DataClass
     );
   }
 
-  factory MddAudioListData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory MddAudioListData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return MddAudioListData(
       id: serializer.fromJson<int>(json['id']),
@@ -1095,14 +1226,17 @@ class MddAudioListData extends DataClass
     };
   }
 
-  MddAudioListData copyWith(
-          {int? id, String? path, String? title, int? order}) =>
-      MddAudioListData(
-        id: id ?? this.id,
-        path: path ?? this.path,
-        title: title ?? this.title,
-        order: order ?? this.order,
-      );
+  MddAudioListData copyWith({
+    int? id,
+    String? path,
+    String? title,
+    int? order,
+  }) => MddAudioListData(
+    id: id ?? this.id,
+    path: path ?? this.path,
+    title: title ?? this.title,
+    order: order ?? this.order,
+  );
   MddAudioListData copyWithCompanion(MddAudioListCompanion data) {
     return MddAudioListData(
       id: data.id.present ? data.id.value : this.id,
@@ -1151,9 +1285,9 @@ class MddAudioListCompanion extends UpdateCompanion<MddAudioListData> {
     required String path,
     required String title,
     required int order,
-  })  : path = Value(path),
-        title = Value(title),
-        order = Value(order);
+  }) : path = Value(path),
+       title = Value(title),
+       order = Value(order);
   static Insertable<MddAudioListData> custom({
     Expression<int>? id,
     Expression<String>? path,
@@ -1168,11 +1302,12 @@ class MddAudioListCompanion extends UpdateCompanion<MddAudioListData> {
     });
   }
 
-  MddAudioListCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? path,
-      Value<String>? title,
-      Value<int>? order}) {
+  MddAudioListCompanion copyWith({
+    Value<int>? id,
+    Value<String>? path,
+    Value<String>? title,
+    Value<int>? order,
+  }) {
     return MddAudioListCompanion(
       id: id ?? this.id,
       path: path ?? this.path,
@@ -1218,32 +1353,56 @@ class MddAudioResource extends Table
   final String? _alias;
   MddAudioResource(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> blockOffset = GeneratedColumn<int>(
-      'block_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'block_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> compressedSize = GeneratedColumn<int>(
-      'compressed_size', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'compressed_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> endOffset = GeneratedColumn<int>(
-      'end_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'end_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<String> key = GeneratedColumn<String>(
-      'key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> mddAudioListId = GeneratedColumn<int>(
-      'mdd_audio_list_id', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'mdd_audio_list_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> startOffset = GeneratedColumn<int>(
-      'start_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'start_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [
-        blockOffset,
-        compressedSize,
-        endOffset,
-        key,
-        mddAudioListId,
-        startOffset
-      ];
+    blockOffset,
+    compressedSize,
+    endOffset,
+    key,
+    mddAudioListId,
+    startOffset,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1255,18 +1414,30 @@ class MddAudioResource extends Table
   MddAudioResourceData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return MddAudioResourceData(
-      blockOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}block_offset'])!,
-      compressedSize: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}compressed_size'])!,
-      endOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}end_offset'])!,
-      key: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
-      mddAudioListId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}mdd_audio_list_id'])!,
-      startOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}start_offset'])!,
+      blockOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}block_offset'],
+      )!,
+      compressedSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}compressed_size'],
+      )!,
+      endOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}end_offset'],
+      )!,
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      mddAudioListId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}mdd_audio_list_id'],
+      )!,
+      startOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_offset'],
+      )!,
     );
   }
 
@@ -1284,13 +1455,14 @@ class MddAudioResourceData extends DataClass
   final String key;
   final int mddAudioListId;
   final int startOffset;
-  const MddAudioResourceData(
-      {required this.blockOffset,
-      required this.compressedSize,
-      required this.endOffset,
-      required this.key,
-      required this.mddAudioListId,
-      required this.startOffset});
+  const MddAudioResourceData({
+    required this.blockOffset,
+    required this.compressedSize,
+    required this.endOffset,
+    required this.key,
+    required this.mddAudioListId,
+    required this.startOffset,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1314,8 +1486,10 @@ class MddAudioResourceData extends DataClass
     );
   }
 
-  factory MddAudioResourceData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory MddAudioResourceData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return MddAudioResourceData(
       blockOffset: serializer.fromJson<int>(json['blockOffset']),
@@ -1339,25 +1513,26 @@ class MddAudioResourceData extends DataClass
     };
   }
 
-  MddAudioResourceData copyWith(
-          {int? blockOffset,
-          int? compressedSize,
-          int? endOffset,
-          String? key,
-          int? mddAudioListId,
-          int? startOffset}) =>
-      MddAudioResourceData(
-        blockOffset: blockOffset ?? this.blockOffset,
-        compressedSize: compressedSize ?? this.compressedSize,
-        endOffset: endOffset ?? this.endOffset,
-        key: key ?? this.key,
-        mddAudioListId: mddAudioListId ?? this.mddAudioListId,
-        startOffset: startOffset ?? this.startOffset,
-      );
+  MddAudioResourceData copyWith({
+    int? blockOffset,
+    int? compressedSize,
+    int? endOffset,
+    String? key,
+    int? mddAudioListId,
+    int? startOffset,
+  }) => MddAudioResourceData(
+    blockOffset: blockOffset ?? this.blockOffset,
+    compressedSize: compressedSize ?? this.compressedSize,
+    endOffset: endOffset ?? this.endOffset,
+    key: key ?? this.key,
+    mddAudioListId: mddAudioListId ?? this.mddAudioListId,
+    startOffset: startOffset ?? this.startOffset,
+  );
   MddAudioResourceData copyWithCompanion(MddAudioResourceCompanion data) {
     return MddAudioResourceData(
-      blockOffset:
-          data.blockOffset.present ? data.blockOffset.value : this.blockOffset,
+      blockOffset: data.blockOffset.present
+          ? data.blockOffset.value
+          : this.blockOffset,
       compressedSize: data.compressedSize.present
           ? data.compressedSize.value
           : this.compressedSize,
@@ -1366,8 +1541,9 @@ class MddAudioResourceData extends DataClass
       mddAudioListId: data.mddAudioListId.present
           ? data.mddAudioListId.value
           : this.mddAudioListId,
-      startOffset:
-          data.startOffset.present ? data.startOffset.value : this.startOffset,
+      startOffset: data.startOffset.present
+          ? data.startOffset.value
+          : this.startOffset,
     );
   }
 
@@ -1386,7 +1562,13 @@ class MddAudioResourceData extends DataClass
 
   @override
   int get hashCode => Object.hash(
-      blockOffset, compressedSize, endOffset, key, mddAudioListId, startOffset);
+    blockOffset,
+    compressedSize,
+    endOffset,
+    key,
+    mddAudioListId,
+    startOffset,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1424,12 +1606,12 @@ class MddAudioResourceCompanion extends UpdateCompanion<MddAudioResourceData> {
     required int mddAudioListId,
     required int startOffset,
     this.rowid = const Value.absent(),
-  })  : blockOffset = Value(blockOffset),
-        compressedSize = Value(compressedSize),
-        endOffset = Value(endOffset),
-        key = Value(key),
-        mddAudioListId = Value(mddAudioListId),
-        startOffset = Value(startOffset);
+  }) : blockOffset = Value(blockOffset),
+       compressedSize = Value(compressedSize),
+       endOffset = Value(endOffset),
+       key = Value(key),
+       mddAudioListId = Value(mddAudioListId),
+       startOffset = Value(startOffset);
   static Insertable<MddAudioResourceData> custom({
     Expression<int>? blockOffset,
     Expression<int>? compressedSize,
@@ -1450,14 +1632,15 @@ class MddAudioResourceCompanion extends UpdateCompanion<MddAudioResourceData> {
     });
   }
 
-  MddAudioResourceCompanion copyWith(
-      {Value<int>? blockOffset,
-      Value<int>? compressedSize,
-      Value<int>? endOffset,
-      Value<String>? key,
-      Value<int>? mddAudioListId,
-      Value<int>? startOffset,
-      Value<int>? rowid}) {
+  MddAudioResourceCompanion copyWith({
+    Value<int>? blockOffset,
+    Value<int>? compressedSize,
+    Value<int>? endOffset,
+    Value<String>? key,
+    Value<int>? mddAudioListId,
+    Value<int>? startOffset,
+    Value<int>? rowid,
+  }) {
     return MddAudioResourceCompanion(
       blockOffset: blockOffset ?? this.blockOffset,
       compressedSize: compressedSize ?? this.compressedSize,
@@ -1518,13 +1701,20 @@ class AiExplanations extends Table
   final String? _alias;
   AiExplanations(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<String> word = GeneratedColumn<String>(
-      'word', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+    'word',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   late final GeneratedColumn<String> explanation = GeneratedColumn<String>(
-      'explanation', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'explanation',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [word, explanation];
   @override
@@ -1538,10 +1728,14 @@ class AiExplanations extends Table
   AiExplanationsData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return AiExplanationsData(
-      word: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
-      explanation: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}explanation'])!,
+      word: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}word'],
+      )!,
+      explanation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}explanation'],
+      )!,
     );
   }
 
@@ -1571,8 +1765,10 @@ class AiExplanationsData extends DataClass
     );
   }
 
-  factory AiExplanationsData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory AiExplanationsData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AiExplanationsData(
       word: serializer.fromJson<String>(json['word']),
@@ -1596,8 +1792,9 @@ class AiExplanationsData extends DataClass
   AiExplanationsData copyWithCompanion(AiExplanationsCompanion data) {
     return AiExplanationsData(
       word: data.word.present ? data.word.value : this.word,
-      explanation:
-          data.explanation.present ? data.explanation.value : this.explanation,
+      explanation: data.explanation.present
+          ? data.explanation.value
+          : this.explanation,
     );
   }
 
@@ -1633,8 +1830,8 @@ class AiExplanationsCompanion extends UpdateCompanion<AiExplanationsData> {
     required String word,
     required String explanation,
     this.rowid = const Value.absent(),
-  })  : word = Value(word),
-        explanation = Value(explanation);
+  }) : word = Value(word),
+       explanation = Value(explanation);
   static Insertable<AiExplanationsData> custom({
     Expression<String>? word,
     Expression<String>? explanation,
@@ -1647,8 +1844,11 @@ class AiExplanationsCompanion extends UpdateCompanion<AiExplanationsData> {
     });
   }
 
-  AiExplanationsCompanion copyWith(
-      {Value<String>? word, Value<String>? explanation, Value<int>? rowid}) {
+  AiExplanationsCompanion copyWith({
+    Value<String>? word,
+    Value<String>? explanation,
+    Value<int>? rowid,
+  }) {
     return AiExplanationsCompanion(
       word: word ?? this.word,
       explanation: explanation ?? this.explanation,
@@ -1689,21 +1889,37 @@ class WritingCheckHistory extends Table
   final String? _alias;
   WritingCheckHistory(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> inputText = GeneratedColumn<String>(
-      'input_text', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'input_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<String> outputText = GeneratedColumn<String>(
-      'output_text', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'output_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-      'created_at', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [id, inputText, outputText, createdAt];
   @override
@@ -1714,18 +1930,28 @@ class WritingCheckHistory extends Table
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  WritingCheckHistoryData map(Map<String, dynamic> data,
-      {String? tablePrefix}) {
+  WritingCheckHistoryData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WritingCheckHistoryData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      inputText: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}input_text'])!,
-      outputText: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}output_text'])!,
-      createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      inputText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}input_text'],
+      )!,
+      outputText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}output_text'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
     );
   }
 
@@ -1741,11 +1967,12 @@ class WritingCheckHistoryData extends DataClass
   final String inputText;
   final String outputText;
   final DateTime createdAt;
-  const WritingCheckHistoryData(
-      {required this.id,
-      required this.inputText,
-      required this.outputText,
-      required this.createdAt});
+  const WritingCheckHistoryData({
+    required this.id,
+    required this.inputText,
+    required this.outputText,
+    required this.createdAt,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1765,8 +1992,10 @@ class WritingCheckHistoryData extends DataClass
     );
   }
 
-  factory WritingCheckHistoryData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory WritingCheckHistoryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return WritingCheckHistoryData(
       id: serializer.fromJson<int>(json['id']),
@@ -1786,23 +2015,24 @@ class WritingCheckHistoryData extends DataClass
     };
   }
 
-  WritingCheckHistoryData copyWith(
-          {int? id,
-          String? inputText,
-          String? outputText,
-          DateTime? createdAt}) =>
-      WritingCheckHistoryData(
-        id: id ?? this.id,
-        inputText: inputText ?? this.inputText,
-        outputText: outputText ?? this.outputText,
-        createdAt: createdAt ?? this.createdAt,
-      );
+  WritingCheckHistoryData copyWith({
+    int? id,
+    String? inputText,
+    String? outputText,
+    DateTime? createdAt,
+  }) => WritingCheckHistoryData(
+    id: id ?? this.id,
+    inputText: inputText ?? this.inputText,
+    outputText: outputText ?? this.outputText,
+    createdAt: createdAt ?? this.createdAt,
+  );
   WritingCheckHistoryData copyWithCompanion(WritingCheckHistoryCompanion data) {
     return WritingCheckHistoryData(
       id: data.id.present ? data.id.value : this.id,
       inputText: data.inputText.present ? data.inputText.value : this.inputText,
-      outputText:
-          data.outputText.present ? data.outputText.value : this.outputText,
+      outputText: data.outputText.present
+          ? data.outputText.value
+          : this.outputText,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1847,9 +2077,9 @@ class WritingCheckHistoryCompanion
     required String inputText,
     required String outputText,
     required DateTime createdAt,
-  })  : inputText = Value(inputText),
-        outputText = Value(outputText),
-        createdAt = Value(createdAt);
+  }) : inputText = Value(inputText),
+       outputText = Value(outputText),
+       createdAt = Value(createdAt);
   static Insertable<WritingCheckHistoryData> custom({
     Expression<int>? id,
     Expression<String>? inputText,
@@ -1864,11 +2094,12 @@ class WritingCheckHistoryCompanion
     });
   }
 
-  WritingCheckHistoryCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? inputText,
-      Value<String>? outputText,
-      Value<DateTime>? createdAt}) {
+  WritingCheckHistoryCompanion copyWith({
+    Value<int>? id,
+    Value<String>? inputText,
+    Value<String>? outputText,
+    Value<DateTime>? createdAt,
+  }) {
     return WritingCheckHistoryCompanion(
       id: id ?? this.id,
       inputText: inputText ?? this.inputText,
@@ -1914,18 +2145,30 @@ class TranslateHistory extends Table
   final String? _alias;
   TranslateHistory(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> inputText = GeneratedColumn<String>(
-      'input_text', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'input_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-      'created_at', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [id, inputText, createdAt];
   @override
@@ -1939,12 +2182,18 @@ class TranslateHistory extends Table
   TranslateHistoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TranslateHistoryData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      inputText: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}input_text'])!,
-      createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      inputText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}input_text'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
     );
   }
 
@@ -1959,8 +2208,11 @@ class TranslateHistoryData extends DataClass
   final int id;
   final String inputText;
   final DateTime createdAt;
-  const TranslateHistoryData(
-      {required this.id, required this.inputText, required this.createdAt});
+  const TranslateHistoryData({
+    required this.id,
+    required this.inputText,
+    required this.createdAt,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1978,8 +2230,10 @@ class TranslateHistoryData extends DataClass
     );
   }
 
-  factory TranslateHistoryData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory TranslateHistoryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TranslateHistoryData(
       id: serializer.fromJson<int>(json['id']),
@@ -1997,13 +2251,15 @@ class TranslateHistoryData extends DataClass
     };
   }
 
-  TranslateHistoryData copyWith(
-          {int? id, String? inputText, DateTime? createdAt}) =>
-      TranslateHistoryData(
-        id: id ?? this.id,
-        inputText: inputText ?? this.inputText,
-        createdAt: createdAt ?? this.createdAt,
-      );
+  TranslateHistoryData copyWith({
+    int? id,
+    String? inputText,
+    DateTime? createdAt,
+  }) => TranslateHistoryData(
+    id: id ?? this.id,
+    inputText: inputText ?? this.inputText,
+    createdAt: createdAt ?? this.createdAt,
+  );
   TranslateHistoryData copyWithCompanion(TranslateHistoryCompanion data) {
     return TranslateHistoryData(
       id: data.id.present ? data.id.value : this.id,
@@ -2046,8 +2302,8 @@ class TranslateHistoryCompanion extends UpdateCompanion<TranslateHistoryData> {
     this.id = const Value.absent(),
     required String inputText,
     required DateTime createdAt,
-  })  : inputText = Value(inputText),
-        createdAt = Value(createdAt);
+  }) : inputText = Value(inputText),
+       createdAt = Value(createdAt);
   static Insertable<TranslateHistoryData> custom({
     Expression<int>? id,
     Expression<String>? inputText,
@@ -2060,8 +2316,11 @@ class TranslateHistoryCompanion extends UpdateCompanion<TranslateHistoryData> {
     });
   }
 
-  TranslateHistoryCompanion copyWith(
-      {Value<int>? id, Value<String>? inputText, Value<DateTime>? createdAt}) {
+  TranslateHistoryCompanion copyWith({
+    Value<int>? id,
+    Value<String>? inputText,
+    Value<DateTime>? createdAt,
+  }) {
     return TranslateHistoryCompanion(
       id: id ?? this.id,
       inputText: inputText ?? this.inputText,
@@ -2105,37 +2364,46 @@ class DatabaseAtV15 extends GeneratedDatabase {
   late final MddAudioList mddAudioList = MddAudioList(this);
   late final MddAudioResource mddAudioResource = MddAudioResource(this);
   late final AiExplanations aiExplanations = AiExplanations(this);
-  late final WritingCheckHistory writingCheckHistory =
-      WritingCheckHistory(this);
+  late final WritingCheckHistory writingCheckHistory = WritingCheckHistory(
+    this,
+  );
   late final TranslateHistory translateHistory = TranslateHistory(this);
-  late final Index idxWordbook = Index('idx_wordbook',
-      'CREATE INDEX idx_wordbook ON wordbook (word, created_at)');
-  late final Index idxWordbookTags = Index('idx_wordbook_tags',
-      'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)');
-  late final Index idxMddAudioResource = Index('idx_mdd_audio_resource',
-      'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")');
-  late final Index idxAiExplanations = Index('idx_ai_explanations',
-      'CREATE INDEX idx_ai_explanations ON ai_explanations (word)');
+  late final Index idxWordbook = Index(
+    'idx_wordbook',
+    'CREATE INDEX idx_wordbook ON wordbook (word, created_at)',
+  );
+  late final Index idxWordbookTags = Index(
+    'idx_wordbook_tags',
+    'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)',
+  );
+  late final Index idxMddAudioResource = Index(
+    'idx_mdd_audio_resource',
+    'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")',
+  );
+  late final Index idxAiExplanations = Index(
+    'idx_ai_explanations',
+    'CREATE INDEX idx_ai_explanations ON ai_explanations (word)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-        dictionaryList,
-        wordbook,
-        wordbookTags,
-        history,
-        dictGroup,
-        mddAudioList,
-        mddAudioResource,
-        aiExplanations,
-        writingCheckHistory,
-        translateHistory,
-        idxWordbook,
-        idxWordbookTags,
-        idxMddAudioResource,
-        idxAiExplanations
-      ];
+    dictionaryList,
+    wordbook,
+    wordbookTags,
+    history,
+    dictGroup,
+    mddAudioList,
+    mddAudioResource,
+    aiExplanations,
+    writingCheckHistory,
+    translateHistory,
+    idxWordbook,
+    idxWordbookTags,
+    idxMddAudioResource,
+    idxAiExplanations,
+  ];
   @override
   int get schemaVersion => 15;
 }

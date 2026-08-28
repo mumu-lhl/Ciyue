@@ -42,7 +42,7 @@ class FlashcardScheduler {
   final fsrs.Scheduler _scheduler;
 
   FlashcardScheduler({bool enableFuzzing = true})
-      : _scheduler = fsrs.Scheduler(enableFuzzing: enableFuzzing);
+    : _scheduler = fsrs.Scheduler(enableFuzzing: enableFuzzing);
 
   Flashcard createCard({required int id, required DateTime now}) {
     _requireUtc(now);
@@ -89,24 +89,24 @@ class FlashcardScheduler {
   }
 
   fsrs.Card _toFsrs(Flashcard card) => fsrs.Card(
-        cardId: card.id,
-        state: fsrs.State.values[card.state.index],
-        step: card.step,
-        stability: card.stability,
-        difficulty: card.difficulty,
-        due: card.due,
-        lastReview: card.lastReview,
-      );
+    cardId: card.id,
+    state: fsrs.State.values[card.state.index],
+    step: card.step,
+    stability: card.stability,
+    difficulty: card.difficulty,
+    due: card.due,
+    lastReview: card.lastReview,
+  );
 
   Flashcard _fromFsrs(fsrs.Card card) => Flashcard(
-        id: card.cardId,
-        state: FlashcardState.values[card.state.index],
-        step: card.step,
-        stability: card.stability,
-        difficulty: card.difficulty,
-        due: card.due,
-        lastReview: card.lastReview,
-      );
+    id: card.cardId,
+    state: FlashcardState.values[card.state.index],
+    step: card.step,
+    stability: card.stability,
+    difficulty: card.difficulty,
+    due: card.due,
+    lastReview: card.lastReview,
+  );
 
   fsrs.Rating _toFsrsRating(FlashcardRating rating) =>
       fsrs.Rating.values[rating.index];

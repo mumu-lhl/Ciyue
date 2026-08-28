@@ -9,19 +9,15 @@ class ExplainWordSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final explainWord =
-        context.select((AISettingsViewModel vm) => vm.explainWord);
+    final explainWord = context.select(
+      (AISettingsViewModel vm) => vm.explainWord,
+    );
     final viewModel = context.read<AISettingsViewModel>();
     return Row(
       children: [
-        TitleText(
-          AppLocalizations.of(context)!.aiExplainWord,
-        ),
+        TitleText(AppLocalizations.of(context)!.aiExplainWord),
         const Spacer(),
-        Switch(
-          value: explainWord,
-          onChanged: viewModel.setExplainWord,
-        ),
+        Switch(value: explainWord, onChanged: viewModel.setExplainWord),
       ],
     );
   }

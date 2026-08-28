@@ -34,8 +34,10 @@ Future<void> initGroup() async {
   dictManager.groups = await dictGroupDao.getAllGroups();
 
   try {
-    Provider.of<HomeModel>(navigatorKey.currentContext!, listen: false)
-        .update();
+    Provider.of<HomeModel>(
+      navigatorKey.currentContext!,
+      listen: false,
+    ).update();
   } catch (e) {
     talker.error(e);
   }
@@ -53,15 +55,9 @@ Future<void> initTrayMenu() async {
     );
     Menu menu = Menu(
       items: [
-        MenuItem(
-          key: "show_window",
-          label: l10n.showWindow,
-        ),
+        MenuItem(key: "show_window", label: l10n.showWindow),
         MenuItem.separator(),
-        MenuItem(
-          key: "exit_app",
-          label: l10n.exitApp,
-        ),
+        MenuItem(key: "exit_app", label: l10n.exitApp),
       ],
     );
     trayManager.setContextMenu(menu);
@@ -273,8 +269,10 @@ Future<void> initPrefs() async {
   talker.info("Initializing shared preferences...");
 
   prefs = await SharedPreferencesWithCache.create(
-      cacheOptions: const SharedPreferencesWithCacheOptions(
-          allowList: preferencesAllowList));
+    cacheOptions: const SharedPreferencesWithCacheOptions(
+      allowList: preferencesAllowList,
+    ),
+  );
 
   talker.info("Shared preferences initialized successfully.");
 }

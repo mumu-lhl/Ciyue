@@ -18,13 +18,16 @@ class WritingCheckViewModel extends ChangeNotifier {
   String? get outputText => _outputText;
 
   void check() {
-    final template =
-        Provider.of<AIPrompts>(navigatorKey.currentContext!, listen: false)
-            .writingCheckPrompt;
+    final template = Provider.of<AIPrompts>(
+      navigatorKey.currentContext!,
+      listen: false,
+    ).writingCheckPrompt;
     _prompt = template
         .replaceAll(r"$text", textEditingController.text)
-        .replaceAll(r"$targetLanguage",
-            ui.PlatformDispatcher.instance.locale.toLanguageTag());
+        .replaceAll(
+          r"$targetLanguage",
+          ui.PlatformDispatcher.instance.locale.toLanguageTag(),
+        );
     _outputText = null;
     notifyListeners();
   }
@@ -41,9 +44,10 @@ class WritingCheckViewModel extends ChangeNotifier {
       return;
     }
     final inputText = textEditingController.text;
-    await Provider.of<WritingCheckHistoryDao>(navigatorKey.currentContext!,
-            listen: false)
-        .addHistory(inputText, outputText);
+    await Provider.of<WritingCheckHistoryDao>(
+      navigatorKey.currentContext!,
+      listen: false,
+    ).addHistory(inputText, outputText);
     notifyListeners();
   }
 

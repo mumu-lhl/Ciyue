@@ -45,5 +45,5 @@ class ExportOptionsNotifier extends Notifier<ExportOptions> {
 
 final exportOptionsProvider =
     NotifierProvider<ExportOptionsNotifier, ExportOptions>(() {
-  return ExportOptionsNotifier();
-});
+      return ExportOptionsNotifier();
+    });

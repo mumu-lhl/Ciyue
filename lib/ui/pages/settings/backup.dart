@@ -18,10 +18,11 @@ class AutoExport extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        leading: Icon(Icons.backup),
-        title: Text(AppLocalizations.of(context)!.autoExport),
-        trailing: Icon(Icons.arrow_forward),
-        onTap: () => context.push("/settings/autoExport"));
+      leading: Icon(Icons.backup),
+      title: Text(AppLocalizations.of(context)!.autoExport),
+      trailing: Icon(Icons.arrow_forward),
+      onTap: () => context.push("/settings/autoExport"),
+    );
   }
 }
 
@@ -31,9 +32,7 @@ class BackupSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.backup),
-      ),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.backup)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),

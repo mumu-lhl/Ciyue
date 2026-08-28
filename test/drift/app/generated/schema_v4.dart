@@ -11,21 +11,37 @@ class DictionaryList extends Table
   final String? _alias;
   DictionaryList(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<String> backupPath = GeneratedColumn<String>(
-      'backup_path', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'backup_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   late final GeneratedColumn<String> fontPath = GeneratedColumn<String>(
-      'font_path', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'font_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
-      'path', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [backupPath, fontPath, id, path];
   @override
@@ -39,14 +55,22 @@ class DictionaryList extends Table
   DictionaryListData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictionaryListData(
-      backupPath: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}backup_path']),
-      fontPath: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}font_path']),
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      path: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      backupPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}backup_path'],
+      ),
+      fontPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}font_path'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
     );
   }
 
@@ -62,8 +86,12 @@ class DictionaryListData extends DataClass
   final String? fontPath;
   final int id;
   final String path;
-  const DictionaryListData(
-      {this.backupPath, this.fontPath, required this.id, required this.path});
+  const DictionaryListData({
+    this.backupPath,
+    this.fontPath,
+    required this.id,
+    required this.path,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -91,8 +119,10 @@ class DictionaryListData extends DataClass
     );
   }
 
-  factory DictionaryListData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory DictionaryListData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DictionaryListData(
       backupPath: serializer.fromJson<String?>(json['backupPath']),
@@ -112,21 +142,22 @@ class DictionaryListData extends DataClass
     };
   }
 
-  DictionaryListData copyWith(
-          {Value<String?> backupPath = const Value.absent(),
-          Value<String?> fontPath = const Value.absent(),
-          int? id,
-          String? path}) =>
-      DictionaryListData(
-        backupPath: backupPath.present ? backupPath.value : this.backupPath,
-        fontPath: fontPath.present ? fontPath.value : this.fontPath,
-        id: id ?? this.id,
-        path: path ?? this.path,
-      );
+  DictionaryListData copyWith({
+    Value<String?> backupPath = const Value.absent(),
+    Value<String?> fontPath = const Value.absent(),
+    int? id,
+    String? path,
+  }) => DictionaryListData(
+    backupPath: backupPath.present ? backupPath.value : this.backupPath,
+    fontPath: fontPath.present ? fontPath.value : this.fontPath,
+    id: id ?? this.id,
+    path: path ?? this.path,
+  );
   DictionaryListData copyWithCompanion(DictionaryListCompanion data) {
     return DictionaryListData(
-      backupPath:
-          data.backupPath.present ? data.backupPath.value : this.backupPath,
+      backupPath: data.backupPath.present
+          ? data.backupPath.value
+          : this.backupPath,
       fontPath: data.fontPath.present ? data.fontPath.value : this.fontPath,
       id: data.id.present ? data.id.value : this.id,
       path: data.path.present ? data.path.value : this.path,
@@ -187,11 +218,12 @@ class DictionaryListCompanion extends UpdateCompanion<DictionaryListData> {
     });
   }
 
-  DictionaryListCompanion copyWith(
-      {Value<String?>? backupPath,
-      Value<String?>? fontPath,
-      Value<int>? id,
-      Value<String>? path}) {
+  DictionaryListCompanion copyWith({
+    Value<String?>? backupPath,
+    Value<String?>? fontPath,
+    Value<int>? id,
+    Value<String>? path,
+  }) {
     return DictionaryListCompanion(
       backupPath: backupPath ?? this.backupPath,
       fontPath: fontPath ?? this.fontPath,
@@ -236,11 +268,19 @@ class Wordbook extends Table with TableInfo<Wordbook, WordbookData> {
   final String? _alias;
   Wordbook(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> tag = GeneratedColumn<int>(
-      'tag', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+    'tag',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   late final GeneratedColumn<String> word = GeneratedColumn<String>(
-      'word', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'word',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [tag, word];
   @override
@@ -254,10 +294,14 @@ class Wordbook extends Table with TableInfo<Wordbook, WordbookData> {
   WordbookData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WordbookData(
-      tag: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}tag']),
-      word: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      tag: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tag'],
+      ),
+      word: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}word'],
+      )!,
     );
   }
 
@@ -288,8 +332,10 @@ class WordbookData extends DataClass implements Insertable<WordbookData> {
     );
   }
 
-  factory WordbookData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory WordbookData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return WordbookData(
       tag: serializer.fromJson<int?>(json['tag']),
@@ -305,12 +351,13 @@ class WordbookData extends DataClass implements Insertable<WordbookData> {
     };
   }
 
-  WordbookData copyWith(
-          {Value<int?> tag = const Value.absent(), String? word}) =>
-      WordbookData(
-        tag: tag.present ? tag.value : this.tag,
-        word: word ?? this.word,
-      );
+  WordbookData copyWith({
+    Value<int?> tag = const Value.absent(),
+    String? word,
+  }) => WordbookData(
+    tag: tag.present ? tag.value : this.tag,
+    word: word ?? this.word,
+  );
   WordbookData copyWithCompanion(WordbookCompanion data) {
     return WordbookData(
       tag: data.tag.present ? data.tag.value : this.tag,
@@ -363,8 +410,11 @@ class WordbookCompanion extends UpdateCompanion<WordbookData> {
     });
   }
 
-  WordbookCompanion copyWith(
-      {Value<int?>? tag, Value<String>? word, Value<int>? rowid}) {
+  WordbookCompanion copyWith({
+    Value<int?>? tag,
+    Value<String>? word,
+    Value<int>? rowid,
+  }) {
     return WordbookCompanion(
       tag: tag ?? this.tag,
       word: word ?? this.word,
@@ -405,17 +455,24 @@ class WordbookTags extends Table
   final String? _alias;
   WordbookTags(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> tag = GeneratedColumn<String>(
-      'tag', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+    'tag',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   @override
   List<GeneratedColumn> get $columns => [id, tag];
   @override
@@ -429,10 +486,14 @@ class WordbookTags extends Table
   WordbookTagsData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WordbookTagsData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      tag: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}tag'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      tag: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tag'],
+      )!,
     );
   }
 
@@ -456,14 +517,13 @@ class WordbookTagsData extends DataClass
   }
 
   WordbookTagsCompanion toCompanion(bool nullToAbsent) {
-    return WordbookTagsCompanion(
-      id: Value(id),
-      tag: Value(tag),
-    );
+    return WordbookTagsCompanion(id: Value(id), tag: Value(tag));
   }
 
-  factory WordbookTagsData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory WordbookTagsData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return WordbookTagsData(
       id: serializer.fromJson<int>(json['id']),
@@ -479,10 +539,8 @@ class WordbookTagsData extends DataClass
     };
   }
 
-  WordbookTagsData copyWith({int? id, String? tag}) => WordbookTagsData(
-        id: id ?? this.id,
-        tag: tag ?? this.tag,
-      );
+  WordbookTagsData copyWith({int? id, String? tag}) =>
+      WordbookTagsData(id: id ?? this.id, tag: tag ?? this.tag);
   WordbookTagsData copyWithCompanion(WordbookTagsCompanion data) {
     return WordbookTagsData(
       id: data.id.present ? data.id.value : this.id,
@@ -531,10 +589,7 @@ class WordbookTagsCompanion extends UpdateCompanion<WordbookTagsData> {
   }
 
   WordbookTagsCompanion copyWith({Value<int>? id, Value<String>? tag}) {
-    return WordbookTagsCompanion(
-      id: id ?? this.id,
-      tag: tag ?? this.tag,
-    );
+    return WordbookTagsCompanion(id: id ?? this.id, tag: tag ?? this.tag);
   }
 
   @override
@@ -564,16 +619,25 @@ class DatabaseAtV4 extends GeneratedDatabase {
   late final DictionaryList dictionaryList = DictionaryList(this);
   late final Wordbook wordbook = Wordbook(this);
   late final WordbookTags wordbookTags = WordbookTags(this);
-  late final Index idxWordbook =
-      Index('idx_wordbook', 'CREATE INDEX idx_wordbook ON wordbook (word)');
-  late final Index idxWordbookTags = Index('idx_wordbook_tags',
-      'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)');
+  late final Index idxWordbook = Index(
+    'idx_wordbook',
+    'CREATE INDEX idx_wordbook ON wordbook (word)',
+  );
+  late final Index idxWordbookTags = Index(
+    'idx_wordbook_tags',
+    'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [dictionaryList, wordbook, wordbookTags, idxWordbook, idxWordbookTags];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    dictionaryList,
+    wordbook,
+    wordbookTags,
+    idxWordbook,
+    idxWordbookTags,
+  ];
   @override
   int get schemaVersion => 4;
 }

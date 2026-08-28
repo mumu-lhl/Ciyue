@@ -39,9 +39,7 @@ class _AIExplanationEditPageState extends State<AIExplanationEditPage> {
     final locale = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(locale.editAIExplanation),
-      ),
+      appBar: AppBar(title: Text(locale.editAIExplanation)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),

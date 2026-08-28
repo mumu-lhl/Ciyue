@@ -6,14 +6,13 @@ import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 
 class HomeDrawer extends StatelessWidget {
-  const HomeDrawer({
-    super.key,
-  });
+  const HomeDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final groupId =
-        context.select<DictManagerModel, int>((value) => value.groupId);
+    final groupId = context.select<DictManagerModel, int>(
+      (value) => value.groupId,
+    );
 
     return Drawer(
       elevation: 10,
@@ -36,14 +35,16 @@ class HomeDrawer extends StatelessWidget {
                   leading: group.id == groupId
                       ? const Icon(Icons.radio_button_checked, size: 20)
                       : const Icon(Icons.radio_button_unchecked, size: 20),
-                  title: Text(group.name == "Default"
-                      ? AppLocalizations.of(context)!.default_
-                      : group.name),
+                  title: Text(
+                    group.name == "Default"
+                        ? AppLocalizations.of(context)!.default_
+                        : group.name,
+                  ),
                   onTap: () async {
                     context.pop();
-                    await context
-                        .read<DictManagerModel>()
-                        .setCurrentGroup(group.id);
+                    await context.read<DictManagerModel>().setCurrentGroup(
+                      group.id,
+                    );
                   },
                 ),
               ),

@@ -14,30 +14,29 @@ class AutoExportSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          leading: BackButton(onPressed: () => context.pop()),
-          title: Text(AppLocalizations.of(context)!.autoExport),
-        ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 500),
-            child: ListView(
-              children: [
-                Enable(),
-                if (Platform.isAndroid) FileName(),
-                if (Platform.isAndroid) ExportDirectory(),
-                if (!Platform.isAndroid) ExportPath(),
-              ],
-            ),
+      appBar: AppBar(
+        leading: BackButton(onPressed: () => context.pop()),
+        title: Text(AppLocalizations.of(context)!.autoExport),
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: ListView(
+            children: [
+              Enable(),
+              if (Platform.isAndroid) FileName(),
+              if (Platform.isAndroid) ExportDirectory(),
+              if (!Platform.isAndroid) ExportPath(),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
 
 class Enable extends StatefulWidget {
-  const Enable({
-    super.key,
-  });
+  const Enable({super.key});
 
   @override
   State<Enable> createState() => _EnableState();
@@ -58,9 +57,7 @@ class ExportPath extends StatefulWidget {
 }
 
 class FileName extends StatefulWidget {
-  const FileName({
-    super.key,
-  });
+  const FileName({super.key});
 
   @override
   State<FileName> createState() => _FileNameState();
@@ -134,9 +131,7 @@ class _FileNameState extends State<FileName> {
             content: TextField(
               autofocus: true,
               controller: controller,
-              decoration: InputDecoration(
-                hintText: "ciyue",
-              ),
+              decoration: InputDecoration(hintText: "ciyue"),
               onSubmitted: (String fileName) {
                 Navigator.pop(context, fileName);
               },

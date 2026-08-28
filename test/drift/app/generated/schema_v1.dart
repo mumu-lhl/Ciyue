@@ -11,15 +11,23 @@ class DictionaryList extends Table
   final String? _alias;
   DictionaryList(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
-      'path', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [id, path];
   @override
@@ -33,10 +41,14 @@ class DictionaryList extends Table
   DictionaryListData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictionaryListData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      path: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
     );
   }
 
@@ -60,14 +72,13 @@ class DictionaryListData extends DataClass
   }
 
   DictionaryListCompanion toCompanion(bool nullToAbsent) {
-    return DictionaryListCompanion(
-      id: Value(id),
-      path: Value(path),
-    );
+    return DictionaryListCompanion(id: Value(id), path: Value(path));
   }
 
-  factory DictionaryListData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory DictionaryListData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DictionaryListData(
       id: serializer.fromJson<int>(json['id']),
@@ -83,10 +94,8 @@ class DictionaryListData extends DataClass
     };
   }
 
-  DictionaryListData copyWith({int? id, String? path}) => DictionaryListData(
-        id: id ?? this.id,
-        path: path ?? this.path,
-      );
+  DictionaryListData copyWith({int? id, String? path}) =>
+      DictionaryListData(id: id ?? this.id, path: path ?? this.path);
   DictionaryListData copyWithCompanion(DictionaryListCompanion data) {
     return DictionaryListData(
       id: data.id.present ? data.id.value : this.id,
@@ -135,10 +144,7 @@ class DictionaryListCompanion extends UpdateCompanion<DictionaryListData> {
   }
 
   DictionaryListCompanion copyWith({Value<int>? id, Value<String>? path}) {
-    return DictionaryListCompanion(
-      id: id ?? this.id,
-      path: path ?? this.path,
-    );
+    return DictionaryListCompanion(id: id ?? this.id, path: path ?? this.path);
   }
 
   @override

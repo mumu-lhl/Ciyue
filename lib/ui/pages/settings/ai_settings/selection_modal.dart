@@ -19,10 +19,7 @@ void showSelectionModal<T>({
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              child: Text(title, style: Theme.of(context).textTheme.titleLarge),
             ),
             const Divider(height: 1),
             Expanded(
@@ -32,8 +29,9 @@ void showSelectionModal<T>({
                   final item = items[index];
                   return ListTile(
                     title: Text(itemText(item)),
-                    trailing:
-                        item == currentItem ? const Icon(Icons.check) : null,
+                    trailing: item == currentItem
+                        ? const Icon(Icons.check)
+                        : null,
                     onTap: () {
                       onItemSelected(item);
                       Navigator.pop(context);

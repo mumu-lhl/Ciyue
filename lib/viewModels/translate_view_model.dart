@@ -72,9 +72,10 @@ class AiTranslateViewModel extends ChangeNotifier {
 
     try {
       if (settings.enableTranslationHistory) {
-        Provider.of<TranslateHistoryDao>(navigatorKey.currentContext!,
-                listen: false)
-            .addHistory(inputController.text.trim());
+        Provider.of<TranslateHistoryDao>(
+          navigatorKey.currentContext!,
+          listen: false,
+        ).addHistory(inputController.text.trim());
       }
 
       TranslationService service;

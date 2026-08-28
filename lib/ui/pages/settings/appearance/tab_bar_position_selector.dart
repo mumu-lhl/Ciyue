@@ -19,10 +19,7 @@ class _TabBarPositionSelectorState extends State<TabBarPositionSelector> {
       title: Text(locale.tabBarPosition),
       trailing: SegmentedButton<TabBarPosition>(
         segments: [
-          ButtonSegment(
-            value: TabBarPosition.top,
-            label: Text(locale.top),
-          ),
+          ButtonSegment(value: TabBarPosition.top, label: Text(locale.top)),
           ButtonSegment(
             value: TabBarPosition.bottom,
             label: Text(locale.bottom),

@@ -32,7 +32,8 @@ class HistoryList extends StatelessWidget {
                 if (model.isSelecting) return false;
 
                 if (direction == DismissDirection.endToStart) {
-                  final confirm = await showDialog<bool>(
+                  final confirm =
+                      await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
                           title: Text(locale!.confirmDelete),
@@ -68,11 +69,12 @@ class HistoryList extends StatelessWidget {
                     context: context,
                     builder: (BuildContext context) {
                       return AddHistoryToWordbookDialog(
-                          tags: tags,
-                          tagsOfWord: tagsOfWord,
-                          toAdd: toAdd,
-                          toDel: toDel,
-                          item: item);
+                        tags: tags,
+                        tagsOfWord: tagsOfWord,
+                        toAdd: toAdd,
+                        toDel: toDel,
+                        item: item,
+                      );
                     },
                   );
                   return false;
@@ -94,17 +96,23 @@ class HistoryList extends StatelessWidget {
                 return false;
               },
               background: Container(
-                  color: Theme.of(context).colorScheme.primary,
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.only(left: 16.0),
-                  child: Icon(Icons.book_outlined,
-                      color: Theme.of(context).colorScheme.onPrimary)),
+                color: Theme.of(context).colorScheme.primary,
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(left: 16.0),
+                child: Icon(
+                  Icons.book_outlined,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
               secondaryBackground: Container(
-                  color: Theme.of(context).colorScheme.error,
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: Icon(Icons.delete_outline,
-                      color: Theme.of(context).colorScheme.onError)),
+                color: Theme.of(context).colorScheme.error,
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 16.0),
+                child: Icon(
+                  Icons.delete_outline,
+                  color: Theme.of(context).colorScheme.onError,
+                ),
+              ),
               child: ListTile(
                 leading: model.isSelecting
                     ? Checkbox(
@@ -126,7 +134,7 @@ class HistoryList extends StatelessWidget {
                   model.toggleSelection(item.id);
                 },
               ),
-            )
+            ),
         ],
       ),
     );
@@ -134,9 +142,7 @@ class HistoryList extends StatelessWidget {
 }
 
 class HistoryLabel extends StatelessWidget {
-  const HistoryLabel({
-    super.key,
-  });
+  const HistoryLabel({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -145,8 +151,8 @@ class HistoryLabel extends StatelessWidget {
       child: Text(
         AppLocalizations.of(context)!.history,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color:
-                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7)),
+          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.7),
+        ),
       ),
     );
   }

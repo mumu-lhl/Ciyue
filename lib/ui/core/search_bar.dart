@@ -56,7 +56,10 @@ class _WordSearchBarWithSuggestionsState
             controller: controller,
             hintText: AppLocalizations.of(context)!.search,
             constraints: const BoxConstraints(
-                maxHeight: 42, minHeight: 42, maxWidth: 500),
+              maxHeight: 42,
+              minHeight: 42,
+              maxWidth: 500,
+            ),
             onTap: () => controller.openView(),
             onChanged: (_) => controller.openView(),
             leading: const Icon(Icons.search),
@@ -71,31 +74,34 @@ class _WordSearchBarWithSuggestionsState
           },
           suggestionsBuilder:
               (BuildContext context, SearchController controller) async {
-            final searchWord = controller.text.trimRight();
+                final searchWord = controller.text.trimRight();
 
-            if (searchWord.isEmpty) {
-              return [const SizedBox.shrink()];
-            }
+                if (searchWord.isEmpty) {
+                  return [const SizedBox.shrink()];
+                }
 
-            final searchResult = await Searcher(searchWord).getSearchResult();
+                final searchResult = await Searcher(searchWord)
+                    .getSearchResult();
 
-            if (settings.aiExplainWord) {
-              searchResult.insert(0, searchWord);
-            }
+                if (settings.aiExplainWord) {
+                  searchResult.insert(0, searchWord);
+                }
 
-            return searchResult.map((e) => ListTile(
-                  title: Text(e),
-                  trailing: const Icon(Icons.arrow_forward),
-                  onTap: () {
-                    context.read<HistoryModel>().addHistory(e);
-                    context.push("/word/${Uri.encodeComponent(e)}");
+                return searchResult.map(
+                  (e) => ListTile(
+                    title: Text(e),
+                    trailing: const Icon(Icons.arrow_forward),
+                    onTap: () {
+                      context.read<HistoryModel>().addHistory(e);
+                      context.push("/word/${Uri.encodeComponent(e)}");
 
-                    if (widget.isHome && settings.autoRemoveSearchWord) {
-                      controller.text = "";
-                    }
-                  },
-                ));
-          },
+                      if (widget.isHome && settings.autoRemoveSearchWord) {
+                        controller.text = "";
+                      }
+                    },
+                  ),
+                );
+              },
         ),
       ),
     );

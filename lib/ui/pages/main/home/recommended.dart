@@ -3,9 +3,7 @@ import "package:material_ui/material_ui.dart";
 import "package:url_launcher/url_launcher.dart";
 
 class RecommendedDictionaries extends StatelessWidget {
-  const RecommendedDictionaries({
-    super.key,
-  });
+  const RecommendedDictionaries({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,16 +19,22 @@ class RecommendedDictionaries extends StatelessWidget {
           ElevatedButton(
             child: Text(locale.recommendedDictionaries),
             onPressed: () async {
-              await launchUrl(Uri.parse(
-                  "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries"));
+              await launchUrl(
+                Uri.parse(
+                  "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries",
+                ),
+              );
             },
           ),
           const SizedBox(height: 8),
           ElevatedButton(
             child: const Text("FreeMDict Cloud"),
             onPressed: () async {
-              await launchUrl(Uri.parse(
-                  "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs"));
+              await launchUrl(
+                Uri.parse(
+                  "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs",
+                ),
+              );
             },
           ),
         ],

@@ -7,19 +7,17 @@ import "package:provider/provider.dart";
 import "package:go_router/go_router.dart";
 
 class LookupMenuItem extends ContextMenuButtonItem {
-  LookupMenuItem({
-    required BuildContext context,
-    required String textToLookup,
-  }) : super(
-          label: AppLocalizations.of(context)!.lookup,
-          onPressed: () async {
-            final String text = textToLookup;
-            if (text.isNotEmpty && context.mounted) {
-              context.push("/word/${Uri.encodeComponent(text)}");
-            }
-            ContextMenuController.removeAny();
-          },
-        );
+  LookupMenuItem({required BuildContext context, required String textToLookup})
+    : super(
+        label: AppLocalizations.of(context)!.lookup,
+        onPressed: () async {
+          final String text = textToLookup;
+          if (text.isNotEmpty && context.mounted) {
+            context.push("/word/${Uri.encodeComponent(text)}");
+          }
+          ContextMenuController.removeAny();
+        },
+      );
 }
 
 class ReadLoudlyMenuItem extends ContextMenuButtonItem {
@@ -27,26 +25,26 @@ class ReadLoudlyMenuItem extends ContextMenuButtonItem {
     required BuildContext context,
     required String textToRead,
   }) : super(
-          label: AppLocalizations.of(context)!.readLoudly,
-          onPressed: () async {
-            final String text = textToRead;
-            if (text.isNotEmpty) {
-              await playSoundOfWord(
-                text,
-                context.read<AudioModel>().mddAudioList,
-              );
-            }
-            ContextMenuController.removeAny();
-          },
-        );
+         label: AppLocalizations.of(context)!.readLoudly,
+         onPressed: () async {
+           final String text = textToRead;
+           if (text.isNotEmpty) {
+             await playSoundOfWord(
+               text,
+               context.read<AudioModel>().mddAudioList,
+             );
+           }
+           ContextMenuController.removeAny();
+         },
+       );
 }
 
 /// It reads the currently selected text; if empty, falls back to [fallbackText].
 AdaptiveTextSelectionToolbar Function(
-        BuildContext context, SelectableRegionState selectableRegionState)
-    buildCustomContextMenu({
-  required String fallbackText,
-}) {
+  BuildContext context,
+  SelectableRegionState selectableRegionState,
+)
+buildCustomContextMenu({required String fallbackText}) {
   return (BuildContext context, SelectableRegionState selectableRegionState) {
     final defaultItems = selectableRegionState.contextMenuButtonItems;
 
@@ -59,14 +57,8 @@ AdaptiveTextSelectionToolbar Function(
       anchors: selectableRegionState.contextMenuAnchors,
       buttonItems: [
         ...defaultItems,
-        LookupMenuItem(
-          context: context,
-          textToLookup: text,
-        ),
-        ReadLoudlyMenuItem(
-          context: context,
-          textToRead: text,
-        ),
+        LookupMenuItem(context: context, textToLookup: text),
+        ReadLoudlyMenuItem(context: context, textToRead: text),
       ],
     );
   };
@@ -91,14 +83,8 @@ EditableTextContextMenuBuilder buildEditableTextCustomContextMenu({
       anchors: editableTextState.contextMenuAnchors,
       buttonItems: [
         ...defaultItems,
-        LookupMenuItem(
-          context: context,
-          textToLookup: text,
-        ),
-        ReadLoudlyMenuItem(
-          context: context,
-          textToRead: text,
-        ),
+        LookupMenuItem(context: context, textToLookup: text),
+        ReadLoudlyMenuItem(context: context, textToRead: text),
       ],
     );
   };

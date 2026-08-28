@@ -11,8 +11,9 @@ part "app.g.dart";
 
 AppDatabase appDatabase() {
   final connection = driftDatabase(
-      name: "dictionary_list",
-      native: DriftNativeOptions(databaseDirectory: databaseDirectory));
+    name: "dictionary_list",
+    native: DriftNativeOptions(databaseDirectory: databaseDirectory),
+  );
   return AppDatabase(connection);
 }
 
@@ -56,54 +57,78 @@ class AppDatabase extends _$AppDatabase {
       onCreate: (Migrator m) async {
         await m.createAll();
       },
-      onUpgrade: stepByStep(from1To2: (m, schema) async {
-        await m.addColumn(
-            schema.dictionaryList, schema.dictionaryList.fontPath);
-      }, from2To3: (m, schema) async {
-        await m.addColumn(
-            schema.dictionaryList, schema.dictionaryList.backupPath);
-      }, from3To4: (m, schema) async {
-        await m.createAll();
-      }, from4To5: (m, schema) async {
-        await m.createTable(schema.history);
-      }, from5To6: (m, schema) async {
-        await m.dropColumn(schema.dictionaryList, "backup_path");
-        await m.create(schema.dictGroup);
-      }, from6To7: (m, schema) async {
-        await m.addColumn(schema.dictionaryList, schema.dictionaryList.alias);
-      }, from7To8: (m, schema) async {
-        await m.addColumn(schema.wordbook, schema.wordbook.createdAt);
-        await m.drop(schema.idxWordbook);
-        await m.createIndex(schema.idxWordbook);
-      }, from8To9: (m, schema) async {
-        // ignore: experimental_member_use
-        await m.alterTable(TableMigration(schema.wordbook));
-      }, from9To10: (m, schema) async {
-        await m.create(schema.mddAudioList);
-        await m.create(schema.mddAudioResource);
-        await m.create(schema.idxMddAudioResource);
-      }, from10To11: (m, schema) async {
-        await m.create(schema.aiExplanations);
-        await m.createIndex(schema.idxAiExplanations);
-      }, from11To12: (m, schema) async {
-        await m.create(schema.writingCheckHistory);
-        await m.create(schema.translateHistory);
-      }, from12To13: (m, schema) async {
-        await m.addColumn(schema.dictionaryList, schema.dictionaryList.type);
-      }, from13To14: (m, schema) async {
-        await m.addColumn(schema.dictionaryList, schema.dictionaryList.order);
-      }, from14To15: (m, schema) async {
-        await m.renameColumn(
-            schema.dictionaryList, "alias", schema.dictionaryList.title);
-      }, from15To16: (m, schema) async {
-        await m.create(schema.openRecords);
-        await m.create(schema.idxOpenRecords);
-      }, from16To17: (m, schema) async {
-        await m.create(schema.flashcards);
-        await m.create(schema.idxFlashcardsDue);
-        await m.create(schema.flashcardReviewLogs);
-        await m.create(schema.idxFlashcardReviewLogsWord);
-      }),
+      onUpgrade: stepByStep(
+        from1To2: (m, schema) async {
+          await m.addColumn(
+            schema.dictionaryList,
+            schema.dictionaryList.fontPath,
+          );
+        },
+        from2To3: (m, schema) async {
+          await m.addColumn(
+            schema.dictionaryList,
+            schema.dictionaryList.backupPath,
+          );
+        },
+        from3To4: (m, schema) async {
+          await m.createAll();
+        },
+        from4To5: (m, schema) async {
+          await m.createTable(schema.history);
+        },
+        from5To6: (m, schema) async {
+          await m.dropColumn(schema.dictionaryList, "backup_path");
+          await m.create(schema.dictGroup);
+        },
+        from6To7: (m, schema) async {
+          await m.addColumn(schema.dictionaryList, schema.dictionaryList.alias);
+        },
+        from7To8: (m, schema) async {
+          await m.addColumn(schema.wordbook, schema.wordbook.createdAt);
+          await m.drop(schema.idxWordbook);
+          await m.createIndex(schema.idxWordbook);
+        },
+        from8To9: (m, schema) async {
+          // ignore: experimental_member_use
+          await m.alterTable(TableMigration(schema.wordbook));
+        },
+        from9To10: (m, schema) async {
+          await m.create(schema.mddAudioList);
+          await m.create(schema.mddAudioResource);
+          await m.create(schema.idxMddAudioResource);
+        },
+        from10To11: (m, schema) async {
+          await m.create(schema.aiExplanations);
+          await m.createIndex(schema.idxAiExplanations);
+        },
+        from11To12: (m, schema) async {
+          await m.create(schema.writingCheckHistory);
+          await m.create(schema.translateHistory);
+        },
+        from12To13: (m, schema) async {
+          await m.addColumn(schema.dictionaryList, schema.dictionaryList.type);
+        },
+        from13To14: (m, schema) async {
+          await m.addColumn(schema.dictionaryList, schema.dictionaryList.order);
+        },
+        from14To15: (m, schema) async {
+          await m.renameColumn(
+            schema.dictionaryList,
+            "alias",
+            schema.dictionaryList.title,
+          );
+        },
+        from15To16: (m, schema) async {
+          await m.create(schema.openRecords);
+          await m.create(schema.idxOpenRecords);
+        },
+        from16To17: (m, schema) async {
+          await m.create(schema.flashcards);
+          await m.create(schema.idxFlashcardsDue);
+          await m.create(schema.flashcardReviewLogs);
+          await m.create(schema.idxFlashcardReviewLogsWord);
+        },
+      ),
     );
   }
 

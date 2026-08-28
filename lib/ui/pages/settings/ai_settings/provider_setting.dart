@@ -13,11 +13,14 @@ class ProviderSetting extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.read<AISettingsViewModel>();
-    final providerName =
-        context.select((AISettingsViewModel vm) => vm.provider);
+    final providerName = context.select(
+      (AISettingsViewModel vm) => vm.provider,
+    );
     final providers = ModelProviderManager.modelProviders.values.toList();
-    final currentProvider = providers.firstWhere((p) => p.name == providerName,
-        orElse: () => providers.first);
+    final currentProvider = providers.firstWhere(
+      (p) => p.name == providerName,
+      orElse: () => providers.first,
+    );
 
     return SettingSelectionChip(
       label: currentProvider.displayedName,

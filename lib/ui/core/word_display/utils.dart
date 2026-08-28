@@ -22,8 +22,9 @@ Widget? buildTitle(String word, Settings settings) {
 Widget buildWebView(String word, int id, bool isExpansion) {
   return Consumer(
     builder: (context, ref, child) {
-      final contentAsync =
-          ref.watch(wordContentProvider((word: word, dictId: id)));
+      final contentAsync = ref.watch(
+        wordContentProvider((word: word, dictId: id)),
+      );
 
       return contentAsync.when(
         data: (content) {

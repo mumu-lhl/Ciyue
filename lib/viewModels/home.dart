@@ -44,13 +44,15 @@ class HistoryModel extends HistoryViewModel<HistoryData> {
     final existWords = await wordbookDao.wordsExist(words);
     for (final word in words) {
       if (existWords.contains(word)) {
-        await Provider.of<WordbookModel>(navigatorKey.currentContext!,
-                listen: false)
-            .delete(word);
+        await Provider.of<WordbookModel>(
+          navigatorKey.currentContext!,
+          listen: false,
+        ).delete(word);
       } else {
-        await Provider.of<WordbookModel>(navigatorKey.currentContext!,
-                listen: false)
-            .add(word);
+        await Provider.of<WordbookModel>(
+          navigatorKey.currentContext!,
+          listen: false,
+        ).add(word);
       }
     }
     clearSelection();

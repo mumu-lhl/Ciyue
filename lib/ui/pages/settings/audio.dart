@@ -30,9 +30,7 @@ class AudioItems extends StatelessWidget {
             return Card(
               key: ValueKey("tts_option"),
               color: Theme.of(context).colorScheme.onInverseSurface,
-              child: ListTile(
-                title: const Text("TTS"),
-              ),
+              child: ListTile(title: const Text("TTS")),
             );
           } else {
             final mddAudio = mddAudioList[index];
@@ -46,12 +44,13 @@ class AudioItems extends StatelessWidget {
                 ),
                 title: Text(mddAudio.title),
                 trailing: IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () async {
-                      await context
-                          .read<AudioModel>()
-                          .removeMddAudio(mddAudio.id);
-                    }),
+                  icon: Icon(Icons.delete),
+                  onPressed: () async {
+                    await context.read<AudioModel>().removeMddAudio(
+                      mddAudio.id,
+                    );
+                  },
+                ),
               ),
             );
           }
@@ -69,9 +68,7 @@ class AudioItems extends StatelessWidget {
 }
 
 class AudioList extends StatelessWidget {
-  const AudioList({
-    super.key,
-  });
+  const AudioList({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -85,8 +82,9 @@ class AudioList extends StatelessWidget {
               onPressed: () async {
                 if (Platform.isAndroid) {
                   if (isFullFlavor()) {
-                    final isGranted =
-                        await requestManageExternalStorage(context);
+                    final isGranted = await requestManageExternalStorage(
+                      context,
+                    );
                     if (isGranted) {
                       final path = await getDirectoryPath();
                       if (path != null) {
@@ -122,9 +120,7 @@ class AudioSettingsPage extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: AppBar(
-          leading: BackButton(),
-        ),
+        appBar: AppBar(leading: BackButton()),
         body: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
@@ -157,7 +153,8 @@ class TTSEngines extends StatelessWidget {
         TitleText(AppLocalizations.of(context)!.ttsEngines),
         SizedBox(height: 12),
         DropdownButtonFormField<String>(
-          initialValue: settings.ttsEngine ??
+          initialValue:
+              settings.ttsEngine ??
               (ttsEngines.isNotEmpty ? ttsEngines.first : null),
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)!.ttsEngines,
@@ -167,14 +164,18 @@ class TTSEngines extends StatelessWidget {
             for (final engine in ttsEngines)
               DropdownMenuItem(
                 value: engine,
-                child: Text((engine as String)
-                    .replaceFirst(RegExp(r"^com\."), "")
-                    .split(".")
-                    .map((e) => e.isEmpty
-                        ? ""
-                        : "${e[0].toUpperCase()}${e.substring(1)}")
-                    .join(" ")),
-              )
+                child: Text(
+                  (engine as String)
+                      .replaceFirst(RegExp(r"^com\."), "")
+                      .split(".")
+                      .map(
+                        (e) => e.isEmpty
+                            ? ""
+                            : "${e[0].toUpperCase()}${e.substring(1)}",
+                      )
+                      .join(" "),
+                ),
+              ),
           ],
           onChanged: (String? ttsEngine) async {
             if (ttsEngine != null) {
@@ -207,10 +208,7 @@ class TTSLanguages extends StatelessWidget {
           ),
           items: [
             for (final lang in ttsLanguages)
-              DropdownMenuItem(
-                value: lang,
-                child: Text(lang),
-              )
+              DropdownMenuItem(value: lang, child: Text(lang)),
           ],
           onChanged: (String? ttsLanguage) async {
             if (ttsLanguage != null) {
@@ -218,7 +216,7 @@ class TTSLanguages extends StatelessWidget {
               flutterTts.setLanguage(ttsLanguage);
             }
           },
-        )
+        ),
       ],
     );
   }

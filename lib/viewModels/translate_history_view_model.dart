@@ -11,26 +11,28 @@ class TranslateHistoryViewModel extends HistoryViewModel<TranslateHistoryData> {
   @override
   Future<void> loadHistory() async {
     final history = await Provider.of<TranslateHistoryDao>(
-            navigatorKey.currentContext!,
-            listen: false)
-        .getAllHistory();
+      navigatorKey.currentContext!,
+      listen: false,
+    ).getAllHistory();
     setHistory(history);
   }
 
   @override
   Future<void> deleteHistory(int id) async {
-    await Provider.of<TranslateHistoryDao>(navigatorKey.currentContext!,
-            listen: false)
-        .deleteHistory(id);
+    await Provider.of<TranslateHistoryDao>(
+      navigatorKey.currentContext!,
+      listen: false,
+    ).deleteHistory(id);
     history.removeWhere((item) => item.id == id);
     notifyListeners();
   }
 
   @override
   Future<void> deleteSelected() async {
-    await Provider.of<TranslateHistoryDao>(navigatorKey.currentContext!,
-            listen: false)
-        .deleteHistories(selectedIds.toList());
+    await Provider.of<TranslateHistoryDao>(
+      navigatorKey.currentContext!,
+      listen: false,
+    ).deleteHistories(selectedIds.toList());
     history.removeWhere((item) => selectedIds.contains(item.id));
     clearSelection();
   }

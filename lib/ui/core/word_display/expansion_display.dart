@@ -36,10 +36,7 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     final length = settings.aiExplainWord
         ? widget.validDictIds.length + 1
         : widget.validDictIds.length;
-    _isExpanded = List<bool>.generate(
-      length,
-      (_) => true,
-    );
+    _isExpanded = List<bool>.generate(length, (_) => true);
   }
 
   @override
@@ -58,8 +55,11 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
           },
           body: AIExplainView(
             word: widget.word,
-            key: ValueKey(context
-                .select<AIExplanationModel, int>((model) => model.refreshKey)),
+            key: ValueKey(
+              context.select<AIExplanationModel, int>(
+                (model) => model.refreshKey,
+              ),
+            ),
           ),
           isExpanded: _isExpanded[panelIndex],
           canTapOnHeader: true,
@@ -89,9 +89,7 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(
-          onPressed: () => context.go("/"),
-        ),
+        leading: BackButton(onPressed: () => context.go("/")),
         title: settings.searchBarInAppBar ? searchBar : null,
       ),
       bottomNavigationBar: (!settings.searchBarInAppBar && searchBar != null)

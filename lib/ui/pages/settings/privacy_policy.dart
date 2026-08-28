@@ -8,23 +8,22 @@ class PrivacyPolicyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.privacyPolicy),
-          leading: BackButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.privacyPolicy),
+        leading: BackButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
         ),
-        body: Center(
-            child: ConstrainedBox(
+      ),
+      body: Center(
+        child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               child: SelectionArea(
-                child: GptMarkdown(
-                  '''
+                child: GptMarkdown('''
             # Privacy Policy
 
             ## Definition
@@ -46,11 +45,12 @@ class PrivacyPolicyPage extends StatelessWidget {
             ## Disclaimer
             
             We are not responsible for the data practices of these third-party services.
-            ''',
-                ),
+            '''),
               ),
             ),
           ),
-        )));
+        ),
+      ),
+    );
   }
 }

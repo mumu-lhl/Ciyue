@@ -3,19 +3,18 @@ import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 class DiscordTile extends StatelessWidget {
-  const DiscordTile({
-    super.key,
-  });
+  const DiscordTile({super.key});
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<AboutViewModel>(context, listen: false);
     return ListTile(
-        title: const Text("Discord"),
-        subtitle: const Text(AboutViewModel.discordUri),
-        leading: const Icon(Icons.discord),
-        onTap: () => viewModel.launchUri(AboutViewModel.discordUri),
-        onLongPress: () =>
-            viewModel.copyToClipboard(context, AboutViewModel.discordUri));
+      title: const Text("Discord"),
+      subtitle: const Text(AboutViewModel.discordUri),
+      leading: const Icon(Icons.discord),
+      onTap: () => viewModel.launchUri(AboutViewModel.discordUri),
+      onLongPress: () =>
+          viewModel.copyToClipboard(context, AboutViewModel.discordUri),
+    );
   }
 }

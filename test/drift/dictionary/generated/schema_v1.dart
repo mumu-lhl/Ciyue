@@ -9,8 +9,12 @@ class Wordbook extends Table with TableInfo<Wordbook, WordbookData> {
   final String? _alias;
   Wordbook(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<String> word = GeneratedColumn<String>(
-      'word', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'word',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [word];
   @override
@@ -24,8 +28,10 @@ class Wordbook extends Table with TableInfo<Wordbook, WordbookData> {
   WordbookData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WordbookData(
-      word: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}word'])!,
+      word: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}word'],
+      )!,
     );
   }
 
@@ -46,33 +52,26 @@ class WordbookData extends DataClass implements Insertable<WordbookData> {
   }
 
   WordbookCompanion toCompanion(bool nullToAbsent) {
-    return WordbookCompanion(
-      word: Value(word),
-    );
+    return WordbookCompanion(word: Value(word));
   }
 
-  factory WordbookData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory WordbookData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return WordbookData(
-      word: serializer.fromJson<String>(json['word']),
-    );
+    return WordbookData(word: serializer.fromJson<String>(json['word']));
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'word': serializer.toJson<String>(word),
-    };
+    return <String, dynamic>{'word': serializer.toJson<String>(word)};
   }
 
-  WordbookData copyWith({String? word}) => WordbookData(
-        word: word ?? this.word,
-      );
+  WordbookData copyWith({String? word}) =>
+      WordbookData(word: word ?? this.word);
   WordbookData copyWithCompanion(WordbookCompanion data) {
-    return WordbookData(
-      word: data.word.present ? data.word.value : this.word,
-    );
+    return WordbookData(word: data.word.present ? data.word.value : this.word);
   }
 
   @override
@@ -147,23 +146,48 @@ class Resource extends Table with TableInfo<Resource, ResourceData> {
   final String? _alias;
   Resource(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> blockOffset = GeneratedColumn<int>(
-      'block_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'block_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> compressedSize = GeneratedColumn<int>(
-      'compressed_size', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'compressed_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> endOffset = GeneratedColumn<int>(
-      'end_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'end_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<String> key = GeneratedColumn<String>(
-      'key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> startOffset = GeneratedColumn<int>(
-      'start_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'start_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [blockOffset, compressedSize, endOffset, key, startOffset];
+  List<GeneratedColumn> get $columns => [
+    blockOffset,
+    compressedSize,
+    endOffset,
+    key,
+    startOffset,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -175,16 +199,26 @@ class Resource extends Table with TableInfo<Resource, ResourceData> {
   ResourceData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ResourceData(
-      blockOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}block_offset'])!,
-      compressedSize: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}compressed_size'])!,
-      endOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}end_offset'])!,
-      key: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
-      startOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}start_offset'])!,
+      blockOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}block_offset'],
+      )!,
+      compressedSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}compressed_size'],
+      )!,
+      endOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}end_offset'],
+      )!,
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      startOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_offset'],
+      )!,
     );
   }
 
@@ -200,12 +234,13 @@ class ResourceData extends DataClass implements Insertable<ResourceData> {
   final int endOffset;
   final String key;
   final int startOffset;
-  const ResourceData(
-      {required this.blockOffset,
-      required this.compressedSize,
-      required this.endOffset,
-      required this.key,
-      required this.startOffset});
+  const ResourceData({
+    required this.blockOffset,
+    required this.compressedSize,
+    required this.endOffset,
+    required this.key,
+    required this.startOffset,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -227,8 +262,10 @@ class ResourceData extends DataClass implements Insertable<ResourceData> {
     );
   }
 
-  factory ResourceData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory ResourceData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ResourceData(
       blockOffset: serializer.fromJson<int>(json['blockOffset']),
@@ -250,30 +287,32 @@ class ResourceData extends DataClass implements Insertable<ResourceData> {
     };
   }
 
-  ResourceData copyWith(
-          {int? blockOffset,
-          int? compressedSize,
-          int? endOffset,
-          String? key,
-          int? startOffset}) =>
-      ResourceData(
-        blockOffset: blockOffset ?? this.blockOffset,
-        compressedSize: compressedSize ?? this.compressedSize,
-        endOffset: endOffset ?? this.endOffset,
-        key: key ?? this.key,
-        startOffset: startOffset ?? this.startOffset,
-      );
+  ResourceData copyWith({
+    int? blockOffset,
+    int? compressedSize,
+    int? endOffset,
+    String? key,
+    int? startOffset,
+  }) => ResourceData(
+    blockOffset: blockOffset ?? this.blockOffset,
+    compressedSize: compressedSize ?? this.compressedSize,
+    endOffset: endOffset ?? this.endOffset,
+    key: key ?? this.key,
+    startOffset: startOffset ?? this.startOffset,
+  );
   ResourceData copyWithCompanion(ResourceCompanion data) {
     return ResourceData(
-      blockOffset:
-          data.blockOffset.present ? data.blockOffset.value : this.blockOffset,
+      blockOffset: data.blockOffset.present
+          ? data.blockOffset.value
+          : this.blockOffset,
       compressedSize: data.compressedSize.present
           ? data.compressedSize.value
           : this.compressedSize,
       endOffset: data.endOffset.present ? data.endOffset.value : this.endOffset,
       key: data.key.present ? data.key.value : this.key,
-      startOffset:
-          data.startOffset.present ? data.startOffset.value : this.startOffset,
+      startOffset: data.startOffset.present
+          ? data.startOffset.value
+          : this.startOffset,
     );
   }
 
@@ -325,11 +364,11 @@ class ResourceCompanion extends UpdateCompanion<ResourceData> {
     required String key,
     required int startOffset,
     this.rowid = const Value.absent(),
-  })  : blockOffset = Value(blockOffset),
-        compressedSize = Value(compressedSize),
-        endOffset = Value(endOffset),
-        key = Value(key),
-        startOffset = Value(startOffset);
+  }) : blockOffset = Value(blockOffset),
+       compressedSize = Value(compressedSize),
+       endOffset = Value(endOffset),
+       key = Value(key),
+       startOffset = Value(startOffset);
   static Insertable<ResourceData> custom({
     Expression<int>? blockOffset,
     Expression<int>? compressedSize,
@@ -348,13 +387,14 @@ class ResourceCompanion extends UpdateCompanion<ResourceData> {
     });
   }
 
-  ResourceCompanion copyWith(
-      {Value<int>? blockOffset,
-      Value<int>? compressedSize,
-      Value<int>? endOffset,
-      Value<String>? key,
-      Value<int>? startOffset,
-      Value<int>? rowid}) {
+  ResourceCompanion copyWith({
+    Value<int>? blockOffset,
+    Value<int>? compressedSize,
+    Value<int>? endOffset,
+    Value<String>? key,
+    Value<int>? startOffset,
+    Value<int>? rowid,
+  }) {
     return ResourceCompanion(
       blockOffset: blockOffset ?? this.blockOffset,
       compressedSize: compressedSize ?? this.compressedSize,
@@ -409,23 +449,48 @@ class Dictionary extends Table with TableInfo<Dictionary, DictionaryData> {
   final String? _alias;
   Dictionary(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> blockOffset = GeneratedColumn<int>(
-      'block_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'block_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> compressedSize = GeneratedColumn<int>(
-      'compressed_size', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'compressed_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> endOffset = GeneratedColumn<int>(
-      'end_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'end_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<String> key = GeneratedColumn<String>(
-      'key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> startOffset = GeneratedColumn<int>(
-      'start_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'start_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [blockOffset, compressedSize, endOffset, key, startOffset];
+  List<GeneratedColumn> get $columns => [
+    blockOffset,
+    compressedSize,
+    endOffset,
+    key,
+    startOffset,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -437,16 +502,26 @@ class Dictionary extends Table with TableInfo<Dictionary, DictionaryData> {
   DictionaryData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictionaryData(
-      blockOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}block_offset'])!,
-      compressedSize: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}compressed_size'])!,
-      endOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}end_offset'])!,
-      key: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
-      startOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}start_offset'])!,
+      blockOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}block_offset'],
+      )!,
+      compressedSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}compressed_size'],
+      )!,
+      endOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}end_offset'],
+      )!,
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      startOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_offset'],
+      )!,
     );
   }
 
@@ -462,12 +537,13 @@ class DictionaryData extends DataClass implements Insertable<DictionaryData> {
   final int endOffset;
   final String key;
   final int startOffset;
-  const DictionaryData(
-      {required this.blockOffset,
-      required this.compressedSize,
-      required this.endOffset,
-      required this.key,
-      required this.startOffset});
+  const DictionaryData({
+    required this.blockOffset,
+    required this.compressedSize,
+    required this.endOffset,
+    required this.key,
+    required this.startOffset,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -489,8 +565,10 @@ class DictionaryData extends DataClass implements Insertable<DictionaryData> {
     );
   }
 
-  factory DictionaryData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory DictionaryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DictionaryData(
       blockOffset: serializer.fromJson<int>(json['blockOffset']),
@@ -512,30 +590,32 @@ class DictionaryData extends DataClass implements Insertable<DictionaryData> {
     };
   }
 
-  DictionaryData copyWith(
-          {int? blockOffset,
-          int? compressedSize,
-          int? endOffset,
-          String? key,
-          int? startOffset}) =>
-      DictionaryData(
-        blockOffset: blockOffset ?? this.blockOffset,
-        compressedSize: compressedSize ?? this.compressedSize,
-        endOffset: endOffset ?? this.endOffset,
-        key: key ?? this.key,
-        startOffset: startOffset ?? this.startOffset,
-      );
+  DictionaryData copyWith({
+    int? blockOffset,
+    int? compressedSize,
+    int? endOffset,
+    String? key,
+    int? startOffset,
+  }) => DictionaryData(
+    blockOffset: blockOffset ?? this.blockOffset,
+    compressedSize: compressedSize ?? this.compressedSize,
+    endOffset: endOffset ?? this.endOffset,
+    key: key ?? this.key,
+    startOffset: startOffset ?? this.startOffset,
+  );
   DictionaryData copyWithCompanion(DictionaryCompanion data) {
     return DictionaryData(
-      blockOffset:
-          data.blockOffset.present ? data.blockOffset.value : this.blockOffset,
+      blockOffset: data.blockOffset.present
+          ? data.blockOffset.value
+          : this.blockOffset,
       compressedSize: data.compressedSize.present
           ? data.compressedSize.value
           : this.compressedSize,
       endOffset: data.endOffset.present ? data.endOffset.value : this.endOffset,
       key: data.key.present ? data.key.value : this.key,
-      startOffset:
-          data.startOffset.present ? data.startOffset.value : this.startOffset,
+      startOffset: data.startOffset.present
+          ? data.startOffset.value
+          : this.startOffset,
     );
   }
 
@@ -587,11 +667,11 @@ class DictionaryCompanion extends UpdateCompanion<DictionaryData> {
     required String key,
     required int startOffset,
     this.rowid = const Value.absent(),
-  })  : blockOffset = Value(blockOffset),
-        compressedSize = Value(compressedSize),
-        endOffset = Value(endOffset),
-        key = Value(key),
-        startOffset = Value(startOffset);
+  }) : blockOffset = Value(blockOffset),
+       compressedSize = Value(compressedSize),
+       endOffset = Value(endOffset),
+       key = Value(key),
+       startOffset = Value(startOffset);
   static Insertable<DictionaryData> custom({
     Expression<int>? blockOffset,
     Expression<int>? compressedSize,
@@ -610,13 +690,14 @@ class DictionaryCompanion extends UpdateCompanion<DictionaryData> {
     });
   }
 
-  DictionaryCompanion copyWith(
-      {Value<int>? blockOffset,
-      Value<int>? compressedSize,
-      Value<int>? endOffset,
-      Value<String>? key,
-      Value<int>? startOffset,
-      Value<int>? rowid}) {
+  DictionaryCompanion copyWith({
+    Value<int>? blockOffset,
+    Value<int>? compressedSize,
+    Value<int>? endOffset,
+    Value<String>? key,
+    Value<int>? startOffset,
+    Value<int>? rowid,
+  }) {
     return DictionaryCompanion(
       blockOffset: blockOffset ?? this.blockOffset,
       compressedSize: compressedSize ?? this.compressedSize,
@@ -670,18 +751,30 @@ class DatabaseAtV1 extends GeneratedDatabase {
   late final Wordbook wordbook = Wordbook(this);
   late final Resource resource = Resource(this);
   late final Dictionary dictionary = Dictionary(this);
-  late final Index idxWordbook =
-      Index('idx_wordbook', 'CREATE INDEX idx_wordbook ON wordbook (word)');
-  late final Index idxData =
-      Index('idx_data', 'CREATE INDEX idx_data ON resource ("key")');
-  late final Index idxWord =
-      Index('idx_word', 'CREATE INDEX idx_word ON dictionary ("key")');
+  late final Index idxWordbook = Index(
+    'idx_wordbook',
+    'CREATE INDEX idx_wordbook ON wordbook (word)',
+  );
+  late final Index idxData = Index(
+    'idx_data',
+    'CREATE INDEX idx_data ON resource ("key")',
+  );
+  late final Index idxWord = Index(
+    'idx_word',
+    'CREATE INDEX idx_word ON dictionary ("key")',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [wordbook, resource, dictionary, idxWordbook, idxData, idxWord];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    wordbook,
+    resource,
+    dictionary,
+    idxWordbook,
+    idxData,
+    idxWord,
+  ];
   @override
   int get schemaVersion => 1;
 }

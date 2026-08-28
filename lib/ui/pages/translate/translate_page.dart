@@ -69,16 +69,10 @@ class AiTranslatePage extends StatelessWidget {
                           targetLanguage: viewModel.targetLanguage,
                           getLanguageName: viewModel.getLanguageName,
                           onSwap: viewModel.swapLanguages,
-                          onSourceTap: () => _showLanguagePicker(
-                            context,
-                            viewModel,
-                            true,
-                          ),
-                          onTargetTap: () => _showLanguagePicker(
-                            context,
-                            viewModel,
-                            false,
-                          ),
+                          onSourceTap: () =>
+                              _showLanguagePicker(context, viewModel, true),
+                          onTargetTap: () =>
+                              _showLanguagePicker(context, viewModel, false),
                         ),
                         _TranslateButton(
                           onPressed: viewModel.inputController.text.isEmpty
@@ -123,8 +117,9 @@ class AiTranslatePage extends StatelessWidget {
         heightFactor: 0.8,
         widthFactor: 0.9,
         child: LanguagePicker(
-          selectedLanguage:
-              isSource ? viewModel.sourceLanguage : viewModel.targetLanguage,
+          selectedLanguage: isSource
+              ? viewModel.sourceLanguage
+              : viewModel.targetLanguage,
           onLanguageSelected: (languageCode) {
             if (isSource) {
               viewModel.setSourceLanguage(languageCode);
@@ -141,9 +136,7 @@ class AiTranslatePage extends StatelessWidget {
 }
 
 class _InputSection extends StatelessWidget {
-  const _InputSection({
-    required this.inputController,
-  });
+  const _InputSection({required this.inputController});
 
   final TextEditingController inputController;
 
@@ -196,10 +189,7 @@ class _LanguageSelectionRow extends StatelessWidget {
                 : getLanguageName(sourceLanguage),
             onTap: onSourceTap,
           ),
-          IconButton(
-            icon: const Icon(Icons.swap_horiz),
-            onPressed: onSwap,
-          ),
+          IconButton(icon: const Icon(Icons.swap_horiz), onPressed: onSwap),
           _LanguageChip(
             languageName: getLanguageName(targetLanguage),
             onTap: onTargetTap,
@@ -287,10 +277,12 @@ class _AlternativesSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          ...alternatives.map((t) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: _AlternativeItem(text: t),
-              )),
+          ...alternatives.map(
+            (t) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: _AlternativeItem(text: t),
+            ),
+          ),
         ],
       ),
     );
@@ -310,8 +302,8 @@ class _AlternativeItemState extends State<_AlternativeItem> {
 
   @override
   Widget build(BuildContext context) {
-    final Color hoverBg =
-        Theme.of(context).colorScheme.primary.withValues(alpha: 0.06);
+    final Color hoverBg = Theme.of(context).colorScheme.primary
+        .withValues(alpha: 0.06);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hover = true),
@@ -324,10 +316,7 @@ class _AlternativeItemState extends State<_AlternativeItem> {
           color: _hover ? hoverBg : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(
-          widget.text,
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
+        child: Text(widget.text, style: Theme.of(context).textTheme.bodyLarge),
       ),
     );
   }
@@ -348,9 +337,7 @@ class _TranslatedTextSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget child;
     if (translationProvider == "AI" && !isError) {
-      child = GptMarkdown(
-        translatedText,
-      );
+      child = GptMarkdown(translatedText);
     } else {
       child = Text(
         translatedText,
@@ -364,8 +351,9 @@ class _TranslatedTextSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: SelectionArea(
-        onSelectionChanged:
-            context.read<SelectionTextViewModel>().setSelectedText,
+        onSelectionChanged: context
+            .read<SelectionTextViewModel>()
+            .setSelectedText,
         contextMenuBuilder: buildCustomContextMenu(
           fallbackText: translatedText,
         ),

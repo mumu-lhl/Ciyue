@@ -6,14 +6,12 @@ class AIPrompts with ChangeNotifier {
   late String _translatePrompt;
   late String _writingCheckPrompt;
 
-  static const String defaultExplainPrompt =
-      """Generate a detailed explanation for the word "\$word". If it has multiple meanings, list as many as possible. Include pronunciation, part of speech, meaning(s), examples, synonyms, and antonyms.
+  static const String defaultExplainPrompt = """Generate a detailed explanation for the word "\$word". If it has multiple meanings, list as many as possible. Include pronunciation, part of speech, meaning(s), examples, synonyms, and antonyms.
 The output is entirely and exclusively in \$targetLanguage.
 NO OTHER WORD LIKE 'OK, here is...'""";
   static const String defaultTranslatePrompt =
       "Translate the following text from \$sourceLanguage to \$targetLanguage. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in \$targetLanguage: \$text";
-  static const String defaultWritingCheckPrompt =
-      """Please evaluate the text from a grammatical and orthographical standpoint, offering suggestions to enhance its composition for a more idiomatic and authentic expression in the given language. 
+  static const String defaultWritingCheckPrompt = """Please evaluate the text from a grammatical and orthographical standpoint, offering suggestions to enhance its composition for a more idiomatic and authentic expression in the given language. 
 Source language: auto decect
 You must output the translation entirely, exclusively and naturally in \$targetLanguage.
 
@@ -39,7 +37,8 @@ Text:
         prefs.getString("customExplainPrompt") ?? defaultExplainPrompt;
     _translatePrompt =
         prefs.getString("customTranslatePrompt") ?? defaultTranslatePrompt;
-    _writingCheckPrompt = prefs.getString("customWritingCheckPrompt") ??
+    _writingCheckPrompt =
+        prefs.getString("customWritingCheckPrompt") ??
         defaultWritingCheckPrompt;
   }
 

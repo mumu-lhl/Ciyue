@@ -4,19 +4,18 @@ import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 class FeedbackTile extends StatelessWidget {
-  const FeedbackTile({
-    super.key,
-  });
+  const FeedbackTile({super.key});
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<AboutViewModel>(context, listen: false);
     return ListTile(
-        title: Text(AppLocalizations.of(context)!.feedback),
-        subtitle: const Text(AboutViewModel.feedbackUri),
-        leading: const Icon(Icons.feedback),
-        onTap: () => viewModel.launchUri(AboutViewModel.feedbackUri),
-        onLongPress: () =>
-            viewModel.copyToClipboard(context, AboutViewModel.feedbackUri));
+      title: Text(AppLocalizations.of(context)!.feedback),
+      subtitle: const Text(AboutViewModel.feedbackUri),
+      leading: const Icon(Icons.feedback),
+      onTap: () => viewModel.launchUri(AboutViewModel.feedbackUri),
+      onLongPress: () =>
+          viewModel.copyToClipboard(context, AboutViewModel.feedbackUri),
+    );
   }
 }

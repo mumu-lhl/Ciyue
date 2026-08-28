@@ -24,11 +24,14 @@ class FlashcardOverviewCard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Today's review",
-                          style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        "Today's review",
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 4),
                       Text(
-                          "${data.due} due · ${data.newCards} new · ${data.done} done"),
+                        "${data.due} due · ${data.newCards} new · ${data.done} done",
+                      ),
                     ],
                   ),
                 ),
@@ -36,8 +39,8 @@ class FlashcardOverviewCard extends ConsumerWidget {
                   onPressed: data.due + data.newCards == 0
                       ? null
                       : () => context.push(
-                            "/flashcards/review${tag == null ? "" : "?tag=$tag"}",
-                          ),
+                          "/flashcards/review${tag == null ? "" : "?tag=$tag"}",
+                        ),
                   icon: const Icon(Icons.play_arrow),
                   label: const Text("Study"),
                 ),

@@ -36,24 +36,22 @@ void showAppSponsorSheet(BuildContext context) {
               const SizedBox(height: 12),
               Card(
                 elevation: 0,
-                color: Theme.of(context)
-                    .colorScheme
-                    .primaryContainer
+                color: Theme.of(context).colorScheme.primaryContainer
                     .withAlpha(77),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   child: Row(
                     children: [
                       Expanded(
                         child: Text(
                           AppLocalizations.of(context)!.sponsorSupportTip,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
+                          style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: Theme.of(context).colorScheme.onSurface,
@@ -141,10 +139,7 @@ class _SponsorLinkCard extends StatelessWidget {
                     color: cs.primaryContainer,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    iconData,
-                    color: cs.onPrimaryContainer,
-                  ),
+                  child: Icon(iconData, color: cs.onPrimaryContainer),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -157,10 +152,7 @@ class _SponsorLinkCard extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        uri,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(uri, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),
@@ -226,10 +218,7 @@ class _SponsorQrCard extends StatelessWidget {
     );
 
     if (label == null) {
-      return Padding(
-        padding: const EdgeInsets.all(4),
-        child: card,
-      );
+      return Padding(padding: const EdgeInsets.all(4), child: card);
     }
 
     return SizedBox(
@@ -239,10 +228,7 @@ class _SponsorQrCard extends StatelessWidget {
         children: [
           Text(label!, style: labelStyle),
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.all(4),
-            child: card,
-          ),
+          Padding(padding: const EdgeInsets.all(4), child: card),
         ],
       ),
     );

@@ -8,16 +8,15 @@ class TermsOfServicePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.termsOfService),
-        ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SingleChildScrollView(
-                child: SelectionArea(child: GptMarkdown("""
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.termsOfService)),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              child: SelectionArea(
+                child: GptMarkdown("""
               # Terms of Service
 
               ## Acceptance of Terms
@@ -35,10 +34,12 @@ class TermsOfServicePage extends StatelessWidget {
               ## Modification of Terms
               
               We reserve the right to update these Terms of Service at any time. Continued use of Ciyue after changes constitutes your acceptance of the updated terms.
-              """)),
+              """),
               ),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

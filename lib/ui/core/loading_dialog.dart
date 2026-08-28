@@ -2,8 +2,9 @@ import "package:material_ui/material_ui.dart";
 
 void showLoadingDialog(BuildContext context, {String? text}) {
   final alert = AlertDialog(
-      backgroundColor: Colors.transparent,
-      content: _LoadingDialogContent(text: text));
+    backgroundColor: Colors.transparent,
+    content: _LoadingDialogContent(text: text),
+  );
 
   showDialog(
     barrierDismissible: false,

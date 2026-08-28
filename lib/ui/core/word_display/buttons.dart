@@ -152,25 +152,27 @@ class _ButtonState extends State<Button> {
                         child: Text(locale.confirm),
                         onPressed: () async {
                           if (!snapshot.data!) {
-                            await context
-                                .read<WordbookModel>()
-                                .add(widget.word);
+                            await context.read<WordbookModel>().add(
+                              widget.word,
+                            );
                           }
 
                           if (!context.mounted) return;
 
                           for (final tag in toAdd) {
-                            await context
-                                .read<WordbookModel>()
-                                .add(widget.word, tag: tag);
+                            await context.read<WordbookModel>().add(
+                              widget.word,
+                              tag: tag,
+                            );
                           }
 
                           if (!context.mounted) return;
 
                           for (final tag in toDel) {
-                            await context
-                                .read<WordbookModel>()
-                                .delete(widget.word, tag: tag);
+                            await context.read<WordbookModel>().delete(
+                              widget.word,
+                              tag: tag,
+                            );
                           }
 
                           if (context.mounted) {

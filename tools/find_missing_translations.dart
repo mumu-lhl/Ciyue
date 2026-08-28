@@ -33,7 +33,8 @@ Future<void> main() async {
 
     if (missingKeys.isNotEmpty) {
       print(
-          "\n--- Missing translations for ${file.path} (locale: $locale) ---");
+        "\n--- Missing translations for ${file.path} (locale: $locale) ---",
+      );
       for (final key in missingKeys) {
         final value = enJson[key];
         final meta = enJson["@$key"];
@@ -44,7 +45,8 @@ Future<void> main() async {
       }
     } else {
       print(
-          "\n--- No missing translations for ${file.path} (locale: $locale) ---");
+        "\n--- No missing translations for ${file.path} (locale: $locale) ---",
+      );
     }
   }
 }

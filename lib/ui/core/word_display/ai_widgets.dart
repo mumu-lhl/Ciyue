@@ -39,10 +39,7 @@ class AIExplainView extends StatelessWidget {
 class RefreshAIExplainButton extends StatelessWidget {
   final String word;
 
-  const RefreshAIExplainButton({
-    super.key,
-    required this.word,
-  });
+  const RefreshAIExplainButton({super.key, required this.word});
 
   @override
   Widget build(BuildContext context) {

@@ -35,9 +35,7 @@ class WordbookModel extends ChangeNotifier {
         final allWords = await wordbookDao.getAllWords();
         final fuse = Fuzzy(
           allWords.map((e) => e.word).toList(),
-          options: FuzzyOptions(
-            threshold: 0.2,
-          ),
+          options: FuzzyOptions(threshold: 0.2),
         );
         final results = fuse.search(query, 40);
         searchResults = results.map((r) => r.item as String).toList();
@@ -177,35 +175,34 @@ class WordbookModel extends ChangeNotifier {
     final locale = AppLocalizations.of(context)!;
 
     await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          final textController = TextEditingController();
+      context: context,
+      builder: (BuildContext context) {
+        final textController = TextEditingController();
 
-          return AlertDialog(
-            title: Text(locale.addTag),
-            content: TextField(
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: locale.tagName,
-              ),
-              controller: textController,
-              onSubmitted: (String tagName) async {
-                await addTag(tagName);
+        return AlertDialog(
+          title: Text(locale.addTag),
+          content: TextField(
+            autofocus: true,
+            decoration: InputDecoration(labelText: locale.tagName),
+            controller: textController,
+            onSubmitted: (String tagName) async {
+              await addTag(tagName);
+              if (context.mounted) Navigator.of(context).pop();
+            },
+          ),
+          actions: [
+            TextCloseButton(),
+            TextButton(
+              child: Text(locale.add),
+              onPressed: () async {
+                await addTag(textController.text);
                 if (context.mounted) Navigator.of(context).pop();
               },
             ),
-            actions: [
-              TextCloseButton(),
-              TextButton(
-                child: Text(locale.add),
-                onPressed: () async {
-                  await addTag(textController.text);
-                  if (context.mounted) Navigator.of(context).pop();
-                },
-              )
-            ],
-          );
-        });
+          ],
+        );
+      },
+    );
   }
 
   Future<void> showTagsListDialog(BuildContext context) async {
@@ -213,28 +210,33 @@ class WordbookModel extends ChangeNotifier {
     if (!context.mounted) return;
 
     await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          final tagsMap = <int, WordbookTag>{};
-          for (final tag in tagsList) {
-            tagsMap[tag.id] = tag;
-          }
+      context: context,
+      builder: (BuildContext context) {
+        final tagsMap = <int, WordbookTag>{};
+        for (final tag in tagsList) {
+          tagsMap[tag.id] = tag;
+        }
 
-          final tagsDisplay = wordbookTagsDao.tagsOrder.isEmpty
-              ? tagsList
-              : wordbookTagsDao.tagsOrder
+        final tagsDisplay = wordbookTagsDao.tagsOrder.isEmpty
+            ? tagsList
+            : wordbookTagsDao.tagsOrder
                   .map((e) => tagsMap[e])
                   .whereType<WordbookTag>()
                   .toList();
 
-          return TagListDialog(
-              tagsDisplay: tagsDisplay,
-              buildAddTag: (context) => showAddTagDialog(context));
-        });
+        return TagListDialog(
+          tagsDisplay: tagsDisplay,
+          buildAddTag: (context) => showAddTagDialog(context),
+        );
+      },
+    );
   }
 
   Future<void> reorderTags(
-      int oldIndex, int newIndex, List<WordbookTag> tagsDisplay) async {
+    int oldIndex,
+    int newIndex,
+    List<WordbookTag> tagsDisplay,
+  ) async {
     final tag = tagsDisplay.removeAt(oldIndex);
     tagsDisplay.insert(newIndex, tag);
 

@@ -23,10 +23,14 @@ void main() {
 
       expect(previews.keys, FlashcardRating.values);
       expect(card.lastReview, isNull);
-      expect(previews[FlashcardRating.again]!.due,
-          now.add(const Duration(minutes: 1)));
-      expect(previews[FlashcardRating.good]!.due,
-          now.add(const Duration(minutes: 10)));
+      expect(
+        previews[FlashcardRating.again]!.due,
+        now.add(const Duration(minutes: 1)),
+      );
+      expect(
+        previews[FlashcardRating.good]!.due,
+        now.add(const Duration(minutes: 10)),
+      );
     });
 
     test("review returns updated card and duration", () {

@@ -1,4 +1,5 @@
 import "dart:convert";
+
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/services/backup.dart";
@@ -16,7 +17,7 @@ import "backup_test.mocks.dart";
   WritingCheckHistoryDao,
   TranslateHistoryDao,
   BackupFileHandler,
-  WordbookModel
+  WordbookModel,
 ])
 void main() {
   late MockWordbookDao mockWordbookDao;
@@ -50,11 +51,7 @@ void main() {
 
   group("BackupService Export", () {
     final words = [
-      WordbookData(
-        createdAt: DateTime.now(),
-        tag: 1,
-        word: "test",
-      )
+      WordbookData(createdAt: DateTime.now(), tag: 1, word: "test"),
     ];
     final tags = [const WordbookTag(id: 1, tag: "tag1")];
     final history = [const HistoryData(id: 1, word: "history1")];
@@ -64,14 +61,14 @@ void main() {
         inputText: "input",
         outputText: "output",
         createdAt: DateTime.now(),
-      )
+      ),
     ];
     final translateHistory = [
       TranslateHistoryData(
         id: 1,
         inputText: "input",
         createdAt: DateTime.now(),
-      )
+      ),
     ];
 
     test("should do nothing if no words or history to export", () async {
@@ -82,10 +79,7 @@ void main() {
           .thenAnswer((_) async => []);
       when(mockTranslateHistoryDao.getAllHistory()).thenAnswer((_) async => []);
 
-      await backupService.export(
-        autoExport: false,
-        exportFileName: "test",
-      );
+      await backupService.export(autoExport: false, exportFileName: "test");
 
       verify(mockWordbookDao.getAllWords()).called(1);
       verify(mockHistoryDao.getAllHistory()).called(1);
@@ -105,10 +99,7 @@ void main() {
       when(mockFileHandler.writeManualExportAndroid(any))
           .thenAnswer((_) async {});
 
-      await backupService.export(
-        autoExport: false,
-        exportFileName: "test",
-      );
+      await backupService.export(autoExport: false, exportFileName: "test");
 
       verify(mockFileHandler.writeManualExportAndroid(any)).called(1);
     });
@@ -125,10 +116,7 @@ void main() {
       when(mockFileHandler.writeManualExportDesktop(any))
           .thenAnswer((_) async {});
 
-      await backupService.export(
-        autoExport: false,
-        exportFileName: "test",
-      );
+      await backupService.export(autoExport: false, exportFileName: "test");
 
       verify(mockFileHandler.writeManualExportDesktop(any)).called(1);
     });
@@ -186,7 +174,7 @@ void main() {
         "wordbookTags": [],
         "history": ["history1", "history2"],
         "writingCheckHistory": [],
-        "translateHistory": []
+        "translateHistory": [],
       });
 
       when(mockFileHandler.readImportFile())

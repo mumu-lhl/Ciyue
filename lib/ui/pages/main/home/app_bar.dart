@@ -9,9 +9,7 @@ import "more_button.dart";
 import "search.dart";
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const HomeAppBar({
-    super.key,
-  });
+  const HomeAppBar({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -23,7 +21,8 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     if (model.isSelecting) {
       return AppBar(
         title: Text(
-            AppLocalizations.of(context)!.nSelected(model.selectedIds.length)),
+          AppLocalizations.of(context)!.nSelected(model.selectedIds.length),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
@@ -51,15 +50,14 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
         ],
       );
     } else {
-      final searchBar =
-          settings.searchBarInAppBar ? const HomeSearchBar() : null;
+      final searchBar = settings.searchBarInAppBar
+          ? const HomeSearchBar()
+          : null;
 
       return AppBar(
         title: searchBar,
         automaticallyImplyLeading: settings.showSidebarIcon,
-        actions: [
-          if (settings.showMoreOptionsButton) const MoreButton(),
-        ],
+        actions: [if (settings.showMoreOptionsButton) const MoreButton()],
       );
     }
   }

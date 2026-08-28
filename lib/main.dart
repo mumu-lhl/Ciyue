@@ -45,27 +45,40 @@ void main() async {
 
     await initApp();
 
-    runApp(ProviderScope(
-      child: provider.MultiProvider(providers: [
-        provider.ChangeNotifierProvider(create: (_) => WordbookModel()),
-        provider.ChangeNotifierProvider(create: (_) => HomeModel()),
-        provider.ChangeNotifierProvider(create: (_) => DictManagerModel()),
-        provider.ChangeNotifierProvider(create: (_) => HistoryModel()),
-        provider.ChangeNotifierProvider(
-            create: (_) => ManageDictionariesModel()),
-        provider.ChangeNotifierProvider(create: (_) => AudioModel()..init()),
-        provider.ChangeNotifierProvider(create: (_) => AIPrompts()),
-        provider.ChangeNotifierProvider(
-            create: (_) => SelectionTextViewModel()),
-        provider.Provider(create: (_) => WritingCheckHistoryDao(mainDatabase)),
-        provider.Provider(create: (_) => TranslateHistoryDao(mainDatabase)),
-        provider.Provider(
-          create: (_) => OpenRecordsRepository(),
-        )
-      ], child: const Ciyue()),
-    ));
+    runApp(
+      ProviderScope(
+        child: provider.MultiProvider(
+          providers: [
+            provider.ChangeNotifierProvider(create: (_) => WordbookModel()),
+            provider.ChangeNotifierProvider(create: (_) => HomeModel()),
+            provider.ChangeNotifierProvider(create: (_) => DictManagerModel()),
+            provider.ChangeNotifierProvider(create: (_) => HistoryModel()),
+            provider.ChangeNotifierProvider(
+              create: (_) => ManageDictionariesModel(),
+            ),
+            provider.ChangeNotifierProvider(
+              create: (_) => AudioModel()..init(),
+            ),
+            provider.ChangeNotifierProvider(create: (_) => AIPrompts()),
+            provider.ChangeNotifierProvider(
+              create: (_) => SelectionTextViewModel(),
+            ),
+            provider.Provider(
+              create: (_) => WritingCheckHistoryDao(mainDatabase),
+            ),
+            provider.Provider(create: (_) => TranslateHistoryDao(mainDatabase)),
+            provider.Provider(create: (_) => OpenRecordsRepository()),
+          ],
+          child: const Ciyue(),
+        ),
+      ),
+    );
   } catch (e) {
-    runApp(ProviderScope(child: MaterialApp(home: CiyueError(error: e))));
+    runApp(
+      ProviderScope(
+        child: MaterialApp(home: CiyueError(error: e)),
+      ),
+    );
   }
 }
 
@@ -78,18 +91,21 @@ void floatingWindow(List<String> args) async {
 
   searchWordFromProcessText = args[0];
 
-  runApp(ProviderScope(
-    child: provider.MultiProvider(providers: [
-      provider.ChangeNotifierProvider(create: (_) => WordbookModel()),
-      provider.ChangeNotifierProvider(create: (_) => HomeModel()),
-      provider.ChangeNotifierProvider(create: (_) => DictManagerModel()),
-      provider.ChangeNotifierProvider(create: (_) => HistoryModel()),
-      provider.ChangeNotifierProvider(create: (_) => AudioModel()..init()),
-      provider.Provider(
-        create: (_) => OpenRecordsRepository(),
-      )
-    ], child: Ciyue(isFloatingWindow: true)),
-  ));
+  runApp(
+    ProviderScope(
+      child: provider.MultiProvider(
+        providers: [
+          provider.ChangeNotifierProvider(create: (_) => WordbookModel()),
+          provider.ChangeNotifierProvider(create: (_) => HomeModel()),
+          provider.ChangeNotifierProvider(create: (_) => DictManagerModel()),
+          provider.ChangeNotifierProvider(create: (_) => HistoryModel()),
+          provider.ChangeNotifierProvider(create: (_) => AudioModel()..init()),
+          provider.Provider(create: (_) => OpenRecordsRepository()),
+        ],
+        child: Ciyue(isFloatingWindow: true),
+      ),
+    ),
+  );
 }
 
 class Ciyue extends StatefulWidget {
@@ -131,8 +147,9 @@ class _CiyueState extends State<Ciyue> with TrayListener {
       final splittedLanguage = settings.language!.split("_");
       if (splittedLanguage.length > 1) {
         locale = Locale.fromSubtags(
-            languageCode: splittedLanguage[0],
-            countryCode: splittedLanguage[1]);
+          languageCode: splittedLanguage[0],
+          countryCode: splittedLanguage[1],
+        );
       } else {
         locale = Locale(settings.language!);
       }
@@ -140,10 +157,13 @@ class _CiyueState extends State<Ciyue> with TrayListener {
 
     if (!settings.enableDynamicColor) {
       final Color seedColor = settings.themeSeedColor;
-      final ColorScheme lightColorScheme =
-          ColorScheme.fromSeed(seedColor: seedColor);
+      final ColorScheme lightColorScheme = ColorScheme.fromSeed(
+        seedColor: seedColor,
+      );
       final ColorScheme darkColorScheme = ColorScheme.fromSeed(
-          seedColor: seedColor, brightness: Brightness.dark);
+        seedColor: seedColor,
+        brightness: Brightness.dark,
+      );
 
       return buildMaterialApp(lightColorScheme, darkColorScheme, locale);
     }
@@ -168,21 +188,28 @@ class _CiyueState extends State<Ciyue> with TrayListener {
           : null;
       final darkColorScheme = accentColor != null
           ? ColorScheme.fromSeed(
-              seedColor: accentColor!, brightness: Brightness.dark)
+              seedColor: accentColor!,
+              brightness: Brightness.dark,
+            )
           : null;
 
       return buildMaterialApp(lightColorScheme, darkColorScheme, locale);
     }
   }
 
-  Widget buildMaterialApp(ColorScheme? lightColorScheme,
-      ColorScheme? darkColorScheme, Locale? locale) {
+  Widget buildMaterialApp(
+    ColorScheme? lightColorScheme,
+    ColorScheme? darkColorScheme,
+    Locale? locale,
+  ) {
     final ColorScheme resolvedDarkColorScheme;
     if (darkColorScheme != null) {
       resolvedDarkColorScheme = darkColorScheme;
     } else {
       resolvedDarkColorScheme = ColorScheme.fromSeed(
-          seedColor: Colors.blue, brightness: Brightness.dark);
+        seedColor: Colors.blue,
+        brightness: Brightness.dark,
+      );
     }
 
     final ColorScheme darkScheme;

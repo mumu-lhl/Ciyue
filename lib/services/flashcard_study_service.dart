@@ -36,10 +36,10 @@ class FlashcardStudyService {
     final remaining = (dailyNewLimit - introduced).clamp(0, dailyNewLimit);
     final newWords = await dao.getNewWords(limit: remaining, tag: tag);
     final items = due
-        .map((card) => FlashcardSessionItem(
-              word: card.word,
-              card: _toDomain(card),
-            ))
+        .map(
+          (card) =>
+              FlashcardSessionItem(word: card.word, card: _toDomain(card)),
+        )
         .toList();
     for (final word in newWords) {
       final card = scheduler.createCard(id: _stableId(word), now: now);
@@ -61,8 +61,7 @@ class FlashcardStudyService {
   Map<domain.FlashcardRating, domain.Flashcard> preview(
     FlashcardSessionItem item, {
     required DateTime now,
-  }) =>
-      scheduler.preview(item.card, now: now);
+  }) => scheduler.preview(item.card, now: now);
 
   Future<FlashcardUndoToken> rate(
     FlashcardSessionItem item,
@@ -97,20 +96,18 @@ class FlashcardStudyService {
     return FlashcardUndoToken(previousCard: previous, logId: logId);
   }
 
-  Future<void> undo(FlashcardUndoToken token) => dao.undoReview(
-        previousCard: token.previousCard,
-        logId: token.logId,
-      );
+  Future<void> undo(FlashcardUndoToken token) =>
+      dao.undoReview(previousCard: token.previousCard, logId: token.logId);
 
   domain.Flashcard _toDomain(db.Flashcard card) => domain.Flashcard(
-        id: _stableId(card.word),
-        state: domain.FlashcardState.values[card.state],
-        step: card.step,
-        stability: card.stability,
-        difficulty: card.difficulty,
-        due: card.due,
-        lastReview: card.lastReview,
-      );
+    id: _stableId(card.word),
+    state: domain.FlashcardState.values[card.state],
+    step: card.step,
+    stability: card.stability,
+    difficulty: card.difficulty,
+    due: card.due,
+    lastReview: card.lastReview,
+  );
 
   int _stableId(String word) {
     var hash = 0xcbf29ce484222325;

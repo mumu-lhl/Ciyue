@@ -8,9 +8,8 @@ void main() {
     final cmake = File(
       "packages/flutter_inappwebview_linux/linux/CMakeLists.txt",
     ).readAsStringSync();
-    final workflow = File(
-      ".github/workflows/linux-build.yml",
-    ).readAsStringSync();
+    final workflow = File(".github/workflows/linux-build.yml")
+        .readAsStringSync();
     final source = File(
       "packages/flutter_inappwebview_linux/linux/in_app_webview/"
       "in_app_webview.cc",
@@ -27,10 +26,7 @@ void main() {
         "    path: packages/flutter_inappwebview_linux",
       ),
     );
-    expect(
-      cmake,
-      contains("option(FLUTTER_INAPPWEBVIEW_FORCE_LEGACY_WPE"),
-    );
+    expect(cmake, contains("option(FLUTTER_INAPPWEBVIEW_FORCE_LEGACY_WPE"));
     expect(cmake, contains("if(NOT FLUTTER_INAPPWEBVIEW_FORCE_LEGACY_WPE)"));
     expect(
       cmake,

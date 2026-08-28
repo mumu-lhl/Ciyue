@@ -29,77 +29,78 @@ class _WritingCheckPage extends StatelessWidget {
     return Consumer<WritingCheckViewModel>(
       builder: (context, viewModel, child) {
         return Scaffold(
-            appBar: AppBar(
-              title: Text(AppLocalizations.of(context)!.writingCheck),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.history),
-                  onPressed: () async {
-                    final result = await context.push("/writing_check/history");
-                    if (result is WritingCheckHistoryData) {
-                      viewModel.loadFromHistory(result);
-                    }
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {
-                    context.push("/writing_check/settings");
-                  },
-                ),
-              ],
-            ),
-            body: Align(
-              alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: viewModel.textEditingController,
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            labelText: AppLocalizations.of(context)!
-                                .label_enter_to_check,
-                            alignLabelWithHint: true,
-                          ),
-                          contextMenuBuilder:
-                              buildEditableTextCustomContextMenu(
-                                  fallbackText:
-                                      viewModel.textEditingController.text),
-                          maxLines: 5,
+          appBar: AppBar(
+            title: Text(AppLocalizations.of(context)!.writingCheck),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.history),
+                onPressed: () async {
+                  final result = await context.push("/writing_check/history");
+                  if (result is WritingCheckHistoryData) {
+                    viewModel.loadFromHistory(result);
+                  }
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () {
+                  context.push("/writing_check/settings");
+                },
+              ),
+            ],
+          ),
+          body: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: viewModel.textEditingController,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: AppLocalizations.of(context)!
+                              .label_enter_to_check,
+                          alignLabelWithHint: true,
                         ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: viewModel.check,
-                          child: Text(AppLocalizations.of(context)!.check),
+                        contextMenuBuilder: buildEditableTextCustomContextMenu(
+                          fallbackText: viewModel.textEditingController.text,
                         ),
-                        const SizedBox(height: 16),
-                        if (viewModel.prompt != null)
-                          AIMarkdown(
-                            prompt: viewModel.prompt!,
-                            onResult: (outputText) {
-                              viewModel.saveResult(outputText);
-                            },
+                        maxLines: 5,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: viewModel.check,
+                        child: Text(AppLocalizations.of(context)!.check),
+                      ),
+                      const SizedBox(height: 16),
+                      if (viewModel.prompt != null)
+                        AIMarkdown(
+                          prompt: viewModel.prompt!,
+                          onResult: (outputText) {
+                            viewModel.saveResult(outputText);
+                          },
+                        ),
+                      if (viewModel.outputText != null)
+                        SelectionArea(
+                          onSelectionChanged: context
+                              .read<SelectionTextViewModel>()
+                              .setSelectedText,
+                          contextMenuBuilder: buildCustomContextMenu(
+                            fallbackText: viewModel.outputText!,
                           ),
-                        if (viewModel.outputText != null)
-                          SelectionArea(
-                            onSelectionChanged: context
-                                .read<SelectionTextViewModel>()
-                                .setSelectedText,
-                            contextMenuBuilder: buildCustomContextMenu(
-                                fallbackText: viewModel.outputText!),
-                            child: GptMarkdown(viewModel.outputText!),
-                          ),
-                      ],
-                    ),
+                          child: GptMarkdown(viewModel.outputText!),
+                        ),
+                    ],
                   ),
                 ),
               ),
-            ));
+            ),
+          ),
+        );
       },
     );
   }

@@ -13,11 +13,13 @@ class ModelSetting extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.read<AISettingsViewModel>();
-    final providerName =
-        context.select((AISettingsViewModel vm) => vm.provider);
+    final providerName = context.select(
+      (AISettingsViewModel vm) => vm.provider,
+    );
     final modelName = context.select((AISettingsViewModel vm) => vm.model);
 
-    final currentProvider = ModelProviderManager.modelProviders[providerName] ??
+    final currentProvider =
+        ModelProviderManager.modelProviders[providerName] ??
         ModelProviderManager.modelProviders.values.first;
 
     if (currentProvider.allowCustomModel) {
@@ -26,8 +28,10 @@ class ModelSetting extends StatelessWidget {
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
           hintText: AppLocalizations.of(context)!.aiModel,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
         ),
         onChanged: viewModel.setModel,
       );

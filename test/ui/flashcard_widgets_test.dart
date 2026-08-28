@@ -11,8 +11,9 @@ void main() {
     expect(snackBar.duration, const Duration(seconds: 4));
   });
 
-  testWidgets("rating controls show four FSRS choices and intervals",
-      (tester) async {
+  testWidgets("rating controls show four FSRS choices and intervals", (
+    tester,
+  ) async {
     final due = DateTime.utc(2026, 7, 11, 8);
     final previews = {
       for (final rating in FlashcardRating.values)
@@ -27,15 +28,17 @@ void main() {
         ),
     };
 
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: FlashcardRatingButtons(
-          now: due,
-          previews: previews,
-          onSelected: (_) {},
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: FlashcardRatingButtons(
+            now: due,
+            previews: previews,
+            onSelected: (_) {},
+          ),
         ),
       ),
-    ));
+    );
 
     expect(find.text("Again"), findsOneWidget);
     expect(find.text("Hard"), findsOneWidget);

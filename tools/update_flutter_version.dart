@@ -18,7 +18,8 @@ int updateFlutterVersion(Directory root, String version) {
 
   var replacements = 0;
   final files = workflows.listSync().whereType<File>().where(
-      (file) => file.path.endsWith(".yml") || file.path.endsWith(".yaml"));
+    (file) => file.path.endsWith(".yml") || file.path.endsWith(".yaml"),
+  );
 
   for (final file in files) {
     final original = file.readAsStringSync();
@@ -41,8 +42,9 @@ int updateFlutterVersion(Directory root, String version) {
 
 void main(List<String> arguments) {
   if (arguments.length != 1) {
-    stderr
-        .writeln("Usage: dart run tools/update_flutter_version.dart <version>");
+    stderr.writeln(
+      "Usage: dart run tools/update_flutter_version.dart <version>",
+    );
     exitCode = 64;
     return;
   }
@@ -50,7 +52,8 @@ void main(List<String> arguments) {
   try {
     final count = updateFlutterVersion(Directory.current, arguments.single);
     stdout.writeln(
-        "Updated $count Flutter version references to ${arguments.single}.");
+      "Updated $count Flutter version references to ${arguments.single}.",
+    );
   } on Object catch (error) {
     stderr.writeln(error);
     exitCode = 1;

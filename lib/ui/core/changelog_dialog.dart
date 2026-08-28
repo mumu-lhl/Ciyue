@@ -6,10 +6,7 @@ import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 
 class ChangelogDialog extends StatelessWidget {
-  const ChangelogDialog({
-    super.key,
-    required this.changelogContent,
-  });
+  const ChangelogDialog({super.key, required this.changelogContent});
 
   final String changelogContent;
 
@@ -18,11 +15,7 @@ class ChangelogDialog extends StatelessWidget {
     return AlertDialog(
       title: Text(AppLocalizations.of(context)!.changelog),
       content: SingleChildScrollView(
-        child: SelectionArea(
-          child: GptMarkdown(
-            changelogContent,
-          ),
-        ),
+        child: SelectionArea(child: GptMarkdown(changelogContent)),
       ),
       actions: [
         TextButton.icon(

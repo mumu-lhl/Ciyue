@@ -82,44 +82,50 @@ void main() {
       // Expect 2 records: 'hello' and 'world'
       expect(allHistory.length, 2);
       expect(
-          allHistory.map((e) => e.inputText), containsAll(["hello", "world"]));
+        allHistory.map((e) => e.inputText),
+        containsAll(["hello", "world"]),
+      );
     });
   });
 
   group("WritingCheckHistoryDao", () {
-    test("addAllHistory should avoid duplicates based on content matches",
-        () async {
+    test("addAllHistory should avoid duplicates based on content matches", () async {
       final now = DateTime.fromMillisecondsSinceEpoch(1000000);
 
       // 1. Insert an initial record directly to set specific fields
       await database
           .into(database.writingCheckHistory)
-          .insert(WritingCheckHistoryCompanion(
-            inputText: Value("input1"),
-            outputText: Value("output1"),
-            createdAt: Value(now),
-          ));
+          .insert(
+            WritingCheckHistoryCompanion(
+              inputText: Value("input1"),
+              outputText: Value("output1"),
+              createdAt: Value(now),
+            ),
+          );
 
       // 2. Prepare import data
       final newHistory = [
         // Duplicate: Exact match on input, output, and time (should be skipped)
         WritingCheckHistoryData(
-            id: 100,
-            inputText: "input1",
-            outputText: "output1",
-            createdAt: now),
+          id: 100,
+          inputText: "input1",
+          outputText: "output1",
+          createdAt: now,
+        ),
         // New: Different output (should be inserted)
         WritingCheckHistoryData(
-            id: 101,
-            inputText: "input1",
-            outputText: "output2",
-            createdAt: now),
+          id: 101,
+          inputText: "input1",
+          outputText: "output2",
+          createdAt: now,
+        ),
         // New: Different time (should be inserted)
         WritingCheckHistoryData(
-            id: 102,
-            inputText: "input1",
-            outputText: "output1",
-            createdAt: now.add(const Duration(seconds: 1))),
+          id: 102,
+          inputText: "input1",
+          outputText: "output1",
+          createdAt: now.add(const Duration(seconds: 1)),
+        ),
       ];
 
       // 3. Perform batch add
@@ -137,14 +143,20 @@ void main() {
 
       // Verify the duplicate logic by counting entries with original content
       final originalContentCount = allHistory
-          .where((e) =>
-              e.inputText == "input1" &&
-              e.outputText == "output1" &&
-              e.createdAt.millisecondsSinceEpoch == now.millisecondsSinceEpoch)
+          .where(
+            (e) =>
+                e.inputText == "input1" &&
+                e.outputText == "output1" &&
+                e.createdAt.millisecondsSinceEpoch ==
+                    now.millisecondsSinceEpoch,
+          )
           .length;
 
-      expect(originalContentCount, 1,
-          reason: "Should satisfy exact match deduplication");
+      expect(
+        originalContentCount,
+        1,
+        reason: "Should satisfy exact match deduplication",
+      );
     });
   });
 }

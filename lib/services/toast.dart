@@ -12,8 +12,9 @@ class ToastService {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final bg =
-        theme.colorScheme.surface.withValues(alpha: isDark ? 0.95 : 0.98);
+    final bg = theme.colorScheme.surface.withValues(
+      alpha: isDark ? 0.95 : 0.98,
+    );
     final border = theme.colorScheme.outline.withValues(alpha: 0.2);
     final textStyle = theme.textTheme.bodyMedium?.copyWith(
       color: theme.colorScheme.onSurface,
@@ -21,18 +22,18 @@ class ToastService {
 
     final (IconData icon, Color iconColor) = switch (type) {
       ToastType.success => (
-          Icons.check_circle_rounded,
-          theme.colorScheme.primary
-        ),
+        Icons.check_circle_rounded,
+        theme.colorScheme.primary,
+      ),
       ToastType.waiting => (
-          Icons.hourglass_top_rounded,
-          theme.colorScheme.secondary
-        ),
+        Icons.hourglass_top_rounded,
+        theme.colorScheme.secondary,
+      ),
       ToastType.error => (Icons.error_rounded, theme.colorScheme.error),
       ToastType.info => (
-          Icons.info_outline_rounded,
-          theme.colorScheme.tertiary
-        ),
+        Icons.info_outline_rounded,
+        theme.colorScheme.tertiary,
+      ),
     };
 
     await SmartDialog.showToast(
@@ -60,16 +61,14 @@ class ToastService {
                 ],
               ),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      icon,
-                      size: 18,
-                      color: iconColor,
-                    ),
+                    Icon(icon, size: 18, color: iconColor),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(

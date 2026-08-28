@@ -23,9 +23,7 @@ class ChatView extends StatelessWidget {
     final model = context.watch<ChatViewModel>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("AI Chat"),
-      ),
+      appBar: AppBar(title: const Text("AI Chat")),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
@@ -95,11 +93,7 @@ class ChatBubble extends StatelessWidget {
   final String message;
   final bool isUser;
 
-  const ChatBubble({
-    super.key,
-    required this.message,
-    required this.isUser,
-  });
+  const ChatBubble({super.key, required this.message, required this.isUser});
 
   @override
   Widget build(BuildContext context) {
@@ -108,9 +102,7 @@ class ChatBubble extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: constraints.maxWidth * 0.7,
-            ),
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.7),
             child: Container(
               margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
               padding: const EdgeInsets.all(12),

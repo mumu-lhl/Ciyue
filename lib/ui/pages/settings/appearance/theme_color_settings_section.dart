@@ -53,8 +53,8 @@ class ThemeColorSettingsNotifier extends Notifier<ThemeColorSettingsState> {
 
 final themeColorSettingsProvider =
     NotifierProvider<ThemeColorSettingsNotifier, ThemeColorSettingsState>(
-  ThemeColorSettingsNotifier.new,
-);
+      ThemeColorSettingsNotifier.new,
+    );
 
 enum _ColorMode { hsv, rgb }
 
@@ -261,10 +261,7 @@ class _CustomColorDialog extends StatefulWidget {
   final AppLocalizations locale;
   final Color initialColor;
 
-  const _CustomColorDialog({
-    required this.locale,
-    required this.initialColor,
-  });
+  const _CustomColorDialog({required this.locale, required this.initialColor});
 
   @override
   State<_CustomColorDialog> createState() => _CustomColorDialogState();
@@ -352,7 +349,8 @@ class _CustomColorDialogState extends State<_CustomColorDialog> {
                 value: hsvColor.saturation * 100,
                 max: 100,
                 onChanged: (value) => setState(
-                    () => hsvColor = hsvColor.withSaturation(value / 100)),
+                  () => hsvColor = hsvColor.withSaturation(value / 100),
+                ),
               ),
               _ColorSlider(
                 label: "V",
@@ -515,10 +513,7 @@ class _HueStrip extends StatelessWidget {
   final double hue;
   final ValueChanged<double> onChanged;
 
-  const _HueStrip({
-    required this.hue,
-    required this.onChanged,
-  });
+  const _HueStrip({required this.hue, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {

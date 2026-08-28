@@ -19,9 +19,7 @@ class DateDivider extends StatelessWidget {
                 DateFormat("yyyy-MM-dd").format(date),
                 style: TextStyle(
                   fontSize: 12,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .secondary
+                  color: Theme.of(context).colorScheme.secondary
                       .withValues(alpha: 0.7),
                 ),
               ),
@@ -30,9 +28,7 @@ class DateDivider extends StatelessWidget {
           const SizedBox(width: 8.0),
           Expanded(
             child: Divider(
-              color: Theme.of(context)
-                  .colorScheme
-                  .secondary
+              color: Theme.of(context).colorScheme.secondary
                   .withValues(alpha: 0.5),
               thickness: 1.0,
             ),

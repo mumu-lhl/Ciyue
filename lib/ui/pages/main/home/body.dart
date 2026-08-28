@@ -8,9 +8,7 @@ import "history.dart";
 import "search.dart";
 
 class HomeBody extends StatelessWidget {
-  const HomeBody({
-    super.key,
-  });
+  const HomeBody({super.key});
 
   @override
   Widget build(BuildContext context) {

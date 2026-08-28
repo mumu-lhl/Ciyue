@@ -4,18 +4,17 @@ import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 class SponsorListTile extends StatelessWidget {
-  const SponsorListTile({
-    super.key,
-  });
+  const SponsorListTile({super.key});
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<AboutViewModel>(context, listen: false);
     return ListTile(
-        title: Text(AppLocalizations.of(context)!.sponsor),
-        leading: const Icon(Icons.favorite),
-        onTap: () => viewModel.showSponsorSheet(context),
-        onLongPress: () =>
-            viewModel.copyToClipboard(context, AboutViewModel.sponsorUri));
+      title: Text(AppLocalizations.of(context)!.sponsor),
+      leading: const Icon(Icons.favorite),
+      onTap: () => viewModel.showSponsorSheet(context),
+      onLongPress: () =>
+          viewModel.copyToClipboard(context, AboutViewModel.sponsorUri),
+    );
   }
 }

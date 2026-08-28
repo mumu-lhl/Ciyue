@@ -46,18 +46,11 @@ class HistorySettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.about),
-      ),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.about)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
-          child: ListView(
-            children: const [
-              HistorySwitch(),
-              ClearHistory(),
-            ],
-          ),
+          child: ListView(children: const [HistorySwitch(), ClearHistory()]),
         ),
       ),
     );
@@ -69,17 +62,19 @@ class HistorySwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HistoryModel>(builder: (context, model, child) {
-      return ListTile(
-        leading: const Icon(Icons.history),
-        title: Text(AppLocalizations.of(context)!.enableHistory),
-        trailing: Switch(
-          value: model.enableHistory,
-          onChanged: (value) {
-            model.setEnableHistory(value);
-          },
-        ),
-      );
-    });
+    return Consumer<HistoryModel>(
+      builder: (context, model, child) {
+        return ListTile(
+          leading: const Icon(Icons.history),
+          title: Text(AppLocalizations.of(context)!.enableHistory),
+          trailing: Switch(
+            value: model.enableHistory,
+            onChanged: (value) {
+              model.setEnableHistory(value);
+            },
+          ),
+        );
+      },
+    );
   }
 }

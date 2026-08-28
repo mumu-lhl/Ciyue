@@ -50,9 +50,9 @@ class AddHistoryToWordbookDialog extends StatelessWidget {
         TextButton(
           child: Text(AppLocalizations.of(context)!.remove),
           onPressed: () async {
-            await context
-                .read<WordbookModel>()
-                .removeWordWithAllTags(item.word);
+            await context.read<WordbookModel>().removeWordWithAllTags(
+              item.word,
+            );
             if (context.mounted) {
               context.pop(true);
               context.read<WordbookModel>().updateWordList();

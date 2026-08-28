@@ -14,8 +14,10 @@ class APIKeySetting extends StatelessWidget {
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
         hintText: AppLocalizations.of(context)!.apiKey,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
       ),
       onChanged: viewModel.setApiKey,
       obscureText: true,

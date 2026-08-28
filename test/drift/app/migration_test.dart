@@ -2,6 +2,7 @@ import "package:drift/drift.dart";
 import "package:drift_dev/api/migrations_native.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:test/test.dart";
+
 import "generated/schema.dart";
 
 void main() {

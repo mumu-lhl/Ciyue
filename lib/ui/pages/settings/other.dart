@@ -65,9 +65,7 @@ class _FloatingWindowState extends State<FloatingWindow> {
         children: [
           Text(AppLocalizations.of(context)!.floatingWindow),
           const SizedBox(width: 8),
-          const BaseBadge(
-            text: "Beta",
-          ),
+          const BaseBadge(text: "Beta"),
         ],
       ),
       value: _isFloatingWindowEnabled,
@@ -89,9 +87,7 @@ class OtherSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.other),
-      ),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.other)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
@@ -133,7 +129,8 @@ class _NotificationSwitchState extends State<NotificationSwitch> {
         });
         await PlatformMethod.flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>()
+              AndroidFlutterLocalNotificationsPlugin
+            >()
             ?.requestNotificationsPermission();
         PlatformMethod.createPersistentNotification(value);
       },

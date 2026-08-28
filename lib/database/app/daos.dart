@@ -12,10 +12,7 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
 
   Future<int> addGroup(String name, List<int> dictIds) {
     return into(dictGroup).insert(
-      DictGroupCompanion(
-        name: Value(name),
-        dictIds: Value(dictIds.join(",")),
-      ),
+      DictGroupCompanion(name: Value(name), dictIds: Value(dictIds.join(","))),
     );
   }
 
@@ -25,8 +22,9 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<int>> getDictIds(int id) async {
     try {
-      final group =
-          await (select(dictGroup)..where((t) => t.id.isValue(id))).getSingle();
+      final group = await (select(
+        dictGroup,
+      )..where((t) => t.id.isValue(id))).getSingle();
       return group.dictIds.split(",").map((e) => int.parse(e)).toList();
     } catch (e) {
       return [];
@@ -38,8 +36,9 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> updateDictIds(int id, List<int> dictIds) {
-    return (update(dictGroup)..where((t) => t.id.isValue(id)))
-        .write(DictGroupCompanion(dictIds: Value(dictIds.join(","))));
+    return (update(dictGroup)..where((t) => t.id.isValue(id))).write(
+      DictGroupCompanion(dictIds: Value(dictIds.join(","))),
+    );
   }
 }
 
@@ -49,25 +48,30 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
   DictionaryListDao(super.attachedDatabase);
 
   Future<int> add(String path, String title) async {
-    final maxOrder = await (select(dictionaryList)
-          ..orderBy([
-            (t) => OrderingTerm(expression: t.order, mode: OrderingMode.desc)
-          ])
-          ..limit(1))
-        .getSingleOrNull();
+    final maxOrder =
+        await (select(dictionaryList)
+              ..orderBy([
+                (t) =>
+                    OrderingTerm(expression: t.order, mode: OrderingMode.desc),
+              ])
+              ..limit(1))
+            .getSingleOrNull();
     final order = (maxOrder?.order ?? -1) + 1;
 
-    return into(dictionaryList).insert(DictionaryListCompanion(
+    return into(dictionaryList).insert(
+      DictionaryListCompanion(
         path: Value(path),
         title: Value(title),
         type: const Value(1),
-        order: Value(order)));
+        order: Value(order),
+      ),
+    );
   }
 
   Future<List<DictionaryListData>> all() {
-    return (select(dictionaryList)
-          ..orderBy([(t) => OrderingTerm(expression: t.order)]))
-        .get();
+    return (select(
+      dictionaryList,
+    )..orderBy([(t) => OrderingTerm(expression: t.order)])).get();
   }
 
   Future<void> updateOrder(List<DictionaryListData> dictionaries) {
@@ -83,34 +87,34 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<bool> dictionaryExist(String path) async {
-    return (await (select(dictionaryList)..where((t) => t.path.isValue(path)))
-            .get())
-        .isNotEmpty;
+    return (await (select(
+      dictionaryList,
+    )..where((t) => t.path.isValue(path))).get()).isNotEmpty;
   }
 
   Future<String?> getTitle(int id) async {
-    final result = await (select(dictionaryList)
-          ..where((t) => t.id.isValue(id)))
-        .getSingleOrNull();
+    final result = await (select(
+      dictionaryList,
+    )..where((t) => t.id.isValue(id))).getSingleOrNull();
     return result?.title;
   }
 
   Future<String?> getFontPath(int id) async {
-    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
-            .getSingle()))
-        .fontPath;
+    return (await ((select(
+      dictionaryList,
+    )..where((t) => t.id.isValue(id))).getSingle())).fontPath;
   }
 
   Future<int> getId(String path) async {
-    return (await ((select(dictionaryList)..where((t) => t.path.isValue(path)))
-            .getSingle()))
-        .id;
+    return (await ((select(
+      dictionaryList,
+    )..where((t) => t.path.isValue(path))).getSingle())).id;
   }
 
   Future<String> getPath(int id) async {
-    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
-            .getSingle()))
-        .path;
+    return (await ((select(
+      dictionaryList,
+    )..where((t) => t.id.isValue(id))).getSingle())).path;
   }
 
   Future<int> remove(String path) {
@@ -118,19 +122,21 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<int> updateTitle(int id, String? alias) {
-    return (update(dictionaryList)..where((t) => t.id.isValue(id)))
-        .write(DictionaryListCompanion(title: Value(alias)));
+    return (update(dictionaryList)..where((t) => t.id.isValue(id))).write(
+      DictionaryListCompanion(title: Value(alias)),
+    );
   }
 
   Future<int> updateFont(int id, String? fontPath) {
-    return (update(dictionaryList)..where((t) => t.id.isValue(id)))
-        .write(DictionaryListCompanion(fontPath: Value(fontPath)));
+    return (update(dictionaryList)..where((t) => t.id.isValue(id))).write(
+      DictionaryListCompanion(fontPath: Value(fontPath)),
+    );
   }
 
   Future<int> getType(int id) async {
-    return (await ((select(dictionaryList)..where((t) => t.id.isValue(id)))
-            .getSingle()))
-        .type;
+    return (await ((select(
+      dictionaryList,
+    )..where((t) => t.id.isValue(id))).getSingle())).type;
   }
 }
 
@@ -148,9 +154,9 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
   }
 
   Future<List<HistoryData>> getAllHistory() {
-    return (select(history)
-          ..orderBy(
-              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
+    return (select(history)..orderBy([
+          (t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc),
+        ]))
         .get();
   }
 
@@ -169,19 +175,19 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
   FlashcardDao(super.attachedDatabase);
 
   Future<Flashcard?> getCard(String word) {
-    return (select(flashcards)..where((row) => row.word.equals(word)))
-        .getSingleOrNull();
+    return (select(
+      flashcards,
+    )..where((row) => row.word.equals(word))).getSingleOrNull();
   }
 
-  Future<List<Flashcard>> getDueCards({
-    required DateTime now,
-    int? tag,
-  }) async {
+  Future<List<Flashcard>> getDueCards({required DateTime now, int? tag}) async {
     final activeWords = await _activeWords(tag: tag);
     if (activeWords.isEmpty) return [];
     return (select(flashcards)
-          ..where((row) =>
-              row.word.isIn(activeWords) & row.due.isSmallerOrEqualValue(now))
+          ..where(
+            (row) =>
+                row.word.isIn(activeWords) & row.due.isSmallerOrEqualValue(now),
+          )
           ..orderBy([(row) => OrderingTerm(expression: row.due)]))
         .get();
   }
@@ -192,8 +198,9 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
       ..orderBy([(row) => OrderingTerm(expression: row.createdAt)]);
     if (tag != null) query.where((row) => row.tag.equals(tag));
     final words = await query.get();
-    final existing =
-        (await select(flashcards).get()).map((e) => e.word).toSet();
+    final existing = (await select(
+      flashcards,
+    ).get()).map((e) => e.word).toSet();
     final result = <String>[];
     for (final entry in words) {
       if (!existing.contains(entry.word) && !result.contains(entry.word)) {
@@ -211,8 +218,10 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
     final expression = flashcards.word.count();
     final query = selectOnly(flashcards)
       ..addColumns([expression])
-      ..where(flashcards.introducedAt.isBiggerOrEqualValue(start) &
-          flashcards.introducedAt.isSmallerThanValue(end));
+      ..where(
+        flashcards.introducedAt.isBiggerOrEqualValue(start) &
+            flashcards.introducedAt.isSmallerThanValue(end),
+      );
     return (await query.getSingle()).read(expression) ?? 0;
   }
 
@@ -226,16 +235,18 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
     DateTime? lastReview,
     required DateTime introducedAt,
   }) {
-    return into(flashcards).insertOnConflictUpdate(FlashcardsCompanion(
-      word: Value(word),
-      state: Value(state),
-      step: Value(step),
-      stability: Value(stability),
-      difficulty: Value(difficulty),
-      due: Value(due),
-      lastReview: Value(lastReview),
-      introducedAt: Value(introducedAt),
-    ));
+    return into(flashcards).insertOnConflictUpdate(
+      FlashcardsCompanion(
+        word: Value(word),
+        state: Value(state),
+        step: Value(step),
+        stability: Value(stability),
+        difficulty: Value(difficulty),
+        due: Value(due),
+        lastReview: Value(lastReview),
+        introducedAt: Value(introducedAt),
+      ),
+    );
   }
 
   Future<int> addReviewLog({
@@ -244,12 +255,14 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
     required DateTime reviewedAt,
     int? durationMs,
   }) {
-    return into(flashcardReviewLogs).insert(FlashcardReviewLogsCompanion(
-      word: Value(word),
-      rating: Value(rating),
-      reviewedAt: Value(reviewedAt),
-      durationMs: Value(durationMs),
-    ));
+    return into(flashcardReviewLogs).insert(
+      FlashcardReviewLogsCompanion(
+        word: Value(word),
+        rating: Value(rating),
+        reviewedAt: Value(reviewedAt),
+        durationMs: Value(durationMs),
+      ),
+    );
   }
 
   Future<int> saveReview({
@@ -301,10 +314,9 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
     await (delete(flashcardReviewLogs)..where((row) => row.id.equals(id))).go();
   }
 
-  Future<List<FlashcardReviewLog>> getReviewLogs() =>
-      (select(flashcardReviewLogs)
-            ..orderBy([(row) => OrderingTerm.desc(row.reviewedAt)]))
-          .get();
+  Future<List<FlashcardReviewLog>> getReviewLogs() => (select(
+    flashcardReviewLogs,
+  )..orderBy([(row) => OrderingTerm.desc(row.reviewedAt)])).get();
 
   Future<int> countReviews({
     required DateTime start,
@@ -313,16 +325,18 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
     final expression = flashcardReviewLogs.id.count();
     final query = selectOnly(flashcardReviewLogs)
       ..addColumns([expression])
-      ..where(flashcardReviewLogs.reviewedAt.isBiggerOrEqualValue(start) &
-          flashcardReviewLogs.reviewedAt.isSmallerThanValue(end));
+      ..where(
+        flashcardReviewLogs.reviewedAt.isBiggerOrEqualValue(start) &
+            flashcardReviewLogs.reviewedAt.isSmallerThanValue(end),
+      );
     return (await query.getSingle()).read(expression) ?? 0;
   }
 
   Future<List<Flashcard>> getAllCards() => select(flashcards).get();
 
   Future<void> addAllCards(List<Flashcard> cards) => batch((batch) {
-        batch.insertAllOnConflictUpdate(flashcards, cards);
-      });
+    batch.insertAllOnConflictUpdate(flashcards, cards);
+  });
 
   Future<void> addAllReviewLogs(List<FlashcardReviewLog> logs) =>
       batch((batch) {
@@ -355,8 +369,9 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     final existing = await getAllWords();
     final existingSet = existing.map((e) => "${e.word}_${e.tag}").toSet();
 
-    final toInsert =
-        data.where((e) => !existingSet.contains("${e.word}_${e.tag}")).toList();
+    final toInsert = data
+        .where((e) => !existingSet.contains("${e.word}_${e.tag}"))
+        .toList();
 
     if (toInsert.isNotEmpty) {
       await batch((batch) {
@@ -373,16 +388,23 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<int> addWord(String word, {int? tag}) {
-    return into(wordbook).insert(WordbookCompanion(
-        tag: Value(tag), word: Value(word), createdAt: Value(DateTime.now())));
+    return into(wordbook).insert(
+      WordbookCompanion(
+        tag: Value(tag),
+        word: Value(word),
+        createdAt: Value(DateTime.now()),
+      ),
+    );
   }
 
   Future<List<WordbookData>> getAllWords() {
     return (select(wordbook)).get();
   }
 
-  Future<List<WordbookData>> getAllWordsWithTag(
-      {int? tag, bool skipTagged = false}) {
+  Future<List<WordbookData>> getAllWordsWithTag({
+    int? tag,
+    bool skipTagged = false,
+  }) {
     if (tag == null) {
       if (skipTagged) {
         final subquery = selectOnly(wordbook)
@@ -392,7 +414,7 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
               ..where((t) => t.tag.isNull() & t.word.isNotInQuery(subquery))
               ..orderBy([
                 (t) =>
-                    OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)
+                    OrderingTerm(expression: t.rowId, mode: OrderingMode.desc),
               ]))
             .get();
       } else {
@@ -400,7 +422,7 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
               ..where((t) => t.tag.isNull())
               ..orderBy([
                 (t) =>
-                    OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)
+                    OrderingTerm(expression: t.rowId, mode: OrderingMode.desc),
               ]))
             .get();
       }
@@ -408,23 +430,29 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
       return (select(wordbook)
             ..where((t) => t.tag.isValue(tag))
             ..orderBy([
-              (t) => OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)
+              (t) => OrderingTerm(expression: t.rowId, mode: OrderingMode.desc),
             ]))
           .get();
     }
   }
 
-  Future<List<WordbookData>> getWordsByYearMonth(int year, int month,
-      {int? tag}) {
+  Future<List<WordbookData>> getWordsByYearMonth(
+    int year,
+    int month, {
+    int? tag,
+  }) {
     final startDate = DateTime(year, month, 1);
     final endDate = DateTime(year, month + 1, 1);
 
     final query = select(wordbook)
-      ..where((t) =>
-          t.createdAt.isBetweenValues(startDate, endDate) &
-          (tag == null ? t.tag.isNull() : t.tag.isValue(tag)))
-      ..orderBy(
-          [(t) => OrderingTerm(expression: t.rowId, mode: OrderingMode.desc)]);
+      ..where(
+        (t) =>
+            t.createdAt.isBetweenValues(startDate, endDate) &
+            (tag == null ? t.tag.isNull() : t.tag.isValue(tag)),
+      )
+      ..orderBy([
+        (t) => OrderingTerm(expression: t.rowId, mode: OrderingMode.desc),
+      ]);
 
     return query.get();
   }
@@ -440,9 +468,9 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     if (tag == null) {
       return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
     } else {
-      return (delete(wordbook)
-            ..where((t) => t.word.isValue(word) & t.tag.isValue(tag)))
-          .go();
+      return (delete(
+        wordbook,
+      )..where((t) => t.word.isValue(word) & t.tag.isValue(tag))).go();
     }
   }
 
@@ -454,14 +482,17 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     await batch((batch) {
       for (final wordData in words) {
         if (wordData.tag == null) {
-          batch.deleteWhere(wordbook,
-              (row) => row.word.isValue(wordData.word) & row.tag.isNull());
+          batch.deleteWhere(
+            wordbook,
+            (row) => row.word.isValue(wordData.word) & row.tag.isNull(),
+          );
         } else {
           batch.deleteWhere(
-              wordbook,
-              (row) =>
-                  row.word.isValue(wordData.word) &
-                  row.tag.isValue(wordData.tag!));
+            wordbook,
+            (row) =>
+                row.word.isValue(wordData.word) &
+                row.tag.isValue(wordData.tag!),
+          );
         }
       }
     });
@@ -475,13 +506,15 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<bool> wordExist(String word) async {
-    return (await (select(wordbook)..where((u) => u.word.isValue(word))).get())
-        .isNotEmpty;
+    return (await (select(
+      wordbook,
+    )..where((u) => u.word.isValue(word))).get()).isNotEmpty;
   }
 
   Future<Set<String>> wordsExist(Iterable<String> words) async {
-    final result =
-        await (select(wordbook)..where((u) => u.word.isIn(words))).get();
+    final result = await (select(
+      wordbook,
+    )..where((u) => u.word.isIn(words))).get();
     return result.map((e) => e.word).toSet();
   }
 }
@@ -501,8 +534,8 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> addTag(String tag) async {
-    final tagId =
-        await into(wordbookTags).insert(WordbookTagsCompanion(tag: Value(tag)));
+    final tagId = await into(wordbookTags)
+        .insert(WordbookTagsCompanion(tag: Value(tag)));
     tagsOrder.add(tagId);
     await updateTagsOrder();
   }
@@ -546,16 +579,23 @@ class MddAudioListDao extends DatabaseAccessor<AppDatabase>
   MddAudioListDao(super.attachedDatabase);
 
   Future<int> add(String path, String title) async {
-    final maxOrder = await (select(mddAudioList)
-          ..orderBy([
-            (t) => OrderingTerm(expression: t.order, mode: OrderingMode.desc)
-          ])
-          ..limit(1))
-        .getSingleOrNull();
+    final maxOrder =
+        await (select(mddAudioList)
+              ..orderBy([
+                (t) =>
+                    OrderingTerm(expression: t.order, mode: OrderingMode.desc),
+              ])
+              ..limit(1))
+            .getSingleOrNull();
     final order = (maxOrder?.order ?? -1) + 1;
 
-    return into(mddAudioList).insert(MddAudioListCompanion(
-        path: Value(path), title: Value(title), order: Value(order)));
+    return into(mddAudioList).insert(
+      MddAudioListCompanion(
+        path: Value(path),
+        title: Value(title),
+        order: Value(order),
+      ),
+    );
   }
 
   Future<void> remove(int id) async {
@@ -563,20 +603,21 @@ class MddAudioListDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<MddAudioListData>> allOrdered() {
-    return (select(mddAudioList)
-          ..orderBy([(t) => OrderingTerm(expression: t.order)]))
-        .get();
+    return (select(
+      mddAudioList,
+    )..orderBy([(t) => OrderingTerm(expression: t.order)])).get();
   }
 
   Future<void> updateOrder(int id, int order) {
-    return (update(mddAudioList)..where((t) => t.id.isValue(id)))
-        .write(MddAudioListCompanion(order: Value(order)));
+    return (update(mddAudioList)..where((t) => t.id.isValue(id))).write(
+      MddAudioListCompanion(order: Value(order)),
+    );
   }
 
   Future<bool> existMddAudio(String path) async {
-    return (await (select(mddAudioList)..where((t) => t.path.isValue(path)))
-            .get())
-        .isNotEmpty;
+    return (await (select(
+      mddAudioList,
+    )..where((t) => t.path.isValue(path))).get()).isNotEmpty;
   }
 }
 
@@ -592,16 +633,18 @@ class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> remove(int mddAudioId) async {
-    await (delete(mddAudioResource)
-          ..where((t) => t.mddAudioListId.isValue(mddAudioId)))
-        .go();
+    await (delete(
+      mddAudioResource,
+    )..where((t) => t.mddAudioListId.isValue(mddAudioId))).go();
   }
 
   Future<List<MddAudioResourceData>?> getByKeyAndMddAudioID(
-      String key, int mddAudioId) async {
-    return (await (select(mddAudioResource)
-          ..where(
-              (t) => t.key.isValue(key) & t.mddAudioListId.isValue(mddAudioId)))
+    String key,
+    int mddAudioId,
+  ) async {
+    return (await (select(mddAudioResource)..where(
+          (t) => t.key.isValue(key) & t.mddAudioListId.isValue(mddAudioId),
+        ))
         .get());
   }
 }
@@ -616,17 +659,20 @@ class AiExplanationDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<AiExplanation?> getAiExplanation(String word) {
-    return (select(aiExplanations)..where((t) => t.word.isValue(word)))
-        .getSingleOrNull();
+    return (select(
+      aiExplanations,
+    )..where((t) => t.word.isValue(word))).getSingleOrNull();
   }
 
   Future<int> updateAiExplanation(AiExplanation explanation) {
-    return (update(aiExplanations)
-          ..where((t) => t.word.isValue(explanation.word)))
-        .write(AiExplanationsCompanion(
-      word: Value(explanation.word),
-      explanation: Value(explanation.explanation),
-    ));
+    return (update(
+      aiExplanations,
+    )..where((t) => t.word.isValue(explanation.word))).write(
+      AiExplanationsCompanion(
+        word: Value(explanation.word),
+        explanation: Value(explanation.explanation),
+      ),
+    );
   }
 
   Future<int> deleteAiExplanation(String word) {
@@ -652,8 +698,10 @@ class WritingCheckHistoryDao extends DatabaseAccessor<AppDatabase>
   Future<void> addAllHistory(List<WritingCheckHistoryData> data) async {
     final existing = await getAllHistory();
     final existingSet = existing
-        .map((e) =>
-            "${e.inputText}_${e.outputText}_${e.createdAt.millisecondsSinceEpoch}")
+        .map(
+          (e) =>
+              "${e.inputText}_${e.outputText}_${e.createdAt.millisecondsSinceEpoch}",
+        )
         .toSet();
 
     final toInsert = data.where((e) {
@@ -670,9 +718,9 @@ class WritingCheckHistoryDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<WritingCheckHistoryData>> getAllHistory() {
-    return (select(writingCheckHistory)
-          ..orderBy(
-              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
+    return (select(writingCheckHistory)..orderBy([
+          (t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc),
+        ]))
         .get();
   }
 
@@ -708,8 +756,9 @@ class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
     final existing = await getAllHistory();
     final existingSet = existing.map((e) => e.inputText).toSet();
 
-    final toInsert =
-        data.where((e) => !existingSet.contains(e.inputText)).toList();
+    final toInsert = data
+        .where((e) => !existingSet.contains(e.inputText))
+        .toList();
 
     if (toInsert.isNotEmpty) {
       await batch((batch) {
@@ -719,9 +768,9 @@ class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<TranslateHistoryData>> getAllHistory() {
-    return (select(translateHistory)
-          ..orderBy(
-              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
+    return (select(translateHistory)..orderBy([
+          (t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc),
+        ]))
         .get();
   }
 
@@ -738,9 +787,9 @@ class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<int> deleteHistoryByInputText(String inputText) {
-    return (delete(translateHistory)
-          ..where((t) => t.inputText.isValue(inputText)))
-        .go();
+    return (delete(
+      translateHistory,
+    )..where((t) => t.inputText.isValue(inputText))).go();
   }
 }
 
@@ -750,10 +799,9 @@ class OpenRecordsDao extends DatabaseAccessor<AppDatabase>
   OpenRecordsDao(super.attachedDatabase);
 
   Future<void> add(String word) async {
-    await into(openRecords).insert(OpenRecordsCompanion(
-      word: Value(word),
-      createdAt: Value(DateTime.now()),
-    ));
+    await into(openRecords).insert(
+      OpenRecordsCompanion(word: Value(word), createdAt: Value(DateTime.now())),
+    );
   }
 
   Future<List<OpenRecord>> getAll() {

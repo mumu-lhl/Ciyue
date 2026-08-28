@@ -32,8 +32,9 @@ class AISettingsViewModel with ChangeNotifier {
     apiUrlController.text = settings.aiAPIUrl;
 
     final currentProvider = ModelProviderManager.modelProviders[_provider]!;
-    if (!currentProvider.models
-            .any((m) => m.originName == modelController.text) &&
+    if (!currentProvider.models.any(
+          (m) => m.originName == modelController.text,
+        ) &&
         !currentProvider.allowCustomModel) {
       modelController.text = currentProvider.models[0].originName;
       _saveAiProviderConfig();
@@ -48,7 +49,10 @@ class AISettingsViewModel with ChangeNotifier {
 
   void _saveAiProviderConfig() {
     settings.saveAiProviderConfig(
-        _provider, modelController.text, apiKeyController.text);
+      _provider,
+      modelController.text,
+      apiKeyController.text,
+    );
     notifyListeners();
   }
 
@@ -59,10 +63,12 @@ class AISettingsViewModel with ChangeNotifier {
 
     final config = settings.getAiProviderConfig(_provider);
     modelController.text = config["model"] ?? "";
-    final currentProvider = ModelProviderManager.modelProviders[_provider] ??
+    final currentProvider =
+        ModelProviderManager.modelProviders[_provider] ??
         ModelProviderManager.modelProviders.values.first;
-    if (!currentProvider.models
-            .any((m) => m.originName == modelController.text) &&
+    if (!currentProvider.models.any(
+          (m) => m.originName == modelController.text,
+        ) &&
         !currentProvider.allowCustomModel) {
       modelController.text = currentProvider.models[0].originName;
     }

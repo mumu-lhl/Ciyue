@@ -32,10 +32,12 @@ class _HistoryListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.read<TranslateHistoryViewModel>();
-    final isSelecting =
-        context.select((TranslateHistoryViewModel vm) => vm.isSelecting);
+    final isSelecting = context.select(
+      (TranslateHistoryViewModel vm) => vm.isSelecting,
+    );
     final isSelected = context.select(
-        (TranslateHistoryViewModel vm) => vm.selectedIds.contains(item.id));
+      (TranslateHistoryViewModel vm) => vm.selectedIds.contains(item.id),
+    );
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -51,9 +53,8 @@ class _HistoryListItem extends StatelessWidget {
           DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
               .add_jm()
               .format(item.createdAt),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey,
-              ),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Colors.grey),
         ),
         onTap: () {
           if (isSelecting) {

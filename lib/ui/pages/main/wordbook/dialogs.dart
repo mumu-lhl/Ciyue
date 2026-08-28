@@ -70,9 +70,7 @@ class _SearchWordDialogState extends State<SearchWordDialog> {
                 builder: (context, model, child) {
                   if (model.searchResults.isEmpty &&
                       _searchController.text.isNotEmpty) {
-                    return const Center(
-                      child: Text("No results found"),
-                    );
+                    return const Center(child: Text("No results found"));
                   }
                   return ListView.builder(
                     shrinkWrap: true,
@@ -94,9 +92,7 @@ class _SearchWordDialogState extends State<SearchWordDialog> {
           ],
         ),
       ),
-      actions: [
-        TextCloseButton(),
-      ],
+      actions: [TextCloseButton()],
     );
   }
 }
@@ -169,14 +165,13 @@ class _MonthPickerDialogState extends State<MonthPickerDialog> {
                   final month = index + 1;
                   return InkWell(
                     onTap: () {
-                      Navigator.of(context).pop(
-                        DateTime(selectedYear, month),
-                      );
+                      Navigator.of(context).pop(DateTime(selectedYear, month));
                     },
                     child: Container(
                       margin: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: initialYear == selectedYear &&
+                        color:
+                            initialYear == selectedYear &&
                                 month == selectedMonth
                             ? Theme.of(context).colorScheme.primary
                             : null,
@@ -186,7 +181,8 @@ class _MonthPickerDialogState extends State<MonthPickerDialog> {
                         child: Text(
                           month.toString(),
                           style: TextStyle(
-                            color: initialYear == selectedYear &&
+                            color:
+                                initialYear == selectedYear &&
                                     month == selectedMonth
                                 ? Theme.of(context).colorScheme.onPrimary
                                 : null,
@@ -271,24 +267,26 @@ class _TagListDialogState extends State<TagListDialog> {
             setState(() {});
           },
           children: widget.tagsDisplay
-              .map((tag) => ListTile(
-                    key: ValueKey(tag.id),
-                    title: Text(tag.tag),
-                    leading: ReorderableDragStartListener(
-                      index: widget.tagsDisplay.indexOf(tag),
-                      child: const Icon(Icons.drag_handle),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await model.removeTag(tag.id);
-                        if (context.mounted) {
-                          Navigator.of(context).pop();
-                          model.showTagsListDialog(context);
-                        }
-                      },
-                    ),
-                  ))
+              .map(
+                (tag) => ListTile(
+                  key: ValueKey(tag.id),
+                  title: Text(tag.tag),
+                  leading: ReorderableDragStartListener(
+                    index: widget.tagsDisplay.indexOf(tag),
+                    child: const Icon(Icons.drag_handle),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () async {
+                      await model.removeTag(tag.id);
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                        model.showTagsListDialog(context);
+                      }
+                    },
+                  ),
+                ),
+              )
               .toList(),
         ),
       ),

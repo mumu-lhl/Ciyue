@@ -22,9 +22,7 @@ class _WritingCheckSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settings),
-      ),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),

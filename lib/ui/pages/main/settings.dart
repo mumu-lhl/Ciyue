@@ -8,9 +8,7 @@ import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 
 class AboutPageListTile extends StatelessWidget {
-  const AboutPageListTile({
-    super.key,
-  });
+  const AboutPageListTile({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +34,7 @@ class AiSettingsPageListTile extends StatelessWidget {
 }
 
 class AppearanceSettingsPageListTile extends StatelessWidget {
-  const AppearanceSettingsPageListTile({
-    super.key,
-  });
+  const AppearanceSettingsPageListTile({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -59,9 +55,7 @@ class AudioSettingsPageListTile extends StatefulWidget {
 }
 
 class BackupPageListTile extends StatelessWidget {
-  const BackupPageListTile({
-    super.key,
-  });
+  const BackupPageListTile({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -94,18 +88,17 @@ class ManageDictionariesPageListTile extends StatelessWidget {
     final locale = AppLocalizations.of(context);
 
     return ListTile(
-        leading: const Icon(Icons.book),
-        title: Text(locale!.manageDictionaries),
-        onTap: () async {
-          await context.push("/settings/dictionaries");
-        });
+      leading: const Icon(Icons.book),
+      title: Text(locale!.manageDictionaries),
+      onTap: () async {
+        await context.push("/settings/dictionaries");
+      },
+    );
   }
 }
 
 class OtherPageListTile extends StatelessWidget {
-  const OtherPageListTile({
-    super.key,
-  });
+  const OtherPageListTile({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -135,17 +128,16 @@ class _WordbookStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalWordCount =
-        context.select((WordbookModel vm) => vm.totalWordCount);
+    final totalWordCount = context.select(
+      (WordbookModel vm) => vm.totalWordCount,
+    );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            color: Theme.of(context).colorScheme.outline,
-          ),
+          side: BorderSide(color: Theme.of(context).colorScheme.outline),
           borderRadius: const BorderRadius.all(Radius.circular(12)),
         ),
         clipBehavior: Clip.antiAlias,
@@ -204,9 +196,7 @@ class SettingsScreen extends StatelessWidget {
 }
 
 class ManageStorageListTile extends StatelessWidget {
-  const ManageStorageListTile({
-    super.key,
-  });
+  const ManageStorageListTile({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -219,9 +209,7 @@ class ManageStorageListTile extends StatelessWidget {
 }
 
 class UpdatePageListTile extends StatelessWidget {
-  const UpdatePageListTile({
-    super.key,
-  });
+  const UpdatePageListTile({super.key});
 
   @override
   Widget build(BuildContext context) {

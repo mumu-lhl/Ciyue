@@ -19,8 +19,8 @@ class StatsCalendar<T extends StatsViewModel> extends StatelessWidget {
           final wordCount = viewModel.getEventsForDay(day).first;
           if (wordCount > 0) {
             final color = Theme.of(context).colorScheme.primary;
-            final opacity =
-                (wordCount / viewModel.maxItemsInFocusedMonth).clamp(0.1, 1.0);
+            final opacity = (wordCount / viewModel.maxItemsInFocusedMonth)
+                .clamp(0.1, 1.0);
             return AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               decoration: BoxDecoration(
@@ -31,8 +31,9 @@ class StatsCalendar<T extends StatsViewModel> extends StatelessWidget {
               child: Center(
                 child: Text(
                   "${day.day}",
-                  style:
-                      TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
                 ),
               ),
             );
@@ -50,7 +51,7 @@ class StatsCalendar<T extends StatsViewModel> extends StatelessWidget {
           },
           onPageChanged: viewModel.onPageChanged,
           availableCalendarFormats: {
-            CalendarFormat.month: AppLocalizations.of(context)!.month
+            CalendarFormat.month: AppLocalizations.of(context)!.month,
           },
           calendarStyle: const CalendarStyle(
             todayDecoration: BoxDecoration(),
@@ -109,7 +110,9 @@ class StatsCalendar<T extends StatsViewModel> extends StatelessWidget {
                     const SizedBox(width: 10),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.secondary,
                         borderRadius: BorderRadius.circular(8),

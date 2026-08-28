@@ -1,4 +1,5 @@
 import "dart:io";
+
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
@@ -10,15 +11,19 @@ class StorageManagementPage extends StatelessWidget {
   const StorageManagementPage({super.key});
 
   Future<void> _confirmAndDelete(
-      BuildContext context, FileSystemEntity entity) async {
+    BuildContext context,
+    FileSystemEntity entity,
+  ) async {
     final locale = AppLocalizations.of(context)!;
-    final bool confirm = await showDialog(
+    final bool confirm =
+        await showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text(locale.confirmDelete),
-              content:
-                  Text(locale.confirmDeleteMessage(p.basename(entity.path))),
+              content: Text(
+                locale.confirmDeleteMessage(p.basename(entity.path)),
+              ),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
@@ -35,12 +40,17 @@ class StorageManagementPage extends StatelessWidget {
         false;
 
     if (confirm && context.mounted) {
-      final viewModel =
-          Provider.of<StorageManagementViewModel>(context, listen: false);
+      final viewModel = Provider.of<StorageManagementViewModel>(
+        context,
+        listen: false,
+      );
       final success = await viewModel.deleteEntity(entity);
       if (!success && viewModel.errorMessage != null && context.mounted) {
-        ToastService.show(viewModel.errorMessage!, context,
-            type: ToastType.error);
+        ToastService.show(
+          viewModel.errorMessage!,
+          context,
+          type: ToastType.error,
+        );
       }
     }
   }
@@ -49,9 +59,7 @@ class StorageManagementPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(locale.manageStorage),
-      ),
+      appBar: AppBar(title: Text(locale.manageStorage)),
       body: Consumer<StorageManagementViewModel>(
         builder: (context, viewModel, child) {
           if (viewModel.isLoading) {
@@ -61,7 +69,8 @@ class StorageManagementPage extends StatelessWidget {
             return Center(child: Text(viewModel.errorMessage!));
           }
           return ListView.builder(
-            itemCount: viewModel.entities.length +
+            itemCount:
+                viewModel.entities.length +
                 (viewModel.isAtBaseDirectory ? 0 : 1),
             itemBuilder: (context, index) {
               if (!viewModel.isAtBaseDirectory && index == 0) {
@@ -71,13 +80,15 @@ class StorageManagementPage extends StatelessWidget {
                   onTap: viewModel.navigateBack,
                 );
               }
-              final actualIndex =
-                  viewModel.isAtBaseDirectory ? index : index - 1;
+              final actualIndex = viewModel.isAtBaseDirectory
+                  ? index
+                  : index - 1;
               final entity = viewModel.entities[actualIndex];
               final isDirectory = entity is Directory;
               return ListTile(
-                leading:
-                    Icon(isDirectory ? Icons.folder : Icons.insert_drive_file),
+                leading: Icon(
+                  isDirectory ? Icons.folder : Icons.insert_drive_file,
+                ),
                 title: Text(p.basename(entity.path)),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),

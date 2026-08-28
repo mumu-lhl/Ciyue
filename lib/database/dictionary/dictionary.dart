@@ -10,8 +10,9 @@ part "dictionary.g.dart";
 
 DictionaryDatabase dictionaryDatabase(int id) {
   final connection = driftDatabase(
-      name: "dictionary_$id",
-      native: DriftNativeOptions(databaseDirectory: databaseDirectory));
+    name: "dictionary_$id",
+    native: DriftNativeOptions(databaseDirectory: databaseDirectory),
+  );
   return DictionaryDatabase(connection);
 }
 
@@ -50,8 +51,9 @@ class DictionaryDatabase extends _$DictionaryDatabase {
   int get schemaVersion => 5;
 
   Future<DictionaryData> getOffset(String word) async {
-    return (await (select(dictionary)..where((u) => u.key.isValue(word)))
-        .get())[0];
+    return (await (select(
+      dictionary,
+    )..where((u) => u.key.isValue(word))).get())[0];
   }
 
   Future<void> insertResource(List<ResourceCompanion> resource) async {
@@ -80,14 +82,15 @@ class DictionaryDatabase extends _$DictionaryDatabase {
 
   Future<bool> wordExist(String word) async {
     // First try with original word
-    var result =
-        await (select(dictionary)..where((u) => u.key.isValue(word))).get();
+    var result = await (select(
+      dictionary,
+    )..where((u) => u.key.isValue(word))).get();
 
     // If not found, try with lowercase version
     if (result.isEmpty) {
-      result = await (select(dictionary)
-            ..where((u) => u.key.isValue(word.toLowerCase())))
-          .get();
+      result = await (select(
+        dictionary,
+      )..where((u) => u.key.isValue(word.toLowerCase()))).get();
     }
 
     return result.isNotEmpty;

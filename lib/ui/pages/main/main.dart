@@ -111,7 +111,7 @@ class _HomeState extends State<Home> {
                           NavigationRailDestination(
                             icon: destination.$1,
                             label: Text(destination.$2),
-                          )
+                          ),
                       ],
                       selectedIndex: _currentIndex,
                       onDestinationSelected: (int index) {
@@ -138,10 +138,7 @@ class _HomeState extends State<Home> {
                     ),
                   ],
                 )
-              : IndexedStack(
-                  index: _currentIndex,
-                  children: _pages,
-                ),
+              : IndexedStack(index: _currentIndex, children: _pages),
           bottomNavigationBar: ratio <= 1.0
               ? NavigationBar(
                   onDestinationSelected: (int index) {
@@ -164,7 +161,7 @@ class _HomeState extends State<Home> {
                       NavigationDestination(
                         icon: destination.$1,
                         label: destination.$2,
-                      )
+                      ),
                   ],
                 )
               : null,
@@ -178,7 +175,7 @@ class _HomeState extends State<Home> {
       (const Icon(Icons.home), AppLocalizations.of(context)!.home),
       (const Icon(Icons.translate), AppLocalizations.of(context)!.translate),
       (const Icon(Icons.book), AppLocalizations.of(context)!.wordBook),
-      (const Icon(Icons.settings), AppLocalizations.of(context)!.settings)
+      (const Icon(Icons.settings), AppLocalizations.of(context)!.settings),
     ];
   }
 

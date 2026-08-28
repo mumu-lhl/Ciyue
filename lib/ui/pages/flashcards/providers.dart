@@ -24,8 +24,8 @@ final flashcardOverviewLoaderProvider = Provider<FlashcardOverviewLoader>(
 
 final flashcardOverviewProvider =
     FutureProvider.family<FlashcardOverview, int?>((ref, tag) {
-  return ref.watch(flashcardOverviewLoaderProvider)(tag);
-});
+      return ref.watch(flashcardOverviewLoaderProvider)(tag);
+    });
 
 final flashcardStudyServiceProvider = Provider<FlashcardStudyService>((ref) {
   return FlashcardStudyService(
@@ -50,8 +50,8 @@ class FlashcardDailyLimitNotifier extends Notifier<int> {
 
 final flashcardDailyNewLimitProvider =
     NotifierProvider<FlashcardDailyLimitNotifier, int>(
-  FlashcardDailyLimitNotifier.new,
-);
+      FlashcardDailyLimitNotifier.new,
+    );
 
 class FlashcardSessionState {
   final List<FlashcardSessionItem> items;
@@ -102,8 +102,11 @@ class FlashcardSessionNotifier extends AsyncNotifier<FlashcardSessionState> {
     final localNow = DateTime.now();
     final items = await _service.loadSession(
       now: localNow.toUtc(),
-      localDayStartUtc:
-          DateTime(localNow.year, localNow.month, localNow.day).toUtc(),
+      localDayStartUtc: DateTime(
+        localNow.year,
+        localNow.month,
+        localNow.day,
+      ).toUtc(),
       dailyNewLimit: ref.watch(flashcardDailyNewLimitProvider),
       tag: tag,
     );
@@ -113,9 +116,7 @@ class FlashcardSessionNotifier extends AsyncNotifier<FlashcardSessionState> {
       answerVisible: false,
       shownAt: localNow,
       startedAt: localNow,
-      ratings: {
-        for (final rating in FlashcardRating.values) rating: 0,
-      },
+      ratings: {for (final rating in FlashcardRating.values) rating: 0},
     );
   }
 
@@ -142,37 +143,38 @@ class FlashcardSessionNotifier extends AsyncNotifier<FlashcardSessionState> {
     );
     final ratings = Map<FlashcardRating, int>.from(value.ratings);
     ratings[rating] = ratings[rating]! + 1;
-    state = AsyncData(value.copyWith(
-      index: value.index + 1,
-      answerVisible: false,
-      shownAt: DateTime.now(),
-      ratings: ratings,
-    ));
+    state = AsyncData(
+      value.copyWith(
+        index: value.index + 1,
+        answerVisible: false,
+        shownAt: DateTime.now(),
+        ratings: ratings,
+      ),
+    );
     ref.invalidate(flashcardOverviewProvider);
     return undo;
   }
 
-  Future<void> undo(
-    FlashcardUndoToken token,
-    FlashcardRating rating,
-  ) async {
+  Future<void> undo(FlashcardUndoToken token, FlashcardRating rating) async {
     await _service.undo(token);
     final value = state.requireValue;
     final ratings = Map<FlashcardRating, int>.from(value.ratings);
     ratings[rating] = ratings[rating]! - 1;
-    state = AsyncData(value.copyWith(
-      index: value.index - 1,
-      answerVisible: true,
-      ratings: ratings,
-    ));
+    state = AsyncData(
+      value.copyWith(
+        index: value.index - 1,
+        answerVisible: true,
+        ratings: ratings,
+      ),
+    );
     ref.invalidate(flashcardOverviewProvider);
   }
 }
 
 final flashcardSessionProvider = AsyncNotifierProvider.autoDispose
     .family<FlashcardSessionNotifier, FlashcardSessionState, int?>(
-  FlashcardSessionNotifier.new,
-);
+      FlashcardSessionNotifier.new,
+    );
 
 Future<FlashcardOverview> _loadFlashcardOverview(int? tag) async {
   final now = DateTime.now();
@@ -181,8 +183,10 @@ Future<FlashcardOverview> _loadFlashcardOverview(int? tag) async {
     start: start,
     end: start.add(const Duration(days: 1)),
   );
-  final remaining =
-      (settings.flashcardDailyNewLimit - introduced).clamp(0, 9999);
+  final remaining = (settings.flashcardDailyNewLimit - introduced).clamp(
+    0,
+    9999,
+  );
   final due = await flashcardDao.getDueCards(now: now.toUtc(), tag: tag);
   final newWords = await flashcardDao.getNewWords(limit: remaining, tag: tag);
   final completed = await flashcardDao.countReviews(

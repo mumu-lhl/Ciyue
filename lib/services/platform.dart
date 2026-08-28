@@ -36,11 +36,16 @@ class PlatformMethod {
 
         case "inputDirectory":
           await prefs.setString(
-              "dictionariesDirectory", call.arguments as String);
+            "dictionariesDirectory",
+            call.arguments as String,
+          );
 
           final mdxFiles = await findMdxFilesOnAndroid(null);
-          await selectMdx(navigatorKey.currentContext!, mdxFiles,
-              closeLoadingWhenEmpty: true);
+          await selectMdx(
+            navigatorKey.currentContext!,
+            mdxFiles,
+            closeLoadingWhenEmpty: true,
+          );
 
           break;
 
@@ -53,9 +58,11 @@ class PlatformMethod {
           break;
 
         case "showLoadingDialog":
-          showLoadingDialog(navigatorKey.currentContext!,
-              text: AppLocalizations.of(navigatorKey.currentContext!)!
-                  .copyingFiles);
+          showLoadingDialog(
+            navigatorKey.currentContext!,
+            text: AppLocalizations.of(navigatorKey.currentContext!)!
+                .copyingFiles,
+          );
           break;
 
         case "getDirectory":
@@ -96,8 +103,11 @@ class PlatformMethod {
     } else {
       showLoadingDialog(navigatorKey.currentContext!);
       final paths = await findMdxFilesOnAndroid(directory);
-      selectMdx(navigatorKey.currentContext!, paths,
-          closeLoadingWhenEmpty: true);
+      selectMdx(
+        navigatorKey.currentContext!,
+        paths,
+        closeLoadingWhenEmpty: true,
+      );
     }
   }
 
@@ -116,33 +126,37 @@ class PlatformMethod {
         InitializationSettings(android: initializationSettingsAndroid);
 
     await flutterLocalNotificationsPlugin.initialize(
-        settings: initializationSettings,
-        onDidReceiveNotificationResponse:
-            (NotificationResponse notificationResponse) {
-          router.go("/");
-          MainPage.setScreenIndex(0);
+      settings: initializationSettings,
+      onDidReceiveNotificationResponse:
+          (NotificationResponse notificationResponse) {
+            router.go("/");
+            MainPage.setScreenIndex(0);
 
-          final model = Provider.of<HomeModel>(navigatorKey.currentContext!,
-              listen: false);
-          model.searchWord = "";
-          model.focusSearchBar();
-        });
+            final model = Provider.of<HomeModel>(
+              navigatorKey.currentContext!,
+              listen: false,
+            );
+            model.searchWord = "";
+            model.focusSearchBar();
+          },
+    );
   }
 
   static Future<void> createPersistentNotification(bool create) async {
     if (create) {
       const AndroidNotificationDetails androidNotificationDetails =
           AndroidNotificationDetails(
-        "persistent_notification",
-        "Persistent Notification",
-        channelDescription: "Persistent notification for Ciyue",
-        importance: Importance.min,
-        priority: Priority.low,
-        ongoing: true,
-        autoCancel: false,
+            "persistent_notification",
+            "Persistent Notification",
+            channelDescription: "Persistent notification for Ciyue",
+            importance: Importance.min,
+            priority: Priority.low,
+            ongoing: true,
+            autoCancel: false,
+          );
+      const NotificationDetails notificationDetails = NotificationDetails(
+        android: androidNotificationDetails,
       );
-      const NotificationDetails notificationDetails =
-          NotificationDetails(android: androidNotificationDetails);
       await flutterLocalNotificationsPlugin.show(
         id: 0,
         title: "Ciyue",

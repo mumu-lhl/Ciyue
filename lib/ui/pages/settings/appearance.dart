@@ -18,9 +18,7 @@ class AppearanceSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.appearance),
-      ),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.appearance)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
@@ -35,10 +33,7 @@ class AppearanceSettingsPage extends StatelessWidget {
               const SearchbarInWordDisplaySwitch(),
               if (settings.advance)
                 const Column(
-                  children: [
-                    DrawerIconSwitch(),
-                    MoreOptionsButtonSwitch(),
-                  ],
+                  children: [DrawerIconSwitch(), MoreOptionsButtonSwitch()],
                 ),
             ],
           ),

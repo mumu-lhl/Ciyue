@@ -33,9 +33,11 @@ class _HistoryListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.read<WritingCheckHistoryViewModel>();
     final isSelected = context.select(
-        (WritingCheckHistoryViewModel vm) => vm.selectedIds.contains(item.id));
-    final isSelecting =
-        context.select((WritingCheckHistoryViewModel vm) => vm.isSelecting);
+      (WritingCheckHistoryViewModel vm) => vm.selectedIds.contains(item.id),
+    );
+    final isSelecting = context.select(
+      (WritingCheckHistoryViewModel vm) => vm.isSelecting,
+    );
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -54,18 +56,16 @@ class _HistoryListItem extends StatelessWidget {
               item.outputText,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey,
-                  ),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: Colors.grey),
             ),
             SizedBox(height: 4.0),
             Text(
               DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
                   .add_jm()
                   .format(item.createdAt),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey,
-                  ),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: Colors.grey),
             ),
           ],
         ),

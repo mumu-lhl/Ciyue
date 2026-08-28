@@ -41,8 +41,9 @@ class _LanguagePickerState extends State<LanguagePicker> {
   void _filterLanguages(String query) {
     setState(() {
       _filteredLanguages = languageMap.entries
-          .where((entry) =>
-              entry.value.toLowerCase().contains(query.toLowerCase()))
+          .where(
+            (entry) => entry.value.toLowerCase().contains(query.toLowerCase()),
+          )
           .toList();
       if (!widget.isSource) {
         _filteredLanguages.removeWhere((entry) => entry.key == "auto");
@@ -77,9 +78,11 @@ class _LanguagePickerState extends State<LanguagePicker> {
               final entry = _filteredLanguages[index];
               final isSelected = entry.key == widget.selectedLanguage;
               return ListTile(
-                title: Text(getLanguageName(entry.key) == "Auto Detect"
-                    ? AppLocalizations.of(context)!.autoDetect
-                    : getLanguageName(entry.key)),
+                title: Text(
+                  getLanguageName(entry.key) == "Auto Detect"
+                      ? AppLocalizations.of(context)!.autoDetect
+                      : getLanguageName(entry.key),
+                ),
                 trailing: isSelected ? const Icon(Icons.check) : null,
                 onTap: () => widget.onLanguageSelected(entry.key),
               );

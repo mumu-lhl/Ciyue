@@ -42,8 +42,7 @@ class AITranslationService implements TranslationService {
     String template = aiPrompts.translatePrompt;
 
     if (!isRichOutput) {
-      template =
-          'Translate this \$sourceLanguage sentence to \$targetLanguage, only return the translated text: "\$text"';
+      template = 'Translate this \$sourceLanguage sentence to \$targetLanguage, only return the translated text: "\$text"';
     }
 
     final prompt = template
@@ -82,11 +81,7 @@ class GoogleTranslationService implements TranslationService {
 }
 
 class DeepLXTranslationService implements TranslationService {
-  static const languageCodeMap = {
-    "auto": "auto",
-    "zh_HK": "ZH",
-    "zh_TW": "ZH",
-  };
+  static const languageCodeMap = {"auto": "auto", "zh_HK": "ZH", "zh_TW": "ZH"};
 
   @override
   Future<TranslationResult> translate(
@@ -101,9 +96,7 @@ class DeepLXTranslationService implements TranslationService {
       throw Exception("DeepLX URL is not configured.");
     }
 
-    final headers = {
-      "Content-Type": "application/json",
-    };
+    final headers = {"Content-Type": "application/json"};
     final data = {
       "text": text,
       "source_lang":

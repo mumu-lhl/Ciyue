@@ -35,15 +35,14 @@ class AboutViewModel extends ChangeNotifier {
 
   Future<void> showChangelog(BuildContext context) async {
     final changelogContent = await ChangelogService.getChangelogContent(
-        Localizations.localeOf(context));
+      Localizations.localeOf(context),
+    );
 
     if (!context.mounted) return;
 
     showDialog(
       context: context,
-      builder: (context) => ChangelogDialog(
-        changelogContent: changelogContent,
-      ),
+      builder: (context) => ChangelogDialog(changelogContent: changelogContent),
     );
   }
 
@@ -60,9 +59,10 @@ class AboutViewModel extends ChangeNotifier {
       if (timestampString.isNotEmpty) {
         final timestamp = int.tryParse(timestampString);
         if (timestamp != null) {
-          final date =
-              DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true)
-                  .toLocal();
+          final date = DateTime.fromMillisecondsSinceEpoch(
+            timestamp * 1000,
+            isUtc: true,
+          ).toLocal();
           return "${packageInfo.version} Dev ($commitHash) ${DateFormat("yyyy-MM-dd-HH:mm:ss").format(date)}";
         }
       }

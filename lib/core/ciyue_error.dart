@@ -10,9 +10,7 @@ class CiyueError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Error"),
-      ),
+      appBar: AppBar(title: const Text("Error")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -22,7 +20,8 @@ class CiyueError extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 launchUrl(
-                    Uri.parse("https://github.com/mumu-lhl/ciyue/issues"));
+                  Uri.parse("https://github.com/mumu-lhl/ciyue/issues"),
+                );
               },
               child: const Text("Report Issue"),
             ),

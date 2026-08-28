@@ -81,13 +81,15 @@ class Settings {
     showSearchBarInWordDisplay =
         prefs.getBool("showSearchBarInWordDisplay") ?? true;
 
-    final dictionarySwitchStyleString =
-        prefs.getString("dictionarySwitchStyle");
+    final dictionarySwitchStyleString = prefs.getString(
+      "dictionarySwitchStyle",
+    );
     if (dictionarySwitchStyleString == null) {
       dictionarySwitchStyle = DictionarySwitchStyle.expansion;
     } else {
-      dictionarySwitchStyle =
-          DictionarySwitchStyle.values.byName(dictionarySwitchStyleString);
+      dictionarySwitchStyle = DictionarySwitchStyle.values.byName(
+        dictionarySwitchStyleString,
+      );
     }
 
     autoUpdate = prefs.getBool("autoUpdate") ?? false;
@@ -120,7 +122,8 @@ class Settings {
     if (aiProviderConfigsString != null) {
       aiProviderConfigs =
           Map.castFrom<dynamic, dynamic, String, Map<String, dynamic>>(
-              jsonDecode(aiProviderConfigsString));
+            jsonDecode(aiProviderConfigsString),
+          );
     }
 
     final tabBarPositionString = prefs.getString("tabBarPosition");
@@ -150,7 +153,10 @@ class Settings {
   }
 
   Future<void> saveAiProviderConfig(
-      String provider, String model, String apiKey) async {
+    String provider,
+    String model,
+    String apiKey,
+  ) async {
     final currentConfig = aiProviderConfigs[provider] ?? {};
     currentConfig["model"] = model;
     currentConfig["apiKey"] = apiKey;

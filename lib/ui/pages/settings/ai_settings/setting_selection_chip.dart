@@ -1,8 +1,11 @@
 import "package:material_ui/material_ui.dart";
 
 class SettingSelectionChip extends StatelessWidget {
-  const SettingSelectionChip(
-      {required this.label, required this.onTap, super.key});
+  const SettingSelectionChip({
+    required this.label,
+    required this.onTap,
+    super.key,
+  });
 
   final String label;
   final VoidCallback onTap;

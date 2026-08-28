@@ -54,11 +54,11 @@ class FlashcardRatingButtons extends StatelessWidget {
   }
 
   String _label(FlashcardRating rating) => switch (rating) {
-        FlashcardRating.again => "Again",
-        FlashcardRating.hard => "Hard",
-        FlashcardRating.good => "Good",
-        FlashcardRating.easy => "Easy",
-      };
+    FlashcardRating.again => "Again",
+    FlashcardRating.hard => "Hard",
+    FlashcardRating.good => "Good",
+    FlashcardRating.easy => "Easy",
+  };
 
   String _interval(Duration duration) {
     if (duration.inDays >= 1) return "${duration.inDays}d";

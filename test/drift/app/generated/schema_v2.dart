@@ -11,18 +11,30 @@ class DictionaryList extends Table
   final String? _alias;
   DictionaryList(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
-      'path', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<String> fontPath = GeneratedColumn<String>(
-      'font_path', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'font_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [id, path, fontPath];
   @override
@@ -36,12 +48,18 @@ class DictionaryList extends Table
   DictionaryListData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictionaryListData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      path: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
-      fontPath: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}font_path']),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      fontPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}font_path'],
+      ),
     );
   }
 
@@ -56,8 +74,11 @@ class DictionaryListData extends DataClass
   final int id;
   final String path;
   final String? fontPath;
-  const DictionaryListData(
-      {required this.id, required this.path, this.fontPath});
+  const DictionaryListData({
+    required this.id,
+    required this.path,
+    this.fontPath,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -79,8 +100,10 @@ class DictionaryListData extends DataClass
     );
   }
 
-  factory DictionaryListData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory DictionaryListData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DictionaryListData(
       id: serializer.fromJson<int>(json['id']),
@@ -98,15 +121,15 @@ class DictionaryListData extends DataClass
     };
   }
 
-  DictionaryListData copyWith(
-          {int? id,
-          String? path,
-          Value<String?> fontPath = const Value.absent()}) =>
-      DictionaryListData(
-        id: id ?? this.id,
-        path: path ?? this.path,
-        fontPath: fontPath.present ? fontPath.value : this.fontPath,
-      );
+  DictionaryListData copyWith({
+    int? id,
+    String? path,
+    Value<String?> fontPath = const Value.absent(),
+  }) => DictionaryListData(
+    id: id ?? this.id,
+    path: path ?? this.path,
+    fontPath: fontPath.present ? fontPath.value : this.fontPath,
+  );
   DictionaryListData copyWithCompanion(DictionaryListCompanion data) {
     return DictionaryListData(
       id: data.id.present ? data.id.value : this.id,
@@ -162,8 +185,11 @@ class DictionaryListCompanion extends UpdateCompanion<DictionaryListData> {
     });
   }
 
-  DictionaryListCompanion copyWith(
-      {Value<int>? id, Value<String>? path, Value<String?>? fontPath}) {
+  DictionaryListCompanion copyWith({
+    Value<int>? id,
+    Value<String>? path,
+    Value<String?>? fontPath,
+  }) {
     return DictionaryListCompanion(
       id: id ?? this.id,
       path: path ?? this.path,

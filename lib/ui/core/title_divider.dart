@@ -3,10 +3,7 @@ import "package:material_ui/material_ui.dart";
 class TitleDivider extends StatelessWidget {
   final String title;
 
-  const TitleDivider({
-    super.key,
-    required this.title,
-  });
+  const TitleDivider({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +13,7 @@ class TitleDivider extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ),
         Expanded(child: Divider(endIndent: 16)),

@@ -13,9 +13,7 @@ class AiTranslateSettingsPage extends StatelessWidget {
       child: Consumer<AiTranslateSettingsViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
-            appBar: AppBar(
-              title: Text(AppLocalizations.of(context)!.settings),
-            ),
+            appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
             body: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500),
@@ -32,13 +30,15 @@ class AiTranslateSettingsPage extends StatelessWidget {
                         items: [
                           DropdownMenuItem(
                             value: true,
-                            child:
-                                Text(AppLocalizations.of(context)!.richOutput),
+                            child: Text(
+                              AppLocalizations.of(context)!.richOutput,
+                            ),
                           ),
                           DropdownMenuItem(
                             value: false,
                             child: Text(
-                                AppLocalizations.of(context)!.simpleOutput),
+                              AppLocalizations.of(context)!.simpleOutput,
+                            ),
                           ),
                         ],
                         onChanged: (bool? newValue) {
@@ -50,8 +50,8 @@ class AiTranslateSettingsPage extends StatelessWidget {
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         decoration: InputDecoration(
-                          labelText:
-                              AppLocalizations.of(context)!.translationProvider,
+                          labelText: AppLocalizations.of(context)!
+                              .translationProvider,
                           border: const OutlineInputBorder(),
                         ),
                         initialValue: viewModel.translationProvider,
@@ -88,8 +88,10 @@ class AiTranslateSettingsPage extends StatelessWidget {
                       ],
                       const SizedBox(height: 16),
                       SwitchListTile(
-                        title: Text(AppLocalizations.of(context)!
-                            .enableTranslationHistory),
+                        title: Text(
+                          AppLocalizations.of(context)!
+                              .enableTranslationHistory,
+                        ),
                         value: viewModel.enableTranslationHistory,
                         onChanged: viewModel.setEnableTranslationHistory,
                       ),

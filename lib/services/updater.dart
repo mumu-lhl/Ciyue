@@ -11,8 +11,9 @@ class Updater {
     final update = await check();
     if (update.success && update.isUpdateAvailable) {
       showDialog(
-          context: navigatorKey.currentContext!,
-          builder: (context) => UpdateAvailable(update: update));
+        context: navigatorKey.currentContext!,
+        builder: (context) => UpdateAvailable(update: update),
+      );
     }
   }
 
@@ -27,11 +28,13 @@ class Updater {
         final dynamic latestRelease;
         if (settings.includePrereleaseUpdates) {
           latestRelease = (response.data as List).firstWhere(
-              (r) => !(r["prerelease"] == true &&
-                  (r["name"] as String? ?? "")
-                      .toLowerCase()
-                      .contains("nightly")),
-              orElse: () => null);
+            (r) =>
+                !(r["prerelease"] == true &&
+                    (r["name"] as String? ?? "").toLowerCase().contains(
+                      "nightly",
+                    )),
+            orElse: () => null,
+          );
         } else {
           latestRelease = response.data;
         }
@@ -44,9 +47,9 @@ class Updater {
           );
         }
 
-        final latestVersion = latestRelease["tag_name"]
-            .toString()
-            .substring(1); // Remove 'v' prefix
+        final latestVersion = latestRelease["tag_name"].toString().substring(
+          1,
+        ); // Remove 'v' prefix
         return Update(
           success: true,
           isUpdateAvailable: latestVersion != packageInfo.version,

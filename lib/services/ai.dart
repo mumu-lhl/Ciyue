@@ -11,11 +11,7 @@ class AI {
   final String apikey;
   late final AIProvider aiProvider;
 
-  AI({
-    required this.provider,
-    required this.model,
-    required this.apikey,
-  }) {
+  AI({required this.provider, required this.model, required this.apikey}) {
     if (provider == "gemini") {
       aiProvider = GeminiProvider(apikey: apikey, model: model);
     } else if (provider == "ollama") {
@@ -47,22 +43,21 @@ class GeminiProvider implements AIProvider {
   @override
   Future<String> request(String prompt) async {
     final formattedApiUrl = ModelProviderManager
-        .modelProviders["gemini"]!.apiUrl
+        .modelProviders["gemini"]!
+        .apiUrl
         .replaceFirst("{model}", model);
 
     final params = {"key": apikey};
 
-    final headers = {
-      "Content-Type": "application/json",
-    };
+    final headers = {"Content-Type": "application/json"};
     final data = {
       "contents": [
         {
           "parts": [
-            {"text": prompt}
-          ]
-        }
-      ]
+            {"text": prompt},
+          ],
+        },
+      ],
     };
 
     try {
@@ -78,7 +73,8 @@ class GeminiProvider implements AIProvider {
         return decodedResponse["candidates"][0]["content"]["parts"][0]["text"];
       } else {
         throw Exception(
-            "Failed to fetch response from Gemini API. Status code: ${response.statusCode}, body: ${response.data}");
+          "Failed to fetch response from Gemini API. Status code: ${response.statusCode}, body: ${response.data}",
+        );
       }
     } catch (e) {
       throw Exception("Error requesting Gemini API: $e");
@@ -89,86 +85,94 @@ class GeminiProvider implements AIProvider {
 class ModelProviderManager {
   static const Map<String, ModelProvider> modelProviders = {
     "openai": ModelProvider(
-        name: "openai",
-        displayedName: "OpenAI",
-        apiUrl: "https://api.openai.com/v1/chat/completions",
-        models: [
-          ModelInfo("gpt-5-mini", "GPT-5 mini"),
-          ModelInfo("gpt-5-nano", "GPT-5 nano"),
-          ModelInfo("gpt-5-chat-latest", "GPT-5 Chat"),
-          ModelInfo("gpt-5", "GPT-5"),
-          ModelInfo("gpt-4o-mini", "GPT-4o mini"),
-          ModelInfo("gpt-4.1-mini", "GPT-4.1 mini"),
-          ModelInfo("gpt-4.1-nano", "GPT-4.1 nano"),
-          ModelInfo("gpt-4.1", "GPT-4.1"),
-          ModelInfo("gpt-4o", "GPT-4o"),
-          ModelInfo("gpt-4.5-preview", "GPT-4.5 Preview"),
-          ModelInfo("o1-pro", "o1-pro"),
-          ModelInfo("o3", "o3"),
-          ModelInfo("o1", "o1"),
-          ModelInfo("o4-mini", "o4-mini"),
-          ModelInfo("o3-mini", "o3-mini"),
-          ModelInfo("o1-mini", "o1-mini"),
-        ]),
+      name: "openai",
+      displayedName: "OpenAI",
+      apiUrl: "https://api.openai.com/v1/chat/completions",
+      models: [
+        ModelInfo("gpt-5-mini", "GPT-5 mini"),
+        ModelInfo("gpt-5-nano", "GPT-5 nano"),
+        ModelInfo("gpt-5-chat-latest", "GPT-5 Chat"),
+        ModelInfo("gpt-5", "GPT-5"),
+        ModelInfo("gpt-4o-mini", "GPT-4o mini"),
+        ModelInfo("gpt-4.1-mini", "GPT-4.1 mini"),
+        ModelInfo("gpt-4.1-nano", "GPT-4.1 nano"),
+        ModelInfo("gpt-4.1", "GPT-4.1"),
+        ModelInfo("gpt-4o", "GPT-4o"),
+        ModelInfo("gpt-4.5-preview", "GPT-4.5 Preview"),
+        ModelInfo("o1-pro", "o1-pro"),
+        ModelInfo("o3", "o3"),
+        ModelInfo("o1", "o1"),
+        ModelInfo("o4-mini", "o4-mini"),
+        ModelInfo("o3-mini", "o3-mini"),
+        ModelInfo("o1-mini", "o1-mini"),
+      ],
+    ),
     "gemini": ModelProvider(
-        name: "gemini",
-        displayedName: "Gemini",
-        apiUrl:
-            "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-        models: [
-          ModelInfo("gemini-2.5-flash", "Gemini 2.5 Flash"),
-          ModelInfo("gemini-2.5-flash-lite", "Gemini 2.5 Flash Lite"),
-          ModelInfo("gemini-2.5-pro", "Gemini 2.5 Pro"),
-          ModelInfo("gemini-2.5-pro-exp-03-25", "Gemini 2.5 Pro"),
-          ModelInfo("gemini-2.0-flash", "Gemini 2.0 Flash"),
-          ModelInfo("gemini-2.0-flash-lite", "Gemini 2.0 Flash Lite"),
-          ModelInfo("gemini-2.0-flash-thinking-exp-01-21",
-              "Gemini 2.0 Flash Thinking"),
-          ModelInfo("gemini-2.0-pro-exp-02-05", "Gemini 2.0 Pro"),
-          ModelInfo("gemini-1.5-pro", "Gemini 1.5 Pro"),
-          ModelInfo("gemini-1.5-flash", "Gemini 1.5 Flash"),
-          ModelInfo("gemini-1.5-flash-8b", "Gemini 1.5 Flash-8B"),
-        ]),
+      name: "gemini",
+      displayedName: "Gemini",
+      apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+      models: [
+        ModelInfo("gemini-2.5-flash", "Gemini 2.5 Flash"),
+        ModelInfo("gemini-2.5-flash-lite", "Gemini 2.5 Flash Lite"),
+        ModelInfo("gemini-2.5-pro", "Gemini 2.5 Pro"),
+        ModelInfo("gemini-2.5-pro-exp-03-25", "Gemini 2.5 Pro"),
+        ModelInfo("gemini-2.0-flash", "Gemini 2.0 Flash"),
+        ModelInfo("gemini-2.0-flash-lite", "Gemini 2.0 Flash Lite"),
+        ModelInfo(
+          "gemini-2.0-flash-thinking-exp-01-21",
+          "Gemini 2.0 Flash Thinking",
+        ),
+        ModelInfo("gemini-2.0-pro-exp-02-05", "Gemini 2.0 Pro"),
+        ModelInfo("gemini-1.5-pro", "Gemini 1.5 Pro"),
+        ModelInfo("gemini-1.5-flash", "Gemini 1.5 Flash"),
+        ModelInfo("gemini-1.5-flash-8b", "Gemini 1.5 Flash-8B"),
+      ],
+    ),
     "deepseek": ModelProvider(
-        name: "deepseek",
-        displayedName: "DeepSeek",
-        apiUrl: "https://api.deepseek.com/chat/completions",
-        models: [
-          ModelInfo("deepseek-chat", "DeepSeek Chat"),
-          ModelInfo("deepseek-reasoner", "DeepSeek Reasoner"),
-        ]),
+      name: "deepseek",
+      displayedName: "DeepSeek",
+      apiUrl: "https://api.deepseek.com/chat/completions",
+      models: [
+        ModelInfo("deepseek-chat", "DeepSeek Chat"),
+        ModelInfo("deepseek-reasoner", "DeepSeek Reasoner"),
+      ],
+    ),
     "anthropic": ModelProvider(
-        name: "anthropic",
-        displayedName: "Anthropic",
-        apiUrl: "https://api.anthropic.com/v1/messages",
-        models: [
-          ModelInfo("claude-opus-4-0", "Claude Opus 4"),
-          ModelInfo("claude-sonnet-4-0", "Claude Sonnet 4"),
-          ModelInfo("claude-3-7-sonnet-latest", "Claude Sonnet 3.7"),
-          ModelInfo("claude-3-5-sonnet-latest", "Claude Sonnet 3.5"),
-          ModelInfo("claude-3-5-haiku-latest", "Claude Haiku 3.5"),
-          ModelInfo("claude-3-sonnet-20240229", "Claude Sonnet 3"),
-          ModelInfo("claude-3-haiku-20240307", "Claude Haiku 3"),
-          ModelInfo("claude-3-opus-latest", "Claude Opus 3"),
-        ]),
+      name: "anthropic",
+      displayedName: "Anthropic",
+      apiUrl: "https://api.anthropic.com/v1/messages",
+      models: [
+        ModelInfo("claude-opus-4-0", "Claude Opus 4"),
+        ModelInfo("claude-sonnet-4-0", "Claude Sonnet 4"),
+        ModelInfo("claude-3-7-sonnet-latest", "Claude Sonnet 3.7"),
+        ModelInfo("claude-3-5-sonnet-latest", "Claude Sonnet 3.5"),
+        ModelInfo("claude-3-5-haiku-latest", "Claude Haiku 3.5"),
+        ModelInfo("claude-3-sonnet-20240229", "Claude Sonnet 3"),
+        ModelInfo("claude-3-haiku-20240307", "Claude Haiku 3"),
+        ModelInfo("claude-3-opus-latest", "Claude Opus 3"),
+      ],
+    ),
     "openrouter": ModelProvider(
-        name: "openrouter",
-        displayedName: "OpenRouter",
-        apiUrl: "https://openrouter.ai/api/v1/chat/completions",
-        models: [],
-        allowCustomModel: true),
+      name: "openrouter",
+      displayedName: "OpenRouter",
+      apiUrl: "https://openrouter.ai/api/v1/chat/completions",
+      models: [],
+      allowCustomModel: true,
+    ),
     "siliconflow": ModelProvider(
-        name: "siliconflow",
-        displayedName: "SiliconFlow",
-        apiUrl: "https://api.ap.siliconflow.com/v1/chat/completions",
-        models: [],
-        allowCustomModel: true),
+      name: "siliconflow",
+      displayedName: "SiliconFlow",
+      apiUrl: "https://api.ap.siliconflow.com/v1/chat/completions",
+      models: [],
+      allowCustomModel: true,
+    ),
     "siliconflowcn": ModelProvider(
-        name: "siliconflowcn",
-        displayedName: "SiliconFlow China",
-        apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
-        models: [],
-        allowCustomModel: true),
+      name: "siliconflowcn",
+      displayedName: "SiliconFlow China",
+      apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
+      models: [],
+      allowCustomModel: true,
+    ),
     "zhipu": ModelProvider(
       name: "zhipu",
       displayedName: "智谱",
@@ -225,16 +229,14 @@ class OllamaProvider implements AIProvider {
 
   @override
   Future<String> request(String prompt) async {
-    final headers = {
-      "Content-Type": "application/json",
-    };
+    final headers = {"Content-Type": "application/json"};
 
     final data = {
       "model": model,
       "messages": [
-        {"role": "user", "content": prompt}
+        {"role": "user", "content": prompt},
       ],
-      "stream": false
+      "stream": false,
     };
 
     try {
@@ -249,7 +251,8 @@ class OllamaProvider implements AIProvider {
         return decodedResponse["message"]["content"];
       } else {
         throw Exception(
-            "Failed to fetch response from Ollama API. Status code: ${response.statusCode}, body: ${response.data}");
+          "Failed to fetch response from Ollama API. Status code: ${response.statusCode}, body: ${response.data}",
+        );
       }
     } on DioException catch (e) {
       throw Exception("Error requesting Ollama API: $e\nBody: ${e.response}");
@@ -284,9 +287,7 @@ class OpenAICompatibleProvider implements AIProvider {
 
   @override
   Future<String> request(String prompt) async {
-    final headers = {
-      "Content-Type": "application/json",
-    };
+    final headers = {"Content-Type": "application/json"};
 
     if (provider == "anthropic") {
       headers["x-api-key"] = apikey;
@@ -303,8 +304,8 @@ class OpenAICompatibleProvider implements AIProvider {
     final data = {
       "model": model,
       "messages": [
-        {"role": "user", "content": prompt}
-      ]
+        {"role": "user", "content": prompt},
+      ],
     };
 
     try {
@@ -319,7 +320,8 @@ class OpenAICompatibleProvider implements AIProvider {
         return decodedResponse["choices"][0]["message"]["content"];
       } else {
         throw Exception(
-            "Failed to fetch response from OpenAI API. Status code: ${response.statusCode}, body: ${response.data}");
+          "Failed to fetch response from OpenAI API. Status code: ${response.statusCode}, body: ${response.data}",
+        );
       }
     } on DioException catch (e) {
       throw Exception("Error requesting OpenAI API: $e\nBody: ${e.response}");

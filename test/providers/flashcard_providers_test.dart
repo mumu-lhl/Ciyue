@@ -5,12 +5,14 @@ import "package:riverpod/riverpod.dart";
 void main() {
   test("overview reloads after provider invalidation", () async {
     var loads = 0;
-    final container = ProviderContainer(overrides: [
-      flashcardOverviewLoaderProvider.overrideWithValue((tag) async {
-        loads++;
-        return FlashcardOverview(due: loads, newCards: 2, done: 3);
-      }),
-    ]);
+    final container = ProviderContainer(
+      overrides: [
+        flashcardOverviewLoaderProvider.overrideWithValue((tag) async {
+          loads++;
+          return FlashcardOverview(due: loads, newCards: 2, done: 3);
+        }),
+      ],
+    );
     addTearDown(container.dispose);
 
     expect((await container.read(flashcardOverviewProvider(7).future)).due, 1);

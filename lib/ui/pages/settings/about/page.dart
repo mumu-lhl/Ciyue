@@ -21,9 +21,7 @@ class AboutSettingsPage extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => AboutViewModel(),
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.about),
-        ),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.about)),
         body: Center(
           child: Container(
             constraints: const BoxConstraints(maxWidth: 500),

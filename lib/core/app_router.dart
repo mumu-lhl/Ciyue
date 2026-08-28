@@ -50,9 +50,10 @@ final router = GoRouter(
       path: "/word/:word",
       builder: (context, state) {
         final word = state.pathParameters["word"];
-        Provider.of<OpenRecordsRepository>(navigatorKey.currentContext!,
-                listen: false)
-            .add(word!);
+        Provider.of<OpenRecordsRepository>(
+          navigatorKey.currentContext!,
+          listen: false,
+        ).add(word!);
 
         return WordDisplay(word: word);
       },
@@ -69,10 +70,11 @@ final router = GoRouter(
       },
     ),
     GoRoute(
-        path: "/description/:dictId",
-        builder: (context, state) => WebviewDisplayDescription(
-              dictId: int.parse(state.pathParameters["dictId"]!),
-            )),
+      path: "/description/:dictId",
+      builder: (context, state) => WebviewDisplayDescription(
+        dictId: int.parse(state.pathParameters["dictId"]!),
+      ),
+    ),
     GoRoute(
       path: "/settings/autoExport",
       builder: (context, state) => const AutoExportSettingsPage(),
@@ -135,11 +137,12 @@ final router = GoRouter(
       ),
     ),
     GoRoute(
-        path: "/properties",
-        builder: (context, state) => PropertiesDictionaryPage(
-              path: (state.extra as Map<String, dynamic>)["path"],
-              id: (state.extra as Map<String, dynamic>)["id"],
-            )),
+      path: "/properties",
+      builder: (context, state) => PropertiesDictionaryPage(
+        path: (state.extra as Map<String, dynamic>)["path"],
+        id: (state.extra as Map<String, dynamic>)["id"],
+      ),
+    ),
     GoRoute(
       path: "/writing_check",
       builder: (context, state) => const WritingCheckPage(),
@@ -156,10 +159,7 @@ final router = GoRouter(
       path: "/settings/logs",
       builder: (context, state) => const LogsPage(),
     ),
-    GoRoute(
-      path: "/chat",
-      builder: (context, state) => const ChatPage(),
-    ),
+    GoRoute(path: "/chat", builder: (context, state) => const ChatPage()),
     GoRoute(
       path: "/settings/wordbook_stats",
       builder: (context, state) => const WordbookStatsPage(),

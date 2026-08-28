@@ -26,14 +26,13 @@ class AIExplanationModel extends ChangeNotifier {
   bool _mounted = true;
 
   AIExplanationModel()
-      : _aiExplanationDao = AiExplanationDao(mainDatabase),
-        _ai = AI(
-          provider: settings.aiProvider,
-          model:
-              settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
-          apikey:
-              settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
-        );
+    : _aiExplanationDao = AiExplanationDao(mainDatabase),
+      _ai = AI(
+        provider: settings.aiProvider,
+        model: settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
+        apikey:
+            settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
+      );
 
   @override
   void dispose() {
@@ -72,9 +71,10 @@ class AIExplanationModel extends ChangeNotifier {
     final targetLanguage = settings.language! == "system"
         ? ui.PlatformDispatcher.instance.locale.languageCode
         : settings.language!;
-    final template =
-        Provider.of<AIPrompts>(navigatorKey.currentContext!, listen: false)
-            .explainPrompt;
+    final template = Provider.of<AIPrompts>(
+      navigatorKey.currentContext!,
+      listen: false,
+    ).explainPrompt;
     final prompt = template
         .replaceAll(r"$word", word)
         .replaceAll(r"$targetLanguage", targetLanguage);
@@ -86,10 +86,12 @@ class AIExplanationModel extends ChangeNotifier {
       final existing = await _aiExplanationDao.getAiExplanation(word);
       if (existing != null) {
         await _aiExplanationDao.updateAiExplanation(
-            AiExplanation(word: word, explanation: fullExplanation));
+          AiExplanation(word: word, explanation: fullExplanation),
+        );
       } else {
         await _aiExplanationDao.insertAiExplanation(
-            AiExplanation(word: word, explanation: fullExplanation));
+          AiExplanation(word: word, explanation: fullExplanation),
+        );
       }
     } catch (e) {
       _explanation = "Error: ${e.toString()}";
@@ -109,7 +111,8 @@ class AIExplanationModel extends ChangeNotifier {
   Future<void> updateExplanation(String word, String newExplanation) async {
     _explanation = newExplanation;
     await _aiExplanationDao.updateAiExplanation(
-        AiExplanation(word: word, explanation: newExplanation));
+      AiExplanation(word: word, explanation: newExplanation),
+    );
 
     if (!_mounted) return;
     notifyListeners();

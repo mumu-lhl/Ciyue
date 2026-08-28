@@ -18,9 +18,10 @@ class ActionButtons extends StatelessWidget {
             runSpacing: 8.0,
             children: [
               OneActionButton(
-                  title: AppLocalizations.of(context)!.writingCheck,
-                  path: "/writing_check",
-                  icon: Icons.spellcheck_outlined),
+                title: AppLocalizations.of(context)!.writingCheck,
+                path: "/writing_check",
+                icon: Icons.spellcheck_outlined,
+              ),
             ],
           ),
         ),
@@ -45,8 +46,10 @@ class OneActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton.filledTonal(
       tooltip: AppLocalizations.of(context)!.writingCheck,
-      icon: Icon(Icons.spellcheck_outlined,
-          color: Theme.of(context).colorScheme.primary),
+      icon: Icon(
+        Icons.spellcheck_outlined,
+        color: Theme.of(context).colorScheme.primary,
+      ),
       onPressed: () {
         context.push("/writing_check");
       },

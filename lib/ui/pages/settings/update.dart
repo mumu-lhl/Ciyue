@@ -12,9 +12,7 @@ class UpdateSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.update),
-      ),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.update)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
@@ -86,33 +84,40 @@ class CheckForUpdates extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        leading: const Icon(Icons.update),
-        title: Text(AppLocalizations.of(context)!.checkForUpdates),
-        onTap: () async {
-          ToastService.show(
-              AppLocalizations.of(context)!.checkingForUpdates, context,
-              type: ToastType.waiting);
+      leading: const Icon(Icons.update),
+      title: Text(AppLocalizations.of(context)!.checkForUpdates),
+      onTap: () async {
+        ToastService.show(
+          AppLocalizations.of(context)!.checkingForUpdates,
+          context,
+          type: ToastType.waiting,
+        );
 
-          final update = await Updater.check();
-          if (!update.success) {
-            if (context.mounted) {
-              ToastService.show(
-                  AppLocalizations.of(context)!.updateCheckFailed, context);
-            }
+        final update = await Updater.check();
+        if (!update.success) {
+          if (context.mounted) {
+            ToastService.show(
+              AppLocalizations.of(context)!.updateCheckFailed,
+              context,
+            );
           }
-          if (update.isUpdateAvailable) {
-            if (context.mounted) {
-              showDialog(
-                context: context,
-                builder: (context) => UpdateAvailable(update: update),
-              );
-            }
-          } else {
-            if (context.mounted) {
-              ToastService.show(
-                  AppLocalizations.of(context)!.noUpdateAvailable, context);
-            }
+        }
+        if (update.isUpdateAvailable) {
+          if (context.mounted) {
+            showDialog(
+              context: context,
+              builder: (context) => UpdateAvailable(update: update),
+            );
           }
-        });
+        } else {
+          if (context.mounted) {
+            ToastService.show(
+              AppLocalizations.of(context)!.noUpdateAvailable,
+              context,
+            );
+          }
+        }
+      },
+    );
   }
 }

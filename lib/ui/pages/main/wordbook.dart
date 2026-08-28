@@ -25,89 +25,95 @@ class WordView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: allWords,
-        builder:
-            (BuildContext context, AsyncSnapshot<List<WordbookData>> snapshot) {
-          final list = <Widget>[];
-          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-            final firstWord = snapshot.data![0];
-            var lastDate = DateTime(firstWord.createdAt.year,
-                firstWord.createdAt.month, firstWord.createdAt.day);
-            list.add(DateDivider(
-              date: lastDate,
-            ));
-
-            for (final data in snapshot.data!) {
-              final date = DateTime(data.createdAt.year, data.createdAt.month,
-                  data.createdAt.day);
-
-              if (date != lastDate) {
-                lastDate = date;
-                list.add(DateDivider(
-                  date: date,
-                ));
-              }
-
-              list.add(
-                Selector<WordbookModel, (bool, bool)>(
-                  selector: (context, model) => (
-                    model.isMultiSelectMode,
-                    model.selectedWords.contains(data)
-                  ),
-                  builder: (context, value, child) {
-                    final isMultiSelectMode = value.$1;
-                    final isSelected = value.$2;
-                    final model = context.read<WordbookModel>();
-
-                    return ListTile(
-                      leading: isMultiSelectMode
-                          ? Checkbox(
-                              value: isSelected,
-                              onChanged: (value) {
-                                model.selectWord(data);
-                              },
-                            )
-                          : null,
-                      title: Text(data.word),
-                      onLongPress: () {
-                        if (!isMultiSelectMode) {
-                          model.toggleMultiSelectMode();
-                          model.selectWord(data);
-                        }
-                      },
-                      onTap: () async {
-                        if (isMultiSelectMode) {
-                          model.selectWord(data);
-                        } else {
-                          if (context.mounted) {
-                            context.push(
-                                "/word/${Uri.encodeComponent(data.word)}");
-                          }
-                        }
-                      },
-                    );
-                  },
-                ),
+      future: allWords,
+      builder:
+          (BuildContext context, AsyncSnapshot<List<WordbookData>> snapshot) {
+            final list = <Widget>[];
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              final firstWord = snapshot.data![0];
+              var lastDate = DateTime(
+                firstWord.createdAt.year,
+                firstWord.createdAt.month,
+                firstWord.createdAt.day,
               );
-            }
-          }
+              list.add(DateDivider(date: lastDate));
 
-          if (list.isEmpty) {
-            return FutureBuilder(
-              future: context.read<WordbookModel>().tags,
-              builder: (context, tagSnapshot) {
-                if (tagSnapshot.hasData && tagSnapshot.data!.isNotEmpty) {
-                  return const Expanded(child: SizedBox());
+              for (final data in snapshot.data!) {
+                final date = DateTime(
+                  data.createdAt.year,
+                  data.createdAt.month,
+                  data.createdAt.day,
+                );
+
+                if (date != lastDate) {
+                  lastDate = date;
+                  list.add(DateDivider(date: date));
                 }
-                return Expanded(
+
+                list.add(
+                  Selector<WordbookModel, (bool, bool)>(
+                    selector: (context, model) => (
+                      model.isMultiSelectMode,
+                      model.selectedWords.contains(data),
+                    ),
+                    builder: (context, value, child) {
+                      final isMultiSelectMode = value.$1;
+                      final isSelected = value.$2;
+                      final model = context.read<WordbookModel>();
+
+                      return ListTile(
+                        leading: isMultiSelectMode
+                            ? Checkbox(
+                                value: isSelected,
+                                onChanged: (value) {
+                                  model.selectWord(data);
+                                },
+                              )
+                            : null,
+                        title: Text(data.word),
+                        onLongPress: () {
+                          if (!isMultiSelectMode) {
+                            model.toggleMultiSelectMode();
+                            model.selectWord(data);
+                          }
+                        },
+                        onTap: () async {
+                          if (isMultiSelectMode) {
+                            model.selectWord(data);
+                          } else {
+                            if (context.mounted) {
+                              context.push(
+                                "/word/${Uri.encodeComponent(data.word)}",
+                              );
+                            }
+                          }
+                        },
+                      );
+                    },
+                  ),
+                );
+              }
+            }
+
+            if (list.isEmpty) {
+              return FutureBuilder(
+                future: context.read<WordbookModel>().tags,
+                builder: (context, tagSnapshot) {
+                  if (tagSnapshot.hasData && tagSnapshot.data!.isNotEmpty) {
+                    return const Expanded(child: SizedBox());
+                  }
+                  return Expanded(
                     child: Center(
-                        child: Text(AppLocalizations.of(context)!.empty)));
-              },
-            );
-          } else {
-            return Expanded(child: ListView(children: list));
-          }
-        });
+                      child: Text(AppLocalizations.of(context)!.empty),
+                    ),
+                  );
+                },
+              );
+            } else {
+              return Expanded(child: ListView(children: list));
+            }
+          },
+    );
   }
 }
 
@@ -139,10 +145,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
       children: [
         Selector<WordbookModel, int?>(
           selector: (context, model) => model.selectedTag,
-          builder: (context, tag, child) => FlashcardOverviewCard(
-            key: ValueKey(tag),
-            tag: tag,
-          ),
+          builder: (context, tag, child) =>
+              FlashcardOverviewCard(key: ValueKey(tag), tag: tag),
         ),
         Selector<WordbookModel, (Future<List<WordbookTag>>, int?)>(
           selector: (context, model) => (model.tags, model.selectedTag),
@@ -165,20 +169,25 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
                     final tag = tagsMap[tagId];
                     if (tag == null) continue;
 
-                    choiceChips.add(ChoiceChip(
-                      label: Text(tag.tag),
-                      selected: selectedTag == tag.id,
-                      onSelected: (selected) {
-                        model.updateSelectedTag(selected ? tag.id : null);
-                        model.updateWordList();
-                      },
-                    ));
+                    choiceChips.add(
+                      ChoiceChip(
+                        label: Text(tag.tag),
+                        selected: selectedTag == tag.id,
+                        onSelected: (selected) {
+                          model.updateSelectedTag(selected ? tag.id : null);
+                          model.updateWordList();
+                        },
+                      ),
+                    );
                   }
 
                   return Padding(
                     padding: const EdgeInsets.only(left: 16.0),
                     child: Wrap(
-                        spacing: 8.0, runSpacing: 4.0, children: choiceChips),
+                      spacing: 8.0,
+                      runSpacing: 4.0,
+                      children: choiceChips,
+                    ),
                   );
                 }
 
@@ -189,10 +198,8 @@ class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
         ),
         Selector<WordbookModel, Future<List<WordbookData>>>(
           selector: (context, model) => model.allWords,
-          builder: (context, allWords, child) => WordView(
-            allWords: allWords,
-          ),
-        )
+          builder: (context, allWords, child) => WordView(allWords: allWords),
+        ),
       ],
     );
   }

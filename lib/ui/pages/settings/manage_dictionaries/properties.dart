@@ -26,9 +26,7 @@ class PropertiesDictionaryPage extends StatelessWidget {
             }
 
             return Container(
-              constraints: BoxConstraints(
-                maxWidth: 500,
-              ),
+              constraints: BoxConstraints(maxWidth: 500),
               child: ListView(
                 children: [
                   ListTile(
@@ -37,7 +35,8 @@ class PropertiesDictionaryPage extends StatelessWidget {
                   ),
                   ListTile(
                     title: Text(
-                        AppLocalizations.of(context)!.totalNumberOfEntries),
+                      AppLocalizations.of(context)!.totalNumberOfEntries,
+                    ),
                     subtitle: Text(model.entriesTotal.toString()),
                   ),
                 ],

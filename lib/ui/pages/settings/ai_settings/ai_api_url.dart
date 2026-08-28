@@ -13,19 +13,20 @@ class AIAPIUrl extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TitleText(
-          AppLocalizations.of(context)!.apiUrl,
-        ),
+        TitleText(AppLocalizations.of(context)!.apiUrl),
         const SizedBox(height: 12),
         TextFormField(
-            controller: viewModel.apiUrlController,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              hintText: AppLocalizations.of(context)!.apiUrl,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          controller: viewModel.apiUrlController,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            hintText: AppLocalizations.of(context)!.apiUrl,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
             ),
-            onChanged: viewModel.setAiAPIUrl),
+          ),
+          onChanged: viewModel.setAiAPIUrl,
+        ),
         const SizedBox(height: 24),
       ],
     );

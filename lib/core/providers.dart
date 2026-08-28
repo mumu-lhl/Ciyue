@@ -11,17 +11,21 @@ final dictManagerProvider = Provider((ref) => dictManager);
 /// FutureProvider that fetches the HTML content of a word for a specific dictionary.
 /// This automates the word-reading logic and handles loading states.
 final wordContentProvider =
-    FutureProvider.family<String, ({String word, int dictId})>(
-        (ref, params) async {
-  final dict = dictManager.dicts[params.dictId];
-  if (dict == null) return "";
-  return await dict.readWord(params.word);
-});
+    FutureProvider.family<String, ({String word, int dictId})>((
+      ref,
+      params,
+    ) async {
+      final dict = dictManager.dicts[params.dictId];
+      if (dict == null) return "";
+      return await dict.readWord(params.word);
+    });
 
 /// FutureProvider that returns a list of dictionary IDs that contain the given word.
 /// This replaces the manual async loop logic previously found in [WordDisplay].
-final validDictIdsProvider =
-    FutureProvider.family<List<int>, String>((ref, word) async {
+final validDictIdsProvider = FutureProvider.family<List<int>, String>((
+  ref,
+  word,
+) async {
   // Wait until the dictionary manager has finished loading.
   while (dictManager.isLoading) {
     await Future.delayed(const Duration(milliseconds: 50));
@@ -52,4 +56,5 @@ class WebViewHeightsNotifier extends Notifier<Map<int, double>> {
 /// Provider for managing WebView heights.
 final webviewHeightsProvider =
     NotifierProvider<WebViewHeightsNotifier, Map<int, double>>(
-        WebViewHeightsNotifier.new);
+      WebViewHeightsNotifier.new,
+    );

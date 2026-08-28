@@ -4,10 +4,7 @@ part "ai.freezed.dart";
 
 @freezed
 abstract class ModelInfo with _$ModelInfo {
-  const factory ModelInfo(
-    String originName,
-    String shownName,
-  ) = _ModelInfo;
+  const factory ModelInfo(String originName, String shownName) = _ModelInfo;
 }
 
 @freezed

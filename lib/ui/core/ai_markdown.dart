@@ -74,9 +74,7 @@ class _AIMarkdownState extends State<AIMarkdown> {
             );
           }
         }
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }

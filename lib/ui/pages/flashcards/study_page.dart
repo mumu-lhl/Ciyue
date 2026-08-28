@@ -69,30 +69,36 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
               child: !state.answerVisible
                   ? word
                   : wide
-                      ? Row(children: [
-                          Expanded(child: word),
-                          const VerticalDivider(width: 1),
-                          Expanded(child: answer),
-                        ])
-                      : Column(children: [
-                          SizedBox(height: 120, child: word),
-                          const Divider(height: 1),
-                          Expanded(child: answer),
-                        ]),
+                  ? Row(
+                      children: [
+                        Expanded(child: word),
+                        const VerticalDivider(width: 1),
+                        Expanded(child: answer),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        SizedBox(height: 120, child: word),
+                        const Divider(height: 1),
+                        Expanded(child: answer),
+                      ],
+                    ),
             ),
           ),
           const SizedBox(height: 12),
           SizedBox(
             height: 72,
             child: state.answerVisible
-                ? Builder(builder: (context) {
-                    final now = DateTime.now().toUtc();
-                    return FlashcardRatingButtons(
-                      now: now,
-                      previews: notifier.preview(now: now),
-                      onSelected: _rate,
-                    );
-                  })
+                ? Builder(
+                    builder: (context) {
+                      final now = DateTime.now().toUtc();
+                      return FlashcardRatingButtons(
+                        now: now,
+                        previews: notifier.preview(now: now),
+                        onSelected: _rate,
+                      );
+                    },
+                  )
                 : FilledButton(
                     onPressed: notifier.showAnswer,
                     child: const Text("Show answer"),
@@ -104,21 +110,21 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
   }
 
   Widget _wordPanel(String word) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              word,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            IconButton(
-              icon: const Icon(Icons.volume_up),
-              onPressed: () => flutterTts.speak(word),
-            ),
-          ],
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          word,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
-      );
+        IconButton(
+          icon: const Icon(Icons.volume_up),
+          onPressed: () => flutterTts.speak(word),
+        ),
+      ],
+    ),
+  );
 
   Widget _answerPanel(FlashcardSessionItem item) {
     final validIds = ref.watch(validDictIdsProvider(item.word));
@@ -149,52 +155,51 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(buildRatingSavedSnackBar(
-      onUndo: () => notifier.undo(undo, rating),
-    ));
+    messenger.showSnackBar(
+      buildRatingSavedSnackBar(onUndo: () => notifier.undo(undo, rating)),
+    );
   }
 
   Widget _buildSummary(FlashcardSessionState state) => Scaffold(
-        appBar: AppBar(),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+    appBar: AppBar(),
+    body: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.check_circle, size: 72),
+          const SizedBox(height: 16),
+          Text(
+            "Session complete",
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          Text("${state.items.length} cards reviewed"),
+          Text("${DateTime.now().difference(state.startedAt).inMinutes} min"),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
             children: [
-              const Icon(Icons.check_circle, size: 72),
-              const SizedBox(height: 16),
-              Text(
-                "Session complete",
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              Text("${state.items.length} cards reviewed"),
-              Text(
-                  "${DateTime.now().difference(state.startedAt).inMinutes} min"),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                children: [
-                  for (final rating in FlashcardRating.values)
-                    Chip(
-                      label: Text(
-                        "${_ratingLabel(rating)} ${state.ratings[rating]}",
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => context.pop(),
-                child: const Text("Done"),
-              ),
+              for (final rating in FlashcardRating.values)
+                Chip(
+                  label: Text(
+                    "${_ratingLabel(rating)} ${state.ratings[rating]}",
+                  ),
+                ),
             ],
           ),
-        ),
-      );
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: () => context.pop(),
+            child: const Text("Done"),
+          ),
+        ],
+      ),
+    ),
+  );
 
   String _ratingLabel(FlashcardRating rating) => switch (rating) {
-        FlashcardRating.again => "Again",
-        FlashcardRating.hard => "Hard",
-        FlashcardRating.good => "Good",
-        FlashcardRating.easy => "Easy",
-      };
+    FlashcardRating.again => "Again",
+    FlashcardRating.hard => "Hard",
+    FlashcardRating.good => "Good",
+    FlashcardRating.easy => "Easy",
+  };
 }

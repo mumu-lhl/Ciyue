@@ -33,23 +33,31 @@ class BackupData {
           .map((e) => WordbookTag.fromJson(e as Map<String, dynamic>))
           .toList(),
       history: (json["history"] as List<dynamic>?)?.cast<String>() ?? [],
-      writingCheckHistory: (json["writingCheckHistory"] as List<dynamic>?)
-              ?.map((e) =>
-                  WritingCheckHistoryData.fromJson(e as Map<String, dynamic>))
+      writingCheckHistory:
+          (json["writingCheckHistory"] as List<dynamic>?)
+              ?.map(
+                (e) =>
+                    WritingCheckHistoryData.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
-      translateHistory: (json["translateHistory"] as List<dynamic>?)
-              ?.map((e) =>
-                  TranslateHistoryData.fromJson(e as Map<String, dynamic>))
+      translateHistory:
+          (json["translateHistory"] as List<dynamic>?)
+              ?.map(
+                (e) => TranslateHistoryData.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
-      flashcards: (json["flashcards"] as List<dynamic>?)
+      flashcards:
+          (json["flashcards"] as List<dynamic>?)
               ?.map((e) => Flashcard.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      flashcardReviewLogs: (json["flashcardReviewLogs"] as List<dynamic>?)
+      flashcardReviewLogs:
+          (json["flashcardReviewLogs"] as List<dynamic>?)
               ?.map(
-                  (e) => FlashcardReviewLog.fromJson(e as Map<String, dynamic>))
+                (e) => FlashcardReviewLog.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
     );
@@ -61,12 +69,14 @@ class BackupData {
       "wordbookWords": wordbookWords.map((e) => e.toJson()).toList(),
       "wordbookTags": wordbookTags.map((e) => e.toJson()).toList(),
       "history": history,
-      "writingCheckHistory":
-          writingCheckHistory.map((e) => e.toJson()).toList(),
+      "writingCheckHistory": writingCheckHistory
+          .map((e) => e.toJson())
+          .toList(),
       "translateHistory": translateHistory.map((e) => e.toJson()).toList(),
       "flashcards": flashcards.map((e) => e.toJson()).toList(),
-      "flashcardReviewLogs":
-          flashcardReviewLogs.map((e) => e.toJson()).toList(),
+      "flashcardReviewLogs": flashcardReviewLogs
+          .map((e) => e.toJson())
+          .toList(),
     });
   }
 }

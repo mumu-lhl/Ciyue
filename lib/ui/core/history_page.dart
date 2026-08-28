@@ -17,11 +17,7 @@ class HistoryPage<T, VM extends HistoryViewModel<T>> extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLoading = context.select((VM vm) => vm.isLoading);
     if (isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final historyIsEmpty = context.select((VM vm) => vm.history.isEmpty);
@@ -80,7 +76,7 @@ class _AppBar<T, VM extends HistoryViewModel<T>> extends StatelessWidget
             icon: const Icon(Icons.delete),
             onPressed: viewModel.deleteSelected,
           ),
-        ]
+        ],
       ],
     );
   }

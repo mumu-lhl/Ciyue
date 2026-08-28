@@ -9,16 +9,8 @@ void main() {
     test("toJson and fromJson should work correctly", () {
       final now = DateTime.now();
       // Assuming WordbookData matches Wordbook table structure
-      final words = [
-        WordbookData(
-          createdAt: now,
-          tag: 1,
-          word: "test",
-        )
-      ];
-      final tags = [
-        const WordbookTag(id: 1, tag: "tag1"),
-      ];
+      final words = [WordbookData(createdAt: now, tag: 1, word: "test")];
+      final tags = [const WordbookTag(id: 1, tag: "tag1")];
       final history = ["history1", "history2"];
       final writingCheckHistory = [
         WritingCheckHistoryData(
@@ -26,14 +18,10 @@ void main() {
           inputText: "input",
           outputText: "output",
           createdAt: now,
-        )
+        ),
       ];
       final translateHistory = [
-        TranslateHistoryData(
-          id: 1,
-          inputText: "input",
-          createdAt: now,
-        )
+        TranslateHistoryData(id: 1, inputText: "input", createdAt: now),
       ];
       final flashcards = [
         Flashcard(
@@ -93,8 +81,10 @@ void main() {
       expect(importedData.wordbookWords.first.tag, 1);
       // Compare dates with tolerance or exact depending on precision loss
       // drift default JSON for DateTime is unix timestamp (int) or string
-      expect(importedData.wordbookWords.first.createdAt.millisecondsSinceEpoch,
-          now.millisecondsSinceEpoch);
+      expect(
+        importedData.wordbookWords.first.createdAt.millisecondsSinceEpoch,
+        now.millisecondsSinceEpoch,
+      );
 
       expect(importedData.wordbookTags.first.tag, "tag1");
       expect(importedData.history, equals(history));
