@@ -1,11 +1,9 @@
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
-import "package:ciyue/database/dictionary/dictionary.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
-import "package:dict_reader/dict_reader.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
@@ -29,13 +27,7 @@ Future<CustomSchemeResponse?> Function(
           Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
       final results = await dictManager.dicts[dictId]!.readResource(filename);
       for (final result in results) {
-        final info = RecordOffsetInfo(
-          result.key,
-          result.blockOffset,
-          result.startOffset,
-          result.endOffset,
-          result.compressedSize,
-        );
+        final info = result.offsetInfo;
         try {
           final Uint8List data;
           if (result.part == null) {
@@ -84,13 +76,7 @@ Future<NavigationActionPolicy?> Function(
       final results = await dictManager.dicts[dictId]!.readResource(filename);
 
       for (final result in results) {
-        final info = RecordOffsetInfo(
-          result.key,
-          result.blockOffset,
-          result.startOffset,
-          result.endOffset,
-          result.compressedSize,
-        );
+        final info = result.offsetInfo;
         final Uint8List data;
         try {
           if (result.part == null) {
@@ -160,7 +146,7 @@ class LocalResourcesPathHandler extends CustomPathHandler {
         final file = File("${dirname(dictManager.dicts[dictId]!.path)}/$path");
         data = await file.readAsBytes();
       } else {
-        List<ResourceData> results;
+        List<MddResourceData> results;
         results = await dictManager.dicts[dictId]!.readResource(path);
 
         if (results.isEmpty) {
@@ -175,13 +161,7 @@ class LocalResourcesPathHandler extends CustomPathHandler {
 
         for (var i = 0; i < results.length;) {
           final result = results[i];
-          final info = RecordOffsetInfo(
-            result.key,
-            result.blockOffset,
-            result.startOffset,
-            result.endOffset,
-            result.compressedSize,
-          );
+          final info = result.offsetInfo;
           try {
             if (result.part == null) {
               data = await dictManager.dicts[dictId]!.readerResources[0]

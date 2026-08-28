@@ -202,45 +202,60 @@ class WebviewDisplayDescription extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dictManager = ref.watch(dictManagerProvider);
-    String html;
-    if (dictManager.dicts.containsKey(dictId)) {
-      html = dictManager.dicts[dictId]!.reader.header["Description"]!;
-      html = HtmlUnescape().convert(html);
-      html = dictManager.dicts[dictId]!.wrapContentWithResources(html);
-
-      return Scaffold(
-        appBar: AppBar(),
-        body: WebviewAndroid(
-          content: html,
-          dictId: dictId,
-          isExpansion: false,
-        ),
-      );
-    } else {
-      final html = getDescriptionFromInactiveDict();
-      return FutureBuilder(
-        future: html,
+    final dict = dictManager.dicts[dictId];
+    if (dict != null) {
+      return FutureBuilder<void>(
+        future: dict.waitForLoading(),
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return Scaffold(
-              appBar: AppBar(),
-              body: WebviewAndroid(
-                content: snapshot.data!,
-                dictId: dictId,
-                isExpansion: false,
-              ),
-            );
-          } else {
+          if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          }
+          return _buildDescription(dict);
         },
       );
     }
+
+    final html = getDescriptionFromInactiveDict();
+    return FutureBuilder(
+      future: html,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Scaffold(
+            appBar: AppBar(),
+            body: WebviewAndroid(
+              content: snapshot.data!,
+              dictId: dictId,
+              isExpansion: false,
+            ),
+          );
+        } else {
+          return const Center(child: CircularProgressIndicator());
+        }
+      },
+    );
+  }
+
+  Widget _buildDescription(Mdict dict) {
+    var html = dict.reader.header["Description"]!;
+    html = HtmlUnescape().convert(html);
+    html = dict.wrapContentWithResources(html);
+
+    return Scaffold(
+      appBar: AppBar(),
+      body: WebviewAndroid(
+        content: html,
+        dictId: dictId,
+        isExpansion: false,
+      ),
+    );
   }
 
   Future<String> getDescriptionFromInactiveDict() async {
     final dict = Mdict(path: await dictionaryListDao.getPath(dictId));
-    await dict.initOnlyMetadata(dict.id);
+    await dict.initOnlyMetadata(dictId);
     var html = dict.reader.header["Description"]!;
     html = HtmlUnescape().convert(html);
     html = dict.wrapContentWithResources(html);

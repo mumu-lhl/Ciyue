@@ -27,12 +27,13 @@ class DictionaryPropertiesViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchProperties(String path, int id) async {
+    final dict = Mdict(path: path);
     try {
-      final dict = Mdict(path: path);
       await dict.initOnlyMetadata(id);
       _title = dict.title;
       _entriesTotal = dict.entriesTotal;
     } finally {
+      await dict.close();
       _isLoading = false;
       notifyListeners();
     }
