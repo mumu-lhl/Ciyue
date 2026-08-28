@@ -218,13 +218,19 @@ jobs:
         run: |
           BUNDLE_LIB_DIR="build/linux/x64/release/bundle/lib"
 
+          # Keep the WPE WebKit and tray/hotkey plugin dependencies in the
+          # bundle. The Flatpak is assembled from this same release bundle,
+          # while the Freedesktop runtime does not provide these libraries.
           for lib in \
             libicui18n.so libicuuc.so libicudata.so libjpeg.so libxml2.so \
             libjxl.so libjxl_cms.so libjxl_threads.so libavif.so \
             libdav1d.so librav1e.so libSvtAv1Enc.so libaom.so libyuv.so \
             libsharpyuv.so libharfbuzz-icu.so libatomic.so libwebpdemux.so \
             libwoff2dec.so libwoff2common.so libhwy.so \
-            libbrotlidec.so libbrotlienc.so libbrotlicommon.so; do
+            libbrotlidec.so libbrotlienc.so libbrotlicommon.so \
+            libkeybinder-3.0.so libayatana-appindicator3.so \
+            libayatana-indicator3.so libayatana-ido3-0.4.so \
+            libdbusmenu-glib.so libdbusmenu-gtk3.so; do
             src=$(find /usr/lib -maxdepth 1 -type f \
               \( -name "$lib.*" -o -name "$lib" \) \
               -printf '%p\n' | sort -V | tail -n 1)

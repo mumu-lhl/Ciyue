@@ -55,6 +55,14 @@ yay -S ciyue
   am -i ciyue
   ```
 
+### Flatpak
+
+Download `ciyue-x86_64.flatpak` from a release and install it with:
+
+```bash
+flatpak install --user ./ciyue-x86_64.flatpak
+```
+
 ## Recommended Dictionaries
 
 See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries).
