@@ -44,7 +44,7 @@ The project uses `justfile` to manage common development tasks.
 ### Standard Flutter Commands
 *   **Run:** `flutter run`
 *   **Analyze:** `flutter analyze`
-*   **Format:** `dart format .` (CI enforces formatting on `.dart` files)
+*   **Format:** `dart format .` (CI checks changed `.dart` files)
 *   **Test:** `flutter test`
 
 ### Build Artifacts
