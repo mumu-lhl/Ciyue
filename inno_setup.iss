@@ -1,6 +1,6 @@
 [Setup]
 AppName=Ciyue
-AppVersion=1.22.2
+AppVersion=1.23.1
 AppPublisher=Mumulhl
 DefaultDirName={autopf}\Ciyue
 DefaultGroupName=Ciyue
