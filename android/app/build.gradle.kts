@@ -1,8 +1,6 @@
-import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.FilterConfiguration.FilterType.*
 import java.util.Properties
 import java.io.FileInputStream
-import org.gradle.kotlin.dsl.configure
 
 plugins {
     id("com.android.application")
@@ -33,9 +31,9 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
-extensions.configure<ApplicationExtension> {
+android {
     namespace = "org.eu.mumulhl.ciyue"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
