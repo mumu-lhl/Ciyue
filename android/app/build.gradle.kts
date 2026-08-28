@@ -1,6 +1,8 @@
+import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.FilterConfiguration.FilterType.*
 import java.util.Properties
 import java.io.FileInputStream
+import org.gradle.kotlin.dsl.configure
 
 plugins {
     id("com.android.application")
@@ -31,10 +33,10 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
-android {
+extensions.configure<ApplicationExtension> {
     namespace = "org.eu.mumulhl.ciyue"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -42,8 +44,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_21.toString()
+    buildFeatures {
+        resValues = true
     }
 
     defaultConfig {
@@ -110,6 +112,12 @@ android {
         jniLibs {
             useLegacyPackaging = true
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
     }
 }
 
