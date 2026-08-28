@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.47.2
@@ -22,7 +24,21 @@ jobs:
         run: flutter pub get
 
       - name: Format
-        run: find . -name '*.dart' -not -path './lib/src/generated/i18n/*' -not -path './packages/flutter_inappwebview_linux/*' | xargs dart format --output=none --set-exit-if-changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_ref="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if ! git rev-parse --verify "$base_ref^{commit}" >/dev/null 2>&1; then
+            base_ref="HEAD^"
+          fi
+
+          mapfile -t dart_files < <(
+            git diff --name-only --diff-filter=ACMRTUXB "$base_ref" HEAD -- '*.dart' |
+              grep -Ev '^(lib/src/generated/i18n|packages/flutter_inappwebview_linux)/' || true
+          )
+          if ((${#dart_files[@]})); then
+            dart format --output=none --set-exit-if-changed "${dart_files[@]}"
+          fi
 
       - name: Analyze
         run: flutter analyze

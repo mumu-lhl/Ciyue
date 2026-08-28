@@ -1,6 +1,7 @@
 #!/bin/sh
+set -eu
+
 HERE=$(dirname "$(readlink -f "$0")")
-cd "$HERE"
 export LD_LIBRARY_PATH="$HERE/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-export XDG_DATA_DIRS="$HERE/share:$XDG_DATA_DIRS"
-exec "$HERE/ciyue" "$@"
+cd "$HERE"
+exec "$HERE/ciyue.bin" "$@"

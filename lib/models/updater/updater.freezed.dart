@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'updater.dart';
@@ -9,7 +9,7 @@ part of 'updater.dart';
 // FreezedGenerator
 // **************************************************************************
 
-// dart format off
+// GENERATED CODE - DO NOT MODIFY BY HAND
 T _$identity<T>(T value) => value;
 
 /// @nodoc
@@ -70,20 +70,22 @@ class _$UpdateCopyWithImpl<$Res> implements $UpdateCopyWith<$Res> {
     Object? isUpdateAvailable = null,
     Object? version = null,
   }) {
-    return _then(_self.copyWith(
-      success: null == success
-          ? _self.success
-          : success // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isUpdateAvailable: null == isUpdateAvailable
-          ? _self.isUpdateAvailable
-          : isUpdateAvailable // ignore: cast_nullable_to_non_nullable
-              as bool,
-      version: null == version
-          ? _self.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+    return _then(
+      Update(
+        success: null == success
+            ? _self.success
+            : success // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        isUpdateAvailable: null == isUpdateAvailable
+            ? _self.isUpdateAvailable
+            : isUpdateAvailable // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        version: null == version
+            ? _self.version
+            : version // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
@@ -181,7 +183,7 @@ extension UpdatePatterns on Update {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(bool success, bool isUpdateAvailable, String version)?
-        $default, {
+    $default, {
     required TResult orElse(),
   }) {
     final _that = this;
@@ -209,7 +211,7 @@ extension UpdatePatterns on Update {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(bool success, bool isUpdateAvailable, String version)
-        $default,
+    $default,
   ) {
     final _that = this;
     switch (_that) {
@@ -235,7 +237,7 @@ extension UpdatePatterns on Update {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(bool success, bool isUpdateAvailable, String version)?
-        $default,
+    $default,
   ) {
     final _that = this;
     switch (_that) {
@@ -250,10 +252,11 @@ extension UpdatePatterns on Update {
 /// @nodoc
 
 class _Update implements Update {
-  const _Update(
-      {required this.success,
-      required this.isUpdateAvailable,
-      required this.version});
+  const _Update({
+    required this.success,
+    required this.isUpdateAvailable,
+    required this.version,
+  });
 
   @override
   final bool success;
@@ -316,21 +319,21 @@ class __$UpdateCopyWithImpl<$Res> implements _$UpdateCopyWith<$Res> {
     Object? isUpdateAvailable = null,
     Object? version = null,
   }) {
-    return _then(_Update(
-      success: null == success
-          ? _self.success
-          : success // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isUpdateAvailable: null == isUpdateAvailable
-          ? _self.isUpdateAvailable
-          : isUpdateAvailable // ignore: cast_nullable_to_non_nullable
-              as bool,
-      version: null == version
-          ? _self.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+    return _then(
+      _Update(
+        success: null == success
+            ? _self.success
+            : success // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        isUpdateAvailable: null == isUpdateAvailable
+            ? _self.isUpdateAvailable
+            : isUpdateAvailable // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        version: null == version
+            ? _self.version
+            : version // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
-
-// dart format on

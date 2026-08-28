@@ -13,41 +13,76 @@ class $ResourceTable extends Resource
       const drift.VerificationMeta('blockOffset');
   @override
   late final drift.GeneratedColumn<int> blockOffset =
-      drift.GeneratedColumn<int>('block_offset', aliasedName, false,
-          type: DriftSqlType.int, requiredDuringInsert: true);
+      drift.GeneratedColumn<int>(
+        'block_offset',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
   static const drift.VerificationMeta _compressedSizeMeta =
       const drift.VerificationMeta('compressedSize');
   @override
   late final drift.GeneratedColumn<int> compressedSize =
-      drift.GeneratedColumn<int>('compressed_size', aliasedName, false,
-          type: DriftSqlType.int, requiredDuringInsert: true);
+      drift.GeneratedColumn<int>(
+        'compressed_size',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
   static const drift.VerificationMeta _endOffsetMeta =
       const drift.VerificationMeta('endOffset');
   @override
   late final drift.GeneratedColumn<int> endOffset = drift.GeneratedColumn<int>(
-      'end_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const drift.VerificationMeta _keyMeta =
-      const drift.VerificationMeta('key');
+    'end_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const drift.VerificationMeta _keyMeta = const drift.VerificationMeta(
+    'key',
+  );
   @override
   late final drift.GeneratedColumn<String> key = drift.GeneratedColumn<String>(
-      'key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const drift.VerificationMeta _startOffsetMeta =
       const drift.VerificationMeta('startOffset');
   @override
   late final drift.GeneratedColumn<int> startOffset =
-      drift.GeneratedColumn<int>('start_offset', aliasedName, false,
-          type: DriftSqlType.int, requiredDuringInsert: true);
-  static const drift.VerificationMeta _partMeta =
-      const drift.VerificationMeta('part');
+      drift.GeneratedColumn<int>(
+        'start_offset',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _partMeta = const drift.VerificationMeta(
+    'part',
+  );
   @override
   late final drift.GeneratedColumn<int> part = drift.GeneratedColumn<int>(
-      'part', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+    'part',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
-  List<drift.GeneratedColumn> get $columns =>
-      [blockOffset, compressedSize, endOffset, key, startOffset, part];
+  List<drift.GeneratedColumn> get $columns => [
+    blockOffset,
+    compressedSize,
+    endOffset,
+    key,
+    startOffset,
+    part,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -55,49 +90,65 @@ class $ResourceTable extends Resource
   static const String $name = 'resource';
   @override
   drift.VerificationContext validateIntegrity(
-      drift.Insertable<ResourceData> instance,
-      {bool isInserting = false}) {
+    drift.Insertable<ResourceData> instance, {
+    bool isInserting = false,
+  }) {
     final context = drift.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('block_offset')) {
       context.handle(
+        _blockOffsetMeta,
+        blockOffset.isAcceptableOrUnknown(
+          data['block_offset']!,
           _blockOffsetMeta,
-          blockOffset.isAcceptableOrUnknown(
-              data['block_offset']!, _blockOffsetMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_blockOffsetMeta);
     }
     if (data.containsKey('compressed_size')) {
       context.handle(
+        _compressedSizeMeta,
+        compressedSize.isAcceptableOrUnknown(
+          data['compressed_size']!,
           _compressedSizeMeta,
-          compressedSize.isAcceptableOrUnknown(
-              data['compressed_size']!, _compressedSizeMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_compressedSizeMeta);
     }
     if (data.containsKey('end_offset')) {
-      context.handle(_endOffsetMeta,
-          endOffset.isAcceptableOrUnknown(data['end_offset']!, _endOffsetMeta));
+      context.handle(
+        _endOffsetMeta,
+        endOffset.isAcceptableOrUnknown(data['end_offset']!, _endOffsetMeta),
+      );
     } else if (isInserting) {
       context.missing(_endOffsetMeta);
     }
     if (data.containsKey('key')) {
       context.handle(
-          _keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
     } else if (isInserting) {
       context.missing(_keyMeta);
     }
     if (data.containsKey('start_offset')) {
       context.handle(
+        _startOffsetMeta,
+        startOffset.isAcceptableOrUnknown(
+          data['start_offset']!,
           _startOffsetMeta,
-          startOffset.isAcceptableOrUnknown(
-              data['start_offset']!, _startOffsetMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_startOffsetMeta);
     }
     if (data.containsKey('part')) {
       context.handle(
-          _partMeta, part.isAcceptableOrUnknown(data['part']!, _partMeta));
+        _partMeta,
+        part.isAcceptableOrUnknown(data['part']!, _partMeta),
+      );
     }
     return context;
   }
@@ -108,18 +159,30 @@ class $ResourceTable extends Resource
   ResourceData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ResourceData(
-      blockOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}block_offset'])!,
-      compressedSize: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}compressed_size'])!,
-      endOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}end_offset'])!,
-      key: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
-      startOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}start_offset'])!,
-      part: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}part']),
+      blockOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}block_offset'],
+      )!,
+      compressedSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}compressed_size'],
+      )!,
+      endOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}end_offset'],
+      )!,
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      startOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_offset'],
+      )!,
+      part: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}part'],
+      ),
     );
   }
 
@@ -137,13 +200,14 @@ class ResourceData extends drift.DataClass
   final String key;
   final int startOffset;
   final int? part;
-  const ResourceData(
-      {required this.blockOffset,
-      required this.compressedSize,
-      required this.endOffset,
-      required this.key,
-      required this.startOffset,
-      this.part});
+  const ResourceData({
+    required this.blockOffset,
+    required this.compressedSize,
+    required this.endOffset,
+    required this.key,
+    required this.startOffset,
+    this.part,
+  });
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
@@ -171,8 +235,10 @@ class ResourceData extends drift.DataClass
     );
   }
 
-  factory ResourceData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory ResourceData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return ResourceData(
       blockOffset: serializer.fromJson<int>(json['blockOffset']),
@@ -196,32 +262,34 @@ class ResourceData extends drift.DataClass
     };
   }
 
-  ResourceData copyWith(
-          {int? blockOffset,
-          int? compressedSize,
-          int? endOffset,
-          String? key,
-          int? startOffset,
-          drift.Value<int?> part = const drift.Value.absent()}) =>
-      ResourceData(
-        blockOffset: blockOffset ?? this.blockOffset,
-        compressedSize: compressedSize ?? this.compressedSize,
-        endOffset: endOffset ?? this.endOffset,
-        key: key ?? this.key,
-        startOffset: startOffset ?? this.startOffset,
-        part: part.present ? part.value : this.part,
-      );
+  ResourceData copyWith({
+    int? blockOffset,
+    int? compressedSize,
+    int? endOffset,
+    String? key,
+    int? startOffset,
+    drift.Value<int?> part = const drift.Value.absent(),
+  }) => ResourceData(
+    blockOffset: blockOffset ?? this.blockOffset,
+    compressedSize: compressedSize ?? this.compressedSize,
+    endOffset: endOffset ?? this.endOffset,
+    key: key ?? this.key,
+    startOffset: startOffset ?? this.startOffset,
+    part: part.present ? part.value : this.part,
+  );
   ResourceData copyWithCompanion(ResourceCompanion data) {
     return ResourceData(
-      blockOffset:
-          data.blockOffset.present ? data.blockOffset.value : this.blockOffset,
+      blockOffset: data.blockOffset.present
+          ? data.blockOffset.value
+          : this.blockOffset,
       compressedSize: data.compressedSize.present
           ? data.compressedSize.value
           : this.compressedSize,
       endOffset: data.endOffset.present ? data.endOffset.value : this.endOffset,
       key: data.key.present ? data.key.value : this.key,
-      startOffset:
-          data.startOffset.present ? data.startOffset.value : this.startOffset,
+      startOffset: data.startOffset.present
+          ? data.startOffset.value
+          : this.startOffset,
       part: data.part.present ? data.part.value : this.part,
     );
   }
@@ -241,7 +309,13 @@ class ResourceData extends drift.DataClass
 
   @override
   int get hashCode => Object.hash(
-      blockOffset, compressedSize, endOffset, key, startOffset, part);
+    blockOffset,
+    compressedSize,
+    endOffset,
+    key,
+    startOffset,
+    part,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -279,11 +353,11 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
     required int startOffset,
     this.part = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
-  })  : blockOffset = drift.Value(blockOffset),
-        compressedSize = drift.Value(compressedSize),
-        endOffset = drift.Value(endOffset),
-        key = drift.Value(key),
-        startOffset = drift.Value(startOffset);
+  }) : blockOffset = drift.Value(blockOffset),
+       compressedSize = drift.Value(compressedSize),
+       endOffset = drift.Value(endOffset),
+       key = drift.Value(key),
+       startOffset = drift.Value(startOffset);
   static drift.Insertable<ResourceData> custom({
     drift.Expression<int>? blockOffset,
     drift.Expression<int>? compressedSize,
@@ -304,14 +378,15 @@ class ResourceCompanion extends drift.UpdateCompanion<ResourceData> {
     });
   }
 
-  ResourceCompanion copyWith(
-      {drift.Value<int>? blockOffset,
-      drift.Value<int>? compressedSize,
-      drift.Value<int>? endOffset,
-      drift.Value<String>? key,
-      drift.Value<int>? startOffset,
-      drift.Value<int?>? part,
-      drift.Value<int>? rowid}) {
+  ResourceCompanion copyWith({
+    drift.Value<int>? blockOffset,
+    drift.Value<int>? compressedSize,
+    drift.Value<int>? endOffset,
+    drift.Value<String>? key,
+    drift.Value<int>? startOffset,
+    drift.Value<int?>? part,
+    drift.Value<int>? rowid,
+  }) {
     return ResourceCompanion(
       blockOffset: blockOffset ?? this.blockOffset,
       compressedSize: compressedSize ?? this.compressedSize,
@@ -375,35 +450,64 @@ class $DictionaryTable extends Dictionary
       const drift.VerificationMeta('blockOffset');
   @override
   late final drift.GeneratedColumn<int> blockOffset =
-      drift.GeneratedColumn<int>('block_offset', aliasedName, false,
-          type: DriftSqlType.int, requiredDuringInsert: true);
+      drift.GeneratedColumn<int>(
+        'block_offset',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
   static const drift.VerificationMeta _compressedSizeMeta =
       const drift.VerificationMeta('compressedSize');
   @override
   late final drift.GeneratedColumn<int> compressedSize =
-      drift.GeneratedColumn<int>('compressed_size', aliasedName, false,
-          type: DriftSqlType.int, requiredDuringInsert: true);
+      drift.GeneratedColumn<int>(
+        'compressed_size',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
   static const drift.VerificationMeta _endOffsetMeta =
       const drift.VerificationMeta('endOffset');
   @override
   late final drift.GeneratedColumn<int> endOffset = drift.GeneratedColumn<int>(
-      'end_offset', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const drift.VerificationMeta _keyMeta =
-      const drift.VerificationMeta('key');
+    'end_offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const drift.VerificationMeta _keyMeta = const drift.VerificationMeta(
+    'key',
+  );
   @override
   late final drift.GeneratedColumn<String> key = drift.GeneratedColumn<String>(
-      'key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const drift.VerificationMeta _startOffsetMeta =
       const drift.VerificationMeta('startOffset');
   @override
   late final drift.GeneratedColumn<int> startOffset =
-      drift.GeneratedColumn<int>('start_offset', aliasedName, false,
-          type: DriftSqlType.int, requiredDuringInsert: true);
+      drift.GeneratedColumn<int>(
+        'start_offset',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
   @override
-  List<drift.GeneratedColumn> get $columns =>
-      [blockOffset, compressedSize, endOffset, key, startOffset];
+  List<drift.GeneratedColumn> get $columns => [
+    blockOffset,
+    compressedSize,
+    endOffset,
+    key,
+    startOffset,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -411,43 +515,57 @@ class $DictionaryTable extends Dictionary
   static const String $name = 'dictionary';
   @override
   drift.VerificationContext validateIntegrity(
-      drift.Insertable<DictionaryData> instance,
-      {bool isInserting = false}) {
+    drift.Insertable<DictionaryData> instance, {
+    bool isInserting = false,
+  }) {
     final context = drift.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('block_offset')) {
       context.handle(
+        _blockOffsetMeta,
+        blockOffset.isAcceptableOrUnknown(
+          data['block_offset']!,
           _blockOffsetMeta,
-          blockOffset.isAcceptableOrUnknown(
-              data['block_offset']!, _blockOffsetMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_blockOffsetMeta);
     }
     if (data.containsKey('compressed_size')) {
       context.handle(
+        _compressedSizeMeta,
+        compressedSize.isAcceptableOrUnknown(
+          data['compressed_size']!,
           _compressedSizeMeta,
-          compressedSize.isAcceptableOrUnknown(
-              data['compressed_size']!, _compressedSizeMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_compressedSizeMeta);
     }
     if (data.containsKey('end_offset')) {
-      context.handle(_endOffsetMeta,
-          endOffset.isAcceptableOrUnknown(data['end_offset']!, _endOffsetMeta));
+      context.handle(
+        _endOffsetMeta,
+        endOffset.isAcceptableOrUnknown(data['end_offset']!, _endOffsetMeta),
+      );
     } else if (isInserting) {
       context.missing(_endOffsetMeta);
     }
     if (data.containsKey('key')) {
       context.handle(
-          _keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
     } else if (isInserting) {
       context.missing(_keyMeta);
     }
     if (data.containsKey('start_offset')) {
       context.handle(
+        _startOffsetMeta,
+        startOffset.isAcceptableOrUnknown(
+          data['start_offset']!,
           _startOffsetMeta,
-          startOffset.isAcceptableOrUnknown(
-              data['start_offset']!, _startOffsetMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_startOffsetMeta);
     }
@@ -460,16 +578,26 @@ class $DictionaryTable extends Dictionary
   DictionaryData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictionaryData(
-      blockOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}block_offset'])!,
-      compressedSize: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}compressed_size'])!,
-      endOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}end_offset'])!,
-      key: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
-      startOffset: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}start_offset'])!,
+      blockOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}block_offset'],
+      )!,
+      compressedSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}compressed_size'],
+      )!,
+      endOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}end_offset'],
+      )!,
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      startOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_offset'],
+      )!,
     );
   }
 
@@ -486,12 +614,13 @@ class DictionaryData extends drift.DataClass
   final int endOffset;
   final String key;
   final int startOffset;
-  const DictionaryData(
-      {required this.blockOffset,
-      required this.compressedSize,
-      required this.endOffset,
-      required this.key,
-      required this.startOffset});
+  const DictionaryData({
+    required this.blockOffset,
+    required this.compressedSize,
+    required this.endOffset,
+    required this.key,
+    required this.startOffset,
+  });
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
@@ -513,8 +642,10 @@ class DictionaryData extends drift.DataClass
     );
   }
 
-  factory DictionaryData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory DictionaryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return DictionaryData(
       blockOffset: serializer.fromJson<int>(json['blockOffset']),
@@ -536,30 +667,32 @@ class DictionaryData extends drift.DataClass
     };
   }
 
-  DictionaryData copyWith(
-          {int? blockOffset,
-          int? compressedSize,
-          int? endOffset,
-          String? key,
-          int? startOffset}) =>
-      DictionaryData(
-        blockOffset: blockOffset ?? this.blockOffset,
-        compressedSize: compressedSize ?? this.compressedSize,
-        endOffset: endOffset ?? this.endOffset,
-        key: key ?? this.key,
-        startOffset: startOffset ?? this.startOffset,
-      );
+  DictionaryData copyWith({
+    int? blockOffset,
+    int? compressedSize,
+    int? endOffset,
+    String? key,
+    int? startOffset,
+  }) => DictionaryData(
+    blockOffset: blockOffset ?? this.blockOffset,
+    compressedSize: compressedSize ?? this.compressedSize,
+    endOffset: endOffset ?? this.endOffset,
+    key: key ?? this.key,
+    startOffset: startOffset ?? this.startOffset,
+  );
   DictionaryData copyWithCompanion(DictionaryCompanion data) {
     return DictionaryData(
-      blockOffset:
-          data.blockOffset.present ? data.blockOffset.value : this.blockOffset,
+      blockOffset: data.blockOffset.present
+          ? data.blockOffset.value
+          : this.blockOffset,
       compressedSize: data.compressedSize.present
           ? data.compressedSize.value
           : this.compressedSize,
       endOffset: data.endOffset.present ? data.endOffset.value : this.endOffset,
       key: data.key.present ? data.key.value : this.key,
-      startOffset:
-          data.startOffset.present ? data.startOffset.value : this.startOffset,
+      startOffset: data.startOffset.present
+          ? data.startOffset.value
+          : this.startOffset,
     );
   }
 
@@ -611,11 +744,11 @@ class DictionaryCompanion extends drift.UpdateCompanion<DictionaryData> {
     required String key,
     required int startOffset,
     this.rowid = const drift.Value.absent(),
-  })  : blockOffset = drift.Value(blockOffset),
-        compressedSize = drift.Value(compressedSize),
-        endOffset = drift.Value(endOffset),
-        key = drift.Value(key),
-        startOffset = drift.Value(startOffset);
+  }) : blockOffset = drift.Value(blockOffset),
+       compressedSize = drift.Value(compressedSize),
+       endOffset = drift.Value(endOffset),
+       key = drift.Value(key),
+       startOffset = drift.Value(startOffset);
   static drift.Insertable<DictionaryData> custom({
     drift.Expression<int>? blockOffset,
     drift.Expression<int>? compressedSize,
@@ -634,13 +767,14 @@ class DictionaryCompanion extends drift.UpdateCompanion<DictionaryData> {
     });
   }
 
-  DictionaryCompanion copyWith(
-      {drift.Value<int>? blockOffset,
-      drift.Value<int>? compressedSize,
-      drift.Value<int>? endOffset,
-      drift.Value<String>? key,
-      drift.Value<int>? startOffset,
-      drift.Value<int>? rowid}) {
+  DictionaryCompanion copyWith({
+    drift.Value<int>? blockOffset,
+    drift.Value<int>? compressedSize,
+    drift.Value<int>? endOffset,
+    drift.Value<String>? key,
+    drift.Value<int>? startOffset,
+    drift.Value<int>? rowid,
+  }) {
     return DictionaryCompanion(
       blockOffset: blockOffset ?? this.blockOffset,
       compressedSize: compressedSize ?? this.compressedSize,
@@ -694,16 +828,24 @@ abstract class _$DictionaryDatabase extends drift.GeneratedDatabase {
   $DictionaryDatabaseManager get managers => $DictionaryDatabaseManager(this);
   late final $ResourceTable resource = $ResourceTable(this);
   late final $DictionaryTable dictionary = $DictionaryTable(this);
-  late final drift.Index idxData =
-      drift.Index('idx_data', 'CREATE INDEX idx_data ON resource ("key")');
-  late final drift.Index idxWord =
-      drift.Index('idx_word', 'CREATE INDEX idx_word ON dictionary ("key")');
+  late final drift.Index idxData = drift.Index(
+    'idx_data',
+    'CREATE INDEX idx_data ON resource ("key")',
+  );
+  late final drift.Index idxWord = drift.Index(
+    'idx_word',
+    'CREATE INDEX idx_word ON dictionary ("key")',
+  );
   @override
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
   @override
-  List<drift.DatabaseSchemaEntity> get allSchemaEntities =>
-      [resource, dictionary, idxData, idxWord];
+  List<drift.DatabaseSchemaEntity> get allSchemaEntities => [
+    resource,
+    dictionary,
+    idxData,
+    idxWord,
+  ];
 }
 
 typedef $$ResourceTableCreateCompanionBuilder = ResourceCompanion Function({
@@ -735,26 +877,34 @@ class $$ResourceTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   drift.ColumnFilters<int> get blockOffset => $composableBuilder(
-      column: $table.blockOffset,
-      builder: (column) => drift.ColumnFilters(column));
+    column: $table.blockOffset,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 
   drift.ColumnFilters<int> get compressedSize => $composableBuilder(
-      column: $table.compressedSize,
-      builder: (column) => drift.ColumnFilters(column));
+    column: $table.compressedSize,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 
   drift.ColumnFilters<int> get endOffset => $composableBuilder(
-      column: $table.endOffset,
-      builder: (column) => drift.ColumnFilters(column));
+    column: $table.endOffset,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 
   drift.ColumnFilters<String> get key => $composableBuilder(
-      column: $table.key, builder: (column) => drift.ColumnFilters(column));
+    column: $table.key,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 
   drift.ColumnFilters<int> get startOffset => $composableBuilder(
-      column: $table.startOffset,
-      builder: (column) => drift.ColumnFilters(column));
+    column: $table.startOffset,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 
   drift.ColumnFilters<int> get part => $composableBuilder(
-      column: $table.part, builder: (column) => drift.ColumnFilters(column));
+    column: $table.part,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 }
 
 class $$ResourceTableOrderingComposer
@@ -767,26 +917,34 @@ class $$ResourceTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   drift.ColumnOrderings<int> get blockOffset => $composableBuilder(
-      column: $table.blockOffset,
-      builder: (column) => drift.ColumnOrderings(column));
+    column: $table.blockOffset,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 
   drift.ColumnOrderings<int> get compressedSize => $composableBuilder(
-      column: $table.compressedSize,
-      builder: (column) => drift.ColumnOrderings(column));
+    column: $table.compressedSize,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 
   drift.ColumnOrderings<int> get endOffset => $composableBuilder(
-      column: $table.endOffset,
-      builder: (column) => drift.ColumnOrderings(column));
+    column: $table.endOffset,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 
   drift.ColumnOrderings<String> get key => $composableBuilder(
-      column: $table.key, builder: (column) => drift.ColumnOrderings(column));
+    column: $table.key,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 
   drift.ColumnOrderings<int> get startOffset => $composableBuilder(
-      column: $table.startOffset,
-      builder: (column) => drift.ColumnOrderings(column));
+    column: $table.startOffset,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 
   drift.ColumnOrderings<int> get part => $composableBuilder(
-      column: $table.part, builder: (column) => drift.ColumnOrderings(column));
+    column: $table.part,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 }
 
 class $$ResourceTableAnnotationComposer
@@ -799,10 +957,14 @@ class $$ResourceTableAnnotationComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   drift.GeneratedColumn<int> get blockOffset => $composableBuilder(
-      column: $table.blockOffset, builder: (column) => column);
+    column: $table.blockOffset,
+    builder: (column) => column,
+  );
 
   drift.GeneratedColumn<int> get compressedSize => $composableBuilder(
-      column: $table.compressedSize, builder: (column) => column);
+    column: $table.compressedSize,
+    builder: (column) => column,
+  );
 
   drift.GeneratedColumn<int> get endOffset =>
       $composableBuilder(column: $table.endOffset, builder: (column) => column);
@@ -811,29 +973,39 @@ class $$ResourceTableAnnotationComposer
       $composableBuilder(column: $table.key, builder: (column) => column);
 
   drift.GeneratedColumn<int> get startOffset => $composableBuilder(
-      column: $table.startOffset, builder: (column) => column);
+    column: $table.startOffset,
+    builder: (column) => column,
+  );
 
   drift.GeneratedColumn<int> get part =>
       $composableBuilder(column: $table.part, builder: (column) => column);
 }
 
-class $$ResourceTableTableManager extends drift.RootTableManager<
-    _$DictionaryDatabase,
-    $ResourceTable,
-    ResourceData,
-    $$ResourceTableFilterComposer,
-    $$ResourceTableOrderingComposer,
-    $$ResourceTableAnnotationComposer,
-    $$ResourceTableCreateCompanionBuilder,
-    $$ResourceTableUpdateCompanionBuilder,
-    (
-      ResourceData,
-      drift.BaseReferences<_$DictionaryDatabase, $ResourceTable, ResourceData>
-    ),
-    ResourceData,
-    drift.PrefetchHooks Function()> {
+class $$ResourceTableTableManager
+    extends
+        drift.RootTableManager<
+          _$DictionaryDatabase,
+          $ResourceTable,
+          ResourceData,
+          $$ResourceTableFilterComposer,
+          $$ResourceTableOrderingComposer,
+          $$ResourceTableAnnotationComposer,
+          $$ResourceTableCreateCompanionBuilder,
+          $$ResourceTableUpdateCompanionBuilder,
+          (
+            ResourceData,
+            drift.BaseReferences<
+              _$DictionaryDatabase,
+              $ResourceTable,
+              ResourceData
+            >,
+          ),
+          ResourceData,
+          drift.PrefetchHooks Function()
+        > {
   $$ResourceTableTableManager(_$DictionaryDatabase db, $ResourceTable table)
-      : super(drift.TableManagerState(
+    : super(
+        drift.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -842,65 +1014,73 @@ class $$ResourceTableTableManager extends drift.RootTableManager<
               $$ResourceTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$ResourceTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            drift.Value<int> blockOffset = const drift.Value.absent(),
-            drift.Value<int> compressedSize = const drift.Value.absent(),
-            drift.Value<int> endOffset = const drift.Value.absent(),
-            drift.Value<String> key = const drift.Value.absent(),
-            drift.Value<int> startOffset = const drift.Value.absent(),
-            drift.Value<int?> part = const drift.Value.absent(),
-            drift.Value<int> rowid = const drift.Value.absent(),
-          }) =>
-              ResourceCompanion(
-            blockOffset: blockOffset,
-            compressedSize: compressedSize,
-            endOffset: endOffset,
-            key: key,
-            startOffset: startOffset,
-            part: part,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int blockOffset,
-            required int compressedSize,
-            required int endOffset,
-            required String key,
-            required int startOffset,
-            drift.Value<int?> part = const drift.Value.absent(),
-            drift.Value<int> rowid = const drift.Value.absent(),
-          }) =>
-              ResourceCompanion.insert(
-            blockOffset: blockOffset,
-            compressedSize: compressedSize,
-            endOffset: endOffset,
-            key: key,
-            startOffset: startOffset,
-            part: part,
-            rowid: rowid,
-          ),
+          updateCompanionCallback:
+              ({
+                drift.Value<int> blockOffset = const drift.Value.absent(),
+                drift.Value<int> compressedSize = const drift.Value.absent(),
+                drift.Value<int> endOffset = const drift.Value.absent(),
+                drift.Value<String> key = const drift.Value.absent(),
+                drift.Value<int> startOffset = const drift.Value.absent(),
+                drift.Value<int?> part = const drift.Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
+              }) => ResourceCompanion(
+                blockOffset: blockOffset,
+                compressedSize: compressedSize,
+                endOffset: endOffset,
+                key: key,
+                startOffset: startOffset,
+                part: part,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int blockOffset,
+                required int compressedSize,
+                required int endOffset,
+                required String key,
+                required int startOffset,
+                drift.Value<int?> part = const drift.Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
+              }) => ResourceCompanion.insert(
+                blockOffset: blockOffset,
+                compressedSize: compressedSize,
+                endOffset: endOffset,
+                key: key,
+                startOffset: startOffset,
+                part: part,
+                rowid: rowid,
+              ),
           withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .map(
+                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+              )
               .toList(),
           prefetchHooksCallback: null,
-        ));
+        ),
+      );
 }
 
-typedef $$ResourceTableProcessedTableManager = drift.ProcessedTableManager<
-    _$DictionaryDatabase,
-    $ResourceTable,
-    ResourceData,
-    $$ResourceTableFilterComposer,
-    $$ResourceTableOrderingComposer,
-    $$ResourceTableAnnotationComposer,
-    $$ResourceTableCreateCompanionBuilder,
-    $$ResourceTableUpdateCompanionBuilder,
-    (
+typedef $$ResourceTableProcessedTableManager =
+    drift.ProcessedTableManager<
+      _$DictionaryDatabase,
+      $ResourceTable,
       ResourceData,
-      drift.BaseReferences<_$DictionaryDatabase, $ResourceTable, ResourceData>
-    ),
-    ResourceData,
-    drift.PrefetchHooks Function()>;
+      $$ResourceTableFilterComposer,
+      $$ResourceTableOrderingComposer,
+      $$ResourceTableAnnotationComposer,
+      $$ResourceTableCreateCompanionBuilder,
+      $$ResourceTableUpdateCompanionBuilder,
+      (
+        ResourceData,
+        drift.BaseReferences<
+          _$DictionaryDatabase,
+          $ResourceTable,
+          ResourceData
+        >,
+      ),
+      ResourceData,
+      drift.PrefetchHooks Function()
+    >;
 typedef $$DictionaryTableCreateCompanionBuilder = DictionaryCompanion Function({
   required int blockOffset,
   required int compressedSize,
@@ -928,23 +1108,29 @@ class $$DictionaryTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   drift.ColumnFilters<int> get blockOffset => $composableBuilder(
-      column: $table.blockOffset,
-      builder: (column) => drift.ColumnFilters(column));
+    column: $table.blockOffset,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 
   drift.ColumnFilters<int> get compressedSize => $composableBuilder(
-      column: $table.compressedSize,
-      builder: (column) => drift.ColumnFilters(column));
+    column: $table.compressedSize,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 
   drift.ColumnFilters<int> get endOffset => $composableBuilder(
-      column: $table.endOffset,
-      builder: (column) => drift.ColumnFilters(column));
+    column: $table.endOffset,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 
   drift.ColumnFilters<String> get key => $composableBuilder(
-      column: $table.key, builder: (column) => drift.ColumnFilters(column));
+    column: $table.key,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 
   drift.ColumnFilters<int> get startOffset => $composableBuilder(
-      column: $table.startOffset,
-      builder: (column) => drift.ColumnFilters(column));
+    column: $table.startOffset,
+    builder: (column) => drift.ColumnFilters(column),
+  );
 }
 
 class $$DictionaryTableOrderingComposer
@@ -957,23 +1143,29 @@ class $$DictionaryTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   drift.ColumnOrderings<int> get blockOffset => $composableBuilder(
-      column: $table.blockOffset,
-      builder: (column) => drift.ColumnOrderings(column));
+    column: $table.blockOffset,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 
   drift.ColumnOrderings<int> get compressedSize => $composableBuilder(
-      column: $table.compressedSize,
-      builder: (column) => drift.ColumnOrderings(column));
+    column: $table.compressedSize,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 
   drift.ColumnOrderings<int> get endOffset => $composableBuilder(
-      column: $table.endOffset,
-      builder: (column) => drift.ColumnOrderings(column));
+    column: $table.endOffset,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 
   drift.ColumnOrderings<String> get key => $composableBuilder(
-      column: $table.key, builder: (column) => drift.ColumnOrderings(column));
+    column: $table.key,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 
   drift.ColumnOrderings<int> get startOffset => $composableBuilder(
-      column: $table.startOffset,
-      builder: (column) => drift.ColumnOrderings(column));
+    column: $table.startOffset,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 }
 
 class $$DictionaryTableAnnotationComposer
@@ -986,10 +1178,14 @@ class $$DictionaryTableAnnotationComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   drift.GeneratedColumn<int> get blockOffset => $composableBuilder(
-      column: $table.blockOffset, builder: (column) => column);
+    column: $table.blockOffset,
+    builder: (column) => column,
+  );
 
   drift.GeneratedColumn<int> get compressedSize => $composableBuilder(
-      column: $table.compressedSize, builder: (column) => column);
+    column: $table.compressedSize,
+    builder: (column) => column,
+  );
 
   drift.GeneratedColumn<int> get endOffset =>
       $composableBuilder(column: $table.endOffset, builder: (column) => column);
@@ -998,27 +1194,36 @@ class $$DictionaryTableAnnotationComposer
       $composableBuilder(column: $table.key, builder: (column) => column);
 
   drift.GeneratedColumn<int> get startOffset => $composableBuilder(
-      column: $table.startOffset, builder: (column) => column);
+    column: $table.startOffset,
+    builder: (column) => column,
+  );
 }
 
-class $$DictionaryTableTableManager extends drift.RootTableManager<
-    _$DictionaryDatabase,
-    $DictionaryTable,
-    DictionaryData,
-    $$DictionaryTableFilterComposer,
-    $$DictionaryTableOrderingComposer,
-    $$DictionaryTableAnnotationComposer,
-    $$DictionaryTableCreateCompanionBuilder,
-    $$DictionaryTableUpdateCompanionBuilder,
-    (
-      DictionaryData,
-      drift
-      .BaseReferences<_$DictionaryDatabase, $DictionaryTable, DictionaryData>
-    ),
-    DictionaryData,
-    drift.PrefetchHooks Function()> {
+class $$DictionaryTableTableManager
+    extends
+        drift.RootTableManager<
+          _$DictionaryDatabase,
+          $DictionaryTable,
+          DictionaryData,
+          $$DictionaryTableFilterComposer,
+          $$DictionaryTableOrderingComposer,
+          $$DictionaryTableAnnotationComposer,
+          $$DictionaryTableCreateCompanionBuilder,
+          $$DictionaryTableUpdateCompanionBuilder,
+          (
+            DictionaryData,
+            drift.BaseReferences<
+              _$DictionaryDatabase,
+              $DictionaryTable,
+              DictionaryData
+            >,
+          ),
+          DictionaryData,
+          drift.PrefetchHooks Function()
+        > {
   $$DictionaryTableTableManager(_$DictionaryDatabase db, $DictionaryTable table)
-      : super(drift.TableManagerState(
+    : super(
+        drift.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -1027,62 +1232,69 @@ class $$DictionaryTableTableManager extends drift.RootTableManager<
               $$DictionaryTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$DictionaryTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            drift.Value<int> blockOffset = const drift.Value.absent(),
-            drift.Value<int> compressedSize = const drift.Value.absent(),
-            drift.Value<int> endOffset = const drift.Value.absent(),
-            drift.Value<String> key = const drift.Value.absent(),
-            drift.Value<int> startOffset = const drift.Value.absent(),
-            drift.Value<int> rowid = const drift.Value.absent(),
-          }) =>
-              DictionaryCompanion(
-            blockOffset: blockOffset,
-            compressedSize: compressedSize,
-            endOffset: endOffset,
-            key: key,
-            startOffset: startOffset,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int blockOffset,
-            required int compressedSize,
-            required int endOffset,
-            required String key,
-            required int startOffset,
-            drift.Value<int> rowid = const drift.Value.absent(),
-          }) =>
-              DictionaryCompanion.insert(
-            blockOffset: blockOffset,
-            compressedSize: compressedSize,
-            endOffset: endOffset,
-            key: key,
-            startOffset: startOffset,
-            rowid: rowid,
-          ),
+          updateCompanionCallback:
+              ({
+                drift.Value<int> blockOffset = const drift.Value.absent(),
+                drift.Value<int> compressedSize = const drift.Value.absent(),
+                drift.Value<int> endOffset = const drift.Value.absent(),
+                drift.Value<String> key = const drift.Value.absent(),
+                drift.Value<int> startOffset = const drift.Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
+              }) => DictionaryCompanion(
+                blockOffset: blockOffset,
+                compressedSize: compressedSize,
+                endOffset: endOffset,
+                key: key,
+                startOffset: startOffset,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int blockOffset,
+                required int compressedSize,
+                required int endOffset,
+                required String key,
+                required int startOffset,
+                drift.Value<int> rowid = const drift.Value.absent(),
+              }) => DictionaryCompanion.insert(
+                blockOffset: blockOffset,
+                compressedSize: compressedSize,
+                endOffset: endOffset,
+                key: key,
+                startOffset: startOffset,
+                rowid: rowid,
+              ),
           withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), drift.BaseReferences(db, table, e)))
+              .map(
+                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+              )
               .toList(),
           prefetchHooksCallback: null,
-        ));
+        ),
+      );
 }
 
-typedef $$DictionaryTableProcessedTableManager = drift.ProcessedTableManager<
-    _$DictionaryDatabase,
-    $DictionaryTable,
-    DictionaryData,
-    $$DictionaryTableFilterComposer,
-    $$DictionaryTableOrderingComposer,
-    $$DictionaryTableAnnotationComposer,
-    $$DictionaryTableCreateCompanionBuilder,
-    $$DictionaryTableUpdateCompanionBuilder,
-    (
+typedef $$DictionaryTableProcessedTableManager =
+    drift.ProcessedTableManager<
+      _$DictionaryDatabase,
+      $DictionaryTable,
       DictionaryData,
-      drift
-      .BaseReferences<_$DictionaryDatabase, $DictionaryTable, DictionaryData>
-    ),
-    DictionaryData,
-    drift.PrefetchHooks Function()>;
+      $$DictionaryTableFilterComposer,
+      $$DictionaryTableOrderingComposer,
+      $$DictionaryTableAnnotationComposer,
+      $$DictionaryTableCreateCompanionBuilder,
+      $$DictionaryTableUpdateCompanionBuilder,
+      (
+        DictionaryData,
+        drift.BaseReferences<
+          _$DictionaryDatabase,
+          $DictionaryTable,
+          DictionaryData
+        >,
+      ),
+      DictionaryData,
+      drift.PrefetchHooks Function()
+    >;
 
 class $DictionaryDatabaseManager {
   final _$DictionaryDatabase _db;

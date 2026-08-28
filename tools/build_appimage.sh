@@ -1,19 +1,29 @@
 #!/bin/bash
 set -e
 
+# Ensure we are in the project root
+cd "$(dirname "$0")/.."
+
 # Configuration
 BINARY_NAME="ciyue"
 APP_NAME="Ciyue"
 APP_ID="org.eu.mumulhl.ciyue"
 ICON_PATH="assets/icon.png"
 BUILD_DIR="build/linux/x64/release"
-BUNDLE_DIR="$BUILD_DIR/bundle"
+if [ ! -d "$BUILD_DIR/bundle" ]; then
+    BUNDLE_DIR=$(find build/linux/x64 -type d -path '*/release/bundle' -print -quit)
+    if [ -z "$BUNDLE_DIR" ]; then
+        echo "Error: Flutter Linux release bundle not found"
+        echo "Please run 'flutter build linux --release' first."
+        exit 1
+    fi
+    BUILD_DIR=$(dirname "$BUNDLE_DIR")
+else
+    BUNDLE_DIR="$BUILD_DIR/bundle"
+fi
 APPDIR="$BUILD_DIR/AppDir"
 ASSETS_DIR="linux/packaging/appimage"
 PACKAGING_DIR="linux/packaging"
-
-# Ensure we are in the project root
-cd "$(dirname "$0")/.."
 
 # Check if flutter build has been run
 if [ ! -d "$BUNDLE_DIR" ]; then

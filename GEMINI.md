@@ -24,7 +24,7 @@
 ## Building and Running
 
 ### Prerequisites
-*   **Flutter SDK:** Version constraint `>=3.4.0 <4.0.0` (CI uses `3.38.5`).
+*   **Flutter SDK:** Version constraint `>=3.13.0 <4.0.0` (CI uses `3.47.2`).
 *   **Just:** Command runner for simplified scripts.
 *   **Platform Requirements:**
     *   **Linux:** `libgtk-3-dev`, `libgstreamer1.0-dev`, `libayatana-appindicator3-dev`, etc.

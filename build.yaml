@@ -6,3 +6,6 @@ targets:
           databases:
             app: lib/database/app/app.dart
             dictionary: lib/database/dictionary/dictionary.dart
+      freezed:
+        options:
+          format: true

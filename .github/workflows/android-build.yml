@@ -173,6 +173,7 @@ jobs:
         with:
           name: ${{ inputs.artifact_name }}
           path: build/app/outputs/flutter-apk/app-full-dev-release.apk
+          if-no-files-found: error
 
       - name: Upload common release APKs
         if: ${{ inputs.build_mode == 'release_common' }}
@@ -180,6 +181,7 @@ jobs:
         with:
           name: ${{ inputs.artifact_name }}
           path: build/app/outputs/flutter-apk/ciyue-*-release.apk
+          if-no-files-found: error
 
       - name: Upload full release APKs
         if: ${{ inputs.build_mode == 'release_full' }}
@@ -187,3 +189,4 @@ jobs:
         with:
           name: ${{ inputs.artifact_name }}
           path: build/app/outputs/flutter-apk/ciyue-*-full.apk
+          if-no-files-found: error

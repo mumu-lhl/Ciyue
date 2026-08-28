@@ -20,7 +20,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.22.2+86
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: ">=3.13.0 <4.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -100,10 +100,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  drift_dev: ^2.34.0
+  drift_dev: ^2.34.1
   build_runner: ^2.15.1
   test: ^1.31.0
-  freezed: ^3.2.5
+  freezed: ^4.0.0
   mockito: ^5.6.4
   shared_preferences_platform_interface: ^2.4.2
 

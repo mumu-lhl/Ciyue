@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'ai.dart';
@@ -9,7 +9,7 @@ part of 'ai.dart';
 // FreezedGenerator
 // **************************************************************************
 
-// dart format off
+// GENERATED CODE - DO NOT MODIFY BY HAND
 T _$identity<T>(T value) => value;
 
 /// @nodoc
@@ -63,20 +63,19 @@ class _$ModelInfoCopyWithImpl<$Res> implements $ModelInfoCopyWith<$Res> {
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? originName = null,
-    Object? shownName = null,
-  }) {
-    return _then(_self.copyWith(
-      originName: null == originName
-          ? _self.originName
-          : originName // ignore: cast_nullable_to_non_nullable
-              as String,
-      shownName: null == shownName
-          ? _self.shownName
-          : shownName // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? originName = null, Object? shownName = null}) {
+    return _then(
+      ModelInfo(
+        null == originName
+            ? _self.originName
+            : originName // ignore: cast_nullable_to_non_nullable
+                  as String,
+        null == shownName
+            ? _self.shownName
+            : shownName // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
@@ -279,8 +278,9 @@ class _ModelInfo implements ModelInfo {
 abstract mixin class _$ModelInfoCopyWith<$Res>
     implements $ModelInfoCopyWith<$Res> {
   factory _$ModelInfoCopyWith(
-          _ModelInfo value, $Res Function(_ModelInfo) _then) =
-      __$ModelInfoCopyWithImpl;
+    _ModelInfo value,
+    $Res Function(_ModelInfo) _then,
+  ) = __$ModelInfoCopyWithImpl;
   @override
   @useResult
   $Res call({String originName, String shownName});
@@ -297,20 +297,19 @@ class __$ModelInfoCopyWithImpl<$Res> implements _$ModelInfoCopyWith<$Res> {
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $Res call({
-    Object? originName = null,
-    Object? shownName = null,
-  }) {
-    return _then(_ModelInfo(
-      null == originName
-          ? _self.originName
-          : originName // ignore: cast_nullable_to_non_nullable
-              as String,
-      null == shownName
-          ? _self.shownName
-          : shownName // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? originName = null, Object? shownName = null}) {
+    return _then(
+      _ModelInfo(
+        null == originName
+            ? _self.originName
+            : originName // ignore: cast_nullable_to_non_nullable
+                  as String,
+        null == shownName
+            ? _self.shownName
+            : shownName // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
@@ -329,7 +328,9 @@ mixin _$ModelProvider {
   @pragma('vm:prefer-inline')
   $ModelProviderCopyWith<ModelProvider> get copyWith =>
       _$ModelProviderCopyWithImpl<ModelProvider>(
-          this as ModelProvider, _$identity);
+        this as ModelProvider,
+        _$identity,
+      );
 
   @override
   bool operator ==(Object other) {
@@ -349,13 +350,14 @@ mixin _$ModelProvider {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      name,
-      displayedName,
-      apiUrl,
-      const DeepCollectionEquality().hash(models),
-      allowCustomModel,
-      allowCustomAPIUrl);
+    runtimeType,
+    name,
+    displayedName,
+    apiUrl,
+    const DeepCollectionEquality().hash(models),
+    allowCustomModel,
+    allowCustomAPIUrl,
+  );
 
   @override
   String toString() {
@@ -366,16 +368,18 @@ mixin _$ModelProvider {
 /// @nodoc
 abstract mixin class $ModelProviderCopyWith<$Res> {
   factory $ModelProviderCopyWith(
-          ModelProvider value, $Res Function(ModelProvider) _then) =
-      _$ModelProviderCopyWithImpl;
+    ModelProvider value,
+    $Res Function(ModelProvider) _then,
+  ) = _$ModelProviderCopyWithImpl;
   @useResult
-  $Res call(
-      {String name,
-      String displayedName,
-      String apiUrl,
-      List<ModelInfo> models,
-      bool allowCustomModel,
-      bool allowCustomAPIUrl});
+  $Res call({
+    String name,
+    String displayedName,
+    String apiUrl,
+    List<ModelInfo> models,
+    bool allowCustomModel,
+    bool allowCustomAPIUrl,
+  });
 }
 
 /// @nodoc
@@ -398,32 +402,34 @@ class _$ModelProviderCopyWithImpl<$Res>
     Object? allowCustomModel = null,
     Object? allowCustomAPIUrl = null,
   }) {
-    return _then(_self.copyWith(
-      name: null == name
-          ? _self.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      displayedName: null == displayedName
-          ? _self.displayedName
-          : displayedName // ignore: cast_nullable_to_non_nullable
-              as String,
-      apiUrl: null == apiUrl
-          ? _self.apiUrl
-          : apiUrl // ignore: cast_nullable_to_non_nullable
-              as String,
-      models: null == models
-          ? _self.models
-          : models // ignore: cast_nullable_to_non_nullable
-              as List<ModelInfo>,
-      allowCustomModel: null == allowCustomModel
-          ? _self.allowCustomModel
-          : allowCustomModel // ignore: cast_nullable_to_non_nullable
-              as bool,
-      allowCustomAPIUrl: null == allowCustomAPIUrl
-          ? _self.allowCustomAPIUrl
-          : allowCustomAPIUrl // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
+    return _then(
+      ModelProvider(
+        name: null == name
+            ? _self.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        displayedName: null == displayedName
+            ? _self.displayedName
+            : displayedName // ignore: cast_nullable_to_non_nullable
+                  as String,
+        apiUrl: null == apiUrl
+            ? _self.apiUrl
+            : apiUrl // ignore: cast_nullable_to_non_nullable
+                  as String,
+        models: null == models
+            ? _self.models
+            : models // ignore: cast_nullable_to_non_nullable
+                  as List<ModelInfo>,
+        allowCustomModel: null == allowCustomModel
+            ? _self.allowCustomModel
+            : allowCustomModel // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        allowCustomAPIUrl: null == allowCustomAPIUrl
+            ? _self.allowCustomAPIUrl
+            : allowCustomAPIUrl // ignore: cast_nullable_to_non_nullable
+                  as bool,
+      ),
+    );
   }
 }
 
@@ -521,20 +527,27 @@ extension ModelProviderPatterns on ModelProvider {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
-            String name,
-            String displayedName,
-            String apiUrl,
-            List<ModelInfo> models,
-            bool allowCustomModel,
-            bool allowCustomAPIUrl)?
-        $default, {
+      String name,
+      String displayedName,
+      String apiUrl,
+      List<ModelInfo> models,
+      bool allowCustomModel,
+      bool allowCustomAPIUrl,
+    )?
+    $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _ModelProvider() when $default != null:
-        return $default(_that.name, _that.displayedName, _that.apiUrl,
-            _that.models, _that.allowCustomModel, _that.allowCustomAPIUrl);
+        return $default(
+          _that.name,
+          _that.displayedName,
+          _that.apiUrl,
+          _that.models,
+          _that.allowCustomModel,
+          _that.allowCustomAPIUrl,
+        );
       case _:
         return orElse();
     }
@@ -556,19 +569,26 @@ extension ModelProviderPatterns on ModelProvider {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
-            String name,
-            String displayedName,
-            String apiUrl,
-            List<ModelInfo> models,
-            bool allowCustomModel,
-            bool allowCustomAPIUrl)
-        $default,
+      String name,
+      String displayedName,
+      String apiUrl,
+      List<ModelInfo> models,
+      bool allowCustomModel,
+      bool allowCustomAPIUrl,
+    )
+    $default,
   ) {
     final _that = this;
     switch (_that) {
       case _ModelProvider():
-        return $default(_that.name, _that.displayedName, _that.apiUrl,
-            _that.models, _that.allowCustomModel, _that.allowCustomAPIUrl);
+        return $default(
+          _that.name,
+          _that.displayedName,
+          _that.apiUrl,
+          _that.models,
+          _that.allowCustomModel,
+          _that.allowCustomAPIUrl,
+        );
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -589,19 +609,26 @@ extension ModelProviderPatterns on ModelProvider {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
-            String name,
-            String displayedName,
-            String apiUrl,
-            List<ModelInfo> models,
-            bool allowCustomModel,
-            bool allowCustomAPIUrl)?
-        $default,
+      String name,
+      String displayedName,
+      String apiUrl,
+      List<ModelInfo> models,
+      bool allowCustomModel,
+      bool allowCustomAPIUrl,
+    )?
+    $default,
   ) {
     final _that = this;
     switch (_that) {
       case _ModelProvider() when $default != null:
-        return $default(_that.name, _that.displayedName, _that.apiUrl,
-            _that.models, _that.allowCustomModel, _that.allowCustomAPIUrl);
+        return $default(
+          _that.name,
+          _that.displayedName,
+          _that.apiUrl,
+          _that.models,
+          _that.allowCustomModel,
+          _that.allowCustomAPIUrl,
+        );
       case _:
         return null;
     }
@@ -611,14 +638,14 @@ extension ModelProviderPatterns on ModelProvider {
 /// @nodoc
 
 class _ModelProvider implements ModelProvider {
-  const _ModelProvider(
-      {required this.name,
-      required this.displayedName,
-      required this.apiUrl,
-      required final List<ModelInfo> models,
-      this.allowCustomModel = false,
-      this.allowCustomAPIUrl = false})
-      : _models = models;
+  const _ModelProvider({
+    required this.name,
+    required this.displayedName,
+    required this.apiUrl,
+    required List<ModelInfo> models,
+    this.allowCustomModel = false,
+    this.allowCustomAPIUrl = false,
+  }) : _models = models;
 
   @override
   final String name;
@@ -667,13 +694,14 @@ class _ModelProvider implements ModelProvider {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      name,
-      displayedName,
-      apiUrl,
-      const DeepCollectionEquality().hash(_models),
-      allowCustomModel,
-      allowCustomAPIUrl);
+    runtimeType,
+    name,
+    displayedName,
+    apiUrl,
+    const DeepCollectionEquality().hash(_models),
+    allowCustomModel,
+    allowCustomAPIUrl,
+  );
 
   @override
   String toString() {
@@ -685,17 +713,19 @@ class _ModelProvider implements ModelProvider {
 abstract mixin class _$ModelProviderCopyWith<$Res>
     implements $ModelProviderCopyWith<$Res> {
   factory _$ModelProviderCopyWith(
-          _ModelProvider value, $Res Function(_ModelProvider) _then) =
-      __$ModelProviderCopyWithImpl;
+    _ModelProvider value,
+    $Res Function(_ModelProvider) _then,
+  ) = __$ModelProviderCopyWithImpl;
   @override
   @useResult
-  $Res call(
-      {String name,
-      String displayedName,
-      String apiUrl,
-      List<ModelInfo> models,
-      bool allowCustomModel,
-      bool allowCustomAPIUrl});
+  $Res call({
+    String name,
+    String displayedName,
+    String apiUrl,
+    List<ModelInfo> models,
+    bool allowCustomModel,
+    bool allowCustomAPIUrl,
+  });
 }
 
 /// @nodoc
@@ -718,33 +748,33 @@ class __$ModelProviderCopyWithImpl<$Res>
     Object? allowCustomModel = null,
     Object? allowCustomAPIUrl = null,
   }) {
-    return _then(_ModelProvider(
-      name: null == name
-          ? _self.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      displayedName: null == displayedName
-          ? _self.displayedName
-          : displayedName // ignore: cast_nullable_to_non_nullable
-              as String,
-      apiUrl: null == apiUrl
-          ? _self.apiUrl
-          : apiUrl // ignore: cast_nullable_to_non_nullable
-              as String,
-      models: null == models
-          ? _self._models
-          : models // ignore: cast_nullable_to_non_nullable
-              as List<ModelInfo>,
-      allowCustomModel: null == allowCustomModel
-          ? _self.allowCustomModel
-          : allowCustomModel // ignore: cast_nullable_to_non_nullable
-              as bool,
-      allowCustomAPIUrl: null == allowCustomAPIUrl
-          ? _self.allowCustomAPIUrl
-          : allowCustomAPIUrl // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
+    return _then(
+      _ModelProvider(
+        name: null == name
+            ? _self.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        displayedName: null == displayedName
+            ? _self.displayedName
+            : displayedName // ignore: cast_nullable_to_non_nullable
+                  as String,
+        apiUrl: null == apiUrl
+            ? _self.apiUrl
+            : apiUrl // ignore: cast_nullable_to_non_nullable
+                  as String,
+        models: null == models
+            ? _self._models
+            : models // ignore: cast_nullable_to_non_nullable
+                  as List<ModelInfo>,
+        allowCustomModel: null == allowCustomModel
+            ? _self.allowCustomModel
+            : allowCustomModel // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        allowCustomAPIUrl: null == allowCustomAPIUrl
+            ? _self.allowCustomAPIUrl
+            : allowCustomAPIUrl // ignore: cast_nullable_to_non_nullable
+                  as bool,
+      ),
+    );
   }
 }
-
-// dart format on

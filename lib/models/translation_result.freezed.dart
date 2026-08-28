@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'translation_result.dart';
@@ -9,7 +9,7 @@ part of 'translation_result.dart';
 // FreezedGenerator
 // **************************************************************************
 
-// dart format off
+// GENERATED CODE - DO NOT MODIFY BY HAND
 T _$identity<T>(T value) => value;
 
 /// @nodoc
@@ -23,7 +23,9 @@ mixin _$TranslationResult {
   @pragma('vm:prefer-inline')
   $TranslationResultCopyWith<TranslationResult> get copyWith =>
       _$TranslationResultCopyWithImpl<TranslationResult>(
-          this as TranslationResult, _$identity);
+        this as TranslationResult,
+        _$identity,
+      );
 
   @override
   bool operator ==(Object other) {
@@ -31,13 +33,18 @@ mixin _$TranslationResult {
         (other.runtimeType == runtimeType &&
             other is TranslationResult &&
             (identical(other.text, text) || other.text == text) &&
-            const DeepCollectionEquality()
-                .equals(other.alternatives, alternatives));
+            const DeepCollectionEquality().equals(
+              other.alternatives,
+              alternatives,
+            ));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, text, const DeepCollectionEquality().hash(alternatives));
+    runtimeType,
+    text,
+    const DeepCollectionEquality().hash(alternatives),
+  );
 
   @override
   String toString() {
@@ -48,8 +55,9 @@ mixin _$TranslationResult {
 /// @nodoc
 abstract mixin class $TranslationResultCopyWith<$Res> {
   factory $TranslationResultCopyWith(
-          TranslationResult value, $Res Function(TranslationResult) _then) =
-      _$TranslationResultCopyWithImpl;
+    TranslationResult value,
+    $Res Function(TranslationResult) _then,
+  ) = _$TranslationResultCopyWithImpl;
   @useResult
   $Res call({String text, List<String> alternatives});
 }
@@ -66,20 +74,19 @@ class _$TranslationResultCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? text = null,
-    Object? alternatives = null,
-  }) {
-    return _then(_self.copyWith(
-      text: null == text
-          ? _self.text
-          : text // ignore: cast_nullable_to_non_nullable
-              as String,
-      alternatives: null == alternatives
-          ? _self.alternatives
-          : alternatives // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-    ));
+  $Res call({Object? text = null, Object? alternatives = null}) {
+    return _then(
+      TranslationResult(
+        text: null == text
+            ? _self.text
+            : text // ignore: cast_nullable_to_non_nullable
+                  as String,
+        alternatives: null == alternatives
+            ? _self.alternatives
+            : alternatives // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+      ),
+    );
   }
 }
 
@@ -243,9 +250,10 @@ extension TranslationResultPatterns on TranslationResult {
 /// @nodoc
 
 class _TranslationResult implements TranslationResult {
-  const _TranslationResult(
-      {required this.text, final List<String> alternatives = const <String>[]})
-      : _alternatives = alternatives;
+  const _TranslationResult({
+    required this.text,
+    List<String> alternatives = const <String>[],
+  }) : _alternatives = alternatives;
 
   @override
   final String text;
@@ -272,13 +280,18 @@ class _TranslationResult implements TranslationResult {
         (other.runtimeType == runtimeType &&
             other is _TranslationResult &&
             (identical(other.text, text) || other.text == text) &&
-            const DeepCollectionEquality()
-                .equals(other._alternatives, _alternatives));
+            const DeepCollectionEquality().equals(
+              other._alternatives,
+              _alternatives,
+            ));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, text, const DeepCollectionEquality().hash(_alternatives));
+    runtimeType,
+    text,
+    const DeepCollectionEquality().hash(_alternatives),
+  );
 
   @override
   String toString() {
@@ -290,8 +303,9 @@ class _TranslationResult implements TranslationResult {
 abstract mixin class _$TranslationResultCopyWith<$Res>
     implements $TranslationResultCopyWith<$Res> {
   factory _$TranslationResultCopyWith(
-          _TranslationResult value, $Res Function(_TranslationResult) _then) =
-      __$TranslationResultCopyWithImpl;
+    _TranslationResult value,
+    $Res Function(_TranslationResult) _then,
+  ) = __$TranslationResultCopyWithImpl;
   @override
   @useResult
   $Res call({String text, List<String> alternatives});
@@ -309,21 +323,18 @@ class __$TranslationResultCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $Res call({
-    Object? text = null,
-    Object? alternatives = null,
-  }) {
-    return _then(_TranslationResult(
-      text: null == text
-          ? _self.text
-          : text // ignore: cast_nullable_to_non_nullable
-              as String,
-      alternatives: null == alternatives
-          ? _self._alternatives
-          : alternatives // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-    ));
+  $Res call({Object? text = null, Object? alternatives = null}) {
+    return _then(
+      _TranslationResult(
+        text: null == text
+            ? _self.text
+            : text // ignore: cast_nullable_to_non_nullable
+                  as String,
+        alternatives: null == alternatives
+            ? _self._alternatives
+            : alternatives // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+      ),
+    );
   }
 }
-
-// dart format on

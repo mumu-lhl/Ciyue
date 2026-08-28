@@ -25,7 +25,9 @@ class DictionaryListDaoManager {
   DictionaryListDaoManager(this._db);
   $$DictionaryListTableTableManager get dictionaryList =>
       $$DictionaryListTableTableManager(
-          _db.attachedDatabase, _db.dictionaryList);
+        _db.attachedDatabase,
+        _db.dictionaryList,
+      );
 }
 
 mixin _$HistoryDaoMixin on DatabaseAccessor<AppDatabase> {
@@ -55,7 +57,9 @@ class FlashcardDaoManager {
       $$FlashcardsTableTableManager(_db.attachedDatabase, _db.flashcards);
   $$FlashcardReviewLogsTableTableManager get flashcardReviewLogs =>
       $$FlashcardReviewLogsTableTableManager(
-          _db.attachedDatabase, _db.flashcardReviewLogs);
+        _db.attachedDatabase,
+        _db.flashcardReviewLogs,
+      );
   $$WordbookTableTableManager get wordbook =>
       $$WordbookTableTableManager(_db.attachedDatabase, _db.wordbook);
 }
@@ -107,7 +111,9 @@ class MddAudioResourceDaoManager {
   MddAudioResourceDaoManager(this._db);
   $$MddAudioResourceTableTableManager get mddAudioResource =>
       $$MddAudioResourceTableTableManager(
-          _db.attachedDatabase, _db.mddAudioResource);
+        _db.attachedDatabase,
+        _db.mddAudioResource,
+      );
 }
 
 mixin _$AiExplanationDaoMixin on DatabaseAccessor<AppDatabase> {
@@ -120,7 +126,9 @@ class AiExplanationDaoManager {
   AiExplanationDaoManager(this._db);
   $$AiExplanationsTableTableManager get aiExplanations =>
       $$AiExplanationsTableTableManager(
-          _db.attachedDatabase, _db.aiExplanations);
+        _db.attachedDatabase,
+        _db.aiExplanations,
+      );
 }
 
 mixin _$WritingCheckHistoryDaoMixin on DatabaseAccessor<AppDatabase> {
@@ -135,7 +143,9 @@ class WritingCheckHistoryDaoManager {
   WritingCheckHistoryDaoManager(this._db);
   $$WritingCheckHistoryTableTableManager get writingCheckHistory =>
       $$WritingCheckHistoryTableTableManager(
-          _db.attachedDatabase, _db.writingCheckHistory);
+        _db.attachedDatabase,
+        _db.writingCheckHistory,
+      );
 }
 
 mixin _$TranslateHistoryDaoMixin on DatabaseAccessor<AppDatabase> {
@@ -149,7 +159,9 @@ class TranslateHistoryDaoManager {
   TranslateHistoryDaoManager(this._db);
   $$TranslateHistoryTableTableManager get translateHistory =>
       $$TranslateHistoryTableTableManager(
-          _db.attachedDatabase, _db.translateHistory);
+        _db.attachedDatabase,
+        _db.translateHistory,
+      );
 }
 
 mixin _$OpenRecordsDaoMixin on DatabaseAccessor<AppDatabase> {

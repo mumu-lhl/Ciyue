@@ -16,7 +16,10 @@ import "package:provider/provider.dart";
 abstract class BackupFileHandler {
   bool get isAndroid;
   Future<void> writeAutoExportAndroid(
-      String directory, String fileName, String content);
+    String directory,
+    String fileName,
+    String content,
+  );
   Future<void> writeAutoExportDesktop(String path, String content);
   Future<void> writeManualExportAndroid(String content);
   Future<void> writeManualExportDesktop(String content);
@@ -29,7 +32,10 @@ class DefaultBackupFileHandler implements BackupFileHandler {
 
   @override
   Future<void> writeAutoExportAndroid(
-      String directory, String fileName, String content) async {
+    String directory,
+    String fileName,
+    String content,
+  ) async {
     final path = join(directory, fileName);
     await PlatformMethod.writeFile({
       "path": path,
@@ -91,8 +97,8 @@ class BackupService {
     required this.translateHistoryDao,
     this.flashcardDao,
     required this.fileHandler,
-    WordbookModel? wordbookModel,
-  }) : _wordbookModel = wordbookModel;
+    this._wordbookModel,
+  });
 
   Future<void> export({
     required bool autoExport,
@@ -106,8 +112,9 @@ class BackupService {
   }) async {
     final words = wordbook ? await wordbookDao.getAllWords() : <WordbookData>[],
         tags = wordbook ? await wordbookTagsDao.getAllTags() : <WordbookTag>[],
-        history =
-            searchHistory ? await historyDao.getAllHistory() : <HistoryData>[],
+        history = searchHistory
+            ? await historyDao.getAllHistory()
+            : <HistoryData>[],
         writingCheckHistoryData = writingCheckHistory
             ? await writingCheckHistoryDao.getAllHistory()
             : <WritingCheckHistoryData>[],
@@ -142,7 +149,10 @@ class BackupService {
           final fileName = setExtension(exportFileName, ".json");
           if (exportDirectory != null) {
             await fileHandler.writeAutoExportAndroid(
-                exportDirectory, fileName, jsonContent);
+              exportDirectory,
+              fileName,
+              jsonContent,
+            );
           }
         } else {
           if (exportPath != null) {
@@ -169,7 +179,8 @@ class BackupService {
     final Map<String, dynamic> content = jsonDecode(contentString);
     final backupData = BackupData.fromJson(content);
 
-    final wordbookModel = _wordbookModel ??
+    final wordbookModel =
+        _wordbookModel ??
         Provider.of<WordbookModel>(navigatorKey.currentContext!, listen: false);
 
     await wordbookModel.addAllWords(backupData.wordbookWords);

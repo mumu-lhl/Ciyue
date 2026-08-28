@@ -167,14 +167,42 @@ jobs:
             BUILD_ARGS="$BUILD_ARGS --dart-define=DEV=true"
           fi
           if [[ "${{ inputs.include_metadata_defines }}" == "true" ]]; then
-            BUILD_ARGS="$BUILD_ARGS --dart-define=GIT_COMMIT_HASH=$(git rev-parse --short HEAD) --dart-define=BUILD_TIMESTAMP=$(date +%s)"
+            COMMIT_HASH="${GITHUB_SHA:0:7}"
+            if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+              COMMIT_HASH="$(git rev-parse --short HEAD)"
+            fi
+            BUILD_ARGS="$BUILD_ARGS --dart-define=GIT_COMMIT_HASH=$COMMIT_HASH --dart-define=BUILD_TIMESTAMP=$(date +%s)"
           fi
           flutter build linux $BUILD_ARGS
+
+      - name: Normalize Flutter Linux bundle path
+        shell: bash
+        run: |
+          set -euxo pipefail
+          legacy_release_dir="build/linux/x64/release"
+          if [[ -d "$legacy_release_dir/bundle" ]]; then
+            exit 0
+          fi
+
+          bundle_binary=$(find build/linux/x64 -type f \
+            -path '*/release/bundle/ciyue' -print -quit)
+          if [[ -z "$bundle_binary" ]]; then
+            echo "Could not locate the Flutter Linux release bundle" >&2
+            find build/linux/x64 -maxdepth 6 -type f -name ciyue -print >&2
+            exit 1
+          fi
+
+          release_dir=$(dirname "$(dirname "$bundle_binary")")
+          relative_release_dir=$(realpath --relative-to="build/linux/x64" "$release_dir")
+          ln -s "$relative_release_dir" "$legacy_release_dir"
 
       - name: Create WPE symlinks
         run: |
           cd build/linux/x64/release/bundle/lib/
-          for soname in libwpe-1.0.so.1 libWPEWebKit-2.0.so.1; do
+          for soname in \
+            libwpe-1.0.so.1 \
+            libWPEWebKit-2.0.so.1 \
+            libWPEBackend-fdo-1.0.so.1; do
             if [[ -e "$soname" ]]; then
               continue
             fi
@@ -190,17 +218,93 @@ jobs:
         run: |
           BUNDLE_LIB_DIR="build/linux/x64/release/bundle/lib"
 
-          for lib in libicui18n.so libicuuc.so libjpeg.so libxml2.so libicudata.so; do
-            src=$(find /usr/lib -maxdepth 1 -type f -name "$lib.*" -printf '%p\n' | sort -V | tail -n 1)
+          for lib in \
+            libicui18n.so libicuuc.so libicudata.so libjpeg.so libxml2.so \
+            libjxl.so libjxl_cms.so libjxl_threads.so libavif.so \
+            libdav1d.so librav1e.so libSvtAv1Enc.so libaom.so libyuv.so \
+            libsharpyuv.so libharfbuzz-icu.so libatomic.so libwebpdemux.so \
+            libwoff2dec.so libwoff2common.so libhwy.so \
+            libbrotlidec.so libbrotlienc.so libbrotlicommon.so; do
+            src=$(find /usr/lib -maxdepth 1 -type f \
+              \( -name "$lib.*" -o -name "$lib" \) \
+              -printf '%p\n' | sort -V | tail -n 1)
             if [[ -z "$src" ]]; then
               echo "Missing $lib in /usr/lib" >&2
               exit 1
             fi
-            cp -L "$src" "$BUNDLE_LIB_DIR/"
+
+            # Copy under the SONAME, not the package's fully-versioned filename
+            # (for example libicuuc.so.75 rather than libicuuc.so.75.1).
+            soname=$(patchelf --print-soname "$src")
+            if [[ -z "$soname" ]]; then
+              echo "Missing SONAME in $src" >&2
+              exit 1
+            fi
+            cp -L "$src" "$BUNDLE_LIB_DIR/$soname"
+            patchelf --remove-rpath "$BUNDLE_LIB_DIR/$soname"
           done
 
-          cd build/linux/x64/release/bundle
-          patchelf --force-rpath --set-rpath '$ORIGIN/lib' ciyue
+          # WPE WebKit launches its network and web processes from the
+          # compile-time libexec directory. Keep those helpers and resources
+          # beside the bundled libraries, then rewrite that directory to a
+          # relative path so AppImage/deb/rpm installs remain relocatable.
+          WPE_RUNTIME_DIR="$BUNDLE_LIB_DIR/wpe-webkit-2.0"
+          rm -rf "$WPE_RUNTIME_DIR"
+          cp -a /usr/lib/wpe-webkit-2.0/. "$WPE_RUNTIME_DIR/"
+
+          WPE_WEBKIT_LIB=$(find "$BUNDLE_LIB_DIR" -maxdepth 1 -type f \
+            -name 'libWPEWebKit-2.0.so.*' -print | sort -V | tail -n 1)
+          if [[ -z "$WPE_WEBKIT_LIB" ]]; then
+            echo "Missing bundled libWPEWebKit-2.0 library" >&2
+            exit 1
+          fi
+          python3 - "$WPE_WEBKIT_LIB" <<'PY'
+          from pathlib import Path
+          import sys
+
+          path = Path(sys.argv[1])
+          data = path.read_bytes()
+          old = b"/usr/lib/wpe-webkit-2.0"
+          new = b"./lib/wpe-webkit-2.0/./"
+          if len(old) != len(new):
+              raise SystemExit("WPE libexec path replacement changed length")
+          count = data.count(old)
+          if count == 0:
+              raise SystemExit(f"WPE libexec path not found in {path}")
+          path.write_bytes(data.replace(old, new))
+          print(f"Patched {path} ({count} path references)")
+          PY
+
+          for helper in WPENetworkProcess WPEWebProcess; do
+            patchelf --set-rpath '$ORIGIN/..' "$WPE_RUNTIME_DIR/$helper"
+          done
+
+          BUNDLE_DIR="build/linux/x64/release/bundle"
+          patchelf --force-rpath --set-rpath '$ORIGIN/lib' "$BUNDLE_DIR/ciyue"
+          mv "$BUNDLE_DIR/ciyue" "$BUNDLE_DIR/ciyue.bin"
+          cp linux/packaging/ciyue-launcher.sh "$BUNDLE_DIR/ciyue"
+          chmod +x "$BUNDLE_DIR/ciyue"
+
+      - name: Verify Linux bundle dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUNDLE_DIR="build/linux/x64/release/bundle"
+          export LD_LIBRARY_PATH="$BUNDLE_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          missing=0
+          while IFS= read -r -d "" file; do
+            if ! file "$file" | grep -q "ELF"; then
+              continue
+            fi
+            unresolved=$(ldd "$file" 2>&1 | grep "not found" || true)
+            if [[ -n "$unresolved" ]]; then
+              printf "Unresolved dependencies in %s:\n%s\n" "$file" "$unresolved" >&2
+              missing=1
+            fi
+          done < <(find "$BUNDLE_DIR" -type f -print0)
+          if (( missing != 0 )); then
+            exit 1
+          fi
 
       - name: Compression
         if: ${{ inputs.package_release_artifacts }}
@@ -227,7 +331,7 @@ jobs:
         if: ${{ inputs.package_release_artifacts }}
         run: |
           ./tools/build_rpm.sh
-          mv ciyue-*.x86_64.rpm ciyue.x86_64.rpm
+          mv ciyue-*.x86_64.rpm ciyue-x86_64.rpm
 
       - name: Upload bundle
         if: ${{ !inputs.package_release_artifacts }}
@@ -235,6 +339,7 @@ jobs:
         with:
           name: ${{ inputs.artifact_name }}
           path: build/linux/x64/release/bundle/
+          if-no-files-found: error
 
       - name: Upload release artifacts
         if: ${{ inputs.package_release_artifacts }}
@@ -247,3 +352,4 @@ jobs:
             *.zsync
             ciyue-x86_64.deb
             ciyue-x86_64.rpm
+          if-no-files-found: error

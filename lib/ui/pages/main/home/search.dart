@@ -34,17 +34,18 @@ class _BottomSearchBarState extends State<BottomSearchBar> {
       context.read<DictManagerModel>().checkIsEmpty();
 
       return Selector<DictManagerModel, bool>(
-          selector: (_, model) => model.isEmpty,
-          builder: (_, isEmpty, __) {
-            if (isEmpty && !settings.aiExplainWord) {
-              return const SizedBox.shrink();
-            }
+        selector: (_, model) => model.isEmpty,
+        builder: (_, isEmpty, _) {
+          if (isEmpty && !settings.aiExplainWord) {
+            return const SizedBox.shrink();
+          }
 
-            return const Padding(
-                padding:
-                    EdgeInsets.only(left: 20, right: 20, bottom: 10, top: 10),
-                child: HomeSearchBar());
-          });
+          return const Padding(
+            padding: EdgeInsets.only(left: 20, right: 20, bottom: 10, top: 10),
+            child: HomeSearchBar(),
+          );
+        },
+      );
     } else {
       return const SizedBox.shrink();
     }
@@ -62,14 +63,13 @@ class _BottomSearchBarState extends State<BottomSearchBar> {
 }
 
 class HomeSearchBar extends StatelessWidget {
-  const HomeSearchBar({
-    super.key,
-  });
+  const HomeSearchBar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final searchWord =
-        context.select<HomeModel, String>((model) => model.searchWord);
+    final searchWord = context.select<HomeModel, String>(
+      (model) => model.searchWord,
+    );
     final model = context.read<HomeModel>();
 
     return FocusScope(

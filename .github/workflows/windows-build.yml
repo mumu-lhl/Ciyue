@@ -92,6 +92,24 @@ jobs:
 
           flutter build windows @extraArgs
 
+      - name: Normalize Flutter Windows bundle path
+        shell: pwsh
+        run: |
+          $legacyReleaseDir = "build/windows/x64/runner/Release"
+          if (Test-Path $legacyReleaseDir) {
+            exit 0
+          }
+
+          $releaseDir = Get-ChildItem -Path "build/windows/x64" -Directory -Recurse |
+            Where-Object { $_.FullName -match '[\\/]runner[\\/]Release$' } |
+            Select-Object -First 1 -ExpandProperty FullName
+          if (-not $releaseDir) {
+            throw "Could not locate the Flutter Windows release bundle"
+          }
+
+          New-Item -ItemType Directory -Force -Path (Split-Path $legacyReleaseDir) | Out-Null
+          Move-Item -Path $releaseDir -Destination $legacyReleaseDir
+
       - name: Copy DLLs
         shell: pwsh
         run: |
@@ -152,6 +170,7 @@ jobs:
         with:
           name: ${{ inputs.artifact_name }}
           path: build/windows/x64/runner/Release/
+          if-no-files-found: error
 
       - name: Install Inno Setup
         if: ${{ inputs.package_release_artifacts }}
@@ -174,3 +193,4 @@ jobs:
           path: |
             ciyue-installer.exe
             ciyue-windows.zip
+          if-no-files-found: error
