@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 3,
+  "appName": "Ciyue",
+  "items": [
+    {
+      "version": "1.23.1-beta.2",
+      "buildNumber": 89,
+      "platform": "linux",
+      "channel": "preview",
+      "mandatory": false,
+      "release": "https://mumulhl.eu.org/Ciyue/updates/releases/1.23.1-beta.2/linux/release.json"
+    },
+    {
+      "version": "1.23.1-beta.2",
+      "buildNumber": 89,
+      "platform": "windows",
+      "channel": "preview",
+      "mandatory": false,
+      "release": "https://mumulhl.eu.org/Ciyue/updates/releases/1.23.1-beta.2/windows/release.json"
+    }
+  ],
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKeyId": "release-f3d56da10d0866ff2cff4c65",
+    "value": "PWQd5zr/zK+9HFz9BKl8POak7Xepy1KbZYGfSU3sCRLQ/u7j+3xHvaq75oySm5N21nm1loFF0uWR/i+EbxdcCQ=="
+  }
+}
