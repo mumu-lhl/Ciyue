@@ -36,29 +36,55 @@ jobs:
     name: Build Linux (${{ inputs.workflow_profile }})
     runs-on: ubuntu-latest
     container:
-      image: archlinux:base-devel
+      # Official Arch base-devel image from 2024-06-22. Pin the digest so a
+      # rolling registry tag cannot silently raise the glibc build baseline.
+      image: docker.io/archlinux/archlinux@sha256:5d1e369287cc90a15fcdc82bb362b206742676912bb8110411b5be24ab45bbca
     env:
-      # Pin Arch Linux packages to a pre-GLIBC_2.42 snapshot so release
-      # artifacts keep using Arch's WPEWebKit stack while remaining usable on
-      # older distributions such as Ubuntu 24.04 / KDE neon.
+      # Keep the complete package set on a pre-GLIBC_2.42 snapshot so release
+      # artifacts remain usable on older distributions such as Ubuntu 24.04 /
+      # KDE neon.
       ARCHLINUX_ARCHIVE_DATE: 2024/07/01
+      ARCHLINUX_PACKAGE_SET: 2024-07-01-v1
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install pre dependencies
+      - name: Cache archived Arch packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/pacman/pkg
+          key: archlinux-packages-${{ runner.arch }}-${{ env.ARCHLINUX_PACKAGE_SET }}
+
+      - name: Install Linux build dependencies
+        shell: bash
         run: |
+          set -euxo pipefail
           printf 'Server = https://archive.archlinux.org/repos/%s/$repo/os/$arch\n' "$ARCHLINUX_ARCHIVE_DATE" > /etc/pacman.d/mirrorlist
-          # The current archlinux:base-devel image has a newer keyring than the
-          # archive snapshot. Signature verification fails for some historical
-          # packages with disabled/expired keys, so disable package signatures
-          # only for this disposable CI container before downgrading.
+
+          # Archived repositories do not provide signed database files and
+          # some historical package signing keys are expired. Use a temporary
+          # config only while resolving this pinned package set; the image's
+          # normal pacman configuration is never modified.
+          cp /etc/pacman.conf /tmp/pacman-ci.conf
           sed -i \
-            -e 's/^SigLevel[[:space:]]*=.*/SigLevel = Never/' \
-            -e 's/^LocalFileSigLevel[[:space:]]*=.*/LocalFileSigLevel = Never/' \
-            /etc/pacman.conf
-          pacman -Syyuu --noconfirm --disable-download-timeout --overwrite '*'
-          pacman -S --noconfirm --disable-download-timeout --overwrite '*' jq git clang cmake ninja wget patchelf
+            -e 's/^SigLevel[[:space:]]*=.*/SigLevel = Optional TrustAll/' \
+            -e 's/^LocalFileSigLevel[[:space:]]*=.*/LocalFileSigLevel = Optional TrustAll/' \
+            /tmp/pacman-ci.conf
+
+          # The base image is from before the archive snapshot, so this is an
+          # upgrade to the pinned snapshot, never a downgrade of a rolling
+          # image.
+          pacman --config /tmp/pacman-ci.conf -Syyu \
+            --noconfirm --disable-download-timeout
+          pacman --config /tmp/pacman-ci.conf -S --needed \
+            --noconfirm --disable-download-timeout \
+            curl dpkg git jq clang cmake ninja patchelf python rpm-tools \
+            unzip wget xz gtk3 gstreamer libayatana-appindicator \
+            libkeybinder3 libsecret wpewebkit
+
           git config --global --add safe.directory '*'
+          pacman -Q glibc wpewebkit libwpe wpebackend-fdo
+          test "$(pkg-config --modversion wpe-webkit-2.0)" = "2.44.2"
+          rm -f /tmp/pacman-ci.conf
 
       - uses: subosito/flutter-action@v2
         with:
@@ -66,9 +92,7 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: |
-          pacman -S --noconfirm gtk3 gstreamer libayatana-appindicator libkeybinder3 wpewebkit
-          flutter pub get
+        run: flutter pub get
 
       - name: Patch flutter_inappwebview for archived WPEWebKit
         run: |
@@ -196,16 +220,12 @@ jobs:
       - name: Build Deb
         if: ${{ inputs.package_release_artifacts }}
         run: |
-          pacman -S --noconfirm dpkg
-
           ./tools/build_deb.sh
           mv *.deb ciyue-x86_64.deb
 
       - name: Build rpm
         if: ${{ inputs.package_release_artifacts }}
         run: |
-          pacman -S --noconfirm rpm-tools
-
           ./tools/build_rpm.sh
           mv ciyue-*.x86_64.rpm ciyue.x86_64.rpm
 
