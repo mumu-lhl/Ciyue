@@ -289,6 +289,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  cryptography_plus:
+    dependency: transitive
+    description:
+      name: cryptography_plus
+      sha256: "34db787df4f4740a39474b6fb0a610aa6dc13a5b5b68754b4787a79939ac0454"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.7.1"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -321,6 +329,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.15"
+  desktop_updater:
+    dependency: "direct main"
+    description:
+      name: desktop_updater
+      sha256: e1df8ca963b94229e45f176e4bc00fb110cdb2afea44de3dfc7469c6a5185676
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.6"
   device_info_plus:
     dependency: "direct main"
     description:
@@ -886,6 +902,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  js:
+    dependency: transitive
+    description:
+      name: js
+      sha256: "53385261521cc4a0c4658fd0ad07a7d14591cf8fc33abbceae306ddb974888dc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.2"
   json_annotation:
     dependency: transitive
     description:
