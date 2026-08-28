@@ -37,3 +37,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: docs/.vitepress/dist
+          # Keep the signed desktop update feed published by release.yml.
+          clean: false

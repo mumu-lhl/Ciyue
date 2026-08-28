@@ -35,6 +35,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.9
+  desktop_updater: ^3.1.6
   drift: ^2.34.3
   drift_flutter: ^0.3.1
   dict_reader:

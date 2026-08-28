@@ -69,9 +69,11 @@ class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
       value: settings.includePrereleaseUpdates,
       onChanged: (value) async {
         await prefs.setBool("includePrereleaseUpdates", value);
-        setState(() {
-          settings.includePrereleaseUpdates = value;
-        });
+        settings.includePrereleaseUpdates = value;
+        if (Updater.supportsDesktopUpdates) {
+          await Updater.resetDesktopController();
+        }
+        setState(() {});
       },
       secondary: const Icon(Icons.settings_suggest_outlined),
     );
@@ -87,6 +89,11 @@ class CheckForUpdates extends StatelessWidget {
       leading: const Icon(Icons.update),
       title: Text(AppLocalizations.of(context)!.checkForUpdates),
       onTap: () async {
+        if (Updater.supportsDesktopUpdates) {
+          await Updater.checkDesktopForUpdates(context);
+          return;
+        }
+
         ToastService.show(
           AppLocalizations.of(context)!.checkingForUpdates,
           context,

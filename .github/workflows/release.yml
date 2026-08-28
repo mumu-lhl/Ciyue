@@ -48,18 +48,231 @@ jobs:
 
   release:
     name: Release
+    if: github.ref_name != 'nightly'
     runs-on: ubuntu-latest
     needs: [build-android, build-android-full, build-windows, build-linux]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.2
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
+
+      - name: Checkout GitHub Pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 1
+
+      - name: Prepare signed desktop update feed
+        shell: bash
+        env:
+          DESKTOP_UPDATER_KEY_BUNDLE_BASE64: ${{ secrets.DESKTOP_UPDATER_KEY_BUNDLE_BASE64 }}
+          DESKTOP_UPDATER_KEY_BUNDLE_PASSPHRASE: ${{ secrets.DESKTOP_UPDATER_KEY_BUNDLE_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+
+          : "${DESKTOP_UPDATER_KEY_BUNDLE_BASE64:?Set DESKTOP_UPDATER_KEY_BUNDLE_BASE64 in repository secrets}"
+          : "${DESKTOP_UPDATER_KEY_BUNDLE_PASSPHRASE:?Set DESKTOP_UPDATER_KEY_BUNDLE_PASSPHRASE in repository secrets}"
+
+          version_with_build="$(grep -m1 '^version:' pubspec.yaml | cut -d: -f2- | sed 's/[[:space:]\"]//g')"
+          version="${version_with_build%%+*}"
+          build_number=""
+          if [[ "$version_with_build" == *+* ]]; then
+            build_number="${version_with_build#*+}"
+          fi
+
+          tag_version="${GITHUB_REF_NAME#v}"
+          if [[ "$tag_version" != "$version" ]]; then
+            echo "Git tag $GITHUB_REF_NAME does not match pubspec version $version" >&2
+            exit 1
+          fi
+
+          channel="stable"
+          if [[ "$version" == *-alpha* || "$version" == *-beta* ]]; then
+            # Alpha and beta releases share one opt-in preview stream.
+            channel="preview"
+          fi
+
+          windows_archive="$(find Windows -maxdepth 2 -type f -name 'ciyue-windows.zip' -print -quit)"
+          linux_archive="$(find Linux -maxdepth 2 -type f -name 'ciyue-linux.tar.xz' -print -quit)"
+          if [[ -z "$windows_archive" || -z "$linux_archive" ]]; then
+            echo "Windows or Linux release archive is missing" >&2
+            exit 1
+          fi
+
+          input_root="$RUNNER_TEMP/desktop-update-input"
+          update_root="$RUNNER_TEMP/desktop-updates"
+          rm -rf "$input_root" "$update_root"
+          mkdir -p "$input_root/windows" "$input_root/linux" \
+            "$update_root/releases/$version/windows" \
+            "$update_root/releases/$version/linux"
+
+          unzip -q "$windows_archive" -d "$input_root/windows"
+          tar -xJf "$linux_archive" -C "$input_root/linux"
+
+          linux_binary="$(find "$input_root/linux" -path '*/bundle/ciyue' -print -quit)"
+          if [[ -z "$linux_binary" ]]; then
+            echo "Could not locate the extracted Linux bundle" >&2
+            exit 1
+          fi
+          linux_input="$(dirname "$linux_binary")"
+
+          bundle_file="$RUNNER_TEMP/desktop-updater.dukey"
+          printf '%s' "$DESKTOP_UPDATER_KEY_BUNDLE_BASE64" | base64 --decode > "$bundle_file"
+          DESKTOP_UPDATER_KEY_BUNDLE_PASSPHRASE="$DESKTOP_UPDATER_KEY_BUNDLE_PASSPHRASE" \
+            dart run desktop_updater:release keys import \
+              --input "$bundle_file" \
+              --passphrase-env DESKTOP_UPDATER_KEY_BUNDLE_PASSPHRASE
+          rm -f "$bundle_file"
+
+          release_asset_base="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}"
+          windows_artifact_url="$release_asset_base/Ciyue-${version}-windows.zip"
+          linux_artifact_url="$release_asset_base/Ciyue-${version}-linux.zip"
+
+          windows_output="$update_root/releases/$version/windows"
+          linux_output="$update_root/releases/$version/linux"
+          windows_package_args=(
+            --input "$input_root/windows"
+            --output "$windows_output"
+            --package-id ciyue
+            --app-name Ciyue
+            --version "$version"
+            --platform windows
+            --channel "$channel"
+            --artifact-url "$windows_artifact_url"
+            --install-strategy wholeDirectoryReplace
+          )
+          linux_package_args=(
+            --input "$linux_input"
+            --output "$linux_output"
+            --package-id org.eu.mumulhl.ciyue
+            --app-name Ciyue
+            --version "$version"
+            --platform linux
+            --channel "$channel"
+            --artifact-url "$linux_artifact_url"
+            --install-strategy wholeDirectoryReplace
+          )
+          if [[ -n "$build_number" ]]; then
+            windows_package_args+=(--build-number "$build_number")
+            linux_package_args+=(--build-number "$build_number")
+          fi
+
+          dart run desktop_updater:package "${windows_package_args[@]}"
+          dart run desktop_updater:package "${linux_package_args[@]}"
+
+          # The release action uploads every file in these two directories.
+          cp "$windows_output/Ciyue-${version}-windows.zip" \
+            "Windows/Ciyue-${version}-windows.zip"
+          cp "$linux_output/Ciyue-${version}-linux.zip" \
+            "Linux/Ciyue-${version}-linux.zip"
+
+          archive="$update_root/app-archive.json"
+          mkdir -p "$update_root"
+          if [[ -f gh-pages/updates/app-archive.json ]]; then
+            cp gh-pages/updates/app-archive.json "$archive"
+          else
+            printf '{\n  "schemaVersion": 3,\n  "appName": "Ciyue",\n  "items": []\n}\n' > "$archive"
+          fi
+
+          # app_archive upsert intentionally requires an unsigned input. The
+          # final signed envelope is added only after both platform items exist.
+          python3 - "$archive" <<'PY'
+          import json
+          import sys
+
+          archive_path = sys.argv[1]
+          with open(archive_path, encoding="utf-8") as handle:
+              archive = json.load(handle)
+          if not isinstance(archive, dict):
+              raise SystemExit("app-archive.json must be a JSON object")
+          archive.pop("signature", None)
+          with open(archive_path, "w", encoding="utf-8") as handle:
+              json.dump(archive, handle, indent=2, ensure_ascii=False)
+              handle.write("\n")
+          PY
+
+          archive_item_args=(
+            --archive "$archive"
+            --app-name Ciyue
+            --version "$version"
+            --channel "$channel"
+          )
+          if [[ -n "$build_number" ]]; then
+            archive_item_args+=(--build-number "$build_number")
+          fi
+          dart run desktop_updater:app_archive upsert \
+            "${archive_item_args[@]}" \
+            --platform windows \
+            --release-url "$UPDATE_BASE_URL/releases/$version/windows/release.json"
+          dart run desktop_updater:app_archive upsert \
+            "${archive_item_args[@]}" \
+            --platform linux \
+            --release-url "$UPDATE_BASE_URL/releases/$version/linux/release.json"
+
+          dart run desktop_updater:release sign \
+            --release "$windows_output/release.json" \
+            --config desktop_updater.yaml
+          dart run desktop_updater:release sign \
+            --release "$linux_output/release.json" \
+            --config desktop_updater.yaml
+          dart run desktop_updater:release sign \
+            --app-archive "$archive" \
+            --config desktop_updater.yaml
+
+
+        env:
+          UPDATE_BASE_URL: https://mumulhl.eu.org/Ciyue/updates
 
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/*,Linux/*"
           tag: ${{ github.ref_name }}
           generateReleaseNotes: true
+          allowUpdates: true
+          replacesArtifacts: true
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
+
+      - name: Verify published desktop artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          dart run desktop_updater:verify \
+            --release "$RUNNER_TEMP/desktop-updates/releases/${GITHUB_REF_NAME#v}/windows/release.json"
+          dart run desktop_updater:verify \
+            --release "$RUNNER_TEMP/desktop-updates/releases/${GITHUB_REF_NAME#v}/linux/release.json"
+
+      - name: Publish desktop update feed to GitHub Pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          feed_root="gh-pages/updates"
+          mkdir -p "$feed_root/releases/$version/windows" \
+            "$feed_root/releases/$version/linux"
+          cp "$RUNNER_TEMP/desktop-updates/app-archive.json" \
+            "$feed_root/app-archive.json"
+          cp "$RUNNER_TEMP/desktop-updates/releases/$version/windows/release.json" \
+            "$feed_root/releases/$version/windows/release.json"
+          cp "$RUNNER_TEMP/desktop-updates/releases/$version/linux/release.json" \
+            "$feed_root/releases/$version/linux/release.json"
+
+          git -C gh-pages config user.name "github-actions[bot]"
+          git -C gh-pages config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C gh-pages add updates
+          if git -C gh-pages diff --cached --quiet; then
+            echo "Desktop update feed is already up to date"
+          else
+            git -C gh-pages commit -m "chore: publish Ciyue desktop update feed"
+            git -C gh-pages push origin HEAD:gh-pages
+          fi

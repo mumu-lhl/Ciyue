@@ -57,6 +57,9 @@ appimagetool
 # VS Code
 .vscode/settings.json
 
+# desktop_updater private signing bundles
+*.dukey
+
 # fastforge
 dist/
 

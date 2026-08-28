@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_linux
+  desktop_updater
   dynamic_color
   file_selector_linux
   flutter_inappwebview_linux
