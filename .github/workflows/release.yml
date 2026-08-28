@@ -82,6 +82,7 @@ jobs:
         env:
           DESKTOP_UPDATER_KEY_BUNDLE_BASE64: ${{ secrets.DESKTOP_UPDATER_KEY_BUNDLE_BASE64 }}
           DESKTOP_UPDATER_KEY_BUNDLE_PASSPHRASE: ${{ secrets.DESKTOP_UPDATER_KEY_BUNDLE_PASSPHRASE }}
+          UPDATE_BASE_URL: https://mumulhl.eu.org/Ciyue/updates
         run: |
           set -euo pipefail
 
@@ -233,10 +234,6 @@ jobs:
           dart run desktop_updater:release sign \
             --app-archive "$archive" \
             --config desktop_updater.yaml
-
-
-        env:
-          UPDATE_BASE_URL: https://mumulhl.eu.org/Ciyue/updates
 
       - uses: ncipollo/release-action@v1
         with:
