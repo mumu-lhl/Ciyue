@@ -379,5 +379,11 @@
   "launchAtStartup": "啟動時啟動",
   "@launchAtStartup": {},
   "openRecordStats": "打開記錄統計",
-  "@openRecordStats": {}
+  "@openRecordStats": {},
+  "showWindow": "顯示視窗",
+  "@showWindow": {},
+  "noDictionariesFound": "找不到詞典",
+  "@noDictionariesFound": {},
+  "exitApp": "退出應用程式",
+  "@exitApp": {}
 }

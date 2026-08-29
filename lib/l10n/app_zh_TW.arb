@@ -222,5 +222,7 @@
     "totalWordsInWordbook": "單字本中的總單字數",
     "launchAtStartup": "啟動時啟動",
     "openRecordStats": "開啟記錄統計",
+    "showWindow": "顯示視窗",
+    "noDictionariesFound": "找不到詞典",
     "exitApp": "退出應用程式"
 }
