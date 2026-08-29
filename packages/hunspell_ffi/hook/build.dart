@@ -1,6 +1,8 @@
 import "package:hooks/hooks.dart";
 import "package:native_toolchain_c/native_toolchain_c.dart";
 
+import "process_manager.dart";
+
 void main(List<String> args) async {
   await build(args, (input, output) async {
     final sources = [
@@ -30,6 +32,10 @@ void main(List<String> args) async {
       std: "c++17",
     );
 
-    await builder.run(input: input, output: output);
+    await builder.run(
+      input: input,
+      output: output,
+      processManager: const CcacheSafeProcessManager(),
+    );
   });
 }

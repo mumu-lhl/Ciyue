@@ -11,6 +11,7 @@ dependencies:
   ffi: ^2.1.4
   hooks: ^2.2.0
   native_toolchain_c: ^0.19.4
+  process: ^5.0.6
 
 dev_dependencies:
   ffigen: ^20.1.1
