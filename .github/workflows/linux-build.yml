@@ -48,10 +48,6 @@ jobs:
       ARCHLINUX_GLIBC_VERSION: "2.39"
       ARCHLINUX_GLIBC_PACKAGE_VERSION: "2.39+r52+gf8e4623421-1"
     steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: recursive
-
       - name: Cache archived Arch packages
         uses: actions/cache@v4
         with:
@@ -92,6 +88,12 @@ jobs:
           test "$(getconf GNU_LIBC_VERSION | awk '{print $2}')" = "$ARCHLINUX_GLIBC_VERSION"
           test "$(pkg-config --modversion wpe-webkit-2.0)" = "2.44.2"
           rm -f /tmp/pacman-ci.conf
+
+      # The pinned Arch image does not include Git. Install the build
+      # dependencies first so checkout can use Git and initialize submodules.
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
 
       - uses: subosito/flutter-action@v2
         with:
