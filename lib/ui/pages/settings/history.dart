@@ -46,7 +46,7 @@ class HistorySettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.about)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.history)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
