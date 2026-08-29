@@ -13,6 +13,7 @@ import "package:ciyue/ui/pages/settings/audio.dart";
 import "package:ciyue/ui/pages/settings/auto_export.dart";
 import "package:ciyue/ui/pages/settings/backup.dart";
 import "package:ciyue/ui/pages/settings/history.dart";
+import "package:ciyue/ui/pages/settings/hunspell.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/properties.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/settings_dictionary.dart";
@@ -114,6 +115,10 @@ final router = GoRouter(
     GoRoute(
       path: "/settings/other",
       builder: (context, state) => const OtherSettingsPage(),
+    ),
+    GoRoute(
+      path: "/settings/hunspell",
+      builder: (context, state) => const HunspellSettingsPage(),
     ),
     GoRoute(
       path: "/settings/about",

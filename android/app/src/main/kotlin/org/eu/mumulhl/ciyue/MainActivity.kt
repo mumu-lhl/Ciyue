@@ -20,6 +20,7 @@ class MainActivity : FlutterActivity() {
         const val GET_DIRECTORY = 2
         const val REQUEST_OVERLAY_PERMISSION = 3
         const val OPEN_AUDIO_DOCUMENT_TREE = 4
+        const val OPEN_HUNSPELL_DOCUMENT_TREE = 5
     }
 
     private lateinit var configurator: EngineConfigurator
@@ -32,6 +33,11 @@ class MainActivity : FlutterActivity() {
     private fun openAudioDirectory() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         startActivityForResult(intent, OPEN_AUDIO_DOCUMENT_TREE)
+    }
+
+    private fun openHunspellDirectory() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        startActivityForResult(intent, OPEN_HUNSPELL_DOCUMENT_TREE)
     }
 
     private fun createFile() {
@@ -64,6 +70,7 @@ class MainActivity : FlutterActivity() {
             when (requestCode) {
                 OPEN_DICTIONARY_DOCUMENT_TREE -> openDocumentTree(data, "dictionaries")
                 OPEN_AUDIO_DOCUMENT_TREE -> openDocumentTree(data, "audios")
+                OPEN_HUNSPELL_DOCUMENT_TREE -> openDocumentTree(data, "hunspell")
                 CREATE_FILE -> createFileHandler(data)
                 GET_DIRECTORY -> getDirectoryHandler(data)
                 REQUEST_OVERLAY_PERMISSION -> {}
@@ -108,6 +115,7 @@ class MainActivity : FlutterActivity() {
             configurator.callback = object : EngineConfigurator.Callback {
                 override fun onOpenDirectory() = openDirectory()
                 override fun onOpenAudioDirectory() = openAudioDirectory()
+                override fun onOpenHunspellDirectory() = openHunspellDirectory()
                 override fun onCreateFile() = createFile()
                 override fun onGetDirectory() = getDirectory()
             }

@@ -1,0 +1,3 @@
+[submodule "packages/hunspell_ffi/third_party/hunspell"]
+	path = packages/hunspell_ffi/third_party/hunspell
+	url = https://github.com/hunspell/hunspell.git

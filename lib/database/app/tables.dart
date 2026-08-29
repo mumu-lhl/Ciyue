@@ -18,6 +18,16 @@ class DictionaryList extends Table {
   IntColumn get type => integer().withDefault(const Constant(0))();
 }
 
+class HunspellSource extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get affPath => text()();
+  TextColumn get dicPath => text()();
+  TextColumn get language => text().nullable()();
+  BoolColumn get enabled => boolean().withDefault(const Constant(false))();
+  IntColumn get order => integer().withDefault(const Constant(0))();
+}
+
 class History extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get word => text()();

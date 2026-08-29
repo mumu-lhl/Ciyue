@@ -1,0 +1,14 @@
+name: HunspellFfiBindings
+description: |
+  Bindings for the Ciyue Hunspell bridge.
+
+output: "lib/hunspell_ffi_bindings_generated.dart"
+headers:
+  entry-points:
+    - "src/hunspell_bridge.h"
+  include-directives:
+    - "src/hunspell_bridge.h"
+ffi-native:
+comments:
+  style: any
+  length: full

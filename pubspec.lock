@@ -854,6 +854,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  hunspell_ffi:
+    dependency: "direct main"
+    description:
+      path: "packages/hunspell_ffi"
+      relative: true
+    source: path
+    version: "0.0.1"
   image:
     dependency: transitive
     description:
@@ -1258,10 +1265,10 @@ packages:
     dependency: transitive
     description:
       name: process
-      sha256: c6248e4526673988586e8c00bb22a49210c258dc91df5227d5da9748ecf79744
+      sha256: "4242ba3508d37e01808bdf71ad1d5bb93a8d671bf2e7450e6b1b353fb0808891"
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.5"
+    version: "5.0.6"
   provider:
     dependency: "direct main"
     description:

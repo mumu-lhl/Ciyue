@@ -30,6 +30,21 @@ class DictionaryListDaoManager {
       );
 }
 
+mixin _$HunspellSourceDaoMixin on DatabaseAccessor<AppDatabase> {
+  $HunspellSourceTable get hunspellSource => attachedDatabase.hunspellSource;
+  HunspellSourceDaoManager get managers => HunspellSourceDaoManager(this);
+}
+
+class HunspellSourceDaoManager {
+  final _$HunspellSourceDaoMixin _db;
+  HunspellSourceDaoManager(this._db);
+  $$HunspellSourceTableTableManager get hunspellSource =>
+      $$HunspellSourceTableTableManager(
+        _db.attachedDatabase,
+        _db.hunspellSource,
+      );
+}
+
 mixin _$HistoryDaoMixin on DatabaseAccessor<AppDatabase> {
   $HistoryTable get history => attachedDatabase.history;
   HistoryDaoManager get managers => HistoryDaoManager(this);

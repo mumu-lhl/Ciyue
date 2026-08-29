@@ -1,5 +1,9 @@
+import "dart:convert";
+
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/dictionary_lookup.dart";
+import "package:ciyue/services/dictionary_lookup_instance.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
 /// Provider for global settings.
@@ -8,8 +12,20 @@ final settingsProvider = Provider((ref) => settings);
 /// Provider for the dictionary manager.
 final dictManagerProvider = Provider((ref) => dictManager);
 
-/// FutureProvider that fetches the HTML content of a word for a specific dictionary.
-/// This automates the word-reading logic and handles loading states.
+/// Resolves a word once so the preview and its dictionary tabs use the same
+/// set of exact and morphology matches.
+final dictionaryLookupProvider =
+    FutureProvider.family<DictionaryLookupResult, String>((ref, word) async {
+      while (dictManager.isLoading) {
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+
+      return dictionaryLookup.lookup(word);
+    });
+
+/// FutureProvider that fetches the HTML content of a word for a specific
+/// dictionary. Multiple matching headwords are rendered in one dictionary
+/// panel so the existing tab/expansion layout does not change.
 final wordContentProvider =
     FutureProvider.family<String, ({String word, int dictId})>((
       ref,
@@ -17,30 +33,37 @@ final wordContentProvider =
     ) async {
       final dict = dictManager.dicts[params.dictId];
       if (dict == null) return "";
-      return await dict.readWord(params.word);
+
+      final lookup = await ref.watch(
+        dictionaryLookupProvider(params.word).future,
+      );
+      final entries = lookup.entriesFor(params.dictId);
+      if (entries.isEmpty) return "";
+
+      if (entries.length == 1) {
+        return dict.wrapContentWithResources(entries.single.content);
+      }
+
+      final html = entries
+          .map(
+            (entry) =>
+                "<section class=\"ciyue-hunspell-entry\">"
+                "<h2>${const HtmlEscape().convert(entry.headword)}</h2>"
+                "${entry.content}</section>",
+          )
+          .join();
+      return dict.wrapContentWithResources(html);
     });
 
-/// FutureProvider that returns a list of dictionary IDs that contain the given word.
-/// This replaces the manual async loop logic previously found in [WordDisplay].
+/// FutureProvider that returns dictionary IDs with at least one exact or
+/// morphology-resolved entry for the given word.
 final validDictIdsProvider = FutureProvider.family<List<int>, String>((
   ref,
   word,
 ) async {
-  // Wait until the dictionary manager has finished loading.
-  while (dictManager.isLoading) {
-    await Future.delayed(const Duration(milliseconds: 50));
-  }
-
   if (word.isEmpty) return [];
-
-  final validIds = <int>[];
-  for (final id in dictManager.dictIds) {
-    final dict = dictManager.dicts[id];
-    if (dict != null && await dict.wordExist(word)) {
-      validIds.add(id);
-    }
-  }
-  return validIds;
+  final lookup = await ref.watch(dictionaryLookupProvider(word).future);
+  return lookup.validDictionaryIds;
 });
 
 /// Notifier for managing the heights of multiple WebViews.

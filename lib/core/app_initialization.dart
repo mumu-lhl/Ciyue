@@ -1,9 +1,11 @@
+import "dart:async";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/changelog.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/startup.dart";
@@ -23,6 +25,15 @@ import "package:provider/provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:tray_manager/tray_manager.dart";
 import "package:window_manager/window_manager.dart";
+
+Future<void> reloadHunspell() async {
+  if (!settings.enableHunspellMorphology) {
+    await hunspellManager.close();
+    return;
+  }
+
+  await hunspellManager.reloadFromDatabase();
+}
 
 Future<void> initGroup() async {
   int? groupId = prefs.getInt("currentDictionaryGroupId");
@@ -72,7 +83,7 @@ Future<void> initApp() async {
   await initPrefs();
 
   // No waiting to save time.
-  initGroup();
+  unawaited(initGroup().then((_) => reloadHunspell()));
 
   flutterTts = FlutterTts();
 
@@ -252,6 +263,8 @@ const preferencesAllowList = <String>{
   "ttsLanguage",
   "audioDirectory",
   "advance",
+  "enableHunspellMorphology",
+  "hunspellLookupMode",
   "enableHistory",
   "versionCode",
   "dictionarySwitchStyle",

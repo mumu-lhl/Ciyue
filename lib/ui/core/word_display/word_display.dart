@@ -170,29 +170,22 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   PreferredSizeWidget buildTabBar(BuildContext context) {
     final dictManager = ref.watch(dictManagerProvider);
     final settings = ref.watch(settingsProvider);
+    final validDictIdsAsync = ref.watch(validDictIdsProvider(widget.word));
+
     return PreferredSize(
       preferredSize: const Size.fromHeight(48),
-      child: FutureBuilder(
-        future: Future.wait([
-          for (final id in dictManager.dictIds)
-            dictManager.dicts[id]!.wordExist(widget.word),
-        ]),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return TabBar(
-              isScrollable: true,
-              tabAlignment: TabAlignment.center,
-              tabs: [
-                if (settings.aiExplainWord) Tab(text: "AI"),
-                for (int i = 0; i < snapshot.data!.length; i++)
-                  if (snapshot.data![i])
-                    Tab(text: dictManager.dicts[dictManager.dictIds[i]]!.title),
-              ],
-            );
-          } else {
-            return const SizedBox.shrink();
-          }
-        },
+      child: validDictIdsAsync.when(
+        data: (validDictIds) => TabBar(
+          isScrollable: true,
+          tabAlignment: TabAlignment.center,
+          tabs: [
+            if (settings.aiExplainWord) Tab(text: "AI"),
+            for (final id in validDictIds)
+              if (dictManager.dicts[id] case final dict?) Tab(text: dict.title),
+          ],
+        ),
+        loading: () => const SizedBox.shrink(),
+        error: (_, _) => const SizedBox.shrink(),
       ),
     );
   }

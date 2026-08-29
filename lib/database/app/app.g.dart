@@ -408,6 +408,456 @@ class DictionaryListCompanion
   }
 }
 
+class $HunspellSourceTable extends HunspellSource
+    with drift.TableInfo<$HunspellSourceTable, HunspellSourceData> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HunspellSourceTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
+    'id',
+  );
+  @override
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const drift.VerificationMeta _nameMeta = const drift.VerificationMeta(
+    'name',
+  );
+  @override
+  late final drift.GeneratedColumn<String> name = drift.GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const drift.VerificationMeta _affPathMeta =
+      const drift.VerificationMeta('affPath');
+  @override
+  late final drift.GeneratedColumn<String> affPath =
+      drift.GeneratedColumn<String>(
+        'aff_path',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _dicPathMeta =
+      const drift.VerificationMeta('dicPath');
+  @override
+  late final drift.GeneratedColumn<String> dicPath =
+      drift.GeneratedColumn<String>(
+        'dic_path',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _languageMeta =
+      const drift.VerificationMeta('language');
+  @override
+  late final drift.GeneratedColumn<String> language =
+      drift.GeneratedColumn<String>(
+        'language',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const drift.VerificationMeta _enabledMeta =
+      const drift.VerificationMeta('enabled');
+  @override
+  late final drift.GeneratedColumn<bool> enabled = drift.GeneratedColumn<bool>(
+    'enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enabled" IN (0, 1))',
+    ),
+    defaultValue: const drift.Constant(false),
+  );
+  static const drift.VerificationMeta _orderMeta = const drift.VerificationMeta(
+    'order',
+  );
+  @override
+  late final drift.GeneratedColumn<int> order = drift.GeneratedColumn<int>(
+    'order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const drift.Constant(0),
+  );
+  @override
+  List<drift.GeneratedColumn> get $columns => [
+    id,
+    name,
+    affPath,
+    dicPath,
+    language,
+    enabled,
+    order,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'hunspell_source';
+  @override
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<HunspellSourceData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('aff_path')) {
+      context.handle(
+        _affPathMeta,
+        affPath.isAcceptableOrUnknown(data['aff_path']!, _affPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_affPathMeta);
+    }
+    if (data.containsKey('dic_path')) {
+      context.handle(
+        _dicPathMeta,
+        dicPath.isAcceptableOrUnknown(data['dic_path']!, _dicPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dicPathMeta);
+    }
+    if (data.containsKey('language')) {
+      context.handle(
+        _languageMeta,
+        language.isAcceptableOrUnknown(data['language']!, _languageMeta),
+      );
+    }
+    if (data.containsKey('enabled')) {
+      context.handle(
+        _enabledMeta,
+        enabled.isAcceptableOrUnknown(data['enabled']!, _enabledMeta),
+      );
+    }
+    if (data.containsKey('order')) {
+      context.handle(
+        _orderMeta,
+        order.isAcceptableOrUnknown(data['order']!, _orderMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
+  @override
+  HunspellSourceData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HunspellSourceData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      affPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}aff_path'],
+      )!,
+      dicPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dic_path'],
+      )!,
+      language: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}language'],
+      ),
+      enabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enabled'],
+      )!,
+      order: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order'],
+      )!,
+    );
+  }
+
+  @override
+  $HunspellSourceTable createAlias(String alias) {
+    return $HunspellSourceTable(attachedDatabase, alias);
+  }
+}
+
+class HunspellSourceData extends drift.DataClass
+    implements drift.Insertable<HunspellSourceData> {
+  final int id;
+  final String name;
+  final String affPath;
+  final String dicPath;
+  final String? language;
+  final bool enabled;
+  final int order;
+  const HunspellSourceData({
+    required this.id,
+    required this.name,
+    required this.affPath,
+    required this.dicPath,
+    this.language,
+    required this.enabled,
+    required this.order,
+  });
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['name'] = drift.Variable<String>(name);
+    map['aff_path'] = drift.Variable<String>(affPath);
+    map['dic_path'] = drift.Variable<String>(dicPath);
+    if (!nullToAbsent || language != null) {
+      map['language'] = drift.Variable<String>(language);
+    }
+    map['enabled'] = drift.Variable<bool>(enabled);
+    map['order'] = drift.Variable<int>(order);
+    return map;
+  }
+
+  HunspellSourceCompanion toCompanion(bool nullToAbsent) {
+    return HunspellSourceCompanion(
+      id: drift.Value(id),
+      name: drift.Value(name),
+      affPath: drift.Value(affPath),
+      dicPath: drift.Value(dicPath),
+      language: language == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(language),
+      enabled: drift.Value(enabled),
+      order: drift.Value(order),
+    );
+  }
+
+  factory HunspellSourceData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return HunspellSourceData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      affPath: serializer.fromJson<String>(json['affPath']),
+      dicPath: serializer.fromJson<String>(json['dicPath']),
+      language: serializer.fromJson<String?>(json['language']),
+      enabled: serializer.fromJson<bool>(json['enabled']),
+      order: serializer.fromJson<int>(json['order']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'affPath': serializer.toJson<String>(affPath),
+      'dicPath': serializer.toJson<String>(dicPath),
+      'language': serializer.toJson<String?>(language),
+      'enabled': serializer.toJson<bool>(enabled),
+      'order': serializer.toJson<int>(order),
+    };
+  }
+
+  HunspellSourceData copyWith({
+    int? id,
+    String? name,
+    String? affPath,
+    String? dicPath,
+    drift.Value<String?> language = const drift.Value.absent(),
+    bool? enabled,
+    int? order,
+  }) => HunspellSourceData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    affPath: affPath ?? this.affPath,
+    dicPath: dicPath ?? this.dicPath,
+    language: language.present ? language.value : this.language,
+    enabled: enabled ?? this.enabled,
+    order: order ?? this.order,
+  );
+  HunspellSourceData copyWithCompanion(HunspellSourceCompanion data) {
+    return HunspellSourceData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      affPath: data.affPath.present ? data.affPath.value : this.affPath,
+      dicPath: data.dicPath.present ? data.dicPath.value : this.dicPath,
+      language: data.language.present ? data.language.value : this.language,
+      enabled: data.enabled.present ? data.enabled.value : this.enabled,
+      order: data.order.present ? data.order.value : this.order,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HunspellSourceData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('affPath: $affPath, ')
+          ..write('dicPath: $dicPath, ')
+          ..write('language: $language, ')
+          ..write('enabled: $enabled, ')
+          ..write('order: $order')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, affPath, dicPath, language, enabled, order);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HunspellSourceData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.affPath == this.affPath &&
+          other.dicPath == this.dicPath &&
+          other.language == this.language &&
+          other.enabled == this.enabled &&
+          other.order == this.order);
+}
+
+class HunspellSourceCompanion
+    extends drift.UpdateCompanion<HunspellSourceData> {
+  final drift.Value<int> id;
+  final drift.Value<String> name;
+  final drift.Value<String> affPath;
+  final drift.Value<String> dicPath;
+  final drift.Value<String?> language;
+  final drift.Value<bool> enabled;
+  final drift.Value<int> order;
+  const HunspellSourceCompanion({
+    this.id = const drift.Value.absent(),
+    this.name = const drift.Value.absent(),
+    this.affPath = const drift.Value.absent(),
+    this.dicPath = const drift.Value.absent(),
+    this.language = const drift.Value.absent(),
+    this.enabled = const drift.Value.absent(),
+    this.order = const drift.Value.absent(),
+  });
+  HunspellSourceCompanion.insert({
+    this.id = const drift.Value.absent(),
+    required String name,
+    required String affPath,
+    required String dicPath,
+    this.language = const drift.Value.absent(),
+    this.enabled = const drift.Value.absent(),
+    this.order = const drift.Value.absent(),
+  }) : name = drift.Value(name),
+       affPath = drift.Value(affPath),
+       dicPath = drift.Value(dicPath);
+  static drift.Insertable<HunspellSourceData> custom({
+    drift.Expression<int>? id,
+    drift.Expression<String>? name,
+    drift.Expression<String>? affPath,
+    drift.Expression<String>? dicPath,
+    drift.Expression<String>? language,
+    drift.Expression<bool>? enabled,
+    drift.Expression<int>? order,
+  }) {
+    return drift.RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (affPath != null) 'aff_path': affPath,
+      if (dicPath != null) 'dic_path': dicPath,
+      if (language != null) 'language': language,
+      if (enabled != null) 'enabled': enabled,
+      if (order != null) 'order': order,
+    });
+  }
+
+  HunspellSourceCompanion copyWith({
+    drift.Value<int>? id,
+    drift.Value<String>? name,
+    drift.Value<String>? affPath,
+    drift.Value<String>? dicPath,
+    drift.Value<String?>? language,
+    drift.Value<bool>? enabled,
+    drift.Value<int>? order,
+  }) {
+    return HunspellSourceCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      affPath: affPath ?? this.affPath,
+      dicPath: dicPath ?? this.dicPath,
+      language: language ?? this.language,
+      enabled: enabled ?? this.enabled,
+      order: order ?? this.order,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (id.present) {
+      map['id'] = drift.Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = drift.Variable<String>(name.value);
+    }
+    if (affPath.present) {
+      map['aff_path'] = drift.Variable<String>(affPath.value);
+    }
+    if (dicPath.present) {
+      map['dic_path'] = drift.Variable<String>(dicPath.value);
+    }
+    if (language.present) {
+      map['language'] = drift.Variable<String>(language.value);
+    }
+    if (enabled.present) {
+      map['enabled'] = drift.Variable<bool>(enabled.value);
+    }
+    if (order.present) {
+      map['order'] = drift.Variable<int>(order.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HunspellSourceCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('affPath: $affPath, ')
+          ..write('dicPath: $dicPath, ')
+          ..write('language: $language, ')
+          ..write('enabled: $enabled, ')
+          ..write('order: $order')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $WordbookTable extends Wordbook
     with drift.TableInfo<$WordbookTable, WordbookData> {
   @override
@@ -4008,6 +4458,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $DictionaryListTable dictionaryList = $DictionaryListTable(this);
+  late final $HunspellSourceTable hunspellSource = $HunspellSourceTable(this);
   late final $WordbookTable wordbook = $WordbookTable(this);
   late final $WordbookTagsTable wordbookTags = $WordbookTagsTable(this);
   late final $HistoryTable history = $HistoryTable(this);
@@ -4057,6 +4508,9 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final DictionaryListDao dictionaryListDao = DictionaryListDao(
     this as AppDatabase,
   );
+  late final HunspellSourceDao hunspellSourceDao = HunspellSourceDao(
+    this as AppDatabase,
+  );
   late final WordbookDao wordbookDao = WordbookDao(this as AppDatabase);
   late final WordbookTagsDao wordbookTagsDao = WordbookTagsDao(
     this as AppDatabase,
@@ -4087,6 +4541,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   @override
   List<drift.DatabaseSchemaEntity> get allSchemaEntities => [
     dictionaryList,
+    hunspellSource,
     wordbook,
     wordbookTags,
     history,
@@ -4332,6 +4787,250 @@ typedef $$DictionaryListTableProcessedTableManager =
         >,
       ),
       DictionaryListData,
+      drift.PrefetchHooks Function()
+    >;
+typedef $$HunspellSourceTableCreateCompanionBuilder =
+    HunspellSourceCompanion Function({
+      drift.Value<int> id,
+      required String name,
+      required String affPath,
+      required String dicPath,
+      drift.Value<String?> language,
+      drift.Value<bool> enabled,
+      drift.Value<int> order,
+    });
+typedef $$HunspellSourceTableUpdateCompanionBuilder =
+    HunspellSourceCompanion Function({
+      drift.Value<int> id,
+      drift.Value<String> name,
+      drift.Value<String> affPath,
+      drift.Value<String> dicPath,
+      drift.Value<String?> language,
+      drift.Value<bool> enabled,
+      drift.Value<int> order,
+    });
+
+class $$HunspellSourceTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $HunspellSourceTable> {
+  $$HunspellSourceTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get affPath => $composableBuilder(
+    column: $table.affPath,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get dicPath => $composableBuilder(
+    column: $table.dicPath,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<int> get order => $composableBuilder(
+    column: $table.order,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+}
+
+class $$HunspellSourceTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $HunspellSourceTable> {
+  $$HunspellSourceTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get affPath => $composableBuilder(
+    column: $table.affPath,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get dicPath => $composableBuilder(
+    column: $table.dicPath,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<int> get order => $composableBuilder(
+    column: $table.order,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+}
+
+class $$HunspellSourceTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $HunspellSourceTable> {
+  $$HunspellSourceTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get affPath =>
+      $composableBuilder(column: $table.affPath, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get dicPath =>
+      $composableBuilder(column: $table.dicPath, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get language =>
+      $composableBuilder(column: $table.language, builder: (column) => column);
+
+  drift.GeneratedColumn<bool> get enabled =>
+      $composableBuilder(column: $table.enabled, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
+}
+
+class $$HunspellSourceTableTableManager
+    extends
+        drift.RootTableManager<
+          _$AppDatabase,
+          $HunspellSourceTable,
+          HunspellSourceData,
+          $$HunspellSourceTableFilterComposer,
+          $$HunspellSourceTableOrderingComposer,
+          $$HunspellSourceTableAnnotationComposer,
+          $$HunspellSourceTableCreateCompanionBuilder,
+          $$HunspellSourceTableUpdateCompanionBuilder,
+          (
+            HunspellSourceData,
+            drift.BaseReferences<
+              _$AppDatabase,
+              $HunspellSourceTable,
+              HunspellSourceData
+            >,
+          ),
+          HunspellSourceData,
+          drift.PrefetchHooks Function()
+        > {
+  $$HunspellSourceTableTableManager(
+    _$AppDatabase db,
+    $HunspellSourceTable table,
+  ) : super(
+        drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HunspellSourceTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HunspellSourceTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HunspellSourceTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                drift.Value<int> id = const drift.Value.absent(),
+                drift.Value<String> name = const drift.Value.absent(),
+                drift.Value<String> affPath = const drift.Value.absent(),
+                drift.Value<String> dicPath = const drift.Value.absent(),
+                drift.Value<String?> language = const drift.Value.absent(),
+                drift.Value<bool> enabled = const drift.Value.absent(),
+                drift.Value<int> order = const drift.Value.absent(),
+              }) => HunspellSourceCompanion(
+                id: id,
+                name: name,
+                affPath: affPath,
+                dicPath: dicPath,
+                language: language,
+                enabled: enabled,
+                order: order,
+              ),
+          createCompanionCallback:
+              ({
+                drift.Value<int> id = const drift.Value.absent(),
+                required String name,
+                required String affPath,
+                required String dicPath,
+                drift.Value<String?> language = const drift.Value.absent(),
+                drift.Value<bool> enabled = const drift.Value.absent(),
+                drift.Value<int> order = const drift.Value.absent(),
+              }) => HunspellSourceCompanion.insert(
+                id: id,
+                name: name,
+                affPath: affPath,
+                dicPath: dicPath,
+                language: language,
+                enabled: enabled,
+                order: order,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$HunspellSourceTableProcessedTableManager =
+    drift.ProcessedTableManager<
+      _$AppDatabase,
+      $HunspellSourceTable,
+      HunspellSourceData,
+      $$HunspellSourceTableFilterComposer,
+      $$HunspellSourceTableOrderingComposer,
+      $$HunspellSourceTableAnnotationComposer,
+      $$HunspellSourceTableCreateCompanionBuilder,
+      $$HunspellSourceTableUpdateCompanionBuilder,
+      (
+        HunspellSourceData,
+        drift.BaseReferences<
+          _$AppDatabase,
+          $HunspellSourceTable,
+          HunspellSourceData
+        >,
+      ),
+      HunspellSourceData,
       drift.PrefetchHooks Function()
     >;
 typedef $$WordbookTableCreateCompanionBuilder = WordbookCompanion Function({
@@ -6485,6 +7184,8 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$DictionaryListTableTableManager get dictionaryList =>
       $$DictionaryListTableTableManager(_db, _db.dictionaryList);
+  $$HunspellSourceTableTableManager get hunspellSource =>
+      $$HunspellSourceTableTableManager(_db, _db.hunspellSource);
   $$WordbookTableTableManager get wordbook =>
       $$WordbookTableTableManager(_db, _db.wordbook);
   $$WordbookTagsTableTableManager get wordbookTags =>

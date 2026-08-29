@@ -20,6 +20,7 @@ String? windowsWebview2Directory;
 // Daos
 final dictGroupDao = DictGroupDao(mainDatabase);
 final dictionaryListDao = DictionaryListDao(mainDatabase);
+final hunspellSourceDao = HunspellSourceDao(mainDatabase);
 final historyDao = HistoryDao(mainDatabase);
 final mddAudioListDao = MddAudioListDao(mainDatabase);
 final mddAudioResourceDao = MddAudioResourceDao(mainDatabase);

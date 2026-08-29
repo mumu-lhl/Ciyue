@@ -3,6 +3,7 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/hunspell.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
@@ -59,6 +60,7 @@ class AddButton extends StatelessWidget {
             if (context.mounted) {
               await selectMdx(context, paths, closeLoadingWhenEmpty: true);
             }
+            await addHunspellPairs(await findHunspellPairsOnAndroid(path));
             return;
           }
 

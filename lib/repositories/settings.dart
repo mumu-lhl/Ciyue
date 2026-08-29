@@ -1,6 +1,7 @@
 import "dart:convert";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/models/hunspell.dart";
 import "package:material_ui/material_ui.dart";
 
 final settings = Settings();
@@ -39,6 +40,9 @@ class Settings {
   late bool includePrereleaseUpdates;
   late bool skipTaggedWord;
   late bool advance;
+
+  late bool enableHunspellMorphology;
+  late HunspellLookupMode hunspellLookupMode;
 
   late String aiProvider;
   late bool aiExplainWord;
@@ -101,6 +105,14 @@ class Settings {
     enableHistory = prefs.getBool("enableHistory") ?? true;
 
     advance = prefs.getBool("advance") ?? false;
+
+    enableHunspellMorphology =
+        prefs.getBool("enableHunspellMorphology") ?? false;
+    final hunspellLookupModeName = prefs.getString("hunspellLookupMode");
+    hunspellLookupMode = HunspellLookupMode.values.firstWhere(
+      (mode) => mode.name == hunspellLookupModeName,
+      orElse: () => HunspellLookupMode.fallback,
+    );
 
     skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
 
@@ -216,6 +228,16 @@ class Settings {
   Future<void> setAdvance(bool value) async {
     advance = value;
     await prefs.setBool("advance", value);
+  }
+
+  Future<void> setEnableHunspellMorphology(bool value) async {
+    enableHunspellMorphology = value;
+    await prefs.setBool("enableHunspellMorphology", value);
+  }
+
+  Future<void> setHunspellLookupMode(HunspellLookupMode mode) async {
+    hunspellLookupMode = mode;
+    await prefs.setString("hunspellLookupMode", mode.name);
   }
 
   Future<void> setEnableHistory(bool value) async {

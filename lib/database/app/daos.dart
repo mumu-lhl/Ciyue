@@ -140,6 +140,86 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
   }
 }
 
+@DriftAccessor(tables: [HunspellSource])
+class HunspellSourceDao extends DatabaseAccessor<AppDatabase>
+    with _$HunspellSourceDaoMixin {
+  HunspellSourceDao(super.attachedDatabase);
+
+  Future<List<HunspellSourceData>> all() {
+    return (select(
+      hunspellSource,
+    )..orderBy([(row) => OrderingTerm(expression: row.order)])).get();
+  }
+
+  Future<List<HunspellSourceData>> enabled() {
+    return (select(hunspellSource)
+          ..where((row) => row.enabled.equals(true))
+          ..orderBy([(row) => OrderingTerm(expression: row.order)]))
+        .get();
+  }
+
+  Future<int> add({
+    required String name,
+    required String affPath,
+    required String dicPath,
+    String? language,
+    bool enabled = false,
+  }) async {
+    final maxOrder =
+        await (select(hunspellSource)
+              ..orderBy([
+                (row) => OrderingTerm(
+                  expression: row.order,
+                  mode: OrderingMode.desc,
+                ),
+              ])
+              ..limit(1))
+            .getSingleOrNull();
+
+    return into(hunspellSource).insert(
+      HunspellSourceCompanion(
+        name: Value(name),
+        affPath: Value(affPath),
+        dicPath: Value(dicPath),
+        language: Value(language),
+        enabled: Value(enabled),
+        order: Value((maxOrder?.order ?? -1) + 1),
+      ),
+    );
+  }
+
+  Future<bool> exists(String affPath, String dicPath) async {
+    return (await (select(hunspellSource)..where(
+              (row) =>
+                  row.affPath.isValue(affPath) & row.dicPath.isValue(dicPath),
+            ))
+            .get())
+        .isNotEmpty;
+  }
+
+  Future<void> setEnabled(int id, bool enabled) {
+    return (update(hunspellSource)..where((row) => row.id.isValue(id))).write(
+      HunspellSourceCompanion(enabled: Value(enabled)),
+    );
+  }
+
+  Future<void> updateOrder(List<HunspellSourceData> sources) {
+    return batch((batch) {
+      for (var i = 0; i < sources.length; i++) {
+        batch.update(
+          hunspellSource,
+          HunspellSourceCompanion(order: Value(i)),
+          where: (row) => row.id.isValue(sources[i].id),
+        );
+      }
+    });
+  }
+
+  Future<void> remove(int id) {
+    return (delete(hunspellSource)..where((row) => row.id.isValue(id))).go();
+  }
+}
+
 @DriftAccessor(tables: [History])
 class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
   HistoryDao(super.attachedDatabase);

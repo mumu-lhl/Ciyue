@@ -1,1 +1,225 @@
-{"_meta":{"description":"This file contains a serialized version of schema entities for drift.","version":"1.2.0"},"options":{"store_date_time_values_as_text":false},"entities":[{"id":0,"references":[],"type":"table","data":{"name":"resource","was_declared_in_moor":false,"columns":[{"name":"block_offset","getter_name":"blockOffset","moor_type":"int","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"compressed_size","getter_name":"compressedSize","moor_type":"int","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"end_offset","getter_name":"endOffset","moor_type":"int","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"key","getter_name":"key","moor_type":"string","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"start_offset","getter_name":"startOffset","moor_type":"int","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"part","getter_name":"part","moor_type":"int","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]}],"is_virtual":false,"without_rowid":false,"constraints":[]}},{"id":1,"references":[],"type":"table","data":{"name":"dictionary","was_declared_in_moor":false,"columns":[{"name":"block_offset","getter_name":"blockOffset","moor_type":"int","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"compressed_size","getter_name":"compressedSize","moor_type":"int","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"end_offset","getter_name":"endOffset","moor_type":"int","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"key","getter_name":"key","moor_type":"string","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"start_offset","getter_name":"startOffset","moor_type":"int","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]}],"is_virtual":false,"without_rowid":false,"constraints":[]}},{"id":2,"references":[0],"type":"index","data":{"on":0,"name":"idx_data","sql":null,"unique":false,"columns":["key"]}},{"id":3,"references":[1],"type":"index","data":{"on":1,"name":"idx_word","sql":null,"unique":false,"columns":["key"]}}]}
+{
+  "_meta": {
+    "description": "This file contains a serialized version of schema entities for drift.",
+    "version": "1.3.0"
+  },
+  "options": {
+    "store_date_time_values_as_text": false
+  },
+  "entities": [
+    {
+      "id": 0,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "resource",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "block_offset",
+            "getter_name": "blockOffset",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "compressed_size",
+            "getter_name": "compressedSize",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "end_offset",
+            "getter_name": "endOffset",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "key",
+            "getter_name": "key",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "start_offset",
+            "getter_name": "startOffset",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "part",
+            "getter_name": "part",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 1,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "dictionary",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "block_offset",
+            "getter_name": "blockOffset",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "compressed_size",
+            "getter_name": "compressedSize",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "end_offset",
+            "getter_name": "endOffset",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "key",
+            "getter_name": "key",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "start_offset",
+            "getter_name": "startOffset",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 2,
+      "references": [
+        0
+      ],
+      "type": "index",
+      "data": {
+        "on": 0,
+        "name": "idx_data",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "key",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "references": [
+        1
+      ],
+      "type": "index",
+      "data": {
+        "on": 1,
+        "name": "idx_word",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "key",
+            "order_by": null
+          }
+        ]
+      }
+    }
+  ],
+  "fixed_sql": [
+    {
+      "name": "resource",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"resource\" (\"block_offset\" INTEGER NOT NULL, \"compressed_size\" INTEGER NOT NULL, \"end_offset\" INTEGER NOT NULL, \"key\" TEXT NOT NULL, \"start_offset\" INTEGER NOT NULL, \"part\" INTEGER NULL);"
+        }
+      ]
+    },
+    {
+      "name": "dictionary",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"dictionary\" (\"block_offset\" INTEGER NOT NULL, \"compressed_size\" INTEGER NOT NULL, \"end_offset\" INTEGER NOT NULL, \"key\" TEXT NOT NULL, \"start_offset\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "idx_data",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX idx_data ON resource (\"key\")"
+        }
+      ]
+    },
+    {
+      "name": "idx_word",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX idx_word ON dictionary (\"key\")"
+        }
+      ]
+    }
+  ]
+}

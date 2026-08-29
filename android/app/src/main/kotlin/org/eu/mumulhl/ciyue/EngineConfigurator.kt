@@ -20,6 +20,7 @@ class EngineConfigurator(private val context: Context) {
     interface Callback {
         fun onOpenDirectory()
         fun onOpenAudioDirectory()
+        fun onOpenHunspellDirectory()
         fun onCreateFile()
         fun onGetDirectory()
     }
@@ -42,6 +43,11 @@ class EngineConfigurator(private val context: Context) {
 
                     "openAudioDirectory" -> {
                         callback?.onOpenAudioDirectory()
+                        result.success(0)
+                    }
+
+                    "openHunspellDirectory" -> {
+                        callback?.onOpenHunspellDirectory()
                         result.success(0)
                     }
 
@@ -115,6 +121,7 @@ class EngineConfigurator(private val context: Context) {
         when (destination) {
             "dictionaries" -> methodChannel?.invokeMethod("inputDirectory", uri.toString())
             "audios" -> methodChannel?.invokeMethod("inputAudioDirectory", uri.toString())
+            "hunspell" -> methodChannel?.invokeMethod("inputHunspellDirectory", uri.toString())
         }
     }
 

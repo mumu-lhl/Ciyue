@@ -61,9 +61,14 @@ The project uses `justfile` to manage common development tasks.
 *   **Formatting:** Enforced via `dart format`.
 *   **Analysis:** `analysis_options.yaml` excludes generated files and platform folders from analysis.
 
+### Native dependencies
+*   Hunspell is compiled from the pinned submodule at `packages/hunspell_ffi/third_party/hunspell`; initialize submodules before building or testing native assets (`git submodule update --init --recursive`).
+
 ### Database (Drift)
 *   **Schema:** Managed in `lib/database/` and `drift_schemas/`.
 *   **Migrations:** Must be generated using `just make-migrations` when schema changes.
+*   **Migration workflow:** After changing a table, update the database `schemaVersion` and add the corresponding `fromNToN+1` migration step. Run `just build_runner`, then `just make-migrations`. Review the table change, migration semantics, and migration tests before running `flutter test`; generated output only needs a successful-generation and expected-version sanity check.
+*   **Generated files:** Do not edit Drift-generated files manually. Keep all existing schema versions; only add the new version and its migration. Commit generated files required by the build, but do not review them line by line.
 
 ### Translations
 *   **Source:** `.arb` files in `lib/l10n/`.

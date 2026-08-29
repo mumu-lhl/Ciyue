@@ -13,7 +13,7 @@ import 'package:ciyue/viewModels/wordbook.dart' as _i10;
 import 'package:drift/backends.dart' as _i4;
 import 'package:drift/drift.dart' as _i3;
 import 'package:drift/src/runtime/executor/stream_queries.dart' as _i5;
-import 'package:flutter/material.dart' as _i11;
+import 'package:material_ui/material_ui.dart' as _i11;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i8;
 

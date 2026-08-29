@@ -9,6 +9,7 @@ import "package:ciyue/ui/core/badges.dart";
 import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
+import "package:go_router/go_router.dart";
 import "package:path_provider/path_provider.dart";
 
 class FloatingWindow extends StatefulWidget {
@@ -99,11 +100,27 @@ class OtherSettingsPage extends StatelessWidget {
                 const NotificationSwitch(),
                 const FloatingWindow(),
               ],
+              const HunspellSettingsTile(),
               const AdvanceSwitch(),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class HunspellSettingsTile extends StatelessWidget {
+  const HunspellSettingsTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.spellcheck),
+      title: const Text("Hunspell"),
+      subtitle: const Text("Optional word-form lookup"),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => context.push("/settings/hunspell"),
     );
   }
 }

@@ -3,6 +3,7 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/ui/pages/main/main.dart";
+import "package:ciyue/repositories/hunspell.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
@@ -15,6 +16,8 @@ import "package:provider/provider.dart";
 const _platform = MethodChannel("org.eu.mumulhl.ciyue");
 
 class PlatformMethod {
+  static void Function()? onHunspellDirectoryImported;
+
   static Future<void> createFile(String content) async {
     await _platform.invokeMethod("createFile", content);
   }
@@ -46,7 +49,22 @@ class PlatformMethod {
             mdxFiles,
             closeLoadingWhenEmpty: true,
           );
+          await addHunspellPairs(await findHunspellPairsOnAndroid(null));
 
+          break;
+
+        case "inputHunspellDirectory":
+          final context = navigatorKey.currentContext;
+          try {
+            await addHunspellPairs(
+              await findHunspellPairsOnAndroid(null, subdirectory: "hunspell"),
+            );
+          } finally {
+            if (context != null && context.mounted) {
+              router.pop();
+            }
+          }
+          onHunspellDirectoryImported?.call();
           break;
 
         case "inputAudioDirectory":
@@ -86,6 +104,10 @@ class PlatformMethod {
 
   static Future<void> openAudioDirectory() async {
     await _platform.invokeMethod("openAudioDirectory");
+  }
+
+  static Future<void> openHunspellDirectory() async {
+    await _platform.invokeMethod("openHunspellDirectory");
   }
 
   static Future<void> setSecureFlag(bool value) async {

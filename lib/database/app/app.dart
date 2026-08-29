@@ -20,6 +20,7 @@ AppDatabase appDatabase() {
 @DriftDatabase(
   tables: [
     DictionaryList,
+    HunspellSource,
     Wordbook,
     WordbookTags,
     History,
@@ -35,6 +36,7 @@ AppDatabase appDatabase() {
   ],
   daos: [
     DictionaryListDao,
+    HunspellSourceDao,
     WordbookDao,
     WordbookTagsDao,
     HistoryDao,
@@ -128,10 +130,13 @@ class AppDatabase extends _$AppDatabase {
           await m.create(schema.flashcardReviewLogs);
           await m.create(schema.idxFlashcardReviewLogsWord);
         },
+        from17To18: (m, schema) async {
+          await m.create(schema.hunspellSource);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 }

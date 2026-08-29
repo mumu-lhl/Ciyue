@@ -1,5 +1,6 @@
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/dictionary_lookup_instance.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/core/search_bar.dart";
@@ -89,23 +90,7 @@ class Searcher {
 
   Searcher(this.text);
 
-  Future<List<String>> getSearchResult() async {
-    final searchers = <Future<List<String>>>[];
-    for (final dict in dictManager.dicts.values) {
-      searchers.add(dict.search(text));
-    }
-
-    final searchResult = [for (final i in await Future.wait(searchers)) ...i];
-    searchResult.sort((a, b) => a.compareTo(b));
-
-    final seen = <String>{};
-    final deduped = <String>[];
-    for (final s in searchResult) {
-      if (seen.add(s)) {
-        deduped.add(s);
-      }
-    }
-
-    return deduped;
+  Future<List<String>> getSearchResult() {
+    return dictionaryLookup.searchSuggestions(text);
   }
 }

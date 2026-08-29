@@ -5,6 +5,7 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/services/toast.dart";
@@ -159,7 +160,8 @@ class DictManager {
   }
 }
 
-class Mdict {
+class Mdict implements DictionarySource {
+  @override
   late int id;
   final String path;
   String? fontName;
@@ -512,47 +514,79 @@ class Mdict {
     }
   }
 
-  Future<String> readWord(String word) async {
+  @override
+  Future<String?> resolveExactKey(String word) async {
     await waitForLoading();
 
-    List<RecordOffsetInfo> data;
-
     if (reader.exist(word)) {
-      data = await locateAll(word);
-    } else if (reader.exist(word.toLowerCase())) {
-      data = await locateAll(word.toLowerCase());
-    } else {
-      throw Exception("Word not found: $word");
+      return word;
     }
 
-    final contents = <String>[];
+    final lowerCaseWord = word.toLowerCase();
+    if (reader.exist(lowerCaseWord)) {
+      return lowerCaseWord;
+    }
+
+    return null;
+  }
+
+  Future<DictionaryEntryData?> readExactEntry(String word) async {
+    final headword = await resolveExactKey(word);
+    if (headword == null) {
+      return null;
+    }
+
+    var data = await locateAll(headword);
+    var contents = <String>[];
     for (final info in data) {
       contents.add(await reader.readOneMdx(info));
     }
 
     final content = contents.join();
-
     if (content.startsWith("@@@LINK=")) {
-      contents.clear();
-
-      final newData = await locateAll(
-        content
-            .replaceFirst("@@@LINK=", "")
-            .replaceAll(RegExp(r"[\n\r\x00]"), "")
-            .trimRight(),
-      );
-      if (newData.isEmpty) {
-        throw Exception(
-          "Linked word not found: ${content.replaceFirst("@@@LINK=", "")}",
-        );
+      final linkedWord = content
+          .replaceFirst("@@@LINK=", "")
+          .replaceAll(RegExp(r"[\n\r\x00]"), "")
+          .trimRight();
+      final linkedHeadword = await resolveExactKey(linkedWord);
+      if (linkedHeadword == null) {
+        throw Exception("Linked word not found: $linkedWord");
       }
 
-      for (final info in newData) {
+      data = await locateAll(linkedHeadword);
+      contents = <String>[];
+      for (final info in data) {
         contents.add(await reader.readOneMdx(info));
       }
     }
 
-    return wrapContentWithResources(contents.join());
+    return DictionaryEntryData(headword: headword, content: contents.join());
+  }
+
+  @override
+  Future<List<DictionaryEntryData>> readExactEntries(
+    Iterable<String> words,
+  ) async {
+    final entries = <DictionaryEntryData>[];
+    final seenHeadwords = <String>{};
+
+    for (final word in words) {
+      final entry = await readExactEntry(word);
+      if (entry != null && seenHeadwords.add(entry.headword)) {
+        entries.add(entry);
+      }
+    }
+
+    return entries;
+  }
+
+  Future<String> readWord(String word) async {
+    final entry = await readExactEntry(word);
+    if (entry == null) {
+      throw Exception("Word not found: $word");
+    }
+
+    return wrapContentWithResources(entry.content);
   }
 
   String wrapContentWithResources(String content) {
@@ -609,6 +643,7 @@ class Mdict {
     title = HtmlUnescape().convert(reader.header["Title"] ?? basename(path));
   }
 
+  @override
   Future<List<String>> search(String query) async {
     await waitForLoading();
 
@@ -626,15 +661,7 @@ class Mdict {
   }
 
   Future<bool> wordExist(String word) async {
-    await waitForLoading();
-
-    if (reader.exist(word)) {
-      return true;
-    } else if (reader.exist(word.toLowerCase())) {
-      return true;
-    } else {
-      return false;
-    }
+    return await resolveExactKey(word) != null;
   }
 
   Future<List<MddResourceData>> readResource(String key) async {

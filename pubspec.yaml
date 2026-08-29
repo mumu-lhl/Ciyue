@@ -42,6 +42,8 @@ dependencies:
     git:
       url: https://github.com/mumu-lhl/dict_reader.git
       ref: 9cb3fc45a4044fddbc94226363694aa42c0ba2d4
+  hunspell_ffi:
+    path: packages/hunspell_ffi
   shared_preferences: ^2.5.5
   go_router: ^18.0.0
   flutter_inappwebview: 6.2.0-beta.3
