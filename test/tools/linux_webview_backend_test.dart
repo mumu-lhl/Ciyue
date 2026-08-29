@@ -40,4 +40,28 @@ void main() {
       ),
     );
   });
+
+  test("Linux custom schemes are registered once per context", () {
+    final source = File(
+      "packages/flutter_inappwebview_linux/linux/in_app_webview/"
+      "in_app_webview.cc",
+    ).readAsStringSync();
+
+    expect(source, contains("webkit_uri_scheme_request_get_web_view(request)"));
+    expect(source, contains("g_object_get_data("));
+    expect(source, contains("request_web_view"));
+    expect(source, contains("scheme_registered"));
+    expect(source, contains("g_object_set_data(G_OBJECT(context)"));
+    expect(
+      source,
+      contains("InAppWebView::OnCustomSchemeRequest, nullptr, nullptr"),
+    );
+    expect(
+      source,
+      contains(
+        "g_object_set_data(G_OBJECT(webview_), "
+        "kInAppWebViewInstanceDataKey, nullptr)",
+      ),
+    );
+  });
 }

@@ -145,6 +145,16 @@ std::string GenerateRandomSecret(size_t length = 32) {
   return result;
 }
 
+// WebKit registers URI scheme handlers on a WebKitWebContext, which may be
+// shared by many WebViews. Associate each WebKitWebView with its native owner
+// so a single context-level handler can dispatch to the right instance.
+constexpr char kInAppWebViewInstanceDataKey[] =
+    "flutter_inappwebview_linux_instance";
+
+std::string CustomSchemeRegistrationKey(const std::string& scheme) {
+  return "flutter_inappwebview_linux_scheme_registered_" + scheme;
+}
+
 }  // namespace
 
 #ifdef HAVE_WPE_BACKEND_LEGACY
@@ -357,6 +367,13 @@ void InAppWebView::AttachChannel(FlBinaryMessenger* messenger, const std::string
 
 InAppWebView::~InAppWebView() {
   debugLog("dealloc InAppWebView");
+
+  // The custom scheme callback is registered on the WebKitWebContext and may
+  // outlive this C++ object. Clear the back-reference before destroying the
+  // WebView so a late request is failed safely instead of dereferencing this.
+  if (webview_ != nullptr) {
+    g_object_set_data(G_OBJECT(webview_), kInAppWebViewInstanceDataKey, nullptr);
+  }
 
   CleanupMonitorChangeHandlers();
 
@@ -886,7 +903,12 @@ void InAppWebView::InitWebView(const InAppWebViewCreationParams& params) {
 #endif
 
   // === Common initialization (both APIs) ===
-  
+
+  // Store the native owner on the WebKitWebView. URI scheme handlers are
+  // registered once per context, so the request itself is used to recover the
+  // correct owner when several dictionary WebViews are alive at once.
+  g_object_set_data(G_OBJECT(webview_), kInAppWebViewInstanceDataKey, this);
+
   WebKitColor bg = {1.0, 1.0, 1.0, 1.0};
   webkit_web_view_set_background_color(webview_, &bg);
 
@@ -7882,14 +7904,29 @@ void InAppWebView::RegisterCustomSchemes() {
       continue;
     }
 
-    // Register the custom URI scheme with the web context
+    // A WebKitWebContext accepts each scheme only once. The default context is
+    // shared by all ordinary WebViews, so use object data as a per-context
+    // registration guard and dispatch by request->web_view in the callback.
+    const std::string registration_key = CustomSchemeRegistrationKey(scheme);
+    if (g_object_get_data(G_OBJECT(context), registration_key.c_str()) != nullptr) {
+      continue;
+    }
+
+    g_object_set_data(G_OBJECT(context), registration_key.c_str(), GINT_TO_POINTER(1));
     webkit_web_context_register_uri_scheme(
-        context, scheme.c_str(), InAppWebView::OnCustomSchemeRequest, this, nullptr);
+        context, scheme.c_str(), InAppWebView::OnCustomSchemeRequest, nullptr, nullptr);
   }
 }
 
 void InAppWebView::OnCustomSchemeRequest(WebKitURISchemeRequest* request, gpointer user_data) {
-  auto* self = static_cast<InAppWebView*>(user_data);
+  (void)user_data;
+
+  WebKitWebView* request_web_view =
+      webkit_uri_scheme_request_get_web_view(request);
+  auto* self = request_web_view == nullptr
+                   ? nullptr
+                   : static_cast<InAppWebView*>(g_object_get_data(
+                         G_OBJECT(request_web_view), kInAppWebViewInstanceDataKey));
   if (self == nullptr || self->webview_ == nullptr || self->channel_delegate_ == nullptr) {
     // Finish with error if we can't handle it
     g_autoptr(GError) error =
