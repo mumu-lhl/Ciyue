@@ -1,4 +1,17 @@
 ---
+## [1.23.1](https://github.com/mumu-lhl/Ciyue/compare/v1.23.1-beta.2..v1.23.1) - 2026-08-31
+
+### 修复
+
+- **(linux)** 将自定义 URL 协议路由到正确的 WebView - ([bdff522](https://github.com/mumu-lhl/Ciyue/commit/bdff5229bbdda45d47c4e72433cf83377b140047)) - Mumulhl
+- **(settings)** 显示历史记录页面标题 - ([d797cd9](https://github.com/mumu-lhl/Ciyue/commit/d797cd98a3626e4514d68c4d2976f850d07a90b5)) - Mumulhl
+- **(translation)** 补全简体中文和繁体中文翻译 - ([ee55edd](https://github.com/mumu-lhl/Ciyue/commit/ee55edd1b277afb7fad7827fd970ad3ecd95c192)) - Mumulhl
+
+### 新功能
+
+- **(hunspell)** 新增可选的词形分析查询功能 - ([cbea448](https://github.com/mumu-lhl/Ciyue/commit/cbea448bb4a454663ba8d7d4b3d3d21c71e32bde)) - Mumulhl
+
+---
 ## [1.23.0](https://github.com/mumu-lhl/Ciyue/compare/v1.22.2..v1.23.0) - 2026-08-28
 
 ### 修复
