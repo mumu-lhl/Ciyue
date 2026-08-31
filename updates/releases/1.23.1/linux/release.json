@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 3,
+  "packageId": "org.eu.mumulhl.ciyue",
+  "appName": "Ciyue",
+  "version": "1.23.1",
+  "buildNumber": 90,
+  "platform": "linux",
+  "channel": "stable",
+  "artifact": {
+    "kind": "zip",
+    "url": "https://github.com/mumu-lhl/Ciyue/releases/download/v1.23.1/Ciyue-1.23.1-linux.zip",
+    "sha256": "e763f1b9688d99dd39a58ff69dd708baf229e02219acbe5084a8987b7ada070b",
+    "length": 84751669
+  },
+  "install": {
+    "strategy": "wholeDirectoryReplace"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKeyId": "release-f3d56da10d0866ff2cff4c65",
+    "value": "0PAoIlS/OUhmJajEIgx794VtKExcXazO+TAFoT0uj8ibBz2vwibQevo0l5lNx6LS/4DoJKzJwdS7LRdJZY4iBw=="
+  },
+  "minimumUpdaterVersion": "2.0.0",
+  "generatedAt": "2026-08-31T15:20:40.230500Z"
+}
