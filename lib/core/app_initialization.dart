@@ -44,13 +44,13 @@ Future<void> initGroup() async {
   await dictManager.setCurrentGroup(groupId);
   dictManager.groups = await dictGroupDao.getAllGroups();
 
-  try {
-    Provider.of<HomeModel>(
-      navigatorKey.currentContext!,
-      listen: false,
-    ).update();
-  } catch (e) {
-    talker.error(e);
+  final context = navigatorKey.currentContext;
+  if (context != null && context.mounted) {
+    try {
+      Provider.of<HomeModel>(context, listen: false).update();
+    } catch (error, stackTrace) {
+      talker.error("Failed to update home model", error, stackTrace);
+    }
   }
 }
 
@@ -75,7 +75,7 @@ Future<void> initTrayMenu() async {
   }
 }
 
-Future<void> initApp() async {
+Future<void> initApp({bool isFloatingWindow = false}) async {
   talker.info("Initializing application...");
 
   final stopWatch = Stopwatch()..start();
@@ -92,13 +92,17 @@ Future<void> initApp() async {
 
   if (Platform.isAndroid) {
     PlatformMethod.initHandler();
-    PlatformMethod.initNotifications();
+    unawaited(PlatformMethod.setSecureFlag(settings.secureScreen));
 
-    if (settings.secureScreen) {
-      PlatformMethod.setSecureFlag(true);
-    }
-    if (settings.notification) {
-      PlatformMethod.createPersistentNotification(true);
+    // The floating window runs in a second FlutterEngine. Do not initialize
+    // process-wide notification state from it; some plugins keep a static
+    // channel and the last engine would otherwise steal callbacks from the
+    // main engine.
+    if (!isFloatingWindow) {
+      PlatformMethod.initNotifications();
+      if (settings.notification) {
+        PlatformMethod.createPersistentNotification(true);
+      }
     }
   }
 
@@ -106,29 +110,33 @@ Future<void> initApp() async {
     accentColor = await DynamicColorPlugin.getAccentColor();
   }
 
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
-    final context = navigatorKey.currentContext!;
-    final locale = Localizations.localeOf(context);
-
-    await initTrayMenu();
-
+  if (isFloatingWindow) {
     packageInfo = await PackageInfo.fromPlatform();
+  } else {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final context = navigatorKey.currentContext!;
+      final locale = Localizations.localeOf(context);
 
-    if (settings.autoUpdate) {
-      Updater.autoUpdate();
-    }
+      await initTrayMenu();
 
-    if (await ChangelogService.shouldShowChangelog(locale)) {
-      final String changelogContent =
-          await ChangelogService.getChangelogContent(locale);
-      showDialog(
-        context: navigatorKey.currentContext!,
-        builder: (context) =>
-            ChangelogDialog(changelogContent: changelogContent),
-      );
-      await ChangelogService.markChangelogShown();
-    }
-  });
+      packageInfo = await PackageInfo.fromPlatform();
+
+      if (settings.autoUpdate) {
+        Updater.autoUpdate();
+      }
+
+      if (await ChangelogService.shouldShowChangelog(locale)) {
+        final String changelogContent =
+            await ChangelogService.getChangelogContent(locale);
+        showDialog(
+          context: navigatorKey.currentContext!,
+          builder: (context) =>
+              ChangelogDialog(changelogContent: changelogContent),
+        );
+        await ChangelogService.markChangelogShown();
+      }
+    });
+  }
 
   stopWatch.stop();
 

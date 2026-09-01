@@ -34,6 +34,7 @@
             android:name=".FloatingWindowActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
+            android:excludeFromRecents="true"
             android:taskAffinity="org.eu.mumulhl.ciyue.floating"
             android:theme="@style/Theme.Transparent"
             android:windowSoftInputMode="adjustResize"
@@ -44,16 +45,7 @@
             android:name=".ProcessTextActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
                 <action android:name="android.intent.action.TRANSLATE" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
@@ -78,10 +70,6 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <service
-            android:name=".FloatingWindowService"
-            android:enabled="true"
-            android:exported="false" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

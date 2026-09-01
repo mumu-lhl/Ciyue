@@ -86,37 +86,46 @@ void main() async {
 void floatingWindow(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await initApp();
+  try {
+    await initApp(isFloatingWindow: true);
 
-  // The Android side may already have delivered a newer request through the
-  // pending-text channel while the app was initializing. Keep that request
-  // instead of overwriting it with the entrypoint's initial argument.
-  if (searchWordFromProcessText.isEmpty && args.isNotEmpty) {
-    searchWordFromProcessText = args.first;
-  }
-  navigateToProcessText(searchWordFromProcessText);
+    // The Android side may already have delivered a newer request through the
+    // pending-text channel while the app was initializing. Keep that request
+    // instead of overwriting it with the entrypoint's initial argument.
+    if (searchWordFromProcessText.isEmpty && args.isNotEmpty) {
+      searchWordFromProcessText = args.first.trim();
+    }
+    navigateToProcessText(searchWordFromProcessText);
 
-  runApp(
-    ProviderScope(
-      child: provider.MultiProvider(
-        providers: [
-          provider.ChangeNotifierProvider(create: (_) => WordbookModel()),
-          provider.ChangeNotifierProvider(create: (_) => HomeModel()),
-          provider.ChangeNotifierProvider(create: (_) => DictManagerModel()),
-          provider.ChangeNotifierProvider(create: (_) => HistoryModel()),
-          provider.ChangeNotifierProvider(create: (_) => AudioModel()..init()),
-          provider.Provider(create: (_) => OpenRecordsRepository()),
-        ],
-        child: Ciyue(isFloatingWindow: true),
+    runApp(
+      ProviderScope(
+        child: provider.MultiProvider(
+          providers: [
+            provider.ChangeNotifierProvider(create: (_) => WordbookModel()),
+            provider.ChangeNotifierProvider(create: (_) => HomeModel()),
+            provider.ChangeNotifierProvider(create: (_) => DictManagerModel()),
+            provider.ChangeNotifierProvider(create: (_) => HistoryModel()),
+            provider.ChangeNotifierProvider(
+              create: (_) => AudioModel()..init(),
+            ),
+            provider.Provider(create: (_) => OpenRecordsRepository()),
+          ],
+          child: const Ciyue(),
+        ),
       ),
-    ),
-  );
+    );
+  } catch (error, stackTrace) {
+    talker.error("Failed to initialize floating window", error, stackTrace);
+    runApp(
+      ProviderScope(
+        child: MaterialApp(home: CiyueError(error: error)),
+      ),
+    );
+  }
 }
 
 class Ciyue extends StatefulWidget {
-  final bool isFloatingWindow;
-
-  const Ciyue({super.key, this.isFloatingWindow = false});
+  const Ciyue({super.key});
 
   @override
   State<Ciyue> createState() => _CiyueState();

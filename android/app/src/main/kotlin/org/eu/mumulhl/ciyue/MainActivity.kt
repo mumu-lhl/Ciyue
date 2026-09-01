@@ -118,8 +118,16 @@ class MainActivity : FlutterActivity() {
                 override fun onOpenHunspellDirectory() = openHunspellDirectory()
                 override fun onCreateFile() = createFile()
                 override fun onGetDirectory() = getDirectory()
+                override fun onSetSecureFlag(secure: Boolean) = setSecureFlag(secure)
             }
         }
+    }
+
+    override fun onDestroy() {
+        if (::configurator.isInitialized) {
+            configurator.dispose()
+        }
+        super.onDestroy()
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -142,7 +150,7 @@ class MainActivity : FlutterActivity() {
 
     private fun handleProcessTextIntent(intent: Intent?) {
         if (intent?.action == Intent.ACTION_PROCESS_TEXT) {
-            val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString() ?: ""
+            val text = TextIntentUtils.extractText(intent)
             configurator.handleProcessText(text)
         }
     }

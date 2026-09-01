@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/services/audio.dart";
@@ -15,13 +17,53 @@ import "package:provider/provider.dart";
 
 const _platform = MethodChannel("org.eu.mumulhl.ciyue");
 
-void navigateToProcessText(String text) {
-  if (text.isEmpty) {
+class _ProcessTextRequest {
+  final int id;
+  final String text;
+
+  const _ProcessTextRequest({required this.id, required this.text});
+
+  factory _ProcessTextRequest.fromPlatform(Object? arguments) {
+    if (arguments is! Map) {
+      throw const FormatException("Invalid process-text request");
+    }
+
+    final id = arguments["id"];
+    final text = arguments["text"];
+    if (id is! num || text is! String) {
+      throw const FormatException("Invalid process-text request");
+    }
+
+    return _ProcessTextRequest(id: id.toInt(), text: text);
+  }
+}
+
+int? _lastNavigatedProcessTextRequestId;
+
+void navigateToProcessText(String text, {int? requestId}) {
+  final normalizedText = text.trim();
+  if (normalizedText.isEmpty) {
     return;
   }
 
-  searchWordFromProcessText = text;
-  router.go("/word/${Uri.encodeComponent(text)}");
+  if (requestId != null) {
+    final lastRequestId = _lastNavigatedProcessTextRequestId;
+    if (lastRequestId != null && requestId <= lastRequestId) {
+      return;
+    }
+    _lastNavigatedProcessTextRequestId = requestId;
+  }
+
+  searchWordFromProcessText = normalizedText;
+  final location = "/word/${Uri.encodeComponent(normalizedText)}";
+  final currentUri = router.state.uri;
+  final isAlreadyShowingWord =
+      currentUri.pathSegments.length == 2 &&
+      currentUri.pathSegments.first == "word" &&
+      currentUri.pathSegments[1] == normalizedText;
+  if (!isAlreadyShowingWord) {
+    router.go(location);
+  }
 }
 
 class PlatformMethod {
@@ -39,14 +81,13 @@ class PlatformMethod {
     _platform.setMethodCallHandler((call) async {
       switch (call.method) {
         case "processText":
-          final text = call.arguments as String;
+          final request = _ProcessTextRequest.fromPlatform(call.arguments);
 
           try {
-            navigateToProcessText(text);
-          } finally {
-            // Let the Android side drop its queued copy. This is important
-            // when the request was sent before the Dart handler was ready.
-            await _platform.invokeMethod("processTextHandled", text);
+            navigateToProcessText(request.text, requestId: request.id);
+            await _acknowledgeProcessText(request);
+          } catch (error, stackTrace) {
+            talker.error("Failed to handle process text", error, stackTrace);
           }
           break;
 
@@ -96,6 +137,14 @@ class PlatformMethod {
           );
           break;
 
+        case "copyDirectoryError":
+          final context = navigatorKey.currentContext;
+          if (context != null && context.mounted) {
+            closeLoadingDialog(context);
+          }
+          talker.error("Failed to copy directory: ${call.arguments}");
+          break;
+
         case "getDirectory":
           final directory = call.arguments as String;
           settings.exportDirectory = directory;
@@ -104,11 +153,34 @@ class PlatformMethod {
       }
     });
 
-    _platform.invokeMethod<String>("getPendingProcessText").then((text) {
-      if (text != null) {
-        navigateToProcessText(text);
+    unawaited(_consumePendingProcessText());
+  }
+
+  static Future<void> _consumePendingProcessText() async {
+    try {
+      final pending = await _platform.invokeMethod<Object?>(
+        "getPendingProcessText",
+      );
+      if (pending == null) {
+        return;
       }
-    });
+
+      final request = _ProcessTextRequest.fromPlatform(pending);
+      navigateToProcessText(request.text, requestId: request.id);
+      await _acknowledgeProcessText(request);
+    } catch (error, stackTrace) {
+      talker.error("Failed to consume pending process text", error, stackTrace);
+    }
+  }
+
+  static Future<void> _acknowledgeProcessText(
+    _ProcessTextRequest request,
+  ) async {
+    try {
+      await _platform.invokeMethod("processTextHandled", {"id": request.id});
+    } catch (error, stackTrace) {
+      talker.error("Failed to acknowledge process text", error, stackTrace);
+    }
   }
 
   static Future<void> openDirectory() async {
@@ -124,7 +196,11 @@ class PlatformMethod {
   }
 
   static Future<void> setSecureFlag(bool value) async {
-    await _platform.invokeMethod("setSecureFlag", value);
+    try {
+      await _platform.invokeMethod("setSecureFlag", value);
+    } catch (error, stackTrace) {
+      talker.error("Failed to set secure screen flag", error, stackTrace);
+    }
   }
 
   static Future<void> updateDictionaries() async {
@@ -154,52 +230,64 @@ class PlatformMethod {
       FlutterLocalNotificationsPlugin();
 
   static Future<void> initNotifications() async {
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings("ic_launcher_foreground");
+    try {
+      const AndroidInitializationSettings initializationSettingsAndroid =
+          AndroidInitializationSettings("ic_launcher_foreground");
 
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+      const InitializationSettings initializationSettings =
+          InitializationSettings(android: initializationSettingsAndroid);
 
-    await flutterLocalNotificationsPlugin.initialize(
-      settings: initializationSettings,
-      onDidReceiveNotificationResponse:
-          (NotificationResponse notificationResponse) {
-            router.go("/");
-            MainPage.setScreenIndex(0);
+      await flutterLocalNotificationsPlugin.initialize(
+        settings: initializationSettings,
+        onDidReceiveNotificationResponse:
+            (NotificationResponse notificationResponse) {
+              router.go("/");
+              MainPage.setScreenIndex(0);
 
-            final model = Provider.of<HomeModel>(
-              navigatorKey.currentContext!,
-              listen: false,
-            );
-            model.searchWord = "";
-            model.focusSearchBar();
-          },
-    );
+              final model = Provider.of<HomeModel>(
+                navigatorKey.currentContext!,
+                listen: false,
+              );
+              model.searchWord = "";
+              model.focusSearchBar();
+            },
+      );
+    } catch (error, stackTrace) {
+      talker.error("Failed to initialize notifications", error, stackTrace);
+    }
   }
 
   static Future<void> createPersistentNotification(bool create) async {
-    if (create) {
-      const AndroidNotificationDetails androidNotificationDetails =
-          AndroidNotificationDetails(
-            "persistent_notification",
-            "Persistent Notification",
-            channelDescription: "Persistent notification for Ciyue",
-            importance: Importance.min,
-            priority: Priority.low,
-            ongoing: true,
-            autoCancel: false,
-          );
-      const NotificationDetails notificationDetails = NotificationDetails(
-        android: androidNotificationDetails,
+    try {
+      if (create) {
+        const AndroidNotificationDetails androidNotificationDetails =
+            AndroidNotificationDetails(
+              "persistent_notification",
+              "Persistent Notification",
+              channelDescription: "Persistent notification for Ciyue",
+              importance: Importance.min,
+              priority: Priority.low,
+              ongoing: true,
+              autoCancel: false,
+            );
+        const NotificationDetails notificationDetails = NotificationDetails(
+          android: androidNotificationDetails,
+        );
+        await flutterLocalNotificationsPlugin.show(
+          id: 0,
+          title: "Ciyue",
+          body: "Ciyue is running in the background",
+          notificationDetails: notificationDetails,
+        );
+      } else {
+        await flutterLocalNotificationsPlugin.cancel(id: 0);
+      }
+    } catch (error, stackTrace) {
+      talker.error(
+        "Failed to update persistent notification",
+        error,
+        stackTrace,
       );
-      await flutterLocalNotificationsPlugin.show(
-        id: 0,
-        title: "Ciyue",
-        body: "Ciyue is running in the background",
-        notificationDetails: notificationDetails,
-      );
-    } else {
-      await flutterLocalNotificationsPlugin.cancel(id: 0);
     }
   }
 }

@@ -1,9 +1,9 @@
 package org.eu.mumulhl.ciyue
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.view.WindowManager
+import android.os.Handler
+import android.os.Looper
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import io.flutter.embedding.engine.FlutterEngine
@@ -11,18 +11,30 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
+import java.io.IOException
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
-class EngineConfigurator(private val context: Context) {
+class EngineConfigurator(context: Context) {
+    private val context = context.applicationContext
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val ioExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     var methodChannel: MethodChannel? = null
-    var pendingProcessText: String? = null
+    private var pendingProcessText: ProcessTextRequest? = null
+    private var nextProcessTextId = 0L
     var exportContent = ""
 
+    private data class ProcessTextRequest(val id: Long, val text: String) {
+        fun toMap(): Map<String, Any> = mapOf("id" to id, "text" to text)
+    }
+
     interface Callback {
-        fun onOpenDirectory()
-        fun onOpenAudioDirectory()
-        fun onOpenHunspellDirectory()
-        fun onCreateFile()
-        fun onGetDirectory()
+        fun onOpenDirectory() {}
+        fun onOpenAudioDirectory() {}
+        fun onOpenHunspellDirectory() {}
+        fun onCreateFile() {}
+        fun onGetDirectory() {}
+        fun onSetSecureFlag(secure: Boolean) {}
     }
 
     var callback: Callback? = null
@@ -37,14 +49,13 @@ class EngineConfigurator(private val context: Context) {
                     }
 
                     "getPendingProcessText" -> {
-                        val text = pendingProcessText
-                        pendingProcessText = null
-                        result.success(text)
+                        result.success(pendingProcessText?.toMap())
                     }
 
                     "processTextHandled" -> {
-                        val text = call.arguments as? String
-                        if (text == null || text == pendingProcessText) {
+                        val arguments = call.arguments as? Map<*, *>
+                        val id = (arguments?.get("id") as? Number)?.toLong()
+                        if (id != null && id == pendingProcessText?.id) {
                             pendingProcessText = null
                         }
                         result.success(0)
@@ -82,7 +93,7 @@ class EngineConfigurator(private val context: Context) {
                     }
 
                     "setSecureFlag" -> {
-                        setSecureFlag(call.arguments as Boolean)
+                        callback?.onSetSecureFlag(call.arguments as Boolean)
                         result.success(0)
                     }
 
@@ -116,27 +127,37 @@ class EngineConfigurator(private val context: Context) {
         }
     }
 
-    private fun setSecureFlag(secure: Boolean) {
-        // This might need activity context, but we can try to use window flags if possible 
-        // Or leave it to MainActivity if it requires an Activity.
-    }
-
     fun copyDirectory(uri: Uri, destination: String) {
-        methodChannel?.invokeMethod("showLoadingDialog", null)
+        val channel = methodChannel ?: return
+        channel.invokeMethod("showLoadingDialog", null)
 
-        val documents = DocumentFile.fromTreeUri(context, uri)!!
-        copy(documents, File(context.filesDir, destination))
+        ioExecutor.execute {
+            try {
+                val documents = DocumentFile.fromTreeUri(context, uri)
+                    ?: throw IOException("Unable to access selected directory")
+                copy(documents, File(context.filesDir, destination))
 
-        when (destination) {
-            "dictionaries" -> methodChannel?.invokeMethod("inputDirectory", uri.toString())
-            "audios" -> methodChannel?.invokeMethod("inputAudioDirectory", uri.toString())
-            "hunspell" -> methodChannel?.invokeMethod("inputHunspellDirectory", uri.toString())
+                mainHandler.post {
+                    when (destination) {
+                        "dictionaries" -> channel.invokeMethod("inputDirectory", uri.toString())
+                        "audios" -> channel.invokeMethod("inputAudioDirectory", uri.toString())
+                        "hunspell" -> channel.invokeMethod("inputHunspellDirectory", uri.toString())
+                    }
+                }
+            } catch (error: Exception) {
+                mainHandler.post {
+                    channel.invokeMethod(
+                        "copyDirectoryError",
+                        error.message ?: error.javaClass.simpleName,
+                    )
+                }
+            }
         }
     }
 
     private fun copy(source: DocumentFile, target: File) {
-        if (!target.exists()) {
-            target.mkdirs()
+        if (!target.exists() && !target.mkdirs()) {
+            throw IOException("Unable to create destination directory: $target")
         }
         source.listFiles().forEach { file ->
             if (file.isFile) {
@@ -156,10 +177,23 @@ class EngineConfigurator(private val context: Context) {
         }
     }
 
+    fun dispose() {
+        mainHandler.removeCallbacksAndMessages(null)
+        ioExecutor.shutdownNow()
+        methodChannel?.setMethodCallHandler(null)
+        methodChannel = null
+        callback = null
+    }
+
     fun handleProcessText(text: String) {
+        if (text.isBlank()) {
+            return
+        }
+
         // Keep the latest request until Dart acknowledges it. The method call
         // may arrive before the Dart entrypoint has installed its handler.
-        pendingProcessText = text
-        methodChannel?.invokeMethod("processText", text)
+        val request = ProcessTextRequest(++nextProcessTextId, text)
+        pendingProcessText = request
+        methodChannel?.invokeMethod("processText", request.toMap())
     }
 }

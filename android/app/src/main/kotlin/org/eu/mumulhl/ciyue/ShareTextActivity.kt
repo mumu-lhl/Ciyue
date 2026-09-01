@@ -8,7 +8,11 @@ class ShareTextActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val text = intent?.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString() ?: ""
+        val text = TextIntentUtils.extractText(intent)
+        if (text.isEmpty()) {
+            finish()
+            return
+        }
 
         val intent = Intent(this, MainActivity::class.java).apply {
             action = Intent.ACTION_PROCESS_TEXT

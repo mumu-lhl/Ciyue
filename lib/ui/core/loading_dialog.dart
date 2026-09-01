@@ -1,6 +1,9 @@
 import "package:material_ui/material_ui.dart";
 
+bool _loadingDialogVisible = false;
+
 void showLoadingDialog(BuildContext context, {String? text}) {
+  _loadingDialogVisible = true;
   final alert = AlertDialog(
     backgroundColor: Colors.transparent,
     content: _LoadingDialogContent(text: text),
@@ -12,7 +15,18 @@ void showLoadingDialog(BuildContext context, {String? text}) {
     builder: (BuildContext context) {
       return alert;
     },
-  );
+  ).whenComplete(() {
+    _loadingDialogVisible = false;
+  });
+}
+
+void closeLoadingDialog(BuildContext context) {
+  if (!_loadingDialogVisible) {
+    return;
+  }
+
+  _loadingDialogVisible = false;
+  Navigator.of(context, rootNavigator: true).pop();
 }
 
 class _LoadingDialogContent extends StatefulWidget {
