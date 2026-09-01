@@ -56,7 +56,9 @@ void navigateToProcessText(String text, {int? requestId}) {
 
   searchWordFromProcessText = normalizedText;
   final location = "/word/${Uri.encodeComponent(normalizedText)}";
-  final currentUri = router.state.uri;
+  // `router.state` reads the last parsed route and is unavailable while the
+  // floating engine is booting, before `runApp` mounts its Navigator.
+  final currentUri = router.routeInformationProvider.value.uri;
   final isAlreadyShowingWord =
       currentUri.pathSegments.length == 2 &&
       currentUri.pathSegments.first == "word" &&

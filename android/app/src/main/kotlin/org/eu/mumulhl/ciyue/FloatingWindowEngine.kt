@@ -25,10 +25,10 @@ object FloatingWindowEngine {
     const val EXTRA_TEXT_TO_SHOW = "extra_text_to_show"
     const val ENGINE_ID = "org.eu.mumulhl.ciyue/floating_window_engine"
 
-    private const val IDLE_SHUTDOWN_DELAY_MS = 30_000L
+    const val IDLE_SHUTDOWN_DELAY_MS = 30_000L
 
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val idleShutdown = Runnable { destroy() }
+    private val idleShutdown = Runnable { destroyNow() }
     private var engine: FlutterEngine? = null
     private var configurator: EngineConfigurator? = null
 
@@ -111,7 +111,7 @@ object FloatingWindowEngine {
         }
     }
 
-    private fun destroy() {
+    fun destroyNow() {
         cancelIdleShutdown()
 
         val currentEngine = engine ?: FlutterEngineCache.getInstance().get(ENGINE_ID)

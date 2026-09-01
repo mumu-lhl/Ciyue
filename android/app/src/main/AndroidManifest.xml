@@ -48,6 +48,13 @@
                 <action android:name="android.intent.action.TRANSLATE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <!-- Some browsers expose selected text through ACTION_SEND. Keep
+                 this broad filter for compatibility; ShareTextActivity handles
+                 regular text sharing with a text/plain MIME type. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.PROCESS_TEXT" />
                 <category android:name="android.intent.category.DEFAULT" />
