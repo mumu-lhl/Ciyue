@@ -6,12 +6,12 @@ import android.util.DisplayMetrics
 import android.view.MotionEvent
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
-import io.flutter.embedding.engine.FlutterEngine
 
 class FloatingWindowActivity : FlutterActivity() {
-    override fun provideFlutterEngine(context: android.content.Context): FlutterEngine? {
-        return io.flutter.embedding.engine.FlutterEngineCache.getInstance().get(FloatingWindowService.ENGINE_ID)
-    }
+    // Tell FlutterActivity that the engine is cached and owned by the service.
+    // This prevents the activity from treating it as a new engine on every
+    // floating-window invocation.
+    override fun getCachedEngineId(): String? = FloatingWindowService.ENGINE_ID
 
     override fun getTransparencyMode(): io.flutter.embedding.android.TransparencyMode {
         return io.flutter.embedding.android.TransparencyMode.transparent

@@ -15,6 +15,15 @@ import "package:provider/provider.dart";
 
 const _platform = MethodChannel("org.eu.mumulhl.ciyue");
 
+void navigateToProcessText(String text) {
+  if (text.isEmpty) {
+    return;
+  }
+
+  searchWordFromProcessText = text;
+  router.go("/word/${Uri.encodeComponent(text)}");
+}
+
 class PlatformMethod {
   static void Function()? onHunspellDirectoryImported;
 
@@ -31,10 +40,14 @@ class PlatformMethod {
       switch (call.method) {
         case "processText":
           final text = call.arguments as String;
-          searchWordFromProcessText = text;
 
-          // Navigate to search result with the text
-          router.go("/word/${Uri.encodeComponent(text)}");
+          try {
+            navigateToProcessText(text);
+          } finally {
+            // Let the Android side drop its queued copy. This is important
+            // when the request was sent before the Dart handler was ready.
+            await _platform.invokeMethod("processTextHandled", text);
+          }
           break;
 
         case "inputDirectory":
@@ -92,8 +105,8 @@ class PlatformMethod {
     });
 
     _platform.invokeMethod<String>("getPendingProcessText").then((text) {
-      if (text != null && text.isNotEmpty) {
-        router.go("/word/${Uri.encodeComponent(text)}");
+      if (text != null) {
+        navigateToProcessText(text);
       }
     });
   }

@@ -87,9 +87,14 @@ void floatingWindow(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await initApp();
-  PlatformMethod.initHandler();
 
-  searchWordFromProcessText = args[0];
+  // The Android side may already have delivered a newer request through the
+  // pending-text channel while the app was initializing. Keep that request
+  // instead of overwriting it with the entrypoint's initial argument.
+  if (searchWordFromProcessText.isEmpty && args.isNotEmpty) {
+    searchWordFromProcessText = args.first;
+  }
+  navigateToProcessText(searchWordFromProcessText);
 
   runApp(
     ProviderScope(
@@ -138,10 +143,6 @@ class _CiyueState extends State<Ciyue> with TrayListener {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isFloatingWindow) {
-      router.go("/word/${Uri.encodeComponent(searchWordFromProcessText)}");
-    }
-
     Locale? locale;
     if (settings.language != "system") {
       final splittedLanguage = settings.language!.split("_");

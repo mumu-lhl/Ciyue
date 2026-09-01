@@ -29,7 +29,8 @@ class FloatingWindowService : Service() {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val text = intent?.getStringExtra(EXTRA_TEXT_TO_SHOW) ?: ""
+        val text = intent?.getStringExtra(EXTRA_TEXT_TO_SHOW)
+            ?: return START_NOT_STICKY
 
         flutterEngine = FlutterEngineCache.getInstance().get(ENGINE_ID)
 
@@ -53,15 +54,29 @@ class FloatingWindowService : Service() {
 
         val activityIntent = Intent(this, FloatingWindowActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
         startActivity(activityIntent)
 
-        return super.onStartCommand(intent, flags, startId)
+        // This service is only a host for the current floating-window
+        // engine. Do not let Android recreate it with a null intent, which
+        // would result in an empty lookup request.
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
-        super.onDestroy()
-        flutterEngine?.destroy()
+        val engine = flutterEngine
+        val cache = FlutterEngineCache.getInstance()
+
+        // A destroyed engine must never remain available to the next lookup.
+        // Only remove our engine so that a newer service instance cannot be
+        // evicted by a stale onDestroy callback.
+        if (engine != null && cache.get(ENGINE_ID) === engine) {
+            cache.remove(ENGINE_ID)
+        }
+
         flutterEngine = null
+        engine?.destroy()
+        super.onDestroy()
     }
 }

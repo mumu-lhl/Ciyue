@@ -37,8 +37,17 @@ class EngineConfigurator(private val context: Context) {
                     }
 
                     "getPendingProcessText" -> {
-                        result.success(pendingProcessText)
+                        val text = pendingProcessText
                         pendingProcessText = null
+                        result.success(text)
+                    }
+
+                    "processTextHandled" -> {
+                        val text = call.arguments as? String
+                        if (text == null || text == pendingProcessText) {
+                            pendingProcessText = null
+                        }
+                        result.success(0)
                     }
 
                     "openAudioDirectory" -> {
@@ -148,10 +157,9 @@ class EngineConfigurator(private val context: Context) {
     }
 
     fun handleProcessText(text: String) {
-        if (methodChannel != null) {
-            methodChannel?.invokeMethod("processText", text)
-        } else {
-            pendingProcessText = text
-        }
+        // Keep the latest request until Dart acknowledges it. The method call
+        // may arrive before the Dart entrypoint has installed its handler.
+        pendingProcessText = text
+        methodChannel?.invokeMethod("processText", text)
     }
 }
