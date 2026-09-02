@@ -49,7 +49,7 @@ jobs:
       ARCHLINUX_GLIBC_PACKAGE_VERSION: "2.39+r52+gf8e4623421-1"
     steps:
       - name: Cache archived Arch packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /var/cache/pacman/pkg
           key: archlinux-packages-${{ runner.arch }}-${{ env.ARCHLINUX_PACKAGE_SET }}
@@ -350,7 +350,7 @@ jobs:
 
       - name: Upload bundle
         if: ${{ !inputs.package_release_artifacts }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.artifact_name }}
           path: build/linux/x64/release/bundle/
@@ -358,7 +358,7 @@ jobs:
 
       - name: Upload release artifacts
         if: ${{ inputs.package_release_artifacts }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.artifact_name }}
           path: |

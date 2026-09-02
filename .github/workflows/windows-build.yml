@@ -52,6 +52,34 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Detect Windows CMake toolchain
+        if: ${{ inputs.enable_build_cache }}
+        id: windows-toolchain
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio/Installer/vswhere.exe"
+          if (-not (Test-Path $vswhere)) {
+            throw "Could not find vswhere.exe"
+          }
+
+          $installationVersion = (& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationVersion | Out-String).Trim()
+          $installationPath = (& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath | Out-String).Trim()
+          if ([string]::IsNullOrWhiteSpace($installationVersion) -or [string]::IsNullOrWhiteSpace($installationPath)) {
+            throw "Could not find a usable Visual Studio CMake toolchain"
+          }
+
+          $majorVersion = [int]($installationVersion.Split('.')[0])
+          $generator = switch ($majorVersion) {
+            18 { "Visual Studio 18 2026" }
+            17 { "Visual Studio 17 2022" }
+            default { "Visual Studio 16 2019" }
+          }
+
+          Write-Host "Using Visual Studio $installationVersion at $installationPath"
+          Write-Host "Using CMake generator $generator"
+          "version=$installationVersion" >> $env:GITHUB_OUTPUT
+          "generator=$generator" >> $env:GITHUB_OUTPUT
+
       - name: Cache Flutter Build
         if: ${{ inputs.enable_build_cache }}
         uses: actions/cache@v5
@@ -59,18 +87,37 @@ jobs:
           path: |
             .dart_tool
             build
-          key: ${{ runner.os }}-build-${{ hashFiles('**/pubspec.lock') }}
+          key: ${{ runner.os }}-build-${{ steps.windows-toolchain.outputs.version }}-${{ hashFiles('**/pubspec.lock') }}
           restore-keys: |
-            ${{ runner.os }}-build-
+            ${{ runner.os }}-build-${{ steps.windows-toolchain.outputs.version }}-
 
       - name: Clean stale Windows CMake cache
+        if: ${{ inputs.enable_build_cache }}
         shell: pwsh
+        env:
+          EXPECTED_CMAKE_GENERATOR: ${{ steps.windows-toolchain.outputs.generator }}
         run: |
-          # The restored build cache may contain a CMake generator from an older
-          # GitHub runner image (for example VS 2022). windows-latest is moving
-          # to windows-2025-vs2026, whose generator is VS 2026, and CMake refuses
-          # to reuse a build directory created by a different generator.
-          Remove-Item -Recurse -Force build/windows -ErrorAction SilentlyContinue
+          $cache = Get-ChildItem -Path "build/windows" -Filter "CMakeCache.txt" -File -Recurse -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+          if (-not $cache) {
+            Write-Host "No cached Windows CMake configuration found"
+            exit 0
+          }
+
+          $generatorLine = Select-String -Path $cache.FullName -Pattern '^CMAKE_GENERATOR:INTERNAL=' |
+            Select-Object -First 1
+          $cachedGenerator = if ($generatorLine) {
+            $generatorLine.Line -replace '^CMAKE_GENERATOR:INTERNAL=', ''
+          } else {
+            ''
+          }
+
+          if ($cachedGenerator -ne $env:EXPECTED_CMAKE_GENERATOR) {
+            Write-Host "Discarding stale CMake cache: '$cachedGenerator' != '$env:EXPECTED_CMAKE_GENERATOR'"
+            Remove-Item -Recurse -Force build/windows -ErrorAction SilentlyContinue
+          } else {
+            Write-Host "Reusing cached CMake configuration for $cachedGenerator"
+          }
 
       - name: Build Windows
         shell: pwsh
@@ -92,25 +139,40 @@ jobs:
           # warning globally until the upstream plugins move to C++20 <coroutine>.
           $env:CL = "/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS $env:CL"
 
+          # CMake otherwise leaves the Visual Studio build at its default
+          # parallelism, which makes the native Windows build unnecessarily
+          # slow on hosted runners.
+          $env:CMAKE_BUILD_PARALLEL_LEVEL = [Environment]::ProcessorCount
+          Write-Host "Using CMake build parallelism: $env:CMAKE_BUILD_PARALLEL_LEVEL"
+
           flutter build windows @extraArgs
 
       - name: Normalize Flutter Windows bundle path
         shell: pwsh
         run: |
           $legacyReleaseDir = "build/windows/x64/runner/Release"
-          if (Test-Path $legacyReleaseDir) {
-            exit 0
-          }
-
+          $legacyReleasePath = [System.IO.Path]::GetFullPath($legacyReleaseDir)
           $releaseDir = Get-ChildItem -Path "build/windows/x64" -Directory -Recurse |
-            Where-Object { $_.FullName -match '[\\/]runner[\\/]Release$' } |
-            Select-Object -First 1 -ExpandProperty FullName
+            Where-Object {
+              $_.FullName -match '[\\/]runner[\\/]Release$' -and
+              [System.IO.Path]::GetFullPath($_.FullName) -ne $legacyReleasePath
+            } |
+            Select-Object -First 1
+
           if (-not $releaseDir) {
+            if (Test-Path $legacyReleaseDir) {
+              exit 0
+            }
             throw "Could not locate the Flutter Windows release bundle"
           }
 
-          New-Item -ItemType Directory -Force -Path (Split-Path $legacyReleaseDir) | Out-Null
-          Move-Item -Path $releaseDir -Destination $legacyReleaseDir
+          # Keep Flutter's canonical CMake output in the cache. The copied
+          # legacy path is only used by artifact packaging.
+          if (Test-Path $legacyReleaseDir) {
+            Remove-Item -Recurse -Force $legacyReleaseDir
+          }
+          New-Item -ItemType Directory -Force -Path $legacyReleaseDir | Out-Null
+          Copy-Item -Path (Join-Path $releaseDir.FullName "*") -Destination $legacyReleaseDir -Recurse -Force
 
       - name: Copy DLLs
         shell: pwsh
@@ -168,7 +230,7 @@ jobs:
 
       - name: Upload runtime bundle
         if: ${{ !inputs.package_release_artifacts }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.artifact_name }}
           path: build/windows/x64/runner/Release/
@@ -189,7 +251,7 @@ jobs:
 
       - name: Upload release artifacts
         if: ${{ inputs.package_release_artifacts }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.artifact_name }}
           path: |
