@@ -909,16 +909,58 @@ Future<void> findAllFileByExtension(
   List<String> output,
   String extension,
 ) async {
-  final entities = await startDir.list().toList();
-  for (final entity in entities) {
-    if (entity is File) {
-      if (entity.path.endsWith(extension)) {
-        output.add(entity.path);
+  if (!await startDir.exists()) {
+    return;
+  }
+
+  final expectedExtension = extension.startsWith(".")
+      ? extension.toLowerCase()
+      : ".${extension.toLowerCase()}";
+
+  try {
+    await for (final entity in startDir.list(followLinks: false)) {
+      if (entity is File) {
+        if (entity.path.toLowerCase().endsWith(expectedExtension)) {
+          output.add(entity.path);
+        }
+      } else if (entity is Directory) {
+        await findAllFileByExtension(entity, output, extension);
       }
-    } else if (entity is Directory) {
-      await findAllFileByExtension(entity, output, extension);
+    }
+  } on FileSystemException {
+    // A single unreadable directory should not prevent the remaining folders
+    // from being scanned.
+  }
+}
+
+String _normalizeScannedPath(String path) {
+  final normalizedPath = normalize(absolute(path));
+  return Platform.isWindows ? normalizedPath.toLowerCase() : normalizedPath;
+}
+
+Future<List<String>> findMdxFilesInDirectories(
+  Iterable<String> directories,
+) async {
+  final mdxFiles = <String>[];
+  final seen = <String>{};
+
+  for (final directoryPath in directories) {
+    final filesInDirectory = <String>[];
+    await findAllFileByExtension(
+      Directory(directoryPath),
+      filesInDirectory,
+      "mdx",
+    );
+
+    for (final filePath in filesInDirectory) {
+      if (seen.add(_normalizeScannedPath(filePath))) {
+        mdxFiles.add(filePath);
+      }
     }
   }
+
+  mdxFiles.sort();
+  return mdxFiles;
 }
 
 Future<List<String>> findMdxFilesOnAndroid(String? directory) async {
@@ -926,8 +968,24 @@ Future<List<String>> findMdxFilesOnAndroid(String? directory) async {
     directory ??
         join((await getApplicationSupportDirectory()).path, "dictionaries"),
   );
-  final mdxFiles = <String>[];
-  await findAllFileByExtension(documentsDir, mdxFiles, "mdx");
+  return findMdxFilesInDirectories([documentsDir.path]);
+}
 
-  return mdxFiles;
+Future<void> selectMdxFromDirectoriesOnDesktop(BuildContext context) async {
+  final selectedPaths = await getDirectoryPaths();
+  final directories = selectedPaths
+      .where((path) => path != null && path.isNotEmpty)
+      .cast<String>()
+      .toList();
+
+  if (directories.isEmpty || !context.mounted) {
+    return;
+  }
+
+  showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
+  final mdxFiles = await findMdxFilesInDirectories(directories);
+
+  if (context.mounted) {
+    await selectMdx(context, mdxFiles, closeLoadingWhenEmpty: true);
+  }
 }

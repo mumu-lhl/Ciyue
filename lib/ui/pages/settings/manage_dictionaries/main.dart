@@ -35,8 +35,35 @@ Future<void> addGroup(String value, BuildContext context) async {
 class AddButton extends StatelessWidget {
   const AddButton({super.key});
 
+  Future<void> _addFromFiles(BuildContext context) {
+    return selectMdxOrMddOnDesktop(context, true);
+  }
+
+  Future<void> _addFromDirectories(BuildContext context) {
+    return selectMdxFromDirectoriesOnDesktop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (isDesktop()) {
+      final locale = AppLocalizations.of(context)!;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: locale.import,
+            icon: const Icon(Icons.note_add),
+            onPressed: () => _addFromFiles(context),
+          ),
+          IconButton(
+            tooltip: locale.add,
+            icon: const Icon(Icons.create_new_folder),
+            onPressed: () => _addFromDirectories(context),
+          ),
+        ],
+      );
+    }
+
     return IconButton(
       icon: const Icon(Icons.add),
       onPressed: () async {
