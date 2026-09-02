@@ -58,6 +58,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate release notes
+        id: git-cliff
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: github
+          args: --current
+        env:
+          OUTPUT: RELEASE_NOTES.md
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: subosito/flutter-action@v2
         with:
@@ -235,11 +248,55 @@ jobs:
             --app-archive "$archive" \
             --config desktop_updater.yaml
 
+      - name: Add release artifact links
+        shell: bash
+        env:
+          RELEASE_ASSET_BASE: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          {
+            cat <<EOF
+          ## Downloads
+
+          ### Android
+
+          | Architecture | Common APK | Full APK |
+          | --- | --- | --- |
+          | Universal (armeabi-v7a, arm64-v8a, x86_64) | [Download](${RELEASE_ASSET_BASE}/ciyue-universal-release.apk) | [Download](${RELEASE_ASSET_BASE}/ciyue-universal-full.apk) |
+          | armeabi-v7a (32-bit ARM) | [Download](${RELEASE_ASSET_BASE}/ciyue-armeabi-v7a-release.apk) | [Download](${RELEASE_ASSET_BASE}/ciyue-armeabi-v7a-full.apk) |
+          | arm64-v8a (64-bit ARM) | [Download](${RELEASE_ASSET_BASE}/ciyue-arm64-v8a-release.apk) | [Download](${RELEASE_ASSET_BASE}/ciyue-arm64-v8a-full.apk) |
+          | x86_64 | [Download](${RELEASE_ASSET_BASE}/ciyue-x86_64-release.apk) | [Download](${RELEASE_ASSET_BASE}/ciyue-x86_64-full.apk) |
+
+          > **Android Common vs Full:** Common uses Android's system folder picker and copies selected dictionaries/audio into app-private storage, so it does not require broad storage access. Full requires the "Manage all files" permission on Android 11+ and reads dictionaries/audio directly from the selected external folder, avoiding the extra copy and saving storage.
+
+          ### Windows
+
+          | Artifact | Download |
+          | --- | --- |
+          | Installer | [ciyue-installer.exe](${RELEASE_ASSET_BASE}/ciyue-installer.exe) |
+          | Portable bundle | [ciyue-windows.zip](${RELEASE_ASSET_BASE}/ciyue-windows.zip) |
+
+          ### Linux
+
+          | Artifact | Download |
+          | --- | --- |
+          | AppImage | [Ciyue-latest-x86_64.AppImage](${RELEASE_ASSET_BASE}/Ciyue-latest-x86_64.AppImage) |
+          | Debian package | [ciyue-x86_64.deb](${RELEASE_ASSET_BASE}/ciyue-x86_64.deb) |
+          | RPM package | [ciyue-x86_64.rpm](${RELEASE_ASSET_BASE}/ciyue-x86_64.rpm) |
+          | Portable tarball | [ciyue-linux.tar.xz](${RELEASE_ASSET_BASE}/ciyue-linux.tar.xz) |
+          | Flatpak | [ciyue-x86_64.flatpak](${RELEASE_ASSET_BASE}/ciyue-x86_64.flatpak) |
+
+          EOF
+            cat RELEASE_NOTES.md
+          } > "$RUNNER_TEMP/RELEASE_NOTES.md"
+          mv "$RUNNER_TEMP/RELEASE_NOTES.md" RELEASE_NOTES.md
+
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/*,Linux/*,Flatpak/ciyue-x86_64.flatpak"
           tag: ${{ github.ref_name }}
-          generateReleaseNotes: true
+          bodyFile: RELEASE_NOTES.md
+          generateReleaseNotes: false
           allowUpdates: true
           replacesArtifacts: true
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
