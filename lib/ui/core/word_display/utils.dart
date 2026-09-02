@@ -8,12 +8,13 @@ import "package:ciyue/ui/core/word_display/webview_widgets.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
-Widget? buildTitle(String word, Settings settings) {
+Widget? buildTitle(
+  String word,
+  Settings settings, {
+  required SearchController controller,
+}) {
   if (settings.showSearchBarInWordDisplay) {
-    return WordSearchBarWithSuggestions(
-      word: word,
-      controller: SearchController(),
-    );
+    return WordSearchBarWithSuggestions(word: word, controller: controller);
   } else {
     return null;
   }

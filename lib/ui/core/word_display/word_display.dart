@@ -6,6 +6,7 @@ import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/expansion_display.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
+import "package:ciyue/utils.dart" as app_utils;
 import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -22,6 +23,26 @@ class WordDisplay extends ConsumerStatefulWidget {
 }
 
 class _WordDisplayState extends ConsumerState<WordDisplay> {
+  final SearchController _searchController = SearchController();
+
+  Widget? _buildSearchBar(Settings settings) {
+    return buildTitle(widget.word, settings, controller: _searchController);
+  }
+
+  void _goBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go("/");
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
@@ -30,17 +51,31 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     return validDictIdsAsync.when(
       data: (validDictIds) {
         if (validDictIds.isEmpty && !settings.aiExplainWord) {
+          final searchBar = _buildSearchBar(settings);
           return Scaffold(
-            appBar: AppBar(),
+            appBar: buildAppBar(context, false, title: searchBar),
+            bottomNavigationBar:
+                (!settings.searchBarInAppBar && searchBar != null)
+                ? BottomAppBar(child: searchBar)
+                : null,
             body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.notFound,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.notFound,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.word,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -52,7 +87,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         final showTab = dictsLength > 1;
 
         if (!showTab) {
-          final searchBar = buildTitle(widget.word, settings);
+          final searchBar = _buildSearchBar(settings);
           return legacy_provider.ChangeNotifierProvider(
             create: (_) => AIExplanationModel(),
             child: Scaffold(
@@ -81,7 +116,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               child: Builder(
                 builder: (context) {
                   final tabController = DefaultTabController.of(context);
-                  final searchBar = buildTitle(widget.word, settings);
+                  final searchBar = _buildSearchBar(settings);
 
                   return Scaffold(
                     appBar: buildAppBar(context, showTab, title: searchBar),
@@ -127,8 +162,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         );
       },
       loading: () {
-        final settings = ref.watch(settingsProvider);
-        final searchBar = buildTitle(widget.word, settings);
+        final searchBar = _buildSearchBar(settings);
         final firstLoadedDictId = dictManager.dictIds.firstWhere(
           (id) => dictManager.dicts[id]?.isReady == true,
           orElse: () => -1,
@@ -149,18 +183,34 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                 ),
         );
       },
-      error: (err, stack) => Scaffold(
-        appBar: AppBar(),
-        body: Center(child: Text("Error: $err")),
-      ),
+      error: (err, stack) {
+        final searchBar = _buildSearchBar(settings);
+        return Scaffold(
+          appBar: buildAppBar(context, false, title: searchBar),
+          bottomNavigationBar:
+              (!settings.searchBarInAppBar && searchBar != null)
+              ? BottomAppBar(child: searchBar)
+              : null,
+          body: Center(child: Text("Error: $err")),
+        );
+      },
     );
   }
 
   AppBar buildAppBar(BuildContext context, bool showTab, {Widget? title}) {
     final settings = ref.watch(settingsProvider);
     return AppBar(
-      leading: BackButton(onPressed: () => context.go("/")),
-      title: settings.searchBarInAppBar ? title : null,
+      leading: BackButton(onPressed: () => _goBack(context)),
+      title: settings.searchBarInAppBar
+          ? (title ?? Text(widget.word, overflow: TextOverflow.ellipsis))
+          : Text(widget.word, overflow: TextOverflow.ellipsis),
+      actions: [
+        IconButton(
+          tooltip: AppLocalizations.of(context)!.copy,
+          icon: const Icon(Icons.copy),
+          onPressed: () => app_utils.addToClipboard(context, widget.word),
+        ),
+      ],
       bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
           ? buildTabBar(context)
           : null,
@@ -177,7 +227,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
       child: validDictIdsAsync.when(
         data: (validDictIds) => TabBar(
           isScrollable: true,
-          tabAlignment: TabAlignment.center,
+          tabAlignment: TabAlignment.start,
           tabs: [
             if (settings.aiExplainWord) Tab(text: "AI"),
             for (final id in validDictIds)
@@ -199,15 +249,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
       if (settings.aiExplainWord)
         KeepAliveWidget(
           key: const ValueKey("ai_tab"),
-          child: AIExplainView(
-            word: widget.word,
-            key: ValueKey(
-              legacy_provider.Provider.of<AIExplanationModel>(
-                context,
-                listen: false,
-              ).refreshKey,
-            ),
-          ),
+          child: AIExplainView(word: widget.word),
         ),
       for (final id in validDictIds)
         KeepAliveWidget(key: ValueKey("dict_$id"), child: _buildWebView(id)),

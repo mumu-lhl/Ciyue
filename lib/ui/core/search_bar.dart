@@ -67,14 +67,15 @@ class _WordSearchBarWithSuggestionsState
           searchController: widget.controller,
           isFullScreen: !isLargeScreen(context),
           viewOnSubmitted: (String word) {
-            if (widget.controller.text.isNotEmpty) {
-              context.read<HistoryModel>().addHistory(word);
-              context.push("/word/${Uri.encodeComponent(word)}");
+            final normalizedWord = word.trim();
+            if (normalizedWord.isNotEmpty) {
+              context.read<HistoryModel>().addHistory(normalizedWord);
+              context.push("/word/${Uri.encodeComponent(normalizedWord)}");
             }
           },
           suggestionsBuilder:
               (BuildContext context, SearchController controller) async {
-                final searchWord = controller.text.trimRight();
+                final searchWord = controller.text.trim();
 
                 if (searchWord.isEmpty) {
                   return [const SizedBox.shrink()];

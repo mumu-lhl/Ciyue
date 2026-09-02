@@ -64,6 +64,7 @@ class _ButtonState extends State<Button> {
 
     return FloatingActionButton.small(
       heroTag: "readLoudly_$word",
+      tooltip: AppLocalizations.of(context)!.readLoudly,
       foregroundColor: colorScheme.primary,
       backgroundColor: colorScheme.primaryContainer,
       child: const Icon(Icons.volume_up),
@@ -83,6 +84,7 @@ class _ButtonState extends State<Button> {
         if (!snapshot.hasData) {
           return FloatingActionButton.small(
             heroTag: "star_${widget.word}",
+            tooltip: locale.wordBook,
             foregroundColor: colorScheme.primary,
             backgroundColor: colorScheme.surface,
             child: const Icon(Icons.star_outline),
@@ -92,6 +94,7 @@ class _ButtonState extends State<Button> {
 
         return FloatingActionButton.small(
           heroTag: "star_${widget.word}",
+          tooltip: locale.wordBook,
           foregroundColor: colorScheme.primary,
           backgroundColor: colorScheme.primaryContainer,
           child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),

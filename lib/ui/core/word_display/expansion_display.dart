@@ -1,13 +1,13 @@
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
-import "package:ciyue/viewModels/ai_explanation.dart";
+import "package:ciyue/utils.dart" as app_utils;
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
 
 class ExpansionWordDisplay extends ConsumerStatefulWidget {
   final String word;
@@ -26,6 +26,25 @@ class ExpansionWordDisplay extends ConsumerStatefulWidget {
 
 class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
   late List<bool> _isExpanded;
+  final SearchController _searchController = SearchController();
+
+  Widget? _buildSearchBar(Settings settings) {
+    return buildTitle(widget.word, settings, controller: _searchController);
+  }
+
+  void _goBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go("/");
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -53,14 +72,7 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
           headerBuilder: (context, isExpanded) {
             return const ListTile(title: Text("AI"));
           },
-          body: AIExplainView(
-            word: widget.word,
-            key: ValueKey(
-              context.select<AIExplanationModel, int>(
-                (model) => model.refreshKey,
-              ),
-            ),
-          ),
+          body: AIExplainView(word: widget.word),
           isExpanded: _isExpanded[panelIndex],
           canTapOnHeader: true,
         ),
@@ -85,12 +97,21 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     final isAIExplainTabSelected =
         settings.aiExplainWord && _isExpanded.isNotEmpty && _isExpanded[0];
 
-    final searchBar = buildTitle(widget.word, settings);
+    final searchBar = _buildSearchBar(settings);
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go("/")),
-        title: settings.searchBarInAppBar ? searchBar : null,
+        leading: BackButton(onPressed: () => _goBack(context)),
+        title: settings.searchBarInAppBar
+            ? (searchBar ?? Text(widget.word, overflow: TextOverflow.ellipsis))
+            : Text(widget.word, overflow: TextOverflow.ellipsis),
+        actions: [
+          IconButton(
+            tooltip: AppLocalizations.of(context)!.copy,
+            icon: const Icon(Icons.copy),
+            onPressed: () => app_utils.addToClipboard(context, widget.word),
+          ),
+        ],
       ),
       bottomNavigationBar: (!settings.searchBarInAppBar && searchBar != null)
           ? BottomAppBar(child: searchBar)
