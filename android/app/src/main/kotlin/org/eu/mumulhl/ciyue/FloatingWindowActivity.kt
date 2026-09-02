@@ -137,7 +137,10 @@ class FloatingWindowActivity : FlutterActivity() {
 
     @Suppress("DEPRECATION")
     override fun onBackPressed() {
-        dismiss()
+        // Give Flutter's Navigator the first chance to pop a dictionary
+        // lookup opened from this floating window. When there is no route to
+        // pop, Flutter falls back to closing the Activity.
+        super.onBackPressed()
     }
 
     override fun onDestroy() {
