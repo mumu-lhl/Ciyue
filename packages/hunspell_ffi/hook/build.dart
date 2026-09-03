@@ -6,6 +6,13 @@ import "process_manager.dart";
 
 void main(List<String> args) async {
   await build(args, (input, output) async {
+    // The hook can be invoked for asset types other than code assets (or with
+    // no asset types at all). HookConfig.code is only available for code
+    // asset builds.
+    if (!input.config.buildCodeAssets) {
+      return;
+    }
+
     final sources = [
       "src/hunspell_bridge.cc",
       for (final file in [
