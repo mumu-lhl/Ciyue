@@ -1,3 +1,4 @@
+import "package:code_assets/code_assets.dart";
 import "package:hooks/hooks.dart";
 import "package:native_toolchain_c/native_toolchain_c.dart";
 
@@ -29,6 +30,11 @@ void main(List<String> args) async {
       includes: ["third_party/hunspell/src/hunspell"],
       defines: {"HUNSPELL_STATIC": null},
       language: Language.cpp,
+      // Android packages this code asset as a standalone .so. Statically link
+      // libc++ so loading it does not depend on a separately bundled runtime.
+      cppLinkStdLib: input.config.code.targetOS == OS.android
+          ? "c++_static"
+          : null,
       std: "c++17",
     );
 

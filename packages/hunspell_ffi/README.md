@@ -13,3 +13,6 @@ git submodule update --init --recursive
 The package currently exposes `stem` and `suggest`. The first Ciyue feature
 uses `stem` for optional word-form lookup; the dictionary source is never used
 as a standalone definition dictionary.
+
+Android builds statically link the C++ runtime so the native asset has no
+runtime dependency on a separately packaged `libc++_shared.so`.

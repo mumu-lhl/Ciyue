@@ -14,11 +14,11 @@ abstract interface class MorphologyProvider {
 final hunspellManager = HunspellManager();
 
 class HunspellManager implements MorphologyProvider {
-  final List<_LoadedSource> _loadedSources = [];
+  final List<HunspellDictionary> _loadedDictionaries = [];
   final Map<int, String> errors = {};
   Future<void> _operationTail = Future<void>.value();
 
-  int get loadedSourceCount => _loadedSources.length;
+  int get loadedSourceCount => _loadedDictionaries.length;
 
   Future<void> reloadFromDatabase() async {
     final sources = await hunspellSourceDao.all();
@@ -40,7 +40,7 @@ class HunspellManager implements MorphologyProvider {
   Future<void> reload(Iterable<HunspellSourceInfo> sources) {
     final sourceList = sources.toList(growable: false);
     return _enqueue(() async {
-      _closeLoadedSources();
+      _closeLoadedDictionaries();
       errors.clear();
 
       for (final source in sourceList) {
@@ -59,9 +59,7 @@ class HunspellManager implements MorphologyProvider {
             affPath: source.affPath,
             dicPath: source.dicPath,
           );
-          _loadedSources.add(
-            _LoadedSource(source: source, dictionary: dictionary),
-          );
+          _loadedDictionaries.add(dictionary);
         } catch (error) {
           errors[source.id] = error.toString();
         }
@@ -73,8 +71,8 @@ class HunspellManager implements MorphologyProvider {
   Future<List<String>> stems(String word) {
     return _enqueue(() {
       final results = <String>{};
-      for (final loaded in _loadedSources) {
-        results.addAll(loaded.dictionary.stem(word));
+      for (final dictionary in _loadedDictionaries) {
+        results.addAll(dictionary.stem(word));
       }
       return results.toList(growable: false);
     });
@@ -84,8 +82,8 @@ class HunspellManager implements MorphologyProvider {
   Future<List<String>> suggestions(String word) {
     return _enqueue(() {
       final results = <String>{};
-      for (final loaded in _loadedSources) {
-        results.addAll(loaded.dictionary.suggest(word));
+      for (final dictionary in _loadedDictionaries) {
+        results.addAll(dictionary.suggest(word));
       }
       return results.toList(growable: false);
     });
@@ -93,16 +91,16 @@ class HunspellManager implements MorphologyProvider {
 
   Future<void> close() {
     return _enqueue(() {
-      _closeLoadedSources();
+      _closeLoadedDictionaries();
       errors.clear();
     });
   }
 
-  void _closeLoadedSources() {
-    for (final loaded in _loadedSources) {
-      loaded.dictionary.close();
+  void _closeLoadedDictionaries() {
+    for (final dictionary in _loadedDictionaries) {
+      dictionary.close();
     }
-    _loadedSources.clear();
+    _loadedDictionaries.clear();
   }
 
   Future<T> _enqueue<T>(FutureOr<T> Function() operation) {
@@ -118,11 +116,4 @@ class HunspellManager implements MorphologyProvider {
 
     return completer.future;
   }
-}
-
-class _LoadedSource {
-  final HunspellSourceInfo source;
-  final HunspellDictionary dictionary;
-
-  const _LoadedSource({required this.source, required this.dictionary});
 }
