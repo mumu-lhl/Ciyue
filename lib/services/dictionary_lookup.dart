@@ -14,6 +14,16 @@ class DictionaryLookupResult {
   }
 }
 
+class DictionarySearchSuggestions {
+  final List<String> dictionarySuggestions;
+  final List<String> spellingSuggestions;
+
+  const DictionarySearchSuggestions({
+    required this.dictionarySuggestions,
+    required this.spellingSuggestions,
+  });
+}
+
 /// Resolves a user query against the active MDX dictionaries.
 ///
 /// This is the seam between the UI and morphology implementations. Callers
@@ -84,9 +94,12 @@ class DictionaryLookup {
     return DictionaryLookupResult(entriesByDictionary: matches);
   }
 
-  Future<List<String>> searchSuggestions(String query) async {
+  Future<DictionarySearchSuggestions> searchSuggestions(String query) async {
     if (query.isEmpty) {
-      return const [];
+      return const DictionarySearchSuggestions(
+        dictionarySuggestions: [],
+        spellingSuggestions: [],
+      );
     }
 
     final activeDictionaries = dictionaries();
@@ -98,7 +111,10 @@ class DictionaryLookup {
     }.toList()..sort();
 
     if (!morphologyEnabled()) {
-      return results;
+      return DictionarySearchSuggestions(
+        dictionarySuggestions: results.toList(growable: false),
+        spellingSuggestions: const [],
+      );
     }
 
     final exactKeys = await Future.wait(
@@ -123,14 +139,20 @@ class DictionaryLookup {
       }
     }
 
+    final dictionarySuggestions = results.toList(growable: false);
+    final spellingSuggestions = <String>[];
     if (someDictionaryMissed) {
       for (final suggestion in await morphology.suggestions(query)) {
         if (!results.contains(suggestion)) {
           results.add(suggestion);
+          spellingSuggestions.add(suggestion);
         }
       }
     }
 
-    return results.toList(growable: false);
+    return DictionarySearchSuggestions(
+      dictionarySuggestions: dictionarySuggestions,
+      spellingSuggestions: spellingSuggestions.toList(growable: false),
+    );
   }
 }

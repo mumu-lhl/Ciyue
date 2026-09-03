@@ -18,6 +18,8 @@
   "@close": {},
   "search": "Search",
   "@search": {},
+  "spellingSuggestions": "Spelling suggestions",
+  "@spellingSuggestions": {},
   "theme": "Theme",
   "@theme": {},
   "dynamicColor": "Material Dynamic Color",

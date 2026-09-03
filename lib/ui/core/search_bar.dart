@@ -81,28 +81,50 @@ class _WordSearchBarWithSuggestionsState
                   return [const SizedBox.shrink()];
                 }
 
-                final searchResult = [
-                  ...await dictionaryLookup.searchSuggestions(searchWord),
-                ];
-
-                if (settings.aiExplainWord) {
-                  searchResult.insert(0, searchWord);
+                final suggestions = await dictionaryLookup.searchSuggestions(
+                  searchWord,
+                );
+                if (!context.mounted) {
+                  return const <Widget>[];
                 }
+                final l10n = AppLocalizations.of(context)!;
 
-                return searchResult.map(
-                  (e) => ListTile(
-                    title: Text(e),
+                ListTile buildSuggestionTile(String word) {
+                  return ListTile(
+                    title: Text(word),
                     trailing: const Icon(Icons.arrow_forward),
                     onTap: () {
-                      context.read<HistoryModel>().addHistory(e);
-                      context.push("/word/${Uri.encodeComponent(e)}");
+                      if (!context.mounted) return;
+                      context.read<HistoryModel>().addHistory(word);
+                      context.push("/word/${Uri.encodeComponent(word)}");
 
                       if (widget.isHome && settings.autoRemoveSearchWord) {
                         controller.text = "";
                       }
                     },
-                  ),
-                );
+                  );
+                }
+
+                return [
+                  if (settings.aiExplainWord) buildSuggestionTile(searchWord),
+                  ...suggestions.dictionarySuggestions.map(buildSuggestionTile),
+                  if (suggestions.spellingSuggestions.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        start: 16,
+                        top: 10,
+                        bottom: 5,
+                      ),
+                      child: Text(
+                        l10n.spellingSuggestions,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.secondary
+                              .withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ),
+                  ...suggestions.spellingSuggestions.map(buildSuggestionTile),
+                ];
               },
         ),
       ),

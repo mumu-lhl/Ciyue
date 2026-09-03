@@ -103,7 +103,10 @@ void main() {
         mode: HunspellLookupMode.supplement,
       );
 
-      expect(await lookup.searchSuggestions("rims"), ["rims", "rim"]);
+      final result = await lookup.searchSuggestions("rims");
+
+      expect(result.dictionarySuggestions, ["rims", "rim"]);
+      expect(result.spellingSuggestions, isEmpty);
     },
   );
 
@@ -119,10 +122,10 @@ void main() {
       enabled: true,
     );
 
-    expect(await lookup.searchSuggestions("unpresidented"), [
-      "unprecedented",
-      "unrepresented",
-    ]);
+    final result = await lookup.searchSuggestions("unpresidented");
+
+    expect(result.dictionarySuggestions, isEmpty);
+    expect(result.spellingSuggestions, ["unprecedented", "unrepresented"]);
     expect(morphology.suggestionCalls, 1);
   });
 
@@ -143,7 +146,10 @@ void main() {
         enabled: true,
       );
 
-      expect(await lookup.searchSuggestions("word"), ["word"]);
+      final result = await lookup.searchSuggestions("word");
+
+      expect(result.dictionarySuggestions, ["word"]);
+      expect(result.spellingSuggestions, isEmpty);
       expect(morphology.suggestionCalls, 0);
     },
   );
