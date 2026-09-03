@@ -44,7 +44,9 @@ void main() {
     final directory = await Directory.systemTemp.createTemp("ciyue_mdict_");
     final mdxFile = await _writeMdx(directory, [
       ("book", "<p>book definition</p>"),
+      ("other", "<p>other definition</p>"),
       ("books", "@@@LINK=book"),
+      ("books", "@@@LINK=other"),
       ("books", "<p>variant definition</p>"),
     ]);
     final path = mdxFile.path.substring(0, mdxFile.path.length - 4);
@@ -65,7 +67,46 @@ void main() {
       entry?.content,
       allOf(
         contains("<p>book definition</p>"),
+        contains("<p>other definition</p>"),
         contains("<p>variant definition</p>"),
+        isNot(contains("@@@LINK=")),
+      ),
+    );
+  });
+
+  test("resolves concatenated @@@LINK records with separators", () async {
+    final directory = await Directory.systemTemp.createTemp("ciyue_mdict_");
+    final mdxFile = await _writeMdx(directory, [
+      ("first", "<p>first definition</p>"),
+      ("second", "<p>second definition</p>"),
+      ("third", "<p>third definition</p>"),
+      ("fourth", "<p>fourth definition</p>"),
+      (
+        "alias",
+        "@@@LINK=first\n@@@LINK=second\r@@@LINK=third\u0000@@@LINK=fourth",
+      ),
+    ]);
+    final path = mdxFile.path.substring(0, mdxFile.path.length - 4);
+    await dictionaryListDao.add(path, "Test dictionary");
+    final dictionary = Mdict(path: path);
+
+    addTearDown(() async {
+      await dictionary.close();
+      await dictionaryListDao.remove(path);
+      await directory.delete(recursive: true);
+    });
+
+    await dictionary.init();
+
+    final entry = await dictionary.readExactEntry("alias");
+
+    expect(
+      entry?.content,
+      allOf(
+        contains("<p>first definition</p>"),
+        contains("<p>second definition</p>"),
+        contains("<p>third definition</p>"),
+        contains("<p>fourth definition</p>"),
         isNot(contains("@@@LINK=")),
       ),
     );

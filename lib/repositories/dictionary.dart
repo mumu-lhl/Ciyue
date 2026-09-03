@@ -181,7 +181,6 @@ class Mdict implements DictionarySource {
 
   static const maxBatchSize = 50000;
   static const maxLoadingCount = 5000;
-  static const _maxLinkResolutionDepth = 8;
 
   bool isLoading = true;
   Future<void>? _metadataInitialization;
@@ -532,14 +531,13 @@ class Mdict implements DictionarySource {
   }
 
   Future<DictionaryEntryData?> readExactEntry(String word) {
-    return _readExactEntry(word, visitedHeadwords: const {}, depth: 0);
+    return _readExactEntry(word, const {});
   }
 
   Future<DictionaryEntryData?> _readExactEntry(
-    String word, {
-    required Set<String> visitedHeadwords,
-    required int depth,
-  }) async {
+    String word,
+    Set<String> visitedHeadwords,
+  ) async {
     final headword = await resolveExactKey(word);
     if (headword == null) {
       return null;
@@ -554,24 +552,34 @@ class Mdict implements DictionarySource {
     final pathHeadwords = {...visitedHeadwords, headword};
     final resolvedContents = <String>[];
     for (final content in contents) {
-      final linkedWord = _linkedWord(content);
-      if (linkedWord == null || depth >= _maxLinkResolutionDepth) {
+      final linkedWords = _linkedWords(content);
+      if (linkedWords.isEmpty) {
         resolvedContents.add(content);
         continue;
       }
 
-      final linkedHeadword = await resolveExactKey(linkedWord);
-      if (linkedHeadword == null || pathHeadwords.contains(linkedHeadword)) {
-        resolvedContents.add(content);
-        continue;
+      var resolved = false;
+      for (final linkedWord in linkedWords) {
+        final linkedHeadword = await resolveExactKey(linkedWord);
+        if (linkedHeadword == null || pathHeadwords.contains(linkedHeadword)) {
+          continue;
+        }
+
+        final linkedEntry = await _readExactEntry(
+          linkedHeadword,
+          pathHeadwords,
+        );
+        if (linkedEntry != null) {
+          resolvedContents.add(linkedEntry.content);
+          resolved = true;
+        }
       }
 
-      final linkedEntry = await _readExactEntry(
-        linkedHeadword,
-        visitedHeadwords: pathHeadwords,
-        depth: depth + 1,
-      );
-      resolvedContents.add(linkedEntry?.content ?? content);
+      // Keep malformed or broken redirects visible instead of making a
+      // dictionary lookup fail altogether.
+      if (!resolved) {
+        resolvedContents.add(content);
+      }
     }
 
     return DictionaryEntryData(
@@ -580,15 +588,22 @@ class Mdict implements DictionarySource {
     );
   }
 
-  String? _linkedWord(String content) {
+  List<String> _linkedWords(String content) {
     const prefix = "@@@LINK=";
-    final trimmed = content.replaceFirst("\uFEFF", "").trim();
+    final trimmed = content
+        .replaceAll("\uFEFF", "")
+        .replaceAll("\u0000", "")
+        .trim();
     if (!trimmed.startsWith(prefix)) {
-      return null;
+      return const [];
     }
 
-    final linkedWord = trimmed.substring(prefix.length).trim();
-    return linkedWord.isEmpty ? null : linkedWord;
+    return trimmed
+        .split(prefix)
+        .skip(1)
+        .map((word) => word.trim())
+        .where((word) => word.isNotEmpty)
+        .toList(growable: false);
   }
 
   @override

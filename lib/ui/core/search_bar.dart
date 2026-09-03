@@ -1,5 +1,5 @@
-import "package:ciyue/ui/pages/main/home.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/dictionary_lookup_instance.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -81,8 +81,9 @@ class _WordSearchBarWithSuggestionsState
                   return [const SizedBox.shrink()];
                 }
 
-                final searchResult = await Searcher(searchWord)
-                    .getSearchResult();
+                final searchResult = [
+                  ...await dictionaryLookup.searchSuggestions(searchWord),
+                ];
 
                 if (settings.aiExplainWord) {
                   searchResult.insert(0, searchWord);

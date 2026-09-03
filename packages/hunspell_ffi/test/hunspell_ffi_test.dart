@@ -12,5 +12,6 @@ void main() {
     addTearDown(dictionary.close);
 
     expect(dictionary.stem("rims"), contains("rim"));
+    expect(dictionary.suggest("rimm"), contains("rim"));
   });
 }

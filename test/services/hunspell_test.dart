@@ -26,6 +26,7 @@ void main() {
     ]);
 
     expect(await manager.stems("rims"), contains("rim"));
+    expect(await manager.suggestions("rimm"), contains("rim"));
     expect(manager.loadedSourceCount, 1);
   });
 

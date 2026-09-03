@@ -3,17 +3,11 @@ import "package:ciyue/models/hunspell.dart";
 import "package:ciyue/services/hunspell.dart";
 
 class DictionaryLookupResult {
-  final String query;
   final Map<int, List<DictionaryEntryData>> entriesByDictionary;
 
-  const DictionaryLookupResult({
-    required this.query,
-    required this.entriesByDictionary,
-  });
+  const DictionaryLookupResult({required this.entriesByDictionary});
 
   List<int> get validDictionaryIds => entriesByDictionary.keys.toList();
-
-  bool get hasMatches => entriesByDictionary.isNotEmpty;
 
   List<DictionaryEntryData> entriesFor(int dictionaryId) {
     return entriesByDictionary[dictionaryId] ?? const [];
@@ -40,12 +34,12 @@ class DictionaryLookup {
 
   Future<DictionaryLookupResult> lookup(String word) async {
     if (word.isEmpty) {
-      return DictionaryLookupResult(query: word, entriesByDictionary: const {});
+      return const DictionaryLookupResult(entriesByDictionary: {});
     }
 
     final activeDictionaries = dictionaries();
     if (activeDictionaries.isEmpty) {
-      return DictionaryLookupResult(query: word, entriesByDictionary: const {});
+      return const DictionaryLookupResult(entriesByDictionary: {});
     }
 
     final exactKeys = await Future.wait(
@@ -81,13 +75,13 @@ class DictionaryLookup {
         candidates.addAll(stems);
       }
 
-      final entries = await dict.readExactEntries(_dedupe(candidates));
+      final entries = await dict.readExactEntries({...candidates});
       if (entries.isNotEmpty) {
         matches[dict.id] = entries;
       }
     }
 
-    return DictionaryLookupResult(query: word, entriesByDictionary: matches);
+    return DictionaryLookupResult(entriesByDictionary: matches);
   }
 
   Future<List<String>> searchSuggestions(String query) async {
@@ -99,54 +93,44 @@ class DictionaryLookup {
     final prefixResults = await Future.wait(
       activeDictionaries.map((dict) => dict.search(query)),
     );
-    final prefixResultSet = <String>{};
-    for (final dictionaryResults in prefixResults) {
-      prefixResultSet.addAll(dictionaryResults);
-    }
-    final results = prefixResultSet.toList()..sort();
+    final results = <String>{
+      for (final dictionaryResults in prefixResults) ...dictionaryResults,
+    }.toList()..sort();
 
-    if (morphologyEnabled()) {
-      final stems = await morphology.stems(query);
-      if (lookupMode() == HunspellLookupMode.supplement ||
-          !await _hasExactMatch(activeDictionaries, query)) {
-        for (final stem in stems) {
-          final canonicalKey = await _findExactKey(activeDictionaries, stem);
-          if (canonicalKey != null && !results.contains(canonicalKey)) {
+    if (!morphologyEnabled()) {
+      return results;
+    }
+
+    final exactKeys = await Future.wait(
+      activeDictionaries.map((dict) => dict.resolveExactKey(query)),
+    );
+    final someDictionaryMissed =
+        activeDictionaries.isEmpty || exactKeys.any((key) => key == null);
+    final stems =
+        lookupMode() == HunspellLookupMode.supplement || someDictionaryMissed
+        ? await morphology.stems(query)
+        : const <String>[];
+
+    for (final stem in stems) {
+      for (final dict in activeDictionaries) {
+        final canonicalKey = await dict.resolveExactKey(stem);
+        if (canonicalKey != null) {
+          if (!results.contains(canonicalKey)) {
             results.add(canonicalKey);
           }
+          break;
+        }
+      }
+    }
+
+    if (someDictionaryMissed) {
+      for (final suggestion in await morphology.suggestions(query)) {
+        if (!results.contains(suggestion)) {
+          results.add(suggestion);
         }
       }
     }
 
     return results.toList(growable: false);
-  }
-
-  Future<bool> _hasExactMatch(
-    List<DictionarySource> activeDictionaries,
-    String word,
-  ) async {
-    for (final dict in activeDictionaries) {
-      if (await dict.resolveExactKey(word) != null) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  Future<String?> _findExactKey(
-    List<DictionarySource> activeDictionaries,
-    String word,
-  ) async {
-    for (final dict in activeDictionaries) {
-      final key = await dict.resolveExactKey(word);
-      if (key != null) {
-        return key;
-      }
-    }
-    return null;
-  }
-
-  Iterable<String> _dedupe(Iterable<String> words) {
-    return {...words};
   }
 }

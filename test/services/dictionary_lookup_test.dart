@@ -106,6 +106,47 @@ void main() {
       expect(await lookup.searchSuggestions("rims"), ["rims", "rim"]);
     },
   );
+
+  test("adds spelling suggestions when a dictionary does not match", () async {
+    final morphology = FakeMorphology(
+      stemsResult: const [],
+      suggestionsResult: ["unprecedented", "unrepresented"],
+    );
+    final dictionary = FakeDictionarySource(id: 1, entries: {});
+    final lookup = makeLookup(
+      dictionary: dictionary,
+      morphology: morphology,
+      enabled: true,
+    );
+
+    expect(await lookup.searchSuggestions("unpresidented"), [
+      "unprecedented",
+      "unrepresented",
+    ]);
+    expect(morphology.suggestionCalls, 1);
+  });
+
+  test(
+    "does not add spelling suggestions when every dictionary matches",
+    () async {
+      final morphology = FakeMorphology(
+        stemsResult: const [],
+        suggestionsResult: ["wording"],
+      );
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"word": "word content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: morphology,
+        enabled: true,
+      );
+
+      expect(await lookup.searchSuggestions("word"), ["word"]);
+      expect(morphology.suggestionCalls, 0);
+    },
+  );
 }
 
 DictionaryLookup makeLookup({
@@ -124,9 +165,14 @@ DictionaryLookup makeLookup({
 
 class FakeMorphology implements MorphologyProvider {
   final List<String> stemsResult;
+  final List<String> suggestionsResult;
   int stemCalls = 0;
+  int suggestionCalls = 0;
 
-  FakeMorphology({required this.stemsResult});
+  FakeMorphology({
+    required this.stemsResult,
+    this.suggestionsResult = const [],
+  });
 
   @override
   Future<List<String>> stems(String word) async {
@@ -135,7 +181,10 @@ class FakeMorphology implements MorphologyProvider {
   }
 
   @override
-  Future<List<String>> suggestions(String word) async => const [];
+  Future<List<String>> suggestions(String word) async {
+    suggestionCalls++;
+    return suggestionsResult;
+  }
 }
 
 class FakeDictionarySource implements DictionarySource {

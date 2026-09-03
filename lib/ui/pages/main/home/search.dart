@@ -1,6 +1,5 @@
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
-import "package:ciyue/services/dictionary_lookup_instance.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/core/search_bar.dart";
@@ -82,15 +81,5 @@ class HomeSearchBar extends StatelessWidget {
         autoFocus: settings.autoFocusSearch,
       ),
     );
-  }
-}
-
-class Searcher {
-  final String text;
-
-  Searcher(this.text);
-
-  Future<List<String>> getSearchResult() {
-    return dictionaryLookup.searchSuggestions(text);
   }
 }
