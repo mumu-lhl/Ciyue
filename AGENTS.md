@@ -71,8 +71,9 @@ The project uses `justfile` to manage common development tasks.
 *   **Generated files:** Do not edit Drift-generated files manually. Keep all existing schema versions; only add the new version and its migration. Commit generated files required by the build, but do not review them line by line.
 
 ### Translations
-*   **Source:** `.arb` files in `lib/l10n/`.
-*   **Management:** **Do NOT edit `.arb` files directly.** Use [Weblate](https://hosted.weblate.org/engage/ciyue/) for translations.
+*   **Source:** Add new source messages to `lib/l10n/app_en.arb`; keep user-visible strings out of widget code and access them through `AppLocalizations`.
+*   **Generation:** After changing an ARB file, run `flutter gen-l10n` to regenerate `lib/src/generated/i18n/app_localizations*.dart`. Never edit generated Dart files manually.
+*   **Translation:** Non-English locale files (`app_*.arb`) are managed through [Weblate](https://hosted.weblate.org/engage/ciyue/); do not hand-edit their translations locally.
 
 ### Contribution Guidelines
 *   **Commits:** Use clear, descriptive commit messages.

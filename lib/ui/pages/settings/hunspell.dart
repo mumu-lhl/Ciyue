@@ -8,6 +8,7 @@ import "package:ciyue/repositories/hunspell.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/platform.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -40,6 +41,7 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: const Text("Hunspell")),
       body: Center(
@@ -49,29 +51,25 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
             children: [
               SwitchListTile(
                 secondary: const Icon(Icons.spellcheck),
-                title: const Text("Enable word-form lookup"),
-                subtitle: const Text(
-                  "Disabled by default. Use Hunspell to find word forms.",
-                ),
+                title: Text(l10n.enableWordFormLookup),
+                subtitle: Text(l10n.enableWordFormLookupDescription),
                 value: settings.enableHunspellMorphology,
                 onChanged: _setMorphologyEnabled,
               ),
               ListTile(
                 leading: const Icon(Icons.tune),
-                title: const Text("Lookup mode"),
-                subtitle: const Text(
-                  "Choose whether stems supplement existing entries.",
-                ),
+                title: Text(l10n.hunspellLookupMode),
+                subtitle: Text(l10n.hunspellLookupModeDescription),
                 trailing: DropdownButton<HunspellLookupMode>(
                   value: settings.hunspellLookupMode,
-                  items: const [
+                  items: [
                     DropdownMenuItem(
                       value: HunspellLookupMode.fallback,
-                      child: Text("Fallback"),
+                      child: Text(l10n.hunspellFallback),
                     ),
                     DropdownMenuItem(
                       value: HunspellLookupMode.supplement,
-                      child: Text("Supplement"),
+                      child: Text(l10n.hunspellSupplement),
                     ),
                   ],
                   onChanged: _setLookupMode,
@@ -80,10 +78,8 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.folder_open),
-                title: const Text("Import Hunspell dictionaries"),
-                subtitle: const Text(
-                  "Select a folder containing .aff and .dic files.",
-                ),
+                title: Text(l10n.importHunspellDictionaries),
+                subtitle: Text(l10n.importHunspellDictionariesDescription),
                 trailing: _isImporting
                     ? const SizedBox(
                         width: 24,
@@ -104,13 +100,15 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                   }
                   if (snapshot.hasError) {
                     return ListTile(
-                      title: Text("Failed to load sources: ${snapshot.error}"),
+                      title: Text(
+                        l10n.hunspellSourcesLoadFailed(
+                          snapshot.error.toString(),
+                        ),
+                      ),
                     );
                   }
                   if (snapshot.data!.isEmpty) {
-                    return const ListTile(
-                      title: Text("No Hunspell dictionaries imported"),
-                    );
+                    return ListTile(title: Text(l10n.noHunspellDictionaries));
                   }
 
                   return Column(
@@ -129,7 +127,7 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                                     _setSourceEnabled(source.id, value),
                               ),
                               IconButton(
-                                tooltip: "Remove",
+                                tooltip: l10n.remove,
                                 icon: const Icon(Icons.delete_outline),
                                 onPressed: () => _removeSource(source.id),
                               ),

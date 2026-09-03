@@ -115,10 +115,11 @@ class HunspellSettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: const Icon(Icons.spellcheck),
       title: const Text("Hunspell"),
-      subtitle: const Text("Optional word-form lookup"),
+      subtitle: Text(l10n.optionalWordFormLookup),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => context.push("/settings/hunspell"),
     );

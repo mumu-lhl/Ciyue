@@ -270,6 +270,34 @@
   "@advanceSwitchDescription": {},
   "enableHistory": "Enable History",
   "@enableHistory": {},
+  "enableWordFormLookup": "Enable word-form lookup",
+  "@enableWordFormLookup": {},
+  "enableWordFormLookupDescription": "Disabled by default. Use Hunspell to find word forms.",
+  "@enableWordFormLookupDescription": {},
+  "hunspellLookupMode": "Lookup mode",
+  "@hunspellLookupMode": {},
+  "hunspellLookupModeDescription": "Choose whether stems supplement existing entries.",
+  "@hunspellLookupModeDescription": {},
+  "hunspellFallback": "Fallback",
+  "@hunspellFallback": {},
+  "hunspellSupplement": "Supplement",
+  "@hunspellSupplement": {},
+  "importHunspellDictionaries": "Import Hunspell dictionaries",
+  "@importHunspellDictionaries": {},
+  "importHunspellDictionariesDescription": "Select a folder containing .aff and .dic files.",
+  "@importHunspellDictionariesDescription": {},
+  "hunspellSourcesLoadFailed": "Failed to load Hunspell dictionaries: {error}",
+  "@hunspellSourcesLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noHunspellDictionaries": "No Hunspell dictionaries imported",
+  "@noHunspellDictionaries": {},
+  "optionalWordFormLookup": "Optional word-form lookup",
+  "@optionalWordFormLookup": {},
   "changelog": "Changelog",
   "@changelog": {},
   "editAIExplanation": "Edit AI Explanation",
