@@ -35,6 +35,7 @@ class EngineConfigurator(context: Context) {
         fun onCreateFile() {}
         fun onGetDirectory() {}
         fun onSetSecureFlag(secure: Boolean) {}
+        fun onDismissFloatingWindow() {}
     }
 
     var callback: Callback? = null
@@ -94,6 +95,11 @@ class EngineConfigurator(context: Context) {
 
                     "setSecureFlag" -> {
                         callback?.onSetSecureFlag(call.arguments as Boolean)
+                        result.success(0)
+                    }
+
+                    "dismissFloatingWindow" -> {
+                        callback?.onDismissFloatingWindow()
                         result.success(0)
                     }
 

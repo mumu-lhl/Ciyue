@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/app_router.dart";
@@ -7,6 +9,7 @@ import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
@@ -231,7 +234,7 @@ class _CiyueState extends State<Ciyue> with TrayListener {
 
     final smartDialogBuilder = FlutterSmartDialog.init();
 
-    return SafeArea(
+    final app = SafeArea(
       top: false,
       child: MaterialApp.router(
         title: "Ciyue",
@@ -257,6 +260,35 @@ class _CiyueState extends State<Ciyue> with TrayListener {
           );
         },
       ),
+    );
+
+    if (!runningInFloatingWindow) {
+      return app;
+    }
+
+    // The Activity window covers the display so Android can deliver edge-back
+    // gestures to it. Keep only the dictionary view visible and use the
+    // transparent area as the floating-window dismiss target.
+    return Stack(
+      alignment: Alignment.topLeft,
+      fit: StackFit.expand,
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            unawaited(dismissFloatingWindow());
+          },
+          child: const SizedBox.expand(),
+        ),
+        Align(
+          alignment: Alignment.center,
+          child: FractionallySizedBox(
+            widthFactor: 0.8,
+            heightFactor: 0.5,
+            child: app,
+          ),
+        ),
+      ],
     );
   }
 

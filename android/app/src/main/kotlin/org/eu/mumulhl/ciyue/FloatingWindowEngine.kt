@@ -85,6 +85,10 @@ object FloatingWindowEngine {
                 override fun onSetSecureFlag(secure: Boolean) {
                     FloatingWindowActivity.setSecureFlag(secure)
                 }
+
+                override fun onDismissFloatingWindow() {
+                    FloatingWindowActivity.dismissCurrent()
+                }
             }
         }
     }

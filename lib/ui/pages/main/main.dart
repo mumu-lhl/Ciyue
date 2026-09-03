@@ -1,6 +1,9 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart";
 import "package:ciyue/ui/pages/main/home/drawer.dart";
 import "package:ciyue/ui/pages/main/home/scaffold.dart";
@@ -67,7 +70,7 @@ class _HomeState extends State<Home> {
         }
 
         if (runningInFloatingWindow) {
-          SystemNavigator.pop();
+          unawaited(dismissFloatingWindow());
           return;
         }
 

@@ -1,13 +1,14 @@
+import "dart:async";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/ui/core/word_display/webview_widgets.dart";
 import "package:material_ui/material_ui.dart";
-import "package:flutter/services.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 
@@ -30,7 +31,7 @@ Widget withFloatingWindowBackHandler(BuildContext context, Widget child) {
     canPop: !runningInFloatingWindow || canPop,
     onPopInvokedWithResult: (didPop, _) {
       if (!didPop && runningInFloatingWindow && !canPop) {
-        SystemNavigator.pop();
+        unawaited(dismissFloatingWindow());
       }
     },
     child: child,

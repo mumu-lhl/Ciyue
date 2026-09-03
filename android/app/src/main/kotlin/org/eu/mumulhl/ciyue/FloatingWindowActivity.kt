@@ -1,12 +1,10 @@
 package org.eu.mumulhl.ciyue
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.DisplayMetrics
-import android.view.MotionEvent
+import android.view.View
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterActivityLaunchConfigs.BackgroundMode
@@ -21,6 +19,12 @@ class FloatingWindowActivity : FlutterActivity() {
             secureFlag = secure
             activityReference?.get()?.let { activity ->
                 activity.runOnUiThread { activity.applySecureFlag() }
+            }
+        }
+
+        fun dismissCurrent() {
+            activityReference?.get()?.let { activity ->
+                activity.runOnUiThread { activity.dismiss() }
             }
         }
     }
@@ -62,27 +66,20 @@ class FloatingWindowActivity : FlutterActivity() {
         activityReference = WeakReference(this)
         applySecureFlag()
         super.onCreate(savedInstanceState)
-        window.addFlags(
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-        )
 
-        val (screenWidth, screenHeight) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val bounds = windowManager.currentWindowMetrics.bounds
-            bounds.width() to bounds.height()
-        } else {
-            @Suppress("DEPRECATION")
-            val displayMetrics = DisplayMetrics()
-            @Suppress("DEPRECATION")
-            windowManager.defaultDisplay.getMetrics(displayMetrics)
-            displayMetrics.widthPixels to displayMetrics.heightPixels
-        }
-
+        // Keep the Activity window full-screen so Android's edge-back gesture
+        // targets this Activity instead of the window underneath it. The
+        // Flutter content is constrained to the visible floating panel in the
+        // Dart layout.
         val layoutParams = WindowManager.LayoutParams()
         layoutParams.copyFrom(window.attributes)
-        layoutParams.width = (screenWidth * 0.8).toInt()
-        layoutParams.height = (screenHeight * 0.5).toInt()
+        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
+        layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT
         window.attributes = layoutParams
+    }
+
+    private fun keepFlutterViewVisible() {
+        findViewById<View>(FLUTTER_VIEW_ID)?.visibility = View.VISIBLE
     }
 
     override fun onStart() {
@@ -91,10 +88,19 @@ class FloatingWindowActivity : FlutterActivity() {
         idleExpired = false
         FloatingWindowEngine.cancelIdleShutdown()
         super.onStart()
+        keepFlutterViewVisible()
     }
 
     override fun onStop() {
         super.onStop()
+
+        // FlutterActivity sets FlutterView to GONE here as a workaround for a
+        // lock-screen issue on some OnePlus devices. That destroys the
+        // TextureView surface while hybrid-composition WebViews survive, so a
+        // cached floating engine can return showing only its WebView. The task
+        // itself is already hidden; keep the Flutter view and surface alive.
+        keepFlutterViewVisible()
+
         when {
             isFinishing -> FloatingWindowEngine.scheduleIdleShutdown()
             dismissed -> {
@@ -118,14 +124,6 @@ class FloatingWindowActivity : FlutterActivity() {
             this,
             intent.getStringExtra(FloatingWindowEngine.EXTRA_TEXT_TO_SHOW).orEmpty(),
         )
-    }
-
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_OUTSIDE) {
-            dismiss()
-            return true
-        }
-        return super.dispatchTouchEvent(event)
     }
 
     private fun dismiss() {

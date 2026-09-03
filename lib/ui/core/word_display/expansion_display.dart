@@ -1,13 +1,15 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/utils.dart" as app_utils;
 import "package:material_ui/material_ui.dart";
-import "package:flutter/services.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 
@@ -38,7 +40,7 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     if (context.canPop()) {
       context.pop();
     } else if (runningInFloatingWindow) {
-      SystemNavigator.pop();
+      unawaited(dismissFloatingWindow());
     } else {
       context.go("/");
     }
