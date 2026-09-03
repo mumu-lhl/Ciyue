@@ -181,6 +181,7 @@ class Mdict implements DictionarySource {
 
   static const maxBatchSize = 50000;
   static const maxLoadingCount = 5000;
+  static const _maxLinkResolutionDepth = 8;
 
   bool isLoading = true;
   Future<void>? _metadataInitialization;
@@ -530,37 +531,64 @@ class Mdict implements DictionarySource {
     return null;
   }
 
-  Future<DictionaryEntryData?> readExactEntry(String word) async {
+  Future<DictionaryEntryData?> readExactEntry(String word) {
+    return _readExactEntry(word, visitedHeadwords: const {}, depth: 0);
+  }
+
+  Future<DictionaryEntryData?> _readExactEntry(
+    String word, {
+    required Set<String> visitedHeadwords,
+    required int depth,
+  }) async {
     final headword = await resolveExactKey(word);
     if (headword == null) {
       return null;
     }
 
-    var data = await locateAll(headword);
-    var contents = <String>[];
+    final data = await locateAll(headword);
+    final contents = <String>[];
     for (final info in data) {
       contents.add(await reader.readOneMdx(info));
     }
 
-    final content = contents.join();
-    if (content.startsWith("@@@LINK=")) {
-      final linkedWord = content
-          .replaceFirst("@@@LINK=", "")
-          .replaceAll(RegExp(r"[\n\r\x00]"), "")
-          .trimRight();
-      final linkedHeadword = await resolveExactKey(linkedWord);
-      if (linkedHeadword == null) {
-        throw Exception("Linked word not found: $linkedWord");
+    final pathHeadwords = {...visitedHeadwords, headword};
+    final resolvedContents = <String>[];
+    for (final content in contents) {
+      final linkedWord = _linkedWord(content);
+      if (linkedWord == null || depth >= _maxLinkResolutionDepth) {
+        resolvedContents.add(content);
+        continue;
       }
 
-      data = await locateAll(linkedHeadword);
-      contents = <String>[];
-      for (final info in data) {
-        contents.add(await reader.readOneMdx(info));
+      final linkedHeadword = await resolveExactKey(linkedWord);
+      if (linkedHeadword == null || pathHeadwords.contains(linkedHeadword)) {
+        resolvedContents.add(content);
+        continue;
       }
+
+      final linkedEntry = await _readExactEntry(
+        linkedHeadword,
+        visitedHeadwords: pathHeadwords,
+        depth: depth + 1,
+      );
+      resolvedContents.add(linkedEntry?.content ?? content);
     }
 
-    return DictionaryEntryData(headword: headword, content: contents.join());
+    return DictionaryEntryData(
+      headword: headword,
+      content: resolvedContents.join(),
+    );
+  }
+
+  String? _linkedWord(String content) {
+    const prefix = "@@@LINK=";
+    final trimmed = content.replaceFirst("\uFEFF", "").trim();
+    if (!trimmed.startsWith(prefix)) {
+      return null;
+    }
+
+    final linkedWord = trimmed.substring(prefix.length).trim();
+    return linkedWord.isEmpty ? null : linkedWord;
   }
 
   @override

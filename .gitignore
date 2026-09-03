@@ -22,6 +22,8 @@ migrate_working_dir/
 #.vscode/
 
 # Flutter/Dart/Pub related
+# Generated when testing the internal package outside the root app.
+/packages/hunspell_ffi/pubspec.lock
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
