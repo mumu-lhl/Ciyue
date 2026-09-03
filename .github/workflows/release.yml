@@ -61,8 +61,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate release notes
-        id: git-cliff
+      # Keep nightly and preview tags out of stable release ranges. Preview
+      # releases may follow another preview release, but stable releases must
+      # always compare with the previous stable release.
+      - name: Generate stable release notes
+        id: git-cliff-stable
+        if: ${{ !contains(github.ref_name, '-alpha') && !contains(github.ref_name, '-beta') }}
         uses: orhun/git-cliff-action@v4
         with:
           config: github
@@ -71,6 +75,20 @@ jobs:
           OUTPUT: RELEASE_NOTES.md
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_CLIFF_TAG_PATTERN: '^v[0-9]+[.][0-9]+[.][0-9]+$'
+
+      - name: Generate preview release notes
+        id: git-cliff-preview
+        if: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') }}
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: github
+          args: --current
+        env:
+          OUTPUT: RELEASE_NOTES.md
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_CLIFF_TAG_PATTERN: '^v[0-9]+[.][0-9]+[.][0-9]+(-(alpha|beta)[.][0-9]+(-[0-9]+)?)?$'
 
       - uses: subosito/flutter-action@v2
         with:
