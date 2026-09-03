@@ -13,6 +13,11 @@ late final SharedPreferencesWithCache prefs;
 late final VoidCallback refreshAll;
 late final FlutterTts flutterTts;
 String searchWordFromProcessText = "";
+
+// Each FlutterEngine has its own isolate, so this flag identifies the current
+// engine rather than the whole Android process.
+bool runningInFloatingWindow = false;
+
 List<dynamic> ttsEngines = [];
 final List<dynamic> ttsLanguages = [];
 String? windowsWebview2Directory;

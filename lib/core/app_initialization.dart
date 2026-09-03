@@ -76,6 +76,7 @@ Future<void> initTrayMenu() async {
 }
 
 Future<void> initApp({bool isFloatingWindow = false}) async {
+  runningInFloatingWindow = isFloatingWindow;
   talker.info("Initializing application...");
 
   final stopWatch = Stopwatch()..start();

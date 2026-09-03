@@ -1,3 +1,4 @@
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart";
@@ -62,6 +63,11 @@ class _HomeState extends State<Home> {
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? _) {
         if (didPop) {
+          return;
+        }
+
+        if (runningInFloatingWindow) {
+          SystemNavigator.pop();
           return;
         }
 
