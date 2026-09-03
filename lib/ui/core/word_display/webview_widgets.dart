@@ -279,82 +279,91 @@ class WebviewWindows extends ConsumerWidget {
     final dictManager = ref.watch(dictManagerProvider);
     final settings = ref.watch(settingsProvider);
     final port = dictManager.dicts[dictId]!.port;
+    final Widget webview;
 
     if (port == 0) {
-      return const Center(child: CircularProgressIndicator());
-    }
+      webview = const Center(child: CircularProgressIndicator());
+    } else {
+      final url = "http://127.0.0.1:$port/";
 
-    final url = "http://127.0.0.1:$port/";
-
-    final Uint8List postData = Uint8List.fromList(
-      utf8.encode(json.encode({"content": content})),
-    );
-
-    final isLightTheme =
-        settings.themeMode == ThemeMode.light ||
-        settings.themeMode == ThemeMode.system &&
-            MediaQuery.of(context).platformBrightness == Brightness.light;
-
-    final webviewSettings = InAppWebViewSettings(
-      useWideViewPort: false,
-      algorithmicDarkeningAllowed: !isLightTheme,
-      resourceCustomSchemes: ["entry", "sound"],
-      transparentBackground: true,
-    );
-
-    if (Platform.isLinux) {
-      final load = linuxWebViewLoad(content, url);
-      return InAppWebView(
-        initialSettings: webviewSettings,
-        initialData: load.initialData,
-        onLoadResourceWithCustomScheme: onLoadResourceWithCustomSchemeWarpper(
-          dictId,
-        ),
-        shouldOverrideUrlLoading: shouldOverrideUrlLoadingWarpper(
-          dictId,
-          context,
-        ),
-        onWebViewCreated: (controller) async {
-          await controller.loadData(
-            data: load.deferredData.data,
-            mimeType: load.deferredData.mimeType,
-            encoding: load.deferredData.encoding,
-            baseUrl: load.deferredData.baseUrl,
-          );
-        },
+      final Uint8List postData = Uint8List.fromList(
+        utf8.encode(json.encode({"content": content})),
       );
+
+      final isLightTheme =
+          settings.themeMode == ThemeMode.light ||
+          settings.themeMode == ThemeMode.system &&
+              MediaQuery.of(context).platformBrightness == Brightness.light;
+
+      final webviewSettings = InAppWebViewSettings(
+        useWideViewPort: false,
+        algorithmicDarkeningAllowed: !isLightTheme,
+        resourceCustomSchemes: ["entry", "sound"],
+        transparentBackground: true,
+      );
+
+      if (Platform.isLinux) {
+        final load = linuxWebViewLoad(content, url);
+        webview = InAppWebView(
+          initialSettings: webviewSettings,
+          initialData: load.initialData,
+          onLoadResourceWithCustomScheme: onLoadResourceWithCustomSchemeWarpper(
+            dictId,
+          ),
+          shouldOverrideUrlLoading: shouldOverrideUrlLoadingWarpper(
+            dictId,
+            context,
+          ),
+          onWebViewCreated: (controller) async {
+            await controller.loadData(
+              data: load.deferredData.data,
+              mimeType: load.deferredData.mimeType,
+              encoding: load.deferredData.encoding,
+              baseUrl: load.deferredData.baseUrl,
+            );
+          },
+        );
+      } else {
+        webview = FutureBuilder(
+          future: WebViewEnvironment.create(
+            settings: WebViewEnvironmentSettings(
+              userDataFolder: windowsWebview2Directory,
+            ),
+          ),
+          builder: (context, snapshot) {
+            if (snapshot.hasData || snapshot.hasError) {
+              return InAppWebView(
+                webViewEnvironment: snapshot.data,
+                initialSettings: webviewSettings,
+                initialUrlRequest: URLRequest(
+                  url: WebUri(url),
+                  method: "POST",
+                  body: postData,
+                ),
+                initialData: InAppWebViewInitialData(
+                  data: content,
+                  baseUrl: WebUri(url),
+                ),
+                onLoadResourceWithCustomScheme:
+                    onLoadResourceWithCustomSchemeWarpper(dictId),
+                shouldOverrideUrlLoading: shouldOverrideUrlLoadingWarpper(
+                  dictId,
+                  context,
+                ),
+              );
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
+        );
+      }
     }
 
-    return FutureBuilder(
-      future: WebViewEnvironment.create(
-        settings: WebViewEnvironmentSettings(
-          userDataFolder: windowsWebview2Directory,
-        ),
-      ),
-      builder: (context, snapshot) {
-        if (snapshot.hasData || snapshot.hasError) {
-          return InAppWebView(
-            webViewEnvironment: snapshot.data,
-            initialSettings: webviewSettings,
-            initialUrlRequest: URLRequest(
-              url: WebUri(url),
-              method: "POST",
-              body: postData,
-            ),
-            initialData: InAppWebViewInitialData(
-              data: content,
-              baseUrl: WebUri(url),
-            ),
-            onLoadResourceWithCustomScheme:
-                onLoadResourceWithCustomSchemeWarpper(dictId),
-            shouldOverrideUrlLoading: shouldOverrideUrlLoadingWarpper(
-              dictId,
-              context,
-            ),
-          );
-        }
-        return const Center(child: CircularProgressIndicator());
-      },
+    // ExpansionPanelList lays out panel bodies with unbounded height. The
+    // Linux platform view uses SizedBox.expand internally, so it must receive
+    // a finite constraint; the WebView can scroll its own content.
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height),
+      child: webview,
     );
   }
 }
