@@ -1,9 +1,16 @@
+import "package:ciyue/ui/core/word_display/entry_link_script.dart";
 import "package:ciyue/ui/core/word_display/webview_widgets.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 
 void main() {
+  test("dictionary link normalization runs at document start", () {
+    final script = dictionaryUserScripts().single;
+    expect(script.source, dictionaryEntryLinkScript);
+    expect(script.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
+  });
+
   test("Linux WebView defers HTML loading until its controller is ready", () {
     const content = "<html><body>word</body></html>";
     const url = "http://127.0.0.1:42433/";

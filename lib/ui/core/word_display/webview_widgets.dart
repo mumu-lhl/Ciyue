@@ -1,3 +1,4 @@
+import "dart:collection";
 import "dart:convert";
 import "dart:io";
 
@@ -6,6 +7,7 @@ import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/word_display/entry_link_script.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:flutter/foundation.dart";
@@ -31,6 +33,15 @@ LinuxWebViewLoad linuxWebViewLoad(String content, String baseUrl) {
     ),
     initialData: null,
   );
+}
+
+UnmodifiableListView<UserScript> dictionaryUserScripts() {
+  return UnmodifiableListView([
+    UserScript(
+      source: dictionaryEntryLinkScript,
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
+  ]);
 }
 
 class WebviewAndroid extends ConsumerStatefulWidget {
@@ -122,6 +133,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
     );
 
     final webview = InAppWebView(
+      initialUserScripts: dictionaryUserScripts(),
       initialData: InAppWebViewInitialData(
         data: widget.content,
         baseUrl: WebUri("http://ciyue.internal/"),
@@ -305,6 +317,7 @@ class WebviewWindows extends ConsumerWidget {
       if (Platform.isLinux) {
         final load = linuxWebViewLoad(content, url);
         webview = InAppWebView(
+          initialUserScripts: dictionaryUserScripts(),
           initialSettings: webviewSettings,
           initialData: load.initialData,
           onLoadResourceWithCustomScheme: onLoadResourceWithCustomSchemeWarpper(
@@ -333,6 +346,7 @@ class WebviewWindows extends ConsumerWidget {
           builder: (context, snapshot) {
             if (snapshot.hasData || snapshot.hasError) {
               return InAppWebView(
+                initialUserScripts: dictionaryUserScripts(),
                 webViewEnvironment: snapshot.data,
                 initialSettings: webviewSettings,
                 initialUrlRequest: URLRequest(
