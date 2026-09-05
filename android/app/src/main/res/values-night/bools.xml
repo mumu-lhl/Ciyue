@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="floating_window_is_light_theme">false</bool>
+</resources>

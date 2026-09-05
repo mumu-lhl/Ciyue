@@ -21,6 +21,10 @@
     </style>
 
     <style name="Theme.Transparent" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <!-- The translucent parent is dark even in day mode. WebView uses
+             isLightTheme for prefers-color-scheme, independently of Flutter's
+             algorithmicDarkeningAllowed setting. Match NormalTheme. -->
+        <item name="android:isLightTheme">@bool/floating_window_is_light_theme</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowContentOverlay">@null</item>
