@@ -80,7 +80,9 @@ jobs:
             "glibc=$ARCHLINUX_GLIBC_PACKAGE_VERSION" \
             curl dpkg git jq clang cmake ninja patchelf python rpm-tools \
             unzip wget xz gtk3 gstreamer libayatana-appindicator \
-            libkeybinder3 libsecret wpewebkit
+            libkeybinder3 libsecret wpewebkit \
+            gobject-introspection gperf gst-plugins-bad lld ruby systemd \
+            unifdef wayland-protocols
 
           git config --global --add safe.directory '*'
           pacman -Q glibc wpewebkit libwpe wpebackend-fdo
@@ -94,6 +96,22 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
+
+      - name: Test WPE runtime relocation
+        env:
+          CIYUE_TEST_WPE_NATIVE: "1"
+        run: python3 test/tools/wpe_runtime_test.py
+
+      - name: Cache relocatable WPE runtime
+        id: wpe-runtime-cache
+        uses: actions/cache@v5
+        with:
+          path: build/wpe-runtime
+          key: wpe-runtime-${{ runner.arch }}-${{ env.ARCHLINUX_PACKAGE_SET }}-${{ hashFiles('tools/build_wpe_runtime.sh', 'tools/patch_wpe_runtime.py', 'linux/packaging/wpe/**') }}
+
+      - name: Build relocatable WPE runtime
+        if: steps.wpe-runtime-cache.outputs.cache-hit != 'true'
+        run: bash tools/build_wpe_runtime.sh build/wpe-runtime
 
       - uses: subosito/flutter-action@v2
         with:
@@ -259,36 +277,16 @@ jobs:
             patchelf --remove-rpath "$BUNDLE_LIB_DIR/$soname"
           done
 
-          # WPE WebKit launches its network and web processes from the
-          # compile-time libexec directory. Keep those helpers and resources
-          # beside the bundled libraries, then rewrite that directory to a
-          # relative path so AppImage/deb/rpm installs remain relocatable.
+          # Use the source-patched library and its matching helper processes.
+          # It resolves absolute runtime paths from its own DSO location; a
+          # relative ELF string replacement breaks bubblewrap's read-only /lib.
+          WPE_STAGE="build/wpe-runtime/usr/lib"
+          test -f "$WPE_STAGE/libWPEWebKit-2.0.so.1"
+          find "$BUNDLE_LIB_DIR" -maxdepth 1 -name 'libWPEWebKit-2.0.so*' -delete
+          cp -a "$WPE_STAGE"/libWPEWebKit-2.0.so* "$BUNDLE_LIB_DIR/"
           WPE_RUNTIME_DIR="$BUNDLE_LIB_DIR/wpe-webkit-2.0"
           rm -rf "$WPE_RUNTIME_DIR"
-          cp -a /usr/lib/wpe-webkit-2.0/. "$WPE_RUNTIME_DIR/"
-
-          WPE_WEBKIT_LIB=$(find "$BUNDLE_LIB_DIR" -maxdepth 1 -type f \
-            -name 'libWPEWebKit-2.0.so.*' -print | sort -V | tail -n 1)
-          if [[ -z "$WPE_WEBKIT_LIB" ]]; then
-            echo "Missing bundled libWPEWebKit-2.0 library" >&2
-            exit 1
-          fi
-          python3 - "$WPE_WEBKIT_LIB" <<'PY'
-          from pathlib import Path
-          import sys
-
-          path = Path(sys.argv[1])
-          data = path.read_bytes()
-          old = b"/usr/lib/wpe-webkit-2.0"
-          new = b"./lib/wpe-webkit-2.0/./"
-          if len(old) != len(new):
-              raise SystemExit("WPE libexec path replacement changed length")
-          count = data.count(old)
-          if count == 0:
-              raise SystemExit(f"WPE libexec path not found in {path}")
-          path.write_bytes(data.replace(old, new))
-          print(f"Patched {path} ({count} path references)")
-          PY
+          cp -a "$WPE_STAGE/wpe-webkit-2.0/." "$WPE_RUNTIME_DIR/"
 
           for helper in WPENetworkProcess WPEWebProcess; do
             patchelf --set-rpath '$ORIGIN/..' "$WPE_RUNTIME_DIR/$helper"
