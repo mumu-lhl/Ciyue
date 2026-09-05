@@ -1,0 +1,97 @@
+name: macOS Build
+
+on:
+  workflow_call:
+    inputs:
+      flutter_version:
+        required: true
+        type: string
+      workflow_profile:
+        required: false
+        type: string
+        default: "ci"
+      artifact_name:
+        required: false
+        type: string
+        default: "macOS"
+      include_metadata_defines:
+        required: false
+        type: boolean
+        default: false
+      include_dev_define:
+        required: false
+        type: boolean
+        default: false
+      package_release_artifacts:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-macos:
+    name: Build macOS (${{ inputs.workflow_profile }})
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter_version }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS
+        run: |
+          extra_args=()
+          if [[ "${{ inputs.include_dev_define }}" == "true" ]]; then
+            extra_args+=("--dart-define=DEV=true")
+          fi
+          if [[ "${{ inputs.include_metadata_defines }}" == "true" ]]; then
+            hash=$(git rev-parse --short HEAD)
+            timestamp=$(date +%s)
+            extra_args+=("--dart-define=GIT_COMMIT_HASH=$hash" "--dart-define=BUILD_TIMESTAMP=$timestamp")
+          fi
+          flutter build macos --release "${extra_args[@]}"
+
+      - name: Verify app bundle signature
+        run: |
+          app="build/macos/Build/Products/Release/Ciyue.app"
+          test -d "$app"
+          codesign --verify --deep "$app"
+          codesign -dv "$app" 2>&1 | grep -E "Signature|Identifier="
+
+      - name: Compression
+        if: ${{ inputs.package_release_artifacts }}
+        run: |
+          cd build/macos/Build/Products/Release
+          # ditto preserves the resource forks, symlinks and extended
+          # attributes that a .app bundle needs to stay valid on macOS.
+          ditto -c -k --sequesterRsrc --keepParent Ciyue.app ciyue-macos.zip
+
+      - name: Build DMG
+        if: ${{ inputs.package_release_artifacts }}
+        run: |
+          cd build/macos/Build/Products/Release
+          hdiutil create -volname Ciyue -srcfolder Ciyue.app -ov -format UDZO ciyue-macos.dmg
+
+      - name: Upload app bundle
+        if: ${{ !inputs.package_release_artifacts }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: build/macos/Build/Products/Release/Ciyue.app
+          if-no-files-found: error
+
+      - name: Upload release artifacts
+        if: ${{ inputs.package_release_artifacts }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: |
+            build/macos/Build/Products/Release/ciyue-macos.zip
+            build/macos/Build/Products/Release/ciyue-macos.dmg
+          if-no-files-found: error

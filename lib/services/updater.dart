@@ -34,6 +34,10 @@ class Updater {
   static Future<desktop_updater.DesktopUpdaterController?>? _initializing;
 
   /// Whether the signed self-update runtime is supported on this platform.
+  ///
+  /// macOS is excluded for now: the signed update feed and release packaging
+  /// do not produce macOS entries yet, so macOS clients fall back to the
+  /// legacy GitHub Releases check below.
   static bool get supportsDesktopUpdates =>
       Platform.isWindows || Platform.isLinux;
 

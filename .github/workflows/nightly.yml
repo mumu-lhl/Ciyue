@@ -83,6 +83,16 @@ jobs:
       artifact_name: Linux
       package_release_artifacts: true
 
+  build-macos:
+    needs: check-activity
+    if: needs.check-activity.outputs.should_run == 'true'
+    uses: ./.github/workflows/macos-build.yml
+    with:
+      flutter_version: 3.47.2
+      workflow_profile: nightly
+      artifact_name: macOS
+      package_release_artifacts: true
+
   build-flatpak:
     needs: [check-activity, build-linux]
     if: needs.check-activity.outputs.should_run == 'true'
@@ -98,6 +108,7 @@ jobs:
         build-android-full,
         build-windows,
         build-linux,
+        build-macos,
         build-flatpak,
       ]
     if: needs.check-activity.outputs.should_run == 'true'
@@ -129,7 +140,7 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/*,Linux/*,Flatpak/ciyue-x86_64.flatpak"
+          artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/*,Linux/*,macOS/*,Flatpak/ciyue-x86_64.flatpak"
           tag: "nightly"
           name: "Nightly Build"
           body: ${{ steps.release_body.outputs.body }}

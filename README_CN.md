@@ -7,10 +7,10 @@
 
 [English](./README.md) | 中文
 
-支持 Android/Windows/Linux 的 mdict 词典。
+支持 Android/Windows/Linux/macOS 的 mdict 词典。
 
 ## 特点
-* 📄 支持 MDX/MDD (Linux 暂不支持)
+* 📄 支持 MDX/MDD
 * 🔍 支持多词典搜索和显示
 * 🎨 支持 Material You
 * 🌐 AI 翻译 (支持 OpenAI, Gemini, Deepseek...)

@@ -8,6 +8,7 @@ import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/ui/core/word_display/webview_widgets.dart";
+import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
@@ -53,7 +54,7 @@ Widget buildWebView(String word, int id, bool isExpansion) {
               dictId: id,
               isExpansion: isExpansion,
             );
-          } else if (Platform.isWindows || Platform.isLinux) {
+          } else if (isDesktop()) {
             return WebviewWindows(content: content, dictId: id);
           } else {
             return FakeWebViewByAI(html: content);

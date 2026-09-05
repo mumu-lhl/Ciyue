@@ -356,7 +356,7 @@ class Mdict implements DictionarySource {
 
       await _checkResources();
 
-      if (Platform.isWindows || Platform.isLinux) {
+      if (isDesktop()) {
         await _startServer();
       }
     } catch (e) {

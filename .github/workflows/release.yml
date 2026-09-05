@@ -46,6 +46,14 @@ jobs:
       artifact_name: Linux
       package_release_artifacts: true
 
+  build-macos:
+    uses: ./.github/workflows/macos-build.yml
+    with:
+      flutter_version: 3.47.2
+      workflow_profile: release
+      artifact_name: macOS
+      package_release_artifacts: true
+
   build-flatpak:
     needs: build-linux
     uses: ./.github/workflows/flatpak-build.yml
@@ -54,7 +62,7 @@ jobs:
     name: Release
     if: github.ref_name != 'nightly'
     runs-on: ubuntu-latest
-    needs: [build-android, build-android-full, build-windows, build-linux, build-flatpak]
+    needs: [build-android, build-android-full, build-windows, build-linux, build-macos, build-flatpak]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -304,6 +312,17 @@ jobs:
           | Portable tarball | [ciyue-linux.tar.xz](${RELEASE_ASSET_BASE}/ciyue-linux.tar.xz) |
           | Flatpak | [ciyue-x86_64.flatpak](${RELEASE_ASSET_BASE}/ciyue-x86_64.flatpak) |
 
+          ### macOS
+
+          Requires macOS 13 (Ventura) or later. Apple Silicon (arm64).
+
+          The app is ad-hoc signed. If Gatekeeper reports the app as damaged or unverified, remove the quarantine flag with `xattr -cr /Applications/Ciyue.app` (or right-click the app and choose Open) after moving it to Applications.
+
+          | Artifact | Download |
+          | --- | --- |
+          | Disk image | [ciyue-macos.dmg](${RELEASE_ASSET_BASE}/ciyue-macos.dmg) |
+          | Portable bundle | [ciyue-macos.zip](${RELEASE_ASSET_BASE}/ciyue-macos.zip) |
+
           EOF
             cat RELEASE_NOTES.md
           } > "$RUNNER_TEMP/RELEASE_NOTES.md"
@@ -311,7 +330,7 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/*,Linux/*,Flatpak/ciyue-x86_64.flatpak"
+          artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/*,Linux/*,macOS/*,Flatpak/ciyue-x86_64.flatpak"
           tag: ${{ github.ref_name }}
           bodyFile: RELEASE_NOTES.md
           generateReleaseNotes: false

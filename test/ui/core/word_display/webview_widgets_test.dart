@@ -15,7 +15,7 @@ void main() {
     const content = "<html><body>word</body></html>";
     const url = "http://127.0.0.1:42433/";
 
-    final load = linuxWebViewLoad(content, url);
+    final load = desktopWebViewLoad(content, url);
 
     expect(load.initialData, isNull);
     expect(load.deferredData.data, content);

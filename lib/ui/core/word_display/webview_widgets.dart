@@ -20,12 +20,12 @@ import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:provider/provider.dart" as legacy_provider;
 
-typedef LinuxWebViewLoad = ({
+typedef DesktopWebViewLoad = ({
   InAppWebViewInitialData deferredData,
   InAppWebViewInitialData? initialData,
 });
 
-LinuxWebViewLoad linuxWebViewLoad(String content, String baseUrl) {
+DesktopWebViewLoad desktopWebViewLoad(String content, String baseUrl) {
   return (
     deferredData: InAppWebViewInitialData(
       data: content,
@@ -314,8 +314,10 @@ class WebviewWindows extends ConsumerWidget {
         transparentBackground: true,
       );
 
-      if (Platform.isLinux) {
-        final load = linuxWebViewLoad(content, url);
+      // macOS uses the same local-server load path as Linux; only Windows
+      // loads through a WebView2 environment.
+      if (!Platform.isWindows) {
+        final load = desktopWebViewLoad(content, url);
         webview = InAppWebView(
           initialUserScripts: dictionaryUserScripts(),
           initialSettings: webviewSettings,

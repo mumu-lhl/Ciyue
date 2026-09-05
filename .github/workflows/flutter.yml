@@ -80,3 +80,12 @@ jobs:
       artifact_name: Linux
       include_metadata_defines: true
       include_dev_define: true
+
+  build-macos:
+    uses: ./.github/workflows/macos-build.yml
+    with:
+      flutter_version: 3.47.2
+      workflow_profile: ci
+      artifact_name: macOS
+      include_metadata_defines: true
+      include_dev_define: true

@@ -7,11 +7,11 @@
 
 English | [中文](./README_CN.md)
 
-A mdict dictionary with Android/Windows/Linux support.
+A mdict dictionary with Android/Windows/Linux/macOS support.
 
 ## Features
 
-* 📄 Support MDX/MDD (not on Linux yet)
+* 📄 Support MDX/MDD
 * 🔍 Support multiple dictionaries search and display
 * 🎨 Support Material You
 * 🌐 AI Translate (Support OpenAI, Gemini, Deepseek...)
