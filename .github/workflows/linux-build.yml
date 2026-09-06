@@ -81,7 +81,7 @@ jobs:
             curl dpkg git jq clang cmake ninja patchelf python rpm-tools \
             unzip wget xz gtk3 gstreamer libayatana-appindicator \
             libkeybinder3 libsecret wpewebkit \
-            gobject-introspection gperf gst-plugins-bad lld ruby systemd \
+            glib2-devel gobject-introspection gperf gst-plugins-bad lld ruby systemd \
             unifdef wayland-protocols
 
           git config --global --add safe.directory '*'
@@ -89,6 +89,7 @@ jobs:
           test "$(pacman -Q glibc | awk '{print $2}')" = "$ARCHLINUX_GLIBC_PACKAGE_VERSION"
           test "$(getconf GNU_LIBC_VERSION | awk '{print $2}')" = "$ARCHLINUX_GLIBC_VERSION"
           test "$(pkg-config --modversion wpe-webkit-2.0)" = "2.44.2"
+          command -v gdbus-codegen
           rm -f /tmp/pacman-ci.conf
 
       # The pinned Arch image does not include Git. Install the build
@@ -223,59 +224,11 @@ jobs:
           relative_release_dir=$(realpath --relative-to="build/linux/x64" "$release_dir")
           ln -s "$relative_release_dir" "$legacy_release_dir"
 
-      - name: Create WPE symlinks
-        run: |
-          cd build/linux/x64/release/bundle/lib/
-          for soname in \
-            libwpe-1.0.so.1 \
-            libWPEWebKit-2.0.so.1 \
-            libWPEBackend-fdo-1.0.so.1; do
-            if [[ -e "$soname" ]]; then
-              continue
-            fi
-            target=$(find . -maxdepth 1 -type f -name "$soname.*" -printf '%f\n' | sort -V | tail -n 1)
-            if [[ -z "$target" ]]; then
-              echo "Missing $soname.* in bundled libraries" >&2
-              exit 1
-            fi
-            ln -s "$target" "$soname"
-          done
-
       - name: Bundle Libraries
         run: |
-          BUNDLE_LIB_DIR="build/linux/x64/release/bundle/lib"
-
-          # Keep the WPE WebKit and tray/hotkey plugin dependencies in the
-          # bundle. The Flatpak is assembled from this same release bundle,
-          # while the Freedesktop runtime does not provide these libraries.
-          for lib in \
-            libicui18n.so libicuuc.so libicudata.so libjpeg.so libxml2.so \
-            libjxl.so libjxl_cms.so libjxl_threads.so libavif.so \
-            libdav1d.so librav1e.so libSvtAv1Enc.so libaom.so libyuv.so \
-            libsharpyuv.so libharfbuzz-icu.so libatomic.so libwebpdemux.so \
-            libwoff2dec.so libwoff2common.so libhwy.so \
-            libbrotlidec.so libbrotlienc.so libbrotlicommon.so \
-            libkeybinder-3.0.so libayatana-appindicator3.so \
-            libayatana-indicator3.so libayatana-ido3-0.4.so \
-            libdbusmenu-glib.so libdbusmenu-gtk3.so; do
-            src=$(find /usr/lib -maxdepth 1 -type f \
-              \( -name "$lib.*" -o -name "$lib" \) \
-              -printf '%p\n' | sort -V | tail -n 1)
-            if [[ -z "$src" ]]; then
-              echo "Missing $lib in /usr/lib" >&2
-              exit 1
-            fi
-
-            # Copy under the SONAME, not the package's fully-versioned filename
-            # (for example libicuuc.so.75 rather than libicuuc.so.75.1).
-            soname=$(patchelf --print-soname "$src")
-            if [[ -z "$soname" ]]; then
-              echo "Missing SONAME in $src" >&2
-              exit 1
-            fi
-            cp -L "$src" "$BUNDLE_LIB_DIR/$soname"
-            patchelf --remove-rpath "$BUNDLE_LIB_DIR/$soname"
-          done
+          set -euo pipefail
+          BUNDLE_DIR="build/linux/x64/release/bundle"
+          BUNDLE_LIB_DIR="$BUNDLE_DIR/lib"
 
           # Use the source-patched library and its matching helper processes.
           # It resolves absolute runtime paths from its own DSO location; a
@@ -292,7 +245,12 @@ jobs:
             patchelf --set-rpath '$ORIGIN/..' "$WPE_RUNTIME_DIR/$helper"
           done
 
-          BUNDLE_DIR="build/linux/x64/release/bundle"
+          # Resolve the complete DT_NEEDED closure instead of maintaining a
+          # fragile list of WPE, codec, tray and hotkey libraries by hand.
+          python3 tools/bundle_linux_dependencies.py \
+            --bundle "$BUNDLE_DIR" \
+            --search /usr/lib
+
           patchelf --force-rpath --set-rpath '$ORIGIN/lib' "$BUNDLE_DIR/ciyue"
           mv "$BUNDLE_DIR/ciyue" "$BUNDLE_DIR/ciyue.bin"
           cp linux/packaging/ciyue-launcher.sh "$BUNDLE_DIR/ciyue"
@@ -303,21 +261,11 @@ jobs:
         run: |
           set -euo pipefail
           BUNDLE_DIR="build/linux/x64/release/bundle"
-          export LD_LIBRARY_PATH="$BUNDLE_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          missing=0
-          while IFS= read -r -d "" file; do
-            if ! file "$file" | grep -q "ELF"; then
-              continue
-            fi
-            unresolved=$(ldd "$file" 2>&1 | grep "not found" || true)
-            if [[ -n "$unresolved" ]]; then
-              printf "Unresolved dependencies in %s:\n%s\n" "$file" "$unresolved" >&2
-              missing=1
-            fi
-          done < <(find "$BUNDLE_DIR" -type f -print0)
-          if (( missing != 0 )); then
-            exit 1
-          fi
+          # This checks DT_NEEDED names against the bundle itself. Unlike ldd,
+          # it cannot silently satisfy missing libraries from the CI container.
+          python3 tools/bundle_linux_dependencies.py \
+            --bundle "$BUNDLE_DIR" \
+            --verify-only
 
       - name: Compression
         if: ${{ inputs.package_release_artifacts }}

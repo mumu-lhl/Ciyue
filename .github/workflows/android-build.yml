@@ -134,10 +134,10 @@ jobs:
               flutter build apk --flavor full-dev $EXTRA_ARGS
               ;;
             release_common)
-              flutter build apk
-              flutter build apk --split-per-abi --target-platform=android-arm64
-              flutter build apk --split-per-abi --target-platform=android-arm
-              flutter build apk --split-per-abi --target-platform=android-x64
+              flutter build apk --flavor=common
+              flutter build apk --flavor=common --split-per-abi --target-platform=android-arm64
+              flutter build apk --flavor=common --split-per-abi --target-platform=android-arm
+              flutter build apk --flavor=common --split-per-abi --target-platform=android-x64
               ;;
             release_full)
               flutter build apk --flavor=full
