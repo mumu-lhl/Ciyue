@@ -224,6 +224,7 @@
 			name = Runner;
 			packageProductDependencies = (
 				78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */,
+				1A2B3C4D5E6F7A8B9C0D1E2F /* LaunchAtLogin */,
 			);
 			productName = Runner;
 			productReference = 33CC10ED2044A3C60003C045 /* Ciyue.app */;

@@ -6,9 +6,10 @@ uses that string as a bubblewrap mount destination. Inside the sandbox it lands
 under read-only `/lib`; a host WPE installation can accidentally hide the bug.
 This affects AppImage as well as the other formats sharing the Linux bundle.
 
-`tools/build_wpe_runtime.sh` builds the checksum-pinned upstream source **in CI**.
-`tools/patch_wpe_runtime.py` changes three consumers to use
-`WPERuntimeDirectory.h`:
+The relocatable runtime is built and tested in
+[`mumu-lhl/wpewebkit-build`](https://github.com/mumu-lhl/wpewebkit-build). Its
+patch changes three consumers to resolve paths relative to the loaded WebKit
+library:
 
 - network/web process executable lookup;
 - injected bundle lookup (including its extra sandbox mount);
@@ -19,25 +20,22 @@ then uses its sibling `wpe-webkit-2.0` directory. No working-directory assumptio
 fixed AppImage mount point, environment override, or sandbox bypass is needed.
 Library, processes, and injected bundle must be shipped from the **same build**.
 
-The CI cache stores the installed runtime, keyed by the archived package set
-and the build/patch/header inputs. Cache misses require a full WebKit build;
-parallelism defaults to two jobs to limit memory consumption. When updating WPE,
-update the version, upstream checksum, package baseline, and patch seams together.
+Ciyue CI downloads a pinned release asset and verifies its SHA-256 digest before
+extracting it. The release's WebKit version and glibc baseline must match the
+archived Arch build environment. When updating WPE, update the release tag,
+asset name, checksum, system development package, and baseline checks together.
 
 Validation without compiling or launching the application:
 
 ```sh
 python3 test/tools/wpe_runtime_test.py
-bash -n tools/build_wpe_runtime.sh
 ```
 
-CI additionally sets `CIYUE_TEST_WPE_NATIVE=1`: this compiles a small probe DSO
-using the actual relocation header and checks a moved directory, spaces, a
-symlink, and an unrelated working directory. The bubblewrap regression masks
-the host WPE installation and compares failing relative mounts with passing
-absolute mounts. It explicitly skips if the host/container forbids namespaces.
-Full WPE compilation and resulting AppImage rendering still need CI/release
-validation; these tests are not a substitute for an end-to-end WebView test.
+The source patch and native relocation tests live with the runtime build. Ciyue's
+test checks the consumer-side download pin and verifies that packaging replaces
+the system WebKit library together with its matching helper directory. Resulting
+AppImage rendering still needs release validation; this is not a substitute for
+an end-to-end WebView test.
 
 Upstream references (pinned tag `wpewebkit-2.44.2`):
 - `Source/WebKit/Shared/glib/ProcessExecutablePathGLib.cpp`

@@ -47,6 +47,9 @@ jobs:
       ARCHLINUX_PACKAGE_SET: 2024-07-01-glibc-2.39-v1
       ARCHLINUX_GLIBC_VERSION: "2.39"
       ARCHLINUX_GLIBC_PACKAGE_VERSION: "2.39+r52+gf8e4623421-1"
+      WPE_RUNTIME_RELEASE: wpewebkit-2.44.2-1
+      WPE_RUNTIME_ASSET: wpewebkit-2.44.2-1-linux-x86_64-glibc-2.39.tar.xz
+      WPE_RUNTIME_SHA256: 7b52bd62c3651098db321b1971f3a458f98ae4e727485c9339b9cdc5463c6d04
     steps:
       - name: Cache archived Arch packages
         uses: actions/cache@v5
@@ -81,8 +84,7 @@ jobs:
             curl dpkg git jq clang cmake ninja patchelf python rpm-tools \
             unzip wget xz gtk3 gstreamer libayatana-appindicator \
             libkeybinder3 libsecret wpewebkit \
-            gobject-introspection gperf gst-plugins-bad lld ruby systemd \
-            unifdef wayland-protocols
+            gst-plugins-bad
 
           git config --global --add safe.directory '*'
           pacman -Q glibc wpewebkit libwpe wpebackend-fdo
@@ -97,21 +99,29 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Test WPE runtime relocation
-        env:
-          CIYUE_TEST_WPE_NATIVE: "1"
+      - name: Test WPE runtime packaging
         run: python3 test/tools/wpe_runtime_test.py
 
-      - name: Cache relocatable WPE runtime
-        id: wpe-runtime-cache
-        uses: actions/cache@v5
-        with:
-          path: build/wpe-runtime
-          key: wpe-runtime-${{ runner.arch }}-${{ env.ARCHLINUX_PACKAGE_SET }}-${{ hashFiles('tools/build_wpe_runtime.sh', 'tools/patch_wpe_runtime.py', 'linux/packaging/wpe/**') }}
+      - name: Download relocatable WPE runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="build/$WPE_RUNTIME_ASSET"
+          runtime_dir="build/wpe-runtime"
+          url="https://github.com/mumu-lhl/wpewebkit-build/releases/download/$WPE_RUNTIME_RELEASE/$WPE_RUNTIME_ASSET"
 
-      - name: Build relocatable WPE runtime
-        if: steps.wpe-runtime-cache.outputs.cache-hit != 'true'
-        run: bash tools/build_wpe_runtime.sh build/wpe-runtime
+          rm -rf "$runtime_dir"
+          mkdir -p "$runtime_dir"
+          curl --fail --location --retry 3 "$url" --output "$archive"
+          printf '%s  %s\n' "$WPE_RUNTIME_SHA256" "$archive" | sha256sum --check -
+          tar --extract --xz --no-same-owner --file "$archive" --directory "$runtime_dir"
+          rm -f "$archive"
+
+          grep -Fx "WPEWebKit version: 2.44.2" "$runtime_dir/WPEWEBKIT-BUILD-INFO.txt"
+          grep -Fx "glibc version: $ARCHLINUX_GLIBC_VERSION" "$runtime_dir/WPEWEBKIT-BUILD-INFO.txt"
+          test -f "$runtime_dir/usr/lib/libWPEWebKit-2.0.so.1"
+          test -x "$runtime_dir/usr/lib/wpe-webkit-2.0/WPENetworkProcess"
+          test -x "$runtime_dir/usr/lib/wpe-webkit-2.0/WPEWebProcess"
 
       - uses: subosito/flutter-action@v2
         with:
@@ -223,61 +233,13 @@ jobs:
           relative_release_dir=$(realpath --relative-to="build/linux/x64" "$release_dir")
           ln -s "$relative_release_dir" "$legacy_release_dir"
 
-      - name: Create WPE symlinks
-        run: |
-          cd build/linux/x64/release/bundle/lib/
-          for soname in \
-            libwpe-1.0.so.1 \
-            libWPEWebKit-2.0.so.1 \
-            libWPEBackend-fdo-1.0.so.1; do
-            if [[ -e "$soname" ]]; then
-              continue
-            fi
-            target=$(find . -maxdepth 1 -type f -name "$soname.*" -printf '%f\n' | sort -V | tail -n 1)
-            if [[ -z "$target" ]]; then
-              echo "Missing $soname.* in bundled libraries" >&2
-              exit 1
-            fi
-            ln -s "$target" "$soname"
-          done
-
       - name: Bundle Libraries
         run: |
-          BUNDLE_LIB_DIR="build/linux/x64/release/bundle/lib"
+          set -euo pipefail
+          BUNDLE_DIR="build/linux/x64/release/bundle"
+          BUNDLE_LIB_DIR="$BUNDLE_DIR/lib"
 
-          # Keep the WPE WebKit and tray/hotkey plugin dependencies in the
-          # bundle. The Flatpak is assembled from this same release bundle,
-          # while the Freedesktop runtime does not provide these libraries.
-          for lib in \
-            libicui18n.so libicuuc.so libicudata.so libjpeg.so libxml2.so \
-            libjxl.so libjxl_cms.so libjxl_threads.so libavif.so \
-            libdav1d.so librav1e.so libSvtAv1Enc.so libaom.so libyuv.so \
-            libsharpyuv.so libharfbuzz-icu.so libatomic.so libwebpdemux.so \
-            libwoff2dec.so libwoff2common.so libhwy.so \
-            libbrotlidec.so libbrotlienc.so libbrotlicommon.so \
-            libkeybinder-3.0.so libayatana-appindicator3.so \
-            libayatana-indicator3.so libayatana-ido3-0.4.so \
-            libdbusmenu-glib.so libdbusmenu-gtk3.so; do
-            src=$(find /usr/lib -maxdepth 1 -type f \
-              \( -name "$lib.*" -o -name "$lib" \) \
-              -printf '%p\n' | sort -V | tail -n 1)
-            if [[ -z "$src" ]]; then
-              echo "Missing $lib in /usr/lib" >&2
-              exit 1
-            fi
-
-            # Copy under the SONAME, not the package's fully-versioned filename
-            # (for example libicuuc.so.75 rather than libicuuc.so.75.1).
-            soname=$(patchelf --print-soname "$src")
-            if [[ -z "$soname" ]]; then
-              echo "Missing SONAME in $src" >&2
-              exit 1
-            fi
-            cp -L "$src" "$BUNDLE_LIB_DIR/$soname"
-            patchelf --remove-rpath "$BUNDLE_LIB_DIR/$soname"
-          done
-
-          # Use the source-patched library and its matching helper processes.
+          # Use the prebuilt relocatable library and its matching helper processes.
           # It resolves absolute runtime paths from its own DSO location; a
           # relative ELF string replacement breaks bubblewrap's read-only /lib.
           WPE_STAGE="build/wpe-runtime/usr/lib"
@@ -292,7 +254,12 @@ jobs:
             patchelf --set-rpath '$ORIGIN/..' "$WPE_RUNTIME_DIR/$helper"
           done
 
-          BUNDLE_DIR="build/linux/x64/release/bundle"
+          # Resolve the complete DT_NEEDED closure instead of maintaining a
+          # fragile list of WPE, codec, tray and hotkey libraries by hand.
+          python3 tools/bundle_linux_dependencies.py \
+            --bundle "$BUNDLE_DIR" \
+            --search /usr/lib
+
           patchelf --force-rpath --set-rpath '$ORIGIN/lib' "$BUNDLE_DIR/ciyue"
           mv "$BUNDLE_DIR/ciyue" "$BUNDLE_DIR/ciyue.bin"
           cp linux/packaging/ciyue-launcher.sh "$BUNDLE_DIR/ciyue"
@@ -303,21 +270,11 @@ jobs:
         run: |
           set -euo pipefail
           BUNDLE_DIR="build/linux/x64/release/bundle"
-          export LD_LIBRARY_PATH="$BUNDLE_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          missing=0
-          while IFS= read -r -d "" file; do
-            if ! file "$file" | grep -q "ELF"; then
-              continue
-            fi
-            unresolved=$(ldd "$file" 2>&1 | grep "not found" || true)
-            if [[ -n "$unresolved" ]]; then
-              printf "Unresolved dependencies in %s:\n%s\n" "$file" "$unresolved" >&2
-              missing=1
-            fi
-          done < <(find "$BUNDLE_DIR" -type f -print0)
-          if (( missing != 0 )); then
-            exit 1
-          fi
+          # This checks DT_NEEDED names against the bundle itself. Unlike ldd,
+          # it cannot silently satisfy missing libraries from the CI container.
+          python3 tools/bundle_linux_dependencies.py \
+            --bundle "$BUNDLE_DIR" \
+            --verify-only
 
       - name: Compression
         if: ${{ inputs.package_release_artifacts }}
