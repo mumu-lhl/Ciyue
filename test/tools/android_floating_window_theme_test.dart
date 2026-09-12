@@ -23,6 +23,7 @@ void main() {
       r'<activity\s[^>]*android:name="\.FloatingWindowActivity"[^>]*>',
     ).firstMatch(manifest)?.group(0);
     expect(activity, contains('android:theme="@style/Theme.Transparent"'));
+    expect(activity, contains('android:resizeableActivity="true"'));
   });
 
   // WebView derives prefers-color-scheme from the native isLightTheme,
@@ -71,6 +72,22 @@ void main() {
             "android:windowBackground",
           ),
           "@android:color/transparent",
+        );
+        expect(
+          styleItem(
+            floatingSource,
+            "Theme.Transparent",
+            "android:windowIsFloating",
+          ),
+          isNull,
+        );
+        expect(
+          styleItem(
+            floatingSource,
+            "Theme.Transparent",
+            "android:windowIsTranslucent",
+          ),
+          "true",
         );
       });
     }

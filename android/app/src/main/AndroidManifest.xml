@@ -40,6 +40,7 @@
             android:windowSoftInputMode="adjustResize"
             android:exported="false"
             android:launchMode="singleTop"
+            android:resizeableActivity="true"
             />
         <activity
             android:name=".ProcessTextActivity"

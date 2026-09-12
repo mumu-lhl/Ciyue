@@ -282,10 +282,15 @@ class _CiyueState extends State<Ciyue> with TrayListener {
         ),
         Align(
           alignment: Alignment.center,
-          child: FractionallySizedBox(
-            widthFactor: 0.8,
-            heightFactor: 0.5,
-            child: app,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 600;
+              final width = isWide ? 540.0 : constraints.maxWidth * 0.85;
+              final height = isWide
+                  ? (constraints.maxHeight * 0.7).clamp(420.0, 720.0)
+                  : constraints.maxHeight * 0.55;
+              return SizedBox(width: width, height: height, child: app);
+            },
           ),
         ),
       ],
