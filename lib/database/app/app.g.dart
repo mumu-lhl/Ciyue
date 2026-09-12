@@ -499,6 +499,21 @@ class $HunspellSourceTable extends HunspellSource
     requiredDuringInsert: false,
     defaultValue: const drift.Constant(0),
   );
+  static const drift.VerificationMeta _twoPassLookupMeta =
+      const drift.VerificationMeta('twoPassLookup');
+  @override
+  late final drift.GeneratedColumn<bool> twoPassLookup =
+      drift.GeneratedColumn<bool>(
+        'two_pass_lookup',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("two_pass_lookup" IN (0, 1))',
+        ),
+        defaultValue: const drift.Constant(false),
+      );
   @override
   List<drift.GeneratedColumn> get $columns => [
     id,
@@ -508,6 +523,7 @@ class $HunspellSourceTable extends HunspellSource
     language,
     enabled,
     order,
+    twoPassLookup,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -566,6 +582,15 @@ class $HunspellSourceTable extends HunspellSource
         order.isAcceptableOrUnknown(data['order']!, _orderMeta),
       );
     }
+    if (data.containsKey('two_pass_lookup')) {
+      context.handle(
+        _twoPassLookupMeta,
+        twoPassLookup.isAcceptableOrUnknown(
+          data['two_pass_lookup']!,
+          _twoPassLookupMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -603,6 +628,10 @@ class $HunspellSourceTable extends HunspellSource
         DriftSqlType.int,
         data['${effectivePrefix}order'],
       )!,
+      twoPassLookup: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}two_pass_lookup'],
+      )!,
     );
   }
 
@@ -621,6 +650,7 @@ class HunspellSourceData extends drift.DataClass
   final String? language;
   final bool enabled;
   final int order;
+  final bool twoPassLookup;
   const HunspellSourceData({
     required this.id,
     required this.name,
@@ -629,6 +659,7 @@ class HunspellSourceData extends drift.DataClass
     this.language,
     required this.enabled,
     required this.order,
+    required this.twoPassLookup,
   });
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
@@ -642,6 +673,7 @@ class HunspellSourceData extends drift.DataClass
     }
     map['enabled'] = drift.Variable<bool>(enabled);
     map['order'] = drift.Variable<int>(order);
+    map['two_pass_lookup'] = drift.Variable<bool>(twoPassLookup);
     return map;
   }
 
@@ -656,6 +688,7 @@ class HunspellSourceData extends drift.DataClass
           : drift.Value(language),
       enabled: drift.Value(enabled),
       order: drift.Value(order),
+      twoPassLookup: drift.Value(twoPassLookup),
     );
   }
 
@@ -672,6 +705,7 @@ class HunspellSourceData extends drift.DataClass
       language: serializer.fromJson<String?>(json['language']),
       enabled: serializer.fromJson<bool>(json['enabled']),
       order: serializer.fromJson<int>(json['order']),
+      twoPassLookup: serializer.fromJson<bool>(json['twoPassLookup']),
     );
   }
   @override
@@ -685,6 +719,7 @@ class HunspellSourceData extends drift.DataClass
       'language': serializer.toJson<String?>(language),
       'enabled': serializer.toJson<bool>(enabled),
       'order': serializer.toJson<int>(order),
+      'twoPassLookup': serializer.toJson<bool>(twoPassLookup),
     };
   }
 
@@ -696,6 +731,7 @@ class HunspellSourceData extends drift.DataClass
     drift.Value<String?> language = const drift.Value.absent(),
     bool? enabled,
     int? order,
+    bool? twoPassLookup,
   }) => HunspellSourceData(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -704,6 +740,7 @@ class HunspellSourceData extends drift.DataClass
     language: language.present ? language.value : this.language,
     enabled: enabled ?? this.enabled,
     order: order ?? this.order,
+    twoPassLookup: twoPassLookup ?? this.twoPassLookup,
   );
   HunspellSourceData copyWithCompanion(HunspellSourceCompanion data) {
     return HunspellSourceData(
@@ -714,6 +751,9 @@ class HunspellSourceData extends drift.DataClass
       language: data.language.present ? data.language.value : this.language,
       enabled: data.enabled.present ? data.enabled.value : this.enabled,
       order: data.order.present ? data.order.value : this.order,
+      twoPassLookup: data.twoPassLookup.present
+          ? data.twoPassLookup.value
+          : this.twoPassLookup,
     );
   }
 
@@ -726,14 +766,23 @@ class HunspellSourceData extends drift.DataClass
           ..write('dicPath: $dicPath, ')
           ..write('language: $language, ')
           ..write('enabled: $enabled, ')
-          ..write('order: $order')
+          ..write('order: $order, ')
+          ..write('twoPassLookup: $twoPassLookup')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, affPath, dicPath, language, enabled, order);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    affPath,
+    dicPath,
+    language,
+    enabled,
+    order,
+    twoPassLookup,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -744,7 +793,8 @@ class HunspellSourceData extends drift.DataClass
           other.dicPath == this.dicPath &&
           other.language == this.language &&
           other.enabled == this.enabled &&
-          other.order == this.order);
+          other.order == this.order &&
+          other.twoPassLookup == this.twoPassLookup);
 }
 
 class HunspellSourceCompanion
@@ -756,6 +806,7 @@ class HunspellSourceCompanion
   final drift.Value<String?> language;
   final drift.Value<bool> enabled;
   final drift.Value<int> order;
+  final drift.Value<bool> twoPassLookup;
   const HunspellSourceCompanion({
     this.id = const drift.Value.absent(),
     this.name = const drift.Value.absent(),
@@ -764,6 +815,7 @@ class HunspellSourceCompanion
     this.language = const drift.Value.absent(),
     this.enabled = const drift.Value.absent(),
     this.order = const drift.Value.absent(),
+    this.twoPassLookup = const drift.Value.absent(),
   });
   HunspellSourceCompanion.insert({
     this.id = const drift.Value.absent(),
@@ -773,6 +825,7 @@ class HunspellSourceCompanion
     this.language = const drift.Value.absent(),
     this.enabled = const drift.Value.absent(),
     this.order = const drift.Value.absent(),
+    this.twoPassLookup = const drift.Value.absent(),
   }) : name = drift.Value(name),
        affPath = drift.Value(affPath),
        dicPath = drift.Value(dicPath);
@@ -784,6 +837,7 @@ class HunspellSourceCompanion
     drift.Expression<String>? language,
     drift.Expression<bool>? enabled,
     drift.Expression<int>? order,
+    drift.Expression<bool>? twoPassLookup,
   }) {
     return drift.RawValuesInsertable({
       if (id != null) 'id': id,
@@ -793,6 +847,7 @@ class HunspellSourceCompanion
       if (language != null) 'language': language,
       if (enabled != null) 'enabled': enabled,
       if (order != null) 'order': order,
+      if (twoPassLookup != null) 'two_pass_lookup': twoPassLookup,
     });
   }
 
@@ -804,6 +859,7 @@ class HunspellSourceCompanion
     drift.Value<String?>? language,
     drift.Value<bool>? enabled,
     drift.Value<int>? order,
+    drift.Value<bool>? twoPassLookup,
   }) {
     return HunspellSourceCompanion(
       id: id ?? this.id,
@@ -813,6 +869,7 @@ class HunspellSourceCompanion
       language: language ?? this.language,
       enabled: enabled ?? this.enabled,
       order: order ?? this.order,
+      twoPassLookup: twoPassLookup ?? this.twoPassLookup,
     );
   }
 
@@ -840,6 +897,9 @@ class HunspellSourceCompanion
     if (order.present) {
       map['order'] = drift.Variable<int>(order.value);
     }
+    if (twoPassLookup.present) {
+      map['two_pass_lookup'] = drift.Variable<bool>(twoPassLookup.value);
+    }
     return map;
   }
 
@@ -852,7 +912,8 @@ class HunspellSourceCompanion
           ..write('dicPath: $dicPath, ')
           ..write('language: $language, ')
           ..write('enabled: $enabled, ')
-          ..write('order: $order')
+          ..write('order: $order, ')
+          ..write('twoPassLookup: $twoPassLookup')
           ..write(')'))
         .toString();
   }
@@ -4798,6 +4859,7 @@ typedef $$HunspellSourceTableCreateCompanionBuilder =
       drift.Value<String?> language,
       drift.Value<bool> enabled,
       drift.Value<int> order,
+      drift.Value<bool> twoPassLookup,
     });
 typedef $$HunspellSourceTableUpdateCompanionBuilder =
     HunspellSourceCompanion Function({
@@ -4808,6 +4870,7 @@ typedef $$HunspellSourceTableUpdateCompanionBuilder =
       drift.Value<String?> language,
       drift.Value<bool> enabled,
       drift.Value<int> order,
+      drift.Value<bool> twoPassLookup,
     });
 
 class $$HunspellSourceTableFilterComposer
@@ -4851,6 +4914,11 @@ class $$HunspellSourceTableFilterComposer
 
   drift.ColumnFilters<int> get order => $composableBuilder(
     column: $table.order,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<bool> get twoPassLookup => $composableBuilder(
+    column: $table.twoPassLookup,
     builder: (column) => drift.ColumnFilters(column),
   );
 }
@@ -4898,6 +4966,11 @@ class $$HunspellSourceTableOrderingComposer
     column: $table.order,
     builder: (column) => drift.ColumnOrderings(column),
   );
+
+  drift.ColumnOrderings<bool> get twoPassLookup => $composableBuilder(
+    column: $table.twoPassLookup,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
 }
 
 class $$HunspellSourceTableAnnotationComposer
@@ -4929,6 +5002,11 @@ class $$HunspellSourceTableAnnotationComposer
 
   drift.GeneratedColumn<int> get order =>
       $composableBuilder(column: $table.order, builder: (column) => column);
+
+  drift.GeneratedColumn<bool> get twoPassLookup => $composableBuilder(
+    column: $table.twoPassLookup,
+    builder: (column) => column,
+  );
 }
 
 class $$HunspellSourceTableTableManager
@@ -4975,6 +5053,7 @@ class $$HunspellSourceTableTableManager
                 drift.Value<String?> language = const drift.Value.absent(),
                 drift.Value<bool> enabled = const drift.Value.absent(),
                 drift.Value<int> order = const drift.Value.absent(),
+                drift.Value<bool> twoPassLookup = const drift.Value.absent(),
               }) => HunspellSourceCompanion(
                 id: id,
                 name: name,
@@ -4983,6 +5062,7 @@ class $$HunspellSourceTableTableManager
                 language: language,
                 enabled: enabled,
                 order: order,
+                twoPassLookup: twoPassLookup,
               ),
           createCompanionCallback:
               ({
@@ -4993,6 +5073,7 @@ class $$HunspellSourceTableTableManager
                 drift.Value<String?> language = const drift.Value.absent(),
                 drift.Value<bool> enabled = const drift.Value.absent(),
                 drift.Value<int> order = const drift.Value.absent(),
+                drift.Value<bool> twoPassLookup = const drift.Value.absent(),
               }) => HunspellSourceCompanion.insert(
                 id: id,
                 name: name,
@@ -5001,6 +5082,7 @@ class $$HunspellSourceTableTableManager
                 language: language,
                 enabled: enabled,
                 order: order,
+                twoPassLookup: twoPassLookup,
               ),
           withReferenceMapper: (p0) => p0
               .map(

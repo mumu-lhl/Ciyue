@@ -27,22 +27,33 @@ mixin _$Update {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as Update;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is Update &&
-            (identical(other.success, success) || other.success == success) &&
-            (identical(other.isUpdateAvailable, isUpdateAvailable) ||
-                other.isUpdateAvailable == isUpdateAvailable) &&
-            (identical(other.version, version) || other.version == version));
+            (identical(other.success, _this.success) ||
+                other.success == _this.success) &&
+            (identical(other.isUpdateAvailable, _this.isUpdateAvailable) ||
+                other.isUpdateAvailable == _this.isUpdateAvailable) &&
+            (identical(other.version, _this.version) ||
+                other.version == _this.version));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, success, isUpdateAvailable, version);
+  int get hashCode {
+    final _this = this as Update;
+    return Object.hash(
+      runtimeType,
+      _this.success,
+      _this.isUpdateAvailable,
+      _this.version,
+    );
+  }
 
   @override
   String toString() {
-    return 'Update(success: $success, isUpdateAvailable: $isUpdateAvailable, version: $version)';
+    final _this = this as Update;
+    return 'Update(success: ${_this.success}, isUpdateAvailable: ${_this.isUpdateAvailable}, version: ${_this.version})';
   }
 }
 
@@ -285,8 +296,9 @@ class _Update implements Update {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, success, isUpdateAvailable, version);
+  int get hashCode {
+    return Object.hash(runtimeType, success, isUpdateAvailable, version);
+  }
 
   @override
   String toString() {

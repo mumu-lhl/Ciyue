@@ -55,6 +55,52 @@ void main() {
     expect(await manager.stems("mixed"), unorderedEquals(["stem1", "stem2"]));
   });
 
+  test("supports two-pass stem lookup per source", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+
+    await manager.reload([
+      HunspellSourceInfo(
+        id: 2,
+        name: "single_pass",
+        affPath: File("packages/hunspell_ffi/test/fixtures/multiple_stems.aff")
+            .absolute
+            .path,
+        dicPath: File("packages/hunspell_ffi/test/fixtures/multiple_stems.dic")
+            .absolute
+            .path,
+        language: null,
+        enabled: true,
+        order: 0,
+        twoPassLookup: false,
+      ),
+    ]);
+
+    expect(await manager.stems("drunkest"), equals(["drunk"]));
+
+    await manager.reload([
+      HunspellSourceInfo(
+        id: 2,
+        name: "two_pass",
+        affPath: File("packages/hunspell_ffi/test/fixtures/multiple_stems.aff")
+            .absolute
+            .path,
+        dicPath: File("packages/hunspell_ffi/test/fixtures/multiple_stems.dic")
+            .absolute
+            .path,
+        language: null,
+        enabled: true,
+        order: 0,
+        twoPassLookup: true,
+      ),
+    ]);
+
+    expect(
+      await manager.stems("drunkest"),
+      unorderedEquals(["drunk", "drink"]),
+    );
+  });
+
   test("skips disabled sources", () async {
     final manager = HunspellManager();
     addTearDown(manager.close);

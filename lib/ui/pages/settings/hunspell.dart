@@ -117,10 +117,20 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                         ListTile(
                           leading: const Icon(Icons.book),
                           title: Text(source.name),
-                          subtitle: Text(source.language ?? source.affPath),
+                          subtitle: Text(
+                            source.twoPassLookup
+                                ? "${source.language ?? source.affPath} • ${l10n.twoPassLookup}"
+                                : (source.language ?? source.affPath),
+                          ),
+                          onTap: () => _showSourceSettings(source),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              IconButton(
+                                tooltip: l10n.hunspellDictionarySettings,
+                                icon: const Icon(Icons.tune),
+                                onPressed: () => _showSourceSettings(source),
+                              ),
                               Switch(
                                 value: source.enabled,
                                 onChanged: (value) =>
@@ -172,6 +182,54 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
     }
     _invalidateLookup();
     _refreshSources();
+  }
+
+  Future<void> _setSourceTwoPassLookup(int id, bool value) async {
+    await hunspellSourceDao.setTwoPassLookup(id, value);
+    if (settings.enableHunspellMorphology) {
+      await reloadHunspellFromDatabase();
+    }
+    _invalidateLookup();
+    _refreshSources();
+  }
+
+  Future<void> _showSourceSettings(HunspellSourceData source) async {
+    final l10n = AppLocalizations.of(context)!;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        var twoPass = source.twoPassLookup;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(source.name),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.twoPassLookup),
+                    subtitle: Text(l10n.twoPassLookupDescription),
+                    value: twoPass,
+                    onChanged: (value) async {
+                      setDialogState(() => twoPass = value);
+                      await _setSourceTwoPassLookup(source.id, value);
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(MaterialLocalizations.of(context).okButtonLabel),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _removeSource(int id) async {

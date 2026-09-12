@@ -29,26 +29,31 @@ mixin _$TranslationResult {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as TranslationResult;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is TranslationResult &&
-            (identical(other.text, text) || other.text == text) &&
+            (identical(other.text, _this.text) || other.text == _this.text) &&
             const DeepCollectionEquality().equals(
               other.alternatives,
-              alternatives,
+              _this.alternatives,
             ));
   }
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    text,
-    const DeepCollectionEquality().hash(alternatives),
-  );
+  int get hashCode {
+    final _this = this as TranslationResult;
+    return Object.hash(
+      runtimeType,
+      _this.text,
+      const DeepCollectionEquality().hash(_this.alternatives),
+    );
+  }
 
   @override
   String toString() {
-    return 'TranslationResult(text: $text, alternatives: $alternatives)';
+    final _this = this as TranslationResult;
+    return 'TranslationResult(text: ${_this.text}, alternatives: ${_this.alternatives})';
   }
 }
 
@@ -281,17 +286,19 @@ class _TranslationResult implements TranslationResult {
             other is _TranslationResult &&
             (identical(other.text, text) || other.text == text) &&
             const DeepCollectionEquality().equals(
-              other._alternatives,
+              other.alternatives,
               _alternatives,
             ));
   }
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    text,
-    const DeepCollectionEquality().hash(_alternatives),
-  );
+  int get hashCode {
+    return Object.hash(
+      runtimeType,
+      text,
+      const DeepCollectionEquality().hash(_alternatives),
+    );
+  }
 
   @override
   String toString() {

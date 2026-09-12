@@ -164,6 +164,7 @@ class HunspellSourceDao extends DatabaseAccessor<AppDatabase>
     required String dicPath,
     String? language,
     bool enabled = false,
+    bool twoPassLookup = false,
   }) async {
     final maxOrder =
         await (select(hunspellSource)
@@ -184,6 +185,7 @@ class HunspellSourceDao extends DatabaseAccessor<AppDatabase>
         language: Value(language),
         enabled: Value(enabled),
         order: Value((maxOrder?.order ?? -1) + 1),
+        twoPassLookup: Value(twoPassLookup),
       ),
     );
   }
@@ -200,6 +202,12 @@ class HunspellSourceDao extends DatabaseAccessor<AppDatabase>
   Future<void> setEnabled(int id, bool enabled) {
     return (update(hunspellSource)..where((row) => row.id.isValue(id))).write(
       HunspellSourceCompanion(enabled: Value(enabled)),
+    );
+  }
+
+  Future<void> setTwoPassLookup(int id, bool twoPassLookup) {
+    return (update(hunspellSource)..where((row) => row.id.isValue(id))).write(
+      HunspellSourceCompanion(twoPassLookup: Value(twoPassLookup)),
     );
   }
 

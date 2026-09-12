@@ -26,21 +26,26 @@ mixin _$ModelInfo {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ModelInfo;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ModelInfo &&
-            (identical(other.originName, originName) ||
-                other.originName == originName) &&
-            (identical(other.shownName, shownName) ||
-                other.shownName == shownName));
+            (identical(other.originName, _this.originName) ||
+                other.originName == _this.originName) &&
+            (identical(other.shownName, _this.shownName) ||
+                other.shownName == _this.shownName));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, originName, shownName);
+  int get hashCode {
+    final _this = this as ModelInfo;
+    return Object.hash(runtimeType, _this.originName, _this.shownName);
+  }
 
   @override
   String toString() {
-    return 'ModelInfo(originName: $originName, shownName: $shownName)';
+    final _this = this as ModelInfo;
+    return 'ModelInfo(originName: ${_this.originName}, shownName: ${_this.shownName})';
   }
 }
 
@@ -266,7 +271,9 @@ class _ModelInfo implements ModelInfo {
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, originName, shownName);
+  int get hashCode {
+    return Object.hash(runtimeType, originName, shownName);
+  }
 
   @override
   String toString() {
@@ -334,34 +341,40 @@ mixin _$ModelProvider {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ModelProvider;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ModelProvider &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.displayedName, displayedName) ||
-                other.displayedName == displayedName) &&
-            (identical(other.apiUrl, apiUrl) || other.apiUrl == apiUrl) &&
-            const DeepCollectionEquality().equals(other.models, models) &&
-            (identical(other.allowCustomModel, allowCustomModel) ||
-                other.allowCustomModel == allowCustomModel) &&
-            (identical(other.allowCustomAPIUrl, allowCustomAPIUrl) ||
-                other.allowCustomAPIUrl == allowCustomAPIUrl));
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            (identical(other.displayedName, _this.displayedName) ||
+                other.displayedName == _this.displayedName) &&
+            (identical(other.apiUrl, _this.apiUrl) ||
+                other.apiUrl == _this.apiUrl) &&
+            const DeepCollectionEquality().equals(other.models, _this.models) &&
+            (identical(other.allowCustomModel, _this.allowCustomModel) ||
+                other.allowCustomModel == _this.allowCustomModel) &&
+            (identical(other.allowCustomAPIUrl, _this.allowCustomAPIUrl) ||
+                other.allowCustomAPIUrl == _this.allowCustomAPIUrl));
   }
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    name,
-    displayedName,
-    apiUrl,
-    const DeepCollectionEquality().hash(models),
-    allowCustomModel,
-    allowCustomAPIUrl,
-  );
+  int get hashCode {
+    final _this = this as ModelProvider;
+    return Object.hash(
+      runtimeType,
+      _this.name,
+      _this.displayedName,
+      _this.apiUrl,
+      const DeepCollectionEquality().hash(_this.models),
+      _this.allowCustomModel,
+      _this.allowCustomAPIUrl,
+    );
+  }
 
   @override
   String toString() {
-    return 'ModelProvider(name: $name, displayedName: $displayedName, apiUrl: $apiUrl, models: $models, allowCustomModel: $allowCustomModel, allowCustomAPIUrl: $allowCustomAPIUrl)';
+    final _this = this as ModelProvider;
+    return 'ModelProvider(name: ${_this.name}, displayedName: ${_this.displayedName}, apiUrl: ${_this.apiUrl}, models: ${_this.models}, allowCustomModel: ${_this.allowCustomModel}, allowCustomAPIUrl: ${_this.allowCustomAPIUrl})';
   }
 }
 
@@ -685,7 +698,7 @@ class _ModelProvider implements ModelProvider {
             (identical(other.displayedName, displayedName) ||
                 other.displayedName == displayedName) &&
             (identical(other.apiUrl, apiUrl) || other.apiUrl == apiUrl) &&
-            const DeepCollectionEquality().equals(other._models, _models) &&
+            const DeepCollectionEquality().equals(other.models, _models) &&
             (identical(other.allowCustomModel, allowCustomModel) ||
                 other.allowCustomModel == allowCustomModel) &&
             (identical(other.allowCustomAPIUrl, allowCustomAPIUrl) ||
@@ -693,15 +706,17 @@ class _ModelProvider implements ModelProvider {
   }
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    name,
-    displayedName,
-    apiUrl,
-    const DeepCollectionEquality().hash(_models),
-    allowCustomModel,
-    allowCustomAPIUrl,
-  );
+  int get hashCode {
+    return Object.hash(
+      runtimeType,
+      name,
+      displayedName,
+      apiUrl,
+      const DeepCollectionEquality().hash(_models),
+      allowCustomModel,
+      allowCustomAPIUrl,
+    );
+  }
 
   @override
   String toString() {

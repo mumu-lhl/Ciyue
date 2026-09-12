@@ -51,8 +51,18 @@ class HunspellDictionary {
 
   bool get isClosed => _isClosed;
 
-  List<String> stem(String word) {
-    return _query(word, bindings.ciyue_hunspell_stem);
+  List<String> stem(String word, {bool twoPass = false}) {
+    final firstPass = _query(word, bindings.ciyue_hunspell_stem);
+    if (!twoPass || firstPass.isEmpty) {
+      return firstPass;
+    }
+    final results = <String>{...firstPass};
+    for (final s in firstPass) {
+      if (s != word) {
+        results.addAll(_query(s, bindings.ciyue_hunspell_stem));
+      }
+    }
+    return results.toList(growable: false);
   }
 
   List<String> suggest(String word) {

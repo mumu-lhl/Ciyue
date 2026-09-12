@@ -26,6 +26,8 @@ class HunspellSource extends Table {
   TextColumn get language => text().nullable()();
   BoolColumn get enabled => boolean().withDefault(const Constant(false))();
   IntColumn get order => integer().withDefault(const Constant(0))();
+  BoolColumn get twoPassLookup =>
+      boolean().withDefault(const Constant(false))();
 }
 
 class History extends Table {

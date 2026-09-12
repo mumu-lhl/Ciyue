@@ -14,6 +14,7 @@ class HunspellSourceInfo {
   final String? language;
   final bool enabled;
   final int order;
+  final bool twoPassLookup;
 
   const HunspellSourceInfo({
     required this.id,
@@ -23,5 +24,6 @@ class HunspellSourceInfo {
     required this.language,
     required this.enabled,
     required this.order,
+    this.twoPassLookup = false,
   });
 }

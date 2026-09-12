@@ -133,10 +133,16 @@ class AppDatabase extends _$AppDatabase {
         from17To18: (m, schema) async {
           await m.create(schema.hunspellSource);
         },
+        from18To19: (m, schema) async {
+          await m.addColumn(
+            schema.hunspellSource,
+            schema.hunspellSource.twoPassLookup,
+          );
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 }

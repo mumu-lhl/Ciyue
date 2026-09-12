@@ -38,4 +38,18 @@ void main() {
     expect(dictionary.stem("发"), unorderedEquals(["髮", "發"]));
     expect(dictionary.stem("mixed"), unorderedEquals(["stem1", "stem2"]));
   });
+
+  test("supports two-pass stem lookup", () {
+    final dictionary = HunspellDictionary.open(
+      affPath: _fixturePath("test/fixtures/multiple_stems.aff"),
+      dicPath: _fixturePath("test/fixtures/multiple_stems.dic"),
+    );
+    addTearDown(dictionary.close);
+
+    expect(dictionary.stem("drunkest", twoPass: false), equals(["drunk"]));
+    expect(
+      dictionary.stem("drunkest", twoPass: true),
+      unorderedEquals(["drunk", "drink"]),
+    );
+  });
 }
