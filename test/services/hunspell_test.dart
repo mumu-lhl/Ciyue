@@ -30,6 +30,31 @@ void main() {
     expect(manager.loadedSourceCount, 1);
   });
 
+  test("loads Hunspell sources and returns all multiple st: stems", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+
+    await manager.reload([
+      HunspellSourceInfo(
+        id: 2,
+        name: "multiple_stems",
+        affPath: File("packages/hunspell_ffi/test/fixtures/multiple_stems.aff")
+            .absolute
+            .path,
+        dicPath: File("packages/hunspell_ffi/test/fixtures/multiple_stems.dic")
+            .absolute
+            .path,
+        language: null,
+        enabled: true,
+        order: 0,
+      ),
+    ]);
+
+    expect(await manager.stems("たい積"), unorderedEquals(["体積", "堆積", "滞積"]));
+    expect(await manager.stems("发"), unorderedEquals(["髮", "發"]));
+    expect(await manager.stems("mixed"), unorderedEquals(["stem1", "stem2"]));
+  });
+
   test("skips disabled sources", () async {
     final manager = HunspellManager();
     addTearDown(manager.close);

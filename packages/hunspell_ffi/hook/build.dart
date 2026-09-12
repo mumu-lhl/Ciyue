@@ -15,13 +15,13 @@ void main(List<String> args) async {
 
     final sources = [
       "src/hunspell_bridge.cc",
+      "src/hashmgr.cxx",
+      "src/hunspell.cxx",
       for (final file in [
         "affentry.cxx",
         "affixmgr.cxx",
         "csutil.cxx",
         "filemgr.cxx",
-        "hashmgr.cxx",
-        "hunspell.cxx",
         "hunzip.cxx",
         "phonet.cxx",
         "replist.cxx",
