@@ -185,12 +185,26 @@ class SettingsScreen extends StatelessWidget {
           title: const Text("Flashcards"),
           onTap: () => context.push("/settings/flashcards"),
         ),
+        const HunspellPageListTile(),
         const BackupPageListTile(),
         const UpdatePageListTile(),
         const OtherPageListTile(),
         const LoggerPageListTile(),
         const AboutPageListTile(),
       ],
+    );
+  }
+}
+
+class HunspellPageListTile extends StatelessWidget {
+  const HunspellPageListTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.spellcheck),
+      title: const Text("Hunspell"),
+      onTap: () => context.push("/settings/hunspell"),
     );
   }
 }
