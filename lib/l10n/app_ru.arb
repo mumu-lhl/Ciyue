@@ -224,5 +224,24 @@
     "customColor": "Пользовательский",
     "showWindow": "Показать окно",
     "noDictionariesFound": "Словари не найдены",
-    "exitApp": "Выйти из Ciyue"
+    "exitApp": "Выйти из Ciyue",
+    "spellingSuggestions": "Варианты написания",
+    "enableWordFormLookup": "Включить поиск словоформ",
+    "enableWordFormLookupDescription": "По умолчанию отключено. Использовать Hunspell для поиска словоформ.",
+    "hunspellLookupMode": "Режим поиска",
+    "hunspellLookupModeDescription": "Выберите, дополнять ли существующие записи основами слов.",
+    "hunspellFallback": "Резервный вариант",
+    "hunspellSupplement": "Дополнение",
+    "importHunspellDictionaries": "Импортировать словари Hunspell",
+    "importHunspellDictionariesDescription": "Выберите папку, содержащую файлы .aff и .dic.",
+    "hunspellSourcesLoadFailed": "Не удалось загрузить словари Hunspell: {error}",
+    "@hunspellSourcesLoadFailed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "noHunspellDictionaries": "Словари Hunspell не импортированы",
+    "optionalWordFormLookup": "Дополнительный поиск словоформ"
 }
