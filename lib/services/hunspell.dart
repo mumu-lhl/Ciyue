@@ -80,14 +80,82 @@ class HunspellManager implements MorphologyProvider {
   @override
   Future<List<String>> stems(String word) {
     return _enqueue(() {
-      final results = <String>{};
-      for (final item in _loadedSources) {
-        results.addAll(
-          item.dictionary.stem(word, twoPass: item.source.twoPassLookup),
-        );
+      final trimmed = word.trim();
+      if (trimmed.isEmpty) {
+        return const <String>[];
       }
-      return results.toList(growable: false);
+
+      final tokens = trimmed.split(RegExp(r"\s+"));
+      if (tokens.length == 1) {
+        return _singleWordStems(trimmed);
+      }
+
+      return _phraseStems(tokens, trimmed);
     });
+  }
+
+  List<String> _singleWordStems(String word) {
+    final results = <String>{};
+    for (final item in _loadedSources) {
+      results.addAll(
+        item.dictionary.stem(word, twoPass: item.source.twoPassLookup),
+      );
+    }
+    return results.toList(growable: false);
+  }
+
+  List<String> _phraseStems(List<String> tokens, String originalPhrase) {
+    const maxPhraseWords = 5;
+    const maxCombinations = 32;
+
+    if (tokens.length > maxPhraseWords) {
+      return _singleWordStems(originalPhrase);
+    }
+
+    final direct = _singleWordStems(originalPhrase);
+
+    var hasAnyStem = false;
+    final tokenCandidates = <List<String>>[];
+    for (final token in tokens) {
+      final stems = _singleWordStems(token);
+      if (stems.isNotEmpty && !(stems.length == 1 && stems.first == token)) {
+        hasAnyStem = true;
+      }
+      tokenCandidates.add(<String>{token, ...stems}.toList(growable: false));
+    }
+
+    if (!hasAnyStem) {
+      return direct;
+    }
+
+    final normalizedOriginal = tokens.join(" ");
+    final results = <String>{...direct};
+
+    var combinations = <List<String>>[[]];
+    for (final candidates in tokenCandidates) {
+      final next = <List<String>>[];
+      for (final prefix in combinations) {
+        for (final candidate in candidates) {
+          next.add([...prefix, candidate]);
+          if (next.length >= maxCombinations) {
+            break;
+          }
+        }
+        if (next.length >= maxCombinations) {
+          break;
+        }
+      }
+      combinations = next;
+    }
+
+    for (final combo in combinations) {
+      final phrase = combo.join(" ");
+      if (phrase.toLowerCase() != normalizedOriginal.toLowerCase()) {
+        results.add(phrase);
+      }
+    }
+
+    return results.toList(growable: false);
   }
 
   @override

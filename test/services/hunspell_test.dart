@@ -120,4 +120,61 @@ void main() {
     expect(await manager.stems("rims"), isEmpty);
     expect(manager.loadedSourceCount, 0);
   });
+
+  test("splits phrases into words and returns combined stems", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+
+    await manager.reload([
+      HunspellSourceInfo(
+        id: 1,
+        name: "simple",
+        affPath: File("packages/hunspell_ffi/test/fixtures/simple.aff")
+            .absolute
+            .path,
+        dicPath: File("packages/hunspell_ffi/test/fixtures/simple.dic")
+            .absolute
+            .path,
+        language: null,
+        enabled: true,
+        order: 0,
+      ),
+    ]);
+
+    expect(await manager.stems("rims up"), equals(["rim up"]));
+    expect(await manager.stems("  rims   up  "), equals(["rim up"]));
+    expect(await manager.stems("rim up"), isEmpty);
+    expect(await manager.stems("unknown phrase here"), isEmpty);
+  });
+
+  test("combines multiple stems for phrases", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+
+    await manager.reload([
+      HunspellSourceInfo(
+        id: 2,
+        name: "multiple_stems",
+        affPath: File("packages/hunspell_ffi/test/fixtures/multiple_stems.aff")
+            .absolute
+            .path,
+        dicPath: File("packages/hunspell_ffi/test/fixtures/multiple_stems.dic")
+            .absolute
+            .path,
+        language: null,
+        enabled: true,
+        order: 0,
+        twoPassLookup: true,
+      ),
+    ]);
+
+    expect(
+      await manager.stems("mixed up"),
+      unorderedEquals(["stem1 up", "stem2 up"]),
+    );
+    expect(
+      await manager.stems("drunkest driver"),
+      unorderedEquals(["drunk driver", "drink driver"]),
+    );
+  });
 }
