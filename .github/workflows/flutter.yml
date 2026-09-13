@@ -18,7 +18,7 @@ jobs:
           submodules: recursive
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.47.2
+          flutter-version: 3.47.4
           cache: true
 
       - name: Install dependencies
@@ -51,7 +51,7 @@ jobs:
     uses: ./.github/workflows/android-build.yml
     secrets: inherit
     with:
-      flutter_version: 3.47.2
+      flutter_version: 3.47.4
       workflow_profile: ci
       build_mode: ci_full_dev
       artifact_name: Apk
@@ -64,7 +64,7 @@ jobs:
   build-windows:
     uses: ./.github/workflows/windows-build.yml
     with:
-      flutter_version: 3.47.2
+      flutter_version: 3.47.4
       workflow_profile: ci
       artifact_name: Windows
       enable_build_cache: true
@@ -75,7 +75,7 @@ jobs:
   build-linux:
     uses: ./.github/workflows/linux-build.yml
     with:
-      flutter_version: 3.47.2
+      flutter_version: 3.47.4
       workflow_profile: ci
       artifact_name: Linux
       include_metadata_defines: true
@@ -84,7 +84,7 @@ jobs:
   build-macos:
     uses: ./.github/workflows/macos-build.yml
     with:
-      flutter_version: 3.47.2
+      flutter_version: 3.47.4
       workflow_profile: ci
       artifact_name: macOS
       include_metadata_defines: true
