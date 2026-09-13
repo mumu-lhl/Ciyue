@@ -250,6 +250,8 @@ jobs:
           rm -rf "$WPE_RUNTIME_DIR"
           cp -a "$WPE_STAGE/wpe-webkit-2.0/." "$WPE_RUNTIME_DIR/"
 
+          python3 tools/patch_wpe_sandbox_paths.py "$BUNDLE_LIB_DIR"
+
           for helper in WPENetworkProcess WPEWebProcess; do
             patchelf --set-rpath '$ORIGIN/..' "$WPE_RUNTIME_DIR/$helper"
           done
