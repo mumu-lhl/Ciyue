@@ -43,6 +43,14 @@
       "release": "https://mumulhl.eu.org/Ciyue/updates/releases/1.23.2-beta.5/linux/release.json"
     },
     {
+      "version": "1.23.2-beta.6",
+      "buildNumber": 96,
+      "platform": "linux",
+      "channel": "preview",
+      "mandatory": false,
+      "release": "https://mumulhl.eu.org/Ciyue/updates/releases/1.23.2-beta.6/linux/release.json"
+    },
+    {
       "version": "1.23.1",
       "buildNumber": 90,
       "platform": "linux",
@@ -91,6 +99,14 @@
       "release": "https://mumulhl.eu.org/Ciyue/updates/releases/1.23.2-beta.5/windows/release.json"
     },
     {
+      "version": "1.23.2-beta.6",
+      "buildNumber": 96,
+      "platform": "windows",
+      "channel": "preview",
+      "mandatory": false,
+      "release": "https://mumulhl.eu.org/Ciyue/updates/releases/1.23.2-beta.6/windows/release.json"
+    },
+    {
       "version": "1.23.1",
       "buildNumber": 90,
       "platform": "windows",
@@ -102,6 +118,6 @@
   "signature": {
     "algorithm": "ed25519",
     "publicKeyId": "release-f3d56da10d0866ff2cff4c65",
-    "value": "I9mCscLpcKJcVFlIMqJ8P9v7S3cp+7a1KM6wvgPo5AXYs/CD6uuTK3WrcmQRHsqXOl5z8WZ2e4cWmmWD2iglBg=="
+    "value": "VYyktvOa4tTELnUSNOWIFudpm0ivdrYEngAsVRBdSgXhlrKJY/Li6LUt2SPgqPFUPQ4mikTflIklu/vpIjniCQ=="
   }
 }
