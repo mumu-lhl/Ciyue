@@ -243,5 +243,8 @@
         }
     },
     "noHunspellDictionaries": "Словари Hunspell не импортированы",
-    "optionalWordFormLookup": "Дополнительный поиск словоформ"
+    "optionalWordFormLookup": "Дополнительный поиск словоформ",
+    "twoPassLookup": "Двухэтапный поиск",
+    "twoPassLookupDescription": "Повторно выполнить запрос к Hunspell, используя основы слов, найденные на первом этапе, чтобы найти более глубокие основы (например, для японского или немецкого языков).",
+    "hunspellDictionarySettings": "Настройки словаря Hunspell"
 }
