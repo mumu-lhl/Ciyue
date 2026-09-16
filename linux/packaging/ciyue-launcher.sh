@@ -36,4 +36,20 @@ if [ -z "${WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS:-}" ]; then
   fi
 fi
 
+# If the host system has no accessible DRM device, WebKit's DMA-BUF
+# renderer cannot create a GBM device. Gracefully disable the DMA-BUF renderer
+# to fall back to shared memory (SHM) rendering.
+if [ -z "${WEBKIT_DISABLE_DMABUF_RENDERER:-}" ]; then
+  HAS_DRM_DEVICE=0
+  for dev in /dev/dri/renderD* /dev/dri/card*; do
+    if [ -e "$dev" ] && [ -r "$dev" ] && [ -w "$dev" ]; then
+      HAS_DRM_DEVICE=1
+      break
+    fi
+  done
+  if [ "$HAS_DRM_DEVICE" -eq 0 ]; then
+    export WEBKIT_DISABLE_DMABUF_RENDERER=1
+  fi
+fi
+
 exec "$HERE/ciyue.bin" "$@"

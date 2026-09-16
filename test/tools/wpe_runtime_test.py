@@ -73,17 +73,30 @@ class LinuxPackagingDependenciesTest(unittest.TestCase):
         control = (ROOT / "linux/packaging/deb/control").read_text()
         self.assertIn("bubblewrap", control)
         self.assertIn("xdg-dbus-proxy", control)
+        self.assertIn("libgbm1", control)
+        self.assertIn("libdrm2", control)
 
     def test_rpm_requires_bubblewrap_and_dbus_proxy(self):
         spec = (ROOT / "linux/packaging/rpm/ciyue.spec").read_text()
         self.assertIn("bubblewrap", spec)
         self.assertIn("xdg-dbus-proxy", spec)
+        self.assertIn("mesa-libgbm", spec)
+        self.assertIn("libdrm", spec)
 
-    def test_launcher_checks_sandbox_availability(self):
+    def test_launcher_checks_sandbox_and_drm_availability(self):
         launcher = (ROOT / "linux/packaging/ciyue-launcher.sh").read_text()
         self.assertIn("WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS", launcher)
         self.assertIn("bwrap", launcher)
         self.assertIn("xdg-dbus-proxy", launcher)
+        self.assertIn("WEBKIT_DISABLE_DMABUF_RENDERER", launcher)
+
+    def test_bundle_excludes_host_graphics_libraries(self):
+        sys.path.insert(0, str(ROOT / "tools"))
+        import bundle_linux_dependencies
+
+        self.assertIn("libgbm.so.1", bundle_linux_dependencies.SYSTEM_LIBRARIES)
+        self.assertIn("libdrm.so.2", bundle_linux_dependencies.SYSTEM_LIBRARIES)
+        self.assertIn("libc.so.6", bundle_linux_dependencies.SYSTEM_LIBRARIES)
 
 
 if __name__ == "__main__":

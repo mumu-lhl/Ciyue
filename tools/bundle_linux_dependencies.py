@@ -29,6 +29,22 @@ GLIBC_RUNTIME_LIBRARIES = {
     "libutil.so.1",
 }
 
+# Graphics and DRM stack libraries are tightly coupled to the host kernel DRM
+# drivers and the host distribution's Mesa build. Bundling them breaks hardware
+# acceleration across distributions (e.g. Debian/Ubuntu /usr/lib/*-linux-gnu/dri
+# vs Arch /usr/lib/dri) and causes GBM initialization failures (issue #734).
+HOST_GRAPHICS_LIBRARIES = {
+    "libgbm.so.1",
+    "libdrm.so.2",
+    "libGL.so.1",
+    "libEGL.so.1",
+    "libGLX.so.0",
+    "libOpenGL.so.0",
+    "libglapi.so.0",
+}
+
+SYSTEM_LIBRARIES = GLIBC_RUNTIME_LIBRARIES | HOST_GRAPHICS_LIBRARIES
+
 NEEDED_RE = re.compile(r"\(NEEDED\).*Shared library: \[(.+)]")
 SONAME_RE = re.compile(r"\(SONAME\).*Library soname: \[(.+)]")
 
@@ -128,7 +144,7 @@ def collect(bundle_dir: Path, search_roots: list[Path]) -> None:
             continue
 
         for needed in metadata.needed:
-            if needed in GLIBC_RUNTIME_LIBRARIES:
+            if needed in SYSTEM_LIBRARIES:
                 continue
             if needed in provided:
                 provider = provided[needed]
@@ -159,7 +175,7 @@ def verify(bundle_dir: Path) -> None:
         metadata = elf_metadata(binary)
         assert metadata is not None
         for needed in metadata.needed:
-            if needed not in GLIBC_RUNTIME_LIBRARIES and needed not in provided_names:
+            if needed not in SYSTEM_LIBRARIES and needed not in provided_names:
                 missing.setdefault(needed, []).append(binary)
 
     if missing:

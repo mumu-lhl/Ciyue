@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <glob.h>
 #include <string>
 #include <unistd.h>
 
@@ -142,6 +143,31 @@ bool HasProblematicGpuDriver() {
   return false;
 }
 
+// Check if an accessible DRM render or card device exists
+bool HasAccessibleDrmNode() {
+  glob_t glob_res;
+  bool found = false;
+  if (glob("/dev/dri/renderD*", 0, nullptr, &glob_res) == 0) {
+    for (size_t i = 0; i < glob_res.gl_pathc; ++i) {
+      if (access(glob_res.gl_pathv[i], R_OK | W_OK) == 0) {
+        found = true;
+        break;
+      }
+    }
+    globfree(&glob_res);
+  }
+  if (!found && glob("/dev/dri/card*", 0, nullptr, &glob_res) == 0) {
+    for (size_t i = 0; i < glob_res.gl_pathc; ++i) {
+      if (access(glob_res.gl_pathv[i], R_OK | W_OK) == 0) {
+        found = true;
+        break;
+      }
+    }
+    globfree(&glob_res);
+  }
+  return found;
+}
+
 }  // namespace
 
 bool ShouldUseSoftwareRendering() {
@@ -155,6 +181,12 @@ bool ShouldUseSoftwareRendering() {
   const char* already_sw = getenv("LIBGL_ALWAYS_SOFTWARE");
   if (already_sw && (strcmp(already_sw, "1") == 0 || strcasecmp(already_sw, "true") == 0)) {
     return true;  // Already in software mode
+  }
+
+  // If no accessible DRM device exists, hardware acceleration is impossible
+  if (!HasAccessibleDrmNode()) {
+    debugLog("No accessible DRM node found in /dev/dri, enabling software rendering");
+    return true;
   }
   
   // If we have a known good GPU driver, use hardware rendering
