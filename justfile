@@ -21,3 +21,6 @@ build-rpm:
 
 build-deb:
     ./tools/build_deb.sh
+
+generate-changelog version:
+    git cliff --tag {{version}} --ignore-tags ".*-.*" -o

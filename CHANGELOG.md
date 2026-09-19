@@ -3,7 +3,59 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [1.23.1](https://github.com/mumu-lhl/Ciyue/compare/v1.23.1-beta.2..1.23.1) - 2026-08-31
+## [1.23.2](https://github.com/mumu-lhl/Ciyue/compare/v1.23.1..1.23.2) - 2026-09-19
+
+### Bug Fixes
+
+- **(android)** stabilize floating window - ([48dd2f4](https://github.com/mumu-lhl/Ciyue/commit/48dd2f43f2ffc1de0318808b367bc1868b1b2319)) - Mumulhl
+- **(android)** harden floating lookup - ([08d7954](https://github.com/mumu-lhl/Ciyue/commit/08d7954e33399772a5a77a3e1a92b7119f9263d5)) - Mumulhl
+- **(android)** stabilize repeated floating lookups - ([ecbde06](https://github.com/mumu-lhl/Ciyue/commit/ecbde0645b06389686c6bc0f088f35f94423e829)) - Mumulhl
+- **(android)** pop floating lookup routes - ([dc244ab](https://github.com/mumu-lhl/Ciyue/commit/dc244ab0b4d9787f30e0fddde3ddbd7ce0631bae)) - Mumulhl
+- **(android)** close floating window at root - ([de2a5b3](https://github.com/mumu-lhl/Ciyue/commit/de2a5b30a1bb328ee22e5801f1338d625aa50468)) - Mumulhl
+- **(android)** support floating edge back - ([619d87c](https://github.com/mumu-lhl/Ciyue/commit/619d87c06cbb86feb356858c1d5fc7c81d8b9586)) - Mumulhl
+- **(android)** align floating WebView theme - ([2452e45](https://github.com/mumu-lhl/Ciyue/commit/2452e454fa9bb993a4f155610798fd503f9aa0d7)) - Mumulhl
+- **(android)** fix floating window letterboxing and ANR in multi-window environments - ([7e88cea](https://github.com/mumu-lhl/Ciyue/commit/7e88cead708b213bb7fd80726f5eab3a9dae5176)) - Mumulhl
+- **(ci)** repair Linux and macOS builds - ([75c5fcf](https://github.com/mumu-lhl/Ciyue/commit/75c5fcf43b527ee230e7a90a9d2d88a4f6522c7b)) - Mumulhl
+- **(hunspell)** link Android C++ runtime - ([164ec4c](https://github.com/mumu-lhl/Ciyue/commit/164ec4cbc8f26f264a6d269a484e196b38d98068)) - Mumulhl
+- **(hunspell)** guard code asset hook - ([c5c8151](https://github.com/mumu-lhl/Ciyue/commit/c5c81514deae07197a6347be4b0c7c4f78f34181)) - Mumulhl
+- **(hunspell)** support multiple st: stems and preserve homonyms (#729) - ([e4c117d](https://github.com/mumu-lhl/Ciyue/commit/e4c117d2dfbb3fea9bb1060d74215725e8fdfce9)) - Mumulhl
+- **(i18n)** localize Hunspell settings - ([941637b](https://github.com/mumu-lhl/Ciyue/commit/941637bc48e373ca9fa996b04bb6e18a8c6dac15)) - Mumulhl
+- **(linux)** resolve WPE runtime paths absolutely - ([784ac48](https://github.com/mumu-lhl/Ciyue/commit/784ac488bbce157cb74b1183b28cd00f53a900a8)) - Mumulhl
+- **(linux)** resolve bubblewrap sandbox paths and fallback on Debian (#733) - ([8ef58ed](https://github.com/mumu-lhl/Ciyue/commit/8ef58edfbbaf2fee2fb6b7543f39ede80fd25fa5)) - Mumulhl
+- **(linux)** exclude host graphics stack to resolve Debian driver paths (#734) - ([064ce69](https://github.com/mumu-lhl/Ciyue/commit/064ce699185b4a507bd098c025992ad34c5f9540)) - Mumulhl
+- **(lookup)** handle redirects and spell suggestions - ([c16c068](https://github.com/mumu-lhl/Ciyue/commit/c16c068199d703d23c8afa2d19987ff96ca3961b)) - Mumulhl
+- **(mdict)** resolve @@@LINK records - ([97cf247](https://github.com/mumu-lhl/Ciyue/commit/97cf247a3d5db250472622e9691e21cf91189933)) - Mumulhl
+- **(webview)** encode Unicode entry links - ([a28263f](https://github.com/mumu-lhl/Ciyue/commit/a28263f6cd9b8e557b392f593fff9f95231fe667)) - Mumulhl
+- **(word-display)** improve lookup navigation - ([70970da](https://github.com/mumu-lhl/Ciyue/commit/70970da8a48ea9a0d3b53e1f02cfe4acfb8e041e)) - Mumulhl
+- **(word-display)** bound desktop webviews - ([0d4b404](https://github.com/mumu-lhl/Ciyue/commit/0d4b40424ee8090298a4628d7179d9fe57457cab)) - Mumulhl
+
+### Features
+
+- **(desktop)** scan dictionary folders - ([c89b35b](https://github.com/mumu-lhl/Ciyue/commit/c89b35b26abe0bd45644bf39fec61c571efab392)) - Mumulhl
+- **(hunspell)** add two-pass lookup option per dictionary (#729) - ([e9094ff](https://github.com/mumu-lhl/Ciyue/commit/e9094fffec42f15d01183cf117344d1318b9019b)) - Mumulhl
+- **(hunspell)** support splitting phrases into words and combining stems (#732) - ([3ea6387](https://github.com/mumu-lhl/Ciyue/commit/3ea638767045a19da501d2dcd91f5d831a883dce)) - Mumulhl
+- **(macos)** add macOS platform support - ([660f930](https://github.com/mumu-lhl/Ciyue/commit/660f93070e5fec3df4704ff7deeb213e2697d3c4)) - Mumulhl
+- **(search)** label spelling suggestions - ([3bd6348](https://github.com/mumu-lhl/Ciyue/commit/3bd6348bbb7ae5c94ee921c9820f08e3f4a82f30)) - Mumulhl
+- **(settings)** move hunspell entry to root settings page below flashcards - ([966b252](https://github.com/mumu-lhl/Ciyue/commit/966b2521a65480fe219e9333ab56955d86938488)) - Mumulhl
+- **(translation)** translated using Weblate (Russian) - ([afee29b](https://github.com/mumu-lhl/Ciyue/commit/afee29b36f05ff141873372f4d0d3d988c9ce412)) - Xapitonov
+- **(translation)** translated using Weblate (Russian) - ([404a4fa](https://github.com/mumu-lhl/Ciyue/commit/404a4fa91d16cd8aad300504158f7d773f667981)) - Xapitonov
+
+### Miscellaneous Chores
+
+- **(deps)** update - ([8b6e971](https://github.com/mumu-lhl/Ciyue/commit/8b6e971d9c9b67f079ec84bd3d8a69cababce924)) - Mumulhl
+- **(deps)** update - ([f3ddf88](https://github.com/mumu-lhl/Ciyue/commit/f3ddf8805ab33d7b73bd75635bcb34f9031df5b0)) - Mumulhl
+- update flutter version to 3.47.2 - ([50be0cd](https://github.com/mumu-lhl/Ciyue/commit/50be0cd64f734a2ba35c2f7e0a2a033f4ec93ca1)) - Mumulhl
+- add rtk rules for antigravity - ([04852ff](https://github.com/mumu-lhl/Ciyue/commit/04852ff4f3b5b5147ae0fe55b8f21b32a4490186)) - Mumulhl
+
+### Ci
+
+- **(build)** optimize builds and actions - ([2871425](https://github.com/mumu-lhl/Ciyue/commit/2871425b3d9f0e2c27a76a24b77f847abff44712)) - Mumulhl
+- **(linux)** consume prebuilt WPEWebKit runtime - ([2ec6881](https://github.com/mumu-lhl/Ciyue/commit/2ec688154fec7c88db4e495fd50dc15d57969b32)) - Mumulhl
+- **(release)** generate linked release notes - ([2f0100c](https://github.com/mumu-lhl/Ciyue/commit/2f0100c7850578395fe12df7d057ba73671422e6)) - Mumulhl
+- **(release)** filter git-cliff release tags - ([ec840f6](https://github.com/mumu-lhl/Ciyue/commit/ec840f6341feaa2fd09f2e4f8d72b675e0be9a10)) - Mumulhl
+
+---
+## [1.23.1](https://github.com/mumu-lhl/Ciyue/compare/v1.23.0..v1.23.1) - 2026-08-31
 
 ### Bug Fixes
 
@@ -16,16 +68,6 @@ All notable changes to this project will be documented in this file. See [conven
 ### Features
 
 - **(hunspell)** add optional morphology lookup - ([cbea448](https://github.com/mumu-lhl/Ciyue/commit/cbea448bb4a454663ba8d7d4b3d3d21c71e32bde)) - Mumulhl
-
-### Ci
-
-- fix Linux checkout with submodules - ([afc7d49](https://github.com/mumu-lhl/Ciyue/commit/afc7d4925750a2bebf334a44478f55027da5ac79)) - Mumulhl
-
----
-## [1.23.1-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.23.0..v1.23.1-beta.1) - 2026-08-28
-
-### Features
-
 - **(translation)** translations update from Hosted Weblate (#713) - ([cf0c831](https://github.com/mumu-lhl/Ciyue/commit/cf0c8312a6f6fffd3cd9e6494f02f14713510461)) - Weblate (bot)
 - **(translation)** translated using Weblate (Tamil) (#712) - ([6db5ff9](https://github.com/mumu-lhl/Ciyue/commit/6db5ff914a9a42e65e3fa3c5bf93feadecb2283e)) - Weblate (bot)
 - **(updater)** add signed desktop updates - ([09d5f33](https://github.com/mumu-lhl/Ciyue/commit/09d5f339bdde255c1c088dd132d01edce9e42307)) - Mumulhl
@@ -38,6 +80,7 @@ All notable changes to this project will be documented in this file. See [conven
 
 - **(flatpak)** add release artifacts - ([a5798fe](https://github.com/mumu-lhl/Ciyue/commit/a5798fe7ef834fb4a0bac44cd15844d192d43066)) - Mumulhl
 - **(linux)** pin glibc 2.39 - ([095b562](https://github.com/mumu-lhl/Ciyue/commit/095b56206225cb4c3ef85c3a5997402c31aeacea)) - Mumulhl
+- fix Linux checkout with submodules - ([afc7d49](https://github.com/mumu-lhl/Ciyue/commit/afc7d4925750a2bebf334a44478f55027da5ac79)) - Mumulhl
 
 ### Merge
 
@@ -181,48 +224,27 @@ All notable changes to this project will be documented in this file. See [conven
 - **(version)** release v1.22.1 to fix build number - ([9fbf822](https://github.com/mumu-lhl/Ciyue/commit/9fbf8225d51c1fe586ad24240d4461a7c2dac21b)) - Mumulhl
 
 ---
-## [1.22.0](https://github.com/mumu-lhl/Ciyue/compare/v1.22.0-beta.1..v1.22.0) - 2026-02-23
+## [1.22.0](https://github.com/mumu-lhl/Ciyue/compare/v1.21.0..v1.22.0) - 2026-02-23
 
 ### Bug Fixes
 
+- **(Android)** fix TTS error during initialization - ([cbfeb7b](https://github.com/mumu-lhl/Ciyue/commit/cbfeb7b261d5b7a931e8aba01869aad6839eba32)) - Mumulhl
 - **(android)** close dictionary import loading dialog when no mdx files are found - ([f2cb2c2](https://github.com/mumu-lhl/Ciyue/commit/f2cb2c2b2cbb20f9105bd07d8b672dae5f74a291)) - Mumulhl
 - **(android)** webview on floating window - ([0009604](https://github.com/mumu-lhl/Ciyue/commit/00096041db4a8abd530e8049c2317a5c7a9d1551)) - Mumulhl
+- **(ci)** fix analyse error - ([d8f7df0](https://github.com/mumu-lhl/Ciyue/commit/d8f7df0db03347cce61b7877ee9d43bb74ec91fd)) - Mumulhl
+- **(ci)** fix linux - ([5abf14f](https://github.com/mumu-lhl/Ciyue/commit/5abf14fa7c18f553e53e17b47ee8e85e83dbae18)) - Mumulhl
+- CI - ([60aff9f](https://github.com/mumu-lhl/Ciyue/commit/60aff9f151f3566e5616319674e11325b095f973)) - Mumulhl
+- prevent multiple app instances when receiving text lookup intents - ([20195a7](https://github.com/mumu-lhl/Ciyue/commit/20195a73e1c72f7cb3c83ac3e6b23321744f3595)) - Donald H.
 - resolve search hang and Linux WebView issues - ([050010b](https://github.com/mumu-lhl/Ciyue/commit/050010b285f6cb0673b64da1dabc1c46ef6d8a0d)) - Mumulhl
 - resolve PROCESS_TEXT issue where repeated searches failed to update - ([d507f5c](https://github.com/mumu-lhl/Ciyue/commit/d507f5c24653f2901c97cb4a387d6d38a8910e42)) - Mumulhl
 
 ### Features
 
+- **(settings)** add dynamic color toggle and advanced theme color picker - ([ed3b8a8](https://github.com/mumu-lhl/Ciyue/commit/ed3b8a84882c6155189e1d96faaed3def8b889fa)) - Mumulhl
 - **(theme)** add pure black AMOLED dark mode toggle - ([65ecb53](https://github.com/mumu-lhl/Ciyue/commit/65ecb531ff0ed6d15e52570f704cace4c2277b91)) - Mumulhl
+- **(translation)** translated using Weblate (French) - ([09b7645](https://github.com/mumu-lhl/Ciyue/commit/09b7645718c5b550d4ca44298762d701f9925311)) - SBS1313
 - internationalize tray menu labels - ([88d1b23](https://github.com/mumu-lhl/Ciyue/commit/88d1b238916be64c5ea7491dfd7aedd0de2930e7)) - Mumulhl
 - notice users when no dictionaries are found - ([7de85a4](https://github.com/mumu-lhl/Ciyue/commit/7de85a4b05613948f1997524bd037d13efd3e34f)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(version)** release v1.22.0 - ([e4ae2a7](https://github.com/mumu-lhl/Ciyue/commit/e4ae2a7ac160031d6c02ee3a938dc3708c6a7a84)) - Mumulhl
-- remove fastforge - ([4c58120](https://github.com/mumu-lhl/Ciyue/commit/4c58120f5b7aeb4ea90f3e9ce3c0225480489793)) - Mumulhl
-
-### Refactoring
-
-- **(settings)** audio settings are not new - ([fc5b896](https://github.com/mumu-lhl/Ciyue/commit/fc5b89683e1088c27066992e520e434dd3f91528)) - Mumulhl
-- **(ui)** refactor appearance settings ui - ([b56118d](https://github.com/mumu-lhl/Ciyue/commit/b56118d43164d66a6c9108e357d7225062d90d3d)) - Mumulhl
-- **(ui)** manage storage should be shown when is non-full flavor - ([4ebd62a](https://github.com/mumu-lhl/Ciyue/commit/4ebd62a39dad2675231f4cb308ff35b0e0425d4b)) - Mumulhl
-- refactor webview - ([4db32ee](https://github.com/mumu-lhl/Ciyue/commit/4db32eea8c539f38f42f673354411fe5a8fc1f30)) - Mumulhl
-
----
-## [1.22.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.21.0..v1.22.0-beta.1) - 2026-02-14
-
-### Bug Fixes
-
-- **(Android)** fix TTS error during initialization - ([cbfeb7b](https://github.com/mumu-lhl/Ciyue/commit/cbfeb7b261d5b7a931e8aba01869aad6839eba32)) - Mumulhl
-- **(ci)** fix analyse error - ([d8f7df0](https://github.com/mumu-lhl/Ciyue/commit/d8f7df0db03347cce61b7877ee9d43bb74ec91fd)) - Mumulhl
-- **(ci)** fix linux - ([5abf14f](https://github.com/mumu-lhl/Ciyue/commit/5abf14fa7c18f553e53e17b47ee8e85e83dbae18)) - Mumulhl
-- CI - ([60aff9f](https://github.com/mumu-lhl/Ciyue/commit/60aff9f151f3566e5616319674e11325b095f973)) - Mumulhl
-- prevent multiple app instances when receiving text lookup intents - ([20195a7](https://github.com/mumu-lhl/Ciyue/commit/20195a73e1c72f7cb3c83ac3e6b23321744f3595)) - Donald H.
-
-### Features
-
-- **(settings)** add dynamic color toggle and advanced theme color picker - ([ed3b8a8](https://github.com/mumu-lhl/Ciyue/commit/ed3b8a84882c6155189e1d96faaed3def8b889fa)) - Mumulhl
-- **(translation)** translated using Weblate (French) - ([09b7645](https://github.com/mumu-lhl/Ciyue/commit/09b7645718c5b550d4ca44298762d701f9925311)) - SBS1313
 
 ### Miscellaneous Chores
 
@@ -245,15 +267,21 @@ All notable changes to this project will be documented in this file. See [conven
 - **(version)** release v1.22.0-beta.1 - ([22f2b65](https://github.com/mumu-lhl/Ciyue/commit/22f2b65bfa1788e06f62184f3038237e6ea54711)) - Mumulhl
 - **(version)** release v1.22.0-beta.2 - ([a2f1eb5](https://github.com/mumu-lhl/Ciyue/commit/a2f1eb51f617ae439630f535fc61574dd57257f2)) - Mumulhl
 - **(version)** release v1.22.0-beta.3 - ([f2e2ef3](https://github.com/mumu-lhl/Ciyue/commit/f2e2ef305c3de889383cf55695f85f655b191727)) - Mumulhl
+- **(version)** release v1.22.0 - ([e4ae2a7](https://github.com/mumu-lhl/Ciyue/commit/e4ae2a7ac160031d6c02ee3a938dc3708c6a7a84)) - Mumulhl
 - add git cliff - ([d6f9354](https://github.com/mumu-lhl/Ciyue/commit/d6f93548c26b6577a26c746910e7665c6444698c)) - Mumulhl
 - add AGENTS.md - ([e351f4b](https://github.com/mumu-lhl/Ciyue/commit/e351f4bf0b1c3585be2c2ce9929bb5aca3d55f9c)) - Mumulhl
 - remove pnpm-lock.yaml - ([ce16363](https://github.com/mumu-lhl/Ciyue/commit/ce16363732018113b235115f51472f22274f3fd3)) - Mumulhl
 - add dist/ to .gitignore - ([766e6ab](https://github.com/mumu-lhl/Ciyue/commit/766e6abcd5f8ec365ca0843faa6d339ef732ae44)) - Mumulhl
+- remove fastforge - ([4c58120](https://github.com/mumu-lhl/Ciyue/commit/4c58120f5b7aeb4ea90f3e9ce3c0225480489793)) - Mumulhl
 
 ### Refactoring
 
 - **(ci)** centralize Flutter version via vars.FLUTTER_VERSION - ([aa9e2d3](https://github.com/mumu-lhl/Ciyue/commit/aa9e2d3b2a39437e94700e320fa9843a5d59b31d)) - Mumulhl
 - **(settings)** streamline theme seed presets and annotate color names - ([9de79cc](https://github.com/mumu-lhl/Ciyue/commit/9de79ccf9c43baf9fb02a1e27c3e06298ff3746e)) - Mumulhl
+- **(settings)** audio settings are not new - ([fc5b896](https://github.com/mumu-lhl/Ciyue/commit/fc5b89683e1088c27066992e520e434dd3f91528)) - Mumulhl
+- **(ui)** refactor appearance settings ui - ([b56118d](https://github.com/mumu-lhl/Ciyue/commit/b56118d43164d66a6c9108e357d7225062d90d3d)) - Mumulhl
+- **(ui)** manage storage should be shown when is non-full flavor - ([4ebd62a](https://github.com/mumu-lhl/Ciyue/commit/4ebd62a39dad2675231f4cb308ff35b0e0425d4b)) - Mumulhl
+- refactor webview - ([4db32ee](https://github.com/mumu-lhl/Ciyue/commit/4db32eea8c539f38f42f673354411fe5a8fc1f30)) - Mumulhl
 
 ### Build
 
@@ -307,7 +335,7 @@ All notable changes to this project will be documented in this file. See [conven
 - **(translation)** translated using Weblate (French) - ([2876c0a](https://github.com/mumu-lhl/Ciyue/commit/2876c0af5f9ef6c04f5b68c682e834f446c9066c)) - SBS1313
 
 ---
-## [1.20.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.1..v1.20.0-beta.1) - 2025-08-16
+## [1.20.0](https://github.com/mumu-lhl/Ciyue/compare/v1.19.1..v1.20.0) - 2025-08-23
 
 ### Android
 
@@ -350,22 +378,7 @@ All notable changes to this project will be documented in this file. See [conven
 - Fix dictionary name - ([09495a2](https://github.com/mumu-lhl/Ciyue/commit/09495a23575766c32744454867d55f6e69aec904)) - Mumulhl
 
 ---
-## [1.19.1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.1-beta.1..v1.19.1) - 2025-08-07
-
-### CI
-
-- Remove common build from flutter.yml - ([c5a3475](https://github.com/mumu-lhl/Ciyue/commit/c5a3475b033644e346ee0e18c15d8739eba2e91a)) - Mumulhl
-
-### Features
-
-- **(translation)** translated using Weblate (Gothic) - ([722a768](https://github.com/mumu-lhl/Ciyue/commit/722a7689aeb9f3fff571f23d30ceda6eb457f4bc)) - Roel v
-
-### UI
-
-- Refactor DictionaryCard interaction and layout - ([728db31](https://github.com/mumu-lhl/Ciyue/commit/728db312959cf480205da79fa874f705572a0744)) - Mumulhl
-
----
-## [1.19.1-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0..v1.19.1-beta.1) - 2025-08-04
+## [1.19.1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0..v1.19.1) - 2025-08-07
 
 ### Android
 
@@ -375,11 +388,13 @@ All notable changes to this project will be documented in this file. See [conven
 
 - Generate release notes and set prerelease - ([01b735b](https://github.com/mumu-lhl/Ciyue/commit/01b735bae475f0550d291ec6509d8bcc8839e3c4)) - Mumulhl
 - Fix uploading asset - ([eb930d7](https://github.com/mumu-lhl/Ciyue/commit/eb930d79c0fb48303466b6b55c8897cabc822485)) - Mumulhl
+- Remove common build from flutter.yml - ([c5a3475](https://github.com/mumu-lhl/Ciyue/commit/c5a3475b033644e346ee0e18c15d8739eba2e91a)) - Mumulhl
 
 ### Features
 
 - **(translation)** added translation using Weblate (Gothic) - ([5d25ddb](https://github.com/mumu-lhl/Ciyue/commit/5d25ddb0d9ef5395afe5ba7cbcff6e3df401c951)) - Roel v
 - **(translation)** translated using Weblate (Gothic) - ([bd4c12d](https://github.com/mumu-lhl/Ciyue/commit/bd4c12d8f4135964d7e96f9289b90a3aa5d3be91)) - Roel v
+- **(translation)** translated using Weblate (Gothic) - ([722a768](https://github.com/mumu-lhl/Ciyue/commit/722a7689aeb9f3fff571f23d30ceda6eb457f4bc)) - Roel v
 
 ### Perf
 
@@ -390,16 +405,17 @@ All notable changes to this project will be documented in this file. See [conven
 ### UI
 
 - Use flutter_smart_dialog to provide toast - ([7b14eea](https://github.com/mumu-lhl/Ciyue/commit/7b14eea02ae75039cefaff82b9ea1df84c7ede40)) - Mumulhl
+- Refactor DictionaryCard interaction and layout - ([728db31](https://github.com/mumu-lhl/Ciyue/commit/728db312959cf480205da79fa874f705572a0744)) - Mumulhl
 
 ---
-## [1.19.0](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-beta.3..v1.19.0) - 2025-08-02
+## [1.19.0](https://github.com/mumu-lhl/Ciyue/compare/v1.18.0..v1.19.0) - 2025-08-02
 
 ### CI
 
+- Support msix - ([206450d](https://github.com/mumu-lhl/Ciyue/commit/206450d254af075c91b734f24e8a57b6c41c3fd8)) - Mumulhl
+- Fix no msix - ([0ee658b](https://github.com/mumu-lhl/Ciyue/commit/0ee658bcdce726b6b526b9c759c904a691b8d4ac)) - Mumulhl
+- Fix installing fastforge - ([90274a1](https://github.com/mumu-lhl/Ciyue/commit/90274a1f1dfbb6a4f0996623e99c513b5ceafb07)) - Mumulhl
 - Build full apk - ([24398d0](https://github.com/mumu-lhl/Ciyue/commit/24398d08d85b557508fcc1608651c22c6dc185b0)) - Mumulhl
-
----
-## [1.19.0-beta.2](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-beta.1..v1.19.0-beta.2) - 2025-08-01
 
 ### Features
 
@@ -410,58 +426,19 @@ All notable changes to this project will be documented in this file. See [conven
 - **(translation)** translated using Weblate (Spanish) - ([7328117](https://github.com/mumu-lhl/Ciyue/commit/732811724d5e720e4466cf8056234cc146ab797e)) - Anonymous
 - **(translation)** translated using Weblate (Catalan) - ([3ff4285](https://github.com/mumu-lhl/Ciyue/commit/3ff428522ce7ce4cd957451df6b832b50419051e)) - Anonymous
 
-### UI
-
-- Fix API Key and AI Model input form - ([0cfe276](https://github.com/mumu-lhl/Ciyue/commit/0cfe276cbc51e7a44a06414e9e35143b963abea0)) - Mumulhl
-
----
-## [1.19.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-alpha.2-2..v1.19.0-beta.1) - 2025-07-30
-
-### Miscellaneous Chores
-
-- **(deps)** bump flutter_local_notifications from 19.3.1 to 19.4.0 - ([a184d73](https://github.com/mumu-lhl/Ciyue/commit/a184d733a024f14fd87dc9840b0815c58602044c)) - dependabot[bot]
-
-### UI
-
-- refactor AI settings page - ([bb8a84d](https://github.com/mumu-lhl/Ciyue/commit/bb8a84de0bbb22e36bdf3ee9eab05837a669c003)) - Mumulhl
-
----
-## [1.19.0-alpha.2-2](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-alpha.2-1..v1.19.0-alpha.2-2) - 2025-07-26
-
-### CI
-
-- Fix installing fastforge - ([90274a1](https://github.com/mumu-lhl/Ciyue/commit/90274a1f1dfbb6a4f0996623e99c513b5ceafb07)) - Mumulhl
-
----
-## [1.19.0-alpha.2-1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-alpha.2..v1.19.0-alpha.2-1) - 2025-07-26
-
-### CI
-
-- Fix no msix - ([0ee658b](https://github.com/mumu-lhl/Ciyue/commit/0ee658bcdce726b6b526b9c759c904a691b8d4ac)) - Mumulhl
-
----
-## [1.19.0-alpha.2](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-alpha.1-1..v1.19.0-alpha.2) - 2025-07-26
-
-### CI
-
-- Support msix - ([206450d](https://github.com/mumu-lhl/Ciyue/commit/206450d254af075c91b734f24e8a57b6c41c3fd8)) - Mumulhl
-
----
-## [1.19.0-alpha.1-1](https://github.com/mumu-lhl/Ciyue/compare/v1.19.0-alpha.1..v1.19.0-alpha.1-1) - 2025-07-22
-
-### Miscellaneous Chores
-
-- **(deps)** bump drift_flutter from 0.2.4 to 0.2.5 - ([49159aa](https://github.com/mumu-lhl/Ciyue/commit/49159aabc02139acd8171bc4e1b4ced0c95ba581)) - dependabot[bot]
-
----
-## [1.19.0-alpha.1](https://github.com/mumu-lhl/Ciyue/compare/v1.18.0..v1.19.0-alpha.1) - 2025-07-22
-
 ### Miscellaneous Chores
 
 - **(deps)** bump freezed from 3.1.0 to 3.2.0 - ([6dd5b9d](https://github.com/mumu-lhl/Ciyue/commit/6dd5b9d71c63a606a0654b1fff1bf61db00e6e1f)) - dependabot[bot]
 - **(deps)** bump logger from 2.6.0 to 2.6.1 - ([8358bc4](https://github.com/mumu-lhl/Ciyue/commit/8358bc449531dd9ec5fa9ecf32c4255d4daaab58)) - dependabot[bot]
 - **(deps)** bump flutter_local_notifications from 19.3.0 to 19.3.1 - ([508caab](https://github.com/mumu-lhl/Ciyue/commit/508caabf696c3a0479a794466f68eb212aef8ea4)) - dependabot[bot]
+- **(deps)** bump drift_flutter from 0.2.4 to 0.2.5 - ([49159aa](https://github.com/mumu-lhl/Ciyue/commit/49159aabc02139acd8171bc4e1b4ced0c95ba581)) - dependabot[bot]
+- **(deps)** bump flutter_local_notifications from 19.3.1 to 19.4.0 - ([a184d73](https://github.com/mumu-lhl/Ciyue/commit/a184d733a024f14fd87dc9840b0815c58602044c)) - dependabot[bot]
 - **(deps-dev)** bump esbuild from 0.25.6 to 0.25.8 in /docs - ([3b6081c](https://github.com/mumu-lhl/Ciyue/commit/3b6081c8ba8d3ca299eeb274031288ac98ff815e)) - dependabot[bot]
+
+### UI
+
+- refactor AI settings page - ([bb8a84d](https://github.com/mumu-lhl/Ciyue/commit/bb8a84de0bbb22e36bdf3ee9eab05837a669c003)) - Mumulhl
+- Fix API Key and AI Model input form - ([0cfe276](https://github.com/mumu-lhl/Ciyue/commit/0cfe276cbc51e7a44a06414e9e35143b963abea0)) - Mumulhl
 
 ---
 ## [1.18.0](https://github.com/mumu-lhl/Ciyue/compare/v1.17.0..v1.18.0) - 2025-07-20
@@ -494,14 +471,7 @@ All notable changes to this project will be documented in this file. See [conven
 - **(deps-dev)** bump esbuild from 0.25.5 to 0.25.6 in /docs - ([72ee5e6](https://github.com/mumu-lhl/Ciyue/commit/72ee5e6c77ae0813126ce24255bff602accd079a)) - dependabot[bot]
 
 ---
-## [1.17.0](https://github.com/mumu-lhl/Ciyue/compare/v1.17.0-beta.1..v1.17.0) - 2025-07-06
-
-### Miscellaneous Chores
-
-- **(deps)** bump gpt_markdown from 1.1.0 to 1.1.1 - ([e85e660](https://github.com/mumu-lhl/Ciyue/commit/e85e6607b26bae11c41b6e99bd93c9d6f1901acf)) - dependabot[bot]
-
----
-## [1.17.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0..v1.17.0-beta.1) - 2025-06-28
+## [1.17.0](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0..v1.17.0) - 2025-07-06
 
 ### Bug Fixes
 
@@ -539,6 +509,7 @@ All notable changes to this project will be documented in this file. See [conven
 - **(deps)** bump build_runner from 2.4.15 to 2.5.0 - ([6298d2f](https://github.com/mumu-lhl/Ciyue/commit/6298d2f9d738952cbc17c6b7df7410943ffc0c95)) - dependabot[bot]
 - **(deps)** bump audioplayers from 6.4.0 to 6.5.0 - ([efa3737](https://github.com/mumu-lhl/Ciyue/commit/efa37372b79e25b7453d3025924d722d32dba1ed)) - dependabot[bot]
 - **(deps)** update - ([7e80b23](https://github.com/mumu-lhl/Ciyue/commit/7e80b237602104e97382f1e7fa5f32cde55a88ee)) - Mumulhl
+- **(deps)** bump gpt_markdown from 1.1.0 to 1.1.1 - ([e85e660](https://github.com/mumu-lhl/Ciyue/commit/e85e6607b26bae11c41b6e99bd93c9d6f1901acf)) - dependabot[bot]
 - **(deps-dev)** bump esbuild from 0.25.4 to 0.25.5 in /docs - ([ecf8998](https://github.com/mumu-lhl/Ciyue/commit/ecf8998ae2ed9b005f38e2ef5cef0131aaeec7c3)) - dependabot[bot]
 - **(justfile)** add count-codes recipe - ([45b0a2d](https://github.com/mumu-lhl/Ciyue/commit/45b0a2dcae31a1bdb266394be0c00f9472647aff)) - Mumulhl
 - ignore .vscode/settings - ([028707a](https://github.com/mumu-lhl/Ciyue/commit/028707acfaddf93d83d3377a78f0807f802b9194)) - Mumulhl
@@ -561,37 +532,7 @@ All notable changes to this project will be documented in this file. See [conven
 - **(ui)** add advance settings option to enable more options - ([5064b07](https://github.com/mumu-lhl/Ciyue/commit/5064b0737e71ac214a2f83de9c5e86e98521ab0b)) - Mumulhl
 
 ---
-## [1.16.0](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0-beta.4..v1.16.0) - 2025-06-01
-
-### Miscellaneous Chores
-
-- **(version)** release v1.16.0 - ([0a9bd92](https://github.com/mumu-lhl/Ciyue/commit/0a9bd927d6a5a292d2aeeb42e0da52aa40859aa0)) - Mumulhl
-
----
-## [1.16.0-beta.4](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0-beta.3..v1.16.0-beta.4) - 2025-05-31
-
-### Miscellaneous Chores
-
-- **(version)** release v1.16.0-beta.4 - ([3eec4ec](https://github.com/mumu-lhl/Ciyue/commit/3eec4ecb8cab0d6f10a4ebbcdf16375996e28aad)) - Mumulhl
-
----
-## [1.16.0-beta.3](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0-beta.2..v1.16.0-beta.3) - 2025-05-31
-
-### Miscellaneous Chores
-
-- **(appimage)** fix build - ([0ed41d3](https://github.com/mumu-lhl/Ciyue/commit/0ed41d3fa8406ea8f33dff91a4f3febaffd117e2)) - Mumulhl
-- **(version)** release v1.16.0-beta.3 - ([2710838](https://github.com/mumu-lhl/Ciyue/commit/27108381f50f3e1a4daac694a1a2ff3fb2c285cf)) - Mumulhl
-
----
-## [1.16.0-beta.2](https://github.com/mumu-lhl/Ciyue/compare/v1.16.0-beta.1..v1.16.0-beta.2) - 2025-05-31
-
-### Miscellaneous Chores
-
-- **(appimage)** fix build - ([491562d](https://github.com/mumu-lhl/Ciyue/commit/491562d0b0214fbe2d87acbd9ae14c4bd87ee468)) - Mumulhl
-- **(version)** release v1.16.0-beta.2 - ([d7a35b3](https://github.com/mumu-lhl/Ciyue/commit/d7a35b3c7a7b5f907e3a6752d765143655856dd6)) - Mumulhl
-
----
-## [1.16.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.15.0..v1.16.0-beta.1) - 2025-05-31
+## [1.16.0](https://github.com/mumu-lhl/Ciyue/compare/v1.15.0..v1.16.0) - 2025-06-01
 
 ### Bug Fixes
 
@@ -607,6 +548,8 @@ All notable changes to this project will be documented in this file. See [conven
 ### Miscellaneous Chores
 
 - **(appimage)** add update information - ([0c83ae1](https://github.com/mumu-lhl/Ciyue/commit/0c83ae13741bf191bca8d421a5538662a5fa6518)) - Mumulhl
+- **(appimage)** fix build - ([491562d](https://github.com/mumu-lhl/Ciyue/commit/491562d0b0214fbe2d87acbd9ae14c4bd87ee468)) - Mumulhl
+- **(appimage)** fix build - ([0ed41d3](https://github.com/mumu-lhl/Ciyue/commit/0ed41d3fa8406ea8f33dff91a4f3febaffd117e2)) - Mumulhl
 - **(build)** support AppImage - ([7689b8d](https://github.com/mumu-lhl/Ciyue/commit/7689b8dcf57825ee700bd88e30215e38615d418a)) - Mumulhl
 - **(ci)** update APK naming conventions in workflows - ([5856c7b](https://github.com/mumu-lhl/Ciyue/commit/5856c7befcdfba02b246ad3a9ca0d9df084e7301)) - Mumulhl
 - **(ci)** add AppImage build release workflow - ([a776c5c](https://github.com/mumu-lhl/Ciyue/commit/a776c5c975e63e4b12b0724eefd680c242d65e71)) - Mumulhl
@@ -615,6 +558,10 @@ All notable changes to this project will be documented in this file. See [conven
 - **(gradle)** enable flavour - ([dafe61f](https://github.com/mumu-lhl/Ciyue/commit/dafe61fb5ea4b4711b98d6af9841ad2b308b6e97)) - Mumulhl
 - **(gradle)** update version code for different archs - ([bda15bc](https://github.com/mumu-lhl/Ciyue/commit/bda15bc540a01c4902e5b8fa092ac628bfb5d723)) - Mumulhl
 - **(version)** release v1.16.0-beta.1 - ([206b20d](https://github.com/mumu-lhl/Ciyue/commit/206b20dbbffe5bb607809ca61b4939d843c47157)) - Mumulhl
+- **(version)** release v1.16.0-beta.2 - ([d7a35b3](https://github.com/mumu-lhl/Ciyue/commit/d7a35b3c7a7b5f907e3a6752d765143655856dd6)) - Mumulhl
+- **(version)** release v1.16.0-beta.3 - ([2710838](https://github.com/mumu-lhl/Ciyue/commit/27108381f50f3e1a4daac694a1a2ff3fb2c285cf)) - Mumulhl
+- **(version)** release v1.16.0-beta.4 - ([3eec4ec](https://github.com/mumu-lhl/Ciyue/commit/3eec4ecb8cab0d6f10a4ebbcdf16375996e28aad)) - Mumulhl
+- **(version)** release v1.16.0 - ([0a9bd92](https://github.com/mumu-lhl/Ciyue/commit/0a9bd927d6a5a292d2aeeb42e0da52aa40859aa0)) - Mumulhl
 - update Flutter version to 3.32.1 in release workflow - ([0129818](https://github.com/mumu-lhl/Ciyue/commit/012981898918a6da51eacb292b67563b82f238e9)) - Mumulhl
 - standardize app name string key to 'app_name' across all locales - ([cf97953](https://github.com/mumu-lhl/Ciyue/commit/cf97953165919715a958b2ce1d215f2e0f0bc344)) - Mumulhl
 
@@ -676,40 +623,7 @@ All notable changes to this project will be documented in this file. See [conven
 - **(version)** release v1.14.1 - ([99ade41](https://github.com/mumu-lhl/Ciyue/commit/99ade416327110e9384a680b26192f4b1010d049)) - Mumulhl
 
 ---
-## [1.14.0](https://github.com/mumu-lhl/Ciyue/compare/v1.14.0-beta.2..v1.14.0) - 2025-05-18
-
-### Bug Fixes
-
-- fix loading dialog in Android - ([42d75b4](https://github.com/mumu-lhl/Ciyue/commit/42d75b43069e31d3e7ce2a2ef3402f855e518da0)) - Mumulhl
-- fix returned type of initHandler - ([74da32c](https://github.com/mumu-lhl/Ciyue/commit/74da32c94e95d9e032101a5c1953160ceb86c1b1)) - Mumulhl
-
-### Features
-
-- new default explanation prompt - ([6952da0](https://github.com/mumu-lhl/Ciyue/commit/6952da0af059de8ab06cf0c0c24d8e916aaca261)) - Mumulhl
-- Add slide transition to word page - ([439c6e2](https://github.com/mumu-lhl/Ciyue/commit/439c6e22f7b121914f9984f06d99cd5839f2c964)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(version)** release v1.14.0 - ([a736821](https://github.com/mumu-lhl/Ciyue/commit/a736821a17fff786ac350cb45f567db335685de9)) - Mumulhl
-
-### Refactoring
-
-- **(animation)** refacotr page transition - ([e9675c0](https://github.com/mumu-lhl/Ciyue/commit/e9675c0c5414daf91bf0f35dbf76956b664a9cd9)) - Mumulhl
-
----
-## [1.14.0-beta.2](https://github.com/mumu-lhl/Ciyue/compare/v1.14.0-beta.1..v1.14.0-beta.2) - 2025-05-17
-
-### Features
-
-- **(translation)** finish translation - ([cb65a7a](https://github.com/mumu-lhl/Ciyue/commit/cb65a7a9fbf53e0d8fcf2ff444fad40092286be5)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(build)** remove flavors - ([e2ee551](https://github.com/mumu-lhl/Ciyue/commit/e2ee55167eff2dd0ca07ea2e3451cd16bff3963b)) - Mumulhl
-- **(version)** release v1.14.0-beta.2 - ([c876b1d](https://github.com/mumu-lhl/Ciyue/commit/c876b1dffdd2cecd8d34c4efa40c9025073cbaad)) - Mumulhl
-
----
-## [1.14.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.13.0..v1.14.0-beta.1) - 2025-05-17
+## [1.14.0](https://github.com/mumu-lhl/Ciyue/compare/v1.13.0..v1.14.0) - 2025-05-18
 
 ### Bug Fixes
 
@@ -719,6 +633,8 @@ All notable changes to this project will be documented in this file. See [conven
 - add loading message for file copying process - ([234dace](https://github.com/mumu-lhl/Ciyue/commit/234dace9aca9317ed3546117df02fe6c72781176)) - Mumulhl
 - set windows webview2 directory - ([ac62170](https://github.com/mumu-lhl/Ciyue/commit/ac621709a870879e22331008e4554502e6724baf)) - Mumulhl
 - only show floating window when permission is enabled - ([8c166f1](https://github.com/mumu-lhl/Ciyue/commit/8c166f1cbd8ca08d5ec00184640f2502961bfb76)) - Mumulhl
+- fix loading dialog in Android - ([42d75b4](https://github.com/mumu-lhl/Ciyue/commit/42d75b43069e31d3e7ce2a2ef3402f855e518da0)) - Mumulhl
+- fix returned type of initHandler - ([74da32c](https://github.com/mumu-lhl/Ciyue/commit/74da32c94e95d9e032101a5c1953160ceb86c1b1)) - Mumulhl
 
 ### Features
 
@@ -727,21 +643,28 @@ All notable changes to this project will be documented in this file. See [conven
 - **(floating window)** click back button to close window - ([f77e149](https://github.com/mumu-lhl/Ciyue/commit/f77e149ea405b70e40b1c729c7a2e9ba53685d7e)) - Mumulhl
 - **(translation)** translated using Weblate (Sardinian) - ([df889ef](https://github.com/mumu-lhl/Ciyue/commit/df889efec68527fb7dc65eaddcf53821a684843b)) - Ajeje Brazorf
 - **(translation)** translated using Weblate (Persian) - ([7ed176a](https://github.com/mumu-lhl/Ciyue/commit/7ed176a819065d0f5595db93ad40b1296022d73c)) - Mo
+- **(translation)** finish translation - ([cb65a7a](https://github.com/mumu-lhl/Ciyue/commit/cb65a7a9fbf53e0d8fcf2ff444fad40092286be5)) - Mumulhl
 - implement floating window service initially - ([26d6453](https://github.com/mumu-lhl/Ciyue/commit/26d64534b2685e77ad0777c541c81fac744f1078)) - Mumulhl
 - support add mutiple dictionaries at once - ([27c2fd1](https://github.com/mumu-lhl/Ciyue/commit/27c2fd1bc29e3ceca5342457068d35c7d29c4aeb)) - Mumulhl
+- new default explanation prompt - ([6952da0](https://github.com/mumu-lhl/Ciyue/commit/6952da0af059de8ab06cf0c0c24d8e916aaca261)) - Mumulhl
+- Add slide transition to word page - ([439c6e2](https://github.com/mumu-lhl/Ciyue/commit/439c6e22f7b121914f9984f06d99cd5839f2c964)) - Mumulhl
 
 ### Miscellaneous Chores
 
 - **(build)** add dev flavor for android - ([65e3ae5](https://github.com/mumu-lhl/Ciyue/commit/65e3ae5f8b8f55917a3b1bab4feac41b3a5b9a64)) - Mumulhl
 - **(build)** add production flavor for android - ([c19ad56](https://github.com/mumu-lhl/Ciyue/commit/c19ad5609212e45dec7314f50469f0d1395024eb)) - Mumulhl
+- **(build)** remove flavors - ([e2ee551](https://github.com/mumu-lhl/Ciyue/commit/e2ee55167eff2dd0ca07ea2e3451cd16bff3963b)) - Mumulhl
 - **(deps)** bump flutter_local_notifications from 19.1.0 to 19.2.0 - ([a17f969](https://github.com/mumu-lhl/Ciyue/commit/a17f9692e1667b04afb025c5e6a6a915b1ef423c)) - dependabot[bot]
 - **(deps)** bump go_router from 15.1.1 to 15.1.2 - ([6d7dd92](https://github.com/mumu-lhl/Ciyue/commit/6d7dd92db6eb93045ec47feb88cdab6d2263ac96)) - dependabot[bot]
 - **(deps-dev)** bump esbuild from 0.25.3 to 0.25.4 in /docs - ([c674ffd](https://github.com/mumu-lhl/Ciyue/commit/c674ffd06b61f3e4bc3b00c03512ffbf68bfeafb)) - dependabot[bot]
 - **(version)** release v1.14.0-beta.1 - ([5d6751a](https://github.com/mumu-lhl/Ciyue/commit/5d6751a682c8a0ebbb3473927f4c6a8b11bb8fb0)) - Mumulhl
+- **(version)** release v1.14.0-beta.2 - ([c876b1d](https://github.com/mumu-lhl/Ciyue/commit/c876b1dffdd2cecd8d34c4efa40c9025073cbaad)) - Mumulhl
+- **(version)** release v1.14.0 - ([a736821](https://github.com/mumu-lhl/Ciyue/commit/a736821a17fff786ac350cb45f567db335685de9)) - Mumulhl
 - **(vscode)** add launch configuration for Flutter Android development - ([274d5b4](https://github.com/mumu-lhl/Ciyue/commit/274d5b4be83e3df6a580569e0ce1ab789f40ece1)) - Mumulhl
 
 ### Refactoring
 
+- **(animation)** refacotr page transition - ([e9675c0](https://github.com/mumu-lhl/Ciyue/commit/e9675c0c5414daf91bf0f35dbf76956b664a9cd9)) - Mumulhl
 - **(manage dictionaries)** enhance dictionary management features and improve state handling - ([a6e9d50](https://github.com/mumu-lhl/Ciyue/commit/a6e9d50fca35d3be2422511c7c657feff0beeb3a)) - Mumulhl
 
 ---
@@ -776,6 +699,7 @@ All notable changes to this project will be documented in this file. See [conven
 ### Refactoring
 
 - **(search)** replace autofocus with focusNode in search bar implementation - ([0fde1d9](https://github.com/mumu-lhl/Ciyue/commit/0fde1d906050b3f80015939c1ead874c2bd7afba)) - Mumulhl
+- **(ui)** improve search ui - ([f8ddcc6](https://github.com/mumu-lhl/Ciyue/commit/f8ddcc68a5d18138a49c02b5d005dcd1fe587446)) - Mumulhl
 
 ### Style
 
@@ -825,7 +749,6 @@ All notable changes to this project will be documented in this file. See [conven
 - **(dictionary)** improve state management and simplify dictionary checks - ([a61b5c5](https://github.com/mumu-lhl/Ciyue/commit/a61b5c5a27c13b572c2783086afbea82579c0b85)) - Mumulhl
 - **(history)** add HistoryModel - ([e329349](https://github.com/mumu-lhl/Ciyue/commit/e329349e6bd2afc983a5e0990ca780b1c944cfaa)) - Mumulhl
 - **(home)** restructure HomeScreen and related components for improved readability and functionality - ([aa8e786](https://github.com/mumu-lhl/Ciyue/commit/aa8e786c42e31075d55390acb5a320a4d440f5c0)) - Mumulhl
-- **(ui)** improve search ui - ([f8ddcc6](https://github.com/mumu-lhl/Ciyue/commit/f8ddcc68a5d18138a49c02b5d005dcd1fe587446)) - Mumulhl
 - refactor update - ([9713d06](https://github.com/mumu-lhl/Ciyue/commit/9713d06c9f1ecb50c1269bdb82cdbabb34b12e84)) - Mumulhl
 - move files to services directory - ([a51ffe1](https://github.com/mumu-lhl/Ciyue/commit/a51ffe1211ca6ec2c719fc2b4c2a96729c570661)) - Mumulhl
 - refactor ai.dart - ([5e30372](https://github.com/mumu-lhl/Ciyue/commit/5e303724bf5b4e04df40bad2fbac84b6360e2f94)) - Mumulhl
@@ -996,10 +919,12 @@ All notable changes to this project will be documented in this file. See [conven
 - format code - ([b880de1](https://github.com/mumu-lhl/Ciyue/commit/b880de161fc1f3a742eb0bffcc1941812aa83666)) - Mumulhl
 
 ---
-## [1.7.0](https://github.com/mumu-lhl/Ciyue/compare/v1.7.0-beta.1..v1.7.0) - 2025-03-23
+## [1.7.0](https://github.com/mumu-lhl/Ciyue/compare/v1.6.0..v1.7.0) - 2025-03-23
 
 ### Bug Fixes
 
+- open privacy policy - ([f8b488f](https://github.com/mumu-lhl/Ciyue/commit/f8b488f89827111f8dc2899ff8aa9674c2f8f77b)) - Mumulhl
+- fix model name - ([0f0cc48](https://github.com/mumu-lhl/Ciyue/commit/0f0cc481477971ec8a00a4154d885113e92365a1)) - Mumulhl
 - update translate label to use localization - ([09ee403](https://github.com/mumu-lhl/Ciyue/commit/09ee403dc3a497e27cb6dc22548bbd5f15255d9c)) - Mumulhl
 - blank screen when editing title alias of a disabled dict - ([95f41b0](https://github.com/mumu-lhl/Ciyue/commit/95f41b01493d96e55211a9f459ceac65a1079543)) - Mumulhl
 - fix importing - ([f002509](https://github.com/mumu-lhl/Ciyue/commit/f0025095466ec864a65bf452c5aae76300dbce4d)) - Mumulhl
@@ -1007,6 +932,7 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Documentation
 
+- update multi-platform support to README - ([89c6b38](https://github.com/mumu-lhl/Ciyue/commit/89c6b38ac23ee6ea2556200868a5931c0372f913)) - Mumulhl
 - add GitHub badge to installation section in README files - ([5f713f7](https://github.com/mumu-lhl/Ciyue/commit/5f713f71a9d9dba6e609e0a0ab285837aebb7ee5)) - Mumulhl
 - add AI translate feature to README - ([d833b18](https://github.com/mumu-lhl/Ciyue/commit/d833b1818088f535ed0553929ef231c55451aa27)) - Mumulhl
 - update README to clarify MDX/MDD support on Linux - ([f91bf20](https://github.com/mumu-lhl/Ciyue/commit/f91bf20aba54661159fc0dc076c2c483bd3cb14e)) - Mumulhl
@@ -1016,51 +942,9 @@ All notable changes to this project will be documented in this file. See [conven
 ### Features
 
 - **(AIExplain)** dynamically set output language based on user settings - ([af088e5](https://github.com/mumu-lhl/Ciyue/commit/af088e5c61b8559cc479881adbb61c4bae424711)) - Mumulhl
-- **(l10n)** add update-related translations for multiple languages - ([bc1c281](https://github.com/mumu-lhl/Ciyue/commit/bc1c281ba8288e06bc5489747f3432d8acb2c87e)) - Mumulhl
-- **(translation)** translated using Weblate (English) - ([cc79d77](https://github.com/mumu-lhl/Ciyue/commit/cc79d773b3117fc6fd2bbe09fb50eb75ce371047)) - Allan Nordhøy
-- allow multi-line input for text translation - ([d561011](https://github.com/mumu-lhl/Ciyue/commit/d5610113a1e9513d9a5d0d50f97e062a4216a875)) - Mumulhl
-- make markdown widget scrollable - ([45e3184](https://github.com/mumu-lhl/Ciyue/commit/45e31846e5b23f8cd4125c330950ebc6596330dd)) - Mumulhl
-- add titles to Privacy Policy and Terms of Service pages - ([0c5bcae](https://github.com/mumu-lhl/Ciyue/commit/0c5bcaebb37289a311c7aaea0acda761a2d92b55)) - Mumulhl
-- enable explain word - ([8e455bd](https://github.com/mumu-lhl/Ciyue/commit/8e455bdf1e0005bce96846f7ffe6c58b96b4c30c)) - Mumulhl
-- hide the tab when only one dictionary is available - ([e4cd0e0](https://github.com/mumu-lhl/Ciyue/commit/e4cd0e0602c8d4298f22d3ef3320669b0e545a1f)) - Mumulhl
-- add AI Explain Word feature - ([90d9416](https://github.com/mumu-lhl/Ciyue/commit/90d9416bc1296714333fbb40e61bb9c5605c4609)) - Mumulhl
-- add check for updates functionality in settings - ([f0a0183](https://github.com/mumu-lhl/Ciyue/commit/f0a0183975e85f6648efa8d52320ce6b06648b85)) - Mumulhl
-- add option to include prerelease updates in settings - ([2c25149](https://github.com/mumu-lhl/Ciyue/commit/2c25149ee577af574371339902bc82c289334dc7)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(deps)** bump flutter_local_notifications from 18.0.1 to 19.0.0 - ([e6a9364](https://github.com/mumu-lhl/Ciyue/commit/e6a936466d95f01cbb3e9b1a8ffd9ededa191ca0)) - dependabot[bot]
-- **(deps)** replace flutter_markdown with gpt_markdown - ([717feef](https://github.com/mumu-lhl/Ciyue/commit/717feef68e970994a7473910fe556141814acdf2)) - Mumulhl
-- **(version)** release v1.7.0 - ([2571f4d](https://github.com/mumu-lhl/Ciyue/commit/2571f4d05fbc6119670fc1942d59f0abf778e022)) - Mumulhl
-- add flutter_local_notifications_windows to FFI plugin list - ([0a62e7c](https://github.com/mumu-lhl/Ciyue/commit/0a62e7c6674f28046a16a4186be34d3b95c11fe5)) - Mumulhl
-- update package description to include Windows/Linux support - ([b0ecb0b](https://github.com/mumu-lhl/Ciyue/commit/b0ecb0b85cf102343ff423814e6a124db753e816)) - Mumulhl
-
-### Refactoring
-
-- keep AiTranslatePage state - ([cfee517](https://github.com/mumu-lhl/Ciyue/commit/cfee517abedb193ebebfd881523ba7c757d0e43e)) - Mumulhl
-- update input handling to use TextEditingController for translation - ([321ef49](https://github.com/mumu-lhl/Ciyue/commit/321ef49dcf472247e540058716b09cc477a48e4c)) - Mumulhl
-- move _isRichOutput variable declaration to the top level - ([23b44b1](https://github.com/mumu-lhl/Ciyue/commit/23b44b1272153a44989c1a22b58d7398064d5069)) - Mumulhl
-
-### Style
-
-- format code - ([c1d93e0](https://github.com/mumu-lhl/Ciyue/commit/c1d93e0c2f1ad8f3befa1aea6a228ef1f8523688)) - Mumulhl
-
----
-## [1.7.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.6.0..v1.7.0-beta.1) - 2025-03-16
-
-### Bug Fixes
-
-- open privacy policy - ([f8b488f](https://github.com/mumu-lhl/Ciyue/commit/f8b488f89827111f8dc2899ff8aa9674c2f8f77b)) - Mumulhl
-- fix model name - ([0f0cc48](https://github.com/mumu-lhl/Ciyue/commit/0f0cc481477971ec8a00a4154d885113e92365a1)) - Mumulhl
-
-### Documentation
-
-- update multi-platform support to README - ([89c6b38](https://github.com/mumu-lhl/Ciyue/commit/89c6b38ac23ee6ea2556200868a5931c0372f913)) - Mumulhl
-
-### Features
-
 - **(l10n)** add auto detect - ([a015c4c](https://github.com/mumu-lhl/Ciyue/commit/a015c4c73aa98fc44e1ce1462fbd1d28d6bb03c1)) - Mumulhl
 - **(l10n)** add new translation - ([26bfa79](https://github.com/mumu-lhl/Ciyue/commit/26bfa796384fb3f90d4d39c6032b3dff739ec69b)) - Mumulhl
+- **(l10n)** add update-related translations for multiple languages - ([bc1c281](https://github.com/mumu-lhl/Ciyue/commit/bc1c281ba8288e06bc5489747f3432d8acb2c87e)) - Mumulhl
 - **(translation)** translated using Weblate (Chinese (Traditional Han script)) - ([5a51678](https://github.com/mumu-lhl/Ciyue/commit/5a51678e51757bfc1396bd7d495c257a60d0ed6d)) - plum7x
 - **(translation)** translated using Weblate (English) - ([d93a5f0](https://github.com/mumu-lhl/Ciyue/commit/d93a5f0bc90dc8c01398162ebd88f1f355047080)) - Integral
 - **(translation)** translated using Weblate (Chinese (Simplified Han script)) - ([b3e7706](https://github.com/mumu-lhl/Ciyue/commit/b3e770675d3f508dd57a0737728fbb5d2cd2a312)) - Integral
@@ -1071,6 +955,7 @@ All notable changes to this project will be documented in this file. See [conven
 - **(translation)** translated using Weblate (Tamil) - ([741f7ea](https://github.com/mumu-lhl/Ciyue/commit/741f7ea0dceb5389372b5ce8041fe4e1360aafbf)) - Integral
 - **(translation)** translated using Weblate (Persian) - ([2ddabc4](https://github.com/mumu-lhl/Ciyue/commit/2ddabc4c11a8b4e44f366d0ada8da5a48ba1d533)) - Integral
 - **(translation)** translated using Weblate (German) - ([48eb51d](https://github.com/mumu-lhl/Ciyue/commit/48eb51d86215ca9c1b259672dbdde58a90c48968)) - Integral
+- **(translation)** translated using Weblate (English) - ([cc79d77](https://github.com/mumu-lhl/Ciyue/commit/cc79d773b3117fc6fd2bbe09fb50eb75ce371047)) - Allan Nordhøy
 - add AI Settings page - ([971c6ea](https://github.com/mumu-lhl/Ciyue/commit/971c6ea375e4d6fa56ef1736b8d7d09ceb5885af)) - Mumulhl
 - implement AI configuration - ([2d00106](https://github.com/mumu-lhl/Ciyue/commit/2d0010653417d777a482e9916a05c758ee498544)) - Mumulhl
 - enhance AI model selection with detailed model information - ([e74f3ac](https://github.com/mumu-lhl/Ciyue/commit/e74f3ac4b72cb40e253ac67df708348b80f5c356)) - Mumulhl
@@ -1084,6 +969,14 @@ All notable changes to this project will be documented in this file. See [conven
 - add more languages in Translate - ([35189a1](https://github.com/mumu-lhl/Ciyue/commit/35189a19b7443f408cb4a6e6bdd616df405ae049)) - Mumulhl
 - support Deepseek - ([52984b2](https://github.com/mumu-lhl/Ciyue/commit/52984b280a2d072d9fd740d791f970b9369979c2)) - Mumulhl
 - support Authropic - ([c3f5419](https://github.com/mumu-lhl/Ciyue/commit/c3f5419dc5326490794ef5eadb255d4559caaea0)) - Mumulhl
+- allow multi-line input for text translation - ([d561011](https://github.com/mumu-lhl/Ciyue/commit/d5610113a1e9513d9a5d0d50f97e062a4216a875)) - Mumulhl
+- make markdown widget scrollable - ([45e3184](https://github.com/mumu-lhl/Ciyue/commit/45e31846e5b23f8cd4125c330950ebc6596330dd)) - Mumulhl
+- add titles to Privacy Policy and Terms of Service pages - ([0c5bcae](https://github.com/mumu-lhl/Ciyue/commit/0c5bcaebb37289a311c7aaea0acda761a2d92b55)) - Mumulhl
+- enable explain word - ([8e455bd](https://github.com/mumu-lhl/Ciyue/commit/8e455bdf1e0005bce96846f7ffe6c58b96b4c30c)) - Mumulhl
+- hide the tab when only one dictionary is available - ([e4cd0e0](https://github.com/mumu-lhl/Ciyue/commit/e4cd0e0602c8d4298f22d3ef3320669b0e545a1f)) - Mumulhl
+- add AI Explain Word feature - ([90d9416](https://github.com/mumu-lhl/Ciyue/commit/90d9416bc1296714333fbb40e61bb9c5605c4609)) - Mumulhl
+- add check for updates functionality in settings - ([f0a0183](https://github.com/mumu-lhl/Ciyue/commit/f0a0183975e85f6648efa8d52320ce6b06648b85)) - Mumulhl
+- add option to include prerelease updates in settings - ([2c25149](https://github.com/mumu-lhl/Ciyue/commit/2c25149ee577af574371339902bc82c289334dc7)) - Mumulhl
 
 ### Miscellaneous Chores
 
@@ -1093,10 +986,15 @@ All notable changes to this project will be documented in this file. See [conven
 - **(ci)** remove redundant localization generation steps from workflows - ([cad997d](https://github.com/mumu-lhl/Ciyue/commit/cad997dc7bd0b461f0a428348de4f0cba8e601bf)) - Mumulhl
 - **(ci)** fix ci - ([e7bf648](https://github.com/mumu-lhl/Ciyue/commit/e7bf648a0e74f5c62e115a8af636219c7bdc6c65)) - Mumulhl
 - **(deps)** bump drift from 2.25.1 to 2.26.0 - ([0616e0d](https://github.com/mumu-lhl/Ciyue/commit/0616e0d537b9b7b6d90ccb74db89ce5c4b0b12d5)) - dependabot[bot]
+- **(deps)** bump flutter_local_notifications from 18.0.1 to 19.0.0 - ([e6a9364](https://github.com/mumu-lhl/Ciyue/commit/e6a936466d95f01cbb3e9b1a8ffd9ededa191ca0)) - dependabot[bot]
+- **(deps)** replace flutter_markdown with gpt_markdown - ([717feef](https://github.com/mumu-lhl/Ciyue/commit/717feef68e970994a7473910fe556141814acdf2)) - Mumulhl
 - **(version)** release v1.7.0-beta.1 - ([58ef274](https://github.com/mumu-lhl/Ciyue/commit/58ef27417fd32ab06a9858f6080ab6a45d5cfd0c)) - Mumulhl
+- **(version)** release v1.7.0 - ([2571f4d](https://github.com/mumu-lhl/Ciyue/commit/2571f4d05fbc6119670fc1942d59f0abf778e022)) - Mumulhl
 - update package versions and sha256 checksums in pubspec.lock - ([5f7b305](https://github.com/mumu-lhl/Ciyue/commit/5f7b305f1da4e9e20a8f2b0d80d6499cc43283de)) - Mumulhl
 - update pubspec.lock and l10n - ([d3a1c69](https://github.com/mumu-lhl/Ciyue/commit/d3a1c69d33d2cc1096f5e4cd568c3a2078e3de95)) - Mumulhl
 - add generated files .gitignore - ([b67670b](https://github.com/mumu-lhl/Ciyue/commit/b67670b6e66c398f31bbfd958c7380c3df3efcc7)) - Mumulhl
+- add flutter_local_notifications_windows to FFI plugin list - ([0a62e7c](https://github.com/mumu-lhl/Ciyue/commit/0a62e7c6674f28046a16a4186be34d3b95c11fe5)) - Mumulhl
+- update package description to include Windows/Linux support - ([b0ecb0b](https://github.com/mumu-lhl/Ciyue/commit/b0ecb0b85cf102343ff423814e6a124db753e816)) - Mumulhl
 
 ### Refactoring
 
@@ -1106,12 +1004,16 @@ All notable changes to this project will be documented in this file. See [conven
 - update default model in AI provider config - ([cb1eb04](https://github.com/mumu-lhl/Ciyue/commit/cb1eb045dfa0bfbe10caa6018a01b01ea8497ff4)) - Mumulhl
 - refactor AI provider initialization and translate languages - ([c8d5216](https://github.com/mumu-lhl/Ciyue/commit/c8d5216a448a933bc44b8f544b66951838a6724b)) - Mumulhl
 - disable ai explain word switch - ([b548366](https://github.com/mumu-lhl/Ciyue/commit/b54836622888411716c85176bba7f185ad99c31a)) - Mumulhl
+- keep AiTranslatePage state - ([cfee517](https://github.com/mumu-lhl/Ciyue/commit/cfee517abedb193ebebfd881523ba7c757d0e43e)) - Mumulhl
+- update input handling to use TextEditingController for translation - ([321ef49](https://github.com/mumu-lhl/Ciyue/commit/321ef49dcf472247e540058716b09cc477a48e4c)) - Mumulhl
+- move _isRichOutput variable declaration to the top level - ([23b44b1](https://github.com/mumu-lhl/Ciyue/commit/23b44b1272153a44989c1a22b58d7398064d5069)) - Mumulhl
 
 ### Style
 
 - format code - ([f672327](https://github.com/mumu-lhl/Ciyue/commit/f672327356f6130e31a7a30a36346872263ff2bc)) - Mumulhl
 - format code - ([f0ef90e](https://github.com/mumu-lhl/Ciyue/commit/f0ef90ecd0340de70e454a6ece789d0fcd56a31f)) - Mumulhl
 - format code - ([e16b801](https://github.com/mumu-lhl/Ciyue/commit/e16b801090e9a05813d62552b7660860957b2d07)) - Mumulhl
+- format code - ([c1d93e0](https://github.com/mumu-lhl/Ciyue/commit/c1d93e0c2f1ad8f3befa1aea6a228ef1f8523688)) - Mumulhl
 
 ---
 ## [1.6.0](https://github.com/mumu-lhl/Ciyue/compare/v1.5.0..v1.6.0) - 2025-03-09
@@ -1287,40 +1189,14 @@ All notable changes to this project will be documented in this file. See [conven
 - format code - ([4624fa4](https://github.com/mumu-lhl/Ciyue/commit/4624fa49b4ad6bf0074b824229f98745dc4dfd35)) - Mumulhl
 
 ---
-## [1.2.0](https://github.com/mumu-lhl/Ciyue/compare/v1.2.0-beta.1..v1.2.0) - 2025-02-01
-
-### Bug Fixes
-
-- fix update button in manage dictionaries page - ([e2d8570](https://github.com/mumu-lhl/Ciyue/commit/e2d85705615c63a103ee70f2898dd42c067c3f29)) - Mumulhl
-- disable scroll on TabBarView in WebviewDisplay - ([6787fa1](https://github.com/mumu-lhl/Ciyue/commit/6787fa1ba343b92a919994b1f51ee84afd74df22)) - Mumulhl
-
-### Features
-
-- add sidebar icon toggle - ([20930e3](https://github.com/mumu-lhl/Ciyue/commit/20930e3ed838b7950e679e65dbebe6e6c87af499)) - Mumulhl
-- implement dismissible history items - ([05d2d16](https://github.com/mumu-lhl/Ciyue/commit/05d2d16287f3b20845f399e92ce1a96c1d26ac3d)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(ci)** fix windows upload - ([5b3ecfb](https://github.com/mumu-lhl/Ciyue/commit/5b3ecfb8eafa616e764d13835142f0434e8af5f2)) - Mumulhl
-- **(version)** release v1.2.0 - ([8fced32](https://github.com/mumu-lhl/Ciyue/commit/8fced32a859229583c92a94748441212b8e9bc43)) - Mumulhl
-
-### Refactoring
-
-- change database directory on Desktop - ([a16b12b](https://github.com/mumu-lhl/Ciyue/commit/a16b12b9b4296835f5531ea9c818bd13c282d61c)) - Mumulhl
-
-### Style
-
-- format code - ([ba90cd2](https://github.com/mumu-lhl/Ciyue/commit/ba90cd2cd467671ae67e9fe3cc67e780709e78ba)) - Mumulhl
-- format code - ([8930dae](https://github.com/mumu-lhl/Ciyue/commit/8930dae0466d9e580bbfcf77e275a5569b375242)) - Mumulhl
-- format code - ([1b3b4cd](https://github.com/mumu-lhl/Ciyue/commit/1b3b4cdd60e7278a74860a3e9d04b77e4a75c9e3)) - Mumulhl
-
----
-## [1.2.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.1.0..v1.2.0-beta.1) - 2025-01-31
+## [1.2.0](https://github.com/mumu-lhl/Ciyue/compare/v1.1.0..v1.2.0) - 2025-02-01
 
 ### Bug Fixes
 
 - Anti-Screenshots become ineffective every time Ciyue is reopened - ([b138ac1](https://github.com/mumu-lhl/Ciyue/commit/b138ac1d9726741579612bdfe92c566ca18be781)) - Mumulhl
 - fix name - ([977e3e4](https://github.com/mumu-lhl/Ciyue/commit/977e3e480e9df5dc4a9b9114db3b7d5fea10cd79)) - Mumulhl
+- fix update button in manage dictionaries page - ([e2d8570](https://github.com/mumu-lhl/Ciyue/commit/e2d85705615c63a103ee70f2898dd42c067c3f29)) - Mumulhl
+- disable scroll on TabBarView in WebviewDisplay - ([6787fa1](https://github.com/mumu-lhl/Ciyue/commit/6787fa1ba343b92a919994b1f51ee84afd74df22)) - Mumulhl
 
 ### Features
 
@@ -1330,6 +1206,8 @@ All notable changes to this project will be documented in this file. See [conven
 - update Flutter workflows for windows and remove deprecated PR workflow - ([b1b6526](https://github.com/mumu-lhl/Ciyue/commit/b1b6526eda37bfcf42f68cf084c75466b922cf3d)) - Mumulhl
 - update flutter_tts dependency to use git source - ([f2aa173](https://github.com/mumu-lhl/Ciyue/commit/f2aa1735b5b29778f9d5f131202045814d760b42)) - Mumulhl
 - add search bar location setting - ([a89da00](https://github.com/mumu-lhl/Ciyue/commit/a89da00602b9bf9f5c4b25eeab94e4d298d9ad60)) - Mumulhl
+- add sidebar icon toggle - ([20930e3](https://github.com/mumu-lhl/Ciyue/commit/20930e3ed838b7950e679e65dbebe6e6c87af499)) - Mumulhl
+- implement dismissible history items - ([05d2d16](https://github.com/mumu-lhl/Ciyue/commit/05d2d16287f3b20845f399e92ce1a96c1d26ac3d)) - Mumulhl
 
 ### Miscellaneous Chores
 
@@ -1340,49 +1218,46 @@ All notable changes to this project will be documented in this file. See [conven
 - **(ci)** add release permissions - ([cd9335d](https://github.com/mumu-lhl/Ciyue/commit/cd9335de0271730339275c45a9b42d5d1791f72a)) - Mumulhl
 - **(ci)** update artifact paths in release workflow - ([f7e174f](https://github.com/mumu-lhl/Ciyue/commit/f7e174fbf5fb5da55c115927c74e2343151092ef)) - Mumulhl
 - **(ci)** update artifact paths in release workflow - ([7dad755](https://github.com/mumu-lhl/Ciyue/commit/7dad755a80b0688dd78a5655ad173f137b8a647a)) - Mumulhl
+- **(ci)** fix windows upload - ([5b3ecfb](https://github.com/mumu-lhl/Ciyue/commit/5b3ecfb8eafa616e764d13835142f0434e8af5f2)) - Mumulhl
 - **(deps)** update - ([7b069cf](https://github.com/mumu-lhl/Ciyue/commit/7b069cfcf2fecf9d37e61b5eb6243595ab8041b4)) - Mumulhl
 - **(version)** release v1.2.0-beta.1 - ([f9dd89c](https://github.com/mumu-lhl/Ciyue/commit/f9dd89c27cc387363b891d0df694f3212f8b0b8a)) - Mumulhl
+- **(version)** release v1.2.0 - ([8fced32](https://github.com/mumu-lhl/Ciyue/commit/8fced32a859229583c92a94748441212b8e9bc43)) - Mumulhl
 
 ### Refactoring
 
 - **(wordbook)** improve layout - ([63dc42f](https://github.com/mumu-lhl/Ciyue/commit/63dc42fd8627e868bc53482d1b3ce1eedbc3cd9c)) - Mumulhl
 - remove useless code - ([189f5db](https://github.com/mumu-lhl/Ciyue/commit/189f5db1f7f2e03f59f7d3e8df769245576c65a8)) - Mumulhl
 - update search bar location labels in multiple languages - ([3c4000a](https://github.com/mumu-lhl/Ciyue/commit/3c4000a2c5483ac2145929c81766d71e5077b2e9)) - Mumulhl
+- change database directory on Desktop - ([a16b12b](https://github.com/mumu-lhl/Ciyue/commit/a16b12b9b4296835f5531ea9c818bd13c282d61c)) - Mumulhl
 
 ### Style
 
 - format code - ([fe471af](https://github.com/mumu-lhl/Ciyue/commit/fe471af3f099a42ecc3cdc83388280fbad6dc1ed)) - Mumulhl
 - format code - ([e954746](https://github.com/mumu-lhl/Ciyue/commit/e9547467125e279ec96d765419611496d511a56a)) - Mumulhl
+- format code - ([ba90cd2](https://github.com/mumu-lhl/Ciyue/commit/ba90cd2cd467671ae67e9fe3cc67e780709e78ba)) - Mumulhl
+- format code - ([8930dae](https://github.com/mumu-lhl/Ciyue/commit/8930dae0466d9e580bbfcf77e275a5569b375242)) - Mumulhl
+- format code - ([1b3b4cd](https://github.com/mumu-lhl/Ciyue/commit/1b3b4cdd60e7278a74860a3e9d04b77e4a75c9e3)) - Mumulhl
 
 ---
-## [1.1.0](https://github.com/mumu-lhl/Ciyue/compare/v1.1.0-beta.1..v1.1.0) - 2025-01-29
+## [1.1.0](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0..v1.1.0) - 2025-01-29
 
 ### Features
 
 - **(translation)** added translation using Weblate (German) - ([e96d306](https://github.com/mumu-lhl/Ciyue/commit/e96d306ec5bd1eed4cd1e2e022c209cc0c42db3f)) - Jean-Luc Tibaux
 - **(translation)** translated using Weblate (German) - ([abed181](https://github.com/mumu-lhl/Ciyue/commit/abed181f93c8dd7c7d1cf3ca6e87b6a065504c32)) - Jean-Luc Tibaux
-- add secure screen feature - ([9e171e7](https://github.com/mumu-lhl/Ciyue/commit/9e171e7c55ba7a7229d68b2a434b3e9448969128)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(version)** release v1.1.0 - ([20ec396](https://github.com/mumu-lhl/Ciyue/commit/20ec39682afeb4ea5357a474d037128f9f186251)) - Mumulhl
-- Add .aider* to gitignore - ([be77cd2](https://github.com/mumu-lhl/Ciyue/commit/be77cd2d9a8fa827d5ad611d6d2a249ddb797fd9)) - Mumulhl
-
----
-## [1.1.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0..v1.1.0-beta.1) - 2025-01-26
-
-### Features
-
 - add sponsor - ([be735bf](https://github.com/mumu-lhl/Ciyue/commit/be735bf5da1b0fab744f88b1217222a647f8969c)) - Mumulhl
 - add auto remove search word feature - ([dd28da4](https://github.com/mumu-lhl/Ciyue/commit/dd28da442ed8dfc79c02f588960ee0e3ba7d67d0)) - Mumulhl
 - handle removal of missing dictionary files - ([f2b91b1](https://github.com/mumu-lhl/Ciyue/commit/f2b91b165ec176218e63cca37cce2fcf42542629)) - Mumulhl
 - implement tag ordering - ([67f9234](https://github.com/mumu-lhl/Ciyue/commit/67f923465e08d5882d8f300ebc72cbf53396b5bc)) - Mumulhl
 - migrate SharedPreferences to SharedPreferencesWithCache - ([99380b0](https://github.com/mumu-lhl/Ciyue/commit/99380b0eff0a74b376497e1a4799f342819d23bb)) - Mumulhl
+- add secure screen feature - ([9e171e7](https://github.com/mumu-lhl/Ciyue/commit/9e171e7c55ba7a7229d68b2a434b3e9448969128)) - Mumulhl
 
 ### Miscellaneous Chores
 
 - **(deps)** update - ([0550afe](https://github.com/mumu-lhl/Ciyue/commit/0550afe7036a54c268d02ad459e1207d844b3d86)) - Mumulhl
 - **(version)** bump version to 1.1.0-beta.1 - ([0152528](https://github.com/mumu-lhl/Ciyue/commit/01525286f566e0f831dfc327797384e929fad1ee)) - Mumulhl
+- **(version)** release v1.1.0 - ([20ec396](https://github.com/mumu-lhl/Ciyue/commit/20ec39682afeb4ea5357a474d037128f9f186251)) - Mumulhl
+- Add .aider* to gitignore - ([be77cd2](https://github.com/mumu-lhl/Ciyue/commit/be77cd2d9a8fa827d5ad611d6d2a249ddb797fd9)) - Mumulhl
 
 ### Refactoring
 
@@ -1393,7 +1268,19 @@ All notable changes to this project will be documented in this file. See [conven
 - format code - ([b0bdb28](https://github.com/mumu-lhl/Ciyue/commit/b0bdb2894bcc169e373710747e2fc6727bdbde49)) - Mumulhl
 
 ---
-## [1.0.0](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.4..v1.0.0) - 2025-01-23
+## [1.0.0](https://github.com/mumu-lhl/Ciyue/compare/v0.16.0..v1.0.0) - 2025-01-23
+
+### Bug Fixes
+
+- fix unselect dictionary - ([f1a16ed](https://github.com/mumu-lhl/Ciyue/commit/f1a16ed86917f25de5a486a27b4e12ba0d7c4e39)) - Mumulhl
+- fix wordbook - ([3fdd522](https://github.com/mumu-lhl/Ciyue/commit/3fdd52246ff0d41e07425cba5081c16c3c2a53fc)) - Mumulhl
+- fix sort dictionaries - ([1d9be71](https://github.com/mumu-lhl/Ciyue/commit/1d9be71af19bf089677c6d061fc4e35466e0610f)) - Mumulhl
+- fix sort dictionaries - ([fa1d2fa](https://github.com/mumu-lhl/Ciyue/commit/fa1d2fa5719cf817b9c0623429d2d9e8ea2f903b)) - Mumulhl
+- fix drawer - ([35a55f5](https://github.com/mumu-lhl/Ciyue/commit/35a55f54325872a5c738a7eb531e568b68f708de)) - Mumulhl
+- fix l10n - ([83ed02b](https://github.com/mumu-lhl/Ciyue/commit/83ed02b4c29745e94c15b2ff866dc5c4de554691)) - Mumulhl
+- export workbook - ([2eeeb1b](https://github.com/mumu-lhl/Ciyue/commit/2eeeb1b48d8d3ecdc9655a038b21d42e2a4bd10c)) - Mumulhl
+- import wordbook - ([5f0c0a7](https://github.com/mumu-lhl/Ciyue/commit/5f0c0a7e53e770b514cdc6fb786fc30ea6ea43f3)) - Mumulhl
+- auto export feature - ([6d583ee](https://github.com/mumu-lhl/Ciyue/commit/6d583ee4eb40c091afb900f33c744b2b6508055b)) - Mumulhl
 
 ### Documentation
 
@@ -1401,60 +1288,23 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### Features
 
-- add properties page - ([b53ecf8](https://github.com/mumu-lhl/Ciyue/commit/b53ecf8248e0e496c8b4759a685fa9235bc02e71)) - Mumulhl
-- add title and total number of entries to localization files - ([f3debf9](https://github.com/mumu-lhl/Ciyue/commit/f3debf9173e4c890ac347292238042cd73aa22e9)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(version)** release v1.0.0 - ([48c7cab](https://github.com/mumu-lhl/Ciyue/commit/48c7cab238a21cfeafcbd53735e4e19e0fe2bf67)) - Mumulhl
-- update Flutter version to 3.27.3 in release workflow - ([0d25ccb](https://github.com/mumu-lhl/Ciyue/commit/0d25ccb42f62c658dea23063dcd54f2f768119fd)) - Mumulhl
-
-### Refactoring
-
-- remove unused codes - ([15ea1f7](https://github.com/mumu-lhl/Ciyue/commit/15ea1f72dbaf79681a976a979398c282487eb449)) - Mumulhl
-
-### Style
-
-- format code - ([ecc56ec](https://github.com/mumu-lhl/Ciyue/commit/ecc56ece703cffb4a52ca1331bbb5885db2ce35a)) - Mumulhl
-
----
-## [1.0.0-beta.4](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.3..v1.0.0-beta.4) - 2025-01-23
-
-### Bug Fixes
-
-- auto export feature - ([6d583ee](https://github.com/mumu-lhl/Ciyue/commit/6d583ee4eb40c091afb900f33c744b2b6508055b)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(deps)** bump flutter_launcher_icons from 0.14.2 to 0.14.3 - ([f3e8d8f](https://github.com/mumu-lhl/Ciyue/commit/f3e8d8f3b0e9b76b383de49caa65b8358b50e1e2)) - dependabot[bot]
-- **(version)** release v1.0.0-beta.4 - ([44969f0](https://github.com/mumu-lhl/Ciyue/commit/44969f0c9bab2ab899fac57fe5cd10d2a3da90b0)) - Mumulhl
-
----
-## [1.0.0-beta.3](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.2..v1.0.0-beta.3) - 2025-01-19
-
-### Features
-
-- add loading dialog when adding dictionaries - ([a5b2110](https://github.com/mumu-lhl/Ciyue/commit/a5b211065dfdd8e6c8c264ddacf5066e5a891264)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(ci)** update flutter version - ([946018b](https://github.com/mumu-lhl/Ciyue/commit/946018b69d6499357223153f492eb7069d76e6d3)) - Mumulhl
-- **(version)** release v1.0.0-beta.3 - ([5a4cee5](https://github.com/mumu-lhl/Ciyue/commit/5a4cee568a013ad731ba63249e2db72e4ee4656f)) - Mumulhl
-- bump copyright year - ([367a39b](https://github.com/mumu-lhl/Ciyue/commit/367a39ba29524605489bc2e5bd9563e9fba94213)) - Mumulhl
-
----
-## [1.0.0-beta.2](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-beta.1..v1.0.0-beta.2) - 2025-01-18
-
-### Bug Fixes
-
-- export workbook - ([2eeeb1b](https://github.com/mumu-lhl/Ciyue/commit/2eeeb1b48d8d3ecdc9655a038b21d42e2a4bd10c)) - Mumulhl
-- import wordbook - ([5f0c0a7](https://github.com/mumu-lhl/Ciyue/commit/5f0c0a7e53e770b514cdc6fb786fc30ea6ea43f3)) - Mumulhl
-
-### Features
-
 - **(localization)** add default and manage groups translations - ([e4bdc7a](https://github.com/mumu-lhl/Ciyue/commit/e4bdc7a88d71292860df6a4b34abc165e90ea727)) - Mumulhl
 - **(translation)** translated using Weblate (Persian) - ([805de30](https://github.com/mumu-lhl/Ciyue/commit/805de3023db7c10b304e3e3827c90bd7ff88bdce)) - Mo
+- support mutiple dictionaries bugly - ([4577245](https://github.com/mumu-lhl/Ciyue/commit/45772459a9d2d3a5038d5f688402c5ba77d237a9)) - Mumulhl
+- support multiple dictionaries in searching and displaying - ([b99470c](https://github.com/mumu-lhl/Ciyue/commit/b99470cd61c4f6527065cd82cdf75012a671fbca)) - Mumulhl
+- support settings for mutiple dictionaries - ([a12633d](https://github.com/mumu-lhl/Ciyue/commit/a12633dceb16faed090f1e10d4cf2e5b9980568b)) - Mumulhl
+- look up history - ([fdaa3a8](https://github.com/mumu-lhl/Ciyue/commit/fdaa3a85c32f5478b5cb4a11faf8b3a5d961bb05)) - Mumulhl
+- look up history (#101) - ([4affaec](https://github.com/mumu-lhl/Ciyue/commit/4affaecdcd03f035206bd29e5fa30a98f9a0abbd)) - Mumulhl
+- group dictionaries - ([9944dd6](https://github.com/mumu-lhl/Ciyue/commit/9944dd6e45ec2fe25f69251453029d6d560c0e76)) - Mumulhl
+- implement group bugly - ([7589015](https://github.com/mumu-lhl/Ciyue/commit/7589015c6a86848450f1b785b79fec4b4cd5726f)) - Mumulhl
+- implement group fully - ([2ad1e42](https://github.com/mumu-lhl/Ciyue/commit/2ad1e422a7ecccd8bff47f5f1caa9390f4757358)) - Mumulhl
+- finish group dictionaries - ([9502310](https://github.com/mumu-lhl/Ciyue/commit/9502310f48f0b50ac1c21e67a7a980426f323e28)) - Mumulhl
+- remove external storage permission - ([ccdfec9](https://github.com/mumu-lhl/Ciyue/commit/ccdfec9cf6b727a634e955059ff1ec35c75d430c)) - Mumulhl
+- add update button - ([7da3688](https://github.com/mumu-lhl/Ciyue/commit/7da36886c783db60bf5f4c8e6456bd4fd3f75e6e)) - Mumulhl
 - remove announcement - ([794f920](https://github.com/mumu-lhl/Ciyue/commit/794f920e7c5a8f397d748487fbcbd43fcc0dd1c8)) - Mumulhl
+- add loading dialog when adding dictionaries - ([a5b2110](https://github.com/mumu-lhl/Ciyue/commit/a5b211065dfdd8e6c8c264ddacf5066e5a891264)) - Mumulhl
+- add properties page - ([b53ecf8](https://github.com/mumu-lhl/Ciyue/commit/b53ecf8248e0e496c8b4759a685fa9235bc02e71)) - Mumulhl
+- add title and total number of entries to localization files - ([f3debf9](https://github.com/mumu-lhl/Ciyue/commit/f3debf9173e4c890ac347292238042cd73aa22e9)) - Mumulhl
 
 ### Miscellaneous Chores
 
@@ -1462,32 +1312,43 @@ All notable changes to this project will be documented in this file. See [conven
 - **(ci)** fix ci - ([e1bb757](https://github.com/mumu-lhl/Ciyue/commit/e1bb757749820ed3e525a3325520dda246e27129)) - Mumulhl
 - **(ci)** fix apt install - ([7785644](https://github.com/mumu-lhl/Ciyue/commit/77856442f5394591beabfda25c664be3cf7b1d9a)) - Mumulhl
 - **(ci)** install libsqlite3-dev - ([525ad29](https://github.com/mumu-lhl/Ciyue/commit/525ad29ef818b911a83d5d01b35a0f283e963933)) - Mumulhl
-- **(deps)** bump go_router from 14.6.2 to 14.6.3 - ([6d4771c](https://github.com/mumu-lhl/Ciyue/commit/6d4771c99749eb7869519a792b380ab1a095bc01)) - dependabot[bot]
-- **(deps)** update - ([3e921eb](https://github.com/mumu-lhl/Ciyue/commit/3e921eb1a2ac205f66b11ad31c49efa93b8a261d)) - Mumulhl
-- **(version)** release v1.0.0-beta.2 - ([70f783f](https://github.com/mumu-lhl/Ciyue/commit/70f783f965cd436fd20356a69ed806d89bf8b0ac)) - Mumulhl
-- remove external storage permission - ([7833b14](https://github.com/mumu-lhl/Ciyue/commit/7833b145901340d3a54f0963653cd5f2bcbfcf83)) - Mumulhl
-- update AGP - ([2da10e0](https://github.com/mumu-lhl/Ciyue/commit/2da10e0815246eab88fedc6d404ca3cc6cd17d08)) - Mumulhl
-
-### Style
-
-- format code - ([9d8c1f8](https://github.com/mumu-lhl/Ciyue/commit/9d8c1f8a191c5e8aea82ebd525ab1c3ab34747f7)) - Mumulhl
-
----
-## [1.0.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v0.16.0..v1.0.0-beta.1) - 2025-01-07
-
-### Bug Fixes
-
-- fix l10n - ([83ed02b](https://github.com/mumu-lhl/Ciyue/commit/83ed02b4c29745e94c15b2ff866dc5c4de554691)) - Mumulhl
-
-### Miscellaneous Chores
-
+- **(ci)** update flutter version - ([946018b](https://github.com/mumu-lhl/Ciyue/commit/946018b69d6499357223153f492eb7069d76e6d3)) - Mumulhl
 - **(deps)** bump drift from 2.23.0 to 2.23.1 - ([128de43](https://github.com/mumu-lhl/Ciyue/commit/128de4353351e6cff306e07e1661996699f7c199)) - dependabot[bot]
 - **(deps)** bump shared_preferences from 2.3.4 to 2.3.5 - ([1c5604a](https://github.com/mumu-lhl/Ciyue/commit/1c5604ae76f4a0cc4951a5632cfed72ff1536d08)) - dependabot[bot]
 - **(deps)** bump drift_dev from 2.23.0 to 2.23.1 - ([a4043a9](https://github.com/mumu-lhl/Ciyue/commit/a4043a9001932f2ab4cff4b5baa532d7ded0591c)) - dependabot[bot]
+- **(deps)** bump go_router from 14.6.2 to 14.6.3 - ([6d4771c](https://github.com/mumu-lhl/Ciyue/commit/6d4771c99749eb7869519a792b380ab1a095bc01)) - dependabot[bot]
+- **(deps)** update - ([3e921eb](https://github.com/mumu-lhl/Ciyue/commit/3e921eb1a2ac205f66b11ad31c49efa93b8a261d)) - Mumulhl
+- **(deps)** bump flutter_launcher_icons from 0.14.2 to 0.14.3 - ([f3e8d8f](https://github.com/mumu-lhl/Ciyue/commit/f3e8d8f3b0e9b76b383de49caa65b8358b50e1e2)) - dependabot[bot]
+- **(version)** release v1.0.0-alpha.1 - ([56861f5](https://github.com/mumu-lhl/Ciyue/commit/56861f539dcddd73667376ed00922ff78d90670e)) - Mumulhl
+- **(version)** release v1.0.0-alpha.2 - ([0fded17](https://github.com/mumu-lhl/Ciyue/commit/0fded17694a65fe1936858df28364ecc2b79c147)) - Mumulhl
+- **(version)** release v1.0.0-alpha.3 - ([214c1f9](https://github.com/mumu-lhl/Ciyue/commit/214c1f94da4ea6a23c87c59a193e8fa98131f7eb)) - Mumulhl
 - **(version)** release v1.0.0-beta.1 - ([ce6b054](https://github.com/mumu-lhl/Ciyue/commit/ce6b054c615ad57fd7388d8ff9ba01914981808b)) - Mumulhl
+- **(version)** release v1.0.0-beta.2 - ([70f783f](https://github.com/mumu-lhl/Ciyue/commit/70f783f965cd436fd20356a69ed806d89bf8b0ac)) - Mumulhl
+- **(version)** release v1.0.0-beta.3 - ([5a4cee5](https://github.com/mumu-lhl/Ciyue/commit/5a4cee568a013ad731ba63249e2db72e4ee4656f)) - Mumulhl
+- **(version)** release v1.0.0-beta.4 - ([44969f0](https://github.com/mumu-lhl/Ciyue/commit/44969f0c9bab2ab899fac57fe5cd10d2a3da90b0)) - Mumulhl
+- **(version)** release v1.0.0 - ([48c7cab](https://github.com/mumu-lhl/Ciyue/commit/48c7cab238a21cfeafcbd53735e4e19e0fe2bf67)) - Mumulhl
+- remove external storage permission - ([7833b14](https://github.com/mumu-lhl/Ciyue/commit/7833b145901340d3a54f0963653cd5f2bcbfcf83)) - Mumulhl
+- update AGP - ([2da10e0](https://github.com/mumu-lhl/Ciyue/commit/2da10e0815246eab88fedc6d404ca3cc6cd17d08)) - Mumulhl
+- bump copyright year - ([367a39b](https://github.com/mumu-lhl/Ciyue/commit/367a39ba29524605489bc2e5bd9563e9fba94213)) - Mumulhl
+- update Flutter version to 3.27.3 in release workflow - ([0d25ccb](https://github.com/mumu-lhl/Ciyue/commit/0d25ccb42f62c658dea23063dcd54f2f768119fd)) - Mumulhl
+
+### Refactoring
+
+- **(database)** refactor database - ([e656ce7](https://github.com/mumu-lhl/Ciyue/commit/e656ce7dcf36cfc36b1ff1c7c5b2d14ac21cf357)) - Mumulhl
+- refactor database - ([766f2fe](https://github.com/mumu-lhl/Ciyue/commit/766f2fef3a6e2722a9e5b82820503e35fe1a07c2)) - Mumulhl
+- remove unused codes - ([15ea1f7](https://github.com/mumu-lhl/Ciyue/commit/15ea1f72dbaf79681a976a979398c282487eb449)) - Mumulhl
+
+### Style
+
+- format - ([b10eace](https://github.com/mumu-lhl/Ciyue/commit/b10eaceabdb3479f2350fffc03f3be812b4ca3d5)) - Mumulhl
+- format code - ([1bc13bd](https://github.com/mumu-lhl/Ciyue/commit/1bc13bd918b2360bc2ce22d776cf92fa96f993ab)) - Mumulhl
+- format code - ([93b2adf](https://github.com/mumu-lhl/Ciyue/commit/93b2adf0a0ab640dad82c16e1887e34882293f27)) - Mumulhl
+- format code - ([ef003f0](https://github.com/mumu-lhl/Ciyue/commit/ef003f0b421a30161e880552cdc9c3b780b19299)) - Mumulhl
+- format code - ([9d8c1f8](https://github.com/mumu-lhl/Ciyue/commit/9d8c1f8a191c5e8aea82ebd525ab1c3ab34747f7)) - Mumulhl
+- format code - ([ecc56ec](https://github.com/mumu-lhl/Ciyue/commit/ecc56ece703cffb4a52ca1331bbb5885db2ce35a)) - Mumulhl
 
 ---
-## [0.16.0](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-alpha.3..v0.16.0) - 2025-01-01
+## [0.16.0](https://github.com/mumu-lhl/Ciyue/compare/v0.15.1..v0.16.0) - 2025-01-01
 
 ### Features
 
@@ -1496,8 +1357,6 @@ All notable changes to this project will be documented in this file. See [conven
 - **(translation)** added translation using Weblate (Persian) - ([f065cbb](https://github.com/mumu-lhl/Ciyue/commit/f065cbbe934b19e1c1ade885c1545656297f5c09)) - Mo
 - **(translation)** translated using Weblate (Persian) - ([a1be096](https://github.com/mumu-lhl/Ciyue/commit/a1be09631bf4a90d2581e52b2b25a4d85bb56d2c)) - Mo
 - **(translation)** translated using Weblate (Russian) - ([6e024a2](https://github.com/mumu-lhl/Ciyue/commit/6e024a294a7d64f273981a3b168b85005f88da3e)) - Xapitonov
-- remove external storage permission - ([ccdfec9](https://github.com/mumu-lhl/Ciyue/commit/ccdfec9cf6b727a634e955059ff1ec35c75d430c)) - Mumulhl
-- add update button - ([7da3688](https://github.com/mumu-lhl/Ciyue/commit/7da36886c783db60bf5f4c8e6456bd4fd3f75e6e)) - Mumulhl
 
 ### Miscellaneous Chores
 
@@ -1505,77 +1364,6 @@ All notable changes to this project will be documented in this file. See [conven
 - **(deps)** bump flutter_tts from 4.2.0 to 4.2.1 (#98) - ([fc6b4e9](https://github.com/mumu-lhl/Ciyue/commit/fc6b4e97ced9d2cfc04b69c1341aa081fa514655)) - dependabot[bot]
 - **(deps)** bump drift_flutter from 0.2.3 to 0.2.4 (#100) - ([330a4b9](https://github.com/mumu-lhl/Ciyue/commit/330a4b92aa40ff1a338f269d29d36c6e0ebf880c)) - dependabot[bot]
 - **(version)** release v0.16.0 - ([8ec59bf](https://github.com/mumu-lhl/Ciyue/commit/8ec59bfb16de3e0d926f77db6ed2160dd0881028)) - Mumulhl
-
-### Style
-
-- format code - ([93b2adf](https://github.com/mumu-lhl/Ciyue/commit/93b2adf0a0ab640dad82c16e1887e34882293f27)) - Mumulhl
-- format code - ([ef003f0](https://github.com/mumu-lhl/Ciyue/commit/ef003f0b421a30161e880552cdc9c3b780b19299)) - Mumulhl
-
----
-## [1.0.0-alpha.3](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-alpha.2..v1.0.0-alpha.3) - 2025-01-06
-
-### Bug Fixes
-
-- fix sort dictionaries - ([1d9be71](https://github.com/mumu-lhl/Ciyue/commit/1d9be71af19bf089677c6d061fc4e35466e0610f)) - Mumulhl
-- fix sort dictionaries - ([fa1d2fa](https://github.com/mumu-lhl/Ciyue/commit/fa1d2fa5719cf817b9c0623429d2d9e8ea2f903b)) - Mumulhl
-- fix drawer - ([35a55f5](https://github.com/mumu-lhl/Ciyue/commit/35a55f54325872a5c738a7eb531e568b68f708de)) - Mumulhl
-
-### Features
-
-- group dictionaries - ([9944dd6](https://github.com/mumu-lhl/Ciyue/commit/9944dd6e45ec2fe25f69251453029d6d560c0e76)) - Mumulhl
-- implement group bugly - ([7589015](https://github.com/mumu-lhl/Ciyue/commit/7589015c6a86848450f1b785b79fec4b4cd5726f)) - Mumulhl
-- implement group fully - ([2ad1e42](https://github.com/mumu-lhl/Ciyue/commit/2ad1e422a7ecccd8bff47f5f1caa9390f4757358)) - Mumulhl
-- finish group dictionaries - ([9502310](https://github.com/mumu-lhl/Ciyue/commit/9502310f48f0b50ac1c21e67a7a980426f323e28)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(version)** release v1.0.0-alpha.3 - ([214c1f9](https://github.com/mumu-lhl/Ciyue/commit/214c1f94da4ea6a23c87c59a193e8fa98131f7eb)) - Mumulhl
-
-### Style
-
-- format code - ([1bc13bd](https://github.com/mumu-lhl/Ciyue/commit/1bc13bd918b2360bc2ce22d776cf92fa96f993ab)) - Mumulhl
-
----
-## [1.0.0-alpha.2](https://github.com/mumu-lhl/Ciyue/compare/v1.0.0-alpha.1..v1.0.0-alpha.2) - 2024-12-31
-
-### Features
-
-- look up history - ([fdaa3a8](https://github.com/mumu-lhl/Ciyue/commit/fdaa3a85c32f5478b5cb4a11faf8b3a5d961bb05)) - Mumulhl
-- look up history (#101) - ([4affaec](https://github.com/mumu-lhl/Ciyue/commit/4affaecdcd03f035206bd29e5fa30a98f9a0abbd)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(version)** release v1.0.0-alpha.2 - ([0fded17](https://github.com/mumu-lhl/Ciyue/commit/0fded17694a65fe1936858df28364ecc2b79c147)) - Mumulhl
-
-### Refactoring
-
-- **(database)** refactor database - ([e656ce7](https://github.com/mumu-lhl/Ciyue/commit/e656ce7dcf36cfc36b1ff1c7c5b2d14ac21cf357)) - Mumulhl
-
----
-## [1.0.0-alpha.1](https://github.com/mumu-lhl/Ciyue/compare/v0.15.1..v1.0.0-alpha.1) - 2024-12-29
-
-### Bug Fixes
-
-- fix unselect dictionary - ([f1a16ed](https://github.com/mumu-lhl/Ciyue/commit/f1a16ed86917f25de5a486a27b4e12ba0d7c4e39)) - Mumulhl
-- fix wordbook - ([3fdd522](https://github.com/mumu-lhl/Ciyue/commit/3fdd52246ff0d41e07425cba5081c16c3c2a53fc)) - Mumulhl
-
-### Features
-
-- support mutiple dictionaries bugly - ([4577245](https://github.com/mumu-lhl/Ciyue/commit/45772459a9d2d3a5038d5f688402c5ba77d237a9)) - Mumulhl
-- support multiple dictionaries in searching and displaying - ([b99470c](https://github.com/mumu-lhl/Ciyue/commit/b99470cd61c4f6527065cd82cdf75012a671fbca)) - Mumulhl
-- support settings for mutiple dictionaries - ([a12633d](https://github.com/mumu-lhl/Ciyue/commit/a12633dceb16faed090f1e10d4cf2e5b9980568b)) - Mumulhl
-
-### Miscellaneous Chores
-
-- **(version)** release v1.0.0-alpha.1 - ([56861f5](https://github.com/mumu-lhl/Ciyue/commit/56861f539dcddd73667376ed00922ff78d90670e)) - Mumulhl
-
-### Refactoring
-
-- refactor database - ([766f2fe](https://github.com/mumu-lhl/Ciyue/commit/766f2fef3a6e2722a9e5b82820503e35fe1a07c2)) - Mumulhl
-
-### Style
-
-- format - ([b10eace](https://github.com/mumu-lhl/Ciyue/commit/b10eaceabdb3479f2350fffc03f3be812b4ca3d5)) - Mumulhl
 
 ---
 ## [0.15.1](https://github.com/mumu-lhl/Ciyue/compare/v0.15.0..v0.15.1) - 2024-12-22
