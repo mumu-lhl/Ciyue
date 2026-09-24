@@ -2,6 +2,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/date_divider.dart";
+import "package:ciyue/ui/core/word_display.dart";
 import "package:ciyue/ui/pages/main/wordbook/app_bar.dart";
 import "package:ciyue/ui/pages/main/wordbook/floating_action_buttons.dart";
 import "package:ciyue/viewModels/wordbook.dart";
@@ -82,8 +83,16 @@ class WordView extends StatelessWidget {
                             model.selectWord(data);
                           } else {
                             if (context.mounted) {
+                              final words = snapshot.data!
+                                  .map((e) => e.word)
+                                  .toList();
+                              final index = snapshot.data!.indexOf(data);
                               context.push(
                                 "/word/${Uri.encodeComponent(data.word)}",
+                                extra: WordListContext(
+                                  words: words,
+                                  initialIndex: index >= 0 ? index : 0,
+                                ),
                               );
                             }
                           }

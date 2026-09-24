@@ -51,6 +51,15 @@ final router = GoRouter(
       path: "/word/:word",
       builder: (context, state) {
         final word = state.pathParameters["word"];
+        final extra = state.extra;
+
+        if (extra is WordListContext && extra.words.isNotEmpty) {
+          return WordDisplayPager(
+            words: extra.words,
+            initialIndex: extra.initialIndex,
+          );
+        }
+
         Provider.of<OpenRecordsRepository>(
           navigatorKey.currentContext!,
           listen: false,

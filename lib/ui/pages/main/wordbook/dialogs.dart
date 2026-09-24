@@ -3,6 +3,7 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/text_buttons.dart";
+import "package:ciyue/ui/core/word_display.dart";
 import "package:ciyue/viewModels/wordbook.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
@@ -81,7 +82,13 @@ class _SearchWordDialogState extends State<SearchWordDialog> {
                         title: Text(word),
                         onTap: () {
                           Navigator.of(context).pop();
-                          context.push("/word/${Uri.encodeComponent(word)}");
+                          context.push(
+                            "/word/${Uri.encodeComponent(word)}",
+                            extra: WordListContext(
+                              words: List<String>.from(model.searchResults),
+                              initialIndex: index,
+                            ),
+                          );
                         },
                       );
                     },

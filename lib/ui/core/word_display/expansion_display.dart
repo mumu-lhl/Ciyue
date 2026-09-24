@@ -7,6 +7,7 @@ import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
+import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/utils.dart" as app_utils;
 import "package:material_ui/material_ui.dart";
@@ -17,12 +18,14 @@ class ExpansionWordDisplay extends ConsumerStatefulWidget {
   final String word;
   final List<int> validDictIds;
   final SearchController? searchController;
+  final WordPagerInfo? pagerInfo;
 
   const ExpansionWordDisplay({
     super.key,
     required this.word,
     required this.validDictIds,
     this.searchController,
+    this.pagerInfo,
   });
 
   @override
@@ -112,15 +115,57 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
 
     final searchBar = _buildSearchBar(settings);
 
+    final locale = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => _goBack(context)),
         title: settings.searchBarInAppBar
             ? (searchBar ?? Text(widget.word, overflow: TextOverflow.ellipsis))
-            : Text(widget.word, overflow: TextOverflow.ellipsis),
+            : (widget.pagerInfo != null
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(widget.word, overflow: TextOverflow.ellipsis),
+                        Text(
+                          "${widget.pagerInfo!.currentIndex + 1} / ${widget.pagerInfo!.totalCount}",
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                        ),
+                      ],
+                    )
+                  : Text(widget.word, overflow: TextOverflow.ellipsis)),
         actions: [
+          if (settings.searchBarInAppBar && widget.pagerInfo != null)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  "${widget.pagerInfo!.currentIndex + 1} / ${widget.pagerInfo!.totalCount}",
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+          if (widget.pagerInfo != null) ...[
+            IconButton(
+              tooltip: locale.previousWord,
+              icon: const Icon(Icons.chevron_left),
+              onPressed: widget.pagerInfo!.onPrevious,
+            ),
+            IconButton(
+              tooltip: locale.nextWord,
+              icon: const Icon(Icons.chevron_right),
+              onPressed: widget.pagerInfo!.onNext,
+            ),
+          ],
           IconButton(
-            tooltip: AppLocalizations.of(context)!.copy,
+            tooltip: locale.copy,
             icon: const Icon(Icons.copy),
             onPressed: () => app_utils.addToClipboard(context, widget.word),
           ),

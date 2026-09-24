@@ -50,6 +50,7 @@ Widget buildWebView(String word, int id, bool isExpansion) {
         data: (content) {
           if (Platform.isAndroid) {
             return WebviewAndroid(
+              word: word,
               content: content,
               dictId: id,
               isExpansion: isExpansion,

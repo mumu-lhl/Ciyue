@@ -67,17 +67,17 @@ final validDictIdsProvider = FutureProvider.family<List<int>, String>((
 });
 
 /// Notifier for managing the heights of multiple WebViews.
-class WebViewHeightsNotifier extends Notifier<Map<int, double>> {
+class WebViewHeightsNotifier extends Notifier<Map<String, double>> {
   @override
-  Map<int, double> build() => {};
+  Map<String, double> build() => {};
 
-  void setHeight(int dictId, double height) {
-    state = {...state, dictId: height};
+  void setHeight(String word, int dictId, double height) {
+    state = {...state, "$word:$dictId": height};
   }
 }
 
 /// Provider for managing WebView heights.
 final webviewHeightsProvider =
-    NotifierProvider<WebViewHeightsNotifier, Map<int, double>>(
+    NotifierProvider<WebViewHeightsNotifier, Map<String, double>>(
       WebViewHeightsNotifier.new,
     );

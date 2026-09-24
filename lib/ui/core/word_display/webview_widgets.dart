@@ -45,12 +45,14 @@ UnmodifiableListView<UserScript> dictionaryUserScripts() {
 }
 
 class WebviewAndroid extends ConsumerStatefulWidget {
+  final String word;
   final String content;
   final int dictId;
   final bool isExpansion;
 
   const WebviewAndroid({
     super.key,
+    this.word = "",
     required this.content,
     required this.dictId,
     required this.isExpansion,
@@ -66,7 +68,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
     final settings = ref.watch(settingsProvider);
     final dictManager = ref.watch(dictManagerProvider);
     final heights = ref.watch(webviewHeightsProvider);
-    final height = heights[widget.dictId] ?? 0;
+    final height = heights["${widget.word}:${widget.dictId}"] ?? 0;
 
     final isLightTheme =
         settings.themeMode == ThemeMode.light ||
@@ -167,7 +169,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
               double newHeight = args[0].toDouble();
               ref
                   .read(webviewHeightsProvider.notifier)
-                  .setHeight(widget.dictId, newHeight);
+                  .setHeight(widget.word, widget.dictId, newHeight);
             },
           );
         }

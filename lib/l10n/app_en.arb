@@ -413,5 +413,9 @@
   "noDictionariesFound": "No dictionaries found",
   "@noDictionariesFound": {},
   "exitApp": "Exit App",
-  "@exitApp": {}
+  "@exitApp": {},
+  "previousWord": "Previous word",
+  "@previousWord": {},
+  "nextWord": "Next word",
+  "@nextWord": {}
 }

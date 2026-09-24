@@ -9,6 +9,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/expansion_display.dart";
+import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/utils.dart" as app_utils;
 import "package:ciyue/viewModels/ai_explanation.dart";
@@ -19,8 +20,9 @@ import "package:provider/provider.dart" as legacy_provider;
 
 class WordDisplay extends ConsumerStatefulWidget {
   final String word;
+  final WordPagerInfo? pagerInfo;
 
-  const WordDisplay({super.key, required this.word});
+  const WordDisplay({super.key, required this.word, this.pagerInfo});
 
   @override
   ConsumerState<WordDisplay> createState() => _WordDisplayState();
@@ -169,6 +171,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               word: widget.word,
               validDictIds: validDictIds,
               searchController: _searchController,
+              pagerInfo: widget.pagerInfo,
             ),
           );
         },
@@ -211,14 +214,53 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
 
   AppBar buildAppBar(BuildContext context, bool showTab, {Widget? title}) {
     final settings = ref.watch(settingsProvider);
+    final locale = AppLocalizations.of(context)!;
     return AppBar(
       leading: BackButton(onPressed: () => _goBack(context)),
       title: settings.searchBarInAppBar
           ? (title ?? Text(widget.word, overflow: TextOverflow.ellipsis))
-          : Text(widget.word, overflow: TextOverflow.ellipsis),
+          : (widget.pagerInfo != null
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(widget.word, overflow: TextOverflow.ellipsis),
+                      Text(
+                        "${widget.pagerInfo!.currentIndex + 1} / ${widget.pagerInfo!.totalCount}",
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  )
+                : Text(widget.word, overflow: TextOverflow.ellipsis)),
       actions: [
+        if (settings.searchBarInAppBar && widget.pagerInfo != null)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                "${widget.pagerInfo!.currentIndex + 1} / ${widget.pagerInfo!.totalCount}",
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+        if (widget.pagerInfo != null) ...[
+          IconButton(
+            tooltip: locale.previousWord,
+            icon: const Icon(Icons.chevron_left),
+            onPressed: widget.pagerInfo!.onPrevious,
+          ),
+          IconButton(
+            tooltip: locale.nextWord,
+            icon: const Icon(Icons.chevron_right),
+            onPressed: widget.pagerInfo!.onNext,
+          ),
+        ],
         IconButton(
-          tooltip: AppLocalizations.of(context)!.copy,
+          tooltip: locale.copy,
           icon: const Icon(Icons.copy),
           onPressed: () => app_utils.addToClipboard(context, widget.word),
         ),
@@ -266,7 +308,12 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
       for (final id in validDictIds)
         KeepAliveWidget(key: ValueKey("dict_$id"), child: _buildWebView(id)),
     ];
-    return TabBarView(children: children);
+    return TabBarView(
+      physics: widget.pagerInfo != null
+          ? const NeverScrollableScrollPhysics()
+          : null,
+      children: children,
+    );
   }
 
   Widget _buildWebView(int id) {
