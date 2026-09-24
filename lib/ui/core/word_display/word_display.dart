@@ -7,6 +7,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
+import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/expansion_display.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
@@ -110,9 +111,19 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   word: widget.word,
                   showAIButtons: settings.aiExplainWord,
                 ),
-                body: settings.aiExplainWord
-                    ? AIExplainView(word: widget.word)
-                    : _buildWebView(validDictIds[0]),
+                body: Stack(
+                  children: [
+                    settings.aiExplainWord
+                        ? AIExplainView(word: widget.word)
+                        : _buildWebView(validDictIds[0]),
+                    const Positioned(
+                      left: 16,
+                      right: 16,
+                      bottom: 16,
+                      child: FloatingAudioIndicator(),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -142,20 +153,36 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                           );
                         },
                       ),
-                      body: Column(
+                      body: Stack(
                         children: [
-                          Expanded(
-                            child: buildTabView(
-                              context,
-                              validDictIds: validDictIds,
-                            ),
+                          Column(
+                            children: [
+                              Expanded(
+                                child: buildTabView(
+                                  context,
+                                  validDictIds: validDictIds,
+                                ),
+                              ),
+                              if (settings.tabBarPosition ==
+                                      TabBarPosition.bottom &&
+                                  showTab)
+                                buildTabBar(context),
+                              if (!settings.searchBarInAppBar &&
+                                  searchBar != null)
+                                searchBar,
+                            ],
                           ),
-                          if (settings.tabBarPosition ==
-                                  TabBarPosition.bottom &&
-                              showTab)
-                            buildTabBar(context),
-                          if (!settings.searchBarInAppBar && searchBar != null)
-                            searchBar,
+                          Positioned(
+                            left: 16,
+                            right: 16,
+                            bottom:
+                                (settings.tabBarPosition ==
+                                        TabBarPosition.bottom &&
+                                    showTab)
+                                ? 64
+                                : 16,
+                            child: const FloatingAudioIndicator(),
+                          ),
                         ],
                       ),
                     );

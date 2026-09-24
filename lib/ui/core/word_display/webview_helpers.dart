@@ -104,7 +104,11 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
           continue;
         }
 
-        await playSound(data, lookupMimeType(filename)!);
+        await playSound(
+          data,
+          lookupMimeType(filename)!,
+          label: basenameWithoutExtension(filename),
+        );
         talker.info("Playing sound (1): $filename");
         return NavigationActionPolicy.CANCEL;
       }

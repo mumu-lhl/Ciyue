@@ -6,6 +6,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
+import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
@@ -178,15 +179,25 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
         word: widget.word,
         showAIButtons: isAIExplainTabSelected,
       ),
-      body: SingleChildScrollView(
-        child: ExpansionPanelList(
-          expansionCallback: (int index, bool isExpanded) {
-            setState(() {
-              _isExpanded[index] = isExpanded;
-            });
-          },
-          children: panels,
-        ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: ExpansionPanelList(
+              expansionCallback: (int index, bool isExpanded) {
+                setState(() {
+                  _isExpanded[index] = isExpanded;
+                });
+              },
+              children: panels,
+            ),
+          ),
+          const Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16,
+            child: FloatingAudioIndicator(),
+          ),
+        ],
       ),
     );
   }

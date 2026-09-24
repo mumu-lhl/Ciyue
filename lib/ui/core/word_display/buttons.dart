@@ -5,6 +5,7 @@ import "package:ciyue/services/backup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/tags_list.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
+import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/wordbook.dart";
@@ -61,16 +62,39 @@ class _ButtonState extends State<Button> {
 
   Widget buildReadLoudlyButton(BuildContext context, String word) {
     final colorScheme = Theme.of(context).colorScheme;
+    final audioModel = Provider.of<AudioModel?>(context);
+    final isPlaying = audioModel?.isWordPlaying(word) ?? false;
 
-    return FloatingActionButton.small(
-      heroTag: "readLoudly_$word",
-      tooltip: AppLocalizations.of(context)!.readLoudly,
-      foregroundColor: colorScheme.primary,
-      backgroundColor: colorScheme.primaryContainer,
-      child: const Icon(Icons.volume_up),
-      onPressed: () async {
-        await playSoundOfWord(word, context.read<AudioModel>().mddAudioList);
-      },
+    return PulsingFab(
+      isPulsing: isPlaying,
+      ringColor: colorScheme.primary,
+      child: FloatingActionButton.small(
+        heroTag: "readLoudly_$word",
+        tooltip: AppLocalizations.of(context)!.readLoudly,
+        foregroundColor: colorScheme.primary,
+        backgroundColor: colorScheme.primaryContainer,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: isPlaying
+              ? AudioWaveformIcon(
+                  key: const ValueKey("playing"),
+                  color: colorScheme.primary,
+                  size: 20,
+                )
+              : const Icon(Icons.volume_up, key: ValueKey("idle")),
+        ),
+        onPressed: () async {
+          if (audioModel != null) {
+            if (audioModel.isWordPlaying(word)) {
+              await audioModel.stopAudio();
+            } else {
+              await audioModel.playWord(word);
+            }
+          } else {
+            await playSoundOfWord(word, []);
+          }
+        },
+      ),
     );
   }
 

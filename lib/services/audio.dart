@@ -6,6 +6,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/mdd_reader_pool.dart";
+import "package:ciyue/viewModels/audio.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
@@ -19,7 +20,16 @@ Future<List<String>> findMddAudioFilesOnAndroid(String? directory) async {
   return mddFiles;
 }
 
-Future<void> playSound(Uint8List audio, String mimeType) async {
+Future<void> playSound(
+  Uint8List audio,
+  String mimeType, {
+  String? label,
+}) async {
+  if (AudioModel.instance != null) {
+    await AudioModel.instance!.playAudioBytes(audio, mimeType, label: label);
+    return;
+  }
+
   final player = AudioPlayer();
   await player.setSourceBytes(audio, mimeType: mimeType);
   await player.resume();
@@ -32,6 +42,11 @@ Future<void> playSoundOfWord(
   String word,
   List<MddAudioListData> mddAudioList,
 ) async {
+  if (AudioModel.instance != null) {
+    await AudioModel.instance!.playWord(word, mddList: mddAudioList);
+    return;
+  }
+
   if (mddAudioList.isNotEmpty) {
     final player = AudioPlayer();
 
