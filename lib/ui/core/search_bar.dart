@@ -30,17 +30,31 @@ class WordSearchBarWithSuggestions extends StatefulWidget {
 
 class _WordSearchBarWithSuggestionsState
     extends State<WordSearchBarWithSuggestions> {
+  bool get _isViewOpen =>
+      widget.controller.isAttached && widget.controller.isOpen;
+
   @override
   void initState() {
     super.initState();
-    widget.controller.text = widget.word;
+    if (!_isViewOpen) {
+      widget.controller.text = widget.word;
+    }
   }
 
   @override
   void didUpdateWidget(covariant WordSearchBarWithSuggestions oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.word != oldWidget.word) {
+    if (widget.word != oldWidget.word && !_isViewOpen) {
       widget.controller.text = widget.word;
+    }
+  }
+
+  void _selectAllText(SearchController controller) {
+    if (controller.text.isNotEmpty) {
+      controller.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: controller.text.length,
+      );
     }
   }
 
@@ -50,6 +64,12 @@ class _WordSearchBarWithSuggestionsState
       child: Center(
         child: SearchAnchor(
           viewHintText: AppLocalizations.of(context)!.search,
+          viewOnOpen: () => _selectAllText(widget.controller),
+          viewOnClose: () {
+            if (widget.word.isNotEmpty && !widget.isHome) {
+              widget.controller.text = widget.word;
+            }
+          },
           builder: (context, controller) => SearchBar(
             autoFocus: widget.autoFocus,
             focusNode: widget.focusNode,
@@ -60,7 +80,10 @@ class _WordSearchBarWithSuggestionsState
               minHeight: 42,
               maxWidth: 500,
             ),
-            onTap: () => controller.openView(),
+            onTap: () {
+              _selectAllText(controller);
+              controller.openView();
+            },
             onChanged: (_) => controller.openView(),
             leading: const Icon(Icons.search),
           ),

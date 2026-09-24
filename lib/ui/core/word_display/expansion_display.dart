@@ -16,11 +16,13 @@ import "package:go_router/go_router.dart";
 class ExpansionWordDisplay extends ConsumerStatefulWidget {
   final String word;
   final List<int> validDictIds;
+  final SearchController? searchController;
 
   const ExpansionWordDisplay({
     super.key,
     required this.word,
     required this.validDictIds,
+    this.searchController,
   });
 
   @override
@@ -30,7 +32,8 @@ class ExpansionWordDisplay extends ConsumerStatefulWidget {
 
 class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
   late List<bool> _isExpanded;
-  final SearchController _searchController = SearchController();
+  late final SearchController _searchController;
+  late final bool _ownsController;
 
   Widget? _buildSearchBar(Settings settings) {
     return buildTitle(widget.word, settings, controller: _searchController);
@@ -48,13 +51,17 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
 
   @override
   void dispose() {
-    _searchController.dispose();
+    if (_ownsController) {
+      _searchController.dispose();
+    }
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+    _ownsController = widget.searchController == null;
+    _searchController = widget.searchController ?? SearchController();
     // We can't use ref here easily for initialization if it depends on ref.watch,
     // but since settings is a singleton for now, it's okay.
     // Long term we should probably pass settings in or use ref in build.

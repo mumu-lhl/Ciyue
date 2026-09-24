@@ -168,6 +168,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             child: ExpansionWordDisplay(
               word: widget.word,
               validDictIds: validDictIds,
+              searchController: _searchController,
             ),
           );
         },
