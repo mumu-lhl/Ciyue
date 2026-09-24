@@ -45,14 +45,26 @@ class _HomeState extends State<Home> {
   // When returning from a pushed route (popping back to a page within the IndexedStack),
   // Flutter's focus restoration logic might incorrectly grant focus to a FocusNode
   // on an *inactive* (but still existing in the tree) page within the IndexedStack.
-  // Wrapping each page in its own FocusScope creates distinct focus boundaries. This ensures
-  // that focus restoration correctly targets the scope of the *currently visible* page after a pop,
-  // preventing focus from unexpectedly jumping to an element on an invisible page.
-  final _pages = [
-    FocusScope(child: const HomeScreen()),
-    FocusScope(child: const AiTranslatePage()),
-    FocusScope(child: const WordBookScreen()),
-    FocusScope(child: const SettingsScreen()),
+  // Wrapping each page in its own FocusScope creates distinct focus boundaries.
+  // Setting canRequestFocus to false on inactive pages ensures that focus restoration
+  // cannot reach into invisible pages, preventing the IME from popping up unexpectedly.
+  List<Widget> get _pages => [
+    FocusScope(
+      canRequestFocus: _currentIndex == 0,
+      child: const HomeScreen(),
+    ),
+    FocusScope(
+      canRequestFocus: _currentIndex == 1,
+      child: const AiTranslatePage(),
+    ),
+    FocusScope(
+      canRequestFocus: _currentIndex == 2,
+      child: const WordBookScreen(),
+    ),
+    FocusScope(
+      canRequestFocus: _currentIndex == 3,
+      child: const SettingsScreen(),
+    ),
   ];
 
   @override
