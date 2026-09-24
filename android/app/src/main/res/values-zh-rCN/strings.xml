@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">词悦</string>
+  <string name="search_widget_name">搜索</string>
+  <string name="search_widget_hint">在词悦中搜索</string>
+  <string name="search_widget_description">在词悦中快速搜索</string>
 </resources>

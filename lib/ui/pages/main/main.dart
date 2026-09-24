@@ -1,6 +1,8 @@
 import "dart:async";
+import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/floating_window.dart";
@@ -16,6 +18,7 @@ import "package:ciyue/viewModels/home.dart";
 import "package:material_ui/material_ui.dart";
 import "package:ciyue/services/toast.dart";
 import "package:flutter/services.dart";
+import "package:home_widget/home_widget.dart";
 import "package:provider/provider.dart";
 
 class Home extends StatefulWidget {
@@ -49,10 +52,7 @@ class _HomeState extends State<Home> {
   // Setting canRequestFocus to false on inactive pages ensures that focus restoration
   // cannot reach into invisible pages, preventing the IME from popping up unexpectedly.
   List<Widget> get _pages => [
-    FocusScope(
-      canRequestFocus: _currentIndex == 0,
-      child: const HomeScreen(),
-    ),
+    FocusScope(canRequestFocus: _currentIndex == 0, child: const HomeScreen()),
     FocusScope(
       canRequestFocus: _currentIndex == 1,
       child: const AiTranslatePage(),
@@ -66,6 +66,22 @@ class _HomeState extends State<Home> {
       child: const SettingsScreen(),
     ),
   ];
+
+  StreamSubscription<Uri?>? _widgetClickSubscription;
+
+  void _handleWidgetClick(Uri? uri) {
+    if (uri?.host == "search") {
+      router.go("/");
+      setState(() {
+        _currentIndex = 0;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<HomeModel>().focusSearchBar();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,5 +225,18 @@ class _HomeState extends State<Home> {
         _currentIndex = index;
       });
     };
+
+    if (Platform.isAndroid) {
+      HomeWidget.initiallyLaunchedFromHomeWidget().then(_handleWidgetClick);
+      _widgetClickSubscription = HomeWidget.widgetClicked.listen(
+        _handleWidgetClick,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _widgetClickSubscription?.cancel();
+    super.dispose();
   }
 }

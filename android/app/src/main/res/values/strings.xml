@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">Ciyue</string>
+  <string name="search_widget_name">Search</string>
+  <string name="search_widget_hint">Search in Ciyue</string>
+  <string name="search_widget_description">Quick search in Ciyue</string>
 </resources>
