@@ -1,4 +1,5 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
@@ -13,6 +14,15 @@ class AISettingsViewModel with ChangeNotifier {
   late final TextEditingController apiKeyController;
   late final TextEditingController modelController;
   late final TextEditingController apiUrlController;
+
+  bool _isFetchingModels = false;
+  bool get isFetchingModels => _isFetchingModels;
+
+  String? _fetchError;
+  String? get fetchError => _fetchError;
+
+  List<ModelInfo> get currentModels =>
+      ModelProviderManager.getModels(_provider);
 
   AISettingsViewModel(this._aiPrompts, this._homeModel) {
     apiKeyController = TextEditingController();
@@ -32,11 +42,11 @@ class AISettingsViewModel with ChangeNotifier {
     apiUrlController.text = settings.aiAPIUrl;
 
     final currentProvider = ModelProviderManager.modelProviders[_provider]!;
-    if (!currentProvider.models.any(
-          (m) => m.originName == modelController.text,
-        ) &&
-        !currentProvider.allowCustomModel) {
-      modelController.text = currentProvider.models[0].originName;
+    final availableModels = currentModels;
+    if (!availableModels.any((m) => m.originName == modelController.text) &&
+        !currentProvider.allowCustomModel &&
+        availableModels.isNotEmpty) {
+      modelController.text = availableModels[0].originName;
       _saveAiProviderConfig();
     }
   }
@@ -66,11 +76,11 @@ class AISettingsViewModel with ChangeNotifier {
     final currentProvider =
         ModelProviderManager.modelProviders[_provider] ??
         ModelProviderManager.modelProviders.values.first;
-    if (!currentProvider.models.any(
-          (m) => m.originName == modelController.text,
-        ) &&
-        !currentProvider.allowCustomModel) {
-      modelController.text = currentProvider.models[0].originName;
+    final availableModels = ModelProviderManager.getModels(_provider);
+    if (!availableModels.any((m) => m.originName == modelController.text) &&
+        !currentProvider.allowCustomModel &&
+        availableModels.isNotEmpty) {
+      modelController.text = availableModels[0].originName;
     }
     apiKeyController.text = config["apiKey"] ?? "";
 
@@ -102,6 +112,39 @@ class AISettingsViewModel with ChangeNotifier {
     if (apiUrlController.text != apiUrl) apiUrlController.text = apiUrl;
     settings.setAiAPIUrl(apiUrl);
     notifyListeners();
+  }
+
+  Future<bool> fetchModels() async {
+    _isFetchingModels = true;
+    _fetchError = null;
+    notifyListeners();
+
+    try {
+      final models = await ModelProviderManager.fetchModels(
+        provider: _provider,
+        apiKey: apiKeyController.text,
+        customApiUrl: apiUrlController.text,
+      );
+
+      if (models.isNotEmpty) {
+        await settings.saveFetchedModels(_provider, models);
+        final currentModelText = modelController.text;
+        if (!models.any((m) => m.originName == currentModelText) &&
+            !ModelProviderManager.modelProviders[_provider]!.allowCustomModel) {
+          modelController.text = models.first.originName;
+          _saveAiProviderConfig();
+        }
+      }
+      _isFetchingModels = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      talker.error("Failed to fetch models for $_provider", e);
+      _fetchError = e.toString().replaceFirst("Exception: ", "");
+      _isFetchingModels = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   @override

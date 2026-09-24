@@ -257,6 +257,7 @@ const preferencesAllowList = <String>{
   "skipTaggedWord",
   "aiProvider",
   "aiProviderConfigs",
+  "aiProviderFetchedModels",
   "aiExplainWord",
   "includePrereleaseUpdates",
 

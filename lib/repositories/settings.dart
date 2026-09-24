@@ -1,6 +1,7 @@
 import "dart:convert";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/models/hunspell.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -47,6 +48,7 @@ class Settings {
   late String aiProvider;
   late bool aiExplainWord;
   Map<String, Map<String, dynamic>> aiProviderConfigs = {};
+  Map<String, List<Map<String, String>>> aiProviderFetchedModels = {};
 
   late String? ttsEngine;
   late String? ttsLanguage;
@@ -138,6 +140,22 @@ class Settings {
           );
     }
 
+    final aiProviderFetchedModelsString = prefs.getString(
+      "aiProviderFetchedModels",
+    );
+    if (aiProviderFetchedModelsString != null) {
+      try {
+        final decoded =
+            jsonDecode(aiProviderFetchedModelsString) as Map<String, dynamic>;
+        aiProviderFetchedModels = decoded.map((k, v) {
+          final list = (v as List)
+              .map((item) => Map<String, String>.from(item as Map))
+              .toList();
+          return MapEntry(k, list);
+        });
+      } catch (_) {}
+    }
+
     final tabBarPositionString = prefs.getString("tabBarPosition");
     if (tabBarPositionString == null) {
       tabBarPosition = TabBarPosition.top;
@@ -174,6 +192,27 @@ class Settings {
     currentConfig["apiKey"] = apiKey;
     aiProviderConfigs[provider] = currentConfig;
     await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
+  }
+
+  List<ModelInfo> getFetchedModels(String provider) {
+    final list = aiProviderFetchedModels[provider];
+    if (list == null || list.isEmpty) return [];
+    return list
+        .map((m) => ModelInfo(m["originName"]!, m["shownName"]!))
+        .toList();
+  }
+
+  Future<void> saveFetchedModels(
+    String provider,
+    List<ModelInfo> models,
+  ) async {
+    aiProviderFetchedModels[provider] = models
+        .map((m) => {"originName": m.originName, "shownName": m.shownName})
+        .toList();
+    await prefs.setString(
+      "aiProviderFetchedModels",
+      jsonEncode(aiProviderFetchedModels),
+    );
   }
 
   Future<void> setAiAPIUrl(String apiUrl) async {
