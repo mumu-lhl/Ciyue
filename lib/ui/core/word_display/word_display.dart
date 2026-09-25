@@ -22,8 +22,14 @@ import "package:provider/provider.dart" as legacy_provider;
 class WordDisplay extends ConsumerStatefulWidget {
   final String word;
   final WordPagerInfo? pagerInfo;
+  final int? initialDictId;
 
-  const WordDisplay({super.key, required this.word, this.pagerInfo});
+  const WordDisplay({
+    super.key,
+    required this.word,
+    this.pagerInfo,
+    this.initialDictId,
+  });
 
   @override
   ConsumerState<WordDisplay> createState() => _WordDisplayState();
@@ -129,10 +135,20 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           }
 
           if (settings.dictionarySwitchStyle == DictionarySwitchStyle.tag) {
+            int initialTabIndex = 0;
+            if (widget.initialDictId != null) {
+              final targetIndex = validDictIds.indexOf(widget.initialDictId!);
+              if (targetIndex != -1) {
+                initialTabIndex = settings.aiExplainWord
+                    ? targetIndex + 1
+                    : targetIndex;
+              }
+            }
+
             return legacy_provider.ChangeNotifierProvider(
               create: (_) => AIExplanationModel(),
               child: DefaultTabController(
-                initialIndex: 0,
+                initialIndex: initialTabIndex,
                 length: dictsLength,
                 child: Builder(
                   builder: (context) {

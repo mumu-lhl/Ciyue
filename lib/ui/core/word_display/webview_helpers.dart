@@ -73,7 +73,7 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
       }
 
       if (context.mounted) {
-        context.push("/word/${Uri.encodeComponent(word)}");
+        context.push("/word/${Uri.encodeComponent(word)}?dictId=$dictId");
       }
     } else if (url.scheme == "sound") {
       final filename = Uri.decodeFull(url.toString())

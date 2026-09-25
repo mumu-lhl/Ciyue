@@ -65,7 +65,12 @@ final router = GoRouter(
           listen: false,
         ).add(word!);
 
-        return WordDisplay(word: word);
+        final dictIdParam = state.uri.queryParameters["dictId"];
+        final initialDictId = dictIdParam != null
+            ? int.tryParse(dictIdParam)
+            : null;
+
+        return WordDisplay(word: word, initialDictId: initialDictId);
       },
     ),
     GoRoute(

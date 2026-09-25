@@ -109,7 +109,9 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
           id: 2,
           title: locale.lookup,
           action: () async {
-            context.push("/word/${Uri.encodeComponent(selectedText)}");
+            context.push(
+              "/word/${Uri.encodeComponent(selectedText)}?dictId=${widget.dictId}",
+            );
           },
         ),
         ContextMenuItem(
