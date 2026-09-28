@@ -36,7 +36,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.9
   desktop_updater: ^3.1.6
-  drift: ^2.34.3
+  drift: ^2.35.0
   drift_flutter: ^0.3.1
   dict_reader:
     git:
