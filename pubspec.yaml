@@ -80,7 +80,7 @@ dependencies:
   tray_manager: ^0.5.3
   window_manager: ^0.5.2
   hotkey_manager: ^0.2.3
-  fuzzy: ^0.5.1
+  fuzzy: ^0.5.2
   fsrs: ^2.0.1
   flutter_riverpod: ^3.4.2
   riverpod: ^3.4.2

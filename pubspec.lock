@@ -739,10 +739,10 @@ packages:
     dependency: "direct main"
     description:
       name: fuzzy
-      sha256: af5fbd36f2f8de0663a5b562ef5ca209aea957e81a2f0e97f97475cfbed044ec
+      sha256: "5ab35514199b09662dd73fdec5f3f446dcae88c51fdab1aa24bb29adc30f0847"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.1"
+    version: "0.5.2"
   glob:
     dependency: transitive
     description:
