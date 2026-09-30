@@ -1,16 +1,72 @@
 import "package:ciyue/core/app_initialization.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/search_bar.dart";
+import "package:ciyue/viewModels/dictionary.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:flutter_test/flutter_test.dart";
+import "package:go_router/go_router.dart";
 import "package:material_ui/material_ui.dart";
+import "package:provider/provider.dart";
 import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
 import "package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart";
 
 void main() {
-  setUp(() async {
+  setUpAll(() async {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
     await initPrefs();
+  });
+
+  testWidgets("home search clears submitted text when auto-remove is enabled", (
+    tester,
+  ) async {
+    settings.autoRemoveSearchWord = true;
+    final controller = SearchController();
+    addTearDown(controller.dispose);
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: "/",
+          builder: (context, state) => Scaffold(
+            body: WordSearchBarWithSuggestions(
+              word: "apple",
+              controller: controller,
+              isHome: true,
+            ),
+          ),
+        ),
+        GoRoute(
+          path: "/word/:word",
+          builder: (context, state) =>
+              Scaffold(body: Text("opened:${state.pathParameters["word"]}")),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<HistoryModel>(
+            create: (_) => _TestHistoryModel(),
+          ),
+          ChangeNotifierProvider(create: (_) => DictManagerModel()),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.tap(find.byType(SearchBar));
+    await tester.pumpAndSettle();
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+
+    expect(find.text("opened:apple"), findsOneWidget);
+    expect(controller.text, "");
   });
 
   testWidgets(
@@ -20,13 +76,16 @@ void main() {
       addTearDown(controller.dispose);
 
       Widget buildHost({required String word}) {
-        return MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: WordSearchBarWithSuggestions(
-              word: word,
-              controller: controller,
+        return ChangeNotifierProvider(
+          create: (_) => DictManagerModel(),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: WordSearchBarWithSuggestions(
+                word: word,
+                controller: controller,
+              ),
             ),
           ),
         );
@@ -72,4 +131,12 @@ void main() {
       expect(controller.text, "apple");
     },
   );
+}
+
+class _TestHistoryModel extends HistoryModel {
+  @override
+  void addHistory(String word) {}
+
+  @override
+  Future<void> loadHistory() async {}
 }

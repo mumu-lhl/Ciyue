@@ -6,6 +6,7 @@ import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 import "body.dart";
+import "group_switcher.dart";
 import "recommended.dart";
 
 class HomeScreen extends StatelessWidget {
@@ -16,10 +17,16 @@ class HomeScreen extends StatelessWidget {
     context.select<HomeModel, int>((value) => value.state);
     context.select<DictManagerModel, bool>((value) => value.isEmpty);
 
-    if (dictManager.isEmpty && !settings.aiExplainWord) {
-      return RecommendedDictionaries();
-    }
+    final content = dictManager.isEmpty && !settings.aiExplainWord
+        ? const RecommendedDictionaries()
+        : const HomeBody();
 
-    return const HomeBody();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const HomeGroupSwitcher(),
+        Expanded(child: content),
+      ],
+    );
   }
 }

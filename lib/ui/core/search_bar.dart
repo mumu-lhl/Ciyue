@@ -2,6 +2,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
+import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
@@ -58,6 +59,18 @@ class _WordSearchBarWithSuggestionsState
     }
   }
 
+  void _openWord(SearchController controller, String word) {
+    final normalizedWord = word.trim();
+    if (normalizedWord.isEmpty) return;
+
+    context.read<HistoryModel>().addHistory(normalizedWord);
+    context.push("/word/${Uri.encodeComponent(normalizedWord)}");
+
+    if (widget.isHome && settings.autoRemoveSearchWord) {
+      controller.text = "";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -89,15 +102,14 @@ class _WordSearchBarWithSuggestionsState
           ),
           searchController: widget.controller,
           isFullScreen: !isLargeScreen(context),
-          viewOnSubmitted: (String word) {
-            final normalizedWord = word.trim();
-            if (normalizedWord.isNotEmpty) {
-              context.read<HistoryModel>().addHistory(normalizedWord);
-              context.push("/word/${Uri.encodeComponent(normalizedWord)}");
-            }
-          },
+          viewOnSubmitted: (String word) => _openWord(widget.controller, word),
           suggestionsBuilder:
               (BuildContext context, SearchController controller) async {
+                while (context.read<DictManagerModel>().isSwitchingGroup) {
+                  await Future.delayed(const Duration(milliseconds: 40));
+                  if (!context.mounted) return const <Widget>[];
+                }
+
                 final searchWord = controller.text.trim();
 
                 if (searchWord.isEmpty) {
@@ -118,12 +130,7 @@ class _WordSearchBarWithSuggestionsState
                     trailing: const Icon(Icons.arrow_forward),
                     onTap: () {
                       if (!context.mounted) return;
-                      context.read<HistoryModel>().addHistory(word);
-                      context.push("/word/${Uri.encodeComponent(word)}");
-
-                      if (widget.isHome && settings.autoRemoveSearchWord) {
-                        controller.text = "";
-                      }
+                      _openWord(controller, word);
                     },
                   );
                 }

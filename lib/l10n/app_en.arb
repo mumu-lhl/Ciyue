@@ -156,6 +156,22 @@
   "@skipTaggedWord": {},
   "dictionaryGroups": "Dictionary Groups",
   "@dictionaryGroups": {},
+  "currentDictionaryGroup": "Dictionary group: {group}",
+  "@currentDictionaryGroup": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "switchingToDictionaryGroup": "Switching to {group}…",
+  "@switchingToDictionaryGroup": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
   "history": "History",
   "@history": {},
   "appearance": "Appearance",

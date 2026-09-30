@@ -107,6 +107,8 @@ class DictManager {
   bool contain(int id) => dicts.keys.contains(id);
 
   Future<void> setCurrentGroup(int id) async {
+    if (id == groupId) return;
+
     _isLoading = true;
 
     try {

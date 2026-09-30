@@ -3,8 +3,10 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:material_ui/material_ui.dart";
 
 class DictManagerModel extends ChangeNotifier {
-  int groupId = dictManager.groupId;
+  int get groupId => dictManager.groupId;
   bool isEmpty = dictManager.isEmpty;
+  bool isSwitchingGroup = false;
+  int? pendingGroupId;
 
   int state = 0;
 
@@ -35,12 +37,19 @@ class DictManagerModel extends ChangeNotifier {
   }
 
   Future<void> setCurrentGroup(int id) async {
-    await dictManager.setCurrentGroup(id);
-    groupId = id;
+    if (id == groupId || isSwitchingGroup) return;
 
-    state += 1;
+    isSwitchingGroup = true;
+    pendingGroupId = id;
+    notifyListeners();
 
-    if (!checkIsEmpty()) {
+    try {
+      await dictManager.setCurrentGroup(id);
+    } finally {
+      pendingGroupId = null;
+      isSwitchingGroup = false;
+      isEmpty = dictManager.isEmpty;
+      state += 1;
       notifyListeners();
     }
   }

@@ -10,9 +10,10 @@ class HomeDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final groupId = context.select<DictManagerModel, int>(
-      (value) => value.groupId,
-    );
+    final (groupId, isSwitchingGroup, _) = context
+        .select<DictManagerModel, (int, bool, int)>(
+          (model) => (model.groupId, model.isSwitchingGroup, model.state),
+        );
 
     return Drawer(
       elevation: 10,
@@ -40,12 +41,16 @@ class HomeDrawer extends StatelessWidget {
                         ? AppLocalizations.of(context)!.default_
                         : group.name,
                   ),
-                  onTap: () async {
-                    context.pop();
-                    await context.read<DictManagerModel>().setCurrentGroup(
-                      group.id,
-                    );
-                  },
+                  onTap: isSwitchingGroup
+                      ? null
+                      : () async {
+                          context.pop();
+                          if (group.id != groupId) {
+                            await context
+                                .read<DictManagerModel>()
+                                .setCurrentGroup(group.id);
+                          }
+                        },
                 ),
               ),
           ],
