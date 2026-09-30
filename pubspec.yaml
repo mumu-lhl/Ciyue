@@ -85,7 +85,7 @@ dependencies:
   fuzzy: ^0.5.1
   fsrs: ^2.0.1
   flutter_riverpod: ^3.4.2
-  riverpod: ^3.4.2
+  riverpod: ^3.4.3
   material_ui: ^1.1.0
   simple_secure_storage: ^0.4.2
   dartssh2: ^4.1.0
