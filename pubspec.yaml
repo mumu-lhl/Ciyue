@@ -88,8 +88,6 @@ dependencies:
   riverpod: ^3.4.2
   material_ui: ^1.1.0
   simple_secure_storage: ^0.4.2
-  flutter_web_auth_2: ^4.1.0
-  google_sign_in: ^7.2.0
 
 dependency_overrides:
   flutter_inappwebview_linux:

@@ -9,9 +9,6 @@ hero:
     - theme: brand
       text: Quickstart
       link: /guide/getting-started
-    - theme: alt
-      text: Cloud sync OAuth setup
-      link: /cloud-sync-oauth
 
 features:
   - title: Support MDX/MDD

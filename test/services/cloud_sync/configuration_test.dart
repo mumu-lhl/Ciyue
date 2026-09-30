@@ -78,32 +78,6 @@ void main() {
     },
   );
 
-  test("stores OAuth provider and folder selection without persisting tokens in preferences", () async {
-    final initial = await store.load();
-    await secrets.write(
-      "ciyue.cloud_sync.oauth.googleDrive",
-      '{"accessToken":"token"}',
-    );
-
-    await store.saveOAuthConnection(
-      provider: CloudSyncProvider.googleDrive,
-      remoteRoot: "Ciyue",
-      googleDriveParentFolderId: "drive-parent",
-      googleDriveParentFolderName: "Study",
-    );
-    final loaded = await store.load();
-
-    expect(loaded.provider, CloudSyncProvider.googleDrive);
-    expect(loaded.isConfigured, isTrue);
-    expect(loaded.googleDriveParentFolderId, "drive-parent");
-    expect(loaded.googleDriveParentFolderName, "Study");
-    expect(loaded.deviceId, initial.deviceId);
-    expect(
-      await SharedPreferencesAsync().getKeys(),
-      isNot(contains("ciyue.cloud_sync.oauth.googleDrive")),
-    );
-  });
-
   test(
     "disconnect clears the secret and remote profile but keeps device ID",
     () async {
