@@ -8,6 +8,8 @@ import "package:xml/xml.dart";
 ///
 /// Paths are relative to the provider's configured root. Implementations must
 /// stage downloads locally and replace the destination only after completion.
+typedef CloudAccessTokenProvider = Future<String> Function();
+
 abstract interface class CloudFileStore {
   Future<List<CloudFileEntry>> listDirectory(String remotePath);
 

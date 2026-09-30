@@ -5,6 +5,9 @@ import "package:ciyue/services/cloud_sync/configuration.dart";
 import "package:ciyue/services/cloud_sync/coordinator.dart";
 import "package:ciyue/services/cloud_sync/dictionary_sync.dart";
 import "package:ciyue/services/cloud_sync/file_store.dart";
+import "package:ciyue/services/cloud_sync/google_drive_file_store.dart";
+import "package:ciyue/services/cloud_sync/oauth.dart";
+import "package:ciyue/services/cloud_sync/one_drive_file_store.dart";
 import "package:ciyue/services/cloud_sync/preview_service.dart";
 import "package:ciyue/services/cloud_sync/service.dart";
 import "package:ciyue/services/cloud_sync/sync_models.dart";
@@ -17,10 +20,16 @@ typedef CloudFileStoreFactory = CloudFileStore Function({
   String? password,
 });
 
+typedef CloudProviderFileStoreFactory = CloudFileStore Function({
+  required CloudSyncProvider provider,
+  required CloudAccessTokenProvider accessTokenProvider,
+  String? googleDriveParentFolderId,
+});
+
 typedef AppSupportDirectoryProvider = Future<Directory> Function();
 
 /// Application-facing operations for previewing, connecting, and syncing one
-/// WebDAV profile. The UI does not handle credentials, local state paths, or
+/// cloud profile. The UI does not handle credentials, local state paths, or
 /// cloud-space identity details directly.
 class CloudSyncSessionService {
   final AppDatabase database;
@@ -29,6 +38,8 @@ class CloudSyncSessionService {
   final CloudSyncSpaceManager spaceManager;
   final DictionarySyncService dictionarySyncService;
   final CloudFileStoreFactory fileStoreFactory;
+  final CloudProviderFileStoreFactory providerFileStoreFactory;
+  final CloudOAuthService oauthService;
   final AppSupportDirectoryProvider appSupportDirectoryProvider;
 
   CloudSyncSessionService({
@@ -38,19 +49,44 @@ class CloudSyncSessionService {
     this.spaceManager = const CloudSyncSpaceManager(),
     DictionarySyncService? dictionarySyncService,
     CloudFileStoreFactory? fileStoreFactory,
+    CloudProviderFileStoreFactory? providerFileStoreFactory,
+    CloudOAuthService? oauthService,
     AppSupportDirectoryProvider? appSupportDirectoryProvider,
   }) : previewService =
            previewService ?? CloudSyncPreviewService(database: database),
        dictionarySyncService =
            dictionarySyncService ?? DictionarySyncService(database: database),
        fileStoreFactory = fileStoreFactory ?? _webDavFileStore,
+       providerFileStoreFactory =
+           providerFileStoreFactory ?? _providerFileStore,
+       oauthService =
+           oauthService ??
+           CloudOAuthService(secretStorage: configurationStore.secretStorage),
        appSupportDirectoryProvider =
            appSupportDirectoryProvider ?? getApplicationSupportDirectory;
 
   Future<CloudSyncConfiguration> loadConfiguration() =>
       configurationStore.load();
 
+  void close() => oauthService.close();
+
+  Future<void> authorize(CloudSyncProvider provider) async {
+    if (provider == CloudSyncProvider.webDav) {
+      throw ArgumentError.value(provider, "provider");
+    }
+    await oauthService.authorize(_oauthProvider(provider));
+  }
+
+  Future<bool> isAuthorized(CloudSyncProvider provider) async =>
+      provider != CloudSyncProvider.webDav &&
+      await oauthService.isAuthorized(_oauthProvider(provider));
+
+  Future<String> accessToken(CloudSyncProvider provider) =>
+      oauthService.accessToken(_oauthProvider(provider));
+
   Future<CloudSyncPreview> preview({
+    CloudSyncProvider provider = CloudSyncProvider.webDav,
+    String? googleDriveParentFolderId,
     required String endpoint,
     required String remoteRoot,
     required String username,
@@ -59,8 +95,12 @@ class CloudSyncSessionService {
     final configuration = await configurationStore.load();
     final normalizedRoot = normalizeCloudSyncRemoteRoot(remoteRoot);
     final isSameProfile =
-        endpoint.trim() == configuration.endpoint &&
-        normalizedRoot == configuration.remoteRoot;
+        provider == configuration.provider &&
+        normalizedRoot == configuration.remoteRoot &&
+        (provider == CloudSyncProvider.webDav
+            ? endpoint.trim() == configuration.endpoint
+            : googleDriveParentFolderId ==
+                  configuration.googleDriveParentFolderId);
     final expectedSpaceId = isSameProfile ? configuration.spaceId : null;
     SyncSnapshot? previousLocalSnapshot;
     if (expectedSpaceId != null) {
@@ -71,9 +111,11 @@ class CloudSyncSessionService {
     }
 
     final fileStore = _createFileStore(
+      provider: provider,
       endpoint: endpoint,
       username: username,
       password: password,
+      googleDriveParentFolderId: googleDriveParentFolderId,
     );
     try {
       final dataPreview = await previewService.preview(
@@ -105,6 +147,9 @@ class CloudSyncSessionService {
   }
 
   Future<CloudSyncOutcome> connectAndSync({
+    CloudSyncProvider provider = CloudSyncProvider.webDav,
+    String? googleDriveParentFolderId,
+    String? googleDriveParentFolderName,
     required String endpoint,
     required String remoteRoot,
     required String username,
@@ -115,9 +160,11 @@ class CloudSyncSessionService {
   }) async {
     final normalizedRoot = normalizeCloudSyncRemoteRoot(remoteRoot);
     final fileStore = _createFileStore(
+      provider: provider,
       endpoint: endpoint,
       username: username,
       password: password,
+      googleDriveParentFolderId: googleDriveParentFolderId,
     );
     try {
       final spaceId = await spaceManager.resolve(
@@ -130,12 +177,21 @@ class CloudSyncSessionService {
         throw StateError("Cloud space changed after the preview.");
       }
 
-      await configurationStore.saveConnection(
-        endpoint: endpoint.trim(),
-        remoteRoot: normalizedRoot,
-        username: username.trim(),
-        password: password ?? "",
-      );
+      if (provider == CloudSyncProvider.webDav) {
+        await configurationStore.saveConnection(
+          endpoint: endpoint.trim(),
+          remoteRoot: normalizedRoot,
+          username: username.trim(),
+          password: password ?? "",
+        );
+      } else {
+        await configurationStore.saveOAuthConnection(
+          provider: provider,
+          remoteRoot: normalizedRoot,
+          googleDriveParentFolderId: googleDriveParentFolderId,
+          googleDriveParentFolderName: googleDriveParentFolderName,
+        );
+      }
       await configurationStore.saveSpaceId(spaceId);
       final outcome = await _syncWithStore(
         configuration: await configurationStore.load(),
@@ -168,13 +224,15 @@ class CloudSyncSessionService {
   Future<CloudSyncOutcome> syncConfigured() async {
     final configuration = await configurationStore.load();
     if (!configuration.isConfigured || configuration.spaceId == null) {
-      throw StateError("WebDAV cloud sync has not been connected yet.");
+      throw StateError("Cloud sync has not been connected yet.");
     }
 
     final fileStore = _createFileStore(
+      provider: configuration.provider,
       endpoint: configuration.endpoint,
       username: configuration.username,
       password: configuration.password,
+      googleDriveParentFolderId: configuration.googleDriveParentFolderId,
     );
     try {
       final spaceId = await spaceManager.resolve(
@@ -193,7 +251,21 @@ class CloudSyncSessionService {
     }
   }
 
-  Future<void> disconnect() => configurationStore.disconnect();
+  Future<void> disconnect({CloudSyncProvider? provider}) async {
+    if (provider == null) {
+      await oauthService.disconnect();
+      await configurationStore.disconnect();
+      return;
+    }
+
+    if (provider != CloudSyncProvider.webDav) {
+      await oauthService.disconnect(_oauthProvider(provider));
+    }
+    final configuration = await configurationStore.load();
+    if (configuration.provider == provider) {
+      await configurationStore.disconnect(clearOAuthCredentials: false);
+    }
+  }
 
   Future<CloudSyncOutcome> _syncWithStore({
     required CloudSyncConfiguration configuration,
@@ -213,10 +285,21 @@ class CloudSyncSessionService {
   }
 
   CloudFileStore _createFileStore({
+    required CloudSyncProvider provider,
     required String endpoint,
     required String username,
     required String? password,
+    String? googleDriveParentFolderId,
   }) {
+    if (provider != CloudSyncProvider.webDav) {
+      return providerFileStoreFactory(
+        provider: provider,
+        googleDriveParentFolderId: googleDriveParentFolderId,
+        accessTokenProvider: oauthService.tokenProvider(
+          _oauthProvider(provider),
+        ),
+      );
+    }
     final hasUsername = username.trim().isNotEmpty;
     final hasPassword = password != null && password.isNotEmpty;
     if (hasUsername != hasPassword) {
@@ -231,6 +314,31 @@ class CloudSyncSessionService {
     );
   }
 }
+
+CloudOAuthProvider _oauthProvider(CloudSyncProvider provider) =>
+    switch (provider) {
+      CloudSyncProvider.googleDrive => CloudOAuthProvider.googleDrive,
+      CloudSyncProvider.oneDrive => CloudOAuthProvider.oneDrive,
+      CloudSyncProvider.webDav => throw ArgumentError.value(
+        provider,
+        "provider",
+      ),
+    };
+
+CloudFileStore _providerFileStore({
+  required CloudSyncProvider provider,
+  required CloudAccessTokenProvider accessTokenProvider,
+  String? googleDriveParentFolderId,
+}) => switch (provider) {
+  CloudSyncProvider.googleDrive => GoogleDriveCloudFileStore(
+    accessTokenProvider: accessTokenProvider,
+    rootFolderId: googleDriveParentFolderId ?? "root",
+  ),
+  CloudSyncProvider.oneDrive => OneDriveCloudFileStore(
+    accessTokenProvider: accessTokenProvider,
+  ),
+  CloudSyncProvider.webDav => throw ArgumentError.value(provider, "provider"),
+};
 
 CloudFileStore _webDavFileStore({
   required Uri baseUri,

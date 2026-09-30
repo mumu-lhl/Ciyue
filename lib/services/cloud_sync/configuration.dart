@@ -3,6 +3,8 @@ import "dart:math";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:simple_secure_storage/simple_secure_storage.dart";
 
+enum CloudSyncProvider { webDav, googleDrive, oneDrive }
+
 abstract interface class CloudSecretStorage {
   Future<String?> read(String key);
 
@@ -28,6 +30,10 @@ class SimpleSecureCloudSecretStorage implements CloudSecretStorage {
 class CloudSyncConfiguration {
   final String endpoint;
   final String remoteRoot;
+  final CloudSyncProvider provider;
+  final bool oauthConnected;
+  final String? googleDriveParentFolderId;
+  final String? googleDriveParentFolderName;
   final String username;
   final String? password;
   final String deviceId;
@@ -36,20 +42,31 @@ class CloudSyncConfiguration {
   const CloudSyncConfiguration({
     required this.endpoint,
     required this.remoteRoot,
+    this.provider = CloudSyncProvider.webDav,
+    this.oauthConnected = false,
+    this.googleDriveParentFolderId,
+    this.googleDriveParentFolderName,
     required this.username,
     required this.password,
     required this.deviceId,
     required this.spaceId,
   });
 
-  bool get isConfigured => endpoint.isNotEmpty;
+  bool get isConfigured => provider == CloudSyncProvider.webDav
+      ? endpoint.isNotEmpty
+      : oauthConnected;
 }
 
-/// Persists non-secret WebDAV settings in preferences and credentials in the
-/// operating system's secure storage.
+/// Persists the cloud profile in preferences and credentials in the operating
+/// system's secure storage.
 class CloudSyncConfigurationStore {
   static const endpointKey = "cloudSyncEndpoint";
+  static const providerKey = "cloudSyncProvider";
   static const remoteRootKey = "cloudSyncRemoteRoot";
+  static const googleDriveParentFolderIdKey =
+      "cloudSyncGoogleDriveParentFolderId";
+  static const googleDriveParentFolderNameKey =
+      "cloudSyncGoogleDriveParentFolderName";
   static const usernameKey = "cloudSyncUsername";
   static const deviceIdKey = "cloudSyncDeviceId";
   static const spaceIdKey = "cloudSyncSpaceId";
@@ -57,7 +74,10 @@ class CloudSyncConfigurationStore {
 
   static const preferenceKeys = {
     endpointKey,
+    providerKey,
     remoteRootKey,
+    googleDriveParentFolderIdKey,
+    googleDriveParentFolderNameKey,
     usernameKey,
     deviceIdKey,
     spaceIdKey,
@@ -79,9 +99,21 @@ class CloudSyncConfigurationStore {
     }
 
     final endpoint = preferences.getString(endpointKey) ?? "";
+    final provider = _providerFromName(preferences.getString(providerKey));
+    final oauthConnected =
+        provider != CloudSyncProvider.webDav &&
+        await secretStorage.read(_oauthSecretKey(provider)) != null;
     return CloudSyncConfiguration(
       endpoint: endpoint,
       remoteRoot: preferences.getString(remoteRootKey) ?? "Ciyue",
+      provider: provider,
+      oauthConnected: oauthConnected,
+      googleDriveParentFolderId: preferences.getString(
+        googleDriveParentFolderIdKey,
+      ),
+      googleDriveParentFolderName: preferences.getString(
+        googleDriveParentFolderNameKey,
+      ),
       username: preferences.getString(usernameKey) ?? "",
       password: endpoint.isEmpty
           ? null
@@ -97,13 +129,21 @@ class CloudSyncConfigurationStore {
     required String username,
     required String password,
   }) async {
+    final previousProvider = _providerFromName(
+      preferences.getString(providerKey),
+    );
     final previousEndpoint = preferences.getString(endpointKey) ?? "";
     final previousRoot = preferences.getString(remoteRootKey) ?? "Ciyue";
     final keepSpace =
-        previousEndpoint == endpoint && previousRoot == remoteRoot;
+        previousProvider == CloudSyncProvider.webDav &&
+        previousEndpoint == endpoint &&
+        previousRoot == remoteRoot;
 
+    await preferences.setString(providerKey, CloudSyncProvider.webDav.name);
     await preferences.setString(endpointKey, endpoint);
     await preferences.setString(remoteRootKey, remoteRoot);
+    await preferences.remove(googleDriveParentFolderIdKey);
+    await preferences.remove(googleDriveParentFolderNameKey);
     await preferences.setString(usernameKey, username);
     if (password.isEmpty) {
       await secretStorage.delete(_passwordKey);
@@ -114,6 +154,52 @@ class CloudSyncConfigurationStore {
     return load();
   }
 
+  Future<void> saveOAuthConnection({
+    required CloudSyncProvider provider,
+    required String remoteRoot,
+    String? googleDriveParentFolderId,
+    String? googleDriveParentFolderName,
+  }) async {
+    if (provider == CloudSyncProvider.webDav) {
+      throw ArgumentError.value(provider, "provider");
+    }
+    final previousProvider = _providerFromName(
+      preferences.getString(providerKey),
+    );
+    final previousRoot = preferences.getString(remoteRootKey) ?? "Ciyue";
+    final previousFolderId = preferences.getString(
+      googleDriveParentFolderIdKey,
+    );
+    final keepSpace =
+        previousProvider == provider &&
+        previousRoot == remoteRoot &&
+        previousFolderId == googleDriveParentFolderId;
+
+    await preferences.setString(providerKey, provider.name);
+    await preferences.setString(remoteRootKey, remoteRoot);
+    await preferences.remove(endpointKey);
+    await preferences.remove(usernameKey);
+    await preferences.remove(googleDriveParentFolderIdKey);
+    await preferences.remove(googleDriveParentFolderNameKey);
+    if (provider == CloudSyncProvider.googleDrive &&
+        googleDriveParentFolderId != null &&
+        googleDriveParentFolderId.isNotEmpty) {
+      await preferences.setString(
+        googleDriveParentFolderIdKey,
+        googleDriveParentFolderId,
+      );
+      if (googleDriveParentFolderName != null &&
+          googleDriveParentFolderName.isNotEmpty) {
+        await preferences.setString(
+          googleDriveParentFolderNameKey,
+          googleDriveParentFolderName,
+        );
+      }
+    }
+    await secretStorage.delete(_passwordKey);
+    if (!keepSpace) await preferences.remove(spaceIdKey);
+  }
+
   Future<void> saveSpaceId(String spaceId) async {
     if (spaceId.isEmpty) throw ArgumentError.value(spaceId, "spaceId");
     await preferences.setString(spaceIdKey, spaceId);
@@ -121,14 +207,34 @@ class CloudSyncConfigurationStore {
 
   Future<String?> loadSpaceId() async => preferences.getString(spaceIdKey);
 
-  Future<void> disconnect() async {
+  Future<void> disconnect({bool clearOAuthCredentials = true}) async {
     await preferences.remove(endpointKey);
+    await preferences.remove(providerKey);
     await preferences.remove(remoteRootKey);
     await preferences.remove(usernameKey);
+    await preferences.remove(googleDriveParentFolderIdKey);
+    await preferences.remove(googleDriveParentFolderNameKey);
     await preferences.remove(spaceIdKey);
     await secretStorage.delete(_passwordKey);
+    if (clearOAuthCredentials) {
+      for (final provider in [
+        CloudSyncProvider.googleDrive,
+        CloudSyncProvider.oneDrive,
+      ]) {
+        await secretStorage.delete(_oauthSecretKey(provider));
+      }
+    }
   }
 }
+
+String _oauthSecretKey(CloudSyncProvider provider) =>
+    "ciyue.cloud_sync.oauth.${provider == CloudSyncProvider.googleDrive ? "googleDrive" : "oneDrive"}";
+
+CloudSyncProvider _providerFromName(String? name) =>
+    CloudSyncProvider.values.firstWhere(
+      (provider) => provider.name == name,
+      orElse: () => CloudSyncProvider.webDav,
+    );
 
 String generateCloudSyncSpaceId() => _newSyncId("space");
 

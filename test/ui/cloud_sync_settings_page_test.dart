@@ -71,6 +71,35 @@ void main() {
     expect(find.text("Sync complete."), findsOneWidget);
   });
 
+  testWidgets("OAuth provider must be authorized before previewing", (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: CloudSyncSettingsPage(sessionService: session),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownButton<CloudSyncProvider>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("Google Drive").last);
+    await tester.pumpAndSettle();
+    expect(find.text("Connect Google Drive"), findsOneWidget);
+
+    await tester.tap(find.text("Connect Google Drive"));
+    await tester.pumpAndSettle();
+    expect(session.authorizationCalls, 1);
+    expect(find.text("Preview changes"), findsOneWidget);
+
+    await tester.tap(find.text("Preview changes"));
+    await tester.pumpAndSettle();
+    expect(session.previewCalls, 1);
+    expect(session.lastPreviewProvider, CloudSyncProvider.googleDrive);
+  });
+
   testWidgets("sends only checked dictionaries after confirmation", (
     tester,
   ) async {
@@ -106,6 +135,9 @@ void main() {
 class _FakeCloudSyncSessionService extends CloudSyncSessionService {
   int previewCalls = 0;
   int connectCalls = 0;
+  int authorizationCalls = 0;
+  bool authorized = false;
+  CloudSyncProvider? lastPreviewProvider;
   Set<String> selectedDictionaryPackageIds = const {};
   CloudSyncConfiguration configuration = const CloudSyncConfiguration(
     endpoint: "",
@@ -125,13 +157,25 @@ class _FakeCloudSyncSessionService extends CloudSyncSessionService {
   Future<CloudSyncConfiguration> loadConfiguration() async => configuration;
 
   @override
+  Future<void> authorize(CloudSyncProvider provider) async {
+    authorizationCalls++;
+    authorized = true;
+  }
+
+  @override
+  Future<bool> isAuthorized(CloudSyncProvider provider) async => authorized;
+
+  @override
   Future<CloudSyncPreview> preview({
+    CloudSyncProvider provider = CloudSyncProvider.webDav,
+    String? googleDriveParentFolderId,
     required String endpoint,
     required String remoteRoot,
     required String username,
     required String? password,
   }) async {
     previewCalls++;
+    lastPreviewProvider = provider;
     return CloudSyncPreview(
       remoteFolderExists: false,
       spaceId: "space-preview",
@@ -171,6 +215,9 @@ class _FakeCloudSyncSessionService extends CloudSyncSessionService {
 
   @override
   Future<CloudSyncOutcome> connectAndSync({
+    CloudSyncProvider provider = CloudSyncProvider.webDav,
+    String? googleDriveParentFolderId,
+    String? googleDriveParentFolderName,
     required String endpoint,
     required String remoteRoot,
     required String username,
@@ -202,7 +249,7 @@ class _FakeCloudSyncSessionService extends CloudSyncSessionService {
   }
 
   @override
-  Future<void> disconnect() async {
+  Future<void> disconnect({CloudSyncProvider? provider}) async {
     configuration = const CloudSyncConfiguration(
       endpoint: "",
       remoteRoot: "Ciyue",
