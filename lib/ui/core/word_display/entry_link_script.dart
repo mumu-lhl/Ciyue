@@ -7,7 +7,7 @@ document.addEventListener('click', function (event) {
   const anchor = target instanceof Element ? target.closest('a[href]') : null;
   if (!anchor) return;
   const href = anchor.getAttribute('href');
-  if (!/^entry:\/\//i.test(href)) return;
+  if (!/^(?:entry:\/\/|gdlookup:\/\/localhost\/)/i.test(href)) return;
   const encoded = href.replace(/[^\x00-\x7F]+/gu, function (text) {
     return encodeURI(text);
   });

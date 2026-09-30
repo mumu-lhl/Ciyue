@@ -77,7 +77,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
     final webviewSettings = InAppWebViewSettings(
       useWideViewPort: false,
       algorithmicDarkeningAllowed: !isLightTheme,
-      resourceCustomSchemes: ["entry", "sound"],
+      resourceCustomSchemes: ["entry", "gdlookup", "sound"],
       transparentBackground: true,
       useHybridComposition: true,
       webViewAssetLoader: WebViewAssetLoader(
@@ -314,7 +314,7 @@ class WebviewWindows extends ConsumerWidget {
       final webviewSettings = InAppWebViewSettings(
         useWideViewPort: false,
         algorithmicDarkeningAllowed: !isLightTheme,
-        resourceCustomSchemes: ["entry", "sound"],
+        resourceCustomSchemes: ["entry", "gdlookup", "sound"],
         transparentBackground: true,
       );
 

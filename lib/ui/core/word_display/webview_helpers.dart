@@ -11,8 +11,20 @@ import "package:go_router/go_router.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 
+bool _isEntryUrl(WebUri url) {
+  return url.scheme == "entry" ||
+      (url.scheme == "gdlookup" && url.host == "localhost");
+}
+
+String _wordFromEntryUrl(WebUri url) {
+  final encodedWord = url.scheme == "gdlookup"
+      ? url.path.replaceFirst(RegExp(r"^/"), "")
+      : url.toString().replaceFirst("entry://", "");
+  return Uri.decodeComponent(encodedWord);
+}
+
 NavigationActionPolicy navigationPolicyForUrl(WebUri url) {
-  return url.scheme == "entry" || url.scheme == "sound"
+  return _isEntryUrl(url) || url.scheme == "sound"
       ? NavigationActionPolicy.CANCEL
       : NavigationActionPolicy.ALLOW;
 }
@@ -64,9 +76,10 @@ Future<NavigationActionPolicy?> Function(
 shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
   return (controller, navigationAction) async {
     final url = navigationAction.request.url;
-    final word = Uri.decodeFull(url.toString().replaceFirst("entry://", ""));
+    if (url == null) return NavigationActionPolicy.CANCEL;
 
-    if (url!.scheme == "entry") {
+    if (_isEntryUrl(url)) {
+      final word = _wordFromEntryUrl(url);
       if (!(await dictManager.dicts[dictId]!.wordExist(word))) {
         talker.info("Word not found: ${url.toString()}");
         return NavigationActionPolicy.CANCEL;
