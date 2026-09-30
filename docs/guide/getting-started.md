@@ -13,6 +13,10 @@
 
 See [Wiki](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries).
 
+## Cloud sync
+
+See [Cloud sync setup](./cloud-sync).
+
 ## KOReader on Android
 
 Create `dictionaries.lua` under directory `koreader`:

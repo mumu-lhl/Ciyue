@@ -42,7 +42,7 @@ void main() {
         preferences: preferences,
         secretStorage: secrets,
       ),
-      fileStoreFactory: ({required baseUri, username, password}) => cloud,
+      fileStoreFactory: ({required settings}) => cloud,
       appSupportDirectoryProvider: () async => supportDirectory,
     );
   });
@@ -59,12 +59,8 @@ void main() {
     () async {
       await database.wordbookDao.addWord("apple");
 
-      final preview = await session.preview(
-        endpoint: "https://dav.example.test/",
-        remoteRoot: "Ciyue",
-        username: "",
-        password: null,
-      );
+      final settings = _webDavSettings();
+      final preview = await session.preview(settings: settings);
 
       expect(preview.remoteFolderExists, isFalse);
       expect(preview.local.wordbookEntries, 1);
@@ -73,10 +69,7 @@ void main() {
       expect((await session.loadConfiguration()).isConfigured, isFalse);
 
       final result = await session.connectAndSync(
-        endpoint: "https://dav.example.test/",
-        remoteRoot: "Ciyue",
-        username: "",
-        password: null,
+        settings: settings,
         previewedSpaceId: preview.spaceId,
       );
 
@@ -98,21 +91,14 @@ void main() {
     await mdx.writeAsString("mdx dictionary");
     await database.dictionaryListDao.add(basePath, "Lexicon");
 
-    final preview = await session.preview(
-      endpoint: "https://dav.example.test/",
-      remoteRoot: "Ciyue",
-      username: "",
-      password: null,
-    );
+    final settings = _webDavSettings();
+    final preview = await session.preview(settings: settings);
     expect(preview.dictionaryPreview!.items, hasLength(1));
     final dictionary = preview.dictionaryPreview!.items.single;
     expect(cloud.files, isEmpty);
 
     await session.connectAndSync(
-      endpoint: "https://dav.example.test/",
-      remoteRoot: "Ciyue",
-      username: "",
-      password: null,
+      settings: settings,
       previewedSpaceId: preview.spaceId,
       selectedDictionaryPackageIds: {dictionary.packageId},
       dictionaryPreview: preview.dictionaryPreview,
@@ -136,17 +122,10 @@ void main() {
     "syncs the saved profile without re-uploading an unchanged snapshot",
     () async {
       await database.wordbookDao.addWord("apple");
-      final preview = await session.preview(
-        endpoint: "https://dav.example.test/",
-        remoteRoot: "Ciyue",
-        username: "",
-        password: null,
-      );
+      final settings = _webDavSettings();
+      final preview = await session.preview(settings: settings);
       await session.connectAndSync(
-        endpoint: "https://dav.example.test/",
-        remoteRoot: "Ciyue",
-        username: "",
-        password: null,
+        settings: settings,
         previewedSpaceId: preview.spaceId,
       );
 
@@ -157,6 +136,13 @@ void main() {
     },
   );
 }
+
+CloudSyncConnectionSettings _webDavSettings() =>
+    const CloudSyncConnectionSettings(
+      endpoint: "https://dav.example.test/",
+      remoteRoot: "Ciyue",
+      username: "",
+    );
 
 class _MemoryCloudSecretStorage implements CloudSecretStorage {
   final Map<String, String> values = {};

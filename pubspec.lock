@@ -49,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.7.0"
+  asn1lib:
+    dependency: transitive
+    description:
+      name: asn1lib
+      sha256: "9a8f69025044eb466b9b60ef3bc3ac99b4dc6c158ae9c56d25eeccf5bc56d024"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.5"
   async:
     dependency: transitive
     description:
@@ -313,6 +321,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.7.1"
+  ctx:
+    dependency: transitive
+    description:
+      name: ctx
+      sha256: "27297206a6ac276a4ade24c609cbaba9406d9ce82d74d226027e9e51d3abfa82"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -337,6 +353,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.13"
+  dartssh2:
+    dependency: "direct main"
+    description:
+      name: dartssh2
+      sha256: "39359aceafcf5940b868249e3c9c6d86e4e0f989eec7417d033c943157c84c51"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.1.0"
   dbus:
     dependency: transitive
     description:
@@ -873,7 +897,7 @@ packages:
     source: hosted
     version: "2.0.0"
   http:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http
       sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
@@ -1276,6 +1300,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.2"
+  pinenacl:
+    dependency: transitive
+    description:
+      name: pinenacl
+      sha256: "57e907beaacbc3c024a098910b6240758e899674de07d6949a67b52fd984cbdf"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.0"
   platform:
     dependency: transitive
     description:
@@ -1372,6 +1404,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.4.2"
+  s3_client:
+    dependency: "direct main"
+    description:
+      name: s3_client
+      sha256: e0da69bd839f8b11308cad973b2a99f22caa988f37995a84af9785130a4d345f
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   screen_retriever:
     dependency: transitive
     description:
@@ -1608,6 +1648,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  sl:
+    dependency: transitive
+    description:
+      name: sl
+      sha256: f6551f150ecc94d087f9a52640e440e5cb5a67d775111680d1752e6e9282ac40
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   source_gen:
     dependency: transitive
     description:

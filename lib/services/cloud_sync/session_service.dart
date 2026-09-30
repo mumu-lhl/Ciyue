@@ -7,21 +7,21 @@ import "package:ciyue/services/cloud_sync/dictionary_sync.dart";
 import "package:ciyue/services/cloud_sync/file_store.dart";
 import "package:ciyue/services/cloud_sync/preview_service.dart";
 import "package:ciyue/services/cloud_sync/service.dart";
+import "package:ciyue/services/cloud_sync/s3_file_store.dart";
+import "package:ciyue/services/cloud_sync/sftp_file_store.dart";
 import "package:ciyue/services/cloud_sync/sync_models.dart";
 import "package:path/path.dart" as p;
 import "package:path_provider/path_provider.dart";
 
 typedef CloudFileStoreFactory = CloudFileStore Function({
-  required Uri baseUri,
-  String? username,
-  String? password,
+  required CloudSyncConnectionSettings settings,
 });
 
 typedef AppSupportDirectoryProvider = Future<Directory> Function();
 
 /// Application-facing operations for previewing, connecting, and syncing one
-/// WebDAV profile. The UI does not handle credentials, local state paths, or
-/// cloud-space identity details directly.
+/// remote profile. The UI does not handle local state paths or cloud-space
+/// identity details directly.
 class CloudSyncSessionService {
   final AppDatabase database;
   final CloudSyncConfigurationStore configurationStore;
@@ -43,7 +43,7 @@ class CloudSyncSessionService {
            previewService ?? CloudSyncPreviewService(database: database),
        dictionarySyncService =
            dictionarySyncService ?? DictionarySyncService(database: database),
-       fileStoreFactory = fileStoreFactory ?? _webDavFileStore,
+       fileStoreFactory = fileStoreFactory ?? _providerFileStore,
        appSupportDirectoryProvider =
            appSupportDirectoryProvider ?? getApplicationSupportDirectory;
 
@@ -51,16 +51,12 @@ class CloudSyncSessionService {
       configurationStore.load();
 
   Future<CloudSyncPreview> preview({
-    required String endpoint,
-    required String remoteRoot,
-    required String username,
-    required String? password,
+    required CloudSyncConnectionSettings settings,
   }) async {
     final configuration = await configurationStore.load();
-    final normalizedRoot = normalizeCloudSyncRemoteRoot(remoteRoot);
-    final isSameProfile =
-        endpoint.trim() == configuration.endpoint &&
-        normalizedRoot == configuration.remoteRoot;
+    final normalizedRoot = normalizeCloudSyncRemoteRoot(settings.remoteRoot);
+    final normalizedSettings = settings.copyWith(remoteRoot: normalizedRoot);
+    final isSameProfile = _isSameProfile(normalizedSettings, configuration);
     final expectedSpaceId = isSameProfile ? configuration.spaceId : null;
     SyncSnapshot? previousLocalSnapshot;
     if (expectedSpaceId != null) {
@@ -70,11 +66,7 @@ class CloudSyncSessionService {
       ).read();
     }
 
-    final fileStore = _createFileStore(
-      endpoint: endpoint,
-      username: username,
-      password: password,
-    );
+    final fileStore = _createFileStore(normalizedSettings);
     try {
       final dataPreview = await previewService.preview(
         fileStore: fileStore,
@@ -105,20 +97,14 @@ class CloudSyncSessionService {
   }
 
   Future<CloudSyncOutcome> connectAndSync({
-    required String endpoint,
-    required String remoteRoot,
-    required String username,
-    required String? password,
+    required CloudSyncConnectionSettings settings,
     required String previewedSpaceId,
     Set<String> selectedDictionaryPackageIds = const {},
     DictionarySyncPreview? dictionaryPreview,
   }) async {
-    final normalizedRoot = normalizeCloudSyncRemoteRoot(remoteRoot);
-    final fileStore = _createFileStore(
-      endpoint: endpoint,
-      username: username,
-      password: password,
-    );
+    final normalizedRoot = normalizeCloudSyncRemoteRoot(settings.remoteRoot);
+    final normalizedSettings = settings.copyWith(remoteRoot: normalizedRoot);
+    final fileStore = _createFileStore(normalizedSettings);
     try {
       final spaceId = await spaceManager.resolve(
         fileStore: fileStore,
@@ -131,10 +117,22 @@ class CloudSyncSessionService {
       }
 
       await configurationStore.saveConnection(
-        endpoint: endpoint.trim(),
-        remoteRoot: normalizedRoot,
-        username: username.trim(),
-        password: password ?? "",
+        settings: CloudSyncConnectionSettings(
+          provider: normalizedSettings.provider,
+          endpoint: normalizedSettings.endpoint.trim(),
+          remoteRoot: normalizedRoot,
+          username: normalizedSettings.username.trim(),
+          password: normalizedSettings.password,
+          sftpHostKeyFingerprint: normalizedSettings.sftpHostKeyFingerprint
+              ?.trim(),
+          sftpPrivateKey: normalizedSettings.sftpPrivateKey,
+          sftpKeyPassphrase: normalizedSettings.sftpKeyPassphrase,
+          s3Bucket: normalizedSettings.s3Bucket?.trim(),
+          s3Region: normalizedSettings.s3Region?.trim(),
+          s3AccessKeyId: normalizedSettings.s3AccessKeyId?.trim(),
+          s3SecretAccessKey: normalizedSettings.s3SecretAccessKey,
+          s3UsePathStyle: normalizedSettings.s3UsePathStyle,
+        ),
       );
       await configurationStore.saveSpaceId(spaceId);
       final outcome = await _syncWithStore(
@@ -168,13 +166,25 @@ class CloudSyncSessionService {
   Future<CloudSyncOutcome> syncConfigured() async {
     final configuration = await configurationStore.load();
     if (!configuration.isConfigured || configuration.spaceId == null) {
-      throw StateError("WebDAV cloud sync has not been connected yet.");
+      throw StateError("Cloud sync has not been connected yet.");
     }
 
     final fileStore = _createFileStore(
-      endpoint: configuration.endpoint,
-      username: configuration.username,
-      password: configuration.password,
+      CloudSyncConnectionSettings(
+        provider: configuration.provider,
+        endpoint: configuration.endpoint,
+        remoteRoot: configuration.remoteRoot,
+        username: configuration.username,
+        password: configuration.password,
+        sftpHostKeyFingerprint: configuration.sftpHostKeyFingerprint,
+        sftpPrivateKey: configuration.sftpPrivateKey,
+        sftpKeyPassphrase: configuration.sftpKeyPassphrase,
+        s3Bucket: configuration.s3Bucket,
+        s3Region: configuration.s3Region,
+        s3AccessKeyId: configuration.s3AccessKeyId,
+        s3SecretAccessKey: configuration.s3SecretAccessKey,
+        s3UsePathStyle: configuration.s3UsePathStyle,
+      ),
     );
     try {
       final spaceId = await spaceManager.resolve(
@@ -212,32 +222,66 @@ class CloudSyncSessionService {
     return syncService.sync();
   }
 
-  CloudFileStore _createFileStore({
-    required String endpoint,
-    required String username,
-    required String? password,
-  }) {
-    final hasUsername = username.trim().isNotEmpty;
-    final hasPassword = password != null && password.isNotEmpty;
-    if (hasUsername != hasPassword) {
-      throw ArgumentError(
-        "WebDAV username and password must be supplied together.",
-      );
+  CloudFileStore _createFileStore(CloudSyncConnectionSettings settings) {
+    if (settings.provider == CloudSyncProvider.webDav) {
+      final hasUsername = settings.username.trim().isNotEmpty;
+      final hasPassword =
+          settings.password != null && settings.password!.isNotEmpty;
+      if (hasUsername != hasPassword) {
+        throw ArgumentError(
+          "WebDAV username and password must be supplied together.",
+        );
+      }
     }
-    return fileStoreFactory(
-      baseUri: Uri.parse(endpoint.trim()),
-      username: hasUsername ? username.trim() : null,
-      password: hasPassword ? password : null,
-    );
+    return fileStoreFactory(settings: settings);
   }
+
+  bool _isSameProfile(
+    CloudSyncConnectionSettings settings,
+    CloudSyncConfiguration configuration,
+  ) =>
+      settings.provider == configuration.provider &&
+      settings.endpoint.trim() == configuration.endpoint &&
+      settings.remoteRoot == configuration.remoteRoot &&
+      settings.username.trim() == configuration.username &&
+      switch (settings.provider) {
+        CloudSyncProvider.webDav => true,
+        CloudSyncProvider.sftp =>
+          settings.sftpHostKeyFingerprint?.trim() ==
+              configuration.sftpHostKeyFingerprint,
+        CloudSyncProvider.s3 =>
+          settings.s3Bucket?.trim() == configuration.s3Bucket &&
+              settings.s3Region?.trim() == configuration.s3Region &&
+              settings.s3AccessKeyId?.trim() == configuration.s3AccessKeyId &&
+              settings.s3UsePathStyle == configuration.s3UsePathStyle,
+      };
 }
 
-CloudFileStore _webDavFileStore({
-  required Uri baseUri,
-  String? username,
-  String? password,
-}) => WebDavCloudFileStore(
-  baseUri: baseUri,
-  username: username,
-  password: password,
-);
+CloudFileStore _providerFileStore({
+  required CloudSyncConnectionSettings settings,
+}) => switch (settings.provider) {
+  CloudSyncProvider.webDav => WebDavCloudFileStore(
+    baseUri: Uri.parse(settings.endpoint.trim()),
+    username: settings.username.trim().isEmpty
+        ? null
+        : settings.username.trim(),
+    password: settings.password,
+  ),
+  CloudSyncProvider.sftp => SftpCloudFileStore(
+    endpoint: Uri.parse(settings.endpoint.trim()),
+    username: settings.username.trim(),
+    password: settings.password,
+    privateKey: settings.sftpPrivateKey,
+    keyPassphrase: settings.sftpKeyPassphrase,
+    expectedHostKeyFingerprint: settings.sftpHostKeyFingerprint ?? "",
+  ),
+  CloudSyncProvider.s3 => S3CloudFileStore(
+    endpoint: Uri.parse(settings.endpoint.trim()),
+    bucket: settings.s3Bucket ?? "",
+    remoteRoot: settings.remoteRoot,
+    region: settings.s3Region ?? "",
+    accessKeyId: settings.s3AccessKeyId ?? "",
+    secretAccessKey: settings.s3SecretAccessKey ?? "",
+    usePathStyle: settings.s3UsePathStyle,
+  ),
+};

@@ -31,10 +31,12 @@ void main() {
     () async {
       final initial = await store.load();
       await store.saveConnection(
-        endpoint: "https://dav.example.test/remote.php/dav/files/alice/",
-        remoteRoot: "Ciyue",
-        username: "alice",
-        password: "secret",
+        settings: const CloudSyncConnectionSettings(
+          endpoint: "https://dav.example.test/remote.php/dav/files/alice/",
+          remoteRoot: "Ciyue",
+          username: "alice",
+          password: "secret",
+        ),
       );
 
       final loaded = await store.load();
@@ -59,18 +61,20 @@ void main() {
     "changing the cloud folder clears its previous space identity",
     () async {
       await store.saveConnection(
-        endpoint: "https://dav.example.test/",
-        remoteRoot: "Ciyue",
-        username: "",
-        password: "",
+        settings: const CloudSyncConnectionSettings(
+          endpoint: "https://dav.example.test/",
+          remoteRoot: "Ciyue",
+          username: "",
+        ),
       );
       await store.saveSpaceId("space-one");
 
       final changed = await store.saveConnection(
-        endpoint: "https://dav.example.test/",
-        remoteRoot: "Ciyue/new-folder",
-        username: "",
-        password: "",
+        settings: const CloudSyncConnectionSettings(
+          endpoint: "https://dav.example.test/",
+          remoteRoot: "Ciyue/new-folder",
+          username: "",
+        ),
       );
 
       expect(changed.spaceId, isNull);
@@ -78,15 +82,67 @@ void main() {
     },
   );
 
+  test("stores SFTP and S3 credentials only in secure storage", () async {
+    await store.saveConnection(
+      settings: const CloudSyncConnectionSettings(
+        provider: CloudSyncProvider.sftp,
+        endpoint: "sftp://nas.example.test:22/backups",
+        remoteRoot: "Ciyue",
+        username: "alice",
+        password: "sftp-password",
+        sftpHostKeyFingerprint: "SHA256:known-host",
+        sftpPrivateKey: "private-key-pem",
+        sftpKeyPassphrase: "key-passphrase",
+      ),
+    );
+    var loaded = await store.load();
+    expect(loaded.provider, CloudSyncProvider.sftp);
+    expect(loaded.isConfigured, isTrue);
+    expect(loaded.password, "sftp-password");
+    expect(loaded.sftpPrivateKey, "private-key-pem");
+    expect(loaded.sftpKeyPassphrase, "key-passphrase");
+    expect(loaded.sftpHostKeyFingerprint, "SHA256:known-host");
+
+    await store.saveSpaceId("space-sftp");
+    await store.saveConnection(
+      settings: const CloudSyncConnectionSettings(
+        provider: CloudSyncProvider.s3,
+        endpoint: "https://account.r2.example.test",
+        remoteRoot: "Ciyue",
+        username: "",
+        s3Bucket: "ciyue-backups",
+        s3Region: "auto",
+        s3AccessKeyId: "access-id",
+        s3SecretAccessKey: "s3-secret",
+        s3UsePathStyle: false,
+      ),
+    );
+    loaded = await store.load();
+    expect(loaded.provider, CloudSyncProvider.s3);
+    expect(loaded.isConfigured, isTrue);
+    expect(loaded.s3Bucket, "ciyue-backups");
+    expect(loaded.s3AccessKeyId, "access-id");
+    expect(loaded.s3SecretAccessKey, "s3-secret");
+    expect(loaded.s3UsePathStyle, isFalse);
+    expect(loaded.spaceId, isNull);
+    expect(secrets.values.values, contains("s3-secret"));
+    expect(secrets.values.values, isNot(contains("sftp-password")));
+    final storedPreferences = await SharedPreferencesAsync().getKeys();
+    expect(storedPreferences, isNot(contains("s3-secret")));
+    expect(storedPreferences, isNot(contains("private-key-pem")));
+  });
+
   test(
     "disconnect clears the secret and remote profile but keeps device ID",
     () async {
       final before = await store.load();
       await store.saveConnection(
-        endpoint: "https://dav.example.test/",
-        remoteRoot: "Ciyue",
-        username: "alice",
-        password: "secret",
+        settings: const CloudSyncConnectionSettings(
+          endpoint: "https://dav.example.test/",
+          remoteRoot: "Ciyue",
+          username: "alice",
+          password: "secret",
+        ),
       );
 
       await store.disconnect();

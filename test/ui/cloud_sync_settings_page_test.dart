@@ -71,6 +71,27 @@ void main() {
     expect(find.text("Sync complete."), findsOneWidget);
   });
 
+  testWidgets("shows configuration fields for each provider", (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: CloudSyncSettingsPage(sessionService: session),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownButtonFormField<CloudSyncProvider>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("S3-compatible storage").last);
+    await tester.pumpAndSettle();
+
+    expect(find.text("S3 endpoint URL"), findsOneWidget);
+    expect(find.text("Bucket"), findsOneWidget);
+    expect(find.text("Access key ID"), findsOneWidget);
+    expect(find.text("Secret access key"), findsOneWidget);
+  });
+
   testWidgets("sends only checked dictionaries after confirmation", (
     tester,
   ) async {
@@ -126,10 +147,7 @@ class _FakeCloudSyncSessionService extends CloudSyncSessionService {
 
   @override
   Future<CloudSyncPreview> preview({
-    required String endpoint,
-    required String remoteRoot,
-    required String username,
-    required String? password,
+    required CloudSyncConnectionSettings settings,
   }) async {
     previewCalls++;
     return CloudSyncPreview(
@@ -171,10 +189,7 @@ class _FakeCloudSyncSessionService extends CloudSyncSessionService {
 
   @override
   Future<CloudSyncOutcome> connectAndSync({
-    required String endpoint,
-    required String remoteRoot,
-    required String username,
-    required String? password,
+    required CloudSyncConnectionSettings settings,
     required String previewedSpaceId,
     Set<String> selectedDictionaryPackageIds = const {},
     DictionarySyncPreview? dictionaryPreview,
@@ -182,10 +197,19 @@ class _FakeCloudSyncSessionService extends CloudSyncSessionService {
     connectCalls++;
     this.selectedDictionaryPackageIds = selectedDictionaryPackageIds;
     configuration = CloudSyncConfiguration(
-      endpoint: endpoint,
-      remoteRoot: remoteRoot,
-      username: username,
-      password: password,
+      provider: settings.provider,
+      endpoint: settings.endpoint,
+      remoteRoot: settings.remoteRoot,
+      username: settings.username,
+      password: settings.password,
+      sftpHostKeyFingerprint: settings.sftpHostKeyFingerprint,
+      sftpPrivateKey: settings.sftpPrivateKey,
+      sftpKeyPassphrase: settings.sftpKeyPassphrase,
+      s3Bucket: settings.s3Bucket,
+      s3Region: settings.s3Region,
+      s3AccessKeyId: settings.s3AccessKeyId,
+      s3SecretAccessKey: settings.s3SecretAccessKey,
+      s3UsePathStyle: settings.s3UsePathStyle,
       deviceId: configuration.deviceId,
       spaceId: previewedSpaceId,
     );
