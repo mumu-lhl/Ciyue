@@ -168,14 +168,18 @@ endif()
 
 # === nlohmann/json dependency for JSON parsing ===
 include(FetchContent)
-FetchContent_Declare(
-  nlohmann_json
-  URL https://github.com/nlohmann/json/releases/download/v${NLOHMANN_JSON_VERSION}/json.tar.xz
-  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-)
-# Don't build tests/examples
-set(JSON_BuildTests OFF CACHE INTERNAL "")
-FetchContent_MakeAvailable(nlohmann_json)
+# The Linux secure-storage plugin also consumes nlohmann/json. Share whichever
+# compatible header-only target Flutter's plugin order registered first.
+if(NOT TARGET nlohmann_json::nlohmann_json)
+  FetchContent_Declare(
+    nlohmann_json
+    URL https://github.com/nlohmann/json/releases/download/v${NLOHMANN_JSON_VERSION}/json.tar.xz
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+  )
+  # Don't build tests/examples.
+  set(JSON_BuildTests OFF CACHE INTERNAL "")
+  FetchContent_MakeAvailable(nlohmann_json)
+endif()
 # Suppress deprecated literal operator warnings from nlohmann_json
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-literal-operator")
 message(STATUS "flutter_inappwebview_linux: nlohmann/json ${NLOHMANN_JSON_VERSION} configured")

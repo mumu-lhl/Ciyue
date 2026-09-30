@@ -3,6 +3,8 @@ import "dart:convert";
 import "package:ciyue/database/app/app.dart";
 
 class BackupData {
+  static const currentVersion = 2;
+
   final int version;
   final List<WordbookData> wordbookWords;
   final List<WordbookTag> wordbookTags;

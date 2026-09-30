@@ -1,0 +1,21 @@
+name: simple_secure_storage_linux
+description: Linux implementation of the Simple Secure Storage plugin.
+homepage: https://github.com/Skyost/SimpleSecureStorage
+repository: https://github.com/Skyost/SimpleSecureStorage/tree/master/packages/simple_secure_storage_linux
+issue_tracker: https://github.com/Skyost/SimpleSecureStorage/issues
+version: 0.2.5
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.29.0'
+
+flutter:
+  plugin:
+    platforms:
+      implements: simple_secure_storage
+      linux:
+        pluginClass: SimpleSecureStorageLinuxPlugin
+
+dependencies:
+  flutter:
+    sdk: flutter
+  simple_secure_storage_platform_interface: ^0.2.3

@@ -12,6 +12,7 @@ import "package:ciyue/ui/pages/settings/appearance.dart";
 import "package:ciyue/ui/pages/settings/audio.dart";
 import "package:ciyue/ui/pages/settings/auto_export.dart";
 import "package:ciyue/ui/pages/settings/backup.dart";
+import "package:ciyue/ui/pages/settings/cloud_sync.dart";
 import "package:ciyue/ui/pages/settings/history.dart";
 import "package:ciyue/ui/pages/settings/hunspell.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
@@ -121,6 +122,10 @@ final router = GoRouter(
     GoRoute(
       path: "/settings/backup",
       builder: (context, state) => const BackupSettingsPage(),
+    ),
+    GoRoute(
+      path: "/settings/cloud_sync",
+      builder: (context, state) => const CloudSyncSettingsPage(),
     ),
     GoRoute(
       path: "/settings/update",

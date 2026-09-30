@@ -27,7 +27,7 @@
 *   **Flutter SDK:** Version constraint `>=3.13.0 <4.0.0` (CI uses `3.47.2`).
 *   **Just:** Command runner for simplified scripts.
 *   **Platform Requirements:**
-    *   **Linux:** `libgtk-3-dev`, `libgstreamer1.0-dev`, `libayatana-appindicator3-dev`, etc.
+    *   **Linux:** `libgtk-3-dev`, `libgstreamer1.0-dev`, `libayatana-appindicator3-dev`, `libsecret-1-dev` (secure cloud credentials), etc. Runtime cloud credential storage also requires an active Secret Service/keyring.
     *   **Android:** Android SDK, Java 21 (for build).
     *   **Windows:** Visual Studio with C++ workload.
 

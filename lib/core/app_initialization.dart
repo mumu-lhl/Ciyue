@@ -23,6 +23,7 @@ import "package:package_info_plus/package_info_plus.dart";
 import "package:path_provider/path_provider.dart";
 import "package:provider/provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
+import "package:simple_secure_storage/simple_secure_storage.dart";
 import "package:tray_manager/tray_manager.dart";
 import "package:window_manager/window_manager.dart";
 
@@ -80,6 +81,15 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
   talker.info("Initializing application...");
 
   final stopWatch = Stopwatch()..start();
+
+  if (!isFloatingWindow) {
+    await SimpleSecureStorage.initialize(
+      const InitializationOptions(
+        appName: "Ciyue",
+        namespace: "ciyue_secure_store",
+      ),
+    );
+  }
 
   await initPrefs();
 
@@ -286,6 +296,11 @@ const preferencesAllowList = <String>{
   "autoFocusSearch",
   "launchAtStartup",
   "flashcardDailyNewLimit",
+  "cloudSyncEndpoint",
+  "cloudSyncRemoteRoot",
+  "cloudSyncUsername",
+  "cloudSyncDeviceId",
+  "cloudSyncSpaceId",
 };
 
 Future<void> initPrefs() async {

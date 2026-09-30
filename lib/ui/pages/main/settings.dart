@@ -54,6 +54,19 @@ class AudioSettingsPageListTile extends StatefulWidget {
       _AudioSettingsPageListTileState();
 }
 
+class CloudSyncPageListTile extends StatelessWidget {
+  const CloudSyncPageListTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.cloud_sync),
+      title: Text(AppLocalizations.of(context)!.cloudSync),
+      onTap: () => context.push("/settings/cloud_sync"),
+    );
+  }
+}
+
 class BackupPageListTile extends StatelessWidget {
   const BackupPageListTile({super.key});
 
@@ -187,6 +200,7 @@ class SettingsScreen extends StatelessWidget {
         ),
         const HunspellPageListTile(),
         const BackupPageListTile(),
+        const CloudSyncPageListTile(),
         const UpdatePageListTile(),
         const OtherPageListTile(),
         const LoggerPageListTile(),

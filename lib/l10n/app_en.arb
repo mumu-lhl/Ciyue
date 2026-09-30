@@ -294,6 +294,108 @@
   "@about": {},
   "backup": "Backup",
   "@backup": {},
+  "cloudSync": "Cloud sync",
+  "@cloudSync": {},
+  "cloudSyncDescription": "Preview and merge your wordbook and review progress, and choose dictionaries to sync across devices.",
+  "@cloudSyncDescription": {},
+  "cloudSyncWebDavUrl": "WebDAV server URL",
+  "@cloudSyncWebDavUrl": {},
+  "cloudSyncRemoteFolder": "Remote folder",
+  "@cloudSyncRemoteFolder": {},
+  "cloudSyncUsername": "Username (optional)",
+  "@cloudSyncUsername": {},
+  "cloudSyncPassword": "Password (optional)",
+  "@cloudSyncPassword": {},
+  "cloudSyncPasswordHint": "Leave blank to keep the saved password.",
+  "@cloudSyncPasswordHint": {},
+  "cloudSyncPreviewButton": "Preview changes",
+  "@cloudSyncPreviewButton": {},
+  "cloudSyncConfirmButton": "Confirm and sync",
+  "@cloudSyncConfirmButton": {},
+  "cloudSyncNow": "Sync now",
+  "@cloudSyncNow": {},
+  "cloudSyncDisconnect": "Disconnect",
+  "@cloudSyncDisconnect": {},
+  "cloudSyncSavedProfile": "Connected to WebDAV",
+  "@cloudSyncSavedProfile": {},
+  "cloudSyncPreviewHeading": "Sync preview",
+  "@cloudSyncPreviewHeading": {},
+  "cloudSyncFolderMissing": "The folder does not exist yet. It will be created after you confirm.",
+  "@cloudSyncFolderMissing": {},
+  "cloudSyncPreviewIntro": "Review the contents before syncing to {folder}.",
+  "@cloudSyncPreviewIntro": {
+    "placeholders": {
+      "folder": { "type": "String" }
+    }
+  },
+  "cloudSyncLocalSummary": "This device: {words} words, {tags} tags, {cards} cards, {reviews} reviews",
+  "@cloudSyncLocalSummary": {
+    "placeholders": {
+      "words": { "type": "int" },
+      "tags": { "type": "int" },
+      "cards": { "type": "int" },
+      "reviews": { "type": "int" }
+    }
+  },
+  "cloudSyncRemoteSummary": "Cloud: {words} words, {tags} tags, {cards} cards, {reviews} reviews",
+  "@cloudSyncRemoteSummary": {
+    "placeholders": {
+      "words": { "type": "int" },
+      "tags": { "type": "int" },
+      "cards": { "type": "int" },
+      "reviews": { "type": "int" }
+    }
+  },
+  "cloudSyncMergedSummary": "After sync: {words} words, {tags} tags, {cards} cards, {reviews} reviews",
+  "@cloudSyncMergedSummary": {
+    "placeholders": {
+      "words": { "type": "int" },
+      "tags": { "type": "int" },
+      "cards": { "type": "int" },
+      "reviews": { "type": "int" }
+    }
+  },
+  "cloudSyncRemoteDevices": "Remote devices: {count}",
+  "@cloudSyncRemoteDevices": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "cloudSyncConflicts": "Conflicts found: {count}. Sync will preserve the changes and will not apply data until conflicts are resolved.",
+  "@cloudSyncConflicts": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "cloudSyncNoConflicts": "No conflicts detected.",
+  "@cloudSyncNoConflicts": {},
+  "cloudSyncDictionaries": "Dictionaries",
+  "@cloudSyncDictionaries": {},
+  "cloudSyncDictionaryHint": "Choose which dictionaries to upload or download. Unchecked dictionaries won't be transferred.",
+  "@cloudSyncDictionaryHint": {},
+  "cloudSyncDictionaryUpload": "On this device · upload",
+  "@cloudSyncDictionaryUpload": {},
+  "cloudSyncDictionaryDownload": "In cloud · download",
+  "@cloudSyncDictionaryDownload": {},
+  "cloudSyncDictionarySynced": "Already on both sides",
+  "@cloudSyncDictionarySynced": {},
+  "cloudSyncDictionaryEmpty": "No dictionaries are available to sync.",
+  "@cloudSyncDictionaryEmpty": {},
+  "cloudSyncDictionaryDetails": "{files} files · {size}",
+  "@cloudSyncDictionaryDetails": {
+    "placeholders": {
+      "files": { "type": "int" },
+      "size": { "type": "String" }
+    }
+  },
+  "cloudSyncSyncComplete": "Sync complete.",
+  "@cloudSyncSyncComplete": {},
+  "cloudSyncSyncFailed": "Could not complete cloud sync. Check your server URL and credentials.",
+  "@cloudSyncSyncFailed": {},
+  "cloudSyncCredentialsPair": "Enter both a username and a password, or leave both blank.",
+  "@cloudSyncCredentialsPair": {},
+  "cloudSyncDisconnected": "Cloud sync disconnected.",
+  "@cloudSyncDisconnected": {},
   "advance": "Advance",
   "@advance": {},
   "advanceSwitchDescription": "Enable to show more settings options",

@@ -209,6 +209,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.4"
+  cipherlib:
+    dependency: transitive
+    description:
+      name: cipherlib
+      sha256: "04e6c25e2740610f24b6fb3ba57fc878ca5e2b87d09248f3a19856b6f7c71e17"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.2"
   cli_config:
     dependency: transitive
     description:
@@ -265,6 +273,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
+  convertlib:
+    dependency: transitive
+    description:
+      name: convertlib
+      sha256: "5874961a2c30a76b65363550897f58d6980deec67320bbfa8021b45cb2797c9c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.6.1"
   coverage:
     dependency: transitive
     description:
@@ -282,7 +298,7 @@ packages:
     source: hosted
     version: "0.3.5+5"
   crypto:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: crypto
       sha256: c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf
@@ -783,6 +799,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.3.4"
+  hashlib:
+    dependency: transitive
+    description:
+      name: hashlib
+      sha256: b998d270c41c782d4e75e8fd19c8f43b64070f65bfeb528bbf886bb253cbb35b
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.2"
   home_widget:
     dependency: "direct main"
     description:
@@ -879,6 +903,14 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
+  idb_shim:
+    dependency: transitive
+    description:
+      name: idb_shim
+      sha256: "6a478bf0928fa954512f2a1e7e56f09e2fb2e3e7d183eb051a59b5d6b39ec16f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.9.9"
   image:
     dependency: transitive
     description:
@@ -1380,6 +1412,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.2"
+  sembast:
+    dependency: transitive
+    description:
+      name: sembast
+      sha256: a976f04d492b82b06c74b3c654795ca5bbf9b670468081a339f6035f121359a3
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.8.11"
+  sembast_web:
+    dependency: transitive
+    description:
+      name: sembast_web
+      sha256: "0dc954ffa88ae75958f4750892e86b29289bb1d0cb16b8f5b27b9fdb84d5d2ee"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.6"
   share_plus:
     dependency: transitive
     description:
@@ -1500,6 +1548,61 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1"
+  simple_secure_storage:
+    dependency: "direct main"
+    description:
+      name: simple_secure_storage
+      sha256: "4ed368264661a132b6232ca72d5938755a960d4e2560b406a3cb3ed72d279128"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.2"
+  simple_secure_storage_android:
+    dependency: transitive
+    description:
+      name: simple_secure_storage_android
+      sha256: "50fb27267755843af039da116d0e545f313ae329ef8838101880802259e0f741"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.1"
+  simple_secure_storage_darwin:
+    dependency: transitive
+    description:
+      name: simple_secure_storage_darwin
+      sha256: a87ed5ee90162048386a9a178840a222d2002e6833771f92f4e95681a89767a2
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.3"
+  simple_secure_storage_linux:
+    dependency: "direct overridden"
+    description:
+      path: "packages/simple_secure_storage_linux"
+      relative: true
+    source: path
+    version: "0.2.5"
+  simple_secure_storage_platform_interface:
+    dependency: transitive
+    description:
+      name: simple_secure_storage_platform_interface
+      sha256: "04fd4ce4c2b97c01a12eba46f51e3075a793d11f13340d06a64eb9b45a463ca5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.3"
+  simple_secure_storage_web:
+    dependency: transitive
+    description:
+      name: simple_secure_storage_web
+      sha256: a390490e22056b7a404ed22e124e4ef0bab9ffd09d9d1f318f786c61fac91ea8
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
+  simple_secure_storage_windows:
+    dependency: transitive
+    description:
+      name: simple_secure_storage_windows
+      sha256: cf31d2a97c26cf854aeb3c9774cd253f6600fb3fdfc6d807d480afae678cef10
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.2"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -1946,7 +2049,7 @@ packages:
     source: hosted
     version: "1.1.0"
   xml:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: xml
       sha256: "67f0aff7be013d107995e9b75bf4e7f2c3ef2dfdb2c8e68024bba0a7fd5756a4"

@@ -10,6 +10,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_inappwebview_linux
   hotkey_manager_linux
   screen_retriever_linux
+  simple_secure_storage_linux
   tray_manager
   url_launcher_linux
   window_manager

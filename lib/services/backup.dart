@@ -198,7 +198,7 @@ class BackupService {
 }
 
 class Backup {
-  static const version = 2;
+  static const version = BackupData.currentVersion;
 
   static Future<void> export(
     bool autoExport, {
