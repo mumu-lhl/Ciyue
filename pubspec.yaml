@@ -61,7 +61,7 @@ dependencies:
   home_widget: ^0.10.0
   file_selector: ^1.1.0
   html_unescape: ^2.0.0
-  flutter_local_notifications: ^22.3.0
+  flutter_local_notifications: ^22.3.1
   dio: ^5.11.0
   crypto: ^3.0.7
   xml: ^7.0.1
