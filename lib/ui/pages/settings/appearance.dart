@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
@@ -31,7 +33,8 @@ class AppearanceSettingsPage extends StatelessWidget {
               const ThemeSelector(),
               const ThemeColorSettingsSection(),
               const DictionaryBackgroundColor(),
-              const DictionaryDarkReaderSwitch(),
+              if (Platform.isWindows || Platform.isLinux)
+                const DictionaryDarkReaderSwitch(),
               const DictionaryCustomCss(),
               const DictionarySwitchStyleSelector(),
               const SearchbarLocationSelector(),

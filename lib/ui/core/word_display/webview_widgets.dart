@@ -35,15 +35,19 @@ DesktopWebViewLoad desktopWebViewLoad(String content, String baseUrl) {
   );
 }
 
-/// WebView2 does not apply algorithmic darkening, so use a light page surface
-/// for dark-mode dictionaries unless the user chose a custom background.
+/// Enable Dark Reader only on supported platforms in dark mode, and only when
+/// the user has not chosen a custom dictionary background.
 bool shouldUseDarkReaderForDictionary({
   required bool isWindows,
+  required bool isLinux,
   required bool isLightTheme,
   required bool enabled,
   required bool hasCustomBackground,
 }) {
-  return isWindows && !isLightTheme && enabled && !hasCustomBackground;
+  return (isWindows || isLinux) &&
+      !isLightTheme &&
+      enabled &&
+      !hasCustomBackground;
 }
 
 Color? resolveDictionaryBackgroundColor({
@@ -382,6 +386,9 @@ typedef _WindowsWebViewSetup = ({
 Future<WebViewEnvironment>? _windowsWebViewEnvironmentFuture;
 Future<String>? _darkReaderSourceFuture;
 
+Future<String> _loadDarkReaderSource() => _darkReaderSourceFuture ??= rootBundle
+    .loadString("assets/third_party/darkreader/darkreader.js");
+
 Future<_WindowsWebViewSetup> _prepareWindowsWebView({
   required bool useDarkReader,
 }) async {
@@ -391,11 +398,7 @@ Future<_WindowsWebViewSetup> _prepareWindowsWebView({
           userDataFolder: windowsWebview2Directory,
         ),
       ));
-  final darkReaderSource = useDarkReader
-      ? await (_darkReaderSourceFuture ??= rootBundle.loadString(
-          "assets/third_party/darkreader/darkreader.js",
-        ))
-      : "";
+  final darkReaderSource = useDarkReader ? await _loadDarkReaderSource() : "";
   return (environment: environment, darkReaderSource: darkReaderSource);
 }
 
@@ -433,6 +436,7 @@ class WebviewWindows extends ConsumerWidget {
 
       final useDarkReader = shouldUseDarkReaderForDictionary(
         isWindows: Platform.isWindows,
+        isLinux: Platform.isLinux,
         isLightTheme: isLightTheme,
         enabled: darkReaderSetting,
         hasCustomBackground: settings.dictionaryBackgroundColor != null,
@@ -455,29 +459,49 @@ class WebviewWindows extends ConsumerWidget {
       // loads through a WebView2 environment.
       if (!Platform.isWindows) {
         final load = desktopWebViewLoad(content, url);
-        webview = InAppWebView(
-          initialUserScripts: dictionaryUserScripts(
-            customCss: settings.dictionaryCustomCss,
-            background: dictionaryBackgroundColor,
-          ),
-          initialSettings: webviewSettings,
-          initialData: load.initialData,
-          onLoadResourceWithCustomScheme: onLoadResourceWithCustomSchemeWarpper(
-            dictId,
-          ),
-          shouldOverrideUrlLoading: shouldOverrideUrlLoadingWarpper(
-            dictId,
-            context,
-          ),
-          onWebViewCreated: (controller) async {
-            await controller.loadData(
-              data: load.deferredData.data,
-              mimeType: load.deferredData.mimeType,
-              encoding: load.deferredData.encoding,
-              baseUrl: load.deferredData.baseUrl,
-            );
-          },
-        );
+
+        Widget buildDesktopWebView(String darkReaderSource) {
+          final darkReaderReady = useDarkReader && darkReaderSource.isNotEmpty;
+          return InAppWebView(
+            key: ValueKey("dark-reader-$darkReaderReady"),
+            initialUserScripts: dictionaryUserScripts(
+              customCss: settings.dictionaryCustomCss,
+              background: dictionaryBackgroundColor,
+              enableDarkReader: darkReaderReady,
+              darkReaderSource: darkReaderSource,
+            ),
+            initialSettings: webviewSettings,
+            initialData: load.initialData,
+            onLoadResourceWithCustomScheme:
+                onLoadResourceWithCustomSchemeWarpper(dictId),
+            shouldOverrideUrlLoading: shouldOverrideUrlLoadingWarpper(
+              dictId,
+              context,
+            ),
+            onWebViewCreated: (controller) async {
+              await controller.loadData(
+                data: load.deferredData.data,
+                mimeType: load.deferredData.mimeType,
+                encoding: load.deferredData.encoding,
+                baseUrl: load.deferredData.baseUrl,
+              );
+            },
+          );
+        }
+
+        if (useDarkReader) {
+          webview = FutureBuilder<String>(
+            future: _loadDarkReaderSource(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData && !snapshot.hasError) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return buildDesktopWebView(snapshot.data ?? "");
+            },
+          );
+        } else {
+          webview = buildDesktopWebView("");
+        }
       } else {
         webview = FutureBuilder<_WindowsWebViewSetup>(
           future: _prepareWindowsWebView(useDarkReader: useDarkReader),

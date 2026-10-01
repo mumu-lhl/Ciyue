@@ -12,38 +12,40 @@ void main() {
     expect(script.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
   });
 
-  test(
-    "Dark Reader activates only for Windows dark mode without custom bg",
-    () {
+  test("Dark Reader activates on Windows and Linux dark mode", () {
+    for (final isWindows in [true, false]) {
       expect(
         shouldUseDarkReaderForDictionary(
-          isWindows: true,
+          isWindows: isWindows,
+          isLinux: !isWindows,
           isLightTheme: false,
           enabled: true,
           hasCustomBackground: false,
         ),
         isTrue,
       );
-      expect(
-        shouldUseDarkReaderForDictionary(
-          isWindows: true,
-          isLightTheme: false,
-          enabled: true,
-          hasCustomBackground: true,
-        ),
-        isFalse,
-      );
-      expect(
-        shouldUseDarkReaderForDictionary(
-          isWindows: false,
-          isLightTheme: false,
-          enabled: true,
-          hasCustomBackground: false,
-        ),
-        isFalse,
-      );
-    },
-  );
+    }
+    expect(
+      shouldUseDarkReaderForDictionary(
+        isWindows: true,
+        isLinux: false,
+        isLightTheme: false,
+        enabled: true,
+        hasCustomBackground: true,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldUseDarkReaderForDictionary(
+        isWindows: false,
+        isLinux: false,
+        isLightTheme: false,
+        enabled: true,
+        hasCustomBackground: false,
+      ),
+      isFalse,
+    );
+  });
 
   test("Dark Reader remains off unless explicitly enabled", () {
     final scripts = dictionaryUserScripts(
