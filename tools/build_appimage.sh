@@ -38,13 +38,12 @@ mkdir -p "$APPDIR"
 cp -r "$BUNDLE_DIR/"* "$APPDIR/"
 
 echo "=== 2. Copying Metadata Files ==="
-# Desktop file (Root for AppImage)
-cp "$PACKAGING_DIR/$APP_ID.desktop" "$APPDIR/"
-ln -sf "$APP_ID.desktop" "$APPDIR/$BINARY_NAME.desktop"
-
-# Desktop file (Standard path for AppStream validation)
+# Keep the desktop entry in the standard applications directory and expose it
+# from the AppDir root, as required by AppImage launchers. There must be only
+# one desktop entry at the root.
 mkdir -p "$APPDIR/usr/share/applications"
 cp "$PACKAGING_DIR/$APP_ID.desktop" "$APPDIR/usr/share/applications/"
+ln -sf "usr/share/applications/$APP_ID.desktop" "$APPDIR/$APP_ID.desktop"
 
 # Icon (Standard path)
 mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
