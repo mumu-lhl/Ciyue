@@ -6,7 +6,6 @@ import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
 
 import "body.dart";
-import "group_switcher.dart";
 import "recommended.dart";
 
 class HomeScreen extends StatelessWidget {
@@ -21,12 +20,6 @@ class HomeScreen extends StatelessWidget {
         ? const RecommendedDictionaries()
         : const HomeBody();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const HomeGroupSwitcher(),
-        Expanded(child: content),
-      ],
-    );
+    return content;
   }
 }
