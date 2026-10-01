@@ -82,8 +82,6 @@
   "@dictionaryBackgroundUseDefault": {},
   "chooseDictionaryBackgroundColor": "Choose Background Color",
   "@chooseDictionaryBackgroundColor": {},
-  "invalidHexColor": "Enter a 6-digit hex color, such as #F5F0E6",
-  "@invalidHexColor": {},
   "empty": "Empty...",
   "@empty": {},
   "add": "Add",

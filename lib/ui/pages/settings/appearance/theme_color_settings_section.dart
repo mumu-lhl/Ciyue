@@ -58,6 +58,22 @@ final themeColorSettingsProvider =
 
 enum _ColorMode { hsv, rgb }
 
+Future<Color?> showAppearanceColorPicker({
+  required BuildContext context,
+  required AppLocalizations locale,
+  required Color initialColor,
+  String? title,
+}) {
+  return showDialog<Color>(
+    context: context,
+    builder: (context) => _CustomColorDialog(
+      locale: locale,
+      initialColor: initialColor,
+      title: title ?? locale.customThemeColor,
+    ),
+  );
+}
+
 class ThemeColorSettingsSection extends ConsumerWidget {
   const ThemeColorSettingsSection({super.key});
 
@@ -197,13 +213,12 @@ class ThemeColorSettingsSection extends ConsumerWidget {
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: () async {
-                      final Color? customColor = await showDialog<Color>(
-                        context: sheetContext,
-                        builder: (dialogContext) => _CustomColorDialog(
-                          locale: locale,
-                          initialColor: currentColor,
-                        ),
-                      );
+                      final Color? customColor =
+                          await showAppearanceColorPicker(
+                            context: sheetContext,
+                            locale: locale,
+                            initialColor: currentColor,
+                          );
                       if (!sheetContext.mounted || customColor == null) {
                         return;
                       }
@@ -260,8 +275,13 @@ class _ColorDot extends StatelessWidget {
 class _CustomColorDialog extends StatefulWidget {
   final AppLocalizations locale;
   final Color initialColor;
+  final String title;
 
-  const _CustomColorDialog({required this.locale, required this.initialColor});
+  const _CustomColorDialog({
+    required this.locale,
+    required this.initialColor,
+    required this.title,
+  });
 
   @override
   State<_CustomColorDialog> createState() => _CustomColorDialogState();
@@ -282,128 +302,136 @@ class _CustomColorDialogState extends State<_CustomColorDialog> {
     final Color currentColor = hsvColor.toColor();
 
     return AlertDialog(
-      title: Text(widget.locale.customThemeColor),
+      title: Text(widget.title),
       content: SizedBox(
         width: 360,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.6,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: currentColor,
-                      borderRadius: BorderRadius.circular(8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: currentColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(_toHex(currentColor)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _SaturationValuePalette(
+                  hsvColor: hsvColor,
+                  onChanged: (color) => setState(() => hsvColor = color),
+                ),
+                const SizedBox(height: 10),
+                _HueStrip(
+                  hue: hsvColor.hue,
+                  onChanged: (hue) =>
+                      setState(() => hsvColor = hsvColor.withHue(hue)),
+                ),
+                const SizedBox(height: 10),
+                SegmentedButton<_ColorMode>(
+                  segments: const [
+                    ButtonSegment<_ColorMode>(
+                      value: _ColorMode.hsv,
+                      label: Text("HSV"),
+                    ),
+                    ButtonSegment<_ColorMode>(
+                      value: _ColorMode.rgb,
+                      label: Text("RGB"),
+                    ),
+                  ],
+                  selected: {colorMode},
+                  onSelectionChanged: (modes) {
+                    if (modes.isEmpty) {
+                      return;
+                    }
+                    setState(() => colorMode = modes.first);
+                  },
+                ),
+                const SizedBox(height: 8),
+                if (colorMode == _ColorMode.hsv) ...[
+                  _ColorSlider(
+                    label: "H",
+                    value: hsvColor.hue,
+                    max: 360,
+                    onChanged: (value) =>
+                        setState(() => hsvColor = hsvColor.withHue(value)),
+                  ),
+                  _ColorSlider(
+                    label: "S",
+                    value: hsvColor.saturation * 100,
+                    max: 100,
+                    onChanged: (value) => setState(
+                      () => hsvColor = hsvColor.withSaturation(value / 100),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Text(_toHex(currentColor)),
+                  _ColorSlider(
+                    label: "V",
+                    value: hsvColor.value * 100,
+                    max: 100,
+                    onChanged: (value) => setState(
+                      () => hsvColor = hsvColor.withValue(value / 100),
+                    ),
+                  ),
+                ] else ...[
+                  _ColorSlider(
+                    label: "R",
+                    value: _channelValue(currentColor.r).toDouble(),
+                    max: 255,
+                    onChanged: (value) => setState(() {
+                      final Color rgb = Color.fromARGB(
+                        255,
+                        value.round(),
+                        _channelValue(currentColor.g),
+                        _channelValue(currentColor.b),
+                      );
+                      hsvColor = HSVColor.fromColor(rgb);
+                    }),
+                  ),
+                  _ColorSlider(
+                    label: "G",
+                    value: _channelValue(currentColor.g).toDouble(),
+                    max: 255,
+                    onChanged: (value) => setState(() {
+                      final Color rgb = Color.fromARGB(
+                        255,
+                        _channelValue(currentColor.r),
+                        value.round(),
+                        _channelValue(currentColor.b),
+                      );
+                      hsvColor = HSVColor.fromColor(rgb);
+                    }),
+                  ),
+                  _ColorSlider(
+                    label: "B",
+                    value: _channelValue(currentColor.b).toDouble(),
+                    max: 255,
+                    onChanged: (value) => setState(() {
+                      final Color rgb = Color.fromARGB(
+                        255,
+                        _channelValue(currentColor.r),
+                        _channelValue(currentColor.g),
+                        value.round(),
+                      );
+                      hsvColor = HSVColor.fromColor(rgb);
+                    }),
+                  ),
+                ],
               ],
             ),
-            const SizedBox(height: 12),
-            _SaturationValuePalette(
-              hsvColor: hsvColor,
-              onChanged: (color) => setState(() => hsvColor = color),
-            ),
-            const SizedBox(height: 10),
-            _HueStrip(
-              hue: hsvColor.hue,
-              onChanged: (hue) =>
-                  setState(() => hsvColor = hsvColor.withHue(hue)),
-            ),
-            const SizedBox(height: 10),
-            SegmentedButton<_ColorMode>(
-              segments: const [
-                ButtonSegment<_ColorMode>(
-                  value: _ColorMode.hsv,
-                  label: Text("HSV"),
-                ),
-                ButtonSegment<_ColorMode>(
-                  value: _ColorMode.rgb,
-                  label: Text("RGB"),
-                ),
-              ],
-              selected: {colorMode},
-              onSelectionChanged: (modes) {
-                if (modes.isEmpty) {
-                  return;
-                }
-                setState(() => colorMode = modes.first);
-              },
-            ),
-            const SizedBox(height: 8),
-            if (colorMode == _ColorMode.hsv) ...[
-              _ColorSlider(
-                label: "H",
-                value: hsvColor.hue,
-                max: 360,
-                onChanged: (value) =>
-                    setState(() => hsvColor = hsvColor.withHue(value)),
-              ),
-              _ColorSlider(
-                label: "S",
-                value: hsvColor.saturation * 100,
-                max: 100,
-                onChanged: (value) => setState(
-                  () => hsvColor = hsvColor.withSaturation(value / 100),
-                ),
-              ),
-              _ColorSlider(
-                label: "V",
-                value: hsvColor.value * 100,
-                max: 100,
-                onChanged: (value) =>
-                    setState(() => hsvColor = hsvColor.withValue(value / 100)),
-              ),
-            ] else ...[
-              _ColorSlider(
-                label: "R",
-                value: _channelValue(currentColor.r).toDouble(),
-                max: 255,
-                onChanged: (value) => setState(() {
-                  final Color rgb = Color.fromARGB(
-                    255,
-                    value.round(),
-                    _channelValue(currentColor.g),
-                    _channelValue(currentColor.b),
-                  );
-                  hsvColor = HSVColor.fromColor(rgb);
-                }),
-              ),
-              _ColorSlider(
-                label: "G",
-                value: _channelValue(currentColor.g).toDouble(),
-                max: 255,
-                onChanged: (value) => setState(() {
-                  final Color rgb = Color.fromARGB(
-                    255,
-                    _channelValue(currentColor.r),
-                    value.round(),
-                    _channelValue(currentColor.b),
-                  );
-                  hsvColor = HSVColor.fromColor(rgb);
-                }),
-              ),
-              _ColorSlider(
-                label: "B",
-                value: _channelValue(currentColor.b).toDouble(),
-                max: 255,
-                onChanged: (value) => setState(() {
-                  final Color rgb = Color.fromARGB(
-                    255,
-                    _channelValue(currentColor.r),
-                    _channelValue(currentColor.g),
-                    value.round(),
-                  );
-                  hsvColor = HSVColor.fromColor(rgb);
-                }),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
       actions: [
