@@ -34,9 +34,9 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.9
-  desktop_updater: ^3.1.6
-  drift: ^2.34.3
+  cupertino_icons: ^2.0.0
+  desktop_updater: ^3.2.0
+  drift: ^2.35.1
   drift_flutter: ^0.3.1
   dict_reader:
     git:
@@ -45,7 +45,7 @@ dependencies:
   hunspell_ffi:
     path: packages/hunspell_ffi
   shared_preferences: ^2.5.5
-  go_router: ^18.0.0
+  go_router: ^18.0.2
   flutter_inappwebview: 6.2.0-beta.3
   path: ^1.9.1
   path_provider: ^2.1.6
@@ -61,16 +61,16 @@ dependencies:
   home_widget: ^0.10.0
   file_selector: ^1.1.0
   html_unescape: ^2.0.0
-  flutter_local_notifications: ^22.3.0
-  dio: ^5.11.0
+  flutter_local_notifications: ^22.3.1
+  dio: ^5.11.1
   crypto: ^3.0.7
   xml: ^7.0.1
-  gpt_markdown: ^1.2.1
+  gpt_markdown: ^1.3.0
   provider: ^6.1.5+1
   freezed_annotation: ^3.1.0
   audioplayers: ^6.8.1
-  permission_handler: ^13.0.1
-  logger: ^2.7.0
+  permission_handler: ^13.0.2
+  logger: ^2.8.0
   translator: ^1.0.4+1
   talker: ^5.1.20
   talker_flutter: ^5.1.16
@@ -79,14 +79,14 @@ dependencies:
   device_info_plus: ^12.4.0
   table_calendar: ^3.2.1
   launch_at_startup: ^0.5.1
-  tray_manager: ^0.5.3
+  tray_manager: ^0.7.0
   window_manager: ^0.5.2
   hotkey_manager: ^0.2.3
-  fuzzy: ^0.5.1
+  fuzzy: ^0.5.2
   fsrs: ^2.0.1
-  flutter_riverpod: ^3.4.2
-  riverpod: ^3.4.2
-  material_ui: ^1.1.0
+  flutter_riverpod: ^3.4.3
+  riverpod: ^3.4.3
+  material_ui: ^1.5.0
   simple_secure_storage: ^0.4.2
   dartssh2: ^4.1.0
   s3_client: ^1.0.0
@@ -116,8 +116,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  drift_dev: ^2.34.5
-  build_runner: ^2.16.0
+  drift_dev: ^2.35.1
+  build_runner: ^2.16.1
   test: ^1.31.1
   freezed: ^4.0.1
   mockito: ^5.8.1

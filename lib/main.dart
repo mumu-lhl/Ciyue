@@ -22,14 +22,11 @@ import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
 import "package:material_ui/material_ui.dart";
-import "package:flutter/services.dart";
 import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:provider/provider.dart" as provider;
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
-import "package:tray_manager/tray_manager.dart";
-import "package:window_manager/window_manager.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -134,7 +131,7 @@ class Ciyue extends StatefulWidget {
   State<Ciyue> createState() => _CiyueState();
 }
 
-class _CiyueState extends State<Ciyue> with TrayListener {
+class _CiyueState extends State<Ciyue> {
   ColorScheme _applyPureBlackDarkScheme(ColorScheme colorScheme) {
     if (colorScheme.brightness != Brightness.dark) {
       return colorScheme;
@@ -299,7 +296,6 @@ class _CiyueState extends State<Ciyue> with TrayListener {
 
   @override
   void initState() {
-    trayManager.addListener(this);
     super.initState();
 
     refreshAll = refresh;
@@ -307,28 +303,8 @@ class _CiyueState extends State<Ciyue> with TrayListener {
 
   @override
   void dispose() {
-    trayManager.removeListener(this);
+    disposeTrayMenu();
     super.dispose();
-  }
-
-  @override
-  void onTrayIconMouseDown() {
-    trayManager.popUpContextMenu();
-  }
-
-  @override
-  void onTrayIconRightMouseDown() {
-    trayManager.popUpContextMenu();
-  }
-
-  @override
-  void onTrayMenuItemClick(MenuItem menuItem) {
-    if (menuItem.key == "show_window") {
-      windowManager.show();
-      windowManager.focus();
-    } else if (menuItem.key == "exit_app") {
-      SystemNavigator.pop();
-    }
   }
 
   void refresh() {

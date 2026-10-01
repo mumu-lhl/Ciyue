@@ -25,7 +25,7 @@ import "package:path_provider/path_provider.dart";
 import "package:provider/provider.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:simple_secure_storage/simple_secure_storage.dart";
-import "package:tray_manager/tray_manager.dart";
+import "package:tray_manager/tray_manager.dart" as tray;
 import "package:window_manager/window_manager.dart";
 
 Future<void> reloadHunspell() async {
@@ -56,25 +56,124 @@ Future<void> initGroup() async {
   }
 }
 
-Future<void> initTrayMenu() async {
-  if (isDesktop()) {
-    final context = navigatorKey.currentContext!;
-    final l10n = AppLocalizations.of(context)!;
+tray.TrayIcon? _trayIcon;
+tray.ListenerId? _trayIconListenerId;
+tray.Menu? _trayMenu;
+tray.MenuItem? _showWindowMenuItem;
+tray.MenuItem? _exitAppMenuItem;
 
-    trayManager.setIcon(
-      Platform.isWindows
-          ? "windows/runner/resources/app_icon.ico"
-          : "assets/icon.png",
-    );
-    Menu menu = Menu(
-      items: [
-        MenuItem(key: "show_window", label: l10n.showWindow),
-        MenuItem.separator(),
-        MenuItem(key: "exit_app", label: l10n.exitApp),
-      ],
-    );
-    trayManager.setContextMenu(menu);
+Future<void> initTrayMenu() async {
+  if (!isDesktop()) {
+    return;
   }
+
+  final context = navigatorKey.currentContext!;
+  final l10n = AppLocalizations.of(context)!;
+
+  var trayIcon = _trayIcon;
+  if (trayIcon == null) {
+    trayIcon = tray.TrayIcon.create();
+    if (trayIcon == null) {
+      throw StateError("Unable to create the system tray icon");
+    }
+    _trayIcon = trayIcon;
+
+    final iconPath = Platform.isWindows
+        ? "windows/runner/resources/app_icon.ico"
+        : "assets/icon.png";
+    final icon = Platform.isWindows
+        ? tray.Image.fromFile(iconPath)
+        : tray.ImageAsset.fromAsset(iconPath) ?? tray.Image.fromFile(iconPath);
+    if (icon == null) {
+      throw ArgumentError.value(
+        iconPath,
+        "iconPath",
+        "Unable to load tray icon",
+      );
+    }
+    trayIcon.icon = icon;
+
+    // A click opens the menu natively (and exposes it to Linux StatusNotifier
+    // hosts); preserve the existing right-click behavior with an event handler.
+    trayIcon.setContextMenuTrigger(tray.ContextMenuTrigger.clicked);
+    _trayIconListenerId = trayIcon.addListener((event) {
+      if (event is tray.TrayIconRightClickedEvent) {
+        _trayIcon?.openContextMenu();
+      }
+    });
+  }
+
+  var menu = _trayMenu;
+  if (menu == null) {
+    menu = tray.Menu.create();
+    if (menu == null) {
+      throw StateError("Unable to create the system tray menu");
+    }
+
+    final showWindowItem = tray.MenuItem.createWithLabelAndType(
+      l10n.showWindow,
+      tray.MenuItemType.normal,
+    );
+    if (showWindowItem == null) {
+      throw StateError("Unable to create the show-window tray menu item");
+    }
+    showWindowItem.addListener((event) {
+      if (event is tray.MenuItemClickedEvent) {
+        windowManager.show();
+        windowManager.focus();
+      }
+    });
+
+    final exitAppItem = tray.MenuItem.createWithLabelAndType(
+      l10n.exitApp,
+      tray.MenuItemType.normal,
+    );
+    if (exitAppItem == null) {
+      throw StateError("Unable to create the exit tray menu item");
+    }
+    exitAppItem.addListener((event) {
+      if (event is tray.MenuItemClickedEvent) {
+        SystemNavigator.pop();
+      }
+    });
+
+    menu
+      ..addItem(showWindowItem)
+      ..addSeparator()
+      ..addItem(exitAppItem);
+    trayIcon.setContextMenu(menu);
+    _trayMenu = menu;
+    _showWindowMenuItem = showWindowItem;
+    _exitAppMenuItem = exitAppItem;
+  } else {
+    _showWindowMenuItem!.label = l10n.showWindow;
+    _exitAppMenuItem!.label = l10n.exitApp;
+  }
+
+  trayIcon.setVisible(true);
+}
+
+void disposeTrayMenu() {
+  final trayIcon = _trayIcon;
+  if (trayIcon != null) {
+    final listenerId = _trayIconListenerId;
+    if (listenerId != null) {
+      trayIcon.removeListener(listenerId);
+    }
+    trayIcon.setContextMenu(null);
+    trayIcon.setVisible(false);
+  }
+
+  _showWindowMenuItem?.dispose();
+  _exitAppMenuItem?.dispose();
+  _trayMenu?.dispose();
+  trayIcon?.dispose();
+
+  _trayIcon = null;
+  _trayIconListenerId = null;
+  _trayMenu = null;
+  _showWindowMenuItem = null;
+  _exitAppMenuItem = null;
 }
 
 Future<void> initApp({bool isFloatingWindow = false}) async {

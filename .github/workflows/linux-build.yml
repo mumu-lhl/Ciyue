@@ -82,7 +82,7 @@ jobs:
             --noconfirm --disable-download-timeout \
             "glibc=$ARCHLINUX_GLIBC_PACKAGE_VERSION" \
             curl dpkg git jq clang cmake ninja patchelf python rpm-tools \
-            unzip wget xz gtk3 gstreamer libayatana-appindicator \
+            unzip wget xz gtk3 libx11 libxi gstreamer \
             libkeybinder3 libsecret wpewebkit \
             gst-plugins-bad
 

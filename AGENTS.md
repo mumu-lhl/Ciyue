@@ -24,10 +24,10 @@
 ## Building and Running
 
 ### Prerequisites
-*   **Flutter SDK:** Version constraint `>=3.13.0 <4.0.0` (CI uses `3.47.2`).
+*   **Flutter SDK:** Flutter `>=3.47.0` and Dart `>=3.13.0` (CI uses `3.47.5`).
 *   **Just:** Command runner for simplified scripts.
 *   **Platform Requirements:**
-    *   **Linux:** `libgtk-3-dev`, `libgstreamer1.0-dev`, `libayatana-appindicator3-dev`, `libsecret-1-dev` (secure cloud credentials), etc. Runtime cloud credential storage also requires an active Secret Service/keyring.
+    *   **Linux:** `libgtk-3-dev`, `libx11-dev`, `libxi-dev`, `libgstreamer1.0-dev`, `libsecret-1-dev` (secure cloud credentials), etc. Runtime cloud credential storage also requires an active Secret Service/keyring.
     *   **Android:** Android SDK, Java 21 (for build).
     *   **Windows:** Visual Studio with C++ workload.
 
