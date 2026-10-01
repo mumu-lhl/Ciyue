@@ -256,6 +256,8 @@ const preferencesAllowList = <String>{
   "enableDynamicColor",
   "pureBlackDarkMode",
   "themeSeedColor",
+  "dictionaryCustomCss",
+  "dictionaryBackgroundColor",
   "tagsOrder",
   "secureScreen",
   "searchBarInAppBar",

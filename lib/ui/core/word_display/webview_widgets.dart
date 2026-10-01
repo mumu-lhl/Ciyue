@@ -35,12 +35,56 @@ DesktopWebViewLoad desktopWebViewLoad(String content, String baseUrl) {
   );
 }
 
-UnmodifiableListView<UserScript> dictionaryUserScripts() {
+UnmodifiableListView<UserScript> dictionaryUserScripts({
+  String customCss = "",
+  Color? background,
+}) {
+  final encodedCss = jsonEncode(customCss);
+  final color = background;
+  final backgroundColor = color == null
+      ? "null"
+      : jsonEncode(
+          "#${(color.toARGB32() & 0x00FFFFFF).toRadixString(16).padLeft(6, "0")}",
+        );
+  final customCssScript =
+      """
+(function() {
+  const css = $encodedCss;
+  const backgroundColor = $backgroundColor;
+  if (!css && !backgroundColor) return;
+  const applyCss = function() {
+    const root = document.head || document.documentElement;
+    if (!root) return false;
+    let style = document.getElementById('ciyue-custom-dictionary-css');
+    if (!style) {
+      style = document.createElement('style');
+      style.id = 'ciyue-custom-dictionary-css';
+      root.appendChild(style);
+    }
+    style.textContent = (backgroundColor
+      ? 'html, body { background-color: ' + backgroundColor + ' !important; }'
+      : '') + css;
+    return true;
+  };
+  if (!applyCss()) {
+    const observer = new MutationObserver(function() {
+      if (applyCss()) observer.disconnect();
+    });
+    observer.observe(document, { childList: true, subtree: true });
+  }
+})();
+""";
+
   return UnmodifiableListView([
     UserScript(
       source: dictionaryEntryLinkScript,
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
+    if (customCss.isNotEmpty || color != null)
+      UserScript(
+        source: customCssScript,
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
+      ),
   ]);
 }
 
@@ -137,7 +181,10 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
     );
 
     final webview = InAppWebView(
-      initialUserScripts: dictionaryUserScripts(),
+      initialUserScripts: dictionaryUserScripts(
+        customCss: settings.dictionaryCustomCss,
+        background: settings.dictionaryBackgroundColor,
+      ),
       initialData: InAppWebViewInitialData(
         data: widget.content,
         baseUrl: WebUri("http://ciyue.internal/"),
@@ -323,7 +370,10 @@ class WebviewWindows extends ConsumerWidget {
       if (!Platform.isWindows) {
         final load = desktopWebViewLoad(content, url);
         webview = InAppWebView(
-          initialUserScripts: dictionaryUserScripts(),
+          initialUserScripts: dictionaryUserScripts(
+            customCss: settings.dictionaryCustomCss,
+            background: settings.dictionaryBackgroundColor,
+          ),
           initialSettings: webviewSettings,
           initialData: load.initialData,
           onLoadResourceWithCustomScheme: onLoadResourceWithCustomSchemeWarpper(
@@ -352,7 +402,10 @@ class WebviewWindows extends ConsumerWidget {
           builder: (context, snapshot) {
             if (snapshot.hasData || snapshot.hasError) {
               return InAppWebView(
-                initialUserScripts: dictionaryUserScripts(),
+                initialUserScripts: dictionaryUserScripts(
+                  customCss: settings.dictionaryCustomCss,
+                  background: settings.dictionaryBackgroundColor,
+                ),
                 webViewEnvironment: snapshot.data,
                 initialSettings: webviewSettings,
                 initialUrlRequest: URLRequest(

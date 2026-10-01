@@ -1,6 +1,7 @@
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
 import "package:ciyue/ui/core/word_display/webview_widgets.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
+import "package:flutter/material.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 
@@ -9,6 +10,17 @@ void main() {
     final script = dictionaryUserScripts().single;
     expect(script.source, dictionaryEntryLinkScript);
     expect(script.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
+  });
+
+  test("custom dictionary styles are injected at document end", () {
+    final script = dictionaryUserScripts(
+      customCss: "body { color: red; }",
+      background: const Color(0xFFF5F0E6),
+    ).last;
+
+    expect(script.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_END);
+    expect(script.source, contains("#f5f0e6"));
+    expect(script.source, contains("body { color: red; }"));
   });
 
   test("Linux WebView defers HTML loading until its controller is ready", () {

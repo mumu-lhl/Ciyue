@@ -21,6 +21,8 @@ class Settings {
   late bool enableDynamicColor;
   late bool pureBlackDarkMode;
   late Color themeSeedColor;
+  late String dictionaryCustomCss;
+  late Color? dictionaryBackgroundColor;
   String? language;
   late bool searchBarInAppBar;
   late TabBarPosition tabBarPosition;
@@ -81,6 +83,11 @@ class Settings {
     pureBlackDarkMode = prefs.getBool("pureBlackDarkMode") ?? false;
     final int? themeSeedColorValue = prefs.getInt("themeSeedColor");
     themeSeedColor = Color(themeSeedColorValue ?? Colors.blue.toARGB32());
+    dictionaryCustomCss = prefs.getString("dictionaryCustomCss") ?? "";
+    final backgroundColorValue = prefs.getInt("dictionaryBackgroundColor");
+    dictionaryBackgroundColor = backgroundColorValue == null
+        ? null
+        : Color(backgroundColorValue);
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
@@ -237,6 +244,20 @@ class Settings {
   Future<void> setPureBlackDarkMode(bool value) async {
     pureBlackDarkMode = value;
     await prefs.setBool("pureBlackDarkMode", value);
+  }
+
+  Future<void> setDictionaryCustomCss(String value) async {
+    dictionaryCustomCss = value;
+    await prefs.setString("dictionaryCustomCss", value);
+  }
+
+  Future<void> setDictionaryBackgroundColor(Color? color) async {
+    dictionaryBackgroundColor = color;
+    if (color == null) {
+      await prefs.remove("dictionaryBackgroundColor");
+    } else {
+      await prefs.setInt("dictionaryBackgroundColor", color.toARGB32());
+    }
   }
 
   Future<void> setTabBarPosition(TabBarPosition position) async {
