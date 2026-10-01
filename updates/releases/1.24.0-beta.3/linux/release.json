@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 3,
+  "packageId": "org.eu.mumulhl.ciyue",
+  "appName": "Ciyue",
+  "version": "1.24.0-beta.3",
+  "buildNumber": 101,
+  "platform": "linux",
+  "channel": "preview",
+  "artifact": {
+    "kind": "zip",
+    "url": "https://github.com/mumu-lhl/Ciyue/releases/download/v1.24.0-beta.3/Ciyue-1.24.0-beta.3-linux.zip",
+    "sha256": "9eb14002bcf537f4de368aecf9766571e87bb976931765a921eccf30244cbda3",
+    "length": 110684506
+  },
+  "install": {
+    "strategy": "wholeDirectoryReplace"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKeyId": "release-f3d56da10d0866ff2cff4c65",
+    "value": "LGLdstHxRSK4l/OxjqHYD3n+qx8AyM9MY9wY9Ug/f0zNaATcwYMuiUtsqW9e1m4UzrDXz/ik+i6Wph2QwPhDDA=="
+  },
+  "minimumUpdaterVersion": "2.0.0",
+  "generatedAt": "2026-10-01T07:49:38.338429Z"
+}

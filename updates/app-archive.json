@@ -67,6 +67,14 @@
       "release": "https://mumulhl.eu.org/Ciyue/updates/releases/1.24.0-beta.2/linux/release.json"
     },
     {
+      "version": "1.24.0-beta.3",
+      "buildNumber": 101,
+      "platform": "linux",
+      "channel": "preview",
+      "mandatory": false,
+      "release": "https://mumulhl.eu.org/Ciyue/updates/releases/1.24.0-beta.3/linux/release.json"
+    },
+    {
       "version": "1.23.1",
       "buildNumber": 90,
       "platform": "linux",
@@ -147,6 +155,14 @@
       "release": "https://mumulhl.eu.org/Ciyue/updates/releases/1.24.0-beta.2/windows/release.json"
     },
     {
+      "version": "1.24.0-beta.3",
+      "buildNumber": 101,
+      "platform": "windows",
+      "channel": "preview",
+      "mandatory": false,
+      "release": "https://mumulhl.eu.org/Ciyue/updates/releases/1.24.0-beta.3/windows/release.json"
+    },
+    {
       "version": "1.23.1",
       "buildNumber": 90,
       "platform": "windows",
@@ -166,6 +182,6 @@
   "signature": {
     "algorithm": "ed25519",
     "publicKeyId": "release-f3d56da10d0866ff2cff4c65",
-    "value": "rIlxrIuE611Te/J41WyUGvpUi54RL3svvhkQIB+Fk0SaPjnbJqlIfhPYylpSXYZJYhZsHPmRr4Y+LCAfjvgdAQ=="
+    "value": "Crkp9FCEvDtztrHz3GKc/MrgD+bGJIgRSh0hWNuJWP9XUzJq6e9DZw2DgxcuGeEWSFFs6V/6tEg88744XzSdDA=="
   }
 }
