@@ -35,6 +35,17 @@ DesktopWebViewLoad desktopWebViewLoad(String content, String baseUrl) {
   );
 }
 
+/// WebView2 does not apply algorithmic darkening, so use a light page surface
+/// for dark-mode dictionaries unless the user chose a custom background.
+Color? resolveDictionaryBackgroundColor({
+  required bool isWindows,
+  required bool isLightTheme,
+  required Color? customColor,
+}) {
+  if (customColor != null) return customColor;
+  return isWindows && !isLightTheme ? Colors.white : null;
+}
+
 UnmodifiableListView<UserScript> dictionaryUserScripts({
   String customCss = "",
   Color? background,
@@ -358,6 +369,12 @@ class WebviewWindows extends ConsumerWidget {
           settings.themeMode == ThemeMode.system &&
               MediaQuery.of(context).platformBrightness == Brightness.light;
 
+      final dictionaryBackgroundColor = resolveDictionaryBackgroundColor(
+        isWindows: Platform.isWindows,
+        isLightTheme: isLightTheme,
+        customColor: settings.dictionaryBackgroundColor,
+      );
+
       final webviewSettings = InAppWebViewSettings(
         useWideViewPort: false,
         algorithmicDarkeningAllowed: !isLightTheme,
@@ -372,7 +389,7 @@ class WebviewWindows extends ConsumerWidget {
         webview = InAppWebView(
           initialUserScripts: dictionaryUserScripts(
             customCss: settings.dictionaryCustomCss,
-            background: settings.dictionaryBackgroundColor,
+            background: dictionaryBackgroundColor,
           ),
           initialSettings: webviewSettings,
           initialData: load.initialData,
@@ -404,7 +421,7 @@ class WebviewWindows extends ConsumerWidget {
               return InAppWebView(
                 initialUserScripts: dictionaryUserScripts(
                   customCss: settings.dictionaryCustomCss,
-                  background: settings.dictionaryBackgroundColor,
+                  background: dictionaryBackgroundColor,
                 ),
                 webViewEnvironment: snapshot.data,
                 initialSettings: webviewSettings,

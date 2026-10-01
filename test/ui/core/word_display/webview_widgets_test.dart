@@ -12,6 +12,49 @@ void main() {
     expect(script.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
   });
 
+  test("dark Windows mode uses a readable default dictionary background", () {
+    expect(
+      resolveDictionaryBackgroundColor(
+        isWindows: true,
+        isLightTheme: false,
+        customColor: null,
+      ),
+      Colors.white,
+    );
+  });
+
+  test("custom dictionary background takes precedence over the fallback", () {
+    const customColor = Color(0xFFF5F0E6);
+
+    expect(
+      resolveDictionaryBackgroundColor(
+        isWindows: true,
+        isLightTheme: false,
+        customColor: customColor,
+      ),
+      customColor,
+    );
+  });
+
+  test("other themes do not get an automatic background", () {
+    expect(
+      resolveDictionaryBackgroundColor(
+        isWindows: true,
+        isLightTheme: true,
+        customColor: null,
+      ),
+      isNull,
+    );
+    expect(
+      resolveDictionaryBackgroundColor(
+        isWindows: false,
+        isLightTheme: false,
+        customColor: null,
+      ),
+      isNull,
+    );
+  });
+
   test("custom dictionary styles are injected at document end", () {
     final script = dictionaryUserScripts(
       customCss: "body { color: red; }",
