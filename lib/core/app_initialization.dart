@@ -5,6 +5,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/cloud_sync/configuration.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/changelog.dart";
 import "package:ciyue/services/platform.dart";
@@ -298,11 +299,7 @@ const preferencesAllowList = <String>{
   "autoFocusSearch",
   "launchAtStartup",
   "flashcardDailyNewLimit",
-  "cloudSyncEndpoint",
-  "cloudSyncRemoteRoot",
-  "cloudSyncUsername",
-  "cloudSyncDeviceId",
-  "cloudSyncSpaceId",
+  ...CloudSyncConfigurationStore.preferenceKeys,
 };
 
 Future<void> initPrefs() async {
