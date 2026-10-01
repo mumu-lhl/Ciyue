@@ -37,18 +37,30 @@ DesktopWebViewLoad desktopWebViewLoad(String content, String baseUrl) {
 
 /// WebView2 does not apply algorithmic darkening, so use a light page surface
 /// for dark-mode dictionaries unless the user chose a custom background.
+bool shouldUseDarkReaderForDictionary({
+  required bool isWindows,
+  required bool isLightTheme,
+  required bool enabled,
+  required bool hasCustomBackground,
+}) {
+  return isWindows && !isLightTheme && enabled && !hasCustomBackground;
+}
+
 Color? resolveDictionaryBackgroundColor({
   required bool isWindows,
   required bool isLightTheme,
   required Color? customColor,
+  bool darkReaderEnabled = false,
 }) {
   if (customColor != null) return customColor;
-  return isWindows && !isLightTheme ? Colors.white : null;
+  return isWindows && !isLightTheme && !darkReaderEnabled ? Colors.white : null;
 }
 
 UnmodifiableListView<UserScript> dictionaryUserScripts({
   String customCss = "",
   Color? background,
+  bool enableDarkReader = false,
+  String darkReaderSource = "",
 }) {
   final encodedCss = jsonEncode(customCss);
   final color = background;
@@ -57,6 +69,25 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
       : jsonEncode(
           "#${(color.toARGB32() & 0x00FFFFFF).toRadixString(16).padLeft(6, "0")}",
         );
+  final darkReaderScript = enableDarkReader && darkReaderSource.isNotEmpty
+      ? """
+$darkReaderSource
+(function() {
+  const darkReader = window.DarkReader;
+  if (darkReader && !darkReader.isEnabled()) {
+    darkReader.enable({
+      mode: 1,
+      brightness: 100,
+      contrast: 100,
+      sepia: 0,
+      darkSchemeBackgroundColor: "#181a1b",
+      darkSchemeTextColor: "#e8e6e3",
+      styleSystemControls: true
+    });
+  }
+})();
+"""
+      : null;
   final customCssScript =
       """
 (function() {
@@ -91,6 +122,11 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
       source: dictionaryEntryLinkScript,
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
+    if (darkReaderScript != null)
+      UserScript(
+        source: darkReaderScript,
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
+      ),
     if (customCss.isNotEmpty || color != null)
       UserScript(
         source: customCssScript,
@@ -338,6 +374,31 @@ class WebviewDisplayDescription extends ConsumerWidget {
   }
 }
 
+typedef _WindowsWebViewSetup = ({
+  WebViewEnvironment environment,
+  String darkReaderSource,
+});
+
+Future<WebViewEnvironment>? _windowsWebViewEnvironmentFuture;
+Future<String>? _darkReaderSourceFuture;
+
+Future<_WindowsWebViewSetup> _prepareWindowsWebView({
+  required bool useDarkReader,
+}) async {
+  final environment = await (_windowsWebViewEnvironmentFuture ??=
+      WebViewEnvironment.create(
+        settings: WebViewEnvironmentSettings(
+          userDataFolder: windowsWebview2Directory,
+        ),
+      ));
+  final darkReaderSource = useDarkReader
+      ? await (_darkReaderSourceFuture ??= rootBundle.loadString(
+          "assets/third_party/darkreader/darkreader.js",
+        ))
+      : "";
+  return (environment: environment, darkReaderSource: darkReaderSource);
+}
+
 class WebviewWindows extends ConsumerWidget {
   final String content;
   final int dictId;
@@ -352,6 +413,7 @@ class WebviewWindows extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dictManager = ref.watch(dictManagerProvider);
     final settings = ref.watch(settingsProvider);
+    final darkReaderSetting = ref.watch(dictionaryDarkReaderProvider);
     final port = dictManager.dicts[dictId]!.port;
     final Widget webview;
 
@@ -369,10 +431,17 @@ class WebviewWindows extends ConsumerWidget {
           settings.themeMode == ThemeMode.system &&
               MediaQuery.of(context).platformBrightness == Brightness.light;
 
+      final useDarkReader = shouldUseDarkReaderForDictionary(
+        isWindows: Platform.isWindows,
+        isLightTheme: isLightTheme,
+        enabled: darkReaderSetting,
+        hasCustomBackground: settings.dictionaryBackgroundColor != null,
+      );
       final dictionaryBackgroundColor = resolveDictionaryBackgroundColor(
         isWindows: Platform.isWindows,
         isLightTheme: isLightTheme,
         customColor: settings.dictionaryBackgroundColor,
+        darkReaderEnabled: useDarkReader,
       );
 
       final webviewSettings = InAppWebViewSettings(
@@ -410,20 +479,28 @@ class WebviewWindows extends ConsumerWidget {
           },
         );
       } else {
-        webview = FutureBuilder(
-          future: WebViewEnvironment.create(
-            settings: WebViewEnvironmentSettings(
-              userDataFolder: windowsWebview2Directory,
-            ),
-          ),
+        webview = FutureBuilder<_WindowsWebViewSetup>(
+          future: _prepareWindowsWebView(useDarkReader: useDarkReader),
           builder: (context, snapshot) {
             if (snapshot.hasData || snapshot.hasError) {
+              final darkReaderSource = snapshot.data?.darkReaderSource ?? "";
+              final darkReaderReady =
+                  useDarkReader && darkReaderSource.isNotEmpty;
+              final background = resolveDictionaryBackgroundColor(
+                isWindows: true,
+                isLightTheme: isLightTheme,
+                customColor: settings.dictionaryBackgroundColor,
+                darkReaderEnabled: darkReaderReady,
+              );
               return InAppWebView(
+                key: ValueKey("dark-reader-$darkReaderReady"),
                 initialUserScripts: dictionaryUserScripts(
                   customCss: settings.dictionaryCustomCss,
-                  background: dictionaryBackgroundColor,
+                  background: background,
+                  enableDarkReader: darkReaderReady,
+                  darkReaderSource: darkReaderSource,
                 ),
-                webViewEnvironment: snapshot.data,
+                webViewEnvironment: snapshot.data?.environment,
                 initialSettings: webviewSettings,
                 initialUrlRequest: URLRequest(
                   url: WebUri(url),

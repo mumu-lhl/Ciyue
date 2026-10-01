@@ -259,6 +259,7 @@ const preferencesAllowList = <String>{
   "themeSeedColor",
   "dictionaryCustomCss",
   "dictionaryBackgroundColor",
+  "dictionaryDarkReaderEnabled",
   "tagsOrder",
   "secureScreen",
   "searchBarInAppBar",

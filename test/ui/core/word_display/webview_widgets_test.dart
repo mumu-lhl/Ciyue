@@ -12,6 +12,59 @@ void main() {
     expect(script.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
   });
 
+  test(
+    "Dark Reader activates only for Windows dark mode without custom bg",
+    () {
+      expect(
+        shouldUseDarkReaderForDictionary(
+          isWindows: true,
+          isLightTheme: false,
+          enabled: true,
+          hasCustomBackground: false,
+        ),
+        isTrue,
+      );
+      expect(
+        shouldUseDarkReaderForDictionary(
+          isWindows: true,
+          isLightTheme: false,
+          enabled: true,
+          hasCustomBackground: true,
+        ),
+        isFalse,
+      );
+      expect(
+        shouldUseDarkReaderForDictionary(
+          isWindows: false,
+          isLightTheme: false,
+          enabled: true,
+          hasCustomBackground: false,
+        ),
+        isFalse,
+      );
+    },
+  );
+
+  test("Dark Reader remains off unless explicitly enabled", () {
+    final scripts = dictionaryUserScripts(
+      darkReaderSource: "window.DarkReader = {};",
+    );
+
+    expect(scripts, hasLength(1));
+    expect(scripts.single.source, isNot(contains("DarkReader.enable")));
+  });
+
+  test("Dark Reader initialization is injected at document end", () {
+    final script = dictionaryUserScripts(
+      enableDarkReader: true,
+      darkReaderSource: "window.DarkReader = { enable: function() {} };",
+    ).last;
+
+    expect(script.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_END);
+    expect(script.source, contains("darkReader.enable({"));
+    expect(script.source, contains("mode: 1"));
+  });
+
   test("dark Windows mode uses a readable default dictionary background", () {
     expect(
       resolveDictionaryBackgroundColor(
@@ -20,6 +73,18 @@ void main() {
         customColor: null,
       ),
       Colors.white,
+    );
+  });
+
+  test("Dark Reader takes over the automatic Windows background", () {
+    expect(
+      resolveDictionaryBackgroundColor(
+        isWindows: true,
+        isLightTheme: false,
+        customColor: null,
+        darkReaderEnabled: true,
+      ),
+      isNull,
     );
   });
 

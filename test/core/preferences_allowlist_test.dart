@@ -14,6 +14,7 @@ void main() {
     await initPrefs();
 
     expect(Settings.new, returnsNormally);
+    expect(preferencesAllowList, contains("dictionaryDarkReaderEnabled"));
     expect(
       preferencesAllowList,
       containsAll(CloudSyncConfigurationStore.preferenceKeys),

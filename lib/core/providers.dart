@@ -9,6 +9,21 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 /// Provider for global settings.
 final settingsProvider = Provider((ref) => settings);
 
+class DictionaryDarkReaderNotifier extends Notifier<bool> {
+  @override
+  bool build() => settings.dictionaryDarkReaderEnabled;
+
+  Future<void> setEnabled(bool value) async {
+    await settings.setDictionaryDarkReaderEnabled(value);
+    state = value;
+  }
+}
+
+final dictionaryDarkReaderProvider =
+    NotifierProvider<DictionaryDarkReaderNotifier, bool>(
+      DictionaryDarkReaderNotifier.new,
+    );
+
 /// Provider for the dictionary manager.
 final dictManagerProvider = Provider((ref) => dictManager);
 

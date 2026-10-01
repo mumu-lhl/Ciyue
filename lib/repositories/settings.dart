@@ -23,6 +23,7 @@ class Settings {
   late Color themeSeedColor;
   late String dictionaryCustomCss;
   late Color? dictionaryBackgroundColor;
+  late bool dictionaryDarkReaderEnabled;
   String? language;
   late bool searchBarInAppBar;
   late TabBarPosition tabBarPosition;
@@ -88,6 +89,8 @@ class Settings {
     dictionaryBackgroundColor = backgroundColorValue == null
         ? null
         : Color(backgroundColorValue);
+    dictionaryDarkReaderEnabled =
+        prefs.getBool("dictionaryDarkReaderEnabled") ?? false;
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
@@ -258,6 +261,11 @@ class Settings {
     } else {
       await prefs.setInt("dictionaryBackgroundColor", color.toARGB32());
     }
+  }
+
+  Future<void> setDictionaryDarkReaderEnabled(bool value) async {
+    dictionaryDarkReaderEnabled = value;
+    await prefs.setBool("dictionaryDarkReaderEnabled", value);
   }
 
   Future<void> setTabBarPosition(TabBarPosition position) async {
