@@ -233,6 +233,7 @@ class _CiyueState extends State<Ciyue> {
 
     final app = SafeArea(
       top: false,
+      bottom: false,
       child: MaterialApp.router(
         title: "Ciyue",
         theme: ThemeData(colorScheme: lightColorScheme),
