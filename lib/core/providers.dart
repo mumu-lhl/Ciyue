@@ -1,13 +1,81 @@
 import "dart:convert";
 
+import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/database/app/daos.dart";
+import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/dictionary_lookup.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
+import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
+import "package:ciyue/viewModels/audio.dart";
+import "package:ciyue/viewModels/dictionary.dart";
+import "package:ciyue/viewModels/home.dart";
+import "package:ciyue/viewModels/selection_text_view_model.dart";
+import "package:ciyue/viewModels/wordbook.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:flutter_riverpod/legacy.dart";
 
 /// Provider for global settings.
 final settingsProvider = Provider((ref) => settings);
+
+/// HomeModel provider.
+final homeModelProvider = ChangeNotifierProvider<HomeModel>(
+  (ref) => HomeModel(),
+);
+
+/// DictManagerModel provider.
+final dictManagerModelProvider = ChangeNotifierProvider<DictManagerModel>(
+  (ref) => DictManagerModel(),
+);
+
+/// HistoryModel provider.
+final historyModelProvider = ChangeNotifierProvider<HistoryModel>(
+  (ref) => HistoryModel(),
+);
+
+/// WordbookModel provider.
+final wordbookModelProvider = ChangeNotifierProvider<WordbookModel>(
+  (ref) => WordbookModel(),
+);
+
+/// AudioModel provider.
+final audioModelProvider = ChangeNotifierProvider<AudioModel>(
+  (ref) => AudioModel()..init(),
+);
+
+/// ManageDictionariesModel provider.
+final manageDictionariesModelProvider =
+    ChangeNotifierProvider<ManageDictionariesModel>(
+      (ref) => ManageDictionariesModel(),
+    );
+
+/// AIPrompts provider.
+final aiPromptsProvider = ChangeNotifierProvider<AIPrompts>(
+  (ref) => AIPrompts(),
+);
+
+/// SelectionTextViewModel provider.
+final selectionTextViewModelProvider =
+    ChangeNotifierProvider<SelectionTextViewModel>(
+      (ref) => SelectionTextViewModel(),
+    );
+
+/// OpenRecordsRepository provider.
+final openRecordsRepositoryProvider = Provider<OpenRecordsRepository>(
+  (ref) => OpenRecordsRepository(),
+);
+
+/// WritingCheckHistoryDao provider.
+final writingCheckHistoryDaoProvider = Provider<WritingCheckHistoryDao>(
+  (ref) => WritingCheckHistoryDao(mainDatabase),
+);
+
+/// TranslateHistoryDao provider.
+final translateHistoryDaoProvider = Provider<TranslateHistoryDao>(
+  (ref) => TranslateHistoryDao(mainDatabase),
+);
 
 class DictionaryDarkReaderNotifier extends Notifier<bool> {
   @override

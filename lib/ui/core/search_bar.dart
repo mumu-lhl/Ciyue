@@ -1,14 +1,13 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/dictionary.dart";
-import "package:ciyue/viewModels/home.dart";
 import "package:material_ui/material_ui.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
 
-class WordSearchBarWithSuggestions extends StatefulWidget {
+class WordSearchBarWithSuggestions extends ConsumerStatefulWidget {
   final String word;
   final SearchController controller;
   final FocusNode? focusNode;
@@ -27,12 +26,12 @@ class WordSearchBarWithSuggestions extends StatefulWidget {
   });
 
   @override
-  State<WordSearchBarWithSuggestions> createState() =>
+  ConsumerState<WordSearchBarWithSuggestions> createState() =>
       _WordSearchBarWithSuggestionsState();
 }
 
 class _WordSearchBarWithSuggestionsState
-    extends State<WordSearchBarWithSuggestions> {
+    extends ConsumerState<WordSearchBarWithSuggestions> {
   bool get _isViewOpen =>
       widget.controller.isAttached && widget.controller.isOpen;
 
@@ -65,7 +64,7 @@ class _WordSearchBarWithSuggestionsState
     final normalizedWord = word.trim();
     if (normalizedWord.isEmpty) return;
 
-    context.read<HistoryModel>().addHistory(normalizedWord);
+    ref.read(historyModelProvider).addHistory(normalizedWord);
     if (widget.onWordSelected != null) {
       widget.onWordSelected!(normalizedWord);
       if (controller.isAttached && controller.isOpen) {
@@ -114,9 +113,9 @@ class _WordSearchBarWithSuggestionsState
           viewOnSubmitted: (String word) => _openWord(widget.controller, word),
           suggestionsBuilder:
               (BuildContext context, SearchController controller) async {
-                while (context.read<DictManagerModel>().isSwitchingGroup) {
+                while (ref.read(dictManagerModelProvider).isSwitchingGroup) {
                   await Future.delayed(const Duration(milliseconds: 40));
-                  if (!context.mounted) return const <Widget>[];
+                  if (!mounted) return const <Widget>[];
                 }
 
                 final searchWord = controller.text.trim();

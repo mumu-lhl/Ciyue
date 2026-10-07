@@ -1,13 +1,14 @@
 import "package:ciyue/core/app_initialization.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:go_router/go_router.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
 import "package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart";
 
@@ -46,12 +47,10 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<HistoryModel>(
-            create: (_) => _TestHistoryModel(),
-          ),
-          ChangeNotifierProvider(create: (_) => DictManagerModel()),
+      ProviderScope(
+        overrides: [
+          historyModelProvider.overrideWith((ref) => _TestHistoryModel()),
+          dictManagerModelProvider.overrideWith((ref) => DictManagerModel()),
         ],
         child: MaterialApp.router(
           routerConfig: router,
@@ -76,8 +75,10 @@ void main() {
       addTearDown(controller.dispose);
 
       Widget buildHost({required String word}) {
-        return ChangeNotifierProvider(
-          create: (_) => DictManagerModel(),
+        return ProviderScope(
+          overrides: [
+            dictManagerModelProvider.overrideWith((ref) => DictManagerModel()),
+          ],
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

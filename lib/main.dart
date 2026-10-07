@@ -5,20 +5,12 @@ import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/core/ciyue_error.dart";
 import "package:ciyue/core/localization_delegates.dart";
-import "package:ciyue/database/app/daos.dart";
-import "package:ciyue/repositories/ai_prompts.dart";
-import "package:ciyue/repositories/open_records.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/audio.dart";
-import "package:ciyue/viewModels/dictionary.dart";
-import "package:ciyue/viewModels/home.dart";
-import "package:ciyue/viewModels/wordbook.dart";
-import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
 import "package:material_ui/material_ui.dart";
@@ -47,29 +39,47 @@ void main() async {
 
     runApp(
       ProviderScope(
-        child: provider.MultiProvider(
-          providers: [
-            provider.ChangeNotifierProvider(create: (_) => WordbookModel()),
-            provider.ChangeNotifierProvider(create: (_) => HomeModel()),
-            provider.ChangeNotifierProvider(create: (_) => DictManagerModel()),
-            provider.ChangeNotifierProvider(create: (_) => HistoryModel()),
-            provider.ChangeNotifierProvider(
-              create: (_) => ManageDictionariesModel(),
-            ),
-            provider.ChangeNotifierProvider(
-              create: (_) => AudioModel()..init(),
-            ),
-            provider.ChangeNotifierProvider(create: (_) => AIPrompts()),
-            provider.ChangeNotifierProvider(
-              create: (_) => SelectionTextViewModel(),
-            ),
-            provider.Provider(
-              create: (_) => WritingCheckHistoryDao(mainDatabase),
-            ),
-            provider.Provider(create: (_) => TranslateHistoryDao(mainDatabase)),
-            provider.Provider(create: (_) => OpenRecordsRepository()),
-          ],
-          child: const Ciyue(),
+        child: Consumer(
+          builder: (context, ref, child) {
+            return provider.MultiProvider(
+              providers: [
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(wordbookModelProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(homeModelProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(dictManagerModelProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(historyModelProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(manageDictionariesModelProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(audioModelProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(aiPromptsProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(selectionTextViewModelProvider),
+                ),
+                provider.Provider.value(
+                  value: ref.watch(writingCheckHistoryDaoProvider),
+                ),
+                provider.Provider.value(
+                  value: ref.watch(translateHistoryDaoProvider),
+                ),
+                provider.Provider.value(
+                  value: ref.watch(openRecordsRepositoryProvider),
+                ),
+              ],
+              child: const Ciyue(),
+            );
+          },
         ),
       ),
     );
@@ -99,18 +109,32 @@ void floatingWindow(List<String> args) async {
 
     runApp(
       ProviderScope(
-        child: provider.MultiProvider(
-          providers: [
-            provider.ChangeNotifierProvider(create: (_) => WordbookModel()),
-            provider.ChangeNotifierProvider(create: (_) => HomeModel()),
-            provider.ChangeNotifierProvider(create: (_) => DictManagerModel()),
-            provider.ChangeNotifierProvider(create: (_) => HistoryModel()),
-            provider.ChangeNotifierProvider(
-              create: (_) => AudioModel()..init(),
-            ),
-            provider.Provider(create: (_) => OpenRecordsRepository()),
-          ],
-          child: const Ciyue(),
+        child: Consumer(
+          builder: (context, ref, child) {
+            return provider.MultiProvider(
+              providers: [
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(wordbookModelProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(homeModelProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(dictManagerModelProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(historyModelProvider),
+                ),
+                provider.ChangeNotifierProvider.value(
+                  value: ref.watch(audioModelProvider),
+                ),
+                provider.Provider.value(
+                  value: ref.watch(openRecordsRepositoryProvider),
+                ),
+              ],
+              child: const Ciyue(),
+            );
+          },
         ),
       ),
     );

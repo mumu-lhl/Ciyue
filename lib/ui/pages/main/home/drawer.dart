@@ -1,9 +1,9 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/dictionary.dart";
 import "package:material_ui/material_ui.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
@@ -14,17 +14,16 @@ class HomeDrawer extends StatelessWidget {
   }
 }
 
-class HomeDrawerList extends StatelessWidget {
+class HomeDrawerList extends ConsumerWidget {
   final bool isDrawer;
 
   const HomeDrawerList({super.key, this.isDrawer = false});
 
   @override
-  Widget build(BuildContext context) {
-    final (groupId, isSwitchingGroup, _) = context
-        .select<DictManagerModel, (int, bool, int)>(
-          (model) => (model.groupId, model.isSwitchingGroup, model.state),
-        );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dictManagerModel = ref.watch(dictManagerModelProvider);
+    final groupId = dictManagerModel.groupId;
+    final isSwitchingGroup = dictManagerModel.isSwitchingGroup;
 
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -57,8 +56,8 @@ class HomeDrawerList extends StatelessWidget {
                           context.pop();
                         }
                         if (group.id != groupId) {
-                          await context
-                              .read<DictManagerModel>()
+                          await ref
+                              .read(dictManagerModelProvider)
                               .setCurrentGroup(group.id);
                         }
                       },

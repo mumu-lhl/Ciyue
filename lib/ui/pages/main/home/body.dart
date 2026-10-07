@@ -1,25 +1,25 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/gestures.dart";
 import "package:flutter/services.dart";
-import "package:provider/provider.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
 import "actions.dart";
 import "history.dart";
 import "search.dart";
 
-class HomeBody extends StatelessWidget {
+class HomeBody extends ConsumerWidget {
   const HomeBody({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    context.select<HomeModel, int>((value) => value.state);
-    context.select<DictManagerModel, bool>((value) => value.isEmpty);
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(homeModelProvider.select((value) => value.state));
+    ref.watch(dictManagerModelProvider.select((value) => value.isEmpty));
 
     if (isLargeScreen(context)) {
       return const _DesktopHomeSplitView();
@@ -37,7 +37,7 @@ class HomeBody extends StatelessWidget {
   }
 }
 
-class _DesktopHomeSplitView extends StatelessWidget {
+class _DesktopHomeSplitView extends ConsumerWidget {
   const _DesktopHomeSplitView();
 
   void _selectAdjacentHistory(
@@ -63,9 +63,9 @@ class _DesktopHomeSplitView extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final homeModel = context.watch<HomeModel>();
-    final historyModel = context.watch<HistoryModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeModel = ref.watch(homeModelProvider);
+    final historyModel = ref.watch(historyModelProvider);
     final selectedWord = homeModel.selectedWord;
     final activeWord =
         selectedWord ??
@@ -228,7 +228,7 @@ class _DesktopHomeSplitView extends StatelessWidget {
   }
 }
 
-class _DesktopWordTabBar extends StatelessWidget {
+class _DesktopWordTabBar extends ConsumerWidget {
   const _DesktopWordTabBar();
 
   void _showTabContextMenu(
@@ -291,8 +291,8 @@ class _DesktopWordTabBar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final homeModel = context.watch<HomeModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeModel = ref.watch(homeModelProvider);
     final tabs = homeModel.tabs;
     final activeIndex = homeModel.activeTabIndex;
     final theme = Theme.of(context);

@@ -1,24 +1,22 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/dictionary.dart";
-import "package:ciyue/viewModels/home.dart";
-import "package:ciyue/viewModels/wordbook.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
 import "more_button.dart";
 import "search.dart";
 
-class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
+class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const HomeAppBar({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
-  Widget build(BuildContext context) {
-    final model = context.watch<HistoryModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final model = ref.watch(historyModelProvider);
 
     if (model.isSelecting) {
       return AppBar(
@@ -40,9 +38,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
             icon: const Icon(Icons.book_outlined),
             onPressed: () async {
               await model.addSelectedToWordbook();
-              if (context.mounted) {
-                context.read<WordbookModel>().updateWordList();
-              }
+              ref.read(wordbookModelProvider).updateWordList();
             },
           ),
           IconButton(
@@ -69,15 +65,14 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-class GroupSelectorButton extends StatelessWidget {
+class GroupSelectorButton extends ConsumerWidget {
   const GroupSelectorButton({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final (groupId, isSwitchingGroup, _) = context
-        .select<DictManagerModel, (int, bool, int)>(
-          (model) => (model.groupId, model.isSwitchingGroup, model.state),
-        );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dictManagerModel = ref.watch(dictManagerModelProvider);
+    final groupId = dictManagerModel.groupId;
+    final isSwitchingGroup = dictManagerModel.isSwitchingGroup;
 
     final currentGroup = dictManager.groups.firstWhere(
       (g) => g.id == groupId,
@@ -108,9 +103,9 @@ class GroupSelectorButton extends StatelessWidget {
       enabled: !isSwitchingGroup,
       onSelected: (int selectedGroupId) async {
         if (selectedGroupId != groupId) {
-          await context.read<DictManagerModel>().setCurrentGroup(
-            selectedGroupId,
-          );
+          await ref
+              .read(dictManagerModelProvider)
+              .setCurrentGroup(selectedGroupId);
         }
       },
       itemBuilder: (context) => [

@@ -1,15 +1,14 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/home.dart";
-import "package:ciyue/viewModels/wordbook.dart";
 import "package:flutter/gestures.dart";
 import "package:material_ui/material_ui.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
 
 import "dialogs.dart";
 
-class HistoryList extends StatelessWidget {
+class HistoryList extends ConsumerWidget {
   final ValueChanged<String>? onWordSelected;
   final ValueChanged<String>? onWordTertiarySelected;
   final String? selectedWord;
@@ -22,8 +21,8 @@ class HistoryList extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final model = context.watch<HistoryModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final model = ref.watch(historyModelProvider);
     final history = model.history;
 
     final locale = AppLocalizations.of(context);
@@ -93,14 +92,14 @@ class HistoryList extends StatelessWidget {
                 if (await wordbookDao.wordExist(item.word)) {
                   if (!context.mounted) return null;
 
-                  await context.read<WordbookModel>().delete(item.word);
+                  await ref.read(wordbookModelProvider).delete(item.word);
                 } else {
                   if (!context.mounted) return null;
 
-                  await context.read<WordbookModel>().add(item.word);
+                  await ref.read(wordbookModelProvider).add(item.word);
                 }
                 if (context.mounted) {
-                  context.read<WordbookModel>().updateWordList();
+                  ref.read(wordbookModelProvider).updateWordList();
                 }
 
                 return false;
