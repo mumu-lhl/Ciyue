@@ -183,29 +183,34 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        const _WordbookStats(),
-        const ManageDictionariesPageListTile(),
-        const AiSettingsPageListTile(),
-        const AudioSettingsPageListTile(),
-        if (Platform.isAndroid && !isFullFlavor())
-          const ManageStorageListTile(),
-        const AppearanceSettingsPageListTile(),
-        const HistoryPageListTile(),
-        ListTile(
-          leading: const Icon(Icons.style),
-          title: const Text("Flashcards"),
-          onTap: () => context.push("/settings/flashcards"),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720),
+        child: ListView(
+          children: [
+            const _WordbookStats(),
+            const ManageDictionariesPageListTile(),
+            const AiSettingsPageListTile(),
+            const AudioSettingsPageListTile(),
+            if (Platform.isAndroid && !isFullFlavor())
+              const ManageStorageListTile(),
+            const AppearanceSettingsPageListTile(),
+            const HistoryPageListTile(),
+            ListTile(
+              leading: const Icon(Icons.style),
+              title: const Text("Flashcards"),
+              onTap: () => context.push("/settings/flashcards"),
+            ),
+            const HunspellPageListTile(),
+            const BackupPageListTile(),
+            const CloudSyncPageListTile(),
+            const UpdatePageListTile(),
+            const OtherPageListTile(),
+            const LoggerPageListTile(),
+            const AboutPageListTile(),
+          ],
         ),
-        const HunspellPageListTile(),
-        const BackupPageListTile(),
-        const CloudSyncPageListTile(),
-        const UpdatePageListTile(),
-        const OtherPageListTile(),
-        const LoggerPageListTile(),
-        const AboutPageListTile(),
-      ],
+      ),
     );
   }
 }

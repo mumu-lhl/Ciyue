@@ -4,9 +4,11 @@ import "package:ciyue/ui/core/language_picker.dart";
 import "package:ciyue/ui/core/custom_context_menu.dart";
 import "package:ciyue/ui/pages/translate/translate_history_page.dart";
 import "package:ciyue/ui/pages/translate/translate_settings_page.dart";
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:ciyue/viewModels/translate_view_model.dart";
 import "package:material_ui/material_ui.dart";
+import "package:flutter/services.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 import "package:provider/provider.dart";
 
@@ -53,51 +55,69 @@ class AiTranslatePage extends StatelessWidget {
             ),
             body: Align(
               alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _InputSection(
-                          inputController: viewModel.inputController,
-                        ),
-                        _LanguageSelectionRow(
-                          sourceLanguage: viewModel.sourceLanguage,
-                          targetLanguage: viewModel.targetLanguage,
-                          getLanguageName: viewModel.getLanguageName,
-                          onSwap: viewModel.swapLanguages,
-                          onSourceTap: () =>
-                              _showLanguagePicker(context, viewModel, true),
-                          onTargetTap: () =>
-                              _showLanguagePicker(context, viewModel, false),
-                        ),
-                        _TranslateButton(
-                          onPressed: viewModel.inputController.text.isEmpty
-                              ? null
-                              : () => viewModel.translateText(context),
-                        ),
-                        if (viewModel.isLoading)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 16.0),
-                            child: Center(child: CircularProgressIndicator()),
+              child: isLargeScreen(context)
+                  ? _DesktopTranslateView(
+                      viewModel: viewModel,
+                      onSourceTap: () =>
+                          _showLanguagePicker(context, viewModel, true),
+                      onTargetTap: () =>
+                          _showLanguagePicker(context, viewModel, false),
+                    )
+                  : ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 500),
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _InputSection(
+                                inputController: viewModel.inputController,
+                              ),
+                              _LanguageSelectionRow(
+                                sourceLanguage: viewModel.sourceLanguage,
+                                targetLanguage: viewModel.targetLanguage,
+                                getLanguageName: viewModel.getLanguageName,
+                                onSwap: viewModel.swapLanguages,
+                                onSourceTap: () => _showLanguagePicker(
+                                  context,
+                                  viewModel,
+                                  true,
+                                ),
+                                onTargetTap: () => _showLanguagePicker(
+                                  context,
+                                  viewModel,
+                                  false,
+                                ),
+                              ),
+                              _TranslateButton(
+                                onPressed:
+                                    viewModel.inputController.text.isEmpty
+                                    ? null
+                                    : () => viewModel.translateText(context),
+                              ),
+                              if (viewModel.isLoading)
+                                const Padding(
+                                  padding: EdgeInsets.only(bottom: 16.0),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                              _TranslatedTextSection(
+                                translatedText: viewModel.translatedText,
+                                translationProvider:
+                                    viewModel.translationProvider,
+                                isError: viewModel.isError,
+                              ),
+                              if (viewModel.alternativeTexts.isNotEmpty)
+                                _AlternativesSection(
+                                  alternatives: viewModel.alternativeTexts,
+                                ),
+                            ],
                           ),
-                        _TranslatedTextSection(
-                          translatedText: viewModel.translatedText,
-                          translationProvider: viewModel.translationProvider,
-                          isError: viewModel.isError,
                         ),
-                        if (viewModel.alternativeTexts.isNotEmpty)
-                          _AlternativesSection(
-                            alternatives: viewModel.alternativeTexts,
-                          ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
             ),
           );
         },
@@ -358,6 +378,177 @@ class _TranslatedTextSection extends StatelessWidget {
           fallbackText: translatedText,
         ),
         child: child,
+      ),
+    );
+  }
+}
+
+class _DesktopTranslateView extends StatelessWidget {
+  final AiTranslateViewModel viewModel;
+  final VoidCallback onSourceTap;
+  final VoidCallback onTargetTap;
+
+  const _DesktopTranslateView({
+    required this.viewModel,
+    required this.onSourceTap,
+    required this.onTargetTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
+          if (viewModel.inputController.text.isNotEmpty) {
+            viewModel.translateText(context);
+          }
+        },
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            _LanguageSelectionRow(
+              sourceLanguage: viewModel.sourceLanguage,
+              targetLanguage: viewModel.targetLanguage,
+              getLanguageName: viewModel.getLanguageName,
+              onSwap: viewModel.swapLanguages,
+              onSourceTap: onSourceTap,
+              onTargetTap: onTargetTap,
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: Card(
+                      elevation: 0,
+                      color: Theme.of(context).colorScheme.surfaceContainerLow,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: viewModel.inputController,
+                                autofocus: true,
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(context)!
+                                      .enterTextToTranslate,
+                                  border: InputBorder.none,
+                                ),
+                                contextMenuBuilder:
+                                    buildEditableTextCustomContextMenu(
+                                      fallbackText:
+                                          viewModel.inputController.text,
+                                    ),
+                                maxLines: null,
+                                expands: true,
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                if (viewModel.inputController.text.isNotEmpty)
+                                  IconButton(
+                                    tooltip: "Clear",
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () =>
+                                        viewModel.inputController.clear(),
+                                  ),
+                                ElevatedButton.icon(
+                                  icon: const Icon(Icons.translate),
+                                  label: Text(
+                                    "${AppLocalizations.of(context)!.translate} (Ctrl+Enter)",
+                                  ),
+                                  onPressed:
+                                      viewModel.inputController.text.isEmpty
+                                      ? null
+                                      : () => viewModel.translateText(context),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Card(
+                      elevation: 0,
+                      color: Theme.of(context).colorScheme.surfaceContainerLow,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    if (viewModel.isLoading)
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 32.0,
+                                        ),
+                                        child: Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      )
+                                    else if (viewModel
+                                        .translatedText
+                                        .isNotEmpty)
+                                      _TranslatedTextSection(
+                                        translatedText:
+                                            viewModel.translatedText,
+                                        translationProvider:
+                                            viewModel.translationProvider,
+                                        isError: viewModel.isError,
+                                      )
+                                    else
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 32.0,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            AppLocalizations.of(context)!
+                                                .enterTextToTranslate,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                          ),
+                                        ),
+                                      ),
+                                    if (viewModel.alternativeTexts.isNotEmpty)
+                                      _AlternativesSection(
+                                        alternatives:
+                                            viewModel.alternativeTexts,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

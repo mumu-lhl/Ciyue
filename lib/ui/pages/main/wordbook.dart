@@ -10,6 +10,7 @@ import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 import "package:ciyue/ui/pages/flashcards/overview_card.dart";
+import "package:ciyue/utils.dart";
 
 class WordBookScreen extends StatefulWidget {
   const WordBookScreen({super.key});
@@ -62,7 +63,16 @@ class WordView extends StatelessWidget {
                       final isSelected = value.$2;
                       final model = context.read<WordbookModel>();
 
+                      final isDesktop = isLargeScreen(context);
+                      final isWordSelected =
+                          !isMultiSelectMode && model.selectedWord == data.word;
+
                       return ListTile(
+                        selected: isWordSelected,
+                        selectedTileColor: Theme.of(context)
+                            .colorScheme
+                            .primaryContainer
+                            .withValues(alpha: 0.35),
                         leading: isMultiSelectMode
                             ? Checkbox(
                                 value: isSelected,
@@ -81,6 +91,8 @@ class WordView extends StatelessWidget {
                         onTap: () async {
                           if (isMultiSelectMode) {
                             model.selectWord(data);
+                          } else if (isDesktop) {
+                            model.selectedWord = data.word;
                           } else {
                             if (context.mounted) {
                               final words = snapshot.data!
@@ -137,6 +149,43 @@ class _WordBookScreenState extends State<WordBookScreen> {
   @override
   Widget build(BuildContext context) {
     context.select<WordbookModel, DateTime?>((model) => model.selectedDate);
+    final isDesktop = isLargeScreen(context);
+
+    if (isDesktop) {
+      final wordbookModel = context.watch<WordbookModel>();
+      final selectedWord = wordbookModel.selectedWord;
+
+      return Scaffold(
+        appBar: const WordbookAppBar(),
+        body: Row(
+          children: [
+            const SizedBox(width: 360, child: WordViewWithTagsClips()),
+            const VerticalDivider(thickness: 1, width: 1),
+            Expanded(
+              child: selectedWord != null && selectedWord.isNotEmpty
+                  ? KeyedSubtree(
+                      key: ValueKey(selectedWord),
+                      child: WordDisplay(
+                        word: selectedWord,
+                        showBackButton: false,
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.empty,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return const Scaffold(
       appBar: WordbookAppBar(),

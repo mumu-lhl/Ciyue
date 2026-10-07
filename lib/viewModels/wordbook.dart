@@ -17,6 +17,16 @@ class WordbookModel extends ChangeNotifier {
   List<WordbookData> selectedWords = [];
   List<String> searchResults = [];
   bool fuzzySearch = false;
+  String? _selectedWord;
+
+  String? get selectedWord => _selectedWord;
+
+  set selectedWord(String? word) {
+    if (_selectedWord != word) {
+      _selectedWord = word;
+      notifyListeners();
+    }
+  }
 
   WordbookModel() {
     loadTotalWordCount();

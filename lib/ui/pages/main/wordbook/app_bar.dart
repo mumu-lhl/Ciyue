@@ -1,3 +1,4 @@
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/wordbook.dart";
 import "package:material_ui/material_ui.dart";
 import "package:provider/provider.dart";
@@ -28,9 +29,46 @@ class WordbookAppBar extends StatelessWidget implements PreferredSizeWidget {
 class _NormalActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final model = context.read<WordbookModel>();
+    final model = context.watch<WordbookModel>();
+    final isDesktop = isLargeScreen(context);
+
     return Row(
       children: [
+        if (isDesktop) ...[
+          IconButton(
+            tooltip: "Search",
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const SearchWordDialog(),
+              );
+            },
+          ),
+          if (model.selectedDate != null)
+            IconButton(
+              tooltip: "Clear date",
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                model.selectedDate = null;
+                model.updateWordList();
+              },
+            ),
+          IconButton(
+            tooltip: "Calendar",
+            icon: const Icon(Icons.calendar_month),
+            onPressed: () async {
+              final DateTime? picked = await showDialog(
+                context: context,
+                builder: (BuildContext context) => const MonthPickerDialog(),
+              );
+              if (picked != null && context.mounted) {
+                model.selectedDate = picked;
+                model.updateWordList();
+              }
+            },
+          ),
+        ],
         IconButton(
           icon: const Icon(Icons.label_outline),
           onPressed: () async {
