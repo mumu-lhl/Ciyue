@@ -2,6 +2,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/viewModels/wordbook.dart";
+import "package:flutter/gestures.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
@@ -10,9 +11,15 @@ import "dialogs.dart";
 
 class HistoryList extends StatelessWidget {
   final ValueChanged<String>? onWordSelected;
+  final ValueChanged<String>? onWordTertiarySelected;
   final String? selectedWord;
 
-  const HistoryList({super.key, this.onWordSelected, this.selectedWord});
+  const HistoryList({
+    super.key,
+    this.onWordSelected,
+    this.onWordTertiarySelected,
+    this.selectedWord,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -116,33 +123,44 @@ class HistoryList extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onError,
                 ),
               ),
-              child: ListTile(
-                selected: !model.isSelecting && selectedWord == item.word,
-                selectedTileColor: Theme.of(context)
-                    .colorScheme
-                    .primaryContainer
-                    .withValues(alpha: 0.35),
-                leading: model.isSelecting
-                    ? Checkbox(
-                        value: model.selectedIds.contains(item.id),
-                        onChanged: (value) {
-                          model.toggleSelection(item.id);
-                        },
-                      )
-                    : null,
-                title: Text(item.word),
-                onTap: () {
-                  if (model.isSelecting) {
-                    model.toggleSelection(item.id);
-                  } else if (onWordSelected != null) {
-                    onWordSelected!(item.word);
-                  } else {
-                    context.push("/word/${Uri.encodeComponent(item.word)}");
+              child: Listener(
+                onPointerDown: (event) {
+                  if (event.buttons == kTertiaryButton && !model.isSelecting) {
+                    if (onWordTertiarySelected != null) {
+                      onWordTertiarySelected!(item.word);
+                    } else if (onWordSelected != null) {
+                      onWordSelected!(item.word);
+                    }
                   }
                 },
-                onLongPress: () {
-                  model.toggleSelection(item.id);
-                },
+                child: ListTile(
+                  selected: !model.isSelecting && selectedWord == item.word,
+                  selectedTileColor: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withValues(alpha: 0.35),
+                  leading: model.isSelecting
+                      ? Checkbox(
+                          value: model.selectedIds.contains(item.id),
+                          onChanged: (value) {
+                            model.toggleSelection(item.id);
+                          },
+                        )
+                      : null,
+                  title: Text(item.word),
+                  onTap: () {
+                    if (model.isSelecting) {
+                      model.toggleSelection(item.id);
+                    } else if (onWordSelected != null) {
+                      onWordSelected!(item.word);
+                    } else {
+                      context.push("/word/${Uri.encodeComponent(item.word)}");
+                    }
+                  },
+                  onLongPress: () {
+                    model.toggleSelection(item.id);
+                  },
+                ),
               ),
             ),
         ],

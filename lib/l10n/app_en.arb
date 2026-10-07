@@ -619,5 +619,13 @@
   "previousWord": "Previous word",
   "@previousWord": {},
   "nextWord": "Next word",
-  "@nextWord": {}
+  "@nextWord": {},
+  "newTab": "New Tab",
+  "@newTab": {},
+  "closeTab": "Close Tab",
+  "@closeTab": {},
+  "closeOtherTabs": "Close Other Tabs",
+  "@closeOtherTabs": {},
+  "closeAllTabs": "Close All Tabs",
+  "@closeAllTabs": {}
 }

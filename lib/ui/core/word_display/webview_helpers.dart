@@ -1,22 +1,83 @@
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
+import "package:ciyue/utils.dart";
+import "package:ciyue/viewModels/home.dart";
 import "package:flutter/foundation.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
+import "package:provider/provider.dart";
+
+DateTime? _lastOpenWordTime;
+String? _lastOpenWordName;
+bool? _lastOpenWordIsNewTab;
+
+void handleOpenWordNavigation(
+  BuildContext context,
+  String rawWord, {
+  required bool newTab,
+  int? dictId,
+}) {
+  final word = rawWord.trim();
+  if (word.isEmpty) return;
+
+  final now = DateTime.now();
+  if (_lastOpenWordName == word &&
+      _lastOpenWordIsNewTab == newTab &&
+      _lastOpenWordTime != null &&
+      now.difference(_lastOpenWordTime!) < const Duration(milliseconds: 300)) {
+    return;
+  }
+  _lastOpenWordName = word;
+  _lastOpenWordIsNewTab = newTab;
+  _lastOpenWordTime = now;
+
+  final navContext = navigatorKey.currentContext ?? context;
+
+  if (isLargeScreen(context)) {
+    try {
+      final homeModel = Provider.of<HomeModel>(navContext, listen: false);
+      if (newTab) {
+        homeModel.openWordInNewTab(word);
+      } else {
+        homeModel.selectedWord = word;
+      }
+    } catch (_) {}
+
+    try {
+      Provider.of<OpenRecordsRepository>(navContext, listen: false).add(word);
+    } catch (_) {}
+
+    try {
+      Provider.of<HistoryModel>(navContext, listen: false).addHistory(word);
+    } catch (_) {}
+  } else {
+    if (context.mounted) {
+      final query = dictId != null ? "?dictId=$dictId" : "";
+      context.push("/word/${Uri.encodeComponent(word)}$query");
+    }
+  }
+}
 
 bool _isEntryUrl(WebUri url) {
   return url.scheme == "entry" ||
+      url.scheme == "ciyue-open-new-tab" ||
       (url.scheme == "gdlookup" && url.host == "localhost");
 }
 
 String _wordFromEntryUrl(WebUri url) {
+  if (url.scheme == "ciyue-open-new-tab") {
+    final raw = url.host.isNotEmpty ? url.host : url.path;
+    return Uri.decodeComponent(raw.replaceFirst(RegExp(r"^/"), ""));
+  }
   final encodedWord = url.scheme == "gdlookup"
       ? url.path.replaceFirst(RegExp(r"^/"), "")
       : url.toString().replaceFirst("entry://", "");
@@ -79,15 +140,22 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
     if (url == null) return NavigationActionPolicy.CANCEL;
 
     if (_isEntryUrl(url)) {
+      final isNewTab = url.scheme == "ciyue-open-new-tab";
       final word = _wordFromEntryUrl(url);
-      if (!(await dictManager.dicts[dictId]!.wordExist(word))) {
+      if (!isNewTab && !(await dictManager.dicts[dictId]!.wordExist(word))) {
         talker.info("Word not found: ${url.toString()}");
         return NavigationActionPolicy.CANCEL;
       }
 
       if (context.mounted) {
-        context.push("/word/${Uri.encodeComponent(word)}?dictId=$dictId");
+        handleOpenWordNavigation(
+          context,
+          word,
+          newTab: isNewTab,
+          dictId: dictId,
+        );
       }
+      return NavigationActionPolicy.CANCEL;
     } else if (url.scheme == "sound") {
       final filename = Uri.decodeFull(url.toString())
           .replaceFirst("sound://", "");

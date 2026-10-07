@@ -77,9 +77,14 @@ class HomeModel extends ChangeNotifier {
   int state = 0;
   String _searchWord = "";
   String? _selectedWord;
+  final List<String> _tabs = [];
+  int _activeTabIndex = -1;
 
   final searchController = SearchController();
   final searchBarFocusNode = FocusNode();
+
+  List<String> get tabs => List.unmodifiable(_tabs);
+  int get activeTabIndex => _activeTabIndex;
 
   String get searchWord => _searchWord;
 
@@ -88,11 +93,158 @@ class HomeModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String? get selectedWord => _selectedWord;
+  String? get selectedWord {
+    if (_activeTabIndex >= 0 && _activeTabIndex < _tabs.length) {
+      final tabWord = _tabs[_activeTabIndex];
+      if (tabWord.isNotEmpty) {
+        return tabWord;
+      }
+    }
+    return _selectedWord;
+  }
 
   set selectedWord(String? word) {
-    if (_selectedWord != word) {
-      _selectedWord = word;
+    if (word == null) {
+      _selectedWord = null;
+      notifyListeners();
+      return;
+    }
+
+    final trimmed = word.trim();
+    if (trimmed.isEmpty) return;
+
+    final existingIndex = _tabs.indexOf(trimmed);
+    if (existingIndex != -1) {
+      _activeTabIndex = existingIndex;
+      _selectedWord = trimmed;
+      notifyListeners();
+      return;
+    }
+
+    if (_tabs.isEmpty) {
+      _tabs.add(trimmed);
+      _activeTabIndex = 0;
+    } else if (_activeTabIndex >= 0 && _activeTabIndex < _tabs.length) {
+      _tabs[_activeTabIndex] = trimmed;
+    } else {
+      _tabs.add(trimmed);
+      _activeTabIndex = _tabs.length - 1;
+    }
+    _selectedWord = trimmed;
+    notifyListeners();
+  }
+
+  void openWordInNewTab(String word, {bool switchTo = true}) {
+    final trimmed = word.trim();
+    if (trimmed.isEmpty) return;
+
+    final existingIndex = _tabs.indexOf(trimmed);
+    if (existingIndex != -1) {
+      if (switchTo) {
+        _activeTabIndex = existingIndex;
+        _selectedWord = trimmed;
+        notifyListeners();
+      }
+      return;
+    }
+
+    if (_activeTabIndex >= 0 &&
+        _activeTabIndex < _tabs.length &&
+        _tabs[_activeTabIndex].isEmpty) {
+      _tabs[_activeTabIndex] = trimmed;
+      _selectedWord = trimmed;
+      notifyListeners();
+      return;
+    }
+
+    _tabs.add(trimmed);
+    if (switchTo) {
+      _activeTabIndex = _tabs.length - 1;
+      _selectedWord = trimmed;
+    }
+    notifyListeners();
+  }
+
+  void newTab() {
+    final emptyIndex = _tabs.indexOf("");
+    if (emptyIndex != -1) {
+      _activeTabIndex = emptyIndex;
+      _selectedWord = "";
+    } else {
+      _tabs.add("");
+      _activeTabIndex = _tabs.length - 1;
+      _selectedWord = "";
+    }
+    focusSearchBar();
+    notifyListeners();
+  }
+
+  void switchToTab(int index) {
+    if (index >= 0 && index < _tabs.length) {
+      _activeTabIndex = index;
+      _selectedWord = _tabs[index];
+      notifyListeners();
+    }
+  }
+
+  void closeTab(int index) {
+    if (index < 0 || index >= _tabs.length) return;
+    _tabs.removeAt(index);
+    if (_tabs.isEmpty) {
+      _activeTabIndex = -1;
+      _selectedWord = null;
+    } else {
+      if (_activeTabIndex == index) {
+        _activeTabIndex = index.clamp(0, _tabs.length - 1);
+        _selectedWord = _tabs[_activeTabIndex];
+      } else if (_activeTabIndex > index) {
+        _activeTabIndex--;
+        _selectedWord = _tabs[_activeTabIndex];
+      }
+    }
+    notifyListeners();
+  }
+
+  void closeOtherTabs(int index) {
+    if (index < 0 || index >= _tabs.length) return;
+    final keep = _tabs[index];
+    _tabs.clear();
+    _tabs.add(keep);
+    _activeTabIndex = 0;
+    _selectedWord = keep;
+    notifyListeners();
+  }
+
+  void closeAllTabs() {
+    _tabs.clear();
+    _activeTabIndex = -1;
+    _selectedWord = null;
+    notifyListeners();
+  }
+
+  void nextTab() {
+    if (_tabs.length > 1) {
+      _activeTabIndex = (_activeTabIndex + 1) % _tabs.length;
+      _selectedWord = _tabs[_activeTabIndex];
+      notifyListeners();
+    }
+  }
+
+  void previousTab() {
+    if (_tabs.length > 1) {
+      _activeTabIndex = (_activeTabIndex - 1 + _tabs.length) % _tabs.length;
+      _selectedWord = _tabs[_activeTabIndex];
+      notifyListeners();
+    }
+  }
+
+  void ensureInitialWord(String word) {
+    final trimmed = word.trim();
+    if (trimmed.isEmpty) return;
+    if (_tabs.isEmpty) {
+      _tabs.add(trimmed);
+      _activeTabIndex = 0;
+      _selectedWord = trimmed;
       notifyListeners();
     }
   }

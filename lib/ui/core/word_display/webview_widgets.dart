@@ -262,6 +262,20 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
       onWebViewCreated: (controller) async {
         webViewController = controller;
 
+        controller.addJavaScriptHandler(
+          handlerName: "openInNewTab",
+          callback: (args) {
+            if (args.isNotEmpty && args[0] is String) {
+              handleOpenWordNavigation(
+                context,
+                args[0] as String,
+                newTab: true,
+                dictId: widget.dictId,
+              );
+            }
+          },
+        );
+
         if (widget.isExpansion) {
           controller.addJavaScriptHandler(
             handlerName: "WebViewHeight",
@@ -479,6 +493,19 @@ class WebviewWindows extends ConsumerWidget {
               context,
             ),
             onWebViewCreated: (controller) async {
+              controller.addJavaScriptHandler(
+                handlerName: "openInNewTab",
+                callback: (args) {
+                  if (args.isNotEmpty && args[0] is String) {
+                    handleOpenWordNavigation(
+                      context,
+                      args[0] as String,
+                      newTab: true,
+                      dictId: dictId,
+                    );
+                  }
+                },
+              );
               await controller.loadData(
                 data: load.deferredData.data,
                 mimeType: load.deferredData.mimeType,
@@ -541,6 +568,21 @@ class WebviewWindows extends ConsumerWidget {
                   dictId,
                   context,
                 ),
+                onWebViewCreated: (controller) async {
+                  controller.addJavaScriptHandler(
+                    handlerName: "openInNewTab",
+                    callback: (args) {
+                      if (args.isNotEmpty && args[0] is String) {
+                        handleOpenWordNavigation(
+                          context,
+                          args[0] as String,
+                          newTab: true,
+                          dictId: dictId,
+                        );
+                      }
+                    },
+                  );
+                },
               );
             }
             return const Center(child: CircularProgressIndicator());

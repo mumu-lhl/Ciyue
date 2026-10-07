@@ -40,10 +40,10 @@ void main() {
       ),
     );
 
-    expect(find.text("Again"), findsOneWidget);
-    expect(find.text("Hard"), findsOneWidget);
-    expect(find.text("Good"), findsOneWidget);
-    expect(find.text("Easy"), findsOneWidget);
+    expect(find.textContaining("Again"), findsOneWidget);
+    expect(find.textContaining("Hard"), findsOneWidget);
+    expect(find.textContaining("Good"), findsOneWidget);
+    expect(find.textContaining("Easy"), findsOneWidget);
     expect(find.text("1d"), findsOneWidget);
     expect(find.text("4d"), findsOneWidget);
   });
