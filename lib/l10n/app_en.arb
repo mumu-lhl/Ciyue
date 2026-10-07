@@ -230,6 +230,8 @@
   "@simpleOutput": {},
   "enterTextToTranslate": "Enter text to translate",
   "@enterTextToTranslate": {},
+  "translation": "Translation",
+  "@translation": {},
   "translate": "Translate",
   "@translate": {},
   "sourceLanguage": "Source Language",

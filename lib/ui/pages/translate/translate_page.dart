@@ -518,7 +518,7 @@ class _DesktopTranslateView extends StatelessWidget {
                                         child: Center(
                                           child: Text(
                                             AppLocalizations.of(context)!
-                                                .enterTextToTranslate,
+                                                .translation,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium
