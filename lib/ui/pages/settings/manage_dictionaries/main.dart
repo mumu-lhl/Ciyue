@@ -1,6 +1,7 @@
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/hunspell.dart";
@@ -9,21 +10,19 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/dictionary.dart";
-import "package:ciyue/viewModels/home.dart";
 import "package:file_selector/file_selector.dart";
 import "package:material_ui/material_ui.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:path/path.dart";
-import "package:provider/provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
-Future<void> addGroup(String value, BuildContext context) async {
+Future<void> addGroup(String value, BuildContext context, WidgetRef ref) async {
   if (value.isNotEmpty) {
     await dictGroupDao.addGroup(value, []);
 
     if (context.mounted) {
-      final model = context.read<DictManagerModel>();
+      final model = ref.read(dictManagerModelProvider);
       await model.updateGroupList();
       if (context.mounted) {
         context.pop();
@@ -101,7 +100,7 @@ class AddButton extends StatelessWidget {
   }
 }
 
-class DictionaryCard extends StatelessWidget {
+class DictionaryCard extends ConsumerWidget {
   final DictionaryListData dictionary;
   final int index;
 
@@ -111,7 +110,10 @@ class DictionaryCard extends StatelessWidget {
     required this.index,
   });
 
-  Future<bool> _checkAndDeleteDictionary(BuildContext context) async {
+  Future<bool> _checkAndDeleteDictionary(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final mdxFile = File("${dictionary.path}.mdx");
     if (!await mdxFile.exists()) {
       if (context.mounted) {
@@ -155,15 +157,15 @@ class DictionaryCard extends StatelessWidget {
 
       // Update UI
       if (context.mounted) {
-        context.read<ManageDictionariesModel>().update();
-        context.read<DictManagerModel>().checkIsEmpty();
+        ref.read(manageDictionariesModelProvider).update();
+        ref.read(dictManagerModelProvider).checkIsEmpty();
       }
       return true;
     }
     return false;
   }
 
-  void _showActionsDialog(BuildContext context, String title) {
+  void _showActionsDialog(BuildContext context, WidgetRef ref, String title) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -172,7 +174,7 @@ class DictionaryCard extends StatelessWidget {
           children: <Widget>[
             SimpleDialogOption(
               onPressed: () async {
-                if (await _checkAndDeleteDictionary(context)) {
+                if (await _checkAndDeleteDictionary(context, ref)) {
                   if (context.mounted) context.pop();
                   return;
                 }
@@ -190,13 +192,13 @@ class DictionaryCard extends StatelessWidget {
             ),
             SimpleDialogOption(
               onPressed: () async {
-                if (await _checkAndDeleteDictionary(context)) {
+                if (await _checkAndDeleteDictionary(context, ref)) {
                   if (context.mounted) context.pop();
                   return;
                 }
                 // Existing remove logic
                 if (dictManager.contain(dictionary.id) && context.mounted) {
-                  final model = context.read<DictManagerModel>();
+                  final model = ref.read(dictManagerModelProvider);
                   await model.close(dictionary.id);
 
                   final dictIds = [
@@ -218,7 +220,7 @@ class DictionaryCard extends StatelessWidget {
                 await tmpDict.removeDictionary(dictionaryId: dictionary.id);
 
                 if (context.mounted) {
-                  context.read<ManageDictionariesModel>().update();
+                  ref.read(manageDictionariesModelProvider).update();
                   context.pop();
                 }
               },
@@ -229,7 +231,7 @@ class DictionaryCard extends StatelessWidget {
             ),
             SimpleDialogOption(
               onPressed: () async {
-                if (await _checkAndDeleteDictionary(context)) {
+                if (await _checkAndDeleteDictionary(context, ref)) {
                   if (context.mounted) context.pop();
                   return;
                 }
@@ -244,7 +246,7 @@ class DictionaryCard extends StatelessWidget {
             ),
             SimpleDialogOption(
               onPressed: () async {
-                if (await _checkAndDeleteDictionary(context)) {
+                if (await _checkAndDeleteDictionary(context, ref)) {
                   if (context.mounted) context.pop();
                   return;
                 }
@@ -270,7 +272,7 @@ class DictionaryCard extends StatelessWidget {
                         controller: controller..text = title,
                         autofocus: true,
                         onSubmitted: (value) async {
-                          await _updateAlias(value, dictionary, context);
+                          await _updateAlias(value, dictionary, context, ref);
                         },
                       ),
                       actions: [
@@ -303,6 +305,7 @@ class DictionaryCard extends StatelessWidget {
                               controller.text,
                               dictionary,
                               context,
+                              ref,
                             );
                           },
                           child: Text(AppLocalizations.of(context)!.confirm),
@@ -324,7 +327,7 @@ class DictionaryCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
 
     final String title;
@@ -352,7 +355,7 @@ class DictionaryCard extends StatelessWidget {
             ),
             Expanded(
               child: GestureDetector(
-                onTap: () => _showActionsDialog(context, title),
+                onTap: () => _showActionsDialog(context, ref, title),
                 child: Text(
                   title,
                   style: Theme.of(context).textTheme.titleMedium,
@@ -362,12 +365,12 @@ class DictionaryCard extends StatelessWidget {
             Checkbox(
               value: dictManager.contain(dictionary.id),
               onChanged: (bool? value) async {
-                if (await _checkAndDeleteDictionary(context)) {
+                if (await _checkAndDeleteDictionary(context, ref)) {
                   return;
                 }
 
                 if (!context.mounted) return;
-                final model = context.read<DictManagerModel>();
+                final model = ref.read(dictManagerModelProvider);
 
                 if (value == true) {
                   final oldDictionariesNumber = dictManager.dicts.length;
@@ -377,8 +380,8 @@ class DictionaryCard extends StatelessWidget {
                   if (oldDictionariesNumber == 0) {
                     if (!context.mounted) return;
 
-                    final searchBarFocusNode = context
-                        .read<HomeModel>()
+                    final searchBarFocusNode = ref
+                        .read(homeModelProvider)
                         .searchBarFocusNode;
 
                     void searchBarFocusListener() {
@@ -411,6 +414,7 @@ class DictionaryCard extends StatelessWidget {
     String value,
     DictionaryListData dictionary,
     BuildContext context,
+    WidgetRef ref,
   ) async {
     if (value.isNotEmpty) {
       if (dictManager.contain(dictionary.id)) {
@@ -418,20 +422,20 @@ class DictionaryCard extends StatelessWidget {
       }
       await dictionaryListDao.updateTitle(dictionary.id, value);
       if (context.mounted) {
-        context.read<ManageDictionariesModel>().update();
+        ref.read(manageDictionariesModelProvider).update();
         context.pop();
       }
     }
   }
 }
 
-class GroupDeleteButton extends StatelessWidget {
+class GroupDeleteButton extends ConsumerWidget {
   final DictGroupData group;
 
   const GroupDeleteButton({super.key, required this.group});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (group.name == "Default") {
       return SizedBox.shrink();
     }
@@ -439,7 +443,7 @@ class GroupDeleteButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.delete),
       onPressed: () async {
-        final model = context.read<DictManagerModel>();
+        final model = ref.read(dictManagerModelProvider);
 
         if (group.id == dictManager.groupId) {
           if (group.id == dictManager.groups.last.id) {
@@ -463,18 +467,18 @@ class GroupDeleteButton extends StatelessWidget {
   }
 }
 
-class GroupDialog extends StatelessWidget {
+class GroupDialog extends ConsumerWidget {
   const GroupDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       title: Text(AppLocalizations.of(context)!.manageGroups),
       content: RadioGroup(
         groupValue: dictManager.groupId,
         onChanged: (int? groupId) async {
           if (groupId != null && groupId != dictManager.groupId) {
-            final model = context.read<DictManagerModel>();
+            final model = ref.read(dictManagerModelProvider);
             await model.setCurrentGroup(groupId);
           }
           if (context.mounted) {
@@ -515,7 +519,7 @@ class GroupDialog extends StatelessWidget {
                     controller: controller,
                     autofocus: true,
                     onSubmitted: (String groupName) async {
-                      await addGroup(groupName, context);
+                      await addGroup(groupName, context, ref);
                     },
                   ),
                   actions: [
@@ -525,7 +529,7 @@ class GroupDialog extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () async {
-                        await addGroup(controller.text, context);
+                        await addGroup(controller.text, context, ref);
                       },
                       child: Text(AppLocalizations.of(context)!.add),
                     ),
@@ -598,17 +602,17 @@ class ManageDictionariesPage extends StatefulWidget {
   State<ManageDictionariesPage> createState() => ManageDictionariesPageState();
 }
 
-class ManageDictionariesBody extends StatelessWidget {
+class ManageDictionariesBody extends ConsumerWidget {
   const ManageDictionariesBody({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    context.select<ManageDictionariesModel, Future<List<DictionaryListData>>>(
-      (model) => model.dictionaries,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dictionaries = ref.watch(
+      manageDictionariesModelProvider.select((model) => model.dictionaries),
     );
 
     return FutureBuilder(
-      future: context.read<ManageDictionariesModel>().dictionaries,
+      future: dictionaries,
       builder:
           (
             BuildContext context,
@@ -632,15 +636,15 @@ class ManageDictionariesBody extends StatelessWidget {
                       final dict = dicts.removeAt(oldIndex);
                       dicts.insert(newIndex, dict);
 
-                      context.read<ManageDictionariesModel>().updateWithList(
-                        dicts,
-                      );
+                      ref
+                          .read(manageDictionariesModelProvider)
+                          .updateWithList(dicts);
 
                       () async {
                         await dictionaryListDao.updateOrder(dicts);
 
                         if (context.mounted) {
-                          final model = context.read<DictManagerModel>();
+                          final model = ref.read(dictManagerModelProvider);
                           await model.updateDictIds();
                         }
                       }();
@@ -693,10 +697,12 @@ class ManageDictionariesPageState extends State<ManageDictionariesPage> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
-          child: Selector<DictManagerModel, int>(
-            selector: (context, model) => model.state,
-            builder: (context, value, child) {
-              return ManageDictionariesBody();
+          child: Consumer(
+            builder: (context, ref, child) {
+              ref.watch(
+                dictManagerModelProvider.select((model) => model.state),
+              );
+              return const ManageDictionariesBody();
             },
           ),
         ),
@@ -712,7 +718,7 @@ class GroupButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () {
-        showDialog(context: context, builder: (context) => GroupDialog());
+        showDialog(context: context, builder: (context) => const GroupDialog());
       },
       icon: Icon(Icons.group),
     );

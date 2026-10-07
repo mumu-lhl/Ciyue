@@ -8,18 +8,18 @@ import "package:ciyue/services/platform.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/audio.dart";
+import "package:ciyue/core/providers.dart";
 import "package:file_selector/file_selector.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
-class AudioItems extends StatelessWidget {
+class AudioItems extends ConsumerWidget {
   const AudioItems({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    context.select<AudioModel, int>((model) => model.mddAudioListState);
-    final mddAudioList = context.read<AudioModel>().mddAudioList;
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(audioModelProvider.select((model) => model.mddAudioListState));
+    final mddAudioList = ref.read(audioModelProvider).mddAudioList;
 
     return Expanded(
       child: ReorderableListView.builder(
@@ -46,9 +46,9 @@ class AudioItems extends StatelessWidget {
                 trailing: IconButton(
                   icon: Icon(Icons.delete),
                   onPressed: () async {
-                    await context.read<AudioModel>().removeMddAudio(
-                      mddAudio.id,
-                    );
+                    await ref
+                        .read(audioModelProvider)
+                        .removeMddAudio(mddAudio.id);
                   },
                 ),
               ),
@@ -60,7 +60,7 @@ class AudioItems extends StatelessWidget {
               newIndex >= mddAudioList.length) {
             return;
           }
-          context.read<AudioModel>().reorderMddAudio(oldIndex, newIndex);
+          ref.read(audioModelProvider).reorderMddAudio(oldIndex, newIndex);
         },
       ),
     );

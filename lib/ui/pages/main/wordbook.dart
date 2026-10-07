@@ -1,31 +1,77 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/date_divider.dart";
 import "package:ciyue/ui/core/word_display.dart";
 import "package:ciyue/ui/pages/main/wordbook/app_bar.dart";
 import "package:ciyue/ui/pages/main/wordbook/floating_action_buttons.dart";
-import "package:ciyue/viewModels/wordbook.dart";
 import "package:material_ui/material_ui.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
 import "package:ciyue/ui/pages/flashcards/overview_card.dart";
 import "package:ciyue/utils.dart";
 
-class WordBookScreen extends StatefulWidget {
+class WordBookScreen extends ConsumerWidget {
   const WordBookScreen({super.key});
 
   @override
-  State<WordBookScreen> createState() => _WordBookScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(wordbookModelProvider.select((model) => model.selectedDate));
+    final isDesktop = isLargeScreen(context);
+
+    if (isDesktop) {
+      final selectedWord = ref.watch(
+        wordbookModelProvider.select((model) => model.selectedWord),
+      );
+
+      return Scaffold(
+        appBar: const WordbookAppBar(),
+        body: Row(
+          children: [
+            const SizedBox(width: 360, child: WordViewWithTagsClips()),
+            const VerticalDivider(thickness: 1, width: 1),
+            Expanded(
+              child: selectedWord != null && selectedWord.isNotEmpty
+                  ? KeyedSubtree(
+                      key: ValueKey(selectedWord),
+                      child: WordDisplay(
+                        word: selectedWord,
+                        showBackButton: false,
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.empty,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return const Scaffold(
+      appBar: WordbookAppBar(),
+      body: WordViewWithTagsClips(),
+      floatingActionButton: WordbookFloatingActionButtons(),
+    );
+  }
 }
 
-class WordView extends StatelessWidget {
+class WordView extends ConsumerWidget {
   final Future<List<WordbookData>> allWords;
 
   const WordView({super.key, required this.allWords});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder(
       future: allWords,
       builder:
@@ -53,19 +99,26 @@ class WordView extends StatelessWidget {
                 }
 
                 list.add(
-                  Selector<WordbookModel, (bool, bool)>(
-                    selector: (context, model) => (
-                      model.isMultiSelectMode,
-                      model.selectedWords.contains(data),
-                    ),
-                    builder: (context, value, child) {
-                      final isMultiSelectMode = value.$1;
-                      final isSelected = value.$2;
-                      final model = context.read<WordbookModel>();
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final isMultiSelectMode = ref.watch(
+                        wordbookModelProvider.select(
+                          (m) => m.isMultiSelectMode,
+                        ),
+                      );
+                      final isSelected = ref.watch(
+                        wordbookModelProvider.select(
+                          (m) => m.selectedWords.contains(data),
+                        ),
+                      );
+                      final selectedWord = ref.watch(
+                        wordbookModelProvider.select((m) => m.selectedWord),
+                      );
+                      final model = ref.read(wordbookModelProvider);
 
                       final isDesktop = isLargeScreen(context);
                       final isWordSelected =
-                          !isMultiSelectMode && model.selectedWord == data.word;
+                          !isMultiSelectMode && selectedWord == data.word;
 
                       return ListTile(
                         selected: isWordSelected,
@@ -118,7 +171,7 @@ class WordView extends StatelessWidget {
 
             if (list.isEmpty) {
               return FutureBuilder(
-                future: context.read<WordbookModel>().tags,
+                future: ref.read(wordbookModelProvider).tags,
                 builder: (context, tagSnapshot) {
                   if (tagSnapshot.hasData && tagSnapshot.data!.isNotEmpty) {
                     return const Expanded(child: SizedBox());
@@ -138,136 +191,78 @@ class WordView extends StatelessWidget {
   }
 }
 
-class WordViewWithTagsClips extends StatefulWidget {
+class WordViewWithTagsClips extends ConsumerStatefulWidget {
   const WordViewWithTagsClips({super.key});
 
   @override
-  State<WordViewWithTagsClips> createState() => _WordViewWithTagsClipsState();
+  ConsumerState<WordViewWithTagsClips> createState() =>
+      _WordViewWithTagsClipsState();
 }
 
-class _WordBookScreenState extends State<WordBookScreen> {
-  @override
-  Widget build(BuildContext context) {
-    context.select<WordbookModel, DateTime?>((model) => model.selectedDate);
-    final isDesktop = isLargeScreen(context);
-
-    if (isDesktop) {
-      final wordbookModel = context.watch<WordbookModel>();
-      final selectedWord = wordbookModel.selectedWord;
-
-      return Scaffold(
-        appBar: const WordbookAppBar(),
-        body: Row(
-          children: [
-            const SizedBox(width: 360, child: WordViewWithTagsClips()),
-            const VerticalDivider(thickness: 1, width: 1),
-            Expanded(
-              child: selectedWord != null && selectedWord.isNotEmpty
-                  ? KeyedSubtree(
-                      key: ValueKey(selectedWord),
-                      child: WordDisplay(
-                        word: selectedWord,
-                        showBackButton: false,
-                      ),
-                    )
-                  : Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.empty,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                      ),
-                    ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return const Scaffold(
-      appBar: WordbookAppBar(),
-      body: WordViewWithTagsClips(),
-      floatingActionButton: WordbookFloatingActionButtons(),
-    );
-  }
-}
-
-class _WordViewWithTagsClipsState extends State<WordViewWithTagsClips> {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Selector<WordbookModel, int?>(
-          selector: (context, model) => model.selectedTag,
-          builder: (context, tag, child) =>
-              FlashcardOverviewCard(key: ValueKey(tag), tag: tag),
-        ),
-        Selector<WordbookModel, (Future<List<WordbookTag>>, int?)>(
-          selector: (context, model) => (model.tags, model.selectedTag),
-          builder: (context, value, child) {
-            final tagsFuture = value.$1;
-            final selectedTag = value.$2;
-            final model = context.read<WordbookModel>();
-
-            return FutureBuilder(
-              future: tagsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                  final choiceChips = <Widget>[];
-                  final tagsMap = <int, WordbookTag>{};
-                  for (final tag in snapshot.data!) {
-                    tagsMap[tag.id] = tag;
-                  }
-
-                  for (final tagId in wordbookTagsDao.tagsOrder) {
-                    final tag = tagsMap[tagId];
-                    if (tag == null) continue;
-
-                    choiceChips.add(
-                      ChoiceChip(
-                        label: Text(tag.tag),
-                        selected: selectedTag == tag.id,
-                        onSelected: (selected) {
-                          model.updateSelectedTag(selected ? tag.id : null);
-                          model.updateWordList();
-                        },
-                      ),
-                    );
-                  }
-
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 16.0),
-                    child: Wrap(
-                      spacing: 8.0,
-                      runSpacing: 4.0,
-                      children: choiceChips,
-                    ),
-                  );
-                }
-
-                return const Wrap();
-              },
-            );
-          },
-        ),
-        Selector<WordbookModel, Future<List<WordbookData>>>(
-          selector: (context, model) => model.allWords,
-          builder: (context, allWords, child) => WordView(allWords: allWords),
-        ),
-      ],
-    );
-  }
-
+class _WordViewWithTagsClipsState extends ConsumerState<WordViewWithTagsClips> {
   @override
   void initState() {
     super.initState();
 
-    final wordbookModel = context.read<WordbookModel>();
+    final wordbookModel = ref.read(wordbookModelProvider);
     wordbookModel.allWords = wordbookDao.getAllWordsWithTag();
     wordbookModel.tags = wordbookTagsDao.getAllTags();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedTag = ref.watch(
+      wordbookModelProvider.select((m) => m.selectedTag),
+    );
+    final tagsFuture = ref.watch(wordbookModelProvider.select((m) => m.tags));
+    final allWords = ref.watch(wordbookModelProvider.select((m) => m.allWords));
+    final model = ref.read(wordbookModelProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FlashcardOverviewCard(key: ValueKey(selectedTag), tag: selectedTag),
+        FutureBuilder(
+          future: tagsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              final choiceChips = <Widget>[];
+              final tagsMap = <int, WordbookTag>{};
+              for (final tag in snapshot.data!) {
+                tagsMap[tag.id] = tag;
+              }
+
+              for (final tagId in wordbookTagsDao.tagsOrder) {
+                final tag = tagsMap[tagId];
+                if (tag == null) continue;
+
+                choiceChips.add(
+                  ChoiceChip(
+                    label: Text(tag.tag),
+                    selected: selectedTag == tag.id,
+                    onSelected: (selected) {
+                      model.updateSelectedTag(selected ? tag.id : null);
+                      model.updateWordList();
+                    },
+                  ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: choiceChips,
+                ),
+              );
+            }
+
+            return const Wrap();
+          },
+        ),
+        WordView(allWords: allWords),
+      ],
+    );
   }
 }

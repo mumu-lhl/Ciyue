@@ -1,15 +1,15 @@
-import "package:ciyue/viewModels/wordbook.dart";
+import "package:ciyue/core/providers.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
 import "dialogs.dart";
 
-class WordbookFloatingActionButtons extends StatelessWidget {
+class WordbookFloatingActionButtons extends ConsumerWidget {
   const WordbookFloatingActionButtons({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final wordbookModel = context.watch<WordbookModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wordbookModel = ref.watch(wordbookModelProvider);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,

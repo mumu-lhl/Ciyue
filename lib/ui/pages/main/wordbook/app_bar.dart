@@ -1,16 +1,16 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/wordbook.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
 import "dialogs.dart";
 
-class WordbookAppBar extends StatelessWidget implements PreferredSizeWidget {
+class WordbookAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const WordbookAppBar({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final model = context.watch<WordbookModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final model = ref.watch(wordbookModelProvider);
 
     return AppBar(
       actions: [
@@ -26,10 +26,10 @@ class WordbookAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-class _NormalActions extends StatelessWidget {
+class _NormalActions extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    final model = context.watch<WordbookModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final model = ref.watch(wordbookModelProvider);
     final isDesktop = isLargeScreen(context);
 
     return Row(
@@ -97,10 +97,10 @@ class _NormalActions extends StatelessWidget {
   }
 }
 
-class _MultiSelectActions extends StatelessWidget {
+class _MultiSelectActions extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    final model = context.watch<WordbookModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final model = ref.watch(wordbookModelProvider);
     final isSelectedWordsEmpty = model.selectedWords.isEmpty;
 
     return Row(

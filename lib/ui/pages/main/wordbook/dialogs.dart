@@ -1,4 +1,5 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -6,24 +7,24 @@ import "package:ciyue/ui/core/text_buttons.dart";
 import "package:ciyue/ui/core/word_display.dart";
 import "package:ciyue/viewModels/wordbook.dart";
 import "package:material_ui/material_ui.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
 
-class SearchWordDialog extends StatefulWidget {
+class SearchWordDialog extends ConsumerStatefulWidget {
   const SearchWordDialog({super.key});
 
   @override
-  State<SearchWordDialog> createState() => _SearchWordDialogState();
+  ConsumerState<SearchWordDialog> createState() => _SearchWordDialogState();
 }
 
-class _SearchWordDialogState extends State<SearchWordDialog> {
+class _SearchWordDialogState extends ConsumerState<SearchWordDialog> {
   final _searchController = TextEditingController();
   late final WordbookModel _model;
 
   @override
   void initState() {
     super.initState();
-    _model = context.read<WordbookModel>();
+    _model = ref.read(wordbookModelProvider);
     _searchController.addListener(() {
       _model.search(_searchController.text);
     });
@@ -67,8 +68,9 @@ class _SearchWordDialogState extends State<SearchWordDialog> {
               },
             ),
             Expanded(
-              child: Consumer<WordbookModel>(
-                builder: (context, model, child) {
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final model = ref.watch(wordbookModelProvider);
                   if (model.searchResults.isEmpty &&
                       _searchController.text.isNotEmpty) {
                     return const Center(child: Text("No results found"));
@@ -104,14 +106,14 @@ class _SearchWordDialogState extends State<SearchWordDialog> {
   }
 }
 
-class MonthPickerDialog extends StatefulWidget {
+class MonthPickerDialog extends ConsumerStatefulWidget {
   const MonthPickerDialog({super.key});
 
   @override
-  State<MonthPickerDialog> createState() => _MonthPickerDialogState();
+  ConsumerState<MonthPickerDialog> createState() => _MonthPickerDialogState();
 }
 
-class _MonthPickerDialogState extends State<MonthPickerDialog> {
+class _MonthPickerDialogState extends ConsumerState<MonthPickerDialog> {
   late int selectedYear;
   late int selectedMonth;
   late final int initialYear;
@@ -120,7 +122,7 @@ class _MonthPickerDialogState extends State<MonthPickerDialog> {
   void initState() {
     super.initState();
     final initialDate =
-        context.read<WordbookModel>().selectedDate ?? DateTime.now();
+        ref.read(wordbookModelProvider).selectedDate ?? DateTime.now();
     selectedYear = initialDate.year;
     selectedMonth = initialDate.month;
     initialYear = initialDate.year;
@@ -208,14 +210,14 @@ class _MonthPickerDialogState extends State<MonthPickerDialog> {
   }
 }
 
-class MoreOptionsDialog extends StatefulWidget {
+class MoreOptionsDialog extends ConsumerStatefulWidget {
   const MoreOptionsDialog({super.key});
 
   @override
-  State<MoreOptionsDialog> createState() => _MoreOptionsDialogState();
+  ConsumerState<MoreOptionsDialog> createState() => _MoreOptionsDialogState();
 }
 
-class _MoreOptionsDialogState extends State<MoreOptionsDialog> {
+class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
@@ -229,8 +231,8 @@ class _MoreOptionsDialogState extends State<MoreOptionsDialog> {
                 settings.skipTaggedWord = value;
                 await prefs.setBool("skipTaggedWord", value);
                 setState(() {});
-                if (context.mounted) {
-                  final wordbookModel = context.read<WordbookModel>();
+                if (mounted) {
+                  final wordbookModel = ref.read(wordbookModelProvider);
                   wordbookModel.updateWordList();
                 }
               }
@@ -243,7 +245,7 @@ class _MoreOptionsDialogState extends State<MoreOptionsDialog> {
   }
 }
 
-class TagListDialog extends StatefulWidget {
+class TagListDialog extends ConsumerStatefulWidget {
   final List<WordbookTag> tagsDisplay;
   final Future<void> Function(BuildContext context) buildAddTag;
 
@@ -254,13 +256,13 @@ class TagListDialog extends StatefulWidget {
   });
 
   @override
-  State<TagListDialog> createState() => _TagListDialogState();
+  ConsumerState<TagListDialog> createState() => _TagListDialogState();
 }
 
-class _TagListDialogState extends State<TagListDialog> {
+class _TagListDialogState extends ConsumerState<TagListDialog> {
   @override
   Widget build(BuildContext context) {
-    final model = context.read<WordbookModel>();
+    final model = ref.read(wordbookModelProvider);
     return AlertDialog(
       title: Text(AppLocalizations.of(context)!.tagList),
       content: SizedBox(

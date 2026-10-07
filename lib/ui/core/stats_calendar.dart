@@ -2,16 +2,17 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/stats_view_model.dart";
 import "package:flutter/material.dart" as flutter_material;
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 import "package:table_calendar/table_calendar.dart";
 
-class StatsCalendar<T extends StatsViewModel> extends StatelessWidget {
-  const StatsCalendar({super.key});
+class StatsCalendar extends StatelessWidget {
+  final StatsViewModel viewModel;
+  const StatsCalendar({super.key, required this.viewModel});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<T>(
-      builder: (context, viewModel, child) {
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, child) {
         if (viewModel.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
