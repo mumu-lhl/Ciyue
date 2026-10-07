@@ -4,15 +4,17 @@ import "package:material_ui/material_ui.dart";
 
 class DictManagerModel extends ChangeNotifier {
   int get groupId => dictManager.groupId;
-  bool isEmpty = dictManager.isEmpty;
+  bool get isEmpty => dictManager.isEmpty;
+  bool get isLoading => dictManager.isLoading;
   bool isSwitchingGroup = false;
   int? pendingGroupId;
 
   int state = 0;
+  bool _lastKnownIsEmpty = dictManager.isEmpty;
 
   bool checkIsEmpty() {
-    if (dictManager.isEmpty != isEmpty) {
-      isEmpty = dictManager.isEmpty;
+    if (dictManager.isEmpty != _lastKnownIsEmpty) {
+      _lastKnownIsEmpty = dictManager.isEmpty;
       Future.microtask(() => notifyListeners());
       return true;
     } else {
@@ -22,18 +24,18 @@ class DictManagerModel extends ChangeNotifier {
 
   Future<void> add(int id, String path) async {
     await dictManager.add(id, path);
+    _lastKnownIsEmpty = dictManager.isEmpty;
 
     update();
   }
 
   Future<void> close(int id) async {
     await dictManager.close(id);
+    _lastKnownIsEmpty = dictManager.isEmpty;
 
     state += 1;
 
-    if (!checkIsEmpty()) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   Future<void> setCurrentGroup(int id) async {
@@ -48,7 +50,7 @@ class DictManagerModel extends ChangeNotifier {
     } finally {
       pendingGroupId = null;
       isSwitchingGroup = false;
-      isEmpty = dictManager.isEmpty;
+      _lastKnownIsEmpty = dictManager.isEmpty;
       state += 1;
       notifyListeners();
     }

@@ -193,8 +193,8 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
 
   await initPrefs();
 
-  // No waiting to save time.
-  unawaited(initGroup().then((_) => reloadHunspell()));
+  await initGroup();
+  unawaited(reloadHunspell());
 
   flutterTts = FlutterTts();
 

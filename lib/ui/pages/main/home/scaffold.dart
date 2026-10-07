@@ -16,7 +16,8 @@ class HomeScreen extends StatelessWidget {
     context.select<HomeModel, int>((value) => value.state);
     context.select<DictManagerModel, bool>((value) => value.isEmpty);
 
-    final content = dictManager.isEmpty && !settings.aiExplainWord
+    final isNoDict = !dictManager.isLoading && dictManager.isEmpty;
+    final content = isNoDict && !settings.aiExplainWord
         ? const RecommendedDictionaries()
         : const HomeBody();
 
