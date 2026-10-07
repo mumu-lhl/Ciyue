@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 3,
+  "packageId": "ciyue",
+  "appName": "Ciyue",
+  "version": "1.24.0-beta.5",
+  "buildNumber": 103,
+  "platform": "windows",
+  "channel": "preview",
+  "artifact": {
+    "kind": "zip",
+    "url": "https://github.com/mumu-lhl/Ciyue/releases/download/v1.24.0-beta.5/Ciyue-1.24.0-beta.5-windows.zip",
+    "sha256": "ab63a59bb5a5bc74aeb4605b553cc0a1d77359f575289375861d4d172a92f3d0",
+    "length": 22752237
+  },
+  "install": {
+    "strategy": "wholeDirectoryReplace"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKeyId": "release-f3d56da10d0866ff2cff4c65",
+    "value": "GTTV39nYia5J+Dg7alykGjGS7Gg4yAL0oKB4JRiitIO5u+X8xDZRSsJ/59HxuTo/6Is1oCOctC1LrRWsOTOcBQ=="
+  },
+  "minimumUpdaterVersion": "2.0.0",
+  "generatedAt": "2026-10-07T17:47:32.288814Z"
+}
