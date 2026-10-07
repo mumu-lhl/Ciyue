@@ -1,13 +1,13 @@
-import "package:ciyue/repositories/open_records.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:flutter/services.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
 /// A pager widget that displays words from a list with horizontal swipe navigation,
 /// desktop prev/next controls, and keyboard arrow shortcut support.
-class WordDisplayPager extends StatefulWidget {
+class WordDisplayPager extends ConsumerStatefulWidget {
   final List<String> words;
   final int initialIndex;
 
@@ -18,10 +18,10 @@ class WordDisplayPager extends StatefulWidget {
   });
 
   @override
-  State<WordDisplayPager> createState() => _WordDisplayPagerState();
+  ConsumerState<WordDisplayPager> createState() => _WordDisplayPagerState();
 }
 
-class _WordDisplayPagerState extends State<WordDisplayPager> {
+class _WordDisplayPagerState extends ConsumerState<WordDisplayPager> {
   late final PageController _pageController;
   late int _currentIndex;
   final FocusNode _focusNode = FocusNode();
@@ -40,7 +40,7 @@ class _WordDisplayPagerState extends State<WordDisplayPager> {
       final word = widget.words[index];
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        Provider.of<OpenRecordsRepository>(context, listen: false).add(word);
+        ref.read(openRecordsRepositoryProvider).add(word);
       });
     }
   }

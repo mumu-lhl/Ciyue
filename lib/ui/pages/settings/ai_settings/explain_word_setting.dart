@@ -1,18 +1,18 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/title_text.dart";
-import "package:ciyue/viewModels/ai_settings_view_model.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
-class ExplainWordSetting extends StatelessWidget {
+class ExplainWordSetting extends ConsumerWidget {
   const ExplainWordSetting({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final explainWord = context.select(
-      (AISettingsViewModel vm) => vm.explainWord,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final explainWord = ref.watch(
+      aiSettingsViewModelProvider.select((vm) => vm.explainWord),
     );
-    final viewModel = context.read<AISettingsViewModel>();
+    final viewModel = ref.read(aiSettingsViewModelProvider);
     return Row(
       children: [
         TitleText(AppLocalizations.of(context)!.aiExplainWord),

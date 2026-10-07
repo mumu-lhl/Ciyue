@@ -1,13 +1,13 @@
 import "dart:convert";
 
-import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/models/translation_result.dart";
 import "package:material_ui/material_ui.dart";
 
 import "package:ciyue/core/http_client.dart";
-import "package:provider/provider.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:translator/translator.dart";
 
 abstract class TranslationService {
@@ -38,7 +38,10 @@ class AITranslationService implements TranslationService {
     final sourceLangName = languageMap[sourceLanguage] ?? sourceLanguage;
     final targetLangName = languageMap[targetLanguage] ?? targetLanguage;
 
-    final aiPrompts = context.read<AIPrompts>();
+    final aiPrompts = ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(aiPromptsProvider);
     String template = aiPrompts.translatePrompt;
 
     if (!isRichOutput) {

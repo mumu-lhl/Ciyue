@@ -17,11 +17,10 @@ import "package:ciyue/ui/pages/settings/storage_management.dart";
 import "package:ciyue/ui/pages/settings/update.dart";
 import "package:ciyue/ui/pages/settings/wordbook_stats.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/storage_management.dart";
-import "package:ciyue/viewModels/wordbook.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
 
 class AboutPageListTile extends StatelessWidget {
   const AboutPageListTile({super.key});
@@ -152,13 +151,13 @@ class LoggerPageListTile extends StatelessWidget {
   }
 }
 
-class _WordbookStats extends StatelessWidget {
+class _WordbookStats extends ConsumerWidget {
   const _WordbookStats();
 
   @override
-  Widget build(BuildContext context) {
-    final totalWordCount = context.select(
-      (WordbookModel vm) => vm.totalWordCount,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final totalWordCount = ref.watch(
+      wordbookModelProvider.select((vm) => vm.totalWordCount),
     );
 
     return Padding(
@@ -315,10 +314,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case _SettingsSection.audio:
         return const AudioSettingsPage();
       case _SettingsSection.manageStorage:
-        return ChangeNotifierProvider(
-          create: (context) => StorageManagementViewModel(),
-          child: const StorageManagementPage(),
-        );
+        return const StorageManagementPage();
       case _SettingsSection.appearance:
         return const AppearanceSettingsPage();
       case _SettingsSection.history:

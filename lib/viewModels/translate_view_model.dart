@@ -1,14 +1,14 @@
 import "dart:ui" as ui;
 
-import "package:ciyue/core/app_router.dart";
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/translation.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
 class AiTranslateViewModel extends ChangeNotifier {
   final TextEditingController inputController = TextEditingController();
+  final TranslateHistoryDao _historyDao;
   String _sourceLanguage = "auto";
   String _targetLanguage = settings.language! == "system"
       ? ui.PlatformDispatcher.instance.locale.languageCode
@@ -18,7 +18,8 @@ class AiTranslateViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool _isError = false;
 
-  AiTranslateViewModel() {
+  AiTranslateViewModel([TranslateHistoryDao? historyDao])
+    : _historyDao = historyDao ?? translateHistoryDao {
     inputController.addListener(() {
       notifyListeners();
     });
@@ -72,10 +73,7 @@ class AiTranslateViewModel extends ChangeNotifier {
 
     try {
       if (settings.enableTranslationHistory) {
-        Provider.of<TranslateHistoryDao>(
-          navigatorKey.currentContext!,
-          listen: false,
-        ).addHistory(inputController.text.trim());
+        _historyDao.addHistory(inputController.text.trim());
       }
 
       TranslationService service;
@@ -108,5 +106,11 @@ class AiTranslateViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    inputController.dispose();
+    super.dispose();
   }
 }

@@ -37,7 +37,9 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
           IconButton(
             icon: const Icon(Icons.book_outlined),
             onPressed: () async {
-              await model.addSelectedToWordbook();
+              await model.addSelectedToWordbook(
+                ref.read(wordbookModelProvider),
+              );
               ref.read(wordbookModelProvider).updateWordList();
             },
           ),

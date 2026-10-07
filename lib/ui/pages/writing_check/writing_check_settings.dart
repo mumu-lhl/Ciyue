@@ -1,22 +1,29 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/writing_check_settings_view_model.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
-class WritingCheckSettingsPage extends StatelessWidget {
+class WritingCheckSettingsPage extends StatefulWidget {
   const WritingCheckSettingsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => WritingCheckSettingsViewModel(),
-      child: const _WritingCheckSettingsPage(),
-    );
-  }
+  State<WritingCheckSettingsPage> createState() =>
+      _WritingCheckSettingsPageState();
 }
 
-class _WritingCheckSettingsPage extends StatelessWidget {
-  const _WritingCheckSettingsPage();
+class _WritingCheckSettingsPageState extends State<WritingCheckSettingsPage> {
+  late final WritingCheckSettingsViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = WritingCheckSettingsViewModel();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +33,16 @@ class _WritingCheckSettingsPage extends StatelessWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
-          child: Consumer<WritingCheckSettingsViewModel>(
-            builder: (context, viewModel, child) {
+          child: ListenableBuilder(
+            listenable: _viewModel,
+            builder: (context, child) {
               return ListView(
                 children: [
                   SwitchListTile(
                     title: Text(l10n.enableWritingCheckHistory),
-                    value: viewModel.enableHistory,
+                    value: _viewModel.enableHistory,
                     onChanged: (value) {
-                      viewModel.setEnableHistory(value);
+                      _viewModel.setEnableHistory(value);
                     },
                   ),
                 ],

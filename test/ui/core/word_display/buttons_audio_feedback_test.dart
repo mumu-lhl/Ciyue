@@ -1,11 +1,11 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
-import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:ciyue/viewModels/audio.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
 class FakeAudioModelForButton extends AudioModel {
   bool fakePlaying = false;
@@ -49,11 +49,8 @@ void main() {
       final fakeAudioModel = FakeAudioModelForButton();
 
       await tester.pumpWidget(
-        MultiProvider(
-          providers: [
-            ChangeNotifierProvider<AudioModel>.value(value: fakeAudioModel),
-            ChangeNotifierProvider(create: (_) => AIExplanationModel()),
-          ],
+        ProviderScope(
+          overrides: [audioModelProvider.overrideWith((ref) => fakeAudioModel)],
           child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

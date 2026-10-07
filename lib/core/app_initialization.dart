@@ -14,7 +14,6 @@ import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/changelog_dialog.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/home.dart";
 import "package:dynamic_color/dynamic_color.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
@@ -22,7 +21,8 @@ import "package:flutter_tts/flutter_tts.dart";
 import "package:hotkey_manager/hotkey_manager.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:path_provider/path_provider.dart";
-import "package:provider/provider.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:simple_secure_storage/simple_secure_storage.dart";
 import "package:tray_manager/tray_manager.dart" as tray;
@@ -49,7 +49,10 @@ Future<void> initGroup() async {
   final context = navigatorKey.currentContext;
   if (context != null && context.mounted) {
     try {
-      Provider.of<HomeModel>(context, listen: false).update();
+      ProviderScope.containerOf(
+        context,
+        listen: false,
+      ).read(homeModelProvider).update();
     } catch (error, stackTrace) {
       talker.error("Failed to update home model", error, stackTrace);
     }

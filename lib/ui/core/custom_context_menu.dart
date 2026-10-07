@@ -1,9 +1,8 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/audio.dart";
-import "package:ciyue/viewModels/selection_text_view_model.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 import "package:go_router/go_router.dart";
 
 class LookupMenuItem extends ContextMenuButtonItem {
@@ -31,7 +30,10 @@ class ReadLoudlyMenuItem extends ContextMenuButtonItem {
            if (text.isNotEmpty) {
              await playSoundOfWord(
                text,
-               context.read<AudioModel>().mddAudioList,
+               ProviderScope.containerOf(
+                 context,
+                 listen: false,
+               ).read(audioModelProvider).mddAudioList,
              );
            }
            ContextMenuController.removeAny();
@@ -48,7 +50,10 @@ buildCustomContextMenu({required String fallbackText}) {
   return (BuildContext context, SelectableRegionState selectableRegionState) {
     final defaultItems = selectableRegionState.contextMenuButtonItems;
 
-    String text = context.read<SelectionTextViewModel>().selectedText;
+    String text = ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(selectionTextViewModelProvider).selectedText;
     if (text.isEmpty) {
       text = fallbackText;
     }

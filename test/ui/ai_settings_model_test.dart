@@ -1,4 +1,5 @@
 import "package:ciyue/core/app_initialization.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
@@ -7,9 +8,9 @@ import "package:ciyue/ui/pages/settings/ai_settings/model_setting.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/selection_modal.dart";
 import "package:ciyue/viewModels/ai_settings_view_model.dart";
 import "package:ciyue/viewModels/home.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
 import "package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart";
 
@@ -29,8 +30,10 @@ void main() {
       final viewModel = AISettingsViewModel(prompts, homeModel);
 
       await tester.pumpWidget(
-        ChangeNotifierProvider.value(
-          value: viewModel,
+        ProviderScope(
+          overrides: [
+            aiSettingsViewModelProvider.overrideWith((ref) => viewModel),
+          ],
           child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

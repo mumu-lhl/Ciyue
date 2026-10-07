@@ -1,19 +1,20 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/home.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
-class SearchbarLocationSelector extends StatefulWidget {
+class SearchbarLocationSelector extends ConsumerStatefulWidget {
   const SearchbarLocationSelector({super.key});
 
   @override
-  State<SearchbarLocationSelector> createState() =>
+  ConsumerState<SearchbarLocationSelector> createState() =>
       _SearchbarLocationSelectorState();
 }
 
-class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
+class _SearchbarLocationSelectorState
+    extends ConsumerState<SearchbarLocationSelector> {
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
@@ -32,7 +33,7 @@ class _SearchbarLocationSelectorState extends State<SearchbarLocationSelector> {
           if (newValue != settings.searchBarInAppBar) {
             settings.searchBarInAppBar = newValue;
             await prefs.setBool("searchBarInAppBar", newValue);
-            if (context.mounted) context.read<HomeModel>().update();
+            ref.read(homeModelProvider).update();
             setState(() {});
           }
         },

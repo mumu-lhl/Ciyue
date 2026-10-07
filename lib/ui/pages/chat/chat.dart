@@ -2,91 +2,102 @@ import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/chat_view_model.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
-import "package:provider/provider.dart";
 
-class ChatPage extends StatelessWidget {
+class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ChatViewModel(),
-      child: const ChatView(),
-    );
-  }
+  State<ChatPage> createState() => _ChatPageState();
 }
 
-class ChatView extends StatelessWidget {
-  const ChatView({super.key});
+class _ChatPageState extends State<ChatPage> {
+  late final ChatViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ChatViewModel();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final model = context.watch<ChatViewModel>();
     final isDesktop = isLargeScreen(context);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("AI Chat")),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: isDesktop ? 800 : 500),
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: model.messages.length,
-                  itemBuilder: (context, index) {
-                    final message = model.messages[index];
-                    return ChatBubble(
-                      message: message.text,
-                      isUser: message.isUser,
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Focus(
-                  focusNode: model.focusNode,
-                  onKeyEvent: (node, event) {
-                    if (event.logicalKey == LogicalKeyboardKey.enter &&
-                        !HardwareKeyboard.instance.isControlPressed) {
-                      if (event is KeyDownEvent) {
-                        context.read<ChatViewModel>().sendMessage();
-                      }
-                      return KeyEventResult.handled;
-                    }
-                    return KeyEventResult.ignored;
-                  },
-                  child: TextField(
-                    onSubmitted: (_) {
-                      context.read<ChatViewModel>().sendMessage();
-                    },
-                    controller: model.textController,
-                    maxLines: null,
-                    decoration: InputDecoration(
-                      hintText: "Type a message...",
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      suffixIcon: Padding(
-                        padding: const EdgeInsets.only(right: 4.0),
-                        child: IconButton(
-                          icon: const Icon(Icons.send),
-                          onPressed: () {
-                            context.read<ChatViewModel>().sendMessage();
-                          },
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, child) {
+        final model = _viewModel;
+        return Scaffold(
+          appBar: AppBar(title: const Text("AI Chat")),
+          body: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: isDesktop ? 800 : 500),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: model.messages.length,
+                      itemBuilder: (context, index) {
+                        final message = model.messages[index];
+                        return ChatBubble(
+                          message: message.text,
+                          isUser: message.isUser,
+                        );
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Focus(
+                      focusNode: model.focusNode,
+                      onKeyEvent: (node, event) {
+                        if (event.logicalKey == LogicalKeyboardKey.enter &&
+                            !HardwareKeyboard.instance.isControlPressed) {
+                          if (event is KeyDownEvent) {
+                            model.sendMessage();
+                          }
+                          return KeyEventResult.handled;
+                        }
+                        return KeyEventResult.ignored;
+                      },
+                      child: TextField(
+                        onSubmitted: (_) {
+                          model.sendMessage();
+                        },
+                        controller: model.textController,
+                        maxLines: null,
+                        decoration: InputDecoration(
+                          hintText: "Type a message...",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                            borderSide: BorderSide.none,
+                          ),
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.only(right: 4.0),
+                            child: IconButton(
+                              icon: const Icon(Icons.send),
+                              onPressed: () {
+                                model.sendMessage();
+                              },
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

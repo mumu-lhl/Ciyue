@@ -9,7 +9,6 @@ import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
-import "package:ciyue/viewModels/audio.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/gestures.dart";
 import "package:material_ui/material_ui.dart";
@@ -18,7 +17,6 @@ import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
-import "package:provider/provider.dart" as legacy_provider;
 
 typedef DesktopWebViewLoad = ({
   InAppWebViewInitialData deferredData,
@@ -217,10 +215,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
             if (context.mounted) {
               await playSoundOfWord(
                 selectedText,
-                legacy_provider.Provider.of<AudioModel>(
-                  context,
-                  listen: false,
-                ).mddAudioList,
+                ref.read(audioModelProvider).mddAudioList,
               );
             }
           },

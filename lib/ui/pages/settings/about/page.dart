@@ -1,7 +1,5 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/settings/about_view_model.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
 import "about_tile.dart";
 import "changelog_tile.dart";
@@ -18,26 +16,23 @@ class AboutSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AboutViewModel(),
-      child: Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context)!.about)),
-        body: Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: ListView(
-              children: const [
-                FeedbackTile(),
-                GithubTile(),
-                DiscordTile(),
-                QQGroupTile(),
-                SponsorListTile(),
-                TermsOfServicePageListTile(),
-                PrivacyPolicyPageListTile(),
-                ChangelogPageListTile(),
-                AboutPageListTile(),
-              ],
-            ),
+    return Scaffold(
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.about)),
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: ListView(
+            children: const [
+              FeedbackTile(),
+              GithubTile(),
+              DiscordTile(),
+              QQGroupTile(),
+              SponsorListTile(),
+              TermsOfServicePageListTile(),
+              PrivacyPolicyPageListTile(),
+              ChangelogPageListTile(),
+              AboutPageListTile(),
+            ],
           ),
         ),
       ),

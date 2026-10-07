@@ -5,123 +5,137 @@ import "package:ciyue/ui/core/custom_context_menu.dart";
 import "package:ciyue/ui/pages/translate/translate_history_page.dart";
 import "package:ciyue/ui/pages/translate/translate_settings_page.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/selection_text_view_model.dart";
 import "package:ciyue/viewModels/translate_view_model.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
-import "package:provider/provider.dart";
 
-class AiTranslatePage extends StatelessWidget {
+class AiTranslatePage extends StatefulWidget {
   const AiTranslatePage({super.key});
 
   @override
+  State<AiTranslatePage> createState() => _AiTranslatePageState();
+}
+
+class _AiTranslatePageState extends State<AiTranslatePage> {
+  late final AiTranslateViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = AiTranslateViewModel();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AiTranslateViewModel(),
-      child: Consumer<AiTranslateViewModel>(
-        builder: (context, viewModel, child) {
-          return Scaffold(
-            appBar: AppBar(
-              actions: <Widget>[
-                IconButton(
-                  icon: const Icon(Icons.history),
-                  tooltip: AppLocalizations.of(context)!.translationHistory,
-                  onPressed: () async {
-                    final result = await Navigator.push<TranslateHistoryData>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const TranslateHistoryPage(),
-                      ),
-                    );
-                    if (result != null) {
-                      viewModel.inputController.text = result.inputText;
-                    }
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  tooltip: AppLocalizations.of(context)!.settings,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AiTranslateSettingsPage(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            body: Align(
-              alignment: Alignment.topCenter,
-              child: isLargeScreen(context)
-                  ? _DesktopTranslateView(
-                      viewModel: viewModel,
-                      onSourceTap: () =>
-                          _showLanguagePicker(context, viewModel, true),
-                      onTargetTap: () =>
-                          _showLanguagePicker(context, viewModel, false),
-                    )
-                  : ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 500),
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _InputSection(
-                                inputController: viewModel.inputController,
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, child) {
+        final viewModel = _viewModel;
+        return Scaffold(
+          appBar: AppBar(
+            actions: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.history),
+                tooltip: AppLocalizations.of(context)!.translationHistory,
+                onPressed: () async {
+                  final result = await Navigator.push<TranslateHistoryData>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TranslateHistoryPage(),
+                    ),
+                  );
+                  if (result != null) {
+                    viewModel.inputController.text = result.inputText;
+                  }
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.settings),
+                tooltip: AppLocalizations.of(context)!.settings,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AiTranslateSettingsPage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          body: Align(
+            alignment: Alignment.topCenter,
+            child: isLargeScreen(context)
+                ? _DesktopTranslateView(
+                    viewModel: viewModel,
+                    onSourceTap: () =>
+                        _showLanguagePicker(context, viewModel, true),
+                    onTargetTap: () =>
+                        _showLanguagePicker(context, viewModel, false),
+                  )
+                : ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _InputSection(
+                              inputController: viewModel.inputController,
+                            ),
+                            _LanguageSelectionRow(
+                              sourceLanguage: viewModel.sourceLanguage,
+                              targetLanguage: viewModel.targetLanguage,
+                              getLanguageName: viewModel.getLanguageName,
+                              onSwap: viewModel.swapLanguages,
+                              onSourceTap: () =>
+                                  _showLanguagePicker(context, viewModel, true),
+                              onTargetTap: () => _showLanguagePicker(
+                                context,
+                                viewModel,
+                                false,
                               ),
-                              _LanguageSelectionRow(
-                                sourceLanguage: viewModel.sourceLanguage,
-                                targetLanguage: viewModel.targetLanguage,
-                                getLanguageName: viewModel.getLanguageName,
-                                onSwap: viewModel.swapLanguages,
-                                onSourceTap: () => _showLanguagePicker(
-                                  context,
-                                  viewModel,
-                                  true,
-                                ),
-                                onTargetTap: () => _showLanguagePicker(
-                                  context,
-                                  viewModel,
-                                  false,
+                            ),
+                            _TranslateButton(
+                              onPressed: viewModel.inputController.text.isEmpty
+                                  ? null
+                                  : () => viewModel.translateText(context),
+                            ),
+                            if (viewModel.isLoading)
+                              const Padding(
+                                padding: EdgeInsets.only(bottom: 16.0),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
                                 ),
                               ),
-                              _TranslateButton(
-                                onPressed:
-                                    viewModel.inputController.text.isEmpty
-                                    ? null
-                                    : () => viewModel.translateText(context),
+                            _TranslatedTextSection(
+                              translatedText: viewModel.translatedText,
+                              translationProvider:
+                                  viewModel.translationProvider,
+                              isError: viewModel.isError,
+                            ),
+                            if (viewModel.alternativeTexts.isNotEmpty)
+                              _AlternativesSection(
+                                alternatives: viewModel.alternativeTexts,
                               ),
-                              if (viewModel.isLoading)
-                                const Padding(
-                                  padding: EdgeInsets.only(bottom: 16.0),
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                ),
-                              _TranslatedTextSection(
-                                translatedText: viewModel.translatedText,
-                                translationProvider:
-                                    viewModel.translationProvider,
-                                isError: viewModel.isError,
-                              ),
-                              if (viewModel.alternativeTexts.isNotEmpty)
-                                _AlternativesSection(
-                                  alternatives: viewModel.alternativeTexts,
-                                ),
-                            ],
-                          ),
+                          ],
                         ),
                       ),
                     ),
-            ),
-          );
-        },
-      ),
+                  ),
+          ),
+        );
+      },
     );
   }
 
@@ -342,7 +356,7 @@ class _AlternativeItemState extends State<_AlternativeItem> {
   }
 }
 
-class _TranslatedTextSection extends StatelessWidget {
+class _TranslatedTextSection extends ConsumerWidget {
   const _TranslatedTextSection({
     required this.translatedText,
     required this.translationProvider,
@@ -354,7 +368,7 @@ class _TranslatedTextSection extends StatelessWidget {
   final bool isError;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final Widget child;
     if (translationProvider == "AI" && !isError) {
       child = GptMarkdown(translatedText);
@@ -371,8 +385,8 @@ class _TranslatedTextSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: SelectionArea(
-        onSelectionChanged: context
-            .read<SelectionTextViewModel>()
+        onSelectionChanged: ref
+            .read(selectionTextViewModelProvider)
             .setSelectedText,
         contextMenuBuilder: buildCustomContextMenu(
           fallbackText: translatedText,

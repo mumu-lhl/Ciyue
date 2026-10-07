@@ -1,5 +1,4 @@
 import "package:ciyue/core/app_globals.dart";
-import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/ui/pages/chat/chat.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check_history.dart";
@@ -29,11 +28,11 @@ import "package:material_ui/material_ui.dart";
 import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:go_router/go_router.dart";
 import "package:ciyue/viewModels/ai_explanation.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/ui/pages/settings/storage_management.dart";
-import "package:ciyue/viewModels/storage_management.dart";
-import "package:ciyue/ui/pages/flashcards/study_page.dart";
 import "package:ciyue/ui/pages/flashcards/settings.dart";
-import "package:provider/provider.dart";
+import "package:ciyue/ui/pages/flashcards/study_page.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:talker_flutter/talker_flutter.dart";
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -61,10 +60,10 @@ final router = GoRouter(
           );
         }
 
-        Provider.of<OpenRecordsRepository>(
+        ProviderScope.containerOf(
           navigatorKey.currentContext!,
           listen: false,
-        ).add(word!);
+        ).read(openRecordsRepositoryProvider).add(word!);
 
         final dictIdParam = state.uri.queryParameters["dictId"];
         final initialDictId = dictIdParam != null
@@ -155,10 +154,7 @@ final router = GoRouter(
     ),
     GoRoute(
       path: "/settings/storage_management",
-      builder: (context, state) => ChangeNotifierProvider(
-        create: (context) => StorageManagementViewModel(),
-        child: const StorageManagementPage(),
-      ),
+      builder: (context, state) => const StorageManagementPage(),
     ),
     GoRoute(
       path: "/properties",

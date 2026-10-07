@@ -1,11 +1,9 @@
 import "package:ciyue/core/app_globals.dart";
-import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/viewModels/history_view_model.dart";
 import "package:ciyue/viewModels/wordbook.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
 class HistoryModel extends HistoryViewModel<HistoryData> {
   bool get enableHistory => settings.enableHistory;
@@ -37,22 +35,24 @@ class HistoryModel extends HistoryViewModel<HistoryData> {
     await loadHistory();
   }
 
-  Future<void> addSelectedToWordbook() async {
+  Future<void> addSelectedToWordbook([WordbookModel? wordbookModel]) async {
     final words = history
         .where((element) => selectedIds.contains(element.id))
         .map((e) => e.word);
     final existWords = await wordbookDao.wordsExist(words);
     for (final word in words) {
       if (existWords.contains(word)) {
-        await Provider.of<WordbookModel>(
-          navigatorKey.currentContext!,
-          listen: false,
-        ).delete(word);
+        if (wordbookModel != null) {
+          await wordbookModel.delete(word);
+        } else {
+          await wordbookDao.removeWord(word);
+        }
       } else {
-        await Provider.of<WordbookModel>(
-          navigatorKey.currentContext!,
-          listen: false,
-        ).add(word);
+        if (wordbookModel != null) {
+          await wordbookModel.add(word);
+        } else {
+          await wordbookDao.addWord(word);
+        }
       }
     }
     clearSelection();

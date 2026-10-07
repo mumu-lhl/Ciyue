@@ -1,8 +1,8 @@
 import "dart:math" as math;
 
-import "package:ciyue/viewModels/audio.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
 /// A compact animated icon rendering bouncing equalizer waveform bars.
 class AudioWaveformIcon extends StatefulWidget {
@@ -209,14 +209,14 @@ class _PulseRingPainter extends CustomPainter {
 
 /// A floating audio status pill that slides in when audio is playing and displays
 /// animated waveform feedback, the word/audio label, and a stop button.
-class FloatingAudioIndicator extends StatelessWidget {
+class FloatingAudioIndicator extends ConsumerWidget {
   const FloatingAudioIndicator({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final audioModel = Provider.of<AudioModel?>(context);
-    final isPlaying = audioModel?.isPlaying ?? false;
-    final playingWord = audioModel?.playingWord ?? "";
+  Widget build(BuildContext context, WidgetRef ref) {
+    final audioModel = ref.watch(audioModelProvider);
+    final isPlaying = audioModel.isPlaying;
+    final playingWord = audioModel.playingWord ?? "";
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -264,7 +264,7 @@ class FloatingAudioIndicator extends StatelessWidget {
                     const SizedBox(width: 6),
                     InkWell(
                       borderRadius: BorderRadius.circular(12),
-                      onTap: () => audioModel?.stopAudio(),
+                      onTap: () => audioModel.stopAudio(),
                       child: Padding(
                         padding: const EdgeInsets.all(2),
                         child: Icon(

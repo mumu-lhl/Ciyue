@@ -2,13 +2,31 @@ import "dart:io";
 
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 import "package:ciyue/viewModels/storage_management.dart";
+import "package:material_ui/material_ui.dart";
 import "package:path/path.dart" as p;
 
-class StorageManagementPage extends StatelessWidget {
+class StorageManagementPage extends StatefulWidget {
   const StorageManagementPage({super.key});
+
+  @override
+  State<StorageManagementPage> createState() => _StorageManagementPageState();
+}
+
+class _StorageManagementPageState extends State<StorageManagementPage> {
+  late final StorageManagementViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = StorageManagementViewModel();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
 
   Future<void> _confirmAndDelete(
     BuildContext context,
@@ -40,14 +58,10 @@ class StorageManagementPage extends StatelessWidget {
         false;
 
     if (confirm && context.mounted) {
-      final viewModel = Provider.of<StorageManagementViewModel>(
-        context,
-        listen: false,
-      );
-      final success = await viewModel.deleteEntity(entity);
-      if (!success && viewModel.errorMessage != null && context.mounted) {
+      final success = await _viewModel.deleteEntity(entity);
+      if (!success && _viewModel.errorMessage != null && context.mounted) {
         ToastService.show(
-          viewModel.errorMessage!,
+          _viewModel.errorMessage!,
           context,
           type: ToastType.error,
         );
@@ -58,32 +72,34 @@ class StorageManagementPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(title: Text(locale.manageStorage)),
-      body: Consumer<StorageManagementViewModel>(
-        builder: (context, viewModel, child) {
-          if (viewModel.isLoading) {
+      body: ListenableBuilder(
+        listenable: _viewModel,
+        builder: (context, child) {
+          if (_viewModel.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (viewModel.errorMessage != null) {
-            return Center(child: Text(viewModel.errorMessage!));
+          if (_viewModel.errorMessage != null) {
+            return Center(child: Text(_viewModel.errorMessage!));
           }
           return ListView.builder(
             itemCount:
-                viewModel.entities.length +
-                (viewModel.isAtBaseDirectory ? 0 : 1),
+                _viewModel.entities.length +
+                (_viewModel.isAtBaseDirectory ? 0 : 1),
             itemBuilder: (context, index) {
-              if (!viewModel.isAtBaseDirectory && index == 0) {
+              if (!_viewModel.isAtBaseDirectory && index == 0) {
                 return ListTile(
                   leading: const Icon(Icons.arrow_back),
                   title: Text(locale.back),
-                  onTap: viewModel.navigateBack,
+                  onTap: _viewModel.navigateBack,
                 );
               }
-              final actualIndex = viewModel.isAtBaseDirectory
+              final actualIndex = _viewModel.isAtBaseDirectory
                   ? index
                   : index - 1;
-              final entity = viewModel.entities[actualIndex];
+              final entity = _viewModel.entities[actualIndex];
               final isDirectory = entity is Directory;
               return ListTile(
                 leading: Icon(
@@ -95,7 +111,7 @@ class StorageManagementPage extends StatelessWidget {
                   onPressed: () => _confirmAndDelete(context, entity),
                 ),
                 onTap: isDirectory
-                    ? () => viewModel.navigateToDirectory(entity)
+                    ? () => _viewModel.navigateToDirectory(entity)
                     : null, // No action for files
               );
             },

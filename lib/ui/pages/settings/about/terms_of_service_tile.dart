@@ -1,14 +1,14 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/settings/about_view_model.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
-class TermsOfServicePageListTile extends StatelessWidget {
+class TermsOfServicePageListTile extends ConsumerWidget {
   const TermsOfServicePageListTile({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final viewModel = Provider.of<AboutViewModel>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.read(aboutViewModelProvider);
     return ListTile(
       leading: const Icon(Icons.article),
       title: Text(AppLocalizations.of(context)!.termsOfService),

@@ -8,7 +8,6 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:go_router/go_router.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart" as provider;
 import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
 import "package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart";
 
@@ -52,16 +51,14 @@ void main() {
     );
 
     return ProviderScope(
-      overrides: [validDictIdsProvider.overrideWith((ref, word) async => [])],
-      child: provider.MultiProvider(
-        providers: [
-          provider.Provider<OpenRecordsRepository>.value(value: openRecords),
-        ],
-        child: MaterialApp.router(
-          routerConfig: router,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-        ),
+      overrides: [
+        validDictIdsProvider.overrideWith((ref, word) async => []),
+        openRecordsRepositoryProvider.overrideWithValue(openRecords),
+      ],
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       ),
     );
   }

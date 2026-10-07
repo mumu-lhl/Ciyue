@@ -1,24 +1,26 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/ai_explanation.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
-import "package:provider/provider.dart";
 
-class AIExplainView extends StatefulWidget {
+class AIExplainView extends ConsumerStatefulWidget {
   final String word;
 
   const AIExplainView({super.key, required this.word});
 
   @override
-  State<AIExplainView> createState() => _AIExplainViewState();
+  ConsumerState<AIExplainView> createState() => _AIExplainViewState();
 }
 
-class _AIExplainViewState extends State<AIExplainView> {
+class _AIExplainViewState extends ConsumerState<AIExplainView> {
   void _requestExplanation() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<AIExplanationModel>().getExplanation(widget.word);
+      ref
+          .read(aiExplanationModelProvider(widget.word))
+          .getExplanation(widget.word);
     });
   }
 
@@ -38,34 +40,31 @@ class _AIExplainViewState extends State<AIExplainView> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AIExplanationModel>(
-      builder: (context, model, child) {
-        if (model.isLoading || model.explanation == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: SelectionArea(child: GptMarkdown(model.explanation!)),
-              ),
-            ),
+    final model = ref.watch(aiExplanationModelProvider(widget.word));
+    if (model.isLoading || model.explanation == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 720),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: SelectionArea(child: GptMarkdown(model.explanation!)),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
 
-class RefreshAIExplainButton extends StatelessWidget {
+class RefreshAIExplainButton extends ConsumerWidget {
   final String word;
 
   const RefreshAIExplainButton({super.key, required this.word});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return FloatingActionButton.small(
@@ -75,13 +74,13 @@ class RefreshAIExplainButton extends StatelessWidget {
       backgroundColor: colorScheme.primaryContainer,
       child: const Icon(Icons.refresh),
       onPressed: () {
-        context.read<AIExplanationModel>().refreshExplanation(word);
+        ref.read(aiExplanationModelProvider(word)).refreshExplanation(word);
       },
     );
   }
 }
 
-class EditAIExplainButton extends StatelessWidget {
+class EditAIExplainButton extends ConsumerWidget {
   final String word;
   final String initialExplanation;
 
@@ -92,7 +91,7 @@ class EditAIExplainButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return FloatingActionButton.small(
@@ -107,7 +106,7 @@ class EditAIExplainButton extends StatelessWidget {
           extra: {
             "word": word,
             "initialExplanation": initialExplanation,
-            "aiExplanationModel": context.read<AIExplanationModel>(),
+            "aiExplanationModel": ref.read(aiExplanationModelProvider(word)),
           },
         );
       },

@@ -13,19 +13,18 @@ import "package:ciyue/ui/pages/translate/translate_page.dart";
 import "package:ciyue/ui/pages/main/settings.dart";
 import "package:ciyue/ui/pages/main/wordbook.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/dictionary.dart";
-import "package:ciyue/viewModels/home.dart";
 import "package:material_ui/material_ui.dart";
 import "package:ciyue/services/toast.dart";
 import "package:flutter/services.dart";
 import "package:home_widget/home_widget.dart";
-import "package:provider/provider.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
-class Home extends StatefulWidget {
+class Home extends ConsumerStatefulWidget {
   const Home({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
+  ConsumerState<Home> createState() => _HomeState();
 }
 
 class MainPage {
@@ -36,7 +35,7 @@ class MainPage {
       _setScreenIndex = callback;
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends ConsumerState<Home> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   late String searchWord;
   var _currentIndex = 0;
@@ -77,7 +76,7 @@ class _HomeState extends State<Home> {
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          context.read<HomeModel>().focusSearchBar();
+          ref.read(homeModelProvider).focusSearchBar();
         }
       });
     }
@@ -86,9 +85,9 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final ratio = MediaQuery.sizeOf(context).aspectRatio;
-    final historyModel = context.watch<HistoryModel>();
-    context.select<HomeModel, int>((value) => value.state);
-    context.select<DictManagerModel, bool>((value) => value.isEmpty);
+    final historyModel = ref.watch(historyModelProvider);
+    ref.watch(homeModelProvider.select((value) => value.state));
+    ref.watch(dictManagerModelProvider.select((value) => value.isEmpty));
 
     return PopScope(
       canPop: false,
@@ -155,8 +154,8 @@ class _HomeState extends State<Home> {
                         if (index != 0) {
                           FocusScope.of(context).unfocus();
                         } else {
-                          context
-                              .read<HomeModel>()
+                          ref
+                              .read(homeModelProvider)
                               .searchBarFocusNode
                               .requestFocus();
                         }
@@ -184,10 +183,10 @@ class _HomeState extends State<Home> {
                     });
                     FocusScope.of(context).unfocus();
                     if (index != 0) {
-                      context.read<HomeModel>().searchBarFocusNode.unfocus();
+                      ref.read(homeModelProvider).searchBarFocusNode.unfocus();
                     } else {
-                      context
-                          .read<HomeModel>()
+                      ref
+                          .read(homeModelProvider)
                           .searchBarFocusNode
                           .requestFocus();
                     }

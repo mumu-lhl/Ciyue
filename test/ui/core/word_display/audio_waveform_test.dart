@@ -1,8 +1,9 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/viewModels/audio.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
 class FakeAudioModel extends AudioModel {
   bool fakePlaying = false;
@@ -80,8 +81,8 @@ void main() {
       final fakeModel = FakeAudioModel();
 
       await tester.pumpWidget(
-        ChangeNotifierProvider<AudioModel>.value(
-          value: fakeModel,
+        ProviderScope(
+          overrides: [audioModelProvider.overrideWith((ref) => fakeModel)],
           child: const MaterialApp(
             home: Scaffold(body: FloatingAudioIndicator()),
           ),

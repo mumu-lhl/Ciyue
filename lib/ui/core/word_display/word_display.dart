@@ -13,11 +13,9 @@ import "package:ciyue/ui/core/word_display/expansion_display.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/utils.dart" as app_utils;
-import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart" as legacy_provider;
 
 class WordDisplay extends ConsumerStatefulWidget {
   final String word;
@@ -109,38 +107,35 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
 
           if (!showTab) {
             final searchBar = _buildSearchBar(settings);
-            return legacy_provider.ChangeNotifierProvider(
-              create: (_) => AIExplanationModel(),
-              child: Scaffold(
-                appBar: buildAppBar(
-                  context,
-                  showTab,
-                  title: searchBar,
-                  showAIButtons: settings.aiExplainWord,
-                ),
-                bottomNavigationBar:
-                    (!settings.searchBarInAppBar && searchBar != null)
-                    ? BottomAppBar(child: searchBar)
-                    : null,
-                floatingActionButton: isDesktopScreen
-                    ? null
-                    : Button(
-                        word: widget.word,
-                        showAIButtons: settings.aiExplainWord,
-                      ),
-                body: Stack(
-                  children: [
-                    settings.aiExplainWord
-                        ? AIExplainView(word: widget.word)
-                        : _buildWebView(validDictIds[0]),
-                    const Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: 16,
-                      child: FloatingAudioIndicator(),
+            return Scaffold(
+              appBar: buildAppBar(
+                context,
+                showTab,
+                title: searchBar,
+                showAIButtons: settings.aiExplainWord,
+              ),
+              bottomNavigationBar:
+                  (!settings.searchBarInAppBar && searchBar != null)
+                  ? BottomAppBar(child: searchBar)
+                  : null,
+              floatingActionButton: isDesktopScreen
+                  ? null
+                  : Button(
+                      word: widget.word,
+                      showAIButtons: settings.aiExplainWord,
                     ),
-                  ],
-                ),
+              body: Stack(
+                children: [
+                  settings.aiExplainWord
+                      ? AIExplainView(word: widget.word)
+                      : _buildWebView(validDictIds[0]),
+                  const Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: 16,
+                    child: FloatingAudioIndicator(),
+                  ),
+                ],
               ),
             );
           }
@@ -156,85 +151,79 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               }
             }
 
-            return legacy_provider.ChangeNotifierProvider(
-              create: (_) => AIExplanationModel(),
-              child: DefaultTabController(
-                initialIndex: initialTabIndex,
-                length: dictsLength,
-                child: Builder(
-                  builder: (context) {
-                    final tabController = DefaultTabController.of(context);
-                    final searchBar = _buildSearchBar(settings);
+            return DefaultTabController(
+              initialIndex: initialTabIndex,
+              length: dictsLength,
+              child: Builder(
+                builder: (context) {
+                  final tabController = DefaultTabController.of(context);
+                  final searchBar = _buildSearchBar(settings);
 
-                    return ListenableBuilder(
-                      listenable: tabController,
-                      builder: (context, child) {
-                        final isAIExplainTabSelected =
-                            settings.aiExplainWord && tabController.index == 0;
+                  return ListenableBuilder(
+                    listenable: tabController,
+                    builder: (context, child) {
+                      final isAIExplainTabSelected =
+                          settings.aiExplainWord && tabController.index == 0;
 
-                        return Scaffold(
-                          appBar: buildAppBar(
-                            context,
-                            showTab,
-                            title: searchBar,
-                            showAIButtons: isAIExplainTabSelected,
-                          ),
-                          floatingActionButton: isDesktopScreen
-                              ? null
-                              : Button(
-                                  word: widget.word,
-                                  showAIButtons: isAIExplainTabSelected,
-                                ),
-                          body: Stack(
-                            children: [
-                              Column(
-                                children: [
-                                  Expanded(
-                                    child: buildTabView(
-                                      context,
-                                      validDictIds: validDictIds,
-                                    ),
+                      return Scaffold(
+                        appBar: buildAppBar(
+                          context,
+                          showTab,
+                          title: searchBar,
+                          showAIButtons: isAIExplainTabSelected,
+                        ),
+                        floatingActionButton: isDesktopScreen
+                            ? null
+                            : Button(
+                                word: widget.word,
+                                showAIButtons: isAIExplainTabSelected,
+                              ),
+                        body: Stack(
+                          children: [
+                            Column(
+                              children: [
+                                Expanded(
+                                  child: buildTabView(
+                                    context,
+                                    validDictIds: validDictIds,
                                   ),
-                                  if (settings.tabBarPosition ==
+                                ),
+                                if (settings.tabBarPosition ==
+                                        TabBarPosition.bottom &&
+                                    showTab)
+                                  buildTabBar(context),
+                                if (!settings.searchBarInAppBar &&
+                                    searchBar != null)
+                                  searchBar,
+                              ],
+                            ),
+                            Positioned(
+                              left: 16,
+                              right: 16,
+                              bottom:
+                                  (settings.tabBarPosition ==
                                           TabBarPosition.bottom &&
                                       showTab)
-                                    buildTabBar(context),
-                                  if (!settings.searchBarInAppBar &&
-                                      searchBar != null)
-                                    searchBar,
-                                ],
-                              ),
-                              Positioned(
-                                left: 16,
-                                right: 16,
-                                bottom:
-                                    (settings.tabBarPosition ==
-                                            TabBarPosition.bottom &&
-                                        showTab)
-                                    ? 64
-                                    : 16,
-                                child: const FloatingAudioIndicator(),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
+                                  ? 64
+                                  : 16,
+                              child: const FloatingAudioIndicator(),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             );
           }
 
-          return legacy_provider.ChangeNotifierProvider(
-            create: (_) => AIExplanationModel(),
-            child: ExpansionWordDisplay(
-              word: widget.word,
-              validDictIds: validDictIds,
-              searchController: _searchController,
-              pagerInfo: widget.pagerInfo,
-              showBackButton: widget.showBackButton,
-            ),
+          return ExpansionWordDisplay(
+            word: widget.word,
+            validDictIds: validDictIds,
+            searchController: _searchController,
+            pagerInfo: widget.pagerInfo,
+            showBackButton: widget.showBackButton,
           );
         },
         loading: () {

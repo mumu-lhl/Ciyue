@@ -9,11 +9,11 @@ import "package:ciyue/repositories/hunspell.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/home.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:flutter/services.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
-import "package:provider/provider.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
 const _platform = MethodChannel("org.eu.mumulhl.ciyue");
 
@@ -246,10 +246,10 @@ class PlatformMethod {
               router.go("/");
               MainPage.setScreenIndex(0);
 
-              final model = Provider.of<HomeModel>(
+              final model = ProviderScope.containerOf(
                 navigatorKey.currentContext!,
                 listen: false,
-              );
+              ).read(homeModelProvider);
               model.searchWord = "";
               model.focusSearchBar();
             },

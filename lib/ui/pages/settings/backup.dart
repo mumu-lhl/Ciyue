@@ -6,11 +6,11 @@ import "package:ciyue/services/backup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/backup/export_dialog.dart";
 import "package:ciyue/ui/pages/settings/backup/export_state.dart";
-import "package:ciyue/viewModels/wordbook.dart";
 import "package:file_selector/file_selector.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
 class AutoExport extends StatelessWidget {
   const AutoExport({super.key});
@@ -90,11 +90,11 @@ class Import extends StatelessWidget {
   }
 }
 
-class LegacyImport extends StatelessWidget {
+class LegacyImport extends ConsumerWidget {
   const LegacyImport({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
       leading: Icon(Icons.file_download),
       title: Text(AppLocalizations.of(context)!.legacyImport),
@@ -126,8 +126,7 @@ class LegacyImport extends StatelessWidget {
           tagsData.add(WordbookTag.fromJson(i));
         }
 
-        if (!context.mounted) return;
-        await context.read<WordbookModel>().addAllWords(wordsData);
+        await ref.read(wordbookModelProvider).addAllWords(wordsData);
         await wordbookTagsDao.addAllTags(tagsData);
       },
     );

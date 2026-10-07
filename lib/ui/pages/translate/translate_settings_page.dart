@@ -1,108 +1,120 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/translate_settings_view_model.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
-class AiTranslateSettingsPage extends StatelessWidget {
+class AiTranslateSettingsPage extends StatefulWidget {
   const AiTranslateSettingsPage({super.key});
 
   @override
+  State<AiTranslateSettingsPage> createState() =>
+      _AiTranslateSettingsPageState();
+}
+
+class _AiTranslateSettingsPageState extends State<AiTranslateSettingsPage> {
+  late final AiTranslateSettingsViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = AiTranslateSettingsViewModel();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AiTranslateSettingsViewModel(),
-      child: Consumer<AiTranslateSettingsViewModel>(
-        builder: (context, viewModel, child) {
-          return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
-            body: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: <Widget>[
-                      DropdownButtonFormField<bool>(
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.outputType,
-                          border: const OutlineInputBorder(),
-                        ),
-                        initialValue: viewModel.isRichOutput,
-                        items: [
-                          DropdownMenuItem(
-                            value: true,
-                            child: Text(
-                              AppLocalizations.of(context)!.richOutput,
-                            ),
-                          ),
-                          DropdownMenuItem(
-                            value: false,
-                            child: Text(
-                              AppLocalizations.of(context)!.simpleOutput,
-                            ),
-                          ),
-                        ],
-                        onChanged: (bool? newValue) {
-                          if (newValue != null) {
-                            viewModel.setRichOutput(newValue);
-                          }
-                        },
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, child) {
+        final viewModel = _viewModel;
+        return Scaffold(
+          appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: <Widget>[
+                    DropdownButtonFormField<bool>(
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.outputType,
+                        border: const OutlineInputBorder(),
                       ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!
-                              .translationProvider,
-                          border: const OutlineInputBorder(),
+                      initialValue: viewModel.isRichOutput,
+                      items: [
+                        DropdownMenuItem(
+                          value: true,
+                          child: Text(AppLocalizations.of(context)!.richOutput),
                         ),
-                        initialValue: viewModel.translationProvider,
-                        items: [
-                          const DropdownMenuItem(
-                            value: "ai",
-                            child: Text("AI"),
+                        DropdownMenuItem(
+                          value: false,
+                          child: Text(
+                            AppLocalizations.of(context)!.simpleOutput,
                           ),
-                          const DropdownMenuItem(
-                            value: "google",
-                            child: Text("Google"),
-                          ),
-                          const DropdownMenuItem(
-                            value: "deeplx",
-                            child: Text("DeepLX"),
-                          ),
-                        ],
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            viewModel.setTranslationProvider(newValue);
-                          }
-                        },
-                      ),
-                      if (viewModel.translationProvider == "deeplx") ...[
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: viewModel.deeplxUrlController,
-                          decoration: const InputDecoration(
-                            labelText: "DeepLX URL",
-                            border: OutlineInputBorder(),
-                          ),
-                          onChanged: viewModel.setDeeplxUrl,
                         ),
                       ],
-                      const SizedBox(height: 16),
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!
-                              .enableTranslationHistory,
+                      onChanged: (bool? newValue) {
+                        if (newValue != null) {
+                          viewModel.setRichOutput(newValue);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!
+                            .translationProvider,
+                        border: const OutlineInputBorder(),
+                      ),
+                      initialValue: viewModel.translationProvider,
+                      items: [
+                        const DropdownMenuItem(value: "ai", child: Text("AI")),
+                        const DropdownMenuItem(
+                          value: "google",
+                          child: Text("Google"),
                         ),
-                        value: viewModel.enableTranslationHistory,
-                        onChanged: viewModel.setEnableTranslationHistory,
+                        const DropdownMenuItem(
+                          value: "deeplx",
+                          child: Text("DeepLX"),
+                        ),
+                      ],
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          viewModel.setTranslationProvider(newValue);
+                        }
+                      },
+                    ),
+                    if (viewModel.translationProvider == "deeplx") ...[
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: viewModel.deeplxUrlController,
+                        decoration: const InputDecoration(
+                          labelText: "DeepLX URL",
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: viewModel.setDeeplxUrl,
                       ),
                     ],
-                  ),
+                    const SizedBox(height: 16),
+                    SwitchListTile(
+                      title: Text(
+                        AppLocalizations.of(context)!.enableTranslationHistory,
+                      ),
+                      value: viewModel.enableTranslationHistory,
+                      onChanged: viewModel.setEnableTranslationHistory,
+                    ),
+                  ],
                 ),
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

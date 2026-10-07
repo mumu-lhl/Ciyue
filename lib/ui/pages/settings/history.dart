@@ -1,14 +1,14 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/home.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
 
-class ClearHistory extends StatelessWidget {
+class ClearHistory extends ConsumerWidget {
   const ClearHistory({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final locale = AppLocalizations.of(context);
 
     return ListTile(
@@ -26,10 +26,8 @@ class ClearHistory extends StatelessWidget {
             ),
             TextButton(
               onPressed: () async {
-                if (context.mounted) {
-                  context.read<HistoryModel>().clearHistory();
-                  context.pop(context);
-                }
+                ref.read(historyModelProvider).clearHistory();
+                context.pop(context);
               },
               child: Text(locale.confirm),
             ),
@@ -57,24 +55,21 @@ class HistorySettingsPage extends StatelessWidget {
   }
 }
 
-class HistorySwitch extends StatelessWidget {
+class HistorySwitch extends ConsumerWidget {
   const HistorySwitch({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer<HistoryModel>(
-      builder: (context, model, child) {
-        return ListTile(
-          leading: const Icon(Icons.history),
-          title: Text(AppLocalizations.of(context)!.enableHistory),
-          trailing: Switch(
-            value: model.enableHistory,
-            onChanged: (value) {
-              model.setEnableHistory(value);
-            },
-          ),
-        );
-      },
+  Widget build(BuildContext context, WidgetRef ref) {
+    final model = ref.watch(historyModelProvider);
+    return ListTile(
+      leading: const Icon(Icons.history),
+      title: Text(AppLocalizations.of(context)!.enableHistory),
+      trailing: Switch(
+        value: model.enableHistory,
+        onChanged: (value) {
+          model.setEnableHistory(value);
+        },
+      ),
     );
   }
 }

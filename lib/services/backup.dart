@@ -11,7 +11,8 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/viewModels/wordbook.dart";
 import "package:file_selector/file_selector.dart";
 import "package:path/path.dart";
-import "package:provider/provider.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
 abstract class BackupFileHandler {
   bool get isAndroid;
@@ -179,11 +180,18 @@ class BackupService {
     final Map<String, dynamic> content = jsonDecode(contentString);
     final backupData = BackupData.fromJson(content);
 
-    final wordbookModel =
+    final WordbookModel? wordbookModel =
         _wordbookModel ??
-        Provider.of<WordbookModel>(navigatorKey.currentContext!, listen: false);
+        (navigatorKey.currentContext != null
+            ? ProviderScope.containerOf(
+                navigatorKey.currentContext!,
+                listen: false,
+              ).read(wordbookModelProvider)
+            : null);
 
-    await wordbookModel.addAllWords(backupData.wordbookWords);
+    if (wordbookModel != null) {
+      await wordbookModel.addAllWords(backupData.wordbookWords);
+    }
     await wordbookTagsDao.addAllTags(backupData.wordbookTags);
 
     // Import history: add from oldest to newest to preserve order (since addHistory adds to top)

@@ -1,18 +1,18 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/selection_modal.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/setting_selection_chip.dart";
-import "package:ciyue/viewModels/ai_settings_view_model.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
-class ModelSetting extends StatelessWidget {
+class ModelSetting extends ConsumerWidget {
   const ModelSetting({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final viewModel = context.watch<AISettingsViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.watch(aiSettingsViewModelProvider);
     final providerName = viewModel.provider;
     final modelName = viewModel.model;
 

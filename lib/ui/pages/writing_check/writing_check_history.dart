@@ -4,40 +4,61 @@ import "package:ciyue/ui/core/history_page.dart";
 import "package:ciyue/viewModels/writing_check_history.dart";
 import "package:material_ui/material_ui.dart";
 import "package:intl/intl.dart";
-import "package:provider/provider.dart";
 
-class WritingCheckHistoryPage extends StatelessWidget {
+class WritingCheckHistoryPage extends StatefulWidget {
   const WritingCheckHistoryPage({super.key});
+
+  @override
+  State<WritingCheckHistoryPage> createState() =>
+      _WritingCheckHistoryPageState();
+}
+
+class _WritingCheckHistoryPageState extends State<WritingCheckHistoryPage> {
+  late final WritingCheckHistoryViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = WritingCheckHistoryViewModel();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return ChangeNotifierProvider(
-      create: (context) => WritingCheckHistoryViewModel(),
-      child: HistoryPage<WritingCheckHistoryData, WritingCheckHistoryViewModel>(
-        title: l10n.writingCheckHistory,
-        itemBuilder: (context, item) {
-          return _HistoryListItem(key: ValueKey(item.id), item: item);
-        },
-      ),
+    return HistoryPage<WritingCheckHistoryData, WritingCheckHistoryViewModel>(
+      title: l10n.writingCheckHistory,
+      viewModel: _viewModel,
+      itemBuilder: (context, item, viewModel) {
+        return _HistoryListItem(
+          key: ValueKey(item.id),
+          item: item,
+          viewModel: viewModel,
+        );
+      },
     );
   }
 }
 
 class _HistoryListItem extends StatelessWidget {
-  const _HistoryListItem({super.key, required this.item});
+  const _HistoryListItem({
+    super.key,
+    required this.item,
+    required this.viewModel,
+  });
 
   final WritingCheckHistoryData item;
+  final WritingCheckHistoryViewModel viewModel;
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.read<WritingCheckHistoryViewModel>();
-    final isSelected = context.select(
-      (WritingCheckHistoryViewModel vm) => vm.selectedIds.contains(item.id),
-    );
-    final isSelecting = context.select(
-      (WritingCheckHistoryViewModel vm) => vm.isSelecting,
-    );
+    final isSelected = viewModel.selectedIds.contains(item.id);
+    final isSelecting = viewModel.isSelecting;
 
     return Card(
       clipBehavior: Clip.antiAlias,

@@ -6,11 +6,9 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
-import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
@@ -21,7 +19,8 @@ import "package:html_unescape/html_unescape_small.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
-import "package:provider/provider.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
 final dictManager = DictManager();
 
@@ -855,7 +854,10 @@ Future<void> selectMdx(
   }
 
   if (context.mounted) {
-    context.read<ManageDictionariesModel>().update();
+    ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(manageDictionariesModelProvider).update();
     context.pop();
   }
 }
@@ -874,10 +876,10 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
       if (context.mounted) {
         final title =
             reader.header["Title"] ?? setExtension(basename(path), "");
-        mddAudioListId = await context.read<AudioModel>().addMddAudio(
-          path,
-          title,
-        );
+        mddAudioListId = await ProviderScope.containerOf(
+          context,
+          listen: false,
+        ).read(audioModelProvider).addMddAudio(path, title);
       }
 
       final resources = <MddAudioResourceCompanion>[];

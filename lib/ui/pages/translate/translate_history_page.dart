@@ -4,40 +4,60 @@ import "package:ciyue/ui/core/history_page.dart";
 import "package:ciyue/viewModels/translate_history_view_model.dart";
 import "package:material_ui/material_ui.dart";
 import "package:intl/intl.dart";
-import "package:provider/provider.dart";
 
-class TranslateHistoryPage extends StatelessWidget {
+class TranslateHistoryPage extends StatefulWidget {
   const TranslateHistoryPage({super.key});
+
+  @override
+  State<TranslateHistoryPage> createState() => _TranslateHistoryPageState();
+}
+
+class _TranslateHistoryPageState extends State<TranslateHistoryPage> {
+  late final TranslateHistoryViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = TranslateHistoryViewModel();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return ChangeNotifierProvider(
-      create: (context) => TranslateHistoryViewModel(),
-      child: HistoryPage<TranslateHistoryData, TranslateHistoryViewModel>(
-        title: l10n.translationHistory,
-        itemBuilder: (context, item) {
-          return _HistoryListItem(key: ValueKey(item.id), item: item);
-        },
-      ),
+    return HistoryPage<TranslateHistoryData, TranslateHistoryViewModel>(
+      title: l10n.translationHistory,
+      viewModel: _viewModel,
+      itemBuilder: (context, item, viewModel) {
+        return _HistoryListItem(
+          key: ValueKey(item.id),
+          item: item,
+          viewModel: viewModel,
+        );
+      },
     );
   }
 }
 
 class _HistoryListItem extends StatelessWidget {
-  const _HistoryListItem({super.key, required this.item});
+  const _HistoryListItem({
+    super.key,
+    required this.item,
+    required this.viewModel,
+  });
 
   final TranslateHistoryData item;
+  final TranslateHistoryViewModel viewModel;
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.read<TranslateHistoryViewModel>();
-    final isSelecting = context.select(
-      (TranslateHistoryViewModel vm) => vm.isSelecting,
-    );
-    final isSelected = context.select(
-      (TranslateHistoryViewModel vm) => vm.selectedIds.contains(item.id),
-    );
+    final isSelecting = viewModel.isSelecting;
+    final isSelected = viewModel.selectedIds.contains(item.id);
 
     return Card(
       clipBehavior: Clip.antiAlias,

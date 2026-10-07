@@ -1,17 +1,14 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
-import "package:ciyue/services/audio.dart";
 import "package:ciyue/services/backup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/tags_list.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
-import "package:ciyue/viewModels/ai_explanation.dart";
-import "package:ciyue/viewModels/audio.dart";
-import "package:ciyue/viewModels/wordbook.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
-import "package:provider/provider.dart";
 
 Future<void> autoExportWordbook() async {
   if (settings.autoExport &&
@@ -27,12 +24,16 @@ Future<void> toggleStarWord(
   required VoidCallback onUpdated,
 }) async {
   final locale = AppLocalizations.of(context)!;
+  final wordbookModel = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(wordbookModelProvider);
 
   Future<void> star() async {
     if (currentStared) {
-      await context.read<WordbookModel>().delete(word);
+      await wordbookModel.delete(word);
     } else {
-      await context.read<WordbookModel>().add(word);
+      await wordbookModel.add(word);
     }
 
     await autoExportWordbook();
@@ -61,43 +62,44 @@ Future<void> toggleStarWord(
                 toAdd: toAdd,
                 toDel: toDel,
               ),
+              if (currentStared)
+                ListTile(
+                  title: Text(locale.remove),
+                  leading: const Icon(Icons.delete),
+                  onTap: () async {
+                    context.pop();
+                    await wordbookModel.removeWordWithAllTags(word);
+                    await autoExportWordbook();
+                    onUpdated();
+                  },
+                ),
             ],
           ),
           actions: [
             TextButton(
-              child: Text(locale.remove),
-              onPressed: () async {
-                await context.read<WordbookModel>().removeWordWithAllTags(word);
-
-                if (context.mounted) {
-                  context.pop();
-                }
-
-                await autoExportWordbook();
-                onUpdated();
+              child: Text(locale.cancel),
+              onPressed: () {
+                context.pop();
               },
             ),
             TextButton(
               child: Text(locale.confirm),
               onPressed: () async {
+                context.pop();
                 if (!currentStared) {
-                  await context.read<WordbookModel>().add(word);
+                  await wordbookModel.add(word);
                 }
 
-                if (!context.mounted) return;
-
-                for (final tag in toAdd) {
-                  await context.read<WordbookModel>().add(word, tag: tag);
+                if (toAdd.isNotEmpty) {
+                  for (final tag in toAdd) {
+                    await wordbookModel.add(word, tag: tag);
+                  }
                 }
 
-                if (!context.mounted) return;
-
-                for (final tag in toDel) {
-                  await context.read<WordbookModel>().delete(word, tag: tag);
-                }
-
-                if (context.mounted) {
-                  context.pop();
+                if (toDel.isNotEmpty) {
+                  for (final tag in toDel) {
+                    await wordbookModel.delete(word, tag: tag);
+                  }
                 }
 
                 await autoExportWordbook();
@@ -114,29 +116,28 @@ Future<void> toggleStarWord(
 }
 
 Future<void> playWordPronunciation(BuildContext context, String word) async {
-  final audioModel = Provider.of<AudioModel?>(context, listen: false);
-  if (audioModel != null) {
-    if (audioModel.isWordPlaying(word)) {
-      await audioModel.stopAudio();
-    } else {
-      await audioModel.playWord(word);
-    }
+  final audioModel = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(audioModelProvider);
+  if (audioModel.isWordPlaying(word)) {
+    await audioModel.stopAudio();
   } else {
-    await playSoundOfWord(word, []);
+    await audioModel.playWord(word);
   }
 }
 
-class Button extends StatefulWidget {
+class Button extends ConsumerStatefulWidget {
   final String word;
   final bool showAIButtons;
 
   const Button({super.key, required this.word, this.showAIButtons = false});
 
   @override
-  State<Button> createState() => _ButtonState();
+  ConsumerState<Button> createState() => _ButtonState();
 }
 
-class _ButtonState extends State<Button> {
+class _ButtonState extends ConsumerState<Button> {
   Future<bool>? stared;
 
   @override
@@ -171,7 +172,10 @@ class _ButtonState extends State<Button> {
             child: EditAIExplainButton(
               word: widget.word,
               initialExplanation:
-                  context.watch<AIExplanationModel>().explanation ?? "",
+                  ref
+                      .watch(aiExplanationModelProvider(widget.word))
+                      .explanation ??
+                  "",
             ),
           ),
         Padding(
@@ -188,8 +192,8 @@ class _ButtonState extends State<Button> {
 
   Widget buildReadLoudlyButton(BuildContext context, String word) {
     final colorScheme = Theme.of(context).colorScheme;
-    final audioModel = Provider.of<AudioModel?>(context);
-    final isPlaying = audioModel?.isWordPlaying(word) ?? false;
+    final audioModel = ref.watch(audioModelProvider);
+    final isPlaying = audioModel.isWordPlaying(word);
 
     return PulsingFab(
       isPulsing: isPlaying,
@@ -310,16 +314,16 @@ class _WordStarIconButtonState extends State<WordStarIconButton> {
   }
 }
 
-class WordPronounceIconButton extends StatelessWidget {
+class WordPronounceIconButton extends ConsumerWidget {
   final String word;
 
   const WordPronounceIconButton({super.key, required this.word});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final locale = AppLocalizations.of(context)!;
-    final audioModel = Provider.of<AudioModel?>(context);
-    final isPlaying = audioModel?.isWordPlaying(word) ?? false;
+    final audioModel = ref.watch(audioModelProvider);
+    final isPlaying = audioModel.isWordPlaying(word);
     final colorScheme = Theme.of(context).colorScheme;
 
     return IconButton(
@@ -336,41 +340,41 @@ class WordPronounceIconButton extends StatelessWidget {
   }
 }
 
-class RefreshAIExplainIconButton extends StatelessWidget {
+class RefreshAIExplainIconButton extends ConsumerWidget {
   final String word;
 
   const RefreshAIExplainIconButton({super.key, required this.word});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return IconButton(
       tooltip: AppLocalizations.of(context)!.update,
       icon: const Icon(Icons.refresh),
       onPressed: () {
-        context.read<AIExplanationModel>().refreshExplanation(word);
+        ref.read(aiExplanationModelProvider(word)).refreshExplanation(word);
       },
     );
   }
 }
 
-class EditAIExplainIconButton extends StatelessWidget {
+class EditAIExplainIconButton extends ConsumerWidget {
   final String word;
 
   const EditAIExplainIconButton({super.key, required this.word});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return IconButton(
       tooltip: AppLocalizations.of(context)!.editAIExplanation,
       icon: const Icon(Icons.edit),
       onPressed: () {
+        final model = ref.read(aiExplanationModelProvider(word));
         context.push(
           "/edit_ai_explanation",
           extra: {
             "word": word,
-            "initialExplanation":
-                context.read<AIExplanationModel>().explanation ?? "",
-            "aiExplanationModel": context.read<AIExplanationModel>(),
+            "initialExplanation": model.explanation ?? "",
+            "aiExplanationModel": model,
           },
         );
       },

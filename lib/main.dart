@@ -5,7 +5,6 @@ import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/core/ciyue_error.dart";
 import "package:ciyue/core/localization_delegates.dart";
-import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/services/platform.dart";
@@ -16,7 +15,6 @@ import "package:dynamic_color/dynamic_color.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
-import "package:provider/provider.dart" as provider;
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
 
@@ -37,52 +35,7 @@ void main() async {
 
     await initApp();
 
-    runApp(
-      ProviderScope(
-        child: Consumer(
-          builder: (context, ref, child) {
-            return provider.MultiProvider(
-              providers: [
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(wordbookModelProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(homeModelProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(dictManagerModelProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(historyModelProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(manageDictionariesModelProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(audioModelProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(aiPromptsProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(selectionTextViewModelProvider),
-                ),
-                provider.Provider.value(
-                  value: ref.watch(writingCheckHistoryDaoProvider),
-                ),
-                provider.Provider.value(
-                  value: ref.watch(translateHistoryDaoProvider),
-                ),
-                provider.Provider.value(
-                  value: ref.watch(openRecordsRepositoryProvider),
-                ),
-              ],
-              child: const Ciyue(),
-            );
-          },
-        ),
-      ),
-    );
+    runApp(const ProviderScope(child: Ciyue()));
   } catch (e) {
     runApp(
       ProviderScope(
@@ -107,37 +60,7 @@ void floatingWindow(List<String> args) async {
     }
     navigateToProcessText(searchWordFromProcessText);
 
-    runApp(
-      ProviderScope(
-        child: Consumer(
-          builder: (context, ref, child) {
-            return provider.MultiProvider(
-              providers: [
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(wordbookModelProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(homeModelProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(dictManagerModelProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(historyModelProvider),
-                ),
-                provider.ChangeNotifierProvider.value(
-                  value: ref.watch(audioModelProvider),
-                ),
-                provider.Provider.value(
-                  value: ref.watch(openRecordsRepositoryProvider),
-                ),
-              ],
-              child: const Ciyue(),
-            );
-          },
-        ),
-      ),
-    );
+    runApp(const ProviderScope(child: Ciyue()));
   } catch (error, stackTrace) {
     talker.error("Failed to initialize floating window", error, stackTrace);
     runApp(

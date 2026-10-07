@@ -1,14 +1,14 @@
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/viewModels/ai_settings_view_model.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
-import "package:provider/provider.dart";
 
-class APIKeySetting extends StatelessWidget {
+class APIKeySetting extends ConsumerWidget {
   const APIKeySetting({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final viewModel = context.read<AISettingsViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.read(aiSettingsViewModelProvider);
     return TextFormField(
       controller: viewModel.apiKeyController,
       decoration: InputDecoration(

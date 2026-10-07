@@ -3,18 +3,17 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
-import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
 import "package:ciyue/utils.dart";
-import "package:ciyue/viewModels/home.dart";
 import "package:flutter/foundation.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
-import "package:provider/provider.dart";
+import "package:ciyue/core/providers.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 
 DateTime? _lastOpenWordTime;
 String? _lastOpenWordName;
@@ -44,20 +43,15 @@ void handleOpenWordNavigation(
 
   if (isLargeScreen(context)) {
     try {
-      final homeModel = Provider.of<HomeModel>(navContext, listen: false);
+      final container = ProviderScope.containerOf(navContext, listen: false);
+      final homeModel = container.read(homeModelProvider);
       if (newTab) {
         homeModel.openWordInNewTab(word);
       } else {
         homeModel.selectedWord = word;
       }
-    } catch (_) {}
-
-    try {
-      Provider.of<OpenRecordsRepository>(navContext, listen: false).add(word);
-    } catch (_) {}
-
-    try {
-      Provider.of<HistoryModel>(navContext, listen: false).addHistory(word);
+      container.read(openRecordsRepositoryProvider).add(word);
+      container.read(historyModelProvider).addHistory(word);
     } catch (_) {}
   } else {
     if (context.mounted) {
