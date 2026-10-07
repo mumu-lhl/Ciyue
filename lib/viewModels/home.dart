@@ -238,6 +238,19 @@ class HomeModel extends ChangeNotifier {
     }
   }
 
+  void reorderTabs(int oldIndex, int newIndex) {
+    if (oldIndex < 0 || oldIndex >= _tabs.length) return;
+    if (newIndex < 0 || newIndex >= _tabs.length) return;
+
+    final activeWord = selectedWord;
+    final item = _tabs.removeAt(oldIndex);
+    _tabs.insert(newIndex, item);
+    if (activeWord != null) {
+      _activeTabIndex = _tabs.indexOf(activeWord);
+    }
+    notifyListeners();
+  }
+
   void ensureInitialWord(String word) {
     final trimmed = word.trim();
     if (trimmed.isEmpty) return;

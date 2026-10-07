@@ -312,11 +312,23 @@ class _DesktopWordTabBar extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: ListView.separated(
+            child: ReorderableListView.builder(
               scrollDirection: Axis.horizontal,
+              buildDefaultDragHandles: false,
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               itemCount: tabs.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 4),
+              onReorderItem: (oldIndex, newIndex) {
+                homeModel.reorderTabs(oldIndex, newIndex);
+              },
+              proxyDecorator: (child, index, animation) {
+                return Material(
+                  elevation: 4,
+                  color: Colors.transparent,
+                  shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(8),
+                  child: child,
+                );
+              },
               itemBuilder: (context, index) {
                 final word = tabs[index];
                 final isActive = index == activeIndex;
@@ -324,90 +336,102 @@ class _DesktopWordTabBar extends StatelessWidget {
 
                 TapDownDetails? tapDownDetails;
 
-                return Listener(
-                  onPointerDown: (event) {
-                    if (event.buttons == kTertiaryButton) {
-                      homeModel.closeTab(index);
-                    }
-                  },
-                  child: GestureDetector(
-                    onTapDown: (details) => tapDownDetails = details,
-                    onSecondaryTap: () {
-                      if (tapDownDetails != null) {
-                        _showTabContextMenu(
-                          context,
-                          tapDownDetails!,
-                          index,
-                          homeModel,
-                        );
-                      }
-                    },
-                    child: Tooltip(
-                      message: displayText,
-                      waitDuration: const Duration(milliseconds: 500),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(8),
-                        onTap: () => homeModel.switchToTab(index),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          constraints: const BoxConstraints(
-                            minWidth: 70,
-                            maxWidth: 180,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isActive
-                                ? theme.colorScheme.surface
-                                : Colors.transparent,
+                return Padding(
+                  key: ValueKey(word.isEmpty ? "__ciyue_empty_tab__" : word),
+                  padding: const EdgeInsets.only(right: 4),
+                  child: ReorderableDragStartListener(
+                    index: index,
+                    child: Listener(
+                      onPointerDown: (event) {
+                        if (event.buttons == kTertiaryButton) {
+                          homeModel.closeTab(index);
+                        }
+                      },
+                      child: GestureDetector(
+                        onTapDown: (details) => tapDownDetails = details,
+                        onSecondaryTap: () {
+                          if (tapDownDetails != null) {
+                            _showTabContextMenu(
+                              context,
+                              tapDownDetails!,
+                              index,
+                              homeModel,
+                            );
+                          }
+                        },
+                        child: Tooltip(
+                          message: displayText,
+                          waitDuration: const Duration(milliseconds: 500),
+                          child: InkWell(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isActive
-                                  ? theme.colorScheme.outlineVariant
-                                  : Colors.transparent,
-                              width: 1,
-                            ),
-                            boxShadow: isActive
-                                ? [
-                                    BoxShadow(
-                                      color: theme.colorScheme.shadow
-                                          .withValues(alpha: 0.05),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  displayText,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: isActive
-                                        ? FontWeight.w600
-                                        : FontWeight.normal,
-                                    color: isActive
-                                        ? theme.colorScheme.primary
-                                        : theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
+                            onTap: () => homeModel.switchToTab(index),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
                               ),
-                              const SizedBox(width: 4),
-                              InkResponse(
-                                radius: 10,
-                                onTap: () => homeModel.closeTab(index),
-                                child: Icon(
-                                  Icons.close,
-                                  size: 14,
+                              constraints: const BoxConstraints(
+                                minWidth: 70,
+                                maxWidth: 180,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? theme.colorScheme.surface
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
                                   color: isActive
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.outline,
+                                      ? theme.colorScheme.outlineVariant
+                                      : Colors.transparent,
+                                  width: 1,
                                 ),
+                                boxShadow: isActive
+                                    ? [
+                                        BoxShadow(
+                                          color: theme.colorScheme.shadow
+                                              .withValues(alpha: 0.05),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ]
+                                    : null,
                               ),
-                            ],
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      displayText,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: isActive
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
+                                            color: isActive
+                                                ? theme.colorScheme.primary
+                                                : theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  InkResponse(
+                                    radius: 10,
+                                    onTap: () => homeModel.closeTab(index),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 14,
+                                      color: isActive
+                                          ? theme.colorScheme.primary
+                                          : theme.colorScheme.outline,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),

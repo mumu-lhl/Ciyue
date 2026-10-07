@@ -106,5 +106,27 @@ void main() {
       model.previousTab();
       expect(model.selectedWord, "c");
     });
+
+    test("reorderTabs moves tabs and keeps active tab synchronized", () {
+      final model = HomeModel();
+      model.openWordInNewTab("apple");
+      model.openWordInNewTab("banana");
+      model.openWordInNewTab("cherry");
+
+      model.switchToTab(1); // active: banana
+      expect(model.selectedWord, "banana");
+
+      // Move apple from 0 to after cherry (destination index 2)
+      model.reorderTabs(0, 2);
+      expect(model.tabs, ["banana", "cherry", "apple"]);
+      expect(model.activeTabIndex, 0); // banana is now index 0
+      expect(model.selectedWord, "banana");
+
+      // Move cherry from 1 to 0
+      model.reorderTabs(1, 0);
+      expect(model.tabs, ["cherry", "banana", "apple"]);
+      expect(model.activeTabIndex, 1); // banana is now index 1
+      expect(model.selectedWord, "banana");
+    });
   });
 }
