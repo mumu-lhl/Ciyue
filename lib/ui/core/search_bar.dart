@@ -14,6 +14,7 @@ class WordSearchBarWithSuggestions extends StatefulWidget {
   final FocusNode? focusNode;
   final bool isHome;
   final bool autoFocus;
+  final ValueChanged<String>? onWordSelected;
 
   const WordSearchBarWithSuggestions({
     super.key,
@@ -22,6 +23,7 @@ class WordSearchBarWithSuggestions extends StatefulWidget {
     this.focusNode,
     this.isHome = false,
     this.autoFocus = false,
+    this.onWordSelected,
   });
 
   @override
@@ -64,7 +66,14 @@ class _WordSearchBarWithSuggestionsState
     if (normalizedWord.isEmpty) return;
 
     context.read<HistoryModel>().addHistory(normalizedWord);
-    context.push("/word/${Uri.encodeComponent(normalizedWord)}");
+    if (widget.onWordSelected != null) {
+      widget.onWordSelected!(normalizedWord);
+      if (controller.isAttached && controller.isOpen) {
+        controller.closeView(normalizedWord);
+      }
+    } else {
+      context.push("/word/${Uri.encodeComponent(normalizedWord)}");
+    }
 
     if (widget.isHome && settings.autoRemoveSearchWord) {
       controller.text = "";

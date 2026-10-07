@@ -63,7 +63,9 @@ class _BottomSearchBarState extends State<BottomSearchBar> {
 }
 
 class HomeSearchBar extends StatelessWidget {
-  const HomeSearchBar({super.key});
+  final ValueChanged<String>? onWordSelected;
+
+  const HomeSearchBar({super.key, this.onWordSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +81,7 @@ class HomeSearchBar extends StatelessWidget {
         focusNode: model.searchBarFocusNode,
         isHome: true,
         autoFocus: settings.autoFocusSearch,
+        onWordSelected: onWordSelected,
       ),
     );
   }

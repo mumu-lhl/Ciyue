@@ -9,7 +9,10 @@ import "package:provider/provider.dart";
 import "dialogs.dart";
 
 class HistoryList extends StatelessWidget {
-  const HistoryList({super.key});
+  final ValueChanged<String>? onWordSelected;
+  final String? selectedWord;
+
+  const HistoryList({super.key, this.onWordSelected, this.selectedWord});
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +117,11 @@ class HistoryList extends StatelessWidget {
                 ),
               ),
               child: ListTile(
+                selected: !model.isSelecting && selectedWord == item.word,
+                selectedTileColor: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer
+                    .withValues(alpha: 0.35),
                 leading: model.isSelecting
                     ? Checkbox(
                         value: model.selectedIds.contains(item.id),
@@ -126,6 +134,8 @@ class HistoryList extends StatelessWidget {
                 onTap: () {
                   if (model.isSelecting) {
                     model.toggleSelection(item.id);
+                  } else if (onWordSelected != null) {
+                    onWordSelected!(item.word);
                   } else {
                     context.push("/word/${Uri.encodeComponent(item.word)}");
                   }

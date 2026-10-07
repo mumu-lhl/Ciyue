@@ -13,6 +13,119 @@ import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:provider/provider.dart";
 
+Future<void> autoExportWordbook() async {
+  if (settings.autoExport &&
+      (settings.exportDirectory != null || settings.exportPath != null)) {
+    Backup.export(true);
+  }
+}
+
+Future<void> toggleStarWord(
+  BuildContext context,
+  String word, {
+  required bool currentStared,
+  required VoidCallback onUpdated,
+}) async {
+  final locale = AppLocalizations.of(context)!;
+
+  Future<void> star() async {
+    if (currentStared) {
+      await context.read<WordbookModel>().delete(word);
+    } else {
+      await context.read<WordbookModel>().add(word);
+    }
+
+    await autoExportWordbook();
+    onUpdated();
+  }
+
+  if (wordbookTagsDao.tagExist) {
+    final tagsOfWord = await wordbookDao.tagsOfWord(word),
+        tags = await wordbookTagsDao.getAllTags();
+
+    final toAdd = <int>[], toDel = <int>[];
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(locale.tags),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TagsList(
+                tags: tags,
+                tagsOfWord: tagsOfWord,
+                toAdd: toAdd,
+                toDel: toDel,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: Text(locale.remove),
+              onPressed: () async {
+                await context.read<WordbookModel>().removeWordWithAllTags(word);
+
+                if (context.mounted) {
+                  context.pop();
+                }
+
+                await autoExportWordbook();
+                onUpdated();
+              },
+            ),
+            TextButton(
+              child: Text(locale.confirm),
+              onPressed: () async {
+                if (!currentStared) {
+                  await context.read<WordbookModel>().add(word);
+                }
+
+                if (!context.mounted) return;
+
+                for (final tag in toAdd) {
+                  await context.read<WordbookModel>().add(word, tag: tag);
+                }
+
+                if (!context.mounted) return;
+
+                for (final tag in toDel) {
+                  await context.read<WordbookModel>().delete(word, tag: tag);
+                }
+
+                if (context.mounted) {
+                  context.pop();
+                }
+
+                await autoExportWordbook();
+                onUpdated();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  } else {
+    await star();
+  }
+}
+
+Future<void> playWordPronunciation(BuildContext context, String word) async {
+  final audioModel = Provider.of<AudioModel?>(context, listen: false);
+  if (audioModel != null) {
+    if (audioModel.isWordPlaying(word)) {
+      await audioModel.stopAudio();
+    } else {
+      await audioModel.playWord(word);
+    }
+  } else {
+    await playSoundOfWord(word, []);
+  }
+}
+
 class Button extends StatefulWidget {
   final String word;
   final bool showAIButtons;
@@ -26,11 +139,24 @@ class Button extends StatefulWidget {
 class _ButtonState extends State<Button> {
   Future<bool>? stared;
 
-  Future<void> autoExport() async {
-    if (settings.autoExport &&
-        (settings.exportDirectory != null || settings.exportPath != null)) {
-      Backup.export(true);
+  @override
+  void initState() {
+    super.initState();
+    stared = wordbookDao.wordExist(widget.word);
+  }
+
+  @override
+  void didUpdateWidget(covariant Button oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.word != oldWidget.word) {
+      checkStared();
     }
+  }
+
+  void checkStared() {
+    setState(() {
+      stared = wordbookDao.wordExist(widget.word);
+    });
   }
 
   @override
@@ -83,17 +209,7 @@ class _ButtonState extends State<Button> {
                 )
               : const Icon(Icons.volume_up, key: ValueKey("idle")),
         ),
-        onPressed: () async {
-          if (audioModel != null) {
-            if (audioModel.isWordPlaying(word)) {
-              await audioModel.stopAudio();
-            } else {
-              await audioModel.playWord(word);
-            }
-          } else {
-            await playSoundOfWord(word, []);
-          }
-        },
+        onPressed: () => playWordPronunciation(context, word),
       ),
     );
   }
@@ -122,106 +238,42 @@ class _ButtonState extends State<Button> {
           foregroundColor: colorScheme.primary,
           backgroundColor: colorScheme.primaryContainer,
           child: Icon(snapshot.data! ? Icons.star : Icons.star_outline),
-          onPressed: () async {
-            Future<void> star() async {
-              if (snapshot.data!) {
-                await context.read<WordbookModel>().delete(widget.word);
-              } else {
-                await context.read<WordbookModel>().add(widget.word);
-              }
-
-              await autoExport();
-              checkStared();
-            }
-
-            if (wordbookTagsDao.tagExist) {
-              final tagsOfWord = await wordbookDao.tagsOfWord(widget.word),
-                  tags = await wordbookTagsDao.getAllTags();
-
-              final toAdd = <int>[], toDel = <int>[];
-
-              if (!context.mounted) return;
-
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text(locale.tags),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TagsList(
-                          tags: tags,
-                          tagsOfWord: tagsOfWord,
-                          toAdd: toAdd,
-                          toDel: toDel,
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        child: Text(locale.remove),
-                        onPressed: () async {
-                          await context
-                              .read<WordbookModel>()
-                              .removeWordWithAllTags(widget.word);
-
-                          if (context.mounted) {
-                            context.pop();
-                          }
-
-                          await autoExport();
-
-                          checkStared();
-                        },
-                      ),
-                      TextButton(
-                        child: Text(locale.confirm),
-                        onPressed: () async {
-                          if (!snapshot.data!) {
-                            await context.read<WordbookModel>().add(
-                              widget.word,
-                            );
-                          }
-
-                          if (!context.mounted) return;
-
-                          for (final tag in toAdd) {
-                            await context.read<WordbookModel>().add(
-                              widget.word,
-                              tag: tag,
-                            );
-                          }
-
-                          if (!context.mounted) return;
-
-                          for (final tag in toDel) {
-                            await context.read<WordbookModel>().delete(
-                              widget.word,
-                              tag: tag,
-                            );
-                          }
-
-                          if (context.mounted) {
-                            context.pop();
-                          }
-
-                          await autoExport();
-
-                          checkStared();
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
-            } else {
-              await star();
-            }
-          },
+          onPressed: () => toggleStarWord(
+            context,
+            widget.word,
+            currentStared: snapshot.data!,
+            onUpdated: checkStared,
+          ),
         );
       },
     );
+  }
+}
+
+class WordStarIconButton extends StatefulWidget {
+  final String word;
+
+  const WordStarIconButton({super.key, required this.word});
+
+  @override
+  State<WordStarIconButton> createState() => _WordStarIconButtonState();
+}
+
+class _WordStarIconButtonState extends State<WordStarIconButton> {
+  Future<bool>? stared;
+
+  @override
+  void initState() {
+    super.initState();
+    stared = wordbookDao.wordExist(widget.word);
+  }
+
+  @override
+  void didUpdateWidget(covariant WordStarIconButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.word != oldWidget.word) {
+      checkStared();
+    }
   }
 
   void checkStared() {
@@ -231,9 +283,97 @@ class _ButtonState extends State<Button> {
   }
 
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
 
-    stared = wordbookDao.wordExist(widget.word);
+    return FutureBuilder<bool>(
+      future: stared,
+      builder: (context, snapshot) {
+        final isStared = snapshot.data ?? false;
+        return IconButton(
+          tooltip: locale.wordBook,
+          icon: Icon(
+            isStared ? Icons.star : Icons.star_outline,
+            color: isStared ? Theme.of(context).colorScheme.primary : null,
+          ),
+          onPressed: snapshot.hasData
+              ? () => toggleStarWord(
+                  context,
+                  widget.word,
+                  currentStared: isStared,
+                  onUpdated: checkStared,
+                )
+              : null,
+        );
+      },
+    );
+  }
+}
+
+class WordPronounceIconButton extends StatelessWidget {
+  final String word;
+
+  const WordPronounceIconButton({super.key, required this.word});
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+    final audioModel = Provider.of<AudioModel?>(context);
+    final isPlaying = audioModel?.isWordPlaying(word) ?? false;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return IconButton(
+      tooltip: locale.readLoudly,
+      icon: isPlaying
+          ? AudioWaveformIcon(
+              key: const ValueKey("playing"),
+              color: colorScheme.primary,
+              size: 20,
+            )
+          : const Icon(Icons.volume_up, key: ValueKey("idle")),
+      onPressed: () => playWordPronunciation(context, word),
+    );
+  }
+}
+
+class RefreshAIExplainIconButton extends StatelessWidget {
+  final String word;
+
+  const RefreshAIExplainIconButton({super.key, required this.word});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: AppLocalizations.of(context)!.update,
+      icon: const Icon(Icons.refresh),
+      onPressed: () {
+        context.read<AIExplanationModel>().refreshExplanation(word);
+      },
+    );
+  }
+}
+
+class EditAIExplainIconButton extends StatelessWidget {
+  final String word;
+
+  const EditAIExplainIconButton({super.key, required this.word});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: AppLocalizations.of(context)!.editAIExplanation,
+      icon: const Icon(Icons.edit),
+      onPressed: () {
+        context.push(
+          "/edit_ai_explanation",
+          extra: {
+            "word": word,
+            "initialExplanation":
+                context.read<AIExplanationModel>().explanation ?? "",
+            "aiExplanationModel": context.read<AIExplanationModel>(),
+          },
+        );
+      },
+    );
   }
 }

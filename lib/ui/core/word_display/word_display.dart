@@ -23,12 +23,14 @@ class WordDisplay extends ConsumerStatefulWidget {
   final String word;
   final WordPagerInfo? pagerInfo;
   final int? initialDictId;
+  final bool showBackButton;
 
   const WordDisplay({
     super.key,
     required this.word,
     this.pagerInfo,
     this.initialDictId,
+    this.showBackButton = true,
   });
 
   @override
@@ -103,20 +105,29 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               : validDictIds.length;
           final showTab = dictsLength > 1;
 
+          final isDesktopScreen = app_utils.isLargeScreen(context);
+
           if (!showTab) {
             final searchBar = _buildSearchBar(settings);
             return legacy_provider.ChangeNotifierProvider(
               create: (_) => AIExplanationModel(),
               child: Scaffold(
-                appBar: buildAppBar(context, showTab, title: searchBar),
+                appBar: buildAppBar(
+                  context,
+                  showTab,
+                  title: searchBar,
+                  showAIButtons: settings.aiExplainWord,
+                ),
                 bottomNavigationBar:
                     (!settings.searchBarInAppBar && searchBar != null)
                     ? BottomAppBar(child: searchBar)
                     : null,
-                floatingActionButton: Button(
-                  word: widget.word,
-                  showAIButtons: settings.aiExplainWord,
-                ),
+                floatingActionButton: isDesktopScreen
+                    ? null
+                    : Button(
+                        word: widget.word,
+                        showAIButtons: settings.aiExplainWord,
+                      ),
                 body: Stack(
                   children: [
                     settings.aiExplainWord
@@ -155,52 +166,59 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                     final tabController = DefaultTabController.of(context);
                     final searchBar = _buildSearchBar(settings);
 
-                    return Scaffold(
-                      appBar: buildAppBar(context, showTab, title: searchBar),
-                      floatingActionButton: ListenableBuilder(
-                        listenable: tabController,
-                        builder: (context, child) {
-                          final isAIExplainTabSelected =
-                              settings.aiExplainWord &&
-                              tabController.index == 0;
-                          return Button(
-                            word: widget.word,
+                    return ListenableBuilder(
+                      listenable: tabController,
+                      builder: (context, child) {
+                        final isAIExplainTabSelected =
+                            settings.aiExplainWord && tabController.index == 0;
+
+                        return Scaffold(
+                          appBar: buildAppBar(
+                            context,
+                            showTab,
+                            title: searchBar,
                             showAIButtons: isAIExplainTabSelected,
-                          );
-                        },
-                      ),
-                      body: Stack(
-                        children: [
-                          Column(
-                            children: [
-                              Expanded(
-                                child: buildTabView(
-                                  context,
-                                  validDictIds: validDictIds,
+                          ),
+                          floatingActionButton: isDesktopScreen
+                              ? null
+                              : Button(
+                                  word: widget.word,
+                                  showAIButtons: isAIExplainTabSelected,
                                 ),
+                          body: Stack(
+                            children: [
+                              Column(
+                                children: [
+                                  Expanded(
+                                    child: buildTabView(
+                                      context,
+                                      validDictIds: validDictIds,
+                                    ),
+                                  ),
+                                  if (settings.tabBarPosition ==
+                                          TabBarPosition.bottom &&
+                                      showTab)
+                                    buildTabBar(context),
+                                  if (!settings.searchBarInAppBar &&
+                                      searchBar != null)
+                                    searchBar,
+                                ],
                               ),
-                              if (settings.tabBarPosition ==
-                                      TabBarPosition.bottom &&
-                                  showTab)
-                                buildTabBar(context),
-                              if (!settings.searchBarInAppBar &&
-                                  searchBar != null)
-                                searchBar,
+                              Positioned(
+                                left: 16,
+                                right: 16,
+                                bottom:
+                                    (settings.tabBarPosition ==
+                                            TabBarPosition.bottom &&
+                                        showTab)
+                                    ? 64
+                                    : 16,
+                                child: const FloatingAudioIndicator(),
+                              ),
                             ],
                           ),
-                          Positioned(
-                            left: 16,
-                            right: 16,
-                            bottom:
-                                (settings.tabBarPosition ==
-                                        TabBarPosition.bottom &&
-                                    showTab)
-                                ? 64
-                                : 16,
-                            child: const FloatingAudioIndicator(),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -215,6 +233,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               validDictIds: validDictIds,
               searchController: _searchController,
               pagerInfo: widget.pagerInfo,
+              showBackButton: widget.showBackButton,
             ),
           );
         },
@@ -255,11 +274,20 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     );
   }
 
-  AppBar buildAppBar(BuildContext context, bool showTab, {Widget? title}) {
+  AppBar buildAppBar(
+    BuildContext context,
+    bool showTab, {
+    Widget? title,
+    bool showAIButtons = false,
+  }) {
     final settings = ref.watch(settingsProvider);
+    final isDesktopScreen = app_utils.isLargeScreen(context);
     final locale = AppLocalizations.of(context)!;
     return AppBar(
-      leading: BackButton(onPressed: () => _goBack(context)),
+      leading: widget.showBackButton
+          ? BackButton(onPressed: () => _goBack(context))
+          : null,
+      automaticallyImplyLeading: widget.showBackButton,
       title: settings.searchBarInAppBar
           ? (title ?? Text(widget.word, overflow: TextOverflow.ellipsis))
           : (widget.pagerInfo != null
@@ -301,6 +329,14 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             icon: const Icon(Icons.chevron_right),
             onPressed: widget.pagerInfo!.onNext,
           ),
+        ],
+        if (isDesktopScreen) ...[
+          WordPronounceIconButton(word: widget.word),
+          WordStarIconButton(word: widget.word),
+          if (showAIButtons) ...[
+            RefreshAIExplainIconButton(word: widget.word),
+            EditAIExplainIconButton(word: widget.word),
+          ],
         ],
         IconButton(
           tooltip: locale.copy,

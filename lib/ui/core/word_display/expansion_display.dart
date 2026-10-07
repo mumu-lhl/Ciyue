@@ -20,6 +20,7 @@ class ExpansionWordDisplay extends ConsumerStatefulWidget {
   final List<int> validDictIds;
   final SearchController? searchController;
   final WordPagerInfo? pagerInfo;
+  final bool showBackButton;
 
   const ExpansionWordDisplay({
     super.key,
@@ -27,6 +28,7 @@ class ExpansionWordDisplay extends ConsumerStatefulWidget {
     required this.validDictIds,
     this.searchController,
     this.pagerInfo,
+    this.showBackButton = true,
   });
 
   @override
@@ -115,11 +117,15 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
         settings.aiExplainWord && _isExpanded.isNotEmpty && _isExpanded[0];
 
     final searchBar = _buildSearchBar(settings);
+    final isDesktopScreen = app_utils.isLargeScreen(context);
 
     final locale = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: () => _goBack(context)),
+        leading: widget.showBackButton
+            ? BackButton(onPressed: () => _goBack(context))
+            : null,
+        automaticallyImplyLeading: widget.showBackButton,
         title: settings.searchBarInAppBar
             ? (searchBar ?? Text(widget.word, overflow: TextOverflow.ellipsis))
             : (widget.pagerInfo != null
@@ -165,6 +171,14 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
               onPressed: widget.pagerInfo!.onNext,
             ),
           ],
+          if (isDesktopScreen) ...[
+            WordPronounceIconButton(word: widget.word),
+            WordStarIconButton(word: widget.word),
+            if (isAIExplainTabSelected) ...[
+              RefreshAIExplainIconButton(word: widget.word),
+              EditAIExplainIconButton(word: widget.word),
+            ],
+          ],
           IconButton(
             tooltip: locale.copy,
             icon: const Icon(Icons.copy),
@@ -175,10 +189,9 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
       bottomNavigationBar: (!settings.searchBarInAppBar && searchBar != null)
           ? BottomAppBar(child: searchBar)
           : null,
-      floatingActionButton: Button(
-        word: widget.word,
-        showAIButtons: isAIExplainTabSelected,
-      ),
+      floatingActionButton: isDesktopScreen
+          ? null
+          : Button(word: widget.word, showAIButtons: isAIExplainTabSelected),
       body: Stack(
         children: [
           SingleChildScrollView(

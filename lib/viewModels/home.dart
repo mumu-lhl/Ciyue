@@ -76,6 +76,7 @@ class HistoryModel extends HistoryViewModel<HistoryData> {
 class HomeModel extends ChangeNotifier {
   int state = 0;
   String _searchWord = "";
+  String? _selectedWord;
 
   final searchController = SearchController();
   final searchBarFocusNode = FocusNode();
@@ -85,6 +86,15 @@ class HomeModel extends ChangeNotifier {
   set searchWord(String word) {
     _searchWord = word;
     notifyListeners();
+  }
+
+  String? get selectedWord => _selectedWord;
+
+  set selectedWord(String? word) {
+    if (_selectedWord != word) {
+      _selectedWord = word;
+      notifyListeners();
+    }
   }
 
   void focusSearchBar() {
