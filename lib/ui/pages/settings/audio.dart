@@ -120,7 +120,9 @@ class AudioSettingsPage extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: AppBar(leading: BackButton()),
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.audioSettings),
+        ),
         body: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),

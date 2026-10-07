@@ -1,4 +1,5 @@
 import "package:ciyue/services/flashcard_scheduler.dart";
+import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 
 SnackBar buildRatingSavedSnackBar({required VoidCallback onUndo}) {
@@ -27,7 +28,7 @@ class FlashcardRatingButtons extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final rating in FlashcardRating.values)
+        for (final (index, rating) in FlashcardRating.values.indexed)
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -39,7 +40,11 @@ class FlashcardRatingButtons extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(_label(rating)),
+                    Text(
+                      isLargeScreen(context)
+                          ? "${_label(rating)} (${index + 1})"
+                          : _label(rating),
+                    ),
                     Text(
                       _interval(previews[rating]!.due.difference(now)),
                       style: Theme.of(context).textTheme.labelSmall,

@@ -24,27 +24,32 @@ class WordbookStatsPage extends StatelessWidget {
         appBar: AppBar(
           title: Text(AppLocalizations.of(context)!.wordbookStats),
         ),
-        body: ListView(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                AppLocalizations.of(context)!.wordbookStats,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: ListView(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    AppLocalizations.of(context)!.wordbookStats,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                const StatsCalendar<WordbookStatsViewModel>(),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    AppLocalizations.of(context)!.openRecordStats,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                const StatsCalendar<OpenRecordStatsViewModel>(),
+              ],
             ),
-            const StatsCalendar<WordbookStatsViewModel>(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                AppLocalizations.of(context)!.openRecordStats,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-            const StatsCalendar<OpenRecordStatsViewModel>(),
-          ],
+          ),
         ),
       ),
     );

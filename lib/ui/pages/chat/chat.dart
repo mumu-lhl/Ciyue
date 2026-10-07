@@ -1,3 +1,4 @@
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/chat_view_model.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
@@ -21,12 +22,13 @@ class ChatView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<ChatViewModel>();
+    final isDesktop = isLargeScreen(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text("AI Chat")),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: BoxConstraints(maxWidth: isDesktop ? 800 : 500),
           child: Column(
             children: [
               Expanded(

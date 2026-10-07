@@ -5,6 +5,8 @@ import "package:ciyue/services/flashcard_study_service.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/pages/flashcards/providers.dart";
 import "package:ciyue/ui/pages/flashcards/rating_buttons.dart";
+import "package:ciyue/utils.dart";
+import "package:flutter/services.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
@@ -31,23 +33,59 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
       ),
       data: (state) {
         if (state.complete) return _buildSummary(state);
-        return Scaffold(
-          appBar: AppBar(
-            title: Text("${state.index + 1} / ${state.items.length}"),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () => context.push("/settings/flashcards"),
+        final notifier = ref.read(
+          flashcardSessionProvider(widget.tag).notifier,
+        );
+
+        return CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.space): () {
+              if (!state.answerVisible) {
+                notifier.showAnswer();
+              }
+            },
+            const SingleActivator(LogicalKeyboardKey.digit1): () {
+              if (state.answerVisible) {
+                _rate(FlashcardRating.again);
+              }
+            },
+            const SingleActivator(LogicalKeyboardKey.digit2): () {
+              if (state.answerVisible) {
+                _rate(FlashcardRating.hard);
+              }
+            },
+            const SingleActivator(LogicalKeyboardKey.digit3): () {
+              if (state.answerVisible) {
+                _rate(FlashcardRating.good);
+              }
+            },
+            const SingleActivator(LogicalKeyboardKey.digit4): () {
+              if (state.answerVisible) {
+                _rate(FlashcardRating.easy);
+              }
+            },
+          },
+          child: Focus(
+            autofocus: true,
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text("${state.index + 1} / ${state.items.length}"),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () => context.push("/settings/flashcards"),
+                  ),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(4),
+                  child: LinearProgressIndicator(
+                    value: state.index / state.items.length,
+                  ),
+                ),
               ),
-            ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(4),
-              child: LinearProgressIndicator(
-                value: state.index / state.items.length,
-              ),
+              body: SafeArea(child: _buildCard(state)),
             ),
           ),
-          body: SafeArea(child: _buildCard(state)),
         );
       },
     );
@@ -101,7 +139,11 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
                   )
                 : FilledButton(
                     onPressed: notifier.showAnswer,
-                    child: const Text("Show answer"),
+                    child: Text(
+                      isLargeScreen(context)
+                          ? "Show answer (Space)"
+                          : "Show answer",
+                    ),
                   ),
           ),
         ],
