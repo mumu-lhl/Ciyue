@@ -364,7 +364,7 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "贊助碼",
   "@sponsorCodes": {},
-    "wechat": "微信",
+  "wechat": "微信",
   "@wechat": {},
   "pressAgainToExit": "再按一次退出",
   "@pressAgainToExit": {},
@@ -385,5 +385,305 @@
   "noDictionariesFound": "找不到詞典",
   "@noDictionariesFound": {},
   "exitApp": "退出應用程式",
-  "@exitApp": {}
+  "@exitApp": {},
+  "spellingSuggestions": "拼寫建議",
+  "@spellingSuggestions": {},
+  "dictionaryCustomCss": "自訂詞典 CSS",
+  "@dictionaryCustomCss": {},
+  "dictionaryCustomCssDescription": "在開啟詞典條目時套用自訂 CSS",
+  "@dictionaryCustomCssDescription": {},
+  "dictionaryCustomCssHint": "輸入 CSS 規則，例如 background-color: #f5f0e6;",
+  "@dictionaryCustomCssHint": {},
+  "dictionaryBackgroundColorTitle": "詞典背景顏色",
+  "@dictionaryBackgroundColorTitle": {},
+  "dictionaryBackgroundColorDescription": "選擇舒適的閱讀背景",
+  "@dictionaryBackgroundColorDescription": {},
+  "dictionaryBackgroundUseDefault": "使用詞典預設背景",
+  "@dictionaryBackgroundUseDefault": {},
+  "dictionaryDarkReaderTitle": "詞典頁面 Dark Reader 深色模式",
+  "@dictionaryDarkReaderTitle": {},
+  "dictionaryDarkReaderDescription": "在 Windows 和 Linux 上自動適配深色模式下的詞典顏色",
+  "@dictionaryDarkReaderDescription": {},
+  "dictionaryDarkReaderNeedsDefaultBackground": "使用詞典預設背景以啟用 Dark Reader",
+  "@dictionaryDarkReaderNeedsDefaultBackground": {},
+  "chooseDictionaryBackgroundColor": "選擇背景顏色",
+  "@chooseDictionaryBackgroundColor": {},
+  "currentDictionaryGroup": "詞典群組：{group}",
+  "@currentDictionaryGroup": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "switchingToDictionaryGroup": "正在切換至 {group}…",
+  "@switchingToDictionaryGroup": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "fetchModels": "透過 API 獲取模型清單",
+  "@fetchModels": {},
+  "fetchModelsSuccess": "成功獲取模型清單",
+  "@fetchModelsSuccess": {},
+  "fetchModelsFailed": "獲取模型清單失敗",
+  "@fetchModelsFailed": {},
+  "selectModel": "選擇模型",
+  "@selectModel": {},
+  "searchModels": "搜尋模型",
+  "@searchModels": {},
+  "apiKeyRequired": "獲取模型清單需要填寫 API 金鑰",
+  "@apiKeyRequired": {},
+  "translation": "翻譯",
+  "@translation": {},
+  "cloudSync": "雲端同步",
+  "@cloudSync": {},
+  "cloudSyncDescription": "預覽並合併生詞本與複習進度，並選擇詞典進行跨裝置同步。",
+  "@cloudSyncDescription": {},
+  "cloudSyncProviderType": "儲存服務商",
+  "@cloudSyncProviderType": {},
+  "cloudSyncProviderWebDav": "WebDAV",
+  "@cloudSyncProviderWebDav": {},
+  "cloudSyncProviderSftp": "SFTP",
+  "@cloudSyncProviderSftp": {},
+  "cloudSyncProviderS3": "S3 相容儲存",
+  "@cloudSyncProviderS3": {},
+  "cloudSyncWebDavUrl": "WebDAV 伺服器 URL",
+  "@cloudSyncWebDavUrl": {},
+  "cloudSyncSftpUrl": "SFTP 伺服器 URL",
+  "@cloudSyncSftpUrl": {},
+  "cloudSyncSftpUsername": "SFTP 使用者名稱",
+  "@cloudSyncSftpUsername": {},
+  "cloudSyncSftpFingerprint": "SSH 主機金鑰 SHA-256 指紋",
+  "@cloudSyncSftpFingerprint": {},
+  "cloudSyncSftpFingerprintHint": "安全 SSH 驗證必需。請向伺服器管理員獲取 SHA256 指紋；貼上 SHA256:... 格式的值。",
+  "@cloudSyncSftpFingerprintHint": {},
+  "cloudSyncSftpCredentialsHint": "輸入密碼、匯入私鑰或同時提供兩者。主機金鑰指紋為必填項。",
+  "@cloudSyncSftpCredentialsHint": {},
+  "cloudSyncSftpPassword": "SFTP 密碼（選填）",
+  "@cloudSyncSftpPassword": {},
+  "cloudSyncSftpSavedPrivateKey": "已安全儲存私鑰。",
+  "@cloudSyncSftpSavedPrivateKey": {},
+  "cloudSyncSftpPrivateKey": "匯入 SSH 私鑰",
+  "@cloudSyncSftpPrivateKey": {},
+  "cloudSyncSftpPrivateKeySelected": "已選擇私鑰：{name}",
+  "@cloudSyncSftpPrivateKeySelected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudSyncSftpRemovePrivateKey": "移除私鑰",
+  "@cloudSyncSftpRemovePrivateKey": {},
+  "cloudSyncSftpKeyPassphrase": "私鑰密碼（選填）",
+  "@cloudSyncSftpKeyPassphrase": {},
+  "cloudSyncS3Endpoint": "S3 端點 URL",
+  "@cloudSyncS3Endpoint": {},
+  "cloudSyncS3Bucket": "儲存貯體 (Bucket)",
+  "@cloudSyncS3Bucket": {},
+  "cloudSyncS3Region": "區域 (Region)",
+  "@cloudSyncS3Region": {},
+  "cloudSyncS3AccessKey": "Access Key ID",
+  "@cloudSyncS3AccessKey": {},
+  "cloudSyncS3SecretKey": "Secret Access Key",
+  "@cloudSyncS3SecretKey": {},
+  "cloudSyncS3SecretHint": "留空表示保留已儲存的密鑰。",
+  "@cloudSyncS3SecretHint": {},
+  "cloudSyncS3PathStyle": "使用路徑樣式定址（MinIO 建議）",
+  "@cloudSyncS3PathStyle": {},
+  "cloudSyncS3Hint": "除本機開發外請使用 HTTPS。對於 AWS 或 R2，請關閉路徑樣式定址；對於 MinIO，通常應開啟。",
+  "@cloudSyncS3Hint": {},
+  "cloudSyncRemoteFolder": "遠端資料夾",
+  "@cloudSyncRemoteFolder": {},
+  "cloudSyncUsername": "使用者名稱（選填）",
+  "@cloudSyncUsername": {},
+  "cloudSyncPassword": "密碼（選填）",
+  "@cloudSyncPassword": {},
+  "cloudSyncPasswordHint": "留空表示保留已儲存的密碼。",
+  "@cloudSyncPasswordHint": {},
+  "cloudSyncPreviewButton": "預覽變更",
+  "@cloudSyncPreviewButton": {},
+  "cloudSyncConfirmButton": "確認並同步",
+  "@cloudSyncConfirmButton": {},
+  "cloudSyncNow": "立即同步",
+  "@cloudSyncNow": {},
+  "cloudSyncDisconnect": "中斷連線",
+  "@cloudSyncDisconnect": {},
+  "cloudSyncSavedProfile": "已連線至 {provider}",
+  "@cloudSyncSavedProfile": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudSyncPreviewHeading": "同步預覽",
+  "@cloudSyncPreviewHeading": {},
+  "cloudSyncFolderMissing": "該資料夾尚不存在，將在您確認後建立。",
+  "@cloudSyncFolderMissing": {},
+  "cloudSyncPreviewIntro": "在同步至 {folder} 之前核對內容。",
+  "@cloudSyncPreviewIntro": {
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudSyncLocalSummary": "目前裝置：{words} 個生詞，{tags} 個標籤，{cards} 張卡片，{reviews} 則複習記錄",
+  "@cloudSyncLocalSummary": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudSyncRemoteSummary": "雲端：{words} 個生詞，{tags} 個標籤，{cards} 張卡片，{reviews} 則複習記錄",
+  "@cloudSyncRemoteSummary": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudSyncMergedSummary": "同步後：{words} 個生詞，{tags} 個標籤，{cards} 張卡片，{reviews} 則複習記錄",
+  "@cloudSyncMergedSummary": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudSyncRemoteDevices": "遠端裝置數：{count}",
+  "@cloudSyncRemoteDevices": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudSyncConflicts": "發現 {count} 處衝突。同步將保留變更，待衝突解決後再套用資料。",
+  "@cloudSyncConflicts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudSyncNoConflicts": "未檢測到衝突。",
+  "@cloudSyncNoConflicts": {},
+  "cloudSyncDictionaries": "詞典",
+  "@cloudSyncDictionaries": {},
+  "cloudSyncDictionaryHint": "選擇要上傳或下載的詞典。未勾選的詞典不會進行傳輸。",
+  "@cloudSyncDictionaryHint": {},
+  "cloudSyncDictionaryUpload": "目前裝置 · 上傳",
+  "@cloudSyncDictionaryUpload": {},
+  "cloudSyncDictionaryDownload": "雲端 · 下載",
+  "@cloudSyncDictionaryDownload": {},
+  "cloudSyncDictionarySynced": "兩端已同步",
+  "@cloudSyncDictionarySynced": {},
+  "cloudSyncDictionaryEmpty": "沒有可同步的詞典。",
+  "@cloudSyncDictionaryEmpty": {},
+  "cloudSyncDictionaryDetails": "{files} 個檔案 · {size}",
+  "@cloudSyncDictionaryDetails": {
+    "placeholders": {
+      "files": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudSyncSyncComplete": "同步完成。",
+  "@cloudSyncSyncComplete": {},
+  "cloudSyncSyncFailed": "無法完成雲端同步。請檢查伺服器 URL 和憑據。",
+  "@cloudSyncSyncFailed": {},
+  "cloudSyncCredentialsPair": "請輸入使用者名稱和密碼，或兩者皆留空。",
+  "@cloudSyncCredentialsPair": {},
+  "cloudSyncDisconnected": "已中斷雲端同步連線。",
+  "@cloudSyncDisconnected": {},
+  "enableWordFormLookup": "啟用詞形還原與變體查詢",
+  "@enableWordFormLookup": {},
+  "enableWordFormLookupDescription": "預設關閉。使用 Hunspell 詞典查詢詞形變體。",
+  "@enableWordFormLookupDescription": {},
+  "hunspellLookupMode": "查詢模式",
+  "@hunspellLookupMode": {},
+  "hunspellLookupModeDescription": "選擇詞幹是補充現有條目還是作為後備策略。",
+  "@hunspellLookupModeDescription": {},
+  "hunspellFallback": "後備 (Fallback)",
+  "@hunspellFallback": {},
+  "hunspellSupplement": "補充 (Supplement)",
+  "@hunspellSupplement": {},
+  "importHunspellDictionaries": "匯入 Hunspell 詞典",
+  "@importHunspellDictionaries": {},
+  "importHunspellDictionariesDescription": "選擇包含 .aff 和 .dic 檔案的資料夾。",
+  "@importHunspellDictionariesDescription": {},
+  "hunspellSourcesLoadFailed": "載入 Hunspell 詞典失敗：{error}",
+  "@hunspellSourcesLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noHunspellDictionaries": "未匯入 Hunspell 詞典",
+  "@noHunspellDictionaries": {},
+  "twoPassLookup": "兩輪迭代查詢 (Two-pass)",
+  "@twoPassLookup": {},
+  "twoPassLookupDescription": "使用第一輪查詢所得的詞幹再次查詢 Hunspell，以尋找更深層的詞根（例如日語或德語）。",
+  "@twoPassLookupDescription": {},
+  "hunspellDictionarySettings": "Hunspell 詞典設定",
+  "@hunspellDictionarySettings": {},
+  "optionalWordFormLookup": "選用詞形還原查詢",
+  "@optionalWordFormLookup": {},
+  "previousWord": "上一個詞",
+  "@previousWord": {},
+  "nextWord": "下一個詞",
+  "@nextWord": {},
+  "newTab": "新增分頁",
+  "@newTab": {},
+  "closeTab": "關閉分頁",
+  "@closeTab": {},
+  "closeOtherTabs": "關閉其他分頁",
+  "@closeOtherTabs": {},
+  "closeAllTabs": "關閉所有分頁",
+  "@closeAllTabs": {},
+  "forward": "前進",
+  "@forward": {},
+  "tabs": "分頁",
+  "@tabs": {},
+  "noOpenTabs": "沒有開啟的分頁",
+  "@noOpenTabs": {},
+  "switchTab": "切換分頁",
+  "@switchTab": {}
 }

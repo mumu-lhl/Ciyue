@@ -377,5 +377,305 @@
   "noDictionariesFound": "未找到词典",
   "@noDictionariesFound": {},
   "exitApp": "退出应用",
-  "@exitApp": {}
+  "@exitApp": {},
+  "spellingSuggestions": "拼写建议",
+  "@spellingSuggestions": {},
+  "dictionaryCustomCss": "自定义词典 CSS",
+  "@dictionaryCustomCss": {},
+  "dictionaryCustomCssDescription": "在打开词典条目时应用自定义 CSS",
+  "@dictionaryCustomCssDescription": {},
+  "dictionaryCustomCssHint": "输入 CSS 规则，例如 background-color: #f5f0e6;",
+  "@dictionaryCustomCssHint": {},
+  "dictionaryBackgroundColorTitle": "词典背景颜色",
+  "@dictionaryBackgroundColorTitle": {},
+  "dictionaryBackgroundColorDescription": "选择舒适的阅读背景",
+  "@dictionaryBackgroundColorDescription": {},
+  "dictionaryBackgroundUseDefault": "使用词典默认背景",
+  "@dictionaryBackgroundUseDefault": {},
+  "dictionaryDarkReaderTitle": "词典页面 Dark Reader 深色模式",
+  "@dictionaryDarkReaderTitle": {},
+  "dictionaryDarkReaderDescription": "在 Windows 和 Linux 上自动适配深色模式下的词典颜色",
+  "@dictionaryDarkReaderDescription": {},
+  "dictionaryDarkReaderNeedsDefaultBackground": "使用词典默认背景以启用 Dark Reader",
+  "@dictionaryDarkReaderNeedsDefaultBackground": {},
+  "chooseDictionaryBackgroundColor": "选择背景颜色",
+  "@chooseDictionaryBackgroundColor": {},
+  "currentDictionaryGroup": "词典分组：{group}",
+  "@currentDictionaryGroup": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "switchingToDictionaryGroup": "正在切换至 {group}…",
+  "@switchingToDictionaryGroup": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "fetchModels": "通过 API 获取模型列表",
+  "@fetchModels": {},
+  "fetchModelsSuccess": "成功获取模型列表",
+  "@fetchModelsSuccess": {},
+  "fetchModelsFailed": "获取模型列表失败",
+  "@fetchModelsFailed": {},
+  "selectModel": "选择模型",
+  "@selectModel": {},
+  "searchModels": "搜索模型",
+  "@searchModels": {},
+  "apiKeyRequired": "获取模型列表需要填写 API 密钥",
+  "@apiKeyRequired": {},
+  "translation": "翻译",
+  "@translation": {},
+  "cloudSync": "云同步",
+  "@cloudSync": {},
+  "cloudSyncDescription": "预览并合并生词本与复习进度，并选择词典进行跨设备同步。",
+  "@cloudSyncDescription": {},
+  "cloudSyncProviderType": "存储服务商",
+  "@cloudSyncProviderType": {},
+  "cloudSyncProviderWebDav": "WebDAV",
+  "@cloudSyncProviderWebDav": {},
+  "cloudSyncProviderSftp": "SFTP",
+  "@cloudSyncProviderSftp": {},
+  "cloudSyncProviderS3": "S3 兼容存储",
+  "@cloudSyncProviderS3": {},
+  "cloudSyncWebDavUrl": "WebDAV 服务器 URL",
+  "@cloudSyncWebDavUrl": {},
+  "cloudSyncSftpUrl": "SFTP 服务器 URL",
+  "@cloudSyncSftpUrl": {},
+  "cloudSyncSftpUsername": "SFTP 用户名",
+  "@cloudSyncSftpUsername": {},
+  "cloudSyncSftpFingerprint": "SSH 主机密钥 SHA-256 指纹",
+  "@cloudSyncSftpFingerprint": {},
+  "cloudSyncSftpFingerprintHint": "安全 SSH 验证必需。请向服务器管理员获取 SHA256 指纹；粘贴 SHA256:... 格式的值。",
+  "@cloudSyncSftpFingerprintHint": {},
+  "cloudSyncSftpCredentialsHint": "输入密码、导入私钥或同时提供两者。主机密钥指纹为必填项。",
+  "@cloudSyncSftpCredentialsHint": {},
+  "cloudSyncSftpPassword": "SFTP 密码（可选）",
+  "@cloudSyncSftpPassword": {},
+  "cloudSyncSftpSavedPrivateKey": "已安全保存私钥。",
+  "@cloudSyncSftpSavedPrivateKey": {},
+  "cloudSyncSftpPrivateKey": "导入 SSH 私钥",
+  "@cloudSyncSftpPrivateKey": {},
+  "cloudSyncSftpPrivateKeySelected": "已选择私钥：{name}",
+  "@cloudSyncSftpPrivateKeySelected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudSyncSftpRemovePrivateKey": "移除私钥",
+  "@cloudSyncSftpRemovePrivateKey": {},
+  "cloudSyncSftpKeyPassphrase": "私钥密码（可选）",
+  "@cloudSyncSftpKeyPassphrase": {},
+  "cloudSyncS3Endpoint": "S3 终端节点 URL",
+  "@cloudSyncS3Endpoint": {},
+  "cloudSyncS3Bucket": "存储桶 (Bucket)",
+  "@cloudSyncS3Bucket": {},
+  "cloudSyncS3Region": "区域 (Region)",
+  "@cloudSyncS3Region": {},
+  "cloudSyncS3AccessKey": "Access Key ID",
+  "@cloudSyncS3AccessKey": {},
+  "cloudSyncS3SecretKey": "Secret Access Key",
+  "@cloudSyncS3SecretKey": {},
+  "cloudSyncS3SecretHint": "留空表示保留已保存的密钥。",
+  "@cloudSyncS3SecretHint": {},
+  "cloudSyncS3PathStyle": "使用路径样式寻址（MinIO 推荐）",
+  "@cloudSyncS3PathStyle": {},
+  "cloudSyncS3Hint": "除本地开发外请使用 HTTPS。对于 AWS 或 R2，请关闭路径样式寻址；对于 MinIO，通常应开启。",
+  "@cloudSyncS3Hint": {},
+  "cloudSyncRemoteFolder": "远端文件夹",
+  "@cloudSyncRemoteFolder": {},
+  "cloudSyncUsername": "用户名（可选）",
+  "@cloudSyncUsername": {},
+  "cloudSyncPassword": "密码（可选）",
+  "@cloudSyncPassword": {},
+  "cloudSyncPasswordHint": "留空表示保留已保存的密码。",
+  "@cloudSyncPasswordHint": {},
+  "cloudSyncPreviewButton": "预览变更",
+  "@cloudSyncPreviewButton": {},
+  "cloudSyncConfirmButton": "确认并同步",
+  "@cloudSyncConfirmButton": {},
+  "cloudSyncNow": "立即同步",
+  "@cloudSyncNow": {},
+  "cloudSyncDisconnect": "断开连接",
+  "@cloudSyncDisconnect": {},
+  "cloudSyncSavedProfile": "已连接至 {provider}",
+  "@cloudSyncSavedProfile": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudSyncPreviewHeading": "同步预览",
+  "@cloudSyncPreviewHeading": {},
+  "cloudSyncFolderMissing": "该文件夹尚不存在，将在您确认后创建。",
+  "@cloudSyncFolderMissing": {},
+  "cloudSyncPreviewIntro": "在同步到 {folder} 之前核对内容。",
+  "@cloudSyncPreviewIntro": {
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudSyncLocalSummary": "当前设备：{words} 个生词，{tags} 个标签，{cards} 张卡片，{reviews} 条复习记录",
+  "@cloudSyncLocalSummary": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudSyncRemoteSummary": "云端：{words} 个生词，{tags} 个标签，{cards} 张卡片，{reviews} 条复习记录",
+  "@cloudSyncRemoteSummary": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudSyncMergedSummary": "同步后：{words} 个生词，{tags} 个标签，{cards} 张卡片，{reviews} 条复习记录",
+  "@cloudSyncMergedSummary": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudSyncRemoteDevices": "远端设备数：{count}",
+  "@cloudSyncRemoteDevices": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudSyncConflicts": "发现 {count} 处冲突。同步将保留更改，待冲突解决后再应用数据。",
+  "@cloudSyncConflicts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudSyncNoConflicts": "未检测到冲突。",
+  "@cloudSyncNoConflicts": {},
+  "cloudSyncDictionaries": "词典",
+  "@cloudSyncDictionaries": {},
+  "cloudSyncDictionaryHint": "选择要上传或下载的词典。未勾选的词典不会进行传输。",
+  "@cloudSyncDictionaryHint": {},
+  "cloudSyncDictionaryUpload": "当前设备 · 上传",
+  "@cloudSyncDictionaryUpload": {},
+  "cloudSyncDictionaryDownload": "云端 · 下载",
+  "@cloudSyncDictionaryDownload": {},
+  "cloudSyncDictionarySynced": "两端已同步",
+  "@cloudSyncDictionarySynced": {},
+  "cloudSyncDictionaryEmpty": "没有可同步的词典。",
+  "@cloudSyncDictionaryEmpty": {},
+  "cloudSyncDictionaryDetails": "{files} 个文件 · {size}",
+  "@cloudSyncDictionaryDetails": {
+    "placeholders": {
+      "files": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudSyncSyncComplete": "同步完成。",
+  "@cloudSyncSyncComplete": {},
+  "cloudSyncSyncFailed": "无法完成云同步。请检查服务器 URL 和凭据。",
+  "@cloudSyncSyncFailed": {},
+  "cloudSyncCredentialsPair": "请输入用户名和密码，或两者均留空。",
+  "@cloudSyncCredentialsPair": {},
+  "cloudSyncDisconnected": "已断开云同步连接。",
+  "@cloudSyncDisconnected": {},
+  "enableWordFormLookup": "启用词形还原与变体查找",
+  "@enableWordFormLookup": {},
+  "enableWordFormLookupDescription": "默认关闭。使用 Hunspell 词典查找词形变体。",
+  "@enableWordFormLookupDescription": {},
+  "hunspellLookupMode": "查找模式",
+  "@hunspellLookupMode": {},
+  "hunspellLookupModeDescription": "选择词干是补充现有条目还是作为后备策略。",
+  "@hunspellLookupModeDescription": {},
+  "hunspellFallback": "后备 (Fallback)",
+  "@hunspellFallback": {},
+  "hunspellSupplement": "补充 (Supplement)",
+  "@hunspellSupplement": {},
+  "importHunspellDictionaries": "导入 Hunspell 词典",
+  "@importHunspellDictionaries": {},
+  "importHunspellDictionariesDescription": "选择包含 .aff 和 .dic 文件的文件夹。",
+  "@importHunspellDictionariesDescription": {},
+  "hunspellSourcesLoadFailed": "加载 Hunspell 词典失败：{error}",
+  "@hunspellSourcesLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noHunspellDictionaries": "未导入 Hunspell 词典",
+  "@noHunspellDictionaries": {},
+  "twoPassLookup": "两轮迭代查找 (Two-pass)",
+  "@twoPassLookup": {},
+  "twoPassLookupDescription": "使用第一轮查找所得的词干再次查询 Hunspell，以查找更深层的词根（例如日语或德语）。",
+  "@twoPassLookupDescription": {},
+  "hunspellDictionarySettings": "Hunspell 词典设置",
+  "@hunspellDictionarySettings": {},
+  "optionalWordFormLookup": "可选词形还原查找",
+  "@optionalWordFormLookup": {},
+  "previousWord": "上一个词",
+  "@previousWord": {},
+  "nextWord": "下一个词",
+  "@nextWord": {},
+  "newTab": "新建标签页",
+  "@newTab": {},
+  "closeTab": "关闭标签页",
+  "@closeTab": {},
+  "closeOtherTabs": "关闭其他标签页",
+  "@closeOtherTabs": {},
+  "closeAllTabs": "关闭所有标签页",
+  "@closeAllTabs": {},
+  "forward": "前进",
+  "@forward": {},
+  "tabs": "标签页",
+  "@tabs": {},
+  "noOpenTabs": "无打开的标签页",
+  "@noOpenTabs": {},
+  "switchTab": "切换标签页",
+  "@switchTab": {}
 }
