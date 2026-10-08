@@ -46,7 +46,7 @@ void handleOpenWordNavigation(
       final container = ProviderScope.containerOf(navContext, listen: false);
       final homeModel = container.read(homeModelProvider);
       if (newTab) {
-        homeModel.openWordInNewTab(word);
+        homeModel.openWordInNewTab(word, dictId: dictId);
       } else {
         homeModel.selectedWord = word;
       }
@@ -54,7 +54,27 @@ void handleOpenWordNavigation(
       container.read(historyModelProvider).addHistory(word);
     } catch (_) {}
   } else {
-    if (context.mounted) {
+    try {
+      final container = ProviderScope.containerOf(navContext, listen: false);
+      final homeModel = container.read(homeModelProvider);
+      container.read(openRecordsRepositoryProvider).add(word);
+      container.read(historyModelProvider).addHistory(word);
+      if (newTab) {
+        homeModel.openWordInNewTab(word, dictId: dictId);
+      } else {
+        homeModel.navigateInCurrentTab(word, dictId: dictId);
+      }
+    } catch (_) {}
+
+    bool isAlreadyInWordRoute = false;
+    try {
+      final currentRoute = GoRouterState.of(context).uri.toString();
+      isAlreadyInWordRoute = currentRoute.startsWith("/word/");
+    } catch (_) {
+      isAlreadyInWordRoute = false;
+    }
+
+    if (!isAlreadyInWordRoute && context.mounted) {
       final query = dictId != null ? "?dictId=$dictId" : "";
       context.push("/word/${Uri.encodeComponent(word)}$query");
     }

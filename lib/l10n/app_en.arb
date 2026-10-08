@@ -627,5 +627,14 @@
   "closeOtherTabs": "Close Other Tabs",
   "@closeOtherTabs": {},
   "closeAllTabs": "Close All Tabs",
-  "@closeAllTabs": {}
+  "@closeAllTabs": {},
+  "forward": "Forward",
+  "@forward": {},
+  "tabs": "Tabs",
+  "@tabs": {},
+  "noOpenTabs": "No open tabs",
+  "@noOpenTabs": {},
+  "switchTab": "Switch Tab",
+  "@switchTab": {}
 }
+

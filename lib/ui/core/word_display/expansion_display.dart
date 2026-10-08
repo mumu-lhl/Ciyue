@@ -21,6 +21,7 @@ class ExpansionWordDisplay extends ConsumerStatefulWidget {
   final SearchController? searchController;
   final WordPagerInfo? pagerInfo;
   final bool showBackButton;
+  final Widget? bottomNavigationBar;
 
   const ExpansionWordDisplay({
     super.key,
@@ -29,6 +30,7 @@ class ExpansionWordDisplay extends ConsumerStatefulWidget {
     this.searchController,
     this.pagerInfo,
     this.showBackButton = true,
+    this.bottomNavigationBar,
   });
 
   @override
@@ -186,9 +188,11 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
           ),
         ],
       ),
-      bottomNavigationBar: (!settings.searchBarInAppBar && searchBar != null)
-          ? BottomAppBar(child: searchBar)
-          : null,
+      bottomNavigationBar:
+          widget.bottomNavigationBar ??
+          ((!settings.searchBarInAppBar && searchBar != null)
+              ? BottomAppBar(child: searchBar)
+              : null),
       floatingActionButton: isDesktopScreen
           ? null
           : Button(word: widget.word, showAIButtons: isAIExplainTabSelected),

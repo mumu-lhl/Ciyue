@@ -129,4 +129,103 @@ void main() {
       expect(model.selectedWord, "banana");
     });
   });
+
+  group("HomeModel Tab History & Navigation", () {
+    test("navigateInCurrentTab builds history and enables back/forward", () {
+      final model = HomeModel();
+      expect(model.canGoBack, isFalse);
+      expect(model.canGoForward, isFalse);
+
+      model.navigateInCurrentTab("apple");
+      expect(model.tabs, ["apple"]);
+      expect(model.selectedWord, "apple");
+      expect(model.canGoBack, isFalse);
+      expect(model.canGoForward, isFalse);
+
+      // Navigate to second word in same tab
+      model.navigateInCurrentTab("banana");
+      expect(model.tabs, ["banana"]);
+      expect(model.selectedWord, "banana");
+      expect(model.canGoBack, isTrue);
+      expect(model.canGoForward, isFalse);
+
+      // Navigate to third word
+      model.navigateInCurrentTab("cherry");
+      expect(model.selectedWord, "cherry");
+      expect(model.canGoBack, isTrue);
+      expect(model.canGoForward, isFalse);
+
+      // Go back to banana
+      model.goBack();
+      expect(model.selectedWord, "banana");
+      expect(model.canGoBack, isTrue);
+      expect(model.canGoForward, isTrue);
+
+      // Go back to apple
+      model.goBack();
+      expect(model.selectedWord, "apple");
+      expect(model.canGoBack, isFalse);
+      expect(model.canGoForward, isTrue);
+
+      // Go forward to banana
+      model.goForward();
+      expect(model.selectedWord, "banana");
+      expect(model.canGoBack, isTrue);
+      expect(model.canGoForward, isTrue);
+
+      // Go forward to cherry
+      model.goForward();
+      expect(model.selectedWord, "cherry");
+      expect(model.canGoBack, isTrue);
+      expect(model.canGoForward, isFalse);
+    });
+
+    test("navigating after going back truncates forward history", () {
+      final model = HomeModel();
+      model.navigateInCurrentTab("apple");
+      model.navigateInCurrentTab("banana");
+      model.navigateInCurrentTab("cherry");
+
+      model.goBack(); // at banana
+      expect(model.selectedWord, "banana");
+      expect(model.canGoForward, isTrue);
+
+      // Navigate to a new word 'date', truncating 'cherry'
+      model.navigateInCurrentTab("date");
+      expect(model.selectedWord, "date");
+      expect(model.canGoBack, isTrue);
+      expect(model.canGoForward, isFalse);
+
+      model.goBack();
+      expect(model.selectedWord, "banana");
+
+      model.goBack();
+      expect(model.selectedWord, "apple");
+
+      model.goForward();
+      expect(model.selectedWord, "banana");
+
+      model.goForward();
+      expect(model.selectedWord, "date");
+      expect(model.canGoForward, isFalse);
+    });
+
+    test("tab overview state toggles and closes on tab selection", () {
+      final model = HomeModel();
+      expect(model.isTabOverviewOpen, isFalse);
+
+      model.toggleTabOverview();
+      expect(model.isTabOverviewOpen, isTrue);
+
+      model.openWordInNewTab("apple");
+      model.openWordInNewTab("banana");
+
+      model.setTabOverviewOpen(true);
+      expect(model.isTabOverviewOpen, isTrue);
+
+      model.switchToTab(0);
+      expect(model.isTabOverviewOpen, isFalse);
+      expect(model.selectedWord, "apple");
+    });
+  });
 }

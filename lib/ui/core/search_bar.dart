@@ -65,17 +65,16 @@ class _WordSearchBarWithSuggestionsState
     if (normalizedWord.isEmpty) return;
 
     ref.read(historyModelProvider).addHistory(normalizedWord);
-    if (widget.onWordSelected != null) {
-      widget.onWordSelected!(normalizedWord);
-      if (controller.isAttached && controller.isOpen) {
-        controller.closeView(normalizedWord);
-      }
-    } else {
-      context.push("/word/${Uri.encodeComponent(normalizedWord)}");
+    if (controller.isAttached && controller.isOpen) {
+      controller.closeView(normalizedWord);
     }
-
     if (widget.isHome && settings.autoRemoveSearchWord) {
       controller.text = "";
+    }
+    if (widget.onWordSelected != null) {
+      widget.onWordSelected!(normalizedWord);
+    } else {
+      context.push("/word/${Uri.encodeComponent(normalizedWord)}");
     }
   }
 
@@ -85,7 +84,22 @@ class _WordSearchBarWithSuggestionsState
       child: Center(
         child: SearchAnchor(
           viewHintText: AppLocalizations.of(context)!.search,
-          viewOnOpen: () => _selectAllText(widget.controller),
+          viewOnOpen: () {
+            if (widget.word.isNotEmpty && !widget.isHome) {
+              _selectAllText(widget.controller);
+            } else {
+              widget.controller.selection = TextSelection.collapsed(
+                offset: widget.controller.text.length,
+              );
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (widget.controller.isAttached) {
+                  widget.controller.selection = TextSelection.collapsed(
+                    offset: widget.controller.text.length,
+                  );
+                }
+              });
+            }
+          },
           viewOnClose: () {
             if (widget.word.isNotEmpty && !widget.isHome) {
               widget.controller.text = widget.word;
@@ -102,10 +116,18 @@ class _WordSearchBarWithSuggestionsState
               maxWidth: 500,
             ),
             onTap: () {
-              _selectAllText(controller);
+              if (controller.text.isNotEmpty && !widget.isHome) {
+                _selectAllText(controller);
+              }
               controller.openView();
             },
-            onChanged: (_) => controller.openView(),
+            onChanged: (_) {
+              controller.openView();
+              controller.selection = TextSelection.collapsed(
+                offset: controller.text.length,
+              );
+            },
+            onSubmitted: (word) => _openWord(controller, word),
             leading: const Icon(Icons.search),
           ),
           searchController: widget.controller,

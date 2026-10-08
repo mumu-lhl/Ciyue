@@ -4,6 +4,7 @@ import "package:ciyue/ui/pages/writing_check/writing_check.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check_history.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check_settings.dart";
 import "package:ciyue/ui/core/word_display.dart";
+import "package:ciyue/utils.dart";
 import "package:ciyue/ui/pages/main/main.dart";
 import "package:ciyue/ui/pages/settings/about.dart";
 import "package:ciyue/ui/pages/settings/ai_settings.dart";
@@ -69,6 +70,13 @@ final router = GoRouter(
         final initialDictId = dictIdParam != null
             ? int.tryParse(dictIdParam)
             : null;
+
+        if (!isLargeScreen(context)) {
+          return MobileWordBrowser(
+            initialWord: word,
+            initialDictId: initialDictId,
+          );
+        }
 
         return WordDisplay(word: word, initialDictId: initialDictId);
       },

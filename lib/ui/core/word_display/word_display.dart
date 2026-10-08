@@ -22,6 +22,7 @@ class WordDisplay extends ConsumerStatefulWidget {
   final WordPagerInfo? pagerInfo;
   final int? initialDictId;
   final bool showBackButton;
+  final Widget? bottomNavigationBar;
 
   const WordDisplay({
     super.key,
@@ -29,6 +30,7 @@ class WordDisplay extends ConsumerStatefulWidget {
     this.pagerInfo,
     this.initialDictId,
     this.showBackButton = true,
+    this.bottomNavigationBar,
   });
 
   @override
@@ -72,9 +74,10 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             return Scaffold(
               appBar: buildAppBar(context, false, title: searchBar),
               bottomNavigationBar:
-                  (!settings.searchBarInAppBar && searchBar != null)
-                  ? BottomAppBar(child: searchBar)
-                  : null,
+                  widget.bottomNavigationBar ??
+                  ((!settings.searchBarInAppBar && searchBar != null)
+                      ? BottomAppBar(child: searchBar)
+                      : null),
               body: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -115,9 +118,10 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                 showAIButtons: settings.aiExplainWord,
               ),
               bottomNavigationBar:
-                  (!settings.searchBarInAppBar && searchBar != null)
-                  ? BottomAppBar(child: searchBar)
-                  : null,
+                  widget.bottomNavigationBar ??
+                  ((!settings.searchBarInAppBar && searchBar != null)
+                      ? BottomAppBar(child: searchBar)
+                      : null),
               floatingActionButton: isDesktopScreen
                   ? null
                   : Button(
@@ -172,6 +176,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                           title: searchBar,
                           showAIButtons: isAIExplainTabSelected,
                         ),
+                        bottomNavigationBar: widget.bottomNavigationBar,
                         floatingActionButton: isDesktopScreen
                             ? null
                             : Button(
@@ -224,6 +229,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             searchController: _searchController,
             pagerInfo: widget.pagerInfo,
             showBackButton: widget.showBackButton,
+            bottomNavigationBar: widget.bottomNavigationBar,
           );
         },
         loading: () {
@@ -236,9 +242,10 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           return Scaffold(
             appBar: buildAppBar(context, false, title: searchBar),
             bottomNavigationBar:
-                (!settings.searchBarInAppBar && searchBar != null)
-                ? BottomAppBar(child: searchBar)
-                : null,
+                widget.bottomNavigationBar ??
+                ((!settings.searchBarInAppBar && searchBar != null)
+                    ? BottomAppBar(child: searchBar)
+                    : null),
             body: firstLoadedDictId != -1
                 ? _buildWebView(firstLoadedDictId)
                 : Center(
@@ -253,9 +260,10 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           return Scaffold(
             appBar: buildAppBar(context, false, title: searchBar),
             bottomNavigationBar:
-                (!settings.searchBarInAppBar && searchBar != null)
-                ? BottomAppBar(child: searchBar)
-                : null,
+                widget.bottomNavigationBar ??
+                ((!settings.searchBarInAppBar && searchBar != null)
+                    ? BottomAppBar(child: searchBar)
+                    : null),
             body: Center(child: Text("Error: $err")),
           );
         },
