@@ -71,7 +71,6 @@ jobs:
       artifact_name: Windows
       enable_build_cache: true
       package_release_artifacts: true
-      msix_skip_clean: true
 
   build-linux:
     needs: check-activity

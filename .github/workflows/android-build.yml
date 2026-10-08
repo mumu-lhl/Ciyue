@@ -58,9 +58,7 @@ jobs:
           distribution: "temurin"
 
       - name: Install dependencies
-        run: |
-          sudo apt install -y libsqlite3-dev
-          flutter pub get
+        run: flutter pub get
 
       - name: Validate signing secrets
         if: ${{ inputs.signing_required }}
@@ -73,27 +71,17 @@ jobs:
             exit 1
           fi
 
-      - name: Decode Keystore (required)
-        if: ${{ inputs.signing_required }}
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-
-      - name: Decode Keystore (optional)
+      - name: Decode Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        if: ${{ !inputs.signing_required && env.KEYSTORE_BASE64 != '' }}
+        if: ${{ inputs.signing_required || env.KEYSTORE_BASE64 != '' }}
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
 
-      - name: Create key.properties (required)
-        if: ${{ inputs.signing_required }}
-        run: |
-          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
-
-      - name: Create key.properties (optional)
+      - name: Create key.properties
         env:
           KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
-        if: ${{ !inputs.signing_required && env.KEY_PROPERTIES != '' }}
+        if: ${{ inputs.signing_required || env.KEY_PROPERTIES != '' }}
         run: |
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
 

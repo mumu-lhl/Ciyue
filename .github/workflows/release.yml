@@ -36,7 +36,6 @@ jobs:
       workflow_profile: release
       artifact_name: Windows
       package_release_artifacts: true
-      msix_skip_clean: false
 
   build-linux:
     uses: ./.github/workflows/linux-build.yml
