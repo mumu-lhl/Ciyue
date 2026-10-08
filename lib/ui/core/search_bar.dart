@@ -9,7 +9,7 @@ import "package:go_router/go_router.dart";
 
 class WordSearchBarWithSuggestions extends ConsumerStatefulWidget {
   final String word;
-  final SearchController controller;
+  final SearchController? controller;
   final FocusNode? focusNode;
   final bool isHome;
   final bool autoFocus;
@@ -18,7 +18,7 @@ class WordSearchBarWithSuggestions extends ConsumerStatefulWidget {
   const WordSearchBarWithSuggestions({
     super.key,
     required this.word,
-    required this.controller,
+    this.controller,
     this.focusNode,
     this.isHome = false,
     this.autoFocus = false,
@@ -32,22 +32,31 @@ class WordSearchBarWithSuggestions extends ConsumerStatefulWidget {
 
 class _WordSearchBarWithSuggestionsState
     extends ConsumerState<WordSearchBarWithSuggestions> {
+  SearchController? _anchorController;
+
+  SearchController? get _effectiveController =>
+      widget.controller ?? _anchorController;
+
   bool get _isViewOpen =>
-      widget.controller.isAttached && widget.controller.isOpen;
+      _effectiveController != null &&
+      _effectiveController!.isAttached &&
+      _effectiveController!.isOpen;
 
   @override
   void initState() {
     super.initState();
-    if (!_isViewOpen) {
-      widget.controller.text = widget.word;
+    if (widget.controller != null && !_isViewOpen) {
+      widget.controller!.text = widget.word;
     }
   }
 
   @override
   void didUpdateWidget(covariant WordSearchBarWithSuggestions oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.word != oldWidget.word && !_isViewOpen) {
-      widget.controller.text = widget.word;
+    if (widget.controller != null &&
+        widget.word != oldWidget.word &&
+        !_isViewOpen) {
+      widget.controller!.text = widget.word;
     }
   }
 
@@ -85,54 +94,71 @@ class _WordSearchBarWithSuggestionsState
         child: SearchAnchor(
           viewHintText: AppLocalizations.of(context)!.search,
           viewOnOpen: () {
+            final ctrl = _effectiveController;
+            if (ctrl == null) return;
             if (widget.word.isNotEmpty && !widget.isHome) {
-              _selectAllText(widget.controller);
+              _selectAllText(ctrl);
             } else {
-              widget.controller.selection = TextSelection.collapsed(
-                offset: widget.controller.text.length,
+              ctrl.selection = TextSelection.collapsed(
+                offset: ctrl.text.length,
               );
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (widget.controller.isAttached) {
-                  widget.controller.selection = TextSelection.collapsed(
-                    offset: widget.controller.text.length,
+                if (ctrl.isAttached) {
+                  ctrl.selection = TextSelection.collapsed(
+                    offset: ctrl.text.length,
                   );
                 }
               });
             }
           },
           viewOnClose: () {
-            if (widget.word.isNotEmpty && !widget.isHome) {
-              widget.controller.text = widget.word;
+            final ctrl = _effectiveController;
+            if (ctrl != null && widget.word.isNotEmpty && !widget.isHome) {
+              ctrl.text = widget.word;
             }
           },
-          builder: (context, controller) => SearchBar(
-            autoFocus: widget.autoFocus,
-            focusNode: widget.focusNode,
-            controller: controller,
-            hintText: AppLocalizations.of(context)!.search,
-            constraints: const BoxConstraints(
-              maxHeight: 42,
-              minHeight: 42,
-              maxWidth: 500,
-            ),
-            onTap: () {
-              if (controller.text.isNotEmpty && !widget.isHome) {
-                _selectAllText(controller);
-              }
-              controller.openView();
-            },
-            onChanged: (_) {
-              controller.openView();
-              controller.selection = TextSelection.collapsed(
-                offset: controller.text.length,
-              );
-            },
-            onSubmitted: (word) => _openWord(controller, word),
-            leading: const Icon(Icons.search),
-          ),
+          builder: (context, controller) {
+            _anchorController = controller;
+            if (widget.controller == null &&
+                widget.word.isNotEmpty &&
+                controller.text.isEmpty &&
+                !_isViewOpen) {
+              controller.text = widget.word;
+            }
+            return SearchBar(
+              autoFocus: widget.autoFocus,
+              focusNode: widget.focusNode,
+              controller: controller,
+              hintText: AppLocalizations.of(context)!.search,
+              constraints: const BoxConstraints(
+                maxHeight: 42,
+                minHeight: 42,
+                maxWidth: 500,
+              ),
+              onTap: () {
+                if (controller.text.isNotEmpty && !widget.isHome) {
+                  _selectAllText(controller);
+                }
+                controller.openView();
+              },
+              onChanged: (_) {
+                controller.openView();
+                controller.selection = TextSelection.collapsed(
+                  offset: controller.text.length,
+                );
+              },
+              onSubmitted: (word) => _openWord(controller, word),
+              leading: const Icon(Icons.search),
+            );
+          },
           searchController: widget.controller,
           isFullScreen: !isLargeScreen(context),
-          viewOnSubmitted: (String word) => _openWord(widget.controller, word),
+          viewOnSubmitted: (String word) {
+            final ctrl = _effectiveController;
+            if (ctrl != null) {
+              _openWord(ctrl, word);
+            }
+          },
           suggestionsBuilder:
               (BuildContext context, SearchController controller) async {
                 while (ref.read(dictManagerModelProvider).isSwitchingGroup) {

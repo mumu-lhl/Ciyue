@@ -41,7 +41,8 @@ class _MobileWordBrowserState extends ConsumerState<MobileWordBrowser> {
         if (existingIndex != -1) {
           homeModel.switchToTab(existingIndex);
         } else {
-          homeModel.openWordInNewTab(
+          homeModel.closeAllTabs();
+          homeModel.ensureInitialWord(
             widget.initialWord,
             dictId: widget.initialDictId,
           );
@@ -64,7 +65,10 @@ class _MobileWordBrowserState extends ConsumerState<MobileWordBrowser> {
     return PopScope(
       canPop: canPopBack,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
+        if (didPop) {
+          homeModel.closeAllTabs();
+          return;
+        }
 
         if (homeModel.isTabOverviewOpen) {
           homeModel.setTabOverviewOpen(false);
@@ -136,8 +140,6 @@ class MobileNewTabPage extends ConsumerWidget {
             children: [
               WordSearchBarWithSuggestions(
                 word: "",
-                controller: homeModel.searchController,
-                focusNode: homeModel.searchBarFocusNode,
                 autoFocus: true,
                 isHome: true,
                 onWordSelected: (word) => _selectWord(ref, word),

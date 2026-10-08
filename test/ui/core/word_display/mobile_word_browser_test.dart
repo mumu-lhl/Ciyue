@@ -273,36 +273,70 @@ void main() {
   );
 
   testWidgets(
-    "opening search view on MobileNewTabPage and selecting word closes view and loads word safely",
+    "exiting MobileWordBrowser closes all tabs so next word lookup starts fresh",
     (tester) async {
       final homeModel = HomeModel();
-      await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
+      late BuildContext rootContext;
+      final router = GoRouter(
+        initialLocation: "/",
+        routes: [
+          GoRoute(
+            path: "/",
+            builder: (context, state) {
+              rootContext = context;
+              return const Scaffold(body: Text("Home"));
+            },
+          ),
+          GoRoute(
+            path: "/word/:word",
+            builder: (context, state) {
+              final word = state.pathParameters["word"]!;
+              return MobileWordBrowser(initialWord: word);
+            },
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            homeModelProvider.overrideWith((ref) => homeModel),
+            validDictIdsProvider.overrideWith((ref, word) async => dictIds),
+            dictionaryLookupProvider.overrideWith(
+              (ref, word) async =>
+                  const DictionaryLookupResult(entriesByDictionary: {}),
+            ),
+            wordContentProvider.overrideWith(
+              (ref, params) async => "<div>content</div>",
+            ),
+            openRecordsRepositoryProvider.overrideWithValue(
+              _FakeOpenRecordsRepository(),
+            ),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      homeModel.newTab();
+      // Push /word/apple from home
+      rootContext.push("/word/apple");
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Open view
-      homeModel.searchController.openView();
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      expect(homeModel.tabs, ["apple"]);
 
-      // Enter search text in controller
-      homeModel.searchController.text = "dragon";
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      // Tap back button in AppBar to exit back to home
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
 
-      // Close view with word selection like suggestion click
-      homeModel.searchController.closeView("dragon");
-      homeModel.selectedWord = "dragon";
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 200));
-
-      expect(find.byType(MobileNewTabPage), findsNothing);
-      expect(homeModel.selectedWord, "dragon");
-      expect(tester.takeException(), isNull);
+      // After exiting, tabs are cleanly cleared
+      expect(homeModel.tabs, isEmpty);
+      expect(find.text("Home"), findsOneWidget);
     },
   );
 }
