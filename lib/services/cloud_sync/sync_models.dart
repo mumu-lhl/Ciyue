@@ -1,5 +1,7 @@
 import "dart:convert";
 
+import "package:crypto/crypto.dart";
+
 /// One immutable version of a logical record in the shared Ciyue sync space.
 ///
 /// Updates and deletions create new versions that name the versions they
@@ -217,6 +219,69 @@ class CloudSyncEngine {
       conflicts: conflicts,
     );
   }
+
+  /// Resolves any multi-head conflicts using Last-Write-Wins (LWW) deterministic
+  /// merge, producing an updated [SyncSnapshot] with no remaining conflicts.
+  SyncSnapshot resolveConflicts(SyncSnapshot snapshot) {
+    final groups = _groupRecords(snapshot.records);
+    final resolvedRecords = [...snapshot.records];
+    var changed = false;
+
+    for (final versions in groups.values) {
+      final parentIds = versions
+          .expand((record) => record.parentVersionIds)
+          .toSet();
+      final heads = versions
+          .where((record) => !parentIds.contains(record.versionId))
+          .toList();
+      if (heads.length <= 1) continue;
+
+      // Deterministic Last-Write-Wins (LWW)
+      heads.sort((a, b) {
+        final timeOrder = b.modifiedAt.compareTo(a.modifiedAt);
+        if (timeOrder != 0) return timeOrder;
+        return b.versionId.compareTo(a.versionId);
+      });
+
+      final winner = heads.first;
+      final maxParentTime = heads
+          .map((h) => h.modifiedAt)
+          .reduce((a, b) => a.isAfter(b) ? a : b);
+      final allParentIds = heads.map((h) => h.versionId).toList()..sort();
+
+      final content = {
+        "entityType": winner.entityType,
+        "entityId": winner.entityId,
+        "parentVersionIds": allParentIds,
+        "data": winner.data,
+        "deleted": winner.deleted,
+      };
+      final versionId = sha256
+          .convert(utf8.encode(_canonicalJson(content)))
+          .toString();
+
+      final mergeRecord = SyncRecord(
+        entityType: winner.entityType,
+        entityId: winner.entityId,
+        versionId: versionId,
+        parentVersionIds: allParentIds,
+        modifiedAt: maxParentTime.add(const Duration(microseconds: 1)),
+        data: winner.data,
+        deleted: winner.deleted,
+      );
+
+      resolvedRecords.add(mergeRecord);
+      changed = true;
+    }
+
+    if (!changed) return snapshot;
+
+    return SyncSnapshot(
+      spaceId: snapshot.spaceId,
+      deviceId: snapshot.deviceId,
+      records: _sortRecords(resolvedRecords),
+    );
+  }
 }
 
 Map<String, List<SyncRecord>> _groupRecords(Iterable<SyncRecord> records) {
@@ -246,8 +311,9 @@ List<SyncRecord> _sortRecords(List<SyncRecord> records) {
 }
 
 bool _sameRecord(SyncRecord a, SyncRecord b) =>
-    jsonEncode(_canonicalize(a.toJson())) ==
-    jsonEncode(_canonicalize(b.toJson()));
+    _canonicalJson(a.toJson()) == _canonicalJson(b.toJson());
+
+String _canonicalJson(Object? value) => jsonEncode(_canonicalize(value));
 
 Object? _canonicalize(Object? value) {
   if (value is Map) {

@@ -142,6 +142,49 @@ void main() {
       expect(await secondDatabase.wordbookDao.countTotalWords(), 0);
     },
   );
+
+  test("concurrent edits between two devices auto-resolve with Last-Write-Wins and converge cleanly", () async {
+    await firstDatabase.wordbookDao.addWord("apple");
+    await service(firstDatabase, "device-a", firstState).sync();
+    await service(secondDatabase, "device-b", secondState).sync();
+
+    // Device A reviews apple
+    await firstDatabase.flashcardDao.putCard(
+      word: "apple",
+      state: 2,
+      due: DateTime.utc(2026, 4, 2),
+      lastReview: DateTime.utc(2026, 4, 1, 10),
+      introducedAt: DateTime.utc(2026, 3, 20),
+    );
+    await service(firstDatabase, "device-a", firstState).sync();
+
+    // Device B concurrently reviews apple later
+    await secondDatabase.flashcardDao.putCard(
+      word: "apple",
+      state: 3,
+      due: DateTime.utc(2026, 4, 10),
+      lastReview: DateTime.utc(2026, 4, 1, 12),
+      introducedAt: DateTime.utc(2026, 3, 20),
+    );
+    final outcomeB = await service(
+      secondDatabase,
+      "device-b",
+      secondState,
+    ).sync();
+
+    // Device B auto-resolves the conflict and saves state
+    expect(outcomeB.conflicts, isEmpty);
+    expect((await secondDatabase.flashcardDao.getAllCards()).single.state, 3);
+
+    // Device A syncs and converges to Device B's newer review
+    final outcomeA = await service(
+      firstDatabase,
+      "device-a",
+      firstState,
+    ).sync();
+    expect(outcomeA.conflicts, isEmpty);
+    expect((await firstDatabase.flashcardDao.getAllCards()).single.state, 3);
+  });
 }
 
 class _MemorySyncStateStore implements SyncSnapshotStateStore {

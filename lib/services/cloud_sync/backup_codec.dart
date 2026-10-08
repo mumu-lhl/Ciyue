@@ -12,15 +12,24 @@ class CloudSyncBackupCodec {
   BackupData decode(
     SyncSnapshot snapshot, {
     List<WordbookTag> localTags = const [],
+    bool allowAutoResolve = false,
   }) {
-    final merge = const CloudSyncEngine().merge(snapshot, snapshot);
+    final effectiveSnapshot = allowAutoResolve
+        ? const CloudSyncEngine().resolveConflicts(snapshot)
+        : snapshot;
+    final merge = const CloudSyncEngine().merge(
+      effectiveSnapshot,
+      effectiveSnapshot,
+    );
     if (merge.conflicts.isNotEmpty) {
       throw StateError(
         "Resolve ${merge.conflicts.length} sync conflict(s) before applying cloud data.",
       );
     }
 
-    final active = snapshot.latestRecords.where((record) => !record.deleted);
+    final active = effectiveSnapshot.latestRecords.where(
+      (record) => !record.deleted,
+    );
     final tagsByStableId = <String, String>{};
     final entries = <Map<String, Object?>>[];
     final cards = <Map<String, Object?>>[];

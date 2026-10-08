@@ -19,6 +19,19 @@ class CloudSyncOutcome {
   }) : conflicts = List.unmodifiable(conflicts);
 }
 
+class CloudSyncSpaceMismatchException extends StateError {
+  final String localSpaceId;
+  final String cloudSpaceId;
+
+  CloudSyncSpaceMismatchException({
+    required this.localSpaceId,
+    required this.cloudSpaceId,
+  }) : super(
+         "This local sync state belongs to '$localSpaceId', "
+         "but the selected cloud folder belongs to '$cloudSpaceId'.",
+       );
+}
+
 /// Coordinates device-scoped snapshot exchange over a [CloudFileStore].
 ///
 /// Each device writes only its own file. Concurrent devices therefore don't
@@ -54,9 +67,9 @@ class CloudSyncSpaceManager {
       }
       final cloudSpaceId = decoded["spaceId"] as String;
       if (preferredSpaceId != null && preferredSpaceId != cloudSpaceId) {
-        throw StateError(
-          "This local sync state belongs to '$preferredSpaceId', "
-          "but the selected cloud folder belongs to '$cloudSpaceId'.",
+        throw CloudSyncSpaceMismatchException(
+          localSpaceId: preferredSpaceId,
+          cloudSpaceId: cloudSpaceId,
         );
       }
       return cloudSpaceId;
@@ -96,6 +109,7 @@ class CloudSyncCoordinator {
     required CloudFileStore fileStore,
     required String remoteRoot,
     required SyncSnapshot localSnapshot,
+    bool autoResolveConflicts = false,
   }) async {
     if (_isSyncing) {
       throw StateError("A Ciyue cloud sync is already running.");
@@ -152,6 +166,11 @@ class CloudSyncCoordinator {
           mergedSnapshot = result.snapshot;
           conflicts = result.conflicts;
           remoteDeviceCount++;
+        }
+
+        if (autoResolveConflicts && conflicts.isNotEmpty) {
+          mergedSnapshot = engine.resolveConflicts(mergedSnapshot);
+          conflicts = const [];
         }
 
         final ownRemotePath = p.posix.join(

@@ -1,10 +1,15 @@
+import "dart:io";
+
 import "package:ciyue/core/app_globals.dart";
-import "package:file_selector/file_selector.dart" show openFile;
+import "package:ciyue/services/cloud_sync/apply_service.dart";
 import "package:ciyue/services/cloud_sync/configuration.dart";
+import "package:ciyue/services/cloud_sync/coordinator.dart";
 import "package:ciyue/services/cloud_sync/dictionary_sync.dart";
 import "package:ciyue/services/cloud_sync/preview_service.dart";
 import "package:ciyue/services/cloud_sync/session_service.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:dio/dio.dart";
+import "package:file_selector/file_selector.dart" show openFile;
 import "package:material_ui/material_ui.dart";
 
 class CloudSyncSettingsPage extends StatefulWidget {
@@ -37,6 +42,7 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
   bool _removeSftpPrivateKey = false;
   bool _s3UsePathStyle = true;
   String? _statusMessage;
+  String? _mismatchedCloudSpaceId;
   final Set<String> _selectedDictionaryPackageIds = {};
   bool _busy = false;
   bool _obscurePassword = true;
@@ -96,11 +102,16 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
   }
 
   void _invalidatePreview() {
-    if (_preview == null && _statusMessage == null) return;
+    if (_preview == null &&
+        _statusMessage == null &&
+        _mismatchedCloudSpaceId == null) {
+      return;
+    }
     setState(() {
       _preview = null;
       _selectedDictionaryPackageIds.clear();
       _statusMessage = null;
+      _mismatchedCloudSpaceId = null;
     });
   }
 
@@ -159,9 +170,8 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
       if (contents.length > 128 * 1024) {
         if (mounted) {
           setState(
-            () =>
-                _statusMessage = AppLocalizations.of(context)!
-                    .cloudSyncSyncFailed,
+            () => _statusMessage =
+                "${AppLocalizations.of(context)!.cloudSyncSyncFailed}: Private key file is too large (>128KB).",
           );
         }
         return;
@@ -173,12 +183,13 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
         _removeSftpPrivateKey = false;
       });
       _invalidatePreview();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(
-          () =>
-              _statusMessage = AppLocalizations.of(context)!
-                  .cloudSyncSyncFailed,
+          () => _statusMessage = _formatSyncError(
+            e,
+            AppLocalizations.of(context)!,
+          ),
         );
       }
     }
@@ -259,9 +270,14 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
         _preview = preview;
         _selectedDictionaryPackageIds.clear();
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      setState(() => _statusMessage = l10n.cloudSyncSyncFailed);
+      setState(() {
+        if (e is CloudSyncSpaceMismatchException) {
+          _mismatchedCloudSpaceId = e.cloudSpaceId;
+        }
+        _statusMessage = _formatSyncError(e, l10n);
+      });
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -276,6 +292,7 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
     setState(() {
       _busy = true;
       _statusMessage = null;
+      _mismatchedCloudSpaceId = null;
     });
     try {
       final outcome = await _session.connectAndSync(
@@ -302,9 +319,79 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
             ? l10n.cloudSyncSyncComplete
             : l10n.cloudSyncConflicts(outcome.conflicts.length);
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      setState(() => _statusMessage = l10n.cloudSyncSyncFailed);
+      setState(() {
+        if (e is CloudSyncSpaceMismatchException) {
+          _mismatchedCloudSpaceId = e.cloudSpaceId;
+        }
+        _statusMessage = _formatSyncError(e, l10n);
+      });
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _syncNow() async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() {
+      _busy = true;
+      _statusMessage = null;
+      _mismatchedCloudSpaceId = null;
+    });
+    try {
+      final outcome = await _session.syncConfigured();
+      final configuration = await _session.loadConfiguration();
+      if (!mounted) return;
+      setState(() {
+        _configuration = configuration;
+        _preview = null;
+        _selectedDictionaryPackageIds.clear();
+        _statusMessage = outcome.conflicts.isEmpty
+            ? l10n.cloudSyncSyncComplete
+            : l10n.cloudSyncConflicts(outcome.conflicts.length);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        if (e is CloudSyncSpaceMismatchException) {
+          _mismatchedCloudSpaceId = e.cloudSpaceId;
+        }
+        _statusMessage = _formatSyncError(e, l10n);
+      });
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _rebindSpaceAndSync(String newSpaceId) async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() {
+      _busy = true;
+      _statusMessage = null;
+      _mismatchedCloudSpaceId = null;
+    });
+    try {
+      await _session.rebindSpace(newSpaceId);
+      final outcome = await _session.syncConfigured();
+      final configuration = await _session.loadConfiguration();
+      if (!mounted) return;
+      setState(() {
+        _configuration = configuration;
+        _preview = null;
+        _selectedDictionaryPackageIds.clear();
+        _statusMessage = outcome.conflicts.isEmpty
+            ? l10n.cloudSyncSyncComplete
+            : l10n.cloudSyncConflicts(outcome.conflicts.length);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        if (e is CloudSyncSpaceMismatchException) {
+          _mismatchedCloudSpaceId = e.cloudSpaceId;
+        }
+        _statusMessage = _formatSyncError(e, l10n);
+      });
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -317,6 +404,7 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
       _preview = null;
       _selectedDictionaryPackageIds.clear();
       _statusMessage = null;
+      _mismatchedCloudSpaceId = null;
     });
     try {
       await _session.disconnect();
@@ -331,12 +419,52 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
         _removeSftpPrivateKey = false;
         _statusMessage = l10n.cloudSyncDisconnected;
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      setState(() => _statusMessage = l10n.cloudSyncSyncFailed);
+      setState(() => _statusMessage = _formatSyncError(e, l10n));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  String _formatSyncError(Object error, AppLocalizations l10n) {
+    if (error is CloudSyncSpaceMismatchException) {
+      return "${l10n.cloudSyncSyncFailed}: Local sync space (${error.localSpaceId}) does not match cloud folder (${error.cloudSpaceId}).";
+    }
+    if (error is DioException) {
+      final statusCode = error.response?.statusCode;
+      if (statusCode == 401 || statusCode == 403) {
+        return "${l10n.cloudSyncSyncFailed}: Authentication failed (HTTP $statusCode). Please verify your credentials.";
+      }
+      if (statusCode == 404) {
+        return "${l10n.cloudSyncSyncFailed}: Remote folder or URL not found (HTTP 404).";
+      }
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout) {
+        return "${l10n.cloudSyncSyncFailed}: Connection timed out. Please check network connectivity.";
+      }
+      if (error.type == DioExceptionType.connectionError) {
+        return "${l10n.cloudSyncSyncFailed}: Failed to connect to server: ${error.message ?? 'connection refused'}.";
+      }
+      return "${l10n.cloudSyncSyncFailed}: ${error.response?.statusMessage ?? error.message ?? error.toString()}";
+    }
+    if (error is SocketException) {
+      return "${l10n.cloudSyncSyncFailed}: Network error (${error.message}).";
+    }
+    if (error is HandshakeException) {
+      return "${l10n.cloudSyncSyncFailed}: SSL/TLS handshake failed (${error.message}).";
+    }
+    if (error is CloudSyncLocalChangedException) {
+      return "${l10n.cloudSyncSyncFailed}: Local data changed while syncing. Please try again.";
+    }
+    if (error is StateError) {
+      return "${l10n.cloudSyncSyncFailed}: ${error.message}";
+    }
+    if (error is FormatException) {
+      return "${l10n.cloudSyncSyncFailed}: ${error.message}";
+    }
+    return "${l10n.cloudSyncSyncFailed}: $error";
   }
 
   @override
@@ -578,23 +706,64 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
                 ),
               ],
               const SizedBox(height: 8),
-              FilledButton.icon(
-                onPressed: _busy ? null : _previewConnection,
-                icon: _busy
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.preview),
-                label: Text(l10n.cloudSyncPreviewButton),
-              ),
+              if (configuration?.isConfigured == true) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: _busy ? null : _syncNow,
+                        icon: _busy
+                            ? const SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.sync),
+                        label: Text(l10n.cloudSyncNow),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _busy ? null : _previewConnection,
+                        icon: const Icon(Icons.preview),
+                        label: Text(l10n.cloudSyncPreviewButton),
+                      ),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                FilledButton.icon(
+                  onPressed: _busy ? null : _previewConnection,
+                  icon: _busy
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.preview),
+                  label: Text(l10n.cloudSyncPreviewButton),
+                ),
+              ],
               if (_statusMessage != null) ...[
                 const SizedBox(height: 12),
                 Text(
                   _statusMessage!,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.error,
+                    color: _statusMessage == l10n.cloudSyncSyncComplete
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.error,
                   ),
+                ),
+              ],
+              if (_mismatchedCloudSpaceId != null) ...[
+                const SizedBox(height: 8),
+                FilledButton.tonalIcon(
+                  onPressed: _busy
+                      ? null
+                      : () => _rebindSpaceAndSync(_mismatchedCloudSpaceId!),
+                  icon: const Icon(Icons.sync_problem),
+                  label: const Text("Rebind to cloud space and sync"),
                 ),
               ],
               if (_preview case final preview?) ...[

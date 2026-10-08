@@ -29,6 +29,7 @@ class CloudSyncApplyService {
     SyncSnapshot snapshot, {
     SyncSnapshot? expectedLocalSnapshot,
     SyncSnapshot? previousLocalSnapshot,
+    bool allowAutoResolve = false,
   }) async {
     await database.transaction(() async {
       if (expectedLocalSnapshot != null) {
@@ -44,7 +45,11 @@ class CloudSyncApplyService {
       }
 
       final currentTags = await database.wordbookTagsDao.getAllTags();
-      final backup = codec.decode(snapshot, localTags: currentTags);
+      final backup = codec.decode(
+        snapshot,
+        localTags: currentTags,
+        allowAutoResolve: allowAutoResolve,
+      );
 
       await database.delete(database.wordbook).go();
       await database.delete(database.wordbookTags).go();

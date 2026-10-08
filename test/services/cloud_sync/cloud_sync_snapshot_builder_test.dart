@@ -1,6 +1,7 @@
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/backup/backup.dart";
 import "package:ciyue/services/cloud_sync/snapshot_builder.dart";
+import "package:ciyue/services/cloud_sync/sync_models.dart";
 import "package:drift/drift.dart" show Value;
 import "package:flutter_test/flutter_test.dart";
 
@@ -193,5 +194,124 @@ void main() {
       ),
       throwsFormatException,
     );
+  });
+
+  test("capturing local edits when previous has conflicting heads creates a merge version", () {
+    final base = builder.capture(
+      data: data(
+        words: [WordbookData(word: "apple", createdAt: addedAt)],
+      ),
+      spaceId: spaceId,
+      deviceId: deviceId,
+    );
+    final baseRecord = base.records.singleWhere(
+      (r) => r.entityType == "wordbook-entry",
+    );
+    final conflictHead1 = SyncRecord(
+      entityType: baseRecord.entityType,
+      entityId: baseRecord.entityId,
+      versionId: "head-1",
+      parentVersionIds: [baseRecord.versionId],
+      modifiedAt: addedAt.add(const Duration(seconds: 1)),
+      data: {
+        "word": "apple",
+        "tagName": null,
+        "createdAt": addedAt.toIso8601String(),
+      },
+      deleted: false,
+    );
+    final conflictHead2 = SyncRecord(
+      entityType: baseRecord.entityType,
+      entityId: baseRecord.entityId,
+      versionId: "head-2",
+      parentVersionIds: [baseRecord.versionId],
+      modifiedAt: addedAt.add(const Duration(seconds: 2)),
+      data: {
+        "word": "apple",
+        "tagName": null,
+        "createdAt": addedAt.toIso8601String(),
+        "note": "conflict",
+      },
+      deleted: false,
+    );
+    final previousWithConflict = SyncSnapshot(
+      spaceId: spaceId,
+      deviceId: deviceId,
+      records: [...base.records, conflictHead1, conflictHead2],
+    );
+
+    final captured = builder.capture(
+      data: data(
+        words: [WordbookData(word: "apple", createdAt: addedAt)],
+      ),
+      spaceId: spaceId,
+      deviceId: deviceId,
+      previous: previousWithConflict,
+    );
+
+    final heads = captured.latestRecords
+        .where((r) => r.entityType == "wordbook-entry")
+        .toList();
+    expect(heads, hasLength(1));
+    expect(heads.single.parentVersionIds, containsAll(["head-1", "head-2"]));
+  });
+
+  test("capturing local deletion when previous has conflicting heads creates a tombstone superseding all heads", () {
+    final base = builder.capture(
+      data: data(
+        words: [WordbookData(word: "apple", createdAt: addedAt)],
+      ),
+      spaceId: spaceId,
+      deviceId: deviceId,
+    );
+    final baseRecord = base.records.singleWhere(
+      (r) => r.entityType == "wordbook-entry",
+    );
+    final conflictHead1 = SyncRecord(
+      entityType: baseRecord.entityType,
+      entityId: baseRecord.entityId,
+      versionId: "head-1",
+      parentVersionIds: [baseRecord.versionId],
+      modifiedAt: addedAt.add(const Duration(seconds: 1)),
+      data: {
+        "word": "apple",
+        "tagName": null,
+        "createdAt": addedAt.toIso8601String(),
+      },
+      deleted: false,
+    );
+    final conflictHead2 = SyncRecord(
+      entityType: baseRecord.entityType,
+      entityId: baseRecord.entityId,
+      versionId: "head-2",
+      parentVersionIds: [baseRecord.versionId],
+      modifiedAt: addedAt.add(const Duration(seconds: 2)),
+      data: {
+        "word": "apple",
+        "tagName": null,
+        "createdAt": addedAt.toIso8601String(),
+        "note": "conflict",
+      },
+      deleted: false,
+    );
+    final previousWithConflict = SyncSnapshot(
+      spaceId: spaceId,
+      deviceId: deviceId,
+      records: [...base.records, conflictHead1, conflictHead2],
+    );
+
+    final captured = builder.capture(
+      data: data(),
+      spaceId: spaceId,
+      deviceId: deviceId,
+      previous: previousWithConflict,
+    );
+
+    final heads = captured.latestRecords
+        .where((r) => r.entityType == "wordbook-entry")
+        .toList();
+    expect(heads, hasLength(1));
+    expect(heads.single.deleted, isTrue);
+    expect(heads.single.parentVersionIds, containsAll(["head-1", "head-2"]));
   });
 }

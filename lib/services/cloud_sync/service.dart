@@ -77,13 +77,14 @@ class CloudSyncService {
   }) : coordinator = coordinator ?? CloudSyncCoordinator(),
        applyService = applyService ?? CloudSyncApplyService(database: database);
 
-  Future<CloudSyncOutcome> sync() async {
+  Future<CloudSyncOutcome> sync({bool autoResolveConflicts = true}) async {
     const maxAttempts = 3;
     for (var attempt = 0; attempt < maxAttempts; attempt++) {
       final previous = await stateStore.read();
       if (previous != null && previous.spaceId != spaceId) {
-        throw StateError(
-          "Local sync state belongs to '${previous.spaceId}', not '$spaceId'.",
+        throw CloudSyncSpaceMismatchException(
+          localSpaceId: previous.spaceId,
+          cloudSpaceId: spaceId,
         );
       }
 
@@ -97,6 +98,7 @@ class CloudSyncService {
         fileStore: fileStore,
         remoteRoot: remoteRoot,
         localSnapshot: localSnapshot,
+        autoResolveConflicts: autoResolveConflicts,
       );
       if (outcome.conflicts.isNotEmpty) return outcome;
 
@@ -105,6 +107,7 @@ class CloudSyncService {
           outcome.snapshot,
           expectedLocalSnapshot: localSnapshot,
           previousLocalSnapshot: previous,
+          allowAutoResolve: autoResolveConflicts,
         );
       } on CloudSyncLocalChangedException {
         if (attempt + 1 == maxAttempts) rethrow;

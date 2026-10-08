@@ -40,14 +40,11 @@ class CloudSyncSnapshotBuilder {
       }
 
       if (heads.length > 1) {
-        final matching = heads.where(
-          (head) => !head.deleted && _sameJson(head.data, entity.data),
-        );
-        if (matching.length == 1) continue;
-        throw StateError(
-          "Cannot sync local changes to '${entity.entityType}:${entity.entityId}' "
-          "until its cloud conflict is resolved.",
-        );
+        final maxParentTime = heads
+            .map((head) => head.modifiedAt)
+            .reduce((a, b) => a.isAfter(b) ? a : b);
+        records.add(_createVersion(entity, heads, maxParentTime));
+        continue;
       }
 
       final head = heads.single;
@@ -60,13 +57,22 @@ class CloudSyncSnapshotBuilder {
       final heads = _heads(entry.value);
       if (heads.isEmpty || heads.every((head) => head.deleted)) continue;
       if (heads.length > 1) {
-        // An absent local row may be the local side of an unresolved
-        // delete-versus-edit conflict; keep both branches until resolution.
-        if (heads.any((head) => head.deleted)) continue;
-        throw StateError(
-          "Cannot sync a deletion for '${entry.key}' while its cloud conflict "
-          "is unresolved.",
+        final maxParentTime = heads
+            .map((head) => head.modifiedAt)
+            .reduce((a, b) => a.isAfter(b) ? a : b);
+        records.add(
+          _createVersion(
+            _SyncEntity(
+              entityType: entry.value.first.entityType,
+              entityId: entry.value.first.entityId,
+              data: null,
+              sourceTime: maxParentTime,
+            ),
+            heads,
+            maxParentTime,
+          ),
         );
+        continue;
       }
       final head = heads.single;
       if (head.deleted) continue;

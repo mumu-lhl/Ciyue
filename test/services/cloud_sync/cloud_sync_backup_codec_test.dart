@@ -156,5 +156,8 @@ void main() {
     );
 
     expect(() => codec.decode(snapshot), throwsStateError);
+
+    final restored = codec.decode(snapshot, allowAutoResolve: true);
+    expect(restored.wordbookWords.single.word, "apple");
   });
 }

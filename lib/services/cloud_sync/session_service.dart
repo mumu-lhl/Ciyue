@@ -205,6 +205,9 @@ class CloudSyncSessionService {
 
   Future<void> disconnect() => configurationStore.disconnect();
 
+  Future<void> rebindSpace(String newSpaceId) =>
+      configurationStore.saveSpaceId(newSpaceId);
+
   Future<CloudSyncOutcome> _syncWithStore({
     required CloudSyncConfiguration configuration,
     required CloudFileStore fileStore,

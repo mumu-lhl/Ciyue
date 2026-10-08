@@ -11,12 +11,13 @@ void main() {
     List<String> parents = const [],
     String type = "wordbook-entry",
     bool deleted = false,
+    DateTime? modifiedAt,
   }) => SyncRecord(
     entityType: type,
     entityId: id,
     versionId: versionId,
     parentVersionIds: parents,
-    modifiedAt: DateTime.utc(2026, 1, 1),
+    modifiedAt: modifiedAt ?? DateTime.utc(2026, 1, 1),
     data: deleted ? null : data,
     deleted: deleted,
   );
@@ -187,4 +188,50 @@ void main() {
       original.toJson(),
     );
   });
+
+  test(
+    "resolveConflicts resolves concurrent edits using deterministic LWW",
+    () {
+      final baseTime = DateTime.utc(2026, 1, 1);
+      final original = record(
+        id: "apple",
+        versionId: "v1",
+        data: {"word": "apple"},
+        modifiedAt: baseTime,
+      );
+      final localEdit = record(
+        id: "apple",
+        versionId: "v2-local",
+        parents: ["v1"],
+        modifiedAt: baseTime.add(const Duration(seconds: 1)),
+        data: {"word": "apple", "note": "local"},
+      );
+      final remoteEdit = record(
+        id: "apple",
+        versionId: "v2-remote",
+        parents: ["v1"],
+        modifiedAt: baseTime.add(const Duration(seconds: 2)),
+        data: {"word": "apple", "note": "remote-wins"},
+      );
+
+      final merged = engine.merge(
+        snapshot(records: [original, localEdit]),
+        snapshot(deviceId: "device-2", records: [original, remoteEdit]),
+      );
+
+      expect(merged.conflicts, hasLength(1));
+
+      final resolved = engine.resolveConflicts(merged.snapshot);
+      final postMerge = engine.merge(resolved, resolved);
+      expect(postMerge.conflicts, isEmpty);
+
+      final heads = resolved.latestRecords;
+      expect(heads, hasLength(1));
+      expect(heads.single.data?["note"], "remote-wins");
+      expect(
+        heads.single.parentVersionIds,
+        containsAll(["v2-local", "v2-remote"]),
+      );
+    },
+  );
 }
