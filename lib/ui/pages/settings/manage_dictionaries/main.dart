@@ -6,14 +6,14 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/hunspell.dart";
 import "package:ciyue/services/platform.dart";
+import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
-import "package:ciyue/services/toast.dart";
 import "package:ciyue/utils.dart";
 import "package:file_selector/file_selector.dart";
-import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
+import "package:material_ui/material_ui.dart";
 import "package:path/path.dart";
 import "package:url_launcher/url_launcher.dart";
 
@@ -29,6 +29,89 @@ Future<void> addGroup(String value, BuildContext context, WidgetRef ref) async {
       }
     }
   }
+}
+
+Future<void> importDictionariesFromFiles(BuildContext context) async {
+  if (Platform.isAndroid) {
+    if (isFullFlavor()) {
+      final isGranted = await requestManageExternalStorage(context);
+      if (!isGranted) return;
+
+      final path = await getDirectoryPath();
+      if (path == null) return;
+
+      await prefs.setString("dictionariesDirectory", path);
+
+      if (!context.mounted) return;
+      showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
+
+      final paths = await findMdxFilesOnAndroid(path);
+      if (context.mounted) {
+        await selectMdx(context, paths, closeLoadingWhenEmpty: true);
+      }
+      await addHunspellPairs(await findHunspellPairsOnAndroid(path));
+      return;
+    }
+
+    PlatformMethod.openDirectory();
+    return;
+  }
+
+  selectMdxOrMddOnDesktop(context, true);
+}
+
+void showRecommendedDialog(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+  final theme = Theme.of(context);
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Row(
+        children: [
+          Icon(Icons.explore_rounded, color: theme.colorScheme.primary),
+          const SizedBox(width: 8),
+          Expanded(child: Text(l10n.recommendedDictionaries)),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Card(
+            elevation: 0,
+            color: theme.colorScheme.surfaceContainerLow,
+            child: ListTile(
+              leading: const Icon(Icons.menu_book_rounded),
+              title: Text(l10n.recommendedDictionaries),
+              trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+              onTap: () => launchUrl(
+                Uri.parse(
+                  "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries",
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            elevation: 0,
+            color: theme.colorScheme.surfaceContainerLow,
+            child: ListTile(
+              leading: const Icon(Icons.cloud_outlined),
+              title: const Text("FreeMDict Cloud"),
+              trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+              onTap: () => launchUrl(
+                Uri.parse(
+                  "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs",
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => context.pop(), child: Text(l10n.close)),
+      ],
+    ),
+  );
 }
 
 class AddButton extends StatelessWidget {
@@ -51,12 +134,12 @@ class AddButton extends StatelessWidget {
         children: [
           IconButton(
             tooltip: locale.import,
-            icon: const Icon(Icons.note_add),
+            icon: const Icon(Icons.note_add_outlined),
             onPressed: () => _addFromFiles(context),
           ),
           IconButton(
             tooltip: locale.add,
-            icon: const Icon(Icons.create_new_folder),
+            icon: const Icon(Icons.create_new_folder_outlined),
             onPressed: () => _addFromDirectories(context),
           ),
         ],
@@ -64,38 +147,9 @@ class AddButton extends StatelessWidget {
     }
 
     return IconButton(
-      icon: const Icon(Icons.add),
-      onPressed: () async {
-        if (Platform.isAndroid) {
-          if (isFullFlavor()) {
-            final isGranted = await requestManageExternalStorage(context);
-            if (!isGranted) return;
-
-            final path = await getDirectoryPath();
-            if (path == null) return;
-
-            await prefs.setString("dictionariesDirectory", path);
-
-            if (!context.mounted) return;
-            showLoadingDialog(
-              context,
-              text: AppLocalizations.of(context)!.loading,
-            );
-
-            final paths = await findMdxFilesOnAndroid(path);
-            if (context.mounted) {
-              await selectMdx(context, paths, closeLoadingWhenEmpty: true);
-            }
-            await addHunspellPairs(await findHunspellPairsOnAndroid(path));
-            return;
-          }
-
-          PlatformMethod.openDirectory();
-          return;
-        }
-
-        selectMdxOrMddOnDesktop(context, true);
-      },
+      icon: const Icon(Icons.add_rounded),
+      tooltip: AppLocalizations.of(context)!.add,
+      onPressed: () => importDictionariesFromFiles(context),
     );
   }
 }
@@ -166,161 +220,274 @@ class DictionaryCard extends ConsumerWidget {
   }
 
   void _showActionsDialog(BuildContext context, WidgetRef ref, String title) {
-    showDialog(
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    Widget buildItem({
+      required IconData icon,
+      required String label,
+      required VoidCallback onTap,
+      Color? iconColor,
+      Color? textColor,
+    }) {
+      return ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        leading: Icon(icon, color: iconColor ?? theme.colorScheme.primary),
+        title: Text(
+          label,
+          style: TextStyle(fontWeight: FontWeight.w500, color: textColor),
+        ),
+        trailing: const Icon(Icons.chevron_right_rounded, size: 18),
+        onTap: onTap,
+      );
+    }
+
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return SimpleDialog(
-          title: Text(title),
-          children: <Widget>[
-            SimpleDialogOption(
-              onPressed: () async {
-                if (await _checkAndDeleteDictionary(context, ref)) {
-                  if (context.mounted) context.pop();
-                  return;
-                }
-                if (!context.mounted) return;
-                context.pop();
-                context.push(
-                  "/properties",
-                  extra: {"path": dictionary.path, "id": dictionary.id},
-                );
-              },
-              child: ListTile(
-                leading: Icon(Icons.settings),
-                title: Text(AppLocalizations.of(context)!.properties),
-              ),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (BuildContext sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 12.0,
             ),
-            SimpleDialogOption(
-              onPressed: () async {
-                if (await _checkAndDeleteDictionary(context, ref)) {
-                  if (context.mounted) context.pop();
-                  return;
-                }
-                // Existing remove logic
-                if (dictManager.contain(dictionary.id) && context.mounted) {
-                  final model = ref.read(dictManagerModelProvider);
-                  await model.close(dictionary.id);
-
-                  final dictIds = [
-                    for (final dict in dictManager.dicts.values) dict.id,
-                  ];
-                  dictManager.dictIds = dictIds;
-
-                  model.checkIsEmpty();
-
-                  await dictGroupDao.updateDictIds(
-                    dictManager.groupId,
-                    dictIds,
-                  );
-                }
-
-                final tmpDict = Mdict(path: dictionary.path);
-                // Removing a dictionary only needs its database id/type; do
-                // not scan the complete dictionary just to delete it.
-                await tmpDict.removeDictionary(dictionaryId: dictionary.id);
-
-                if (context.mounted) {
-                  ref.read(manageDictionariesModelProvider).update();
-                  context.pop();
-                }
-              },
-              child: ListTile(
-                leading: Icon(Icons.delete),
-                title: Text(AppLocalizations.of(context)!.remove),
-              ),
-            ),
-            SimpleDialogOption(
-              onPressed: () async {
-                if (await _checkAndDeleteDictionary(context, ref)) {
-                  if (context.mounted) context.pop();
-                  return;
-                }
-                if (!context.mounted) return;
-                context.pop();
-                context.push("/description/${dictionary.id}");
-              },
-              child: ListTile(
-                leading: Icon(Icons.info),
-                title: Text(AppLocalizations.of(context)!.description),
-              ),
-            ),
-            SimpleDialogOption(
-              onPressed: () async {
-                if (await _checkAndDeleteDictionary(context, ref)) {
-                  if (context.mounted) context.pop();
-                  return;
-                }
-                if (!context.mounted) return;
-                context.pop();
-                context.push("/settings/dictionary/${dictionary.id}");
-              },
-              child: ListTile(
-                leading: Icon(Icons.settings),
-                title: Text(AppLocalizations.of(context)!.settings),
-              ),
-            ),
-            SimpleDialogOption(
-              onPressed: () {
-                context.pop();
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    final controller = TextEditingController();
-                    return AlertDialog(
-                      title: Text(AppLocalizations.of(context)!.titleAlias),
-                      content: TextField(
-                        controller: controller..text = title,
-                        autofocus: true,
-                        onSubmitted: (value) async {
-                          await _updateAlias(value, dictionary, context, ref);
-                        },
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.outlineVariant.withValues(
+                          alpha: 0.6,
+                        ),
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () async {
-                            if (dictManager.contain(dictionary.id)) {
-                              dictManager.dicts[dictionary.id]!
-                                  .setDefaultTitle();
-                              controller.text =
-                                  dictManager.dicts[dictionary.id]!.title;
-                            } else {
-                              final dict = Mdict(path: dictionary.path);
-                              try {
-                                await dict.initOnlyMetadata(dictionary.id);
-                                controller.text = dict.title;
-                              } finally {
-                                await dict.close();
-                              }
-                            }
-                          },
-                          child: Text(AppLocalizations.of(context)!.default_),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.auto_stories_rounded,
+                            color: theme.colorScheme.onPrimaryContainer,
+                            size: 20,
+                          ),
                         ),
-                        TextButton(
-                          onPressed: () => context.pop(),
-                          child: Text(AppLocalizations.of(context)!.close),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            await _updateAlias(
-                              controller.text,
-                              dictionary,
-                              context,
-                              ref,
-                            );
-                          },
-                          child: Text(AppLocalizations.of(context)!.confirm),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                dictionary.path,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
                       ],
-                    );
-                  },
-                );
-              },
-              child: ListTile(
-                leading: Icon(Icons.title),
-                title: Text(AppLocalizations.of(context)!.titleAlias),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  const SizedBox(height: 6),
+                  buildItem(
+                    icon: Icons.title_rounded,
+                    label: l10n.titleAlias,
+                    onTap: () {
+                      sheetContext.pop();
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          final controller = TextEditingController()
+                            ..text = title;
+                          return AlertDialog(
+                            title: Text(l10n.titleAlias),
+                            content: TextField(
+                              controller: controller,
+                              autofocus: true,
+                              onSubmitted: (value) async {
+                                await _updateAlias(
+                                  value,
+                                  dictionary,
+                                  context,
+                                  ref,
+                                );
+                              },
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () async {
+                                  if (dictManager.contain(dictionary.id)) {
+                                    dictManager.dicts[dictionary.id]!
+                                        .setDefaultTitle();
+                                    controller.text =
+                                        dictManager.dicts[dictionary.id]!.title;
+                                  } else {
+                                    final dict = Mdict(path: dictionary.path);
+                                    try {
+                                      await dict.initOnlyMetadata(
+                                        dictionary.id,
+                                      );
+                                      controller.text = dict.title;
+                                    } finally {
+                                      await dict.close();
+                                    }
+                                  }
+                                },
+                                child: Text(l10n.default_),
+                              ),
+                              TextButton(
+                                onPressed: () => context.pop(),
+                                child: Text(l10n.close),
+                              ),
+                              FilledButton(
+                                onPressed: () async {
+                                  await _updateAlias(
+                                    controller.text,
+                                    dictionary,
+                                    context,
+                                    ref,
+                                  );
+                                },
+                                child: Text(l10n.confirm),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  buildItem(
+                    icon: Icons.description_outlined,
+                    label: l10n.description,
+                    onTap: () async {
+                      if (await _checkAndDeleteDictionary(context, ref)) {
+                        if (sheetContext.mounted) sheetContext.pop();
+                        return;
+                      }
+                      if (!sheetContext.mounted) return;
+                      sheetContext.pop();
+                      context.push("/description/${dictionary.id}");
+                    },
+                  ),
+                  buildItem(
+                    icon: Icons.info_outline_rounded,
+                    label: l10n.properties,
+                    onTap: () async {
+                      if (await _checkAndDeleteDictionary(context, ref)) {
+                        if (sheetContext.mounted) sheetContext.pop();
+                        return;
+                      }
+                      if (!sheetContext.mounted) return;
+                      sheetContext.pop();
+                      context.push(
+                        "/properties",
+                        extra: {"path": dictionary.path, "id": dictionary.id},
+                      );
+                    },
+                  ),
+                  buildItem(
+                    icon: Icons.tune_rounded,
+                    label: l10n.settings,
+                    onTap: () async {
+                      if (await _checkAndDeleteDictionary(context, ref)) {
+                        if (sheetContext.mounted) sheetContext.pop();
+                        return;
+                      }
+                      if (!sheetContext.mounted) return;
+                      sheetContext.pop();
+                      context.push("/settings/dictionary/${dictionary.id}");
+                    },
+                  ),
+                  buildItem(
+                    icon: Icons.delete_outline_rounded,
+                    label: l10n.remove,
+                    iconColor: theme.colorScheme.error,
+                    textColor: theme.colorScheme.error,
+                    onTap: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (confirmContext) => AlertDialog(
+                          title: Text(l10n.remove),
+                          content: Text(title),
+                          actions: [
+                            TextButton(
+                              onPressed: () => confirmContext.pop(false),
+                              child: Text(l10n.close),
+                            ),
+                            FilledButton(
+                              onPressed: () => confirmContext.pop(true),
+                              child: Text(l10n.confirm),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true) return;
+                      if (!context.mounted) return;
+
+                      if (await _checkAndDeleteDictionary(context, ref)) {
+                        if (sheetContext.mounted) sheetContext.pop();
+                        return;
+                      }
+                      if (dictManager.contain(dictionary.id) &&
+                          context.mounted) {
+                        final model = ref.read(dictManagerModelProvider);
+                        await model.close(dictionary.id);
+
+                        final dictIds = [
+                          for (final dict in dictManager.dicts.values) dict.id,
+                        ];
+                        dictManager.dictIds = dictIds;
+                        model.checkIsEmpty();
+                        await dictGroupDao.updateDictIds(
+                          dictManager.groupId,
+                          dictIds,
+                        );
+                      }
+
+                      final tmpDict = Mdict(path: dictionary.path);
+                      await tmpDict.removeDictionary(
+                        dictionaryId: dictionary.id,
+                      );
+
+                      if (sheetContext.mounted) {
+                        ref.read(manageDictionariesModelProvider).update();
+                        sheetContext.pop();
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         );
       },
     );
@@ -328,7 +495,9 @@ class DictionaryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     final String title;
     if (dictionary.title != null && dictionary.title != "") {
@@ -336,6 +505,7 @@ class DictionaryCard extends ConsumerWidget {
     } else {
       title = basename(dictionary.path);
     }
+    final isEnabled = dictManager.contain(dictionary.id);
 
     return Card(
       key: ValueKey(dictionary.id),
@@ -345,33 +515,114 @@ class DictionaryCard extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+          color: isEnabled
+              ? colorScheme.outlineVariant.withValues(alpha: 0.6)
+              : colorScheme.outlineVariant.withValues(alpha: 0.25),
           width: 0.8,
         ),
       ),
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
         child: Row(
           children: [
             ReorderableDragStartListener(
               index: index,
-              child: IconButton(
-                icon: Icon(Icons.drag_handle),
-                onPressed: () => {},
-              ),
-            ),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _showActionsDialog(context, ref, title),
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.grab,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(
+                    Icons.drag_indicator_rounded,
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                    size: 20,
+                  ),
                 ),
               ),
             ),
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: () => _showActionsDialog(context, ref, title),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6.0,
+                    vertical: 6.0,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: isEnabled
+                              ? colorScheme.primaryContainer.withValues(
+                                  alpha: 0.8,
+                                )
+                              : colorScheme.surfaceContainerHighest.withValues(
+                                  alpha: 0.5,
+                                ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.menu_book_rounded,
+                          size: 18,
+                          color: isEnabled
+                              ? colorScheme.onPrimaryContainer
+                              : colorScheme.onSurfaceVariant.withValues(
+                                  alpha: 0.7,
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              title,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: isEnabled
+                                    ? colorScheme.onSurface
+                                    : colorScheme.onSurface.withValues(
+                                        alpha: 0.65,
+                                      ),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              basename(dictionary.path),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant.withValues(
+                                  alpha: 0.7,
+                                ),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_vert_rounded, size: 20),
+              color: colorScheme.onSurfaceVariant,
+              tooltip: l10n.properties,
+              onPressed: () => _showActionsDialog(context, ref, title),
+            ),
             Checkbox(
-              value: dictManager.contain(dictionary.id),
+              value: isEnabled,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
               onChanged: (bool? value) async {
                 if (await _checkAndDeleteDictionary(context, ref)) {
                   return;
@@ -445,12 +696,36 @@ class GroupDeleteButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (group.name == "Default") {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     return IconButton(
-      icon: const Icon(Icons.delete),
+      icon: const Icon(Icons.delete_outline_rounded),
+      color: Theme.of(context).colorScheme.error,
+      tooltip: l10n.remove,
       onPressed: () async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(l10n.remove),
+            content: Text(group.name),
+            actions: [
+              TextButton(
+                onPressed: () => dialogContext.pop(false),
+                child: Text(l10n.close),
+              ),
+              FilledButton(
+                onPressed: () => dialogContext.pop(true),
+                child: Text(l10n.confirm),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmed != true) return;
+
         final model = ref.read(dictManagerModelProvider);
 
         if (group.id == dictManager.groupId) {
@@ -480,41 +755,92 @@ class GroupDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.manageGroups),
-      content: RadioGroup(
-        groupValue: dictManager.groupId,
-        onChanged: (int? groupId) async {
-          if (groupId != null && groupId != dictManager.groupId) {
-            final model = ref.read(dictManagerModelProvider);
-            await model.setCurrentGroup(groupId);
-          }
-          if (context.mounted) {
-            context.pop();
-          }
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final group in dictManager.groups)
-              RadioListTile(
-                title: Text(
-                  group.name == "Default"
-                      ? AppLocalizations.of(context)!.default_
-                      : group.name,
+      title: Row(
+        children: [
+          Icon(
+            Icons.collections_bookmark_rounded,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text(l10n.manageGroups)),
+        ],
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final group in dictManager.groups)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6.0),
+                  child: Material(
+                    color: group.id == dictManager.groupId
+                        ? theme.colorScheme.primaryContainer.withValues(
+                            alpha: 0.4,
+                          )
+                        : theme.colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () async {
+                        if (group.id != dictManager.groupId) {
+                          final model = ref.read(dictManagerModelProvider);
+                          await model.setCurrentGroup(group.id);
+                        }
+                        if (context.mounted) {
+                          context.pop();
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              group.id == dictManager.groupId
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_unchecked_rounded,
+                              color: group.id == dictManager.groupId
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurfaceVariant,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                group.name == "Default"
+                                    ? l10n.default_
+                                    : group.name,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  fontWeight: group.id == dictManager.groupId
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                            GroupDeleteButton(group: group),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                value: group.id,
-                secondary: GroupDeleteButton(group: group),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => context.pop(),
-          child: Text(AppLocalizations.of(context)!.close),
-        ),
-        TextButton(
+        TextButton(onPressed: () => context.pop(), child: Text(l10n.close)),
+        FilledButton.tonalIcon(
+          icon: const Icon(Icons.add_rounded, size: 18),
+          label: Text(l10n.add),
           onPressed: () {
             context.pop();
             showDialog(
@@ -522,7 +848,7 @@ class GroupDialog extends ConsumerWidget {
               builder: (context) {
                 final controller = TextEditingController();
                 return AlertDialog(
-                  title: Text(AppLocalizations.of(context)!.add),
+                  title: Text(l10n.add),
                   content: TextField(
                     controller: controller,
                     autofocus: true,
@@ -533,20 +859,19 @@ class GroupDialog extends ConsumerWidget {
                   actions: [
                     TextButton(
                       onPressed: () => context.pop(),
-                      child: Text(AppLocalizations.of(context)!.close),
+                      child: Text(l10n.close),
                     ),
-                    TextButton(
+                    FilledButton(
                       onPressed: () async {
                         await addGroup(controller.text, context, ref);
                       },
-                      child: Text(AppLocalizations.of(context)!.add),
+                      child: Text(l10n.confirm),
                     ),
                   ],
                 );
               },
             );
           },
-          child: Text(AppLocalizations.of(context)!.add),
         ),
       ],
     );
@@ -559,46 +884,115 @@ class InfoButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.info),
-      onPressed: () {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.recommendedDictionaries),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
+      icon: const Icon(Icons.info_outline_rounded),
+      tooltip: AppLocalizations.of(context)!.recommendedDictionaries,
+      onPressed: () => showRecommendedDialog(context),
+    );
+  }
+}
+
+class _GroupStatusBar extends StatelessWidget {
+  final String groupName;
+  final int enabledCount;
+  final int totalCount;
+  final VoidCallback onTap;
+
+  const _GroupStatusBar({
+    required this.groupName,
+    required this.enabledCount,
+    required this.totalCount,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+      child: Material(
+        color: colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
               children: [
-                ListTile(
-                  title: Text(
-                    AppLocalizations.of(context)!.recommendedDictionaries,
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  trailing: const Icon(Icons.open_in_new),
-                  onTap: () => launchUrl(
-                    Uri.parse(
-                      "https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries",
-                    ),
+                  child: Icon(
+                    Icons.collections_bookmark_rounded,
+                    size: 18,
+                    color: colorScheme.onPrimaryContainer,
                   ),
                 ),
-                ListTile(
-                  title: const Text("FreeMDict Cloud"),
-                  trailing: const Icon(Icons.open_in_new),
-                  onTap: () => launchUrl(
-                    Uri.parse(
-                      "https://cloud.freemdict.com/index.php/s/pgKcDcbSDTCzXCs",
-                    ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              groupName,
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.secondaryContainer.withValues(
+                                alpha: 0.6,
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              "$enabledCount / $totalCount",
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onSecondaryContainer,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n.manageGroups,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                Icon(
+                  Icons.unfold_more_rounded,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => context.pop(),
-                child: Text(AppLocalizations.of(context)!.close),
-              ),
-            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
@@ -618,6 +1012,9 @@ class ManageDictionariesBody extends ConsumerWidget {
     final dictionaries = ref.watch(
       manageDictionariesModelProvider.select((model) => model.dictionaries),
     );
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return FutureBuilder(
       future: dictionaries,
@@ -630,42 +1027,129 @@ class ManageDictionariesBody extends ConsumerWidget {
               final dicts = snapshot.data!;
               if (dicts.isEmpty) {
                 return Center(
-                  child: Text(
-                    AppLocalizations.of(context)!.empty,
-                    style: Theme.of(context).textTheme.titleLarge,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerHigh,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.auto_stories_outlined,
+                            size: 40,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          l10n.empty,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.addDictionary,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            FilledButton.icon(
+                              onPressed: () =>
+                                  importDictionariesFromFiles(context),
+                              icon: const Icon(Icons.add_rounded, size: 18),
+                              label: Text(l10n.add),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: () => showRecommendedDialog(context),
+                              icon: const Icon(
+                                Icons.explore_outlined,
+                                size: 18,
+                              ),
+                              label: Text(l10n.recommendedDictionaries),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 );
               } else {
-                return Padding(
-                  padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                  child: ReorderableListView(
-                    buildDefaultDragHandles: false,
-                    onReorderItem: (oldIndex, newIndex) {
-                      final dict = dicts.removeAt(oldIndex);
-                      dicts.insert(newIndex, dict);
-
-                      ref
-                          .read(manageDictionariesModelProvider)
-                          .updateWithList(dicts);
-
-                      () async {
-                        await dictionaryListDao.updateOrder(dicts);
-
-                        if (context.mounted) {
-                          final model = ref.read(dictManagerModelProvider);
-                          await model.updateDictIds();
-                        }
-                      }();
-                    },
-                    children: [
-                      for (int i = 0; i < dicts.length; i++)
-                        DictionaryCard(
-                          key: ValueKey(dicts[i].id),
-                          dictionary: dicts[i],
-                          index: i,
+                final currentGroup = dictManager.groups.firstWhere(
+                  (g) => g.id == dictManager.groupId,
+                  orElse: () => dictManager.groups.isNotEmpty
+                      ? dictManager.groups.first
+                      : const DictGroupData(
+                          id: 0,
+                          name: "Default",
+                          dictIds: "[]",
                         ),
-                    ],
-                  ),
+                );
+                final groupName = currentGroup.name == "Default"
+                    ? l10n.default_
+                    : currentGroup.name;
+
+                return Column(
+                  children: [
+                    _GroupStatusBar(
+                      groupName: groupName,
+                      enabledCount: dictManager.dicts.length,
+                      totalCount: dicts.length,
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const GroupDialog(),
+                        );
+                      },
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ReorderableListView(
+                          buildDefaultDragHandles: false,
+                          onReorderItem: (oldIndex, newIndex) {
+                            final dict = dicts.removeAt(oldIndex);
+                            dicts.insert(newIndex, dict);
+
+                            ref
+                                .read(manageDictionariesModelProvider)
+                                .updateWithList(dicts);
+
+                            () async {
+                              await dictionaryListDao.updateOrder(dicts);
+
+                              if (context.mounted) {
+                                final model = ref.read(
+                                  dictManagerModelProvider,
+                                );
+                                await model.updateDictIds();
+                              }
+                            }();
+                          },
+                          children: [
+                            for (int i = 0; i < dicts.length; i++)
+                              DictionaryCard(
+                                key: ValueKey(dicts[i].id),
+                                dictionary: dicts[i],
+                                index: i,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               }
             } else {
@@ -693,8 +1177,11 @@ class ManageDictionariesModel extends ChangeNotifier {
 class ManageDictionariesPageState extends State<ManageDictionariesPage> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
+        title: Text(l10n.manageDictionaries),
         actions: [
           const GroupButton(),
           if (Platform.isAndroid) const UpdateButton(),
@@ -725,10 +1212,11 @@ class GroupButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      tooltip: AppLocalizations.of(context)!.manageGroups,
       onPressed: () {
         showDialog(context: context, builder: (context) => const GroupDialog());
       },
-      icon: Icon(Icons.group),
+      icon: const Icon(Icons.collections_bookmark_rounded),
     );
   }
 }
@@ -739,7 +1227,8 @@ class UpdateButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Icon(Icons.refresh),
+      tooltip: "Refresh",
+      icon: const Icon(Icons.refresh_rounded),
       onPressed: () {
         PlatformMethod.updateDictionaries();
       },
