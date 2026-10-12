@@ -367,12 +367,13 @@ void InAppWebView::AttachChannel(FlBinaryMessenger* messenger, const std::string
 
 InAppWebView::~InAppWebView() {
   debugLog("dealloc InAppWebView");
+  is_disposing_.store(true);
+  on_frame_available_ = nullptr;
 
-  // The custom scheme callback is registered on the WebKitWebContext and may
-  // outlive this C++ object. Clear the back-reference before destroying the
-  // WebView so a late request is failed safely instead of dereferencing this.
   if (webview_ != nullptr) {
     g_object_set_data(G_OBJECT(webview_), kInAppWebViewInstanceDataKey, nullptr);
+    g_signal_handlers_disconnect_matched(webview_, G_SIGNAL_MATCH_DATA, 0, 0, nullptr, nullptr, this);
+    webkit_web_view_stop_loading(webview_);
   }
 
   CleanupMonitorChangeHandlers();
@@ -520,6 +521,8 @@ InAppWebView::~InAppWebView() {
                                                                             exported_image_);
       exported_image_ = nullptr;
     }
+    exportable_ = nullptr;
+    wpe_backend_ = nullptr;
   }
 
   on_frame_available_ = nullptr;
@@ -1218,7 +1221,7 @@ void InAppWebView::OnFrameDisplayed(void* data) {
 
 #ifdef HAVE_WPE_BACKEND_LEGACY
 void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
-  if (image == nullptr) {
+  if (is_disposing_.load() || image == nullptr) {
     return;
   }
 
@@ -3698,7 +3701,7 @@ void* InAppWebView::GetCurrentEglImage(uint32_t* out_width, uint32_t* out_height
   // Protect exported_image_ access - OnExportDmaBuf may be called from WPE's thread
   std::lock_guard<std::mutex> lock(exported_image_mutex_);
   
-  if (exported_image_ == nullptr) {
+  if (is_disposing_.load() || exported_image_ == nullptr) {
     if (out_width)
       *out_width = 0;
     if (out_height)
@@ -3835,6 +3838,11 @@ void InAppWebView::OnLoadChanged(WebKitWebView* web_view, WebKitLoadEvent load_e
       break;
     case WEBKIT_LOAD_FINISHED:
       self->channel_delegate_->onLoadStop(self->getUrl().value_or(""));
+#ifdef HAVE_WPE_BACKEND_LEGACY
+      if (self->wpe_backend_ != nullptr) {
+        wpe_view_backend_dispatch_set_size(self->wpe_backend_, self->width_, self->height_);
+      }
+#endif
       break;
     default:
       break;
@@ -6704,6 +6712,9 @@ void InAppWebView::OnWebProcessTerminated(WebKitWebView* web_view,
                                           WebKitWebProcessTerminationReason reason,
                                           gpointer user_data) {
   auto* self = static_cast<InAppWebView*>(user_data);
+  if (self == nullptr || self->is_disposing_.load()) {
+    return;
+  }
 
   // Determine if this was a crash or a kill
   // - WEBKIT_WEB_PROCESS_CRASHED: The web process crashed -> didCrash = true
@@ -8052,11 +8063,17 @@ extern "C" {
 static void wpe_export_fdo_egl_image_callback(void* data,
                                               struct wpe_fdo_egl_exported_image* image) {
   auto* self = static_cast<flutter_inappwebview_plugin::InAppWebView*>(data);
+  if (self == nullptr || self->is_disposing_.load()) {
+    return;
+  }
   self->OnExportDmaBuf(image);
 }
 
 static void wpe_export_shm_buffer_callback(void* data, struct wpe_fdo_shm_exported_buffer* buffer) {
   auto* self = static_cast<flutter_inappwebview_plugin::InAppWebView*>(data);
+  if (self == nullptr || self->is_disposing_.load()) {
+    return;
+  }
   self->OnExportShmBuffer(buffer);
 }
 }

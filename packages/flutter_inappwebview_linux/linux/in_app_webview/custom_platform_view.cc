@@ -190,6 +190,15 @@ CustomPlatformView::CustomPlatformView(FlBinaryMessenger* messenger,
 CustomPlatformView::~CustomPlatformView() {
   debugLog("dealloc CustomPlatformView");
 
+  if (webview_ != nullptr) {
+    webview_->SetOnFrameAvailable(nullptr);
+    webview_->SetOnCursorChanged(nullptr);
+  }
+
+  if (egl_texture_ != nullptr) {
+    inappwebview_egl_texture_set_egl_image(egl_texture_, nullptr, 0, 0);
+  }
+
   if (method_channel_ != nullptr) {
     fl_method_channel_set_method_call_handler(method_channel_, nullptr, nullptr, nullptr);
     g_object_unref(method_channel_);

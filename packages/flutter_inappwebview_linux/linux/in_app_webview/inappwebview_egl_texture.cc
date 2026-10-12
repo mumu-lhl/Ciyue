@@ -141,8 +141,9 @@ static gboolean inappwebview_egl_texture_populate(FlTextureGL* texture, uint32_t
   }
 
   // Use the EGL image that was set via inappwebview_egl_texture_set_egl_image()
-  // This is updated by the on_frame_available callback before Flutter is notified
-  if (self->current_egl_image != nullptr && self->width > 0 && self->height > 0) {
+  // This is updated by the on_frame_available callback before Flutter is notified.
+  // ONLY re-bind glEGLImageTargetTexture2DOES when a new frame is actually available!
+  if (self->has_new_frame && self->current_egl_image != nullptr && self->width > 0 && self->height > 0) {
     // Check if EGL image extension is available
     if (check_egl_image_extension(self)) {
       // Create texture if needed
@@ -178,6 +179,17 @@ static gboolean inappwebview_egl_texture_populate(FlTextureGL* texture, uint32_t
       g_mutex_unlock(&self->mutex);
       return TRUE;
     }
+  }
+
+  // If no new frame, but we already have an initialized texture from a previous frame,
+  // keep using it to prevent flicker and avoid rebinding recycled/stale EGL images!
+  if (self->texture_initialized && self->texture_id != 0) {
+    *target = GL_TEXTURE_2D;
+    *name = self->texture_id;
+    *out_width = self->texture_width > 0 ? self->texture_width : 1;
+    *out_height = self->texture_height > 0 ? self->texture_height : 1;
+    g_mutex_unlock(&self->mutex);
+    return TRUE;
   }
 
   // Fallback: Try to get pixel buffer from webview (SHM mode)
@@ -349,7 +361,7 @@ void inappwebview_egl_texture_set_egl_image(InAppWebViewEGLTexture* self, void* 
   self->current_egl_image = egl_image;
   self->width = width;
   self->height = height;
-  self->has_new_frame = TRUE;
+  self->has_new_frame = (egl_image != nullptr && width > 0 && height > 0);
 
   g_mutex_unlock(&self->mutex);
 }
