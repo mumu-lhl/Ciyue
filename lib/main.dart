@@ -178,13 +178,86 @@ class _CiyueState extends State<Ciyue> {
 
     final smartDialogBuilder = FlutterSmartDialog.init();
 
+    ThemeData buildTheme(ColorScheme? scheme, {required bool isDark}) {
+      final resolvedScheme =
+          scheme ??
+          ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: isDark ? Brightness.dark : Brightness.light,
+          );
+      final isPureBlack = isDark && settings.pureBlackDarkMode;
+      final effectiveScheme = isPureBlack
+          ? _applyPureBlackDarkScheme(resolvedScheme)
+          : resolvedScheme;
+
+      return ThemeData(
+        colorScheme: effectiveScheme,
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: effectiveScheme.outlineVariant.withValues(alpha: 0.5),
+              width: 0.8,
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+        ),
+        dialogTheme: DialogThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+        listTileTheme: ListTileThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 2,
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: effectiveScheme.surfaceContainerHighest.withValues(
+            alpha: 0.4,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(
+              color: effectiveScheme.outlineVariant.withValues(alpha: 0.4),
+              width: 0.8,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: effectiveScheme.primary, width: 1.5),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          indicatorShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        ),
+      );
+    }
+
     final app = SafeArea(
       top: false,
       bottom: false,
       child: MaterialApp.router(
         title: "Ciyue",
-        theme: ThemeData(colorScheme: lightColorScheme),
-        darkTheme: ThemeData(colorScheme: darkScheme),
+        theme: buildTheme(lightColorScheme, isDark: false),
+        darkTheme: buildTheme(darkScheme, isDark: true),
         themeMode: settings.themeMode,
         locale: locale,
         localizationsDelegates: [

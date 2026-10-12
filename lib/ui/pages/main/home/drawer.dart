@@ -25,45 +25,95 @@ class HomeDrawerList extends ConsumerWidget {
     final groupId = dictManagerModel.groupId;
     final isSwitchingGroup = dictManagerModel.isSwitchingGroup;
 
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: ListView(
-        children: [
-          DrawerHeader(
-            child: Text(
-              AppLocalizations.of(context)!.dictionaryGroups,
-              style: Theme.of(context).textTheme.headlineLarge,
-            ),
-          ),
-          for (final group in dictManager.groups)
-            Card(
-              color: Theme.of(context).colorScheme.secondaryContainer,
-              elevation: 0,
-              clipBehavior: Clip.antiAlias,
-              child: ListTile(
-                leading: group.id == groupId
-                    ? const Icon(Icons.radio_button_checked, size: 20)
-                    : const Icon(Icons.radio_button_unchecked, size: 20),
-                title: Text(
-                  group.name == "Default"
-                      ? AppLocalizations.of(context)!.default_
-                      : group.name,
-                ),
-                onTap: isSwitchingGroup
-                    ? null
-                    : () async {
-                        if (isDrawer) {
-                          context.pop();
-                        }
-                        if (group.id != groupId) {
-                          await ref
-                              .read(dictManagerModelProvider)
-                              .setCurrentGroup(group.id);
-                        }
-                      },
+    final theme = Theme.of(context);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 16, 8, 20),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.collections_bookmark_rounded,
+                      color: theme.colorScheme.onPrimaryContainer,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    AppLocalizations.of(context)!.dictionaryGroups,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
-        ],
+            for (final group in dictManager.groups)
+              Card(
+                color: group.id == groupId
+                    ? theme.colorScheme.primaryContainer.withValues(alpha: 0.4)
+                    : theme.colorScheme.surfaceContainerLow,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(
+                    color: group.id == groupId
+                        ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                        : theme.colorScheme.outlineVariant.withValues(
+                            alpha: 0.4,
+                          ),
+                  ),
+                ),
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                child: ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  leading: Icon(
+                    group.id == groupId
+                        ? Icons.check_circle_rounded
+                        : Icons.radio_button_unchecked,
+                    size: 22,
+                    color: group.id == groupId
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.outline,
+                  ),
+                  title: Text(
+                    group.name == "Default"
+                        ? AppLocalizations.of(context)!.default_
+                        : group.name,
+                    style: TextStyle(
+                      fontWeight: group.id == groupId
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  onTap: isSwitchingGroup
+                      ? null
+                      : () async {
+                          if (isDrawer) {
+                            context.pop();
+                          }
+                          if (group.id != groupId) {
+                            await ref
+                                .read(dictManagerModelProvider)
+                                .setCurrentGroup(group.id);
+                          }
+                        },
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

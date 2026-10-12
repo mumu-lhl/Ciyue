@@ -48,38 +48,100 @@ class _LanguageSelectorState extends State<LanguageSelector> {
     }
   }
 
+  static const _supportedLanguages = [
+    "system",
+    "zh",
+    "zh_HK",
+    "zh_TW",
+    "en",
+    "de",
+    "es",
+    "ru",
+    "bn",
+    "ca",
+    "nb",
+    "sc",
+    "ta",
+    "fa",
+    "got",
+  ];
+
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
+    final currentLanguage = settings.language ?? "system";
 
-    return InkWell(
-      onTapUp: (tapUpDetails) async {
-        final languageSelected = await showMenu<String>(
+    return ListTile(
+      leading: const Icon(Icons.language_rounded),
+      title: Text(locale.language),
+      subtitle: Text(_getLanguageName(settings.language, locale)),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+      onTap: () async {
+        final languageSelected = await showDialog<String>(
           context: context,
-          position: RelativeRect.fromLTRB(
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-            tapUpDetails.globalPosition.dx,
-            tapUpDetails.globalPosition.dy,
-          ),
-          initialValue: settings.language,
-          items: [
-            PopupMenuItem(value: "system", child: Text(locale.system)),
-            const PopupMenuItem(value: "bn", child: Text("Bengali")),
-            const PopupMenuItem(value: "ca", child: Text("Catalan")),
-            const PopupMenuItem(value: "de", child: Text("Deutsch")),
-            const PopupMenuItem(value: "es", child: Text("Español")),
-            const PopupMenuItem(value: "en", child: Text("English")),
-            const PopupMenuItem(value: "ru", child: Text("Русский")),
-            const PopupMenuItem(value: "nb", child: Text("Bokmål")),
-            const PopupMenuItem(value: "sc", child: Text("Sardinian")),
-            const PopupMenuItem(value: "ta", child: Text("Tamil")),
-            const PopupMenuItem(value: "fa", child: Text("فارسی")),
-            const PopupMenuItem(value: "got", child: Text("Gothic")),
-            const PopupMenuItem(value: "zh", child: Text("简体中文")),
-            const PopupMenuItem(value: "zh_HK", child: Text("繁體中文（香港）")),
-            const PopupMenuItem(value: "zh_TW", child: Text("正體中文（臺灣）")),
-          ],
+          builder: (context) {
+            return AlertDialog(
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.language_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(locale.language),
+                ],
+              ),
+              content: SizedBox(
+                width: 360,
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: _supportedLanguages.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 2),
+                  itemBuilder: (context, index) {
+                    final code = _supportedLanguages[index];
+                    final isSelected = code == currentLanguage;
+                    return ListTile(
+                      dense: true,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      selected: isSelected,
+                      selectedTileColor: Theme.of(context)
+                          .colorScheme
+                          .primaryContainer
+                          .withValues(alpha: 0.4),
+                      title: Text(
+                        _getLanguageName(code, locale),
+                        style: TextStyle(
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : null,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Icon(
+                              Icons.check_circle_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 20,
+                            )
+                          : null,
+                      onTap: () => Navigator.pop(context, code),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(locale.cancel),
+                ),
+              ],
+            );
+          },
         );
 
         if (languageSelected != null && languageSelected != settings.language) {
@@ -90,12 +152,6 @@ class _LanguageSelectorState extends State<LanguageSelector> {
           refreshAll();
         }
       },
-      child: ListTile(
-        leading: const Icon(Icons.language),
-        title: Text(locale.language),
-        subtitle: Text(_getLanguageName(settings.language, locale)),
-        trailing: const Icon(Icons.keyboard_arrow_down),
-      ),
     );
   }
 }

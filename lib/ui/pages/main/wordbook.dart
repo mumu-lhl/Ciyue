@@ -120,48 +120,83 @@ class WordView extends ConsumerWidget {
                       final isWordSelected =
                           !isMultiSelectMode && selectedWord == data.word;
 
-                      return ListTile(
-                        selected: isWordSelected,
-                        selectedTileColor: Theme.of(context)
-                            .colorScheme
-                            .primaryContainer
-                            .withValues(alpha: 0.35),
-                        leading: isMultiSelectMode
-                            ? Checkbox(
-                                value: isSelected,
-                                onChanged: (value) {
-                                  model.selectWord(data);
-                                },
-                              )
-                            : null,
-                        title: Text(data.word),
-                        onLongPress: () {
-                          if (!isMultiSelectMode) {
-                            model.toggleMultiSelectMode();
-                            model.selectWord(data);
-                          }
-                        },
-                        onTap: () async {
-                          if (isMultiSelectMode) {
-                            model.selectWord(data);
-                          } else if (isDesktop) {
-                            model.selectedWord = data.word;
-                          } else {
-                            if (context.mounted) {
-                              final words = snapshot.data!
-                                  .map((e) => e.word)
-                                  .toList();
-                              final index = snapshot.data!.indexOf(data);
-                              context.push(
-                                "/word/${Uri.encodeComponent(data.word)}",
-                                extra: WordListContext(
-                                  words: words,
-                                  initialIndex: index >= 0 ? index : 0,
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 2,
+                        ),
+                        child: ListTile(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          selected: isWordSelected,
+                          selectedTileColor: Theme.of(context)
+                              .colorScheme
+                              .primaryContainer
+                              .withValues(alpha: 0.45),
+                          leading: isMultiSelectMode
+                              ? Checkbox(
+                                  value: isSelected,
+                                  onChanged: (value) {
+                                    model.selectWord(data);
+                                  },
+                                )
+                              : Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest
+                                        .withValues(alpha: 0.5),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.bookmark_outline_rounded,
+                                    size: 16,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary,
+                                  ),
                                 ),
-                              );
+                          title: Text(
+                            data.word,
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          trailing: isMultiSelectMode
+                              ? null
+                              : const Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 18,
+                                ),
+                          onLongPress: () {
+                            if (!isMultiSelectMode) {
+                              model.toggleMultiSelectMode();
+                              model.selectWord(data);
                             }
-                          }
-                        },
+                          },
+                          onTap: () async {
+                            if (isMultiSelectMode) {
+                              model.selectWord(data);
+                            } else if (isDesktop) {
+                              model.selectedWord = data.word;
+                            } else {
+                              if (context.mounted) {
+                                final words = snapshot.data!
+                                    .map((e) => e.word)
+                                    .toList();
+                                final index = snapshot.data!.indexOf(data);
+                                context.push(
+                                  "/word/${Uri.encodeComponent(data.word)}",
+                                  extra: WordListContext(
+                                    words: words,
+                                    initialIndex: index >= 0 ? index : 0,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        ),
                       );
                     },
                   ),

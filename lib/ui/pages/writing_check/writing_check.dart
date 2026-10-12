@@ -77,9 +77,19 @@ class WritingCheckPage extends ConsumerWidget {
                             maxLines: 5,
                           ),
                           const SizedBox(height: 16),
-                          ElevatedButton(
+                          FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(48),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            icon: const Icon(
+                              Icons.spellcheck_rounded,
+                              size: 20,
+                            ),
                             onPressed: viewModel.check,
-                            child: Text(AppLocalizations.of(context)!.check),
+                            label: Text(AppLocalizations.of(context)!.check),
                           ),
                           const SizedBox(height: 16),
                           if (viewModel.prompt != null)

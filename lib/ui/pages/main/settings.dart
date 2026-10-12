@@ -159,33 +159,68 @@ class _WordbookStats extends ConsumerWidget {
     final totalWordCount = ref.watch(
       wordbookModelProvider.select((vm) => vm.totalWordCount),
     );
+    final theme = Theme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: Theme.of(context).colorScheme.outline),
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.35),
+      shape: RoundedRectangleBorder(
+        side: BorderSide(
+          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+          width: 1,
         ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => context.push("/settings/wordbook_stats"),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.totalWordsInWordbook,
-                  style: Theme.of(context).textTheme.titleMedium,
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.push("/settings/wordbook_stats"),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
                 ),
-                Text(
-                  totalWordCount.toString(),
-                  style: Theme.of(context).textTheme.titleLarge,
+                child: Icon(
+                  Icons.auto_stories_rounded,
+                  color: theme.colorScheme.primary,
+                  size: 22,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.totalWordsInWordbook,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      totalWordCount.toString(),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.7,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -341,31 +376,111 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     if (!isLargeScreen(context)) {
+      final theme = Theme.of(context);
+      final l10n = AppLocalizations.of(context);
+
+      Widget buildGroup({
+        required String title,
+        required List<Widget> children,
+      }) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 12.0, bottom: 6.0),
+                child: Text(
+                  title,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              Card(
+                elevation: 0,
+                color: theme.colorScheme.surfaceContainerLow,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.4,
+                    ),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    for (int i = 0; i < children.length; i++) ...[
+                      if (i > 0)
+                        Divider(
+                          height: 1,
+                          indent: 52,
+                          color: theme.colorScheme.outlineVariant.withValues(
+                            alpha: 0.25,
+                          ),
+                        ),
+                      children[i],
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
       return Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 720),
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: [
-              const _WordbookStats(),
-              const ManageDictionariesPageListTile(),
-              const AiSettingsPageListTile(),
-              const AudioSettingsPageListTile(),
-              if (Platform.isAndroid && !isFullFlavor())
-                const ManageStorageListTile(),
-              const AppearanceSettingsPageListTile(),
-              const HistoryPageListTile(),
-              ListTile(
-                leading: const Icon(Icons.style),
-                title: const Text("Flashcards"),
-                onTap: () => context.push("/settings/flashcards"),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 16),
+                child: _WordbookStats(),
               ),
-              const HunspellPageListTile(),
-              const BackupPageListTile(),
-              const CloudSyncPageListTile(),
-              const UpdatePageListTile(),
-              const OtherPageListTile(),
-              const LoggerPageListTile(),
-              const AboutPageListTile(),
+              buildGroup(
+                title: l10n?.manageDictionaries ?? "Dictionaries & AI",
+                children: [
+                  const ManageDictionariesPageListTile(),
+                  const AiSettingsPageListTile(),
+                  const AudioSettingsPageListTile(),
+                  if (Platform.isAndroid && !isFullFlavor())
+                    const ManageStorageListTile(),
+                ],
+              ),
+              buildGroup(
+                title: l10n?.appearance ?? "Appearance & History",
+                children: [
+                  const AppearanceSettingsPageListTile(),
+                  const HistoryPageListTile(),
+                  ListTile(
+                    leading: const Icon(Icons.style),
+                    title: const Text("Flashcards"),
+                    trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+                    onTap: () => context.push("/settings/flashcards"),
+                  ),
+                  const HunspellPageListTile(),
+                ],
+              ),
+              buildGroup(
+                title: l10n?.backup ?? "Data & Sync",
+                children: [
+                  const BackupPageListTile(),
+                  const CloudSyncPageListTile(),
+                ],
+              ),
+              buildGroup(
+                title: l10n?.about ?? "System & About",
+                children: [
+                  const UpdatePageListTile(),
+                  const OtherPageListTile(),
+                  const LoggerPageListTile(),
+                  const AboutPageListTile(),
+                ],
+              ),
             ],
           ),
         ),

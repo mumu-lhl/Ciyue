@@ -8,29 +8,43 @@ class DateDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dateString = DateFormat("yyyy-MM-dd").format(date);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
       child: Row(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                DateFormat("yyyy-MM-dd").format(date),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.secondary
-                      .withValues(alpha: 0.7),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 8.0),
           Expanded(
             child: Divider(
-              color: Theme.of(context).colorScheme.secondary
-                  .withValues(alpha: 0.5),
-              thickness: 1.0,
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+              thickness: 0.8,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                dateString,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurfaceVariant,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Divider(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+              thickness: 0.8,
             ),
           ),
         ],

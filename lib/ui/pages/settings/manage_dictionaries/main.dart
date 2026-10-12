@@ -341,9 +341,17 @@ class DictionaryCard extends ConsumerWidget {
       key: ValueKey(dictionary.id),
       elevation: 0,
       clipBehavior: Clip.antiAlias,
-      color: colorScheme.onInverseSurface,
+      color: colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+          width: 0.8,
+        ),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Padding(
-        padding: const EdgeInsets.all(4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
         child: Row(
           children: [
             ReorderableDragStartListener(

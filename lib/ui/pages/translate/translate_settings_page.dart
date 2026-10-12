@@ -35,81 +35,121 @@ class _AiTranslateSettingsPageState extends State<AiTranslateSettingsPage> {
           appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
           body: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: <Widget>[
-                    DropdownButtonFormField<bool>(
-                      decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.outputType,
-                        border: const OutlineInputBorder(),
+              constraints: const BoxConstraints(maxWidth: 540),
+              child: ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                children: [
+                  Card(
+                    elevation: 0,
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant
+                            .withValues(alpha: 0.4),
                       ),
-                      initialValue: viewModel.isRichOutput,
-                      items: [
-                        DropdownMenuItem(
-                          value: true,
-                          child: Text(AppLocalizations.of(context)!.richOutput),
-                        ),
-                        DropdownMenuItem(
-                          value: false,
-                          child: Text(
-                            AppLocalizations.of(context)!.simpleOutput,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DropdownButtonFormField<bool>(
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!
+                                  .outputType,
+                              prefixIcon: const Icon(Icons.tune_rounded),
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            initialValue: viewModel.isRichOutput,
+                            items: [
+                              DropdownMenuItem(
+                                value: true,
+                                child: Text(
+                                  AppLocalizations.of(context)!.richOutput,
+                                ),
+                              ),
+                              DropdownMenuItem(
+                                value: false,
+                                child: Text(
+                                  AppLocalizations.of(context)!.simpleOutput,
+                                ),
+                              ),
+                            ],
+                            onChanged: (bool? newValue) {
+                              if (newValue != null) {
+                                viewModel.setRichOutput(newValue);
+                              }
+                            },
                           ),
-                        ),
-                      ],
-                      onChanged: (bool? newValue) {
-                        if (newValue != null) {
-                          viewModel.setRichOutput(newValue);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!
-                            .translationProvider,
-                        border: const OutlineInputBorder(),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!
+                                  .translationProvider,
+                              prefixIcon: const Icon(Icons.hub_outlined),
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            initialValue: viewModel.translationProvider,
+                            items: const [
+                              DropdownMenuItem(value: "ai", child: Text("AI")),
+                              DropdownMenuItem(
+                                value: "google",
+                                child: Text("Google"),
+                              ),
+                              DropdownMenuItem(
+                                value: "deeplx",
+                                child: Text("DeepLX"),
+                              ),
+                            ],
+                            onChanged: (String? newValue) {
+                              if (newValue != null) {
+                                viewModel.setTranslationProvider(newValue);
+                              }
+                            },
+                          ),
+                          if (viewModel.translationProvider == "deeplx") ...[
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: viewModel.deeplxUrlController,
+                              decoration: const InputDecoration(
+                                labelText: "DeepLX URL",
+                                prefixIcon: Icon(Icons.link_rounded),
+                              ),
+                              onChanged: viewModel.setDeeplxUrl,
+                            ),
+                          ],
+                        ],
                       ),
-                      initialValue: viewModel.translationProvider,
-                      items: [
-                        const DropdownMenuItem(value: "ai", child: Text("AI")),
-                        const DropdownMenuItem(
-                          value: "google",
-                          child: Text("Google"),
-                        ),
-                        const DropdownMenuItem(
-                          value: "deeplx",
-                          child: Text("DeepLX"),
-                        ),
-                      ],
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          viewModel.setTranslationProvider(newValue);
-                        }
-                      },
                     ),
-                    if (viewModel.translationProvider == "deeplx") ...[
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: viewModel.deeplxUrlController,
-                        decoration: const InputDecoration(
-                          labelText: "DeepLX URL",
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: viewModel.setDeeplxUrl,
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    elevation: 0,
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant
+                            .withValues(alpha: 0.4),
                       ),
-                    ],
-                    const SizedBox(height: 16),
-                    SwitchListTile(
+                    ),
+                    child: SwitchListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      secondary: const Icon(Icons.history_rounded),
                       title: Text(
                         AppLocalizations.of(context)!.enableTranslationHistory,
                       ),
                       value: viewModel.enableTranslationHistory,
                       onChanged: viewModel.setEnableTranslationHistory,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

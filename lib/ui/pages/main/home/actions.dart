@@ -7,52 +7,61 @@ class ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 500),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-          child: Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8.0,
-            runSpacing: 8.0,
-            children: [
-              OneActionButton(
-                title: AppLocalizations.of(context)!.writingCheck,
-                path: "/writing_check",
-                icon: Icons.spellcheck_outlined,
-              ),
-            ],
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ActionChip(
+                  avatar: Icon(
+                    Icons.spellcheck_rounded,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  label: Text(l10n.writingCheck),
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerLow,
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant
+                        .withValues(alpha: 0.5),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  onPressed: () => context.push("/writing_check"),
+                ),
+                const SizedBox(width: 8),
+                ActionChip(
+                  avatar: Icon(
+                    Icons.style_outlined,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                  label: const Text("Flashcards"),
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerLow,
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant
+                        .withValues(alpha: 0.5),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  onPressed: () => context.push("/flashcards/review"),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class OneActionButton extends StatelessWidget {
-  final String title;
-  final String path;
-  final IconData icon;
-
-  const OneActionButton({
-    super.key,
-    required this.title,
-    required this.path,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton.filledTonal(
-      tooltip: AppLocalizations.of(context)!.writingCheck,
-      icon: Icon(
-        Icons.spellcheck_outlined,
-        color: Theme.of(context).colorScheme.primary,
-      ),
-      onPressed: () {
-        context.push("/writing_check");
-      },
     );
   }
 }

@@ -98,36 +98,45 @@ class MoreOptionsDialog extends ConsumerStatefulWidget {
 class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
   @override
   Widget build(BuildContext context) {
-    return SimpleDialog(
-      title: Text(AppLocalizations.of(context)!.more),
-      children: [
-        SimpleDialogOption(
-          child: CheckboxListTile(
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(l10n.more),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SwitchListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             value: settings.autoRemoveSearchWord,
             onChanged: (value) async {
-              if (value != null) {
-                settings.autoRemoveSearchWord = value;
-                await prefs.setBool("autoRemoveSearchWord", value);
-                if (mounted) ref.read(homeModelProvider).update();
-                setState(() {});
-              }
+              settings.autoRemoveSearchWord = value;
+              await prefs.setBool("autoRemoveSearchWord", value);
+              if (mounted) ref.read(homeModelProvider).update();
+              setState(() {});
             },
-            title: Text(AppLocalizations.of(context)!.autoRemoveSearchWord),
+            title: Text(l10n.autoRemoveSearchWord),
           ),
-        ),
-        SimpleDialogOption(
-          child: CheckboxListTile(
+          const SizedBox(height: 4),
+          SwitchListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             value: settings.autoFocusSearch,
             onChanged: (value) async {
-              if (value != null) {
-                settings.autoFocusSearch = value;
-                await prefs.setBool("autoFocusSearch", value);
-                if (mounted) ref.read(homeModelProvider).update();
-                setState(() {});
-              }
+              settings.autoFocusSearch = value;
+              await prefs.setBool("autoFocusSearch", value);
+              if (mounted) ref.read(homeModelProvider).update();
+              setState(() {});
             },
-            title: Text(AppLocalizations.of(context)!.autoFocusSearch),
+            title: Text(l10n.autoFocusSearch),
           ),
+        ],
+      ),
+      actions: [
+        FilledButton.tonal(
+          onPressed: () => context.pop(),
+          child: Text(l10n.close),
         ),
       ],
     );
