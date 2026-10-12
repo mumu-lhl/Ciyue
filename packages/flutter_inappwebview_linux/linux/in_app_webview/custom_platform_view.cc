@@ -151,6 +151,17 @@ CustomPlatformView::CustomPlatformView(FlBinaryMessenger* messenger,
     MarkTextureFrameAvailable();
   });
 
+  // If an EGL image is already available from early rendering, register it now
+  if (egl_texture_ != nullptr && webview_ != nullptr) {
+    uint32_t width = 0;
+    uint32_t height = 0;
+    void* egl_image = webview_->GetCurrentEglImage(&width, &height);
+    if (egl_image != nullptr) {
+      inappwebview_egl_texture_set_egl_image(egl_texture_, egl_image, width, height);
+      MarkTextureFrameAvailable();
+    }
+  }
+
   // Set up cursor change callback
   webview_->SetOnCursorChanged(
       [this](const std::string& cursor_name) { EmitCursorChanged(cursor_name); });

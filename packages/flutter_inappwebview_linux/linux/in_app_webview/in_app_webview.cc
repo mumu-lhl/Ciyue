@@ -505,6 +505,14 @@ InAppWebView::~InAppWebView() {
   
   egl_display_ = nullptr;
 #elif defined(HAVE_WPE_BACKEND_LEGACY)
+  if (wpe_backend_ != nullptr) {
+    wpe_view_backend_remove_activity_state(
+        wpe_backend_,
+        wpe_view_activity_state_visible |
+        wpe_view_activity_state_in_window |
+        wpe_view_activity_state_focused);
+  }
+
   {
     std::lock_guard<std::mutex> lock(exported_image_mutex_);
     if (exported_image_ != nullptr && exportable_ != nullptr) {
@@ -513,6 +521,8 @@ InAppWebView::~InAppWebView() {
       exported_image_ = nullptr;
     }
   }
+
+  on_frame_available_ = nullptr;
 
   if (webview_ != nullptr) {
     g_object_unref(webview_);
@@ -604,14 +614,17 @@ void InAppWebView::InitWpeBackend() {
 
   egl_display_ = egl_display;
 
-  // Initialize WPE FDO with the EGL display
-  if (!wpe_fdo_initialize_for_egl_display(egl_display)) {
-    errorLog("InAppWebView: Failed to initialize WPE FDO");
-    // Try again with headless mode
-    if (!wpe_fdo_initialize_for_egl_display(EGL_NO_DISPLAY)) {
-      errorLog("InAppWebView: Failed to initialize WPE FDO in headless mode");
+  // Initialize WPE FDO with the EGL display (only once per process)
+  static std::once_flag s_wpe_fdo_init_flag;
+  std::call_once(s_wpe_fdo_init_flag, [egl_display]() {
+    if (!wpe_fdo_initialize_for_egl_display(egl_display)) {
+      errorLog("InAppWebView: Failed to initialize WPE FDO");
+      // Try again with headless mode
+      if (!wpe_fdo_initialize_for_egl_display(EGL_NO_DISPLAY)) {
+        errorLog("InAppWebView: Failed to initialize WPE FDO in headless mode");
+      }
     }
-  }
+  });
 
   // Create the exportable backend for DMA-BUF export
   static struct wpe_view_backend_exportable_fdo_egl_client exportable_client = {
@@ -3743,6 +3756,19 @@ void InAppWebView::SetOnFrameAvailable(std::function<void()> callback) {
       delete data;
       return G_SOURCE_REMOVE;
     }, new std::tuple<WPEToplevel*, int, int>(toplevel, w, h), nullptr);
+  }
+#elif defined(HAVE_WPE_BACKEND_LEGACY)
+  if (on_frame_available_) {
+    bool has_image = false;
+    {
+      std::lock_guard<std::mutex> lock(exported_image_mutex_);
+      has_image = (exported_image_ != nullptr);
+    }
+    if (has_image) {
+      on_frame_available_();
+    } else if (wpe_backend_ != nullptr) {
+      wpe_view_backend_dispatch_set_size(wpe_backend_, width_, height_);
+    }
   }
 #endif
 }

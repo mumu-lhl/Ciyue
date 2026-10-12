@@ -508,6 +508,10 @@ class WebviewWindows extends ConsumerWidget {
                 baseUrl: load.deferredData.baseUrl,
               );
             },
+            onRenderProcessGone: (controller, detail) async {
+              talker.warning("InAppWebView render process gone, reloading...");
+              await controller.reload();
+            },
           );
         }
 

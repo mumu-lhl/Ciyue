@@ -244,7 +244,18 @@ static gboolean inappwebview_egl_texture_populate(FlTextureGL* texture, uint32_t
     }
   }
 
-  // No frame available yet, use default 1x1 transparent texture
+  // No new frame available yet:
+  // If we already have an initialized texture from a previous frame, keep using it to prevent flicker
+  if (self->texture_initialized && self->texture_id != 0) {
+    *target = GL_TEXTURE_2D;
+    *name = self->texture_id;
+    *out_width = self->texture_width > 0 ? self->texture_width : 1;
+    *out_height = self->texture_height > 0 ? self->texture_height : 1;
+    g_mutex_unlock(&self->mutex);
+    return TRUE;
+  }
+
+  // Fallback: use default 1x1 transparent texture until first frame arrives
   if (!self->default_texture_initialized) {
     glGenTextures(1, &self->default_texture_id);
     glBindTexture(GL_TEXTURE_2D, self->default_texture_id);
