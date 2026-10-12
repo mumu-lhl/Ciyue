@@ -115,17 +115,34 @@ class DictManager {
 
       groupId = id;
       dictIds = await dictGroupDao.getDictIds(id);
-      final paths = await Future.wait([
+      final rawPaths = await Future.wait([
         for (final dictId in dictIds) dictionaryListDao.getPath(dictId),
       ]);
 
+      final validDictIds = <int>[];
+      final validPaths = <String>[];
+      var hasMissingDict = false;
+
+      for (var i = 0; i < dictIds.length; i++) {
+        final path = rawPaths[i];
+        if (path != null) {
+          validDictIds.add(dictIds[i]);
+          validPaths.add(path);
+        } else {
+          hasMissingDict = true;
+        }
+      }
+
+      dictIds = validDictIds;
+
       final added = await Future.wait([
-        for (var i = 0; i < paths.length; i++) _tryAdd(dictIds[i], paths[i]),
+        for (var i = 0; i < validPaths.length; i++)
+          _tryAdd(validDictIds[i], validPaths[i]),
       ]);
       final toRemove = <int>[];
       for (var i = 0; i < added.length; i++) {
         if (!added[i]) {
-          await dictionaryListDao.remove(paths[i]);
+          await dictionaryListDao.remove(validPaths[i]);
           toRemove.add(i);
         }
       }
@@ -142,7 +159,7 @@ class DictManager {
         }
       }
 
-      if (toRemove.isNotEmpty) {
+      if (toRemove.isNotEmpty || hasMissingDict) {
         await dictGroupDao.updateDictIds(groupId, dictIds);
       }
     } finally {
@@ -935,11 +952,12 @@ Future<void> selectMdxOrMddOnDesktop(BuildContext context, bool isMdx) async {
   );
 
   final files = await openFiles(acceptedTypeGroups: [typeGroup]);
+  if (files.isEmpty) {
+    return;
+  }
 
-  if (files.isNotEmpty) {
-    if (context.mounted) {
-      showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
-    }
+  if (context.mounted) {
+    showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
   }
 
   if (context.mounted) {

@@ -377,9 +377,13 @@ class WebviewDisplayDescription extends ConsumerWidget {
   }
 
   Future<String> getDescriptionFromInactiveDict() async {
-    final dict = Mdict(path: await dictionaryListDao.getPath(dictId));
+    final path = await dictionaryListDao.getPath(dictId);
+    if (path == null) {
+      return "";
+    }
+    final dict = Mdict(path: path);
     await dict.initOnlyMetadata(dictId);
-    var html = dict.reader.header["Description"]!;
+    var html = dict.reader.header["Description"] ?? "";
     html = HtmlUnescape().convert(html);
     html = dict.wrapContentWithResources(html);
     await dict.close();

@@ -47,9 +47,9 @@ jobs:
       ARCHLINUX_PACKAGE_SET: 2024-07-01-glibc-2.39-v1
       ARCHLINUX_GLIBC_VERSION: "2.39"
       ARCHLINUX_GLIBC_PACKAGE_VERSION: "2.39+r52+gf8e4623421-1"
-      WPE_RUNTIME_RELEASE: wpewebkit-2.44.2-1
-      WPE_RUNTIME_ASSET: wpewebkit-2.44.2-1-linux-x86_64-glibc-2.39.tar.xz
-      WPE_RUNTIME_SHA256: 7b52bd62c3651098db321b1971f3a458f98ae4e727485c9339b9cdc5463c6d04
+      WPE_RUNTIME_RELEASE: wpewebkit-2.54.1-1
+      WPE_RUNTIME_ASSET: wpewebkit-2.54.1-1-linux-x86_64-glibc-2.39.tar.xz
+      WPE_RUNTIME_SHA256: faa4e191cb550fd916085ca69eedc54716614a09b61012a59b53bf84c430dbca
     steps:
       - name: Cache archived Arch packages
         uses: actions/cache@v5
@@ -117,7 +117,7 @@ jobs:
           tar --extract --xz --no-same-owner --file "$archive" --directory "$runtime_dir"
           rm -f "$archive"
 
-          grep -Fx "WPEWebKit version: 2.44.2" "$runtime_dir/WPEWEBKIT-BUILD-INFO.txt"
+          grep -Fx "WPEWebKit version: 2.54.1" "$runtime_dir/WPEWEBKIT-BUILD-INFO.txt"
           grep -Fx "glibc version: $ARCHLINUX_GLIBC_VERSION" "$runtime_dir/WPEWEBKIT-BUILD-INFO.txt"
           test -f "$runtime_dir/usr/lib/libWPEWebKit-2.0.so.1"
           test -x "$runtime_dir/usr/lib/wpe-webkit-2.0/WPENetworkProcess"

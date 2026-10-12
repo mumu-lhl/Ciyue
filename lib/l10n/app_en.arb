@@ -635,6 +635,8 @@
   "noOpenTabs": "No open tabs",
   "@noOpenTabs": {},
   "switchTab": "Switch Tab",
-  "@switchTab": {}
+  "@switchTab": {},
+  "groupNameAlreadyExists": "Group name already exists",
+  "@groupNameAlreadyExists": {}
 }
 

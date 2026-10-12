@@ -31,6 +31,21 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
     }
   }
 
+  Future<void> removeDictIdFromAllGroups(int dictId) async {
+    final groups = await getAllGroups();
+    for (final group in groups) {
+      final ids = group.dictIds
+          .split(",")
+          .where((e) => e.isNotEmpty)
+          .map((e) => int.tryParse(e))
+          .whereType<int>()
+          .toList();
+      if (ids.remove(dictId)) {
+        await updateDictIds(group.id, ids);
+      }
+    }
+  }
+
   Future<void> removeGroup(int id) async {
     await (delete(dictGroup)..where((t) => t.id.isValue(id))).go();
   }
@@ -111,10 +126,10 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
     )..where((t) => t.path.isValue(path))).getSingle())).id;
   }
 
-  Future<String> getPath(int id) async {
+  Future<String?> getPath(int id) async {
     return (await ((select(
       dictionaryList,
-    )..where((t) => t.id.isValue(id))).getSingle())).path;
+    )..where((t) => t.id.isValue(id))).getSingleOrNull()))?.path;
   }
 
   Future<int> remove(String path) {

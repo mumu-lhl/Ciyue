@@ -1,6 +1,6 @@
 # Relocatable WPE runtime
 
-The Linux bundle uses WPE WebKit 2.44.2, matching the archived Arch ABI baseline.
+The Linux bundle uses WPE WebKit 2.54.1, matching the archived Arch ABI baseline.
 Do not byte-replace `/usr/lib/wpe-webkit-2.0` with a relative path: WebKit also
 uses that string as a bubblewrap mount destination. Inside the sandbox it lands
 under read-only `/lib`; a host WPE installation can accidentally hide the bug.

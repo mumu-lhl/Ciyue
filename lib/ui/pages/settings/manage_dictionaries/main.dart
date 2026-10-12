@@ -18,15 +18,42 @@ import "package:path/path.dart";
 import "package:url_launcher/url_launcher.dart";
 
 Future<void> addGroup(String value, BuildContext context, WidgetRef ref) async {
-  if (value.isNotEmpty) {
-    await dictGroupDao.addGroup(value, []);
+  final trimmed = value.trim();
+  if (trimmed.isEmpty) return;
 
+  final existingGroups = await dictGroupDao.getAllGroups();
+  final alreadyExists = existingGroups.any(
+    (g) => g.name.toLowerCase() == trimmed.toLowerCase(),
+  );
+
+  if (alreadyExists) {
+    if (context.mounted) {
+      ToastService.show(
+        AppLocalizations.of(context)!.groupNameAlreadyExists,
+        context,
+        type: ToastType.info,
+      );
+    }
+    return;
+  }
+
+  try {
+    await dictGroupDao.addGroup(trimmed, []);
     if (context.mounted) {
       final model = ref.read(dictManagerModelProvider);
       await model.updateGroupList();
       if (context.mounted) {
         context.pop();
       }
+    }
+  } catch (e, stackTrace) {
+    talker.error("Failed to add group: $e", e, stackTrace);
+    if (context.mounted) {
+      ToastService.show(
+        AppLocalizations.of(context)!.groupNameAlreadyExists,
+        context,
+        type: ToastType.error,
+      );
     }
   }
 }
@@ -154,7 +181,7 @@ class AddButton extends StatelessWidget {
   }
 }
 
-class DictionaryCard extends ConsumerWidget {
+class DictionaryCard extends ConsumerStatefulWidget {
   final DictionaryListData dictionary;
   final int index;
 
@@ -163,6 +190,16 @@ class DictionaryCard extends ConsumerWidget {
     required this.dictionary,
     required this.index,
   });
+
+  @override
+  ConsumerState<DictionaryCard> createState() => _DictionaryCardState();
+}
+
+class _DictionaryCardState extends ConsumerState<DictionaryCard> {
+  bool _isToggling = false;
+
+  DictionaryListData get dictionary => widget.dictionary;
+  int get index => widget.index;
 
   Future<bool> _checkAndDeleteDictionary(
     BuildContext context,
@@ -204,10 +241,11 @@ class DictionaryCard extends ConsumerWidget {
         await dictManager.close(dictionary.id);
       }
 
-      // Update dictIds in the current group
-      final dictIds = [for (final dict in dictManager.dicts.values) dict.id];
-      dictManager.dictIds = dictIds;
-      await dictGroupDao.updateDictIds(dictManager.groupId, dictIds);
+      // Remove from all groups
+      await dictGroupDao.removeDictIdFromAllGroups(dictionary.id);
+      dictManager.dictIds = [
+        for (final dict in dictManager.dicts.values) dict.id,
+      ];
 
       // Update UI
       if (context.mounted) {
@@ -321,8 +359,14 @@ class DictionaryCard extends ConsumerWidget {
                   buildItem(
                     icon: Icons.title_rounded,
                     label: l10n.titleAlias,
-                    onTap: () {
+                    onTap: () async {
+                      if (await _checkAndDeleteDictionary(context, ref)) {
+                        if (sheetContext.mounted) sheetContext.pop();
+                        return;
+                      }
+                      if (!sheetContext.mounted) return;
                       sheetContext.pop();
+                      if (!context.mounted) return;
                       showDialog(
                         context: context,
                         builder: (context) {
@@ -345,21 +389,31 @@ class DictionaryCard extends ConsumerWidget {
                             actions: [
                               TextButton(
                                 onPressed: () async {
-                                  if (dictManager.contain(dictionary.id)) {
-                                    dictManager.dicts[dictionary.id]!
-                                        .setDefaultTitle();
-                                    controller.text =
-                                        dictManager.dicts[dictionary.id]!.title;
-                                  } else {
-                                    final dict = Mdict(path: dictionary.path);
-                                    try {
-                                      await dict.initOnlyMetadata(
-                                        dictionary.id,
-                                      );
-                                      controller.text = dict.title;
-                                    } finally {
-                                      await dict.close();
+                                  try {
+                                    if (dictManager.contain(dictionary.id)) {
+                                      dictManager.dicts[dictionary.id]!
+                                          .setDefaultTitle();
+                                      controller.text = dictManager
+                                          .dicts[dictionary.id]!
+                                          .title;
+                                    } else {
+                                      final dict = Mdict(path: dictionary.path);
+                                      try {
+                                        await dict.initOnlyMetadata(
+                                          dictionary.id,
+                                        );
+                                        controller.text = dict.title;
+                                      } finally {
+                                        await dict.close();
+                                      }
                                     }
+                                  } catch (e, stackTrace) {
+                                    talker.error(
+                                      "Failed to restore default title: $e",
+                                      e,
+                                      stackTrace,
+                                    );
+                                    controller.text = basename(dictionary.path);
                                   }
                                 },
                                 child: Text(l10n.default_),
@@ -461,17 +515,15 @@ class DictionaryCard extends ConsumerWidget {
                           context.mounted) {
                         final model = ref.read(dictManagerModelProvider);
                         await model.close(dictionary.id);
-
-                        final dictIds = [
+                        dictManager.dictIds = [
                           for (final dict in dictManager.dicts.values) dict.id,
                         ];
-                        dictManager.dictIds = dictIds;
                         model.checkIsEmpty();
-                        await dictGroupDao.updateDictIds(
-                          dictManager.groupId,
-                          dictIds,
-                        );
                       }
+
+                      await dictGroupDao.removeDictIdFromAllGroups(
+                        dictionary.id,
+                      );
 
                       final tmpDict = Mdict(path: dictionary.path);
                       await tmpDict.removeDictionary(
@@ -494,7 +546,7 @@ class DictionaryCard extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
@@ -623,45 +675,59 @@ class DictionaryCard extends ConsumerWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
-              onChanged: (bool? value) async {
-                if (await _checkAndDeleteDictionary(context, ref)) {
-                  return;
-                }
+              onChanged: _isToggling
+                  ? null
+                  : (bool? value) async {
+                      if (_isToggling) return;
+                      setState(() => _isToggling = true);
 
-                if (!context.mounted) return;
-                final model = ref.read(dictManagerModelProvider);
+                      try {
+                        if (await _checkAndDeleteDictionary(context, ref)) {
+                          return;
+                        }
 
-                if (value == true) {
-                  final oldDictionariesNumber = dictManager.dicts.length;
+                        if (!context.mounted) return;
+                        final model = ref.read(dictManagerModelProvider);
 
-                  await model.add(dictionary.id, dictionary.path);
+                        if (value == true) {
+                          final oldDictionariesNumber =
+                              dictManager.dicts.length;
 
-                  if (oldDictionariesNumber == 0) {
-                    if (!context.mounted) return;
+                          await model.add(dictionary.id, dictionary.path);
 
-                    final searchBarFocusNode = ref
-                        .read(homeModelProvider)
-                        .searchBarFocusNode;
+                          if (oldDictionariesNumber == 0) {
+                            if (!context.mounted) return;
 
-                    void searchBarFocusListener() {
-                      if (searchBarFocusNode.hasFocus) {
-                        searchBarFocusNode.unfocus();
-                        searchBarFocusNode.removeListener(
-                          searchBarFocusListener,
-                        );
+                            final searchBarFocusNode = ref
+                                .read(homeModelProvider)
+                                .searchBarFocusNode;
+
+                            void searchBarFocusListener() {
+                              if (searchBarFocusNode.hasFocus) {
+                                searchBarFocusNode.unfocus();
+                                searchBarFocusNode.removeListener(
+                                  searchBarFocusListener,
+                                );
+                              }
+                            }
+
+                            searchBarFocusNode.addListener(
+                              searchBarFocusListener,
+                            );
+                          }
+                        } else {
+                          await model.close(dictionary.id);
+                        }
+
+                        model.checkIsEmpty();
+
+                        await model.updateDictIds();
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isToggling = false);
+                        }
                       }
-                    }
-
-                    searchBarFocusNode.addListener(searchBarFocusListener);
-                  }
-                } else {
-                  await model.close(dictionary.id);
-                }
-
-                model.checkIsEmpty();
-
-                await model.updateDictIds();
-              },
+                    },
             ),
           ],
         ),
@@ -675,15 +741,20 @@ class DictionaryCard extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
-    if (value.isNotEmpty) {
-      if (dictManager.contain(dictionary.id)) {
-        dictManager.dicts[dictionary.id]!.title = value;
+    final trimmed = value.trim();
+    final newTitle = trimmed.isEmpty ? null : trimmed;
+
+    if (dictManager.contain(dictionary.id)) {
+      if (newTitle == null) {
+        dictManager.dicts[dictionary.id]!.setDefaultTitle();
+      } else {
+        dictManager.dicts[dictionary.id]!.title = newTitle;
       }
-      await dictionaryListDao.updateTitle(dictionary.id, value);
-      if (context.mounted) {
-        ref.read(manageDictionariesModelProvider).update();
-        context.pop();
-      }
+    }
+    await dictionaryListDao.updateTitle(dictionary.id, newTitle);
+    if (context.mounted) {
+      ref.read(manageDictionariesModelProvider).update();
+      context.pop();
     }
   }
 }
@@ -743,8 +814,6 @@ class GroupDeleteButton extends ConsumerWidget {
 
         await dictGroupDao.removeGroup(group.id);
         await model.updateGroupList();
-
-        if (context.mounted) context.pop();
       },
     );
   }
@@ -787,13 +856,13 @@ class GroupDialog extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
-                      onTap: () async {
-                        if (group.id != dictManager.groupId) {
-                          final model = ref.read(dictManagerModelProvider);
-                          await model.setCurrentGroup(group.id);
-                        }
-                        if (context.mounted) {
-                          context.pop();
+                      onTap: () {
+                        final targetGroupId = group.id;
+                        context.pop();
+                        if (targetGroupId != dictManager.groupId) {
+                          ref
+                              .read(dictManagerModelProvider)
+                              .setCurrentGroup(targetGroupId);
                         }
                       },
                       child: Padding(

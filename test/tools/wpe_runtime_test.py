@@ -13,10 +13,10 @@ class ReleaseRuntimeTest(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/linux-build.yml").read_text()
 
         self.assertIn("mumu-lhl/wpewebkit-build/releases/download/", workflow)
-        self.assertIn("WPE_RUNTIME_RELEASE: wpewebkit-2.44.2-1", workflow)
+        self.assertIn("WPE_RUNTIME_RELEASE: wpewebkit-2.54.1-1", workflow)
         self.assertIn(
             "WPE_RUNTIME_SHA256: "
-            "7b52bd62c3651098db321b1971f3a458f98ae4e727485c9339b9cdc5463c6d04",
+            "faa4e191cb550fd916085ca69eedc54716614a09b61012a59b53bf84c430dbca",
             workflow,
         )
         self.assertIn("sha256sum --check -", workflow)
