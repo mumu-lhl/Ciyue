@@ -600,8 +600,12 @@ class InAppWebView {
   // Used by getHitTestResult() to return the current element under the cursor
   WebKitHitTestResult* last_hit_test_result_ = nullptr;
 
-  // Disposing flag to prevent callbacks during destruction
+ public:
+  // Disposing flag to prevent callbacks during destruction.
+  // Public so the WPE FDO C callbacks (free functions outside the class)
+  // can read it; the flag is only ever set inside the class.
   std::atomic<bool> is_disposing_{false};
+ private:
 
   // Mouse state
   double cursor_x_ = 0;
