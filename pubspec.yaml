@@ -78,7 +78,7 @@ dependencies:
   device_info_plus: ^12.4.0
   table_calendar: ^3.3.0
   launch_at_startup: ^0.5.1
-  tray_manager: ^0.7.0
+  tray_manager: ^0.8.0
   window_manager: ^0.5.2
   hotkey_manager: ^0.2.3
   fuzzy: ^0.5.2
