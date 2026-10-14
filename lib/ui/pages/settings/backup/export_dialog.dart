@@ -13,6 +13,10 @@ class ExportOptionsDialog extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return AlertDialog(
+      icon: Icon(
+        Icons.file_upload,
+        color: Theme.of(context).colorScheme.primary,
+      ),
       title: Text(l10n.export),
       content: SingleChildScrollView(
         child: Column(
@@ -47,7 +51,7 @@ class ExportOptionsDialog extends ConsumerWidget {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.cancel),
         ),
-        TextButton(
+        FilledButton(
           onPressed: () => Navigator.of(context).pop(options),
           child: Text(l10n.confirm),
         ),

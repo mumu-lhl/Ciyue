@@ -3,6 +3,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:ciyue/ui/core/update_available.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -17,10 +18,15 @@ class UpdateSettingsPage extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: const [
-              AutoUpdateSwitch(),
-              PrereleaseUpdatesSwitch(),
-              CheckForUpdates(),
+              SettingsGroupCard(
+                children: [
+                  AutoUpdateSwitch(),
+                  PrereleaseUpdatesSwitch(),
+                  CheckForUpdates(),
+                ],
+              ),
             ],
           ),
         ),
@@ -88,6 +94,7 @@ class CheckForUpdates extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.update),
       title: Text(AppLocalizations.of(context)!.checkForUpdates),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () async {
         if (Updater.supportsDesktopUpdates) {
           await Updater.checkDesktopForUpdates(context);

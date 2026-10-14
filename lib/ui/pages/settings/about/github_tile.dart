@@ -13,6 +13,7 @@ class GithubTile extends ConsumerWidget {
       title: const Text("Github"),
       subtitle: const Text(AboutViewModel.githubUri),
       leading: const Icon(Icons.public),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () => viewModel.launchUri(AboutViewModel.githubUri),
       onLongPress: () =>
           viewModel.copyToClipboard(context, AboutViewModel.githubUri),

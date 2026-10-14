@@ -1,6 +1,7 @@
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:ciyue/ui/core/title_text.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/ai_api_url.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/api_key_setting.dart";
@@ -54,8 +55,8 @@ class AiSettingsPage extends ConsumerWidget {
                   children: [
                     // AI Provider
                     TitleText(AppLocalizations.of(context)!.aiProvider),
-                    const SizedBox(height: 12),
-                    const ProviderSetting(),
+                    const SizedBox(height: 6),
+                    const SettingsFieldCard(child: ProviderSetting()),
                     const SizedBox(height: 24),
 
                     // AI API URL
@@ -66,18 +67,18 @@ class AiSettingsPage extends ConsumerWidget {
 
                     // AI Model
                     TitleText(AppLocalizations.of(context)!.aiModel),
-                    const SizedBox(height: 12),
-                    const ModelSetting(),
+                    const SizedBox(height: 6),
+                    const SettingsFieldCard(child: ModelSetting()),
                     const SizedBox(height: 24),
 
                     // API Key
                     TitleText(AppLocalizations.of(context)!.apiKey),
-                    const SizedBox(height: 12),
-                    const APIKeySetting(),
+                    const SizedBox(height: 6),
+                    const SettingsFieldCard(child: APIKeySetting()),
                     const SizedBox(height: 24),
 
                     // Explain Word
-                    const ExplainWordSetting(),
+                    const SettingsFieldCard(child: ExplainWordSetting()),
                     const SizedBox(height: 24),
 
                     // Explain Word Prompt Setting

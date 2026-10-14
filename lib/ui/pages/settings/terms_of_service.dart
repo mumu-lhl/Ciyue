@@ -11,12 +11,24 @@ class TermsOfServicePage extends StatelessWidget {
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.termsOfService)),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: const BoxConstraints(maxWidth: 720),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               child: SelectionArea(
-                child: GptMarkdown("""
+                child: Card(
+                  elevation: 0,
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant
+                          .withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: GptMarkdown("""
               # Terms of Service
 
               ## Acceptance of Terms
@@ -35,6 +47,8 @@ class TermsOfServicePage extends StatelessWidget {
               
               We reserve the right to update these Terms of Service at any time. Continued use of Ciyue after changes constitutes your acceptance of the updated terms.
               """),
+                  ),
+                ),
               ),
             ),
           ),

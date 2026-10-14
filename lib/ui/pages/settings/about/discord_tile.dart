@@ -13,6 +13,7 @@ class DiscordTile extends ConsumerWidget {
       title: const Text("Discord"),
       subtitle: const Text(AboutViewModel.discordUri),
       leading: const Icon(Icons.discord),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () => viewModel.launchUri(AboutViewModel.discordUri),
       onLongPress: () =>
           viewModel.copyToClipboard(context, AboutViewModel.discordUri),

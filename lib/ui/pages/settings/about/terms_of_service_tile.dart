@@ -12,6 +12,7 @@ class TermsOfServicePageListTile extends ConsumerWidget {
     return ListTile(
       leading: const Icon(Icons.article),
       title: Text(AppLocalizations.of(context)!.termsOfService),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () => viewModel.openTermsOfService(context),
     );
   }

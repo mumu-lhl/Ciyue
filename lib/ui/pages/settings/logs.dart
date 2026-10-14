@@ -17,7 +17,7 @@ class LogsPage extends StatelessWidget {
       theme: TalkerScreenTheme(
         backgroundColor: theme.colorScheme.surface,
         textColor: theme.colorScheme.onSurface,
-        cardColor: theme.colorScheme.surface,
+        cardColor: theme.colorScheme.surfaceContainerLow,
       ),
     );
   }

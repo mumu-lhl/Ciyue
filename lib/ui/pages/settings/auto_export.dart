@@ -4,6 +4,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:file_selector/file_selector.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
@@ -22,11 +23,16 @@ class AutoExportSettingsPage extends StatelessWidget {
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 500),
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: [
-              Enable(),
-              if (Platform.isAndroid) FileName(),
-              if (Platform.isAndroid) ExportDirectory(),
-              if (!Platform.isAndroid) ExportPath(),
+              SettingsGroupCard(
+                children: [
+                  Enable(),
+                  if (Platform.isAndroid) FileName(),
+                  if (Platform.isAndroid) ExportDirectory(),
+                  if (!Platform.isAndroid) ExportPath(),
+                ],
+              ),
             ],
           ),
         ),
@@ -88,6 +94,7 @@ class _ExportDirectoryState extends State<ExportDirectory> {
           ? null
           : Text(settings.exportDirectory!),
       leading: Icon(Icons.folder),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () async {
         PlatformMethod.getDirectory();
       },
@@ -102,6 +109,7 @@ class _ExportPathState extends State<ExportPath> {
       title: Text(AppLocalizations.of(context)!.exportPath),
       subtitle: settings.exportPath == null ? null : Text(settings.exportPath!),
       leading: Icon(Icons.folder),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () async {
         final path = await getSaveLocation(suggestedName: "ciyue.json");
         if (path != null) {
@@ -122,6 +130,7 @@ class _FileNameState extends State<FileName> {
       title: Text(AppLocalizations.of(context)!.exportFileName),
       subtitle: Text(settings.exportFileName),
       leading: Icon(Icons.file_present),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () async {
         final controller = TextEditingController(text: settings.exportFileName);
         final fileName = await showDialog<String>(

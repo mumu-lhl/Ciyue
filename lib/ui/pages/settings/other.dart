@@ -6,6 +6,7 @@ import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/startup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/badges.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
@@ -92,14 +93,19 @@ class OtherSettingsPage extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: [
-              if (isDesktop()) const LaunchAtStartupSwitch(),
-              if (Platform.isAndroid) ...[
-                const SecureScreenSwitch(),
-                const NotificationSwitch(),
-                const FloatingWindow(),
-              ],
-              const AdvanceSwitch(),
+              SettingsGroupCard(
+                children: [
+                  if (isDesktop()) const LaunchAtStartupSwitch(),
+                  if (Platform.isAndroid) ...[
+                    const SecureScreenSwitch(),
+                    const NotificationSwitch(),
+                    const FloatingWindow(),
+                  ],
+                  const AdvanceSwitch(),
+                ],
+              ),
             ],
           ),
         ),

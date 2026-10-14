@@ -12,20 +12,34 @@ class SettingSelectionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: Theme.of(context).dividerColor),
-          borderRadius: BorderRadius.circular(8),
+          color: theme.colorScheme.surfaceContainerLow,
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+          ),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontSize: 16)),
-            const Icon(Icons.arrow_drop_down),
+            Expanded(
+              child: Text(
+                label,
+                style: theme.textTheme.bodyLarge,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),

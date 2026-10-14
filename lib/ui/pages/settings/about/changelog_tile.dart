@@ -12,6 +12,7 @@ class ChangelogPageListTile extends ConsumerWidget {
     return ListTile(
       leading: const Icon(Icons.history),
       title: Text(AppLocalizations.of(context)!.changelog),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () => viewModel.showChangelog(context),
     );
   }

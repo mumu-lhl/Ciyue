@@ -14,6 +14,7 @@ class FeedbackTile extends ConsumerWidget {
       title: Text(AppLocalizations.of(context)!.feedback),
       subtitle: const Text(AboutViewModel.feedbackUri),
       leading: const Icon(Icons.feedback),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () => viewModel.launchUri(AboutViewModel.feedbackUri),
       onLongPress: () =>
           viewModel.copyToClipboard(context, AboutViewModel.feedbackUri),

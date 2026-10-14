@@ -12,6 +12,7 @@ void showSelectionModal<T>({
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    showDragHandle: true,
     builder: (_) => FractionallySizedBox(
       heightFactor: 0.8,
       widthFactor: 0.9,
@@ -113,10 +114,33 @@ class _SelectionModalContentState<T> extends State<_SelectionModalContent<T>> {
                   itemCount: filteredItems.length,
                   itemBuilder: (context, index) {
                     final item = filteredItems[index];
+                    final isSelected = item == widget.currentItem;
                     return ListTile(
-                      title: Text(widget.itemText(item)),
-                      trailing: item == widget.currentItem
-                          ? const Icon(Icons.check)
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      selected: isSelected,
+                      selectedTileColor: Theme.of(context)
+                          .colorScheme
+                          .primaryContainer
+                          .withValues(alpha: 0.4),
+                      title: Text(
+                        widget.itemText(item),
+                        style: TextStyle(
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : null,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Icon(
+                              Icons.check_circle_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 20,
+                            )
                           : null,
                       onTap: () {
                         widget.onItemSelected(item);

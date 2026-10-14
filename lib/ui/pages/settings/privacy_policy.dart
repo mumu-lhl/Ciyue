@@ -18,12 +18,24 @@ class PrivacyPolicyPage extends StatelessWidget {
       ),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: const BoxConstraints(maxWidth: 720),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               child: SelectionArea(
-                child: GptMarkdown('''
+                child: Card(
+                  elevation: 0,
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant
+                          .withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: GptMarkdown('''
             # Privacy Policy
 
             ## Definition
@@ -46,6 +58,8 @@ class PrivacyPolicyPage extends StatelessWidget {
             
             We are not responsible for the data practices of these third-party services.
             '''),
+                  ),
+                ),
               ),
             ),
           ),

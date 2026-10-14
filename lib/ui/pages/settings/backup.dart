@@ -4,6 +4,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/services/backup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:ciyue/ui/pages/settings/backup/export_dialog.dart";
 import "package:ciyue/ui/pages/settings/backup/export_state.dart";
 import "package:file_selector/file_selector.dart";
@@ -20,7 +21,7 @@ class AutoExport extends StatelessWidget {
     return ListTile(
       leading: Icon(Icons.backup),
       title: Text(AppLocalizations.of(context)!.autoExport),
-      trailing: Icon(Icons.arrow_forward),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () => context.push("/settings/autoExport"),
     );
   }
@@ -37,11 +38,11 @@ class BackupSettingsPage extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
           child: ListView(
-            children: [
-              const AutoExport(),
-              const Export(),
-              const Import(),
-              const LegacyImport(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            children: const [
+              SettingsGroupCard(
+                children: [AutoExport(), Export(), Import(), LegacyImport()],
+              ),
             ],
           ),
         ),
@@ -58,6 +59,7 @@ class Export extends StatelessWidget {
     return ListTile(
       leading: Icon(Icons.file_upload),
       title: Text(AppLocalizations.of(context)!.export),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () async {
         final options = await showDialog<ExportOptions>(
           context: context,

@@ -1,4 +1,5 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:ciyue/ui/core/title_text.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -24,23 +25,29 @@ class PromptSetting extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TitleText(title),
-        const SizedBox(height: 12),
-        TextFormField(
-          key: ValueKey(initialValue),
-          initialValue: initialValue,
-          maxLines: null,
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            helperText: helperText,
-          ),
-          onChanged: onChanged,
-        ),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: onReset,
-            child: Text(AppLocalizations.of(context)!.resetToDefault),
+        const SizedBox(height: 6),
+        SettingsFieldCard(
+          child: Column(
+            children: [
+              TextFormField(
+                key: ValueKey(initialValue),
+                initialValue: initialValue,
+                maxLines: null,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  helperText: helperText,
+                ),
+                onChanged: onChanged,
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: onReset,
+                  child: Text(AppLocalizations.of(context)!.resetToDefault),
+                ),
+              ),
+            ],
           ),
         ),
       ],

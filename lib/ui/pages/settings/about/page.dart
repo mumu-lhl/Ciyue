@@ -1,4 +1,5 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:material_ui/material_ui.dart";
 
 import "about_tile.dart";
@@ -22,16 +23,26 @@ class AboutSettingsPage extends StatelessWidget {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 500),
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: const [
-              FeedbackTile(),
-              GithubTile(),
-              DiscordTile(),
-              QQGroupTile(),
-              SponsorListTile(),
-              TermsOfServicePageListTile(),
-              PrivacyPolicyPageListTile(),
-              ChangelogPageListTile(),
-              AboutPageListTile(),
+              SettingsGroupCard(
+                children: [
+                  FeedbackTile(),
+                  GithubTile(),
+                  DiscordTile(),
+                  QQGroupTile(),
+                  SponsorListTile(),
+                ],
+              ),
+              SizedBox(height: 16),
+              SettingsGroupCard(
+                children: [
+                  TermsOfServicePageListTile(),
+                  PrivacyPolicyPageListTile(),
+                  ChangelogPageListTile(),
+                  AboutPageListTile(),
+                ],
+              ),
             ],
           ),
         ),

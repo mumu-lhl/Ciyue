@@ -161,6 +161,14 @@ class _ColorSwatch extends StatelessWidget {
             width: selected ? 3 : 1,
           ),
         ),
+        child: selected
+            ? const Icon(
+                Icons.check,
+                size: 18,
+                color: Colors.white,
+                shadows: [Shadow(color: Colors.black54, blurRadius: 2)],
+              )
+            : null,
       ),
     );
   }

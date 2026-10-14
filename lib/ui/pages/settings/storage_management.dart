@@ -72,6 +72,7 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(locale.manageStorage)),
@@ -84,37 +85,79 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
           if (_viewModel.errorMessage != null) {
             return Center(child: Text(_viewModel.errorMessage!));
           }
-          return ListView.builder(
-            itemCount:
-                _viewModel.entities.length +
-                (_viewModel.isAtBaseDirectory ? 0 : 1),
-            itemBuilder: (context, index) {
-              if (!_viewModel.isAtBaseDirectory && index == 0) {
-                return ListTile(
-                  leading: const Icon(Icons.arrow_back),
-                  title: Text(locale.back),
-                  onTap: _viewModel.navigateBack,
-                );
-              }
-              final actualIndex = _viewModel.isAtBaseDirectory
-                  ? index
-                  : index - 1;
-              final entity = _viewModel.entities[actualIndex];
-              final isDirectory = entity is Directory;
-              return ListTile(
-                leading: Icon(
-                  isDirectory ? Icons.folder : Icons.insert_drive_file,
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Card(
+              elevation: 0,
+              color: theme.colorScheme.surfaceContainerLow,
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.4,
+                  ),
                 ),
-                title: Text(p.basename(entity.path)),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _confirmAndDelete(context, entity),
+              ),
+              child: ListView.separated(
+                itemCount:
+                    _viewModel.entities.length +
+                    (_viewModel.isAtBaseDirectory ? 0 : 1),
+                separatorBuilder: (context, index) => Divider(
+                  height: 1,
+                  indent: 52,
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.25,
+                  ),
                 ),
-                onTap: isDirectory
-                    ? () => _viewModel.navigateToDirectory(entity)
-                    : null, // No action for files
-              );
-            },
+                itemBuilder: (context, index) {
+                  if (!_viewModel.isAtBaseDirectory && index == 0) {
+                    return ListTile(
+                      leading: const Icon(Icons.arrow_back),
+                      title: Text(locale.back),
+                      onTap: _viewModel.navigateBack,
+                    );
+                  }
+                  final actualIndex = _viewModel.isAtBaseDirectory
+                      ? index
+                      : index - 1;
+                  final entity = _viewModel.entities[actualIndex];
+                  final isDirectory = entity is Directory;
+                  return ListTile(
+                    leading: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: isDirectory
+                            ? theme.colorScheme.primaryContainer.withValues(
+                                alpha: 0.8,
+                              )
+                            : theme.colorScheme.surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        isDirectory ? Icons.folder : Icons.insert_drive_file,
+                        size: 18,
+                        color: isDirectory
+                            ? theme.colorScheme.onPrimaryContainer
+                            : theme.colorScheme.onSurfaceVariant.withValues(
+                                alpha: 0.7,
+                              ),
+                      ),
+                    ),
+                    title: Text(p.basename(entity.path)),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: theme.colorScheme.error),
+                      onPressed: () => _confirmAndDelete(context, entity),
+                    ),
+                    onTap: isDirectory
+                        ? () => _viewModel.navigateToDirectory(entity)
+                        : null, // No action for files
+                  );
+                },
+              ),
+            ),
           );
         },
       ),

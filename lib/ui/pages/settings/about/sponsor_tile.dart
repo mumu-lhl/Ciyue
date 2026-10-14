@@ -13,6 +13,7 @@ class SponsorListTile extends ConsumerWidget {
     return ListTile(
       title: Text(AppLocalizations.of(context)!.sponsor),
       leading: const Icon(Icons.favorite),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () => viewModel.showSponsorSheet(context),
       onLongPress: () =>
           viewModel.copyToClipboard(context, AboutViewModel.sponsorUri),

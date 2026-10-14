@@ -1,5 +1,6 @@
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
@@ -11,9 +12,14 @@ class ClearHistory extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = AppLocalizations.of(context);
 
+    final theme = Theme.of(context);
     return ListTile(
-      leading: const Icon(Icons.delete),
-      title: Text(locale!.clearHistory),
+      leading: Icon(Icons.delete, color: theme.colorScheme.error),
+      title: Text(
+        locale!.clearHistory,
+        style: TextStyle(color: theme.colorScheme.error),
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () => showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -48,7 +54,12 @@ class HistorySettingsPage extends StatelessWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
-          child: ListView(children: const [HistorySwitch(), ClearHistory()]),
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            children: const [
+              SettingsGroupCard(children: [HistorySwitch(), ClearHistory()]),
+            ],
+          ),
         ),
       ),
     );

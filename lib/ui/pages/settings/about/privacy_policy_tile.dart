@@ -12,6 +12,7 @@ class PrivacyPolicyPageListTile extends ConsumerWidget {
     return ListTile(
       leading: const Icon(Icons.security),
       title: Text(AppLocalizations.of(context)!.privacyPolicy),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () => viewModel.openPrivacyPolicy(context),
     );
   }

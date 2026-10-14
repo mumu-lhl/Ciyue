@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:material_ui/material_ui.dart";
 
 import "appearance/dictionary_background_color.dart";
@@ -28,22 +29,34 @@ class AppearanceSettingsPage extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: [
-              const LanguageSelector(),
-              const ThemeSelector(),
-              const ThemeColorSettingsSection(),
-              const DictionaryBackgroundColor(),
-              if (Platform.isWindows || Platform.isLinux)
-                const DictionaryDarkReaderSwitch(),
-              const DictionaryCustomCss(),
-              const DictionarySwitchStyleSelector(),
-              const SearchbarLocationSelector(),
-              const TabBarPositionSelector(),
-              const SearchbarInWordDisplaySwitch(),
-              if (settings.advance)
-                const Column(
+              SettingsGroupCard(
+                children: [
+                  const LanguageSelector(),
+                  const ThemeSelector(),
+                  const ThemeColorSettingsSection(),
+                  const DictionaryBackgroundColor(),
+                  if (Platform.isWindows || Platform.isLinux)
+                    const DictionaryDarkReaderSwitch(),
+                  const DictionaryCustomCss(),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const SettingsGroupCard(
+                children: [
+                  DictionarySwitchStyleSelector(),
+                  SearchbarLocationSelector(),
+                  TabBarPositionSelector(),
+                  SearchbarInWordDisplaySwitch(),
+                ],
+              ),
+              if (settings.advance) ...[
+                const SizedBox(height: 16),
+                const SettingsGroupCard(
                   children: [DrawerIconSwitch(), MoreOptionsButtonSwitch()],
                 ),
+              ],
             ],
           ),
         ),
