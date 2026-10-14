@@ -58,21 +58,17 @@ Color? resolveDictionaryBackgroundColor({
   return isWindows && !isLightTheme && !darkReaderEnabled ? Colors.white : null;
 }
 
-UnmodifiableListView<UserScript> dictionaryUserScripts({
-  String customCss = "",
-  Color? background,
-  bool enableDarkReader = false,
-  String darkReaderSource = "",
-}) {
-  final encodedCss = jsonEncode(customCss);
-  final color = background;
-  final backgroundColor = color == null
-      ? "null"
-      : jsonEncode(
-          "#${(color.toARGB32() & 0x00FFFFFF).toRadixString(16).padLeft(6, "0")}",
-        );
-  final darkReaderScript = enableDarkReader && darkReaderSource.isNotEmpty
-      ? """
+/// Cache for the DarkReader wrapper script. The 346KB `darkReaderSource` is
+/// loaded once and reused as the same String instance, so an identity check
+/// avoids re-interpolating it on every WebView build.
+String? _cachedDarkReaderSource;
+String? _cachedDarkReaderScript;
+
+String _darkReaderScript(String darkReaderSource) {
+  if (!identical(_cachedDarkReaderSource, darkReaderSource)) {
+    _cachedDarkReaderSource = darkReaderSource;
+    _cachedDarkReaderScript =
+        """
 $darkReaderSource
 (function() {
   const darkReader = window.DarkReader;
@@ -88,7 +84,26 @@ $darkReaderSource
     });
   }
 })();
-"""
+""";
+  }
+  return _cachedDarkReaderScript!;
+}
+
+UnmodifiableListView<UserScript> dictionaryUserScripts({
+  String customCss = "",
+  Color? background,
+  bool enableDarkReader = false,
+  String darkReaderSource = "",
+}) {
+  final encodedCss = jsonEncode(customCss);
+  final color = background;
+  final backgroundColor = color == null
+      ? "null"
+      : jsonEncode(
+          "#${(color.toARGB32() & 0x00FFFFFF).toRadixString(16).padLeft(6, "0")}",
+        );
+  final darkReaderScript = enableDarkReader && darkReaderSource.isNotEmpty
+      ? _darkReaderScript(darkReaderSource)
       : null;
   final customCssScript =
       """
@@ -160,8 +175,13 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final dictManager = ref.watch(dictManagerProvider);
-    final heights = ref.watch(webviewHeightsProvider);
-    final height = heights["${widget.word}:${widget.dictId}"] ?? 0;
+    final height =
+        ref.watch(
+          webviewHeightsProvider.select(
+            (m) => m["${widget.word}:${widget.dictId}"],
+          ),
+        ) ??
+        0;
 
     final isLightTheme =
         settings.themeMode == ThemeMode.light ||
@@ -284,20 +304,35 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         }
       },
       onPageCommitVisible: (controller, url) async {
-        controller.evaluateJavascript(
-          source: """
-var lastHeight = 0;
-function checkHeight() {
-  var currentHeight = document.body.scrollHeight;
-  if (currentHeight !== lastHeight) {
-    lastHeight = currentHeight;
-    window.flutter_inappwebview.callHandler('WebViewHeight', currentHeight);
+        // Only the expansion panels need live height reports, and only they
+        // register the 'WebViewHeight' handler. Use MutationObserver +
+        // ResizeObserver instead of a requestAnimationFrame loop so there is
+        // zero JS cost once the content settles (images/fonts loading late
+        // still trigger an update via these observers).
+        if (widget.isExpansion) {
+          controller.evaluateJavascript(
+            source: """
+(function() {
+  if (!document.body) return;
+  var lastHeight = 0;
+  function reportHeight() {
+    var currentHeight = document.body.scrollHeight;
+    if (currentHeight !== lastHeight) {
+      lastHeight = currentHeight;
+      window.flutter_inappwebview.callHandler('WebViewHeight', currentHeight);
+    }
   }
-  requestAnimationFrame(checkHeight);
-}
-checkHeight();
+  new MutationObserver(reportHeight).observe(document.body, {
+    childList: true, subtree: true, attributes: true, characterData: true
+  });
+  if (window.ResizeObserver) {
+    new ResizeObserver(reportHeight).observe(document.body);
+  }
+  reportHeight();
+})();
 """,
-        );
+          );
+        }
 
         if (dictManager.dicts[widget.dictId]!.fontName != null) {
           await controller.evaluateJavascript(
@@ -415,7 +450,7 @@ Future<_WindowsWebViewSetup> _prepareWindowsWebView({
   return (environment: environment, darkReaderSource: darkReaderSource);
 }
 
-class WebviewWindows extends ConsumerWidget {
+class WebviewWindows extends ConsumerStatefulWidget {
   final String content;
   final int dictId;
 
@@ -426,7 +461,30 @@ class WebviewWindows extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WebviewWindows> createState() => _WebviewWindowsState();
+}
+
+class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
+  Uint8List? _postData;
+  String? _postDataContent;
+
+  /// The POST body is the whole dictionary HTML (up to MBs) JSON-encoded.
+  /// Recompute only when the content actually changes, not on every build.
+  Uint8List _getPostData() {
+    if (_postDataContent != widget.content) {
+      _postDataContent = widget.content;
+      _postData = Uint8List.fromList(
+        utf8.encode(json.encode({"content": widget.content})),
+      );
+    }
+    return _postData!;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
+    final content = widget.content;
+    final dictId = widget.dictId;
     final dictManager = ref.watch(dictManagerProvider);
     final settings = ref.watch(settingsProvider);
     final darkReaderSetting = ref.watch(dictionaryDarkReaderProvider);
@@ -437,10 +495,6 @@ class WebviewWindows extends ConsumerWidget {
       webview = const Center(child: CircularProgressIndicator());
     } else {
       final url = "http://127.0.0.1:$port/";
-
-      final Uint8List postData = Uint8List.fromList(
-        utf8.encode(json.encode({"content": content})),
-      );
 
       final isLightTheme =
           settings.themeMode == ThemeMode.light ||
@@ -559,7 +613,7 @@ class WebviewWindows extends ConsumerWidget {
                 initialUrlRequest: URLRequest(
                   url: WebUri(url),
                   method: "POST",
-                  body: postData,
+                  body: _getPostData(),
                 ),
                 initialData: InAppWebViewInitialData(
                   data: content,

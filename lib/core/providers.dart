@@ -172,7 +172,11 @@ class WebViewHeightsNotifier extends Notifier<Map<String, double>> {
   Map<String, double> build() => {};
 
   void setHeight(String word, int dictId, double height) {
-    state = {...state, "$word:$dictId": height};
+    final key = "$word:$dictId";
+    // Skip notifying when the height didn't change: every notification
+    // rebuilds all WebViews that watch the heights map.
+    if (state[key] == height) return;
+    state = {...state, key: height};
   }
 }
 

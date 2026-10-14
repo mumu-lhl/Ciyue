@@ -64,21 +64,33 @@ class _DesktopHomeSplitView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final homeModel = ref.watch(homeModelProvider);
-    final historyModel = ref.watch(historyModelProvider);
-    final selectedWord = homeModel.selectedWord;
-    final activeWord =
-        selectedWord ??
-        (historyModel.history.isNotEmpty
-            ? historyModel.history.first.word
-            : null);
+    // Subscribe narrowly: rebuilding the whole split view (and the WordDisplay
+    // inside it) on every history write or tab mutation is expensive.
+    // Imperative calls below use ref.read so they don't subscribe.
+    final homeModel = ref.read(homeModelProvider);
+    final historyModel = ref.read(historyModelProvider);
+    final selectedWord = ref.watch(
+      homeModelProvider.select((model) => model.selectedWord),
+    );
+    final tabsEmpty = ref.watch(
+      homeModelProvider.select((model) => model.tabs.isEmpty),
+    );
+    final historyEmpty = ref.watch(
+      historyModelProvider.select((model) => model.history.isEmpty),
+    );
+    final firstHistoryWord = ref.watch(
+      historyModelProvider.select(
+        (model) => model.history.isEmpty ? null : model.history.first.word,
+      ),
+    );
+    final activeWord = selectedWord ?? firstHistoryWord;
 
-    if (homeModel.tabs.isEmpty &&
-        historyModel.history.isNotEmpty &&
-        selectedWord == null) {
+    if (tabsEmpty && !historyEmpty && selectedWord == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (homeModel.tabs.isEmpty && historyModel.history.isNotEmpty) {
-          homeModel.ensureInitialWord(historyModel.history.first.word);
+        final liveHomeModel = ref.read(homeModelProvider);
+        final liveHistoryModel = ref.read(historyModelProvider);
+        if (liveHomeModel.tabs.isEmpty && liveHistoryModel.history.isNotEmpty) {
+          liveHomeModel.ensureInitialWord(liveHistoryModel.history.first.word);
         }
       });
     }
@@ -161,7 +173,7 @@ class _DesktopHomeSplitView extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (homeModel.tabs.isNotEmpty) const _DesktopWordTabBar(),
+                  if (!tabsEmpty) const _DesktopWordTabBar(),
                   Expanded(
                     child: selectedWord != null && selectedWord.isNotEmpty
                         ? KeyedSubtree(
@@ -171,14 +183,11 @@ class _DesktopHomeSplitView extends ConsumerWidget {
                               showBackButton: false,
                             ),
                           )
-                        : (historyModel.history.isNotEmpty &&
-                                  homeModel.tabs.isEmpty
+                        : (!historyEmpty && tabsEmpty
                               ? KeyedSubtree(
-                                  key: ValueKey(
-                                    historyModel.history.first.word,
-                                  ),
+                                  key: ValueKey(firstHistoryWord),
                                   child: WordDisplay(
-                                    word: historyModel.history.first.word,
+                                    word: firstHistoryWord!,
                                     showBackButton: false,
                                   ),
                                 )
@@ -292,9 +301,19 @@ class _DesktopWordTabBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final homeModel = ref.watch(homeModelProvider);
-    final tabs = homeModel.tabs;
-    final activeIndex = homeModel.activeTabIndex;
+    // HomeModel.tabs allocates a new list on every access, so selecting the
+    // list itself would rebuild on every notification. Select a joined string
+    // instead: it only changes when a tab's word actually changes.
+    final tabWords = ref.watch(
+      homeModelProvider.select((model) => model.tabs.join("\u0000")),
+    );
+    final List<String> tabs = tabWords.isEmpty
+        ? const []
+        : tabWords.split("\u0000");
+    final activeIndex = ref.watch(
+      homeModelProvider.select((model) => model.activeTabIndex),
+    );
+    final homeModel = ref.read(homeModelProvider);
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
