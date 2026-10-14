@@ -2891,6 +2891,12 @@ class MockWordbookModel extends _i1.Mock implements _i10.WordbookModel {
   );
 
   @override
+  set selectedWord(String? word) => super.noSuchMethod(
+    Invocation.setter(#selectedWord, word),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   bool get hasListeners =>
       (super.noSuchMethod(Invocation.getter(#hasListeners), returnValue: false)
           as bool);
