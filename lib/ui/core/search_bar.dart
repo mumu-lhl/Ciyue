@@ -34,6 +34,17 @@ class _WordSearchBarWithSuggestionsState
     extends ConsumerState<WordSearchBarWithSuggestions> {
   SearchController? _anchorController;
 
+  /// Monotonic id for suggestion requests. Lets superseded keystrokes and
+  /// out-of-order query results discard themselves instead of firing
+  /// redundant dictionary lookups.
+  int _suggestionGen = 0;
+
+  /// Last successfully built suggestions, returned as-is when a keystroke
+  /// is superseded mid-debounce so the list doesn't flicker.
+  List<Widget>? _lastSuggestions;
+
+  static const _suggestionDebounce = Duration(milliseconds: 250);
+
   SearchController? get _effectiveController =>
       widget.controller ?? _anchorController;
 
@@ -142,7 +153,9 @@ class _WordSearchBarWithSuggestionsState
                 controller.openView();
               },
               onChanged: (_) {
-                controller.openView();
+                if (!_isViewOpen) {
+                  controller.openView();
+                }
                 controller.selection = TextSelection.collapsed(
                   offset: controller.text.length,
                 );
@@ -161,22 +174,38 @@ class _WordSearchBarWithSuggestionsState
           },
           suggestionsBuilder:
               (BuildContext context, SearchController controller) async {
-                while (ref.read(dictManagerModelProvider).isSwitchingGroup) {
-                  await Future.delayed(const Duration(milliseconds: 40));
-                  if (!mounted) return const <Widget>[];
-                }
+                List<Widget> keepPrevious() =>
+                    _lastSuggestions ?? const <Widget>[];
 
                 final searchWord = controller.text.trim();
+                final gen = ++_suggestionGen;
+
+                // Debounce: only the last keystroke of a burst runs the
+                // query. Superseded calls return the previous suggestions.
+                await Future.delayed(_suggestionDebounce);
+                if (!mounted) return keepPrevious();
+                if (gen != _suggestionGen ||
+                    controller.text.trim() != searchWord) {
+                  return keepPrevious();
+                }
+
+                while (ref.read(dictManagerModelProvider).isSwitchingGroup) {
+                  await Future.delayed(const Duration(milliseconds: 40));
+                  if (!mounted) return keepPrevious();
+                }
 
                 if (searchWord.isEmpty) {
-                  return [const SizedBox.shrink()];
+                  _lastSuggestions = [const SizedBox.shrink()];
+                  return _lastSuggestions!;
                 }
 
                 final suggestions = await dictionaryLookup.searchSuggestions(
                   searchWord,
                 );
-                if (!context.mounted) {
-                  return const <Widget>[];
+                if (!context.mounted || gen != _suggestionGen) {
+                  // A newer keystroke arrived while querying: drop the stale
+                  // result instead of overwriting fresh suggestions.
+                  return keepPrevious();
                 }
                 final l10n = AppLocalizations.of(context)!;
 
@@ -191,7 +220,7 @@ class _WordSearchBarWithSuggestionsState
                   );
                 }
 
-                return [
+                _lastSuggestions = [
                   if (settings.aiExplainWord) buildSuggestionTile(searchWord),
                   ...suggestions.dictionarySuggestions.map(buildSuggestionTile),
                   if (suggestions.spellingSuggestions.isNotEmpty)
@@ -211,6 +240,7 @@ class _WordSearchBarWithSuggestionsState
                     ),
                   ...suggestions.spellingSuggestions.map(buildSuggestionTile),
                 ];
+                return _lastSuggestions!;
               },
         ),
       ),

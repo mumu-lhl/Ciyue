@@ -66,30 +66,34 @@ class DictionaryLookup {
       stems = await morphology.stems(word);
     }
 
-    final matches = <int, List<DictionaryEntryData>>{};
-    for (var i = 0; i < activeDictionaries.length; i++) {
-      final dict = activeDictionaries[i];
-      final exactKey = exactKeys[i];
-      final shouldUseStems = switch (currentMode) {
-        HunspellLookupMode.fallback => exactKey == null,
-        HunspellLookupMode.supplement => true,
-      };
+    final entriesList = await Future.wait(
+      List.generate(activeDictionaries.length, (i) async {
+        final dict = activeDictionaries[i];
+        final exactKey = exactKeys[i];
+        final shouldUseStems = switch (currentMode) {
+          HunspellLookupMode.fallback => exactKey == null,
+          HunspellLookupMode.supplement => true,
+        };
 
-      final candidates = <String>[];
-      if (exactKey != null) {
-        candidates.add(exactKey);
-      } else {
-        candidates.add(word);
-      }
-      if (shouldResolveStems && shouldUseStems) {
-        candidates.addAll(stems);
-      }
+        final candidates = <String>[];
+        if (exactKey != null) {
+          candidates.add(exactKey);
+        } else {
+          candidates.add(word);
+        }
+        if (shouldResolveStems && shouldUseStems) {
+          candidates.addAll(stems);
+        }
 
-      final entries = await dict.readExactEntries({...candidates});
-      if (entries.isNotEmpty) {
-        matches[dict.id] = entries;
-      }
-    }
+        // Query all dictionaries concurrently instead of awaiting each
+        // disk read + record-block decompression in series.
+        return MapEntry(dict.id, await dict.readExactEntries({...candidates}));
+      }),
+    );
+    final matches = <int, List<DictionaryEntryData>>{
+      for (final entry in entriesList)
+        if (entry.value.isNotEmpty) entry.key: entry.value,
+    };
 
     return DictionaryLookupResult(entriesByDictionary: matches);
   }
@@ -106,9 +110,11 @@ class DictionaryLookup {
     final prefixResults = await Future.wait(
       activeDictionaries.map((dict) => dict.search(query)),
     );
-    final results = <String>{
+    // `seen` backs O(1) dedup; `results` preserves display order.
+    final seen = <String>{
       for (final dictionaryResults in prefixResults) ...dictionaryResults,
-    }.toList()..sort();
+    };
+    final results = seen.toList()..sort();
 
     if (!morphologyEnabled()) {
       return DictionarySearchSuggestions(
@@ -127,11 +133,19 @@ class DictionaryLookup {
         ? await morphology.stems(query)
         : const <String>[];
 
-    for (final stem in stems) {
-      for (final dict in activeDictionaries) {
-        final canonicalKey = await dict.resolveExactKey(stem);
+    // Resolve every stem against every dictionary concurrently, keeping the
+    // original first-dictionary-wins order per stem.
+    final stemKeyLists = await Future.wait(
+      stems.map(
+        (stem) => Future.wait(
+          activeDictionaries.map((dict) => dict.resolveExactKey(stem)),
+        ),
+      ),
+    );
+    for (final keys in stemKeyLists) {
+      for (final canonicalKey in keys) {
         if (canonicalKey != null) {
-          if (!results.contains(canonicalKey)) {
+          if (seen.add(canonicalKey)) {
             results.add(canonicalKey);
           }
           break;
@@ -143,7 +157,7 @@ class DictionaryLookup {
     final spellingSuggestions = <String>[];
     if (someDictionaryMissed) {
       for (final suggestion in await morphology.suggestions(query)) {
-        if (!results.contains(suggestion)) {
+        if (seen.add(suggestion)) {
           results.add(suggestion);
           spellingSuggestions.add(suggestion);
         }

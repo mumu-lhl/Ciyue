@@ -1052,7 +1052,14 @@ class $$ResourceTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$ResourceTable, ResourceData>(table),
+                  drift.BaseReferences<
+                    _$DictionaryDatabase,
+                    $ResourceTable,
+                    ResourceData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -1266,7 +1273,14 @@ class $$DictionaryTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$DictionaryTable, DictionaryData>(table),
+                  drift.BaseReferences<
+                    _$DictionaryDatabase,
+                    $DictionaryTable,
+                    DictionaryData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
