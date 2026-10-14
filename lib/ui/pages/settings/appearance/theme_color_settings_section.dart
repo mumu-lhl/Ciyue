@@ -85,72 +85,85 @@ class ThemeColorSettingsSection extends ConsumerWidget {
     final pureBlackDarkMode = themeSettings.pureBlackDarkMode;
     final themeSeedColor = themeSettings.seedColor;
 
+    final tiles = <Widget>[
+      SwitchListTile(
+        secondary: const Icon(Icons.dynamic_form_outlined),
+        title: Text(locale.dynamicColor),
+        subtitle: Text(locale.dynamicColorDescription),
+        value: dynamicColorEnabled,
+        onChanged: (value) async {
+          ref
+              .read(themeColorSettingsProvider.notifier)
+              .setDynamicColorEnabled(value);
+          await settings.setEnableDynamicColor(value);
+          refreshAll();
+        },
+      ),
+      SwitchListTile(
+        secondary: const Icon(Icons.contrast),
+        title: Text(locale.pureBlackDarkMode),
+        subtitle: Text(locale.pureBlackDarkModeDescription),
+        value: pureBlackDarkMode,
+        onChanged: (value) async {
+          ref
+              .read(themeColorSettingsProvider.notifier)
+              .setPureBlackDarkMode(value);
+          await settings.setPureBlackDarkMode(value);
+          refreshAll();
+        },
+      ),
+      if (!dynamicColorEnabled)
+        ListTile(
+          leading: const Icon(Icons.palette_outlined),
+          title: Text(locale.appThemeColor),
+          subtitle: Text(_toHex(themeSeedColor)),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: themeSeedColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Theme.of(context).dividerColor),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.keyboard_arrow_down),
+            ],
+          ),
+          onTap: () async {
+            final Color? selectedColor = await _showThemeColorPicker(
+              context,
+              locale,
+              themeSeedColor,
+            );
+            if (selectedColor == null) {
+              return;
+            }
+
+            ref
+                .read(themeColorSettingsProvider.notifier)
+                .setSeedColor(selectedColor);
+            await settings.setThemeSeedColor(selectedColor);
+            refreshAll();
+          },
+        ),
+    ];
+
     return Column(
       children: [
-        SwitchListTile(
-          secondary: const Icon(Icons.dynamic_form_outlined),
-          title: Text(locale.dynamicColor),
-          subtitle: Text(locale.dynamicColorDescription),
-          value: dynamicColorEnabled,
-          onChanged: (value) async {
-            ref
-                .read(themeColorSettingsProvider.notifier)
-                .setDynamicColorEnabled(value);
-            await settings.setEnableDynamicColor(value);
-            refreshAll();
-          },
-        ),
-        SwitchListTile(
-          secondary: const Icon(Icons.contrast),
-          title: Text(locale.pureBlackDarkMode),
-          subtitle: Text(locale.pureBlackDarkModeDescription),
-          value: pureBlackDarkMode,
-          onChanged: (value) async {
-            ref
-                .read(themeColorSettingsProvider.notifier)
-                .setPureBlackDarkMode(value);
-            await settings.setPureBlackDarkMode(value);
-            refreshAll();
-          },
-        ),
-        if (!dynamicColorEnabled)
-          ListTile(
-            leading: const Icon(Icons.palette_outlined),
-            title: Text(locale.appThemeColor),
-            subtitle: Text(_toHex(themeSeedColor)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: themeSeedColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(Icons.keyboard_arrow_down),
-              ],
+        for (int i = 0; i < tiles.length; i++) ...[
+          if (i > 0)
+            Divider(
+              height: 1,
+              indent: 52,
+              color: Theme.of(context).colorScheme.outlineVariant
+                  .withValues(alpha: 0.25),
             ),
-            onTap: () async {
-              final Color? selectedColor = await _showThemeColorPicker(
-                context,
-                locale,
-                themeSeedColor,
-              );
-              if (selectedColor == null) {
-                return;
-              }
-
-              ref
-                  .read(themeColorSettingsProvider.notifier)
-                  .setSeedColor(selectedColor);
-              await settings.setThemeSeedColor(selectedColor);
-              refreshAll();
-            },
-          ),
+          tiles[i],
+        ],
       ],
     );
   }
@@ -262,11 +275,19 @@ class _ColorDot extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(
             color: selected
-                ? Theme.of(context).colorScheme.onSurface
+                ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).dividerColor,
             width: selected ? 2 : 1,
           ),
         ),
+        child: selected
+            ? const Icon(
+                Icons.check,
+                size: 16,
+                color: Colors.white,
+                shadows: [Shadow(color: Colors.black54, blurRadius: 2)],
+              )
+            : null,
       ),
     );
   }

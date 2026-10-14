@@ -9,6 +9,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:ciyue/utils.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -48,105 +49,106 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: [
-              SwitchListTile(
-                secondary: const Icon(Icons.spellcheck),
-                title: Text(l10n.enableWordFormLookup),
-                subtitle: Text(l10n.enableWordFormLookupDescription),
-                value: settings.enableHunspellMorphology,
-                onChanged: _setMorphologyEnabled,
-              ),
-              ListTile(
-                leading: const Icon(Icons.tune),
-                title: Text(l10n.hunspellLookupMode),
-                subtitle: Text(l10n.hunspellLookupModeDescription),
-                trailing: DropdownButton<HunspellLookupMode>(
-                  value: settings.hunspellLookupMode,
-                  items: [
-                    DropdownMenuItem(
-                      value: HunspellLookupMode.fallback,
-                      child: Text(l10n.hunspellFallback),
-                    ),
-                    DropdownMenuItem(
-                      value: HunspellLookupMode.supplement,
-                      child: Text(l10n.hunspellSupplement),
-                    ),
-                  ],
-                  onChanged: _setLookupMode,
-                ),
-              ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.folder_open),
-                title: Text(l10n.importHunspellDictionaries),
-                subtitle: Text(l10n.importHunspellDictionariesDescription),
-                trailing: _isImporting
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(),
-                      )
-                    : const Icon(Icons.chevron_right),
-                onTap: _isImporting ? null : _importDirectory,
-              ),
-              FutureBuilder<List<HunspellSourceData>>(
-                future: _sources,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  if (snapshot.hasError) {
-                    return ListTile(
-                      title: Text(
-                        l10n.hunspellSourcesLoadFailed(
-                          snapshot.error.toString(),
+              SettingsGroupCard(
+                children: [
+                  SwitchListTile(
+                    secondary: const Icon(Icons.spellcheck),
+                    title: Text(l10n.enableWordFormLookup),
+                    subtitle: Text(l10n.enableWordFormLookupDescription),
+                    value: settings.enableHunspellMorphology,
+                    onChanged: _setMorphologyEnabled,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.tune),
+                    title: Text(l10n.hunspellLookupMode),
+                    subtitle: Text(l10n.hunspellLookupModeDescription),
+                    trailing: DropdownButton<HunspellLookupMode>(
+                      value: settings.hunspellLookupMode,
+                      items: [
+                        DropdownMenuItem(
+                          value: HunspellLookupMode.fallback,
+                          child: Text(l10n.hunspellFallback),
                         ),
-                      ),
-                    );
-                  }
-                  if (snapshot.data!.isEmpty) {
-                    return ListTile(title: Text(l10n.noHunspellDictionaries));
-                  }
+                        DropdownMenuItem(
+                          value: HunspellLookupMode.supplement,
+                          child: Text(l10n.hunspellSupplement),
+                        ),
+                      ],
+                      onChanged: _setLookupMode,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SettingsGroupCard(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.folder_open),
+                    title: Text(l10n.importHunspellDictionaries),
+                    subtitle: Text(l10n.importHunspellDictionariesDescription),
+                    trailing: _isImporting
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(),
+                          )
+                        : const Icon(Icons.chevron_right),
+                    onTap: _isImporting ? null : _importDirectory,
+                  ),
+                  FutureBuilder<List<HunspellSourceData>>(
+                    future: _sources,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      if (snapshot.hasError) {
+                        return ListTile(
+                          title: Text(
+                            l10n.hunspellSourcesLoadFailed(
+                              snapshot.error.toString(),
+                            ),
+                          ),
+                        );
+                      }
+                      if (snapshot.data!.isEmpty) {
+                        return ListTile(
+                          title: Text(l10n.noHunspellDictionaries),
+                        );
+                      }
 
-                  return Column(
-                    children: [
-                      for (final source in snapshot.data!)
-                        ListTile(
-                          leading: const Icon(Icons.book),
-                          title: Text(source.name),
-                          subtitle: Text(
-                            source.twoPassLookup
-                                ? "${source.language ?? source.affPath} • ${l10n.twoPassLookup}"
-                                : (source.language ?? source.affPath),
-                          ),
-                          onTap: () => _showSourceSettings(source),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                tooltip: l10n.hunspellDictionarySettings,
-                                icon: const Icon(Icons.tune),
-                                onPressed: () => _showSourceSettings(source),
+                      final sources = snapshot.data!;
+                      return Column(
+                        children: [
+                          for (int i = 0; i < sources.length; i++) ...[
+                            if (i > 0)
+                              Divider(
+                                height: 1,
+                                indent: 52,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant
+                                    .withValues(alpha: 0.25),
                               ),
-                              Switch(
-                                value: source.enabled,
-                                onChanged: (value) =>
-                                    _setSourceEnabled(source.id, value),
-                              ),
-                              IconButton(
-                                tooltip: l10n.remove,
-                                icon: const Icon(Icons.delete_outline),
-                                onPressed: () => _removeSource(source.id),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  );
-                },
+                            _HunspellSourceTile(
+                              source: sources[i],
+                              l10n: l10n,
+                              onShowSettings: () =>
+                                  _showSourceSettings(sources[i]),
+                              onSetEnabled: (value) =>
+                                  _setSourceEnabled(sources[i].id, value),
+                              onRemove: () => _removeSource(sources[i].id),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -220,7 +222,7 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                 ],
               ),
               actions: [
-                TextButton(
+                FilledButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   child: Text(MaterialLocalizations.of(context).okButtonLabel),
                 ),
@@ -278,5 +280,52 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
     ref.invalidate(dictionaryLookupProvider);
     ref.invalidate(validDictIdsProvider);
     ref.invalidate(wordContentProvider);
+  }
+}
+
+class _HunspellSourceTile extends StatelessWidget {
+  const _HunspellSourceTile({
+    required this.source,
+    required this.l10n,
+    required this.onShowSettings,
+    required this.onSetEnabled,
+    required this.onRemove,
+  });
+
+  final HunspellSourceData source;
+  final AppLocalizations l10n;
+  final VoidCallback onShowSettings;
+  final ValueChanged<bool> onSetEnabled;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      leading: const Icon(Icons.book),
+      title: Text(source.name),
+      subtitle: Text(
+        source.twoPassLookup
+            ? "${source.language ?? source.affPath} • ${l10n.twoPassLookup}"
+            : (source.language ?? source.affPath),
+      ),
+      onTap: onShowSettings,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: l10n.hunspellDictionarySettings,
+            icon: const Icon(Icons.tune),
+            onPressed: onShowSettings,
+          ),
+          Switch(value: source.enabled, onChanged: onSetEnabled),
+          IconButton(
+            tooltip: l10n.remove,
+            icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),
+            onPressed: onRemove,
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -8,6 +8,7 @@ import "package:ciyue/services/cloud_sync/dictionary_sync.dart";
 import "package:ciyue/services/cloud_sync/preview_service.dart";
 import "package:ciyue/services/cloud_sync/session_service.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/settings_group.dart";
 import "package:dio/dio.dart";
 import "package:file_selector/file_selector.dart" show openFile;
 import "package:material_ui/material_ui.dart";
@@ -481,228 +482,257 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text(l10n.cloudSyncDescription),
+              Text(
+                l10n.cloudSyncDescription,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<CloudSyncProvider>(
-                initialValue: _provider,
-                decoration: InputDecoration(
-                  labelText: l10n.cloudSyncProviderType,
-                ),
-                items: [
-                  for (final provider in CloudSyncProvider.values)
-                    DropdownMenuItem(
-                      value: provider,
-                      child: Text(_providerLabel(l10n, provider)),
+              SettingsFieldCard(
+                child: Column(
+                  children: [
+                    DropdownButtonFormField<CloudSyncProvider>(
+                      initialValue: _provider,
+                      decoration: InputDecoration(
+                        labelText: l10n.cloudSyncProviderType,
+                      ),
+                      items: [
+                        for (final provider in CloudSyncProvider.values)
+                          DropdownMenuItem(
+                            value: provider,
+                            child: Text(_providerLabel(l10n, provider)),
+                          ),
+                      ],
+                      onChanged: _busy ? null : _onProviderChanged,
                     ),
-                ],
-                onChanged: _busy ? null : _onProviderChanged,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                enabled: !_busy,
-                controller: _endpointController,
-                keyboardType: TextInputType.url,
-                autocorrect: false,
-                decoration: InputDecoration(
-                  labelText: switch (_provider) {
-                    CloudSyncProvider.webDav => l10n.cloudSyncWebDavUrl,
-                    CloudSyncProvider.sftp => l10n.cloudSyncSftpUrl,
-                    CloudSyncProvider.s3 => l10n.cloudSyncS3Endpoint,
-                  },
-                  hintText: switch (_provider) {
-                    CloudSyncProvider.webDav =>
-                      "https://example.com/remote.php/dav/files/user/",
-                    CloudSyncProvider.sftp =>
-                      "sftp://nas.example.com:22/backup",
-                    CloudSyncProvider.s3 => "https://s3.example.com",
-                  },
-                ),
-                onChanged: (_) => _invalidatePreview(),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                enabled: !_busy,
-                controller: _remoteRootController,
-                decoration: InputDecoration(
-                  labelText: l10n.cloudSyncRemoteFolder,
-                  hintText: "Ciyue",
-                ),
-                onChanged: (_) => _invalidatePreview(),
-              ),
-              if (_provider != CloudSyncProvider.s3) ...[
-                const SizedBox(height: 12),
-                TextField(
-                  enabled: !_busy,
-                  controller: _usernameController,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: _provider == CloudSyncProvider.sftp
-                        ? l10n.cloudSyncSftpUsername
-                        : l10n.cloudSyncUsername,
-                  ),
-                  onChanged: (_) => _invalidatePreview(),
-                ),
-              ],
-              if (_provider == CloudSyncProvider.s3) ...[
-                const SizedBox(height: 12),
-                TextField(
-                  enabled: !_busy,
-                  controller: _s3BucketController,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: l10n.cloudSyncS3Bucket,
-                  ),
-                  onChanged: (_) => _invalidatePreview(),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  enabled: !_busy,
-                  controller: _s3RegionController,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: l10n.cloudSyncS3Region,
-                    hintText: "us-east-1",
-                  ),
-                  onChanged: (_) => _invalidatePreview(),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  enabled: !_busy,
-                  controller: _s3AccessKeyController,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: l10n.cloudSyncS3AccessKey,
-                  ),
-                  onChanged: (_) => _invalidatePreview(),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  enabled: !_busy,
-                  controller: _s3SecretKeyController,
-                  obscureText: true,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: l10n.cloudSyncS3SecretKey,
-                    helperText:
-                        configuration?.provider == _provider &&
-                            configuration?.s3SecretAccessKey != null
-                        ? l10n.cloudSyncS3SecretHint
-                        : null,
-                  ),
-                  onChanged: (_) => _invalidatePreview(),
-                ),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: _s3UsePathStyle,
-                  onChanged: _busy
-                      ? null
-                      : (value) {
-                          setState(() => _s3UsePathStyle = value ?? false);
-                          _invalidatePreview();
+                    const SizedBox(height: 12),
+                    TextField(
+                      enabled: !_busy,
+                      controller: _endpointController,
+                      keyboardType: TextInputType.url,
+                      autocorrect: false,
+                      decoration: InputDecoration(
+                        labelText: switch (_provider) {
+                          CloudSyncProvider.webDav => l10n.cloudSyncWebDavUrl,
+                          CloudSyncProvider.sftp => l10n.cloudSyncSftpUrl,
+                          CloudSyncProvider.s3 => l10n.cloudSyncS3Endpoint,
                         },
-                  title: Text(l10n.cloudSyncS3PathStyle),
+                        hintText: switch (_provider) {
+                          CloudSyncProvider.webDav =>
+                            "https://example.com/remote.php/dav/files/user/",
+                          CloudSyncProvider.sftp =>
+                            "sftp://nas.example.com:22/backup",
+                          CloudSyncProvider.s3 => "https://s3.example.com",
+                        },
+                      ),
+                      onChanged: (_) => _invalidatePreview(),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      enabled: !_busy,
+                      controller: _remoteRootController,
+                      decoration: InputDecoration(
+                        labelText: l10n.cloudSyncRemoteFolder,
+                        hintText: "Ciyue",
+                      ),
+                      onChanged: (_) => _invalidatePreview(),
+                    ),
+                    if (_provider != CloudSyncProvider.s3) ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        enabled: !_busy,
+                        controller: _usernameController,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          labelText: _provider == CloudSyncProvider.sftp
+                              ? l10n.cloudSyncSftpUsername
+                              : l10n.cloudSyncUsername,
+                        ),
+                        onChanged: (_) => _invalidatePreview(),
+                      ),
+                    ],
+                    if (_provider == CloudSyncProvider.s3) ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        enabled: !_busy,
+                        controller: _s3BucketController,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          labelText: l10n.cloudSyncS3Bucket,
+                        ),
+                        onChanged: (_) => _invalidatePreview(),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        enabled: !_busy,
+                        controller: _s3RegionController,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          labelText: l10n.cloudSyncS3Region,
+                          hintText: "us-east-1",
+                        ),
+                        onChanged: (_) => _invalidatePreview(),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        enabled: !_busy,
+                        controller: _s3AccessKeyController,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          labelText: l10n.cloudSyncS3AccessKey,
+                        ),
+                        onChanged: (_) => _invalidatePreview(),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        enabled: !_busy,
+                        controller: _s3SecretKeyController,
+                        obscureText: true,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          labelText: l10n.cloudSyncS3SecretKey,
+                          helperText:
+                              configuration?.provider == _provider &&
+                                  configuration?.s3SecretAccessKey != null
+                              ? l10n.cloudSyncS3SecretHint
+                              : null,
+                        ),
+                        onChanged: (_) => _invalidatePreview(),
+                      ),
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        value: _s3UsePathStyle,
+                        onChanged: _busy
+                            ? null
+                            : (value) {
+                                setState(
+                                  () => _s3UsePathStyle = value ?? false,
+                                );
+                                _invalidatePreview();
+                              },
+                        title: Text(l10n.cloudSyncS3PathStyle),
+                      ),
+                      Text(
+                        l10n.cloudSyncS3Hint,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                    if (_provider == CloudSyncProvider.sftp) ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        enabled: !_busy,
+                        controller: _sftpFingerprintController,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          labelText: l10n.cloudSyncSftpFingerprint,
+                          helperText: l10n.cloudSyncSftpFingerprintHint,
+                        ),
+                        onChanged: (_) => _invalidatePreview(),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.cloudSyncSftpCredentialsHint,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                    if (_provider != CloudSyncProvider.s3) ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        enabled: !_busy,
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          labelText: _provider == CloudSyncProvider.sftp
+                              ? l10n.cloudSyncSftpPassword
+                              : l10n.cloudSyncPassword,
+                          helperText:
+                              configuration?.provider == _provider &&
+                                  configuration?.password != null
+                              ? l10n.cloudSyncPasswordHint
+                              : null,
+                          suffixIcon: IconButton(
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                          ),
+                        ),
+                        onChanged: (_) => _invalidatePreview(),
+                      ),
+                    ],
+                    if (_provider == CloudSyncProvider.sftp) ...[
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: _busy ? null : _chooseSftpPrivateKey,
+                        icon: const Icon(Icons.key),
+                        label: Text(l10n.cloudSyncSftpPrivateKey),
+                      ),
+                      if (_sftpPrivateKeyName case final name?)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            l10n.cloudSyncSftpPrivateKeySelected(name),
+                          ),
+                          trailing: IconButton(
+                            tooltip: l10n.cloudSyncSftpRemovePrivateKey,
+                            onPressed: _busy ? null : _clearSftpPrivateKey,
+                            icon: const Icon(Icons.delete_outline),
+                          ),
+                        )
+                      else if (configuration?.provider == _provider &&
+                          configuration?.sftpPrivateKey != null &&
+                          !_removeSftpPrivateKey)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.cloudSyncSftpSavedPrivateKey),
+                          trailing: IconButton(
+                            tooltip: l10n.cloudSyncSftpRemovePrivateKey,
+                            onPressed: _busy ? null : _clearSftpPrivateKey,
+                            icon: const Icon(Icons.delete_outline),
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        enabled: !_busy,
+                        controller: _sftpKeyPassphraseController,
+                        obscureText: true,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          labelText: l10n.cloudSyncSftpKeyPassphrase,
+                        ),
+                        onChanged: (_) => _invalidatePreview(),
+                      ),
+                    ],
+                  ],
                 ),
-                Text(l10n.cloudSyncS3Hint),
-              ],
-              if (_provider == CloudSyncProvider.sftp) ...[
-                const SizedBox(height: 12),
-                TextField(
-                  enabled: !_busy,
-                  controller: _sftpFingerprintController,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: l10n.cloudSyncSftpFingerprint,
-                    helperText: l10n.cloudSyncSftpFingerprintHint,
-                  ),
-                  onChanged: (_) => _invalidatePreview(),
-                ),
-                const SizedBox(height: 8),
-                Text(l10n.cloudSyncSftpCredentialsHint),
-              ],
-              if (_provider != CloudSyncProvider.s3) ...[
-                const SizedBox(height: 12),
-                TextField(
-                  enabled: !_busy,
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: _provider == CloudSyncProvider.sftp
-                        ? l10n.cloudSyncSftpPassword
-                        : l10n.cloudSyncPassword,
-                    helperText:
-                        configuration?.provider == _provider &&
-                            configuration?.password != null
-                        ? l10n.cloudSyncPasswordHint
-                        : null,
-                    suffixIcon: IconButton(
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+              ),
+              if (configuration?.isConfigured == true) ...[
+                const SizedBox(height: 16),
+                SettingsGroupCard(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.cloud_done),
+                      title: Text(
+                        l10n.cloudSyncSavedProfile(
+                          _providerLabel(l10n, configuration!.provider),
+                        ),
+                      ),
+                      trailing: TextButton(
+                        onPressed: _busy ? null : _disconnect,
+                        child: Text(l10n.cloudSyncDisconnect),
                       ),
                     ),
-                  ),
-                  onChanged: (_) => _invalidatePreview(),
-                ),
-              ],
-              if (_provider == CloudSyncProvider.sftp) ...[
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: _busy ? null : _chooseSftpPrivateKey,
-                  icon: const Icon(Icons.key),
-                  label: Text(l10n.cloudSyncSftpPrivateKey),
-                ),
-                if (_sftpPrivateKeyName case final name?)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.cloudSyncSftpPrivateKeySelected(name)),
-                    trailing: IconButton(
-                      tooltip: l10n.cloudSyncSftpRemovePrivateKey,
-                      onPressed: _busy ? null : _clearSftpPrivateKey,
-                      icon: const Icon(Icons.delete_outline),
-                    ),
-                  )
-                else if (configuration?.provider == _provider &&
-                    configuration?.sftpPrivateKey != null &&
-                    !_removeSftpPrivateKey)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.cloudSyncSftpSavedPrivateKey),
-                    trailing: IconButton(
-                      tooltip: l10n.cloudSyncSftpRemovePrivateKey,
-                      onPressed: _busy ? null : _clearSftpPrivateKey,
-                      icon: const Icon(Icons.delete_outline),
-                    ),
-                  ),
-                const SizedBox(height: 8),
-                TextField(
-                  enabled: !_busy,
-                  controller: _sftpKeyPassphraseController,
-                  obscureText: true,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: l10n.cloudSyncSftpKeyPassphrase,
-                  ),
-                  onChanged: (_) => _invalidatePreview(),
-                ),
-              ],
-              if (configuration?.isConfigured == true) ...[
-                const SizedBox(height: 12),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.cloud_done),
-                  title: Text(
-                    l10n.cloudSyncSavedProfile(
-                      _providerLabel(l10n, configuration!.provider),
-                    ),
-                  ),
-                  trailing: TextButton(
-                    onPressed: _busy ? null : _disconnect,
-                    child: Text(l10n.cloudSyncDisconnect),
-                  ),
+                  ],
                 ),
               ],
               const SizedBox(height: 8),
@@ -747,13 +777,36 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
               ],
               if (_statusMessage != null) ...[
                 const SizedBox(height: 12),
-                Text(
-                  _statusMessage!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: _statusMessage == l10n.cloudSyncSyncComplete
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.error,
-                  ),
+                Builder(
+                  builder: (context) {
+                    final isSuccess =
+                        _statusMessage == l10n.cloudSyncSyncComplete;
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSuccess
+                            ? theme.colorScheme.primaryContainer.withValues(
+                                alpha: 0.5,
+                              )
+                            : theme.colorScheme.errorContainer.withValues(
+                                alpha: 0.5,
+                              ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        _statusMessage!,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isSuccess
+                              ? theme.colorScheme.onPrimaryContainer
+                              : theme.colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
               if (_mismatchedCloudSpaceId != null) ...[
@@ -827,6 +880,14 @@ class _PreviewCard extends StatelessWidget {
     );
 
     return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

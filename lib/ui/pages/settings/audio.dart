@@ -26,16 +26,35 @@ class AudioItems extends ConsumerWidget {
         buildDefaultDragHandles: false,
         itemCount: mddAudioList.length + 1,
         itemBuilder: (context, index) {
+          final theme = Theme.of(context);
           if (index == mddAudioList.length) {
             return Card(
               key: ValueKey("tts_option"),
-              color: Theme.of(context).colorScheme.onInverseSurface,
+              elevation: 0,
+              color: theme.colorScheme.surfaceContainerLow,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.4,
+                  ),
+                ),
+              ),
               child: ListTile(title: const Text("TTS")),
             );
           } else {
             final mddAudio = mddAudioList[index];
             return Card(
-              color: Theme.of(context).colorScheme.onInverseSurface,
+              elevation: 0,
+              color: theme.colorScheme.surfaceContainerLow,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.4,
+                  ),
+                ),
+              ),
               key: ValueKey(mddAudio.id),
               child: ListTile(
                 leading: ReorderableDragStartListener(
@@ -44,7 +63,7 @@ class AudioItems extends ConsumerWidget {
                 ),
                 title: Text(mddAudio.title),
                 trailing: IconButton(
-                  icon: Icon(Icons.delete),
+                  icon: Icon(Icons.delete, color: theme.colorScheme.error),
                   onPressed: () async {
                     await ref
                         .read(audioModelProvider)
@@ -77,7 +96,7 @@ class AudioList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            IconButton(
+            IconButton.filledTonal(
               icon: Icon(Icons.add),
               onPressed: () async {
                 if (Platform.isAndroid) {
@@ -160,7 +179,7 @@ class TTSEngines extends StatelessWidget {
               (ttsEngines.isNotEmpty ? ttsEngines.first : null),
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)!.ttsEngines,
-            border: OutlineInputBorder(),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           items: [
             for (final engine in ttsEngines)
@@ -206,7 +225,7 @@ class TTSLanguages extends StatelessWidget {
           initialValue: settings.ttsLanguage ?? _defaultLanguage(),
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)!.ttsLanguages,
-            border: OutlineInputBorder(),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           items: [
             for (final lang in ttsLanguages)

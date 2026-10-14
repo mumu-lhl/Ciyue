@@ -37,9 +37,9 @@ void showAppSponsorSheet(BuildContext context) {
               Card(
                 elevation: 0,
                 color: Theme.of(context).colorScheme.primaryContainer
-                    .withAlpha(77),
+                    .withValues(alpha: 0.3),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -124,9 +124,11 @@ class _SponsorLinkCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Card(
-          elevation: 2,
+          elevation: 0,
+          color: cs.surfaceContainerLow,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -208,7 +210,7 @@ class _SponsorQrCard extends StatelessWidget {
     final card = AspectRatio(
       aspectRatio: 1,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Image.asset(
           imagePath,
           fit: BoxFit.cover,
