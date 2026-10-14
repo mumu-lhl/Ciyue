@@ -255,6 +255,38 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
     });
   }
 
+  /// Batch import of history words, oldest first. Deduplicates (keeping the
+  /// newest occurrence) and replaces existing rows for these words, matching
+  /// the semantics of calling [addHistory] in a loop but in far fewer
+  /// statements.
+  Future<void> addAllHistory(List<String> words) async {
+    if (words.isEmpty) {
+      return;
+    }
+    final seen = <String>{};
+    final newestFirst = <String>[];
+    for (var i = words.length - 1; i >= 0; i--) {
+      if (seen.add(words[i])) {
+        newestFirst.add(words[i]);
+      }
+    }
+    // Insert oldest first so ids ascend with recency (matches ORDER BY id
+    // DESC used by getAllHistory).
+    final ordered = newestFirst.reversed.toList();
+    // Delete in chunks to stay under SQLite's variable limit.
+    for (var i = 0; i < ordered.length; i += 500) {
+      final end = i + 500 < ordered.length ? i + 500 : ordered.length;
+      await (delete(
+        history,
+      )..where((t) => t.word.isIn(ordered.sublist(i, end)))).go();
+    }
+    await batch((b) {
+      b.insertAll(history, [
+        for (final word in ordered) HistoryCompanion(word: Value(word)),
+      ]);
+    });
+  }
+
   Future<void> clearHistory() {
     return delete(history).go();
   }
@@ -848,14 +880,17 @@ class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
     with _$TranslateHistoryDaoMixin {
   TranslateHistoryDao(super.attachedDatabase);
 
-  Future<int> addHistory(String inputText) async {
-    await deleteHistoryByInputText(inputText);
-    return into(translateHistory).insert(
-      TranslateHistoryCompanion(
-        inputText: Value(inputText),
-        createdAt: Value(DateTime.now()),
-      ),
-    );
+  Future<int> addHistory(String inputText) {
+    // Delete + insert in one transaction: fewer journal syncs and atomic.
+    return transaction(() async {
+      await deleteHistoryByInputText(inputText);
+      return into(translateHistory).insert(
+        TranslateHistoryCompanion(
+          inputText: Value(inputText),
+          createdAt: Value(DateTime.now()),
+        ),
+      );
+    });
   }
 
   Future<void> addAllHistory(List<TranslateHistoryData> data) async {

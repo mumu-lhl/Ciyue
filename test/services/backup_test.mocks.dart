@@ -1331,6 +1331,13 @@ class MockHistoryDao extends _i1.Mock implements _i6.HistoryDao {
   ) as _i7.Future<int>);
 
   @override
+  _i7.Future<void> addAllHistory(List<String>? words) => (super.noSuchMethod(
+    Invocation.method(#addAllHistory, [words]),
+    returnValue: _i7.Future<void>.value(),
+    returnValueForMissingStub: _i7.Future<void>.value(),
+  ) as _i7.Future<void>);
+
+  @override
   _i7.Future<void> clearHistory() => (super.noSuchMethod(
     Invocation.method(#clearHistory, []),
     returnValue: _i7.Future<void>.value(),

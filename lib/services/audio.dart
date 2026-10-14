@@ -50,11 +50,17 @@ Future<void> playSoundOfWord(
   if (mddAudioList.isNotEmpty) {
     final player = AudioPlayer();
 
-    for (final mddAudio in mddAudioList) {
-      final audios = await mddAudioResourceDao.getByKeyAndMddAudioID(
-        "$word.spx",
-        mddAudio.id,
-      );
+    // Query all audio packages concurrently; results stay in list order so
+    // the first playable match (by package priority) still wins.
+    final lookupResults = await Future.wait(
+      mddAudioList.map(
+        (mddAudio) =>
+            mddAudioResourceDao.getByKeyAndMddAudioID("$word.spx", mddAudio.id),
+      ),
+    );
+    for (var i = 0; i < mddAudioList.length; i++) {
+      final mddAudio = mddAudioList[i];
+      final audios = lookupResults[i];
       for (final audio in audios!) {
         if (setExtension(audio.key, "") != word) {
           continue;

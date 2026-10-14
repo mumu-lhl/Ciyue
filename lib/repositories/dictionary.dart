@@ -200,7 +200,18 @@ class Mdict implements DictionarySource {
   static const maxBatchSize = 50000;
   static const maxLoadingCount = 5000;
 
-  bool isLoading = true;
+  bool _isLoading = true;
+  bool get isLoading => _isLoading;
+  set isLoading(bool value) {
+    _isLoading = value;
+    if (!value) {
+      // Wake up any waitForLoading callers without polling.
+      _loadingCompleter?.complete();
+      _loadingCompleter = null;
+    }
+  }
+
+  Completer<void>? _loadingCompleter;
   Future<void>? _metadataInitialization;
   Future<void>? _initialization;
   Future<void>? _closeFuture;
@@ -473,15 +484,19 @@ class Mdict implements DictionarySource {
   }
 
   Future<void> waitForLoading() async {
-    final initialization = _initialization;
+    final initialization = _initialization ?? _metadataInitialization;
     if (initialization != null) {
       await initialization;
       return;
     }
 
-    while (isLoading) {
-      await Future.delayed(Duration(milliseconds: 40));
+    if (!isLoading) {
+      return;
     }
+    // No polling: the isLoading setter completes this when loading finishes.
+    // The check-then-create is race-free: no await runs in between, so the
+    // setter cannot complete a completer we haven't created yet.
+    await (_loadingCompleter ??= Completer<void>()).future;
   }
 
   Future<List<int>?> _readResourceDesktop(String filename) async {
@@ -562,10 +577,10 @@ class Mdict implements DictionarySource {
     }
 
     final data = await locateAll(headword);
-    final contents = <String>[];
-    for (final info in data) {
-      contents.add(await reader.readOneMdx(info));
-    }
+    // Read records concurrently: each read is an independent random disk
+    // access + decompression, and the reader's record-block cache is safe
+    // for concurrent use.
+    final contents = await Future.wait(data.map(reader.readOneMdx));
 
     final pathHeadwords = {...visitedHeadwords, headword};
     final resolvedContents = <String>[];
@@ -608,6 +623,30 @@ class Mdict implements DictionarySource {
 
   List<String> _linkedWords(String content) {
     const prefix = "@@@LINK=";
+    // Fast path: most entries are not links. Avoid copying MB-sized strings
+    // with replaceAll when the prefix can't be at the start (after junk).
+    final prefixIndex = content.indexOf(prefix);
+    if (prefixIndex != -1) {
+      var onlyJunkBefore = true;
+      for (var i = 0; i < prefixIndex; i++) {
+        final unit = content.codeUnitAt(i);
+        if (unit != 0xFEFF &&
+            unit != 0x00 &&
+            unit != 0x20 &&
+            unit != 0x09 &&
+            unit != 0x0A &&
+            unit != 0x0D) {
+          onlyJunkBefore = false;
+          break;
+        }
+      }
+      if (!onlyJunkBefore) {
+        return const [];
+      }
+    } else {
+      return const [];
+    }
+
     final trimmed = content
         .replaceAll("\uFEFF", "")
         .replaceAll("\u0000", "")

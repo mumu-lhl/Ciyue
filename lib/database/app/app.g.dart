@@ -4538,9 +4538,17 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final $FlashcardsTable flashcards = $FlashcardsTable(this);
   late final $FlashcardReviewLogsTable flashcardReviewLogs =
       $FlashcardReviewLogsTable(this);
+  late final drift.Index idxDictionaryListPath = drift.Index(
+    'idx_dictionary_list_path',
+    'CREATE INDEX idx_dictionary_list_path ON dictionary_list (path)',
+  );
   late final drift.Index idxWordbook = drift.Index(
     'idx_wordbook',
     'CREATE INDEX idx_wordbook ON wordbook (word, created_at)',
+  );
+  late final drift.Index idxWordbookCreatedAt = drift.Index(
+    'idx_wordbook_created_at',
+    'CREATE INDEX idx_wordbook_created_at ON wordbook (created_at)',
   );
   late final drift.Index idxWordbookTags = drift.Index(
     'idx_wordbook_tags',
@@ -4552,11 +4560,15 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   );
   late final drift.Index idxMddAudioResource = drift.Index(
     'idx_mdd_audio_resource',
-    'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")',
+    'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key", mdd_audio_list_id)',
   );
   late final drift.Index idxAiExplanations = drift.Index(
     'idx_ai_explanations',
     'CREATE INDEX idx_ai_explanations ON ai_explanations (word)',
+  );
+  late final drift.Index idxTranslateHistoryInputText = drift.Index(
+    'idx_translate_history_input_text',
+    'CREATE INDEX idx_translate_history_input_text ON translate_history (input_text)',
   );
   late final drift.Index idxOpenRecords = drift.Index(
     'idx_open_records',
@@ -4569,6 +4581,10 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final drift.Index idxFlashcardReviewLogsWord = drift.Index(
     'idx_flashcard_review_logs_word',
     'CREATE INDEX idx_flashcard_review_logs_word ON flashcard_review_logs (word)',
+  );
+  late final drift.Index idxFlashcardReviewLogsReviewedAt = drift.Index(
+    'idx_flashcard_review_logs_reviewed_at',
+    'CREATE INDEX idx_flashcard_review_logs_reviewed_at ON flashcard_review_logs (reviewed_at)',
   );
   late final DictionaryListDao dictionaryListDao = DictionaryListDao(
     this as AppDatabase,
@@ -4619,14 +4635,18 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     openRecords,
     flashcards,
     flashcardReviewLogs,
+    idxDictionaryListPath,
     idxWordbook,
+    idxWordbookCreatedAt,
     idxWordbookTags,
     idxHistoryWord,
     idxMddAudioResource,
     idxAiExplanations,
+    idxTranslateHistoryInputText,
     idxOpenRecords,
     idxFlashcardsDue,
     idxFlashcardReviewLogsWord,
+    idxFlashcardReviewLogsReviewedAt,
   ];
 }
 

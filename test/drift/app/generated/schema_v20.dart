@@ -3849,5 +3849,5 @@ class DatabaseAtV20 extends GeneratedDatabase {
     idxHistoryWord,
   ];
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 }

@@ -195,9 +195,7 @@ class BackupService {
     await wordbookTagsDao.addAllTags(backupData.wordbookTags);
 
     // Import history: add from oldest to newest to preserve order (since addHistory adds to top)
-    for (final word in backupData.history.reversed) {
-      await historyDao.addHistory(word);
-    }
+    await historyDao.addAllHistory(backupData.history.reversed.toList());
     await writingCheckHistoryDao.addAllHistory(backupData.writingCheckHistory);
     await translateHistoryDao.addAllHistory(backupData.translateHistory);
     await flashcardDao?.addAllCards(backupData.flashcards);

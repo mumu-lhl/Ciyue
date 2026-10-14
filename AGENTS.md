@@ -68,6 +68,7 @@ The project uses `justfile` to manage common development tasks.
 *   **Schema:** Managed in `lib/database/` and `drift_schemas/`.
 *   **Migrations:** Must be generated using `just make-migrations` when schema changes.
 *   **Migration workflow:** After changing a table, update the database `schemaVersion` and add the corresponding `fromNToN+1` migration step. Run `just build_runner`, then `just make-migrations`. Review the table change, migration semantics, and migration tests before running `flutter test`; generated output only needs a successful-generation and expected-version sanity check.
+*   **make-migrations quirk (2026-10-15):** `drift_dev make-migrations` silently drops index entities when regenerating Dart test fixtures (`test/drift/*/generated/schema_vN.dart`) and `app.steps.dart` for a schema version whose `drift_schema_vN.json` was hand-authored (observed with v20's `idx_history_word`). The JSON itself is read correctly. If this happens, manually add the missing index to `SchemaN` in `app.steps.dart` and to `DatabaseAtVN` in the test fixture, then verify with the migration test.
 *   **Generated files:** Do not edit Drift-generated files manually. Keep all existing schema versions; only add the new version and its migration. Commit generated files required by the build, but do not review them line by line.
 
 ### Translations

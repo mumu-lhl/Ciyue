@@ -181,7 +181,7 @@ void main() {
           .thenAnswer((_) async => jsonContent);
       when(mockWordbookModel.addAllWords(any)).thenAnswer((_) async {});
       when(mockWordbookTagsDao.addAllTags(any)).thenAnswer((_) async {});
-      when(mockHistoryDao.addHistory(any)).thenAnswer((_) async => 1);
+      when(mockHistoryDao.addAllHistory(any)).thenAnswer((_) async {});
       when(mockWritingCheckHistoryDao.addAllHistory(any))
           .thenAnswer((_) async {});
       when(mockTranslateHistoryDao.addAllHistory(any)).thenAnswer((_) async {});
@@ -190,9 +190,8 @@ void main() {
 
       verify(mockWordbookModel.addAllWords(any)).called(1);
       verify(mockWordbookTagsDao.addAllTags(any)).called(1);
-      // History should be added in reverse order: history2 then history1
-      verify(mockHistoryDao.addHistory("history2")).called(1);
-      verify(mockHistoryDao.addHistory("history1")).called(1);
+      // History should be imported oldest-first in a single batch call.
+      verify(mockHistoryDao.addAllHistory(["history2", "history1"])).called(1);
       verify(mockWritingCheckHistoryDao.addAllHistory(any)).called(1);
       verify(mockTranslateHistoryDao.addAllHistory(any)).called(1);
     });

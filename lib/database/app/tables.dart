@@ -9,6 +9,7 @@ class DictGroup extends Table {
 /// Type:
 /// 0: Old way, needs database to store dictionary info.
 /// 1: New way, does not need database to store dictionary info.
+@TableIndex(name: "idx_dictionary_list_path", columns: {#path})
 class DictionaryList extends Table {
   TextColumn get title => text().nullable()();
   TextColumn get fontPath => text().nullable()();
@@ -45,7 +46,7 @@ class MddAudioList extends Table {
   IntColumn get order => integer()();
 }
 
-@TableIndex(name: "idx_mdd_audio_resource", columns: {#key})
+@TableIndex(name: "idx_mdd_audio_resource", columns: {#key, #mddAudioListId})
 class MddAudioResource extends Table {
   IntColumn get blockOffset => integer()();
   IntColumn get compressedSize => integer()();
@@ -56,6 +57,7 @@ class MddAudioResource extends Table {
 }
 
 @TableIndex(name: "idx_wordbook", columns: {#word, #createdAt})
+@TableIndex(name: "idx_wordbook_created_at", columns: {#createdAt})
 class Wordbook extends Table {
   DateTimeColumn get createdAt => dateTime()();
   IntColumn get tag => integer().nullable()();
@@ -81,6 +83,7 @@ class WritingCheckHistory extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
+@TableIndex(name: "idx_translate_history_input_text", columns: {#inputText})
 class TranslateHistory extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get inputText => text()();
@@ -110,6 +113,10 @@ class Flashcards extends Table {
 }
 
 @TableIndex(name: "idx_flashcard_review_logs_word", columns: {#word})
+@TableIndex(
+  name: "idx_flashcard_review_logs_reviewed_at",
+  columns: {#reviewedAt},
+)
 class FlashcardReviewLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get word => text()();

@@ -142,10 +142,19 @@ class AppDatabase extends _$AppDatabase {
         from19To20: (m, schema) async {
           await m.createIndex(schema.idxHistoryWord);
         },
+        from20To21: (m, schema) async {
+          await m.createIndex(schema.idxDictionaryListPath);
+          await m.createIndex(schema.idxTranslateHistoryInputText);
+          // Replace the single-column index with the composite one.
+          await m.drop(schema.idxMddAudioResource);
+          await m.createIndex(schema.idxMddAudioResource);
+          await m.createIndex(schema.idxFlashcardReviewLogsReviewedAt);
+          await m.createIndex(schema.idxWordbookCreatedAt);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 }

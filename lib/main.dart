@@ -21,6 +21,9 @@ import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Show a splash immediately so the first frame isn't blocked on disk I/O
+  // (prefs migration) and heavy init.
+  runApp(const _StartupSplash());
   try {
     drift.driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
@@ -41,6 +44,18 @@ void main() async {
       ProviderScope(
         child: MaterialApp(home: CiyueError(error: e)),
       ),
+    );
+  }
+}
+
+/// Minimal splash shown while prefs migrate and the app initializes.
+class _StartupSplash extends StatelessWidget {
+  const _StartupSplash();
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: Scaffold(body: Center(child: CircularProgressIndicator())),
     );
   }
 }
