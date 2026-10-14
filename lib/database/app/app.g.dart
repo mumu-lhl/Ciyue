@@ -4546,6 +4546,10 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     'idx_wordbook_tags',
     'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)',
   );
+  late final drift.Index idxHistoryWord = drift.Index(
+    'idx_history_word',
+    'CREATE INDEX idx_history_word ON history (word)',
+  );
   late final drift.Index idxMddAudioResource = drift.Index(
     'idx_mdd_audio_resource',
     'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")',
@@ -4617,6 +4621,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     flashcardReviewLogs,
     idxWordbook,
     idxWordbookTags,
+    idxHistoryWord,
     idxMddAudioResource,
     idxAiExplanations,
     idxOpenRecords,
@@ -4821,7 +4826,14 @@ class $$DictionaryListTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$DictionaryListTable, DictionaryListData>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $DictionaryListTable,
+                    DictionaryListData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -5086,7 +5098,14 @@ class $$HunspellSourceTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$HunspellSourceTable, HunspellSourceData>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $HunspellSourceTable,
+                    HunspellSourceData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -5252,7 +5271,14 @@ class $$WordbookTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$WordbookTable, WordbookData>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $WordbookTable,
+                    WordbookData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -5384,7 +5410,14 @@ class $$WordbookTagsTableTableManager
           }) => WordbookTagsCompanion.insert(id: id, tag: tag),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$WordbookTagsTable, WordbookTag>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $WordbookTagsTable,
+                    WordbookTag
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -5513,7 +5546,14 @@ class $$HistoryTableTableManager
           }) => HistoryCompanion.insert(id: id, word: word),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$HistoryTable, HistoryData>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $HistoryTable,
+                    HistoryData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -5659,7 +5699,14 @@ class $$DictGroupTableTableManager
           }) => DictGroupCompanion.insert(dictIds: dictIds, id: id, name: name),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$DictGroupTable, DictGroupData>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $DictGroupTable,
+                    DictGroupData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -5840,7 +5887,14 @@ class $$MddAudioListTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$MddAudioListTable, MddAudioListData>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $MddAudioListTable,
+                    MddAudioListData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -6079,7 +6133,16 @@ class $$MddAudioResourceTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$MddAudioResourceTable, MddAudioResourceData>(
+                    table,
+                  ),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $MddAudioResourceTable,
+                    MddAudioResourceData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -6236,7 +6299,14 @@ class $$AiExplanationsTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$AiExplanationsTable, AiExplanation>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $AiExplanationsTable,
+                    AiExplanation
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -6431,7 +6501,17 @@ class $$WritingCheckHistoryTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<
+                    $WritingCheckHistoryTable,
+                    WritingCheckHistoryData
+                  >(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $WritingCheckHistoryTable,
+                    WritingCheckHistoryData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -6599,7 +6679,16 @@ class $$TranslateHistoryTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$TranslateHistoryTable, TranslateHistoryData>(
+                    table,
+                  ),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $TranslateHistoryTable,
+                    TranslateHistoryData
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -6756,7 +6845,14 @@ class $$OpenRecordsTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$OpenRecordsTable, OpenRecord>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $OpenRecordsTable,
+                    OpenRecord
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -7019,7 +7115,14 @@ class $$FlashcardsTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$FlashcardsTable, Flashcard>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $FlashcardsTable,
+                    Flashcard
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -7231,7 +7334,16 @@ class $$FlashcardReviewLogsTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$FlashcardReviewLogsTable, FlashcardReviewLog>(
+                    table,
+                  ),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $FlashcardReviewLogsTable,
+                    FlashcardReviewLog
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
