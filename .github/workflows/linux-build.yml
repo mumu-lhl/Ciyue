@@ -84,9 +84,11 @@ jobs:
             curl dpkg git jq clang cmake ninja patchelf python rpm-tools \
             unzip wget xz gtk3 libx11 libxi gstreamer \
             libkeybinder3 libsecret wpewebkit \
-            gst-plugins-bad libinput
-          # libinput is required by libWPEWebKit (links libinput.so.10);
-          # the bundler copies it into the Linux package from this container.
+            gst-plugins-bad libinput enchant libtasn1 hyphen
+          # libWPEWebKit's DT_NEEDED closure needs these from the container;
+          # the bundler copies them into the Linux package:
+          # libinput (libinput.so.10), enchant (libenchant-2.so.2),
+          # libtasn1 (libtasn1.so.6), hyphen (libhyphen.so.0).
 
           git config --global --add safe.directory '*'
           pacman -Q glibc wpewebkit libwpe wpebackend-fdo
