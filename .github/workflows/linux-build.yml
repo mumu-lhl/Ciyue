@@ -84,7 +84,9 @@ jobs:
             curl dpkg git jq clang cmake ninja patchelf python rpm-tools \
             unzip wget xz gtk3 libx11 libxi gstreamer \
             libkeybinder3 libsecret wpewebkit \
-            gst-plugins-bad
+            gst-plugins-bad libinput
+          # libinput is required by libWPEWebKit (links libinput.so.10);
+          # the bundler copies it into the Linux package from this container.
 
           git config --global --add safe.directory '*'
           pacman -Q glibc wpewebkit libwpe wpebackend-fdo
