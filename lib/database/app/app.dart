@@ -139,10 +139,13 @@ class AppDatabase extends _$AppDatabase {
             schema.hunspellSource.twoPassLookup,
           );
         },
+        from19To20: (m, schema) async {
+          await m.createIndex(schema.idxHistoryWord);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 }

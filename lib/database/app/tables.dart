@@ -30,6 +30,9 @@ class HunspellSource extends Table {
       boolean().withDefault(const Constant(false))();
 }
 
+/// Index on `word`: every lookup does `DELETE WHERE word = ?` followed by an
+/// insert, so the delete must not scan the whole table.
+@TableIndex(name: "idx_history_word", columns: {#word})
 class History extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get word => text()();

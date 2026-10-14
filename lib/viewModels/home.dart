@@ -13,8 +13,14 @@ class HistoryModel extends HistoryViewModel<HistoryData> {
     if (!settings.enableHistory) {
       return;
     }
-    await historyDao.addHistory(word);
-    await loadHistory();
+    final id = await historyDao.addHistory(word);
+    // Update the in-memory list directly instead of reloading the whole
+    // table: the new entry goes first (matching `ORDER BY id DESC`).
+    setHistory([
+      HistoryData(id: id, word: word),
+      for (final entry in history)
+        if (entry.word != word) entry,
+    ]);
   }
 
   void clearHistory() async {

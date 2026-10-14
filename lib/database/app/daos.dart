@@ -247,9 +247,12 @@ class HunspellSourceDao extends DatabaseAccessor<AppDatabase>
 class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
   HistoryDao(super.attachedDatabase);
 
-  Future<int> addHistory(String word) async {
-    await removeHistory(word);
-    return into(history).insert(HistoryCompanion(word: Value(word)));
+  Future<int> addHistory(String word) {
+    // Delete + insert in one transaction: fewer journal syncs and atomic.
+    return transaction(() async {
+      await removeHistory(word);
+      return into(history).insert(HistoryCompanion(word: Value(word)));
+    });
   }
 
   Future<void> clearHistory() {
