@@ -3049,6 +3049,253 @@ final class Schema19 extends i0.VersionedSchema {
   );
 }
 
+final class Schema20 extends i0.VersionedSchema {
+  Schema20({required super.database}) : super(version: 20);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    dictionaryList,
+    hunspellSource,
+    wordbook,
+    wordbookTags,
+    history,
+    dictGroup,
+    mddAudioList,
+    mddAudioResource,
+    aiExplanations,
+    writingCheckHistory,
+    translateHistory,
+    openRecords,
+    flashcards,
+    flashcardReviewLogs,
+    idxWordbook,
+    idxWordbookTags,
+    idxMddAudioResource,
+    idxAiExplanations,
+    idxOpenRecords,
+    idxFlashcardsDue,
+    idxFlashcardReviewLogsWord,
+    idxHistoryWord,
+  ];
+  late final Shape15 dictionaryList = Shape15(
+    source: i0.VersionedTable(
+      entityName: 'dictionary_list',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_27,
+        _column_28,
+        _column_29,
+        _column_30,
+        _column_31,
+        _column_32,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape24 hunspellSource = Shape24(
+    source: i0.VersionedTable(
+      entityName: 'hunspell_source',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_29,
+        _column_61,
+        _column_62,
+        _column_63,
+        _column_64,
+        _column_65,
+        _column_66,
+        _column_67,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape17 wordbook = Shape17(
+    source: i0.VersionedTable(
+      entityName: 'wordbook',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_33, _column_34, _column_35],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape3 wordbookTags = Shape3(
+    source: i0.VersionedTable(
+      entityName: 'wordbook_tags',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_36],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape4 history = Shape4(
+    source: i0.VersionedTable(
+      entityName: 'history',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_35],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape5 dictGroup = Shape5(
+    source: i0.VersionedTable(
+      entityName: 'dict_group',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_37, _column_29, _column_38],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape8 mddAudioList = Shape8(
+    source: i0.VersionedTable(
+      entityName: 'mdd_audio_list',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_31, _column_39, _column_40],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape9 mddAudioResource = Shape9(
+    source: i0.VersionedTable(
+      entityName: 'mdd_audio_resource',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_41,
+        _column_42,
+        _column_43,
+        _column_44,
+        _column_45,
+        _column_46,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape10 aiExplanations = Shape10(
+    source: i0.VersionedTable(
+      entityName: 'ai_explanations',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_47, _column_48],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape18 writingCheckHistory = Shape18(
+    source: i0.VersionedTable(
+      entityName: 'writing_check_history',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_49, _column_50, _column_33],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape19 translateHistory = Shape19(
+    source: i0.VersionedTable(
+      entityName: 'translate_history',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_49, _column_33],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape20 openRecords = Shape20(
+    source: i0.VersionedTable(
+      entityName: 'open_records',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_35, _column_33],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape21 flashcards = Shape21(
+    source: i0.VersionedTable(
+      entityName: 'flashcards',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(word)'],
+      columns: [
+        _column_35,
+        _column_51,
+        _column_52,
+        _column_53,
+        _column_54,
+        _column_55,
+        _column_56,
+        _column_57,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape22 flashcardReviewLogs = Shape22(
+    source: i0.VersionedTable(
+      entityName: 'flashcard_review_logs',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_35, _column_58, _column_59, _column_60],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Index idxWordbook = i1.Index(
+    'idx_wordbook',
+    'CREATE INDEX idx_wordbook ON wordbook (word, created_at)',
+  );
+  final i1.Index idxWordbookTags = i1.Index(
+    'idx_wordbook_tags',
+    'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)',
+  );
+  final i1.Index idxMddAudioResource = i1.Index(
+    'idx_mdd_audio_resource',
+    'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key")',
+  );
+  final i1.Index idxAiExplanations = i1.Index(
+    'idx_ai_explanations',
+    'CREATE INDEX idx_ai_explanations ON ai_explanations (word)',
+  );
+  final i1.Index idxOpenRecords = i1.Index(
+    'idx_open_records',
+    'CREATE INDEX idx_open_records ON open_records (word, created_at)',
+  );
+  final i1.Index idxFlashcardsDue = i1.Index(
+    'idx_flashcards_due',
+    'CREATE INDEX idx_flashcards_due ON flashcards (due)',
+  );
+  final i1.Index idxFlashcardReviewLogsWord = i1.Index(
+    'idx_flashcard_review_logs_word',
+    'CREATE INDEX idx_flashcard_review_logs_word ON flashcard_review_logs (word)',
+  );
+  final i1.Index idxHistoryWord = i1.Index(
+    'idx_history_word',
+    'CREATE INDEX idx_history_word ON history (word)',
+  );
+}
+
 class Shape24 extends i0.VersionedTable {
   Shape24({required super.source, required super.alias}) : super.aliased();
   i1.GeneratedColumn<int> get id =>
@@ -3098,6 +3345,7 @@ i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema17 schema) from16To17,
   required Future<void> Function(i1.Migrator m, Schema18 schema) from17To18,
   required Future<void> Function(i1.Migrator m, Schema19 schema) from18To19,
+  required Future<void> Function(i1.Migrator m, Schema20 schema) from19To20,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -3191,6 +3439,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from18To19(migrator, schema);
         return 19;
+      case 19:
+        final schema = Schema20(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from19To20(migrator, schema);
+        return 20;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -3216,6 +3469,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema17 schema) from16To17,
   required Future<void> Function(i1.Migrator m, Schema18 schema) from17To18,
   required Future<void> Function(i1.Migrator m, Schema19 schema) from18To19,
+  required Future<void> Function(i1.Migrator m, Schema20 schema) from19To20,
 }) => i0.VersionedSchema.stepByStepHelper(
   step: migrationSteps(
     from1To2: from1To2,
@@ -3236,5 +3490,6 @@ i1.OnUpgrade stepByStep({
     from16To17: from16To17,
     from17To18: from17To18,
     from18To19: from18To19,
+    from19To20: from19To20,
   ),
 );
