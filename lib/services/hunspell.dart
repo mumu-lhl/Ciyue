@@ -1,5 +1,6 @@
 import "dart:async";
 import "dart:io";
+import "dart:isolate";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/hunspell.dart";
@@ -18,14 +19,258 @@ class _LoadedHunspellSource {
   const _LoadedHunspellSource({required this.source, required this.dictionary});
 }
 
+// Worker isolate messages. All cross-isolate data must be simple values.
+class _ReloadRequest {
+  final List<HunspellSourceInfo> sources;
+  final SendPort replyPort;
+
+  const _ReloadRequest(this.sources, this.replyPort);
+}
+
+class _ReloadResult {
+  final int loadedCount;
+  final Map<int, String> errors;
+
+  const _ReloadResult(this.loadedCount, this.errors);
+}
+
+class _StemsRequest {
+  final String word;
+  final SendPort replyPort;
+
+  const _StemsRequest(this.word, this.replyPort);
+}
+
+class _SuggestionsRequest {
+  final String word;
+  final SendPort replyPort;
+
+  const _SuggestionsRequest(this.word, this.replyPort);
+}
+
+class _CloseRequest {
+  final SendPort replyPort;
+
+  const _CloseRequest(this.replyPort);
+}
+
+/// Worker isolate entry point. Owns all HunspellDictionary native handles
+/// so synchronous FFI calls never run on the UI thread.
+///
+/// Read/write separation: `stems`/`suggestions` always use the currently
+/// active dictionaries. A `reload` loads new dictionaries asynchronously
+/// without blocking the message loop, so queries keep serving (with the old
+/// dictionaries) instead of head-of-line blocking behind a slow reload.
+void _hunspellWorker(SendPort sendPort) {
+  final receivePort = ReceivePort();
+  sendPort.send(receivePort.sendPort);
+
+  var dictionaries = <_LoadedHunspellSource>[];
+  var errors = <int, String>{};
+  var reloadInProgress = false;
+
+  Future<_ReloadResult> doReload(List<HunspellSourceInfo> sources) async {
+    final newDictionaries = <_LoadedHunspellSource>[];
+    final newErrors = <int, String>{};
+
+    for (final source in sources) {
+      if (!source.enabled) continue;
+
+      if (!await File(source.affPath).exists() ||
+          !await File(source.dicPath).exists()) {
+        newErrors[source.id] = "Hunspell files are missing";
+        continue;
+      }
+
+      try {
+        final dictionary = HunspellDictionary.open(
+          affPath: source.affPath,
+          dicPath: source.dicPath,
+        );
+        newDictionaries.add(
+          _LoadedHunspellSource(source: source, dictionary: dictionary),
+        );
+      } catch (error) {
+        newErrors[source.id] = error.toString();
+      }
+    }
+
+    // Atomically swap: close old dictionaries only after new ones are ready.
+    for (final item in dictionaries) {
+      item.dictionary.close();
+    }
+    dictionaries = newDictionaries;
+    errors = newErrors;
+
+    return _ReloadResult(dictionaries.length, Map.of(errors));
+  }
+
+  List<String> doStems(String word) {
+    final trimmed = word.trim();
+    if (trimmed.isEmpty) return const <String>[];
+
+    final tokens = trimmed.split(RegExp(r"\s+"));
+    if (tokens.length == 1) {
+      return _singleWordStems(dictionaries, trimmed);
+    }
+    return _phraseStems(dictionaries, tokens, trimmed);
+  }
+
+  List<String> doSuggestions(String word) {
+    final results = <String>{};
+    for (final item in dictionaries) {
+      results.addAll(item.dictionary.suggest(word));
+    }
+    return results.toList(growable: false);
+  }
+
+  receivePort.listen((message) {
+    if (message is _ReloadRequest) {
+      if (reloadInProgress) {
+        // A reload is already running; ack with current state to avoid
+        // stacking redundant reloads.
+        message.replyPort.send(
+          _ReloadResult(dictionaries.length, Map.of(errors)),
+        );
+        return;
+      }
+      reloadInProgress = true;
+      // Don't await: keep serving queries with the old dictionaries
+      // while the new ones load.
+      doReload(message.sources).then((result) {
+        reloadInProgress = false;
+        message.replyPort.send(result);
+      });
+    } else if (message is _StemsRequest) {
+      message.replyPort.send(doStems(message.word));
+    } else if (message is _SuggestionsRequest) {
+      message.replyPort.send(doSuggestions(message.word));
+    } else if (message is _CloseRequest) {
+      for (final item in dictionaries) {
+        item.dictionary.close();
+      }
+      dictionaries = [];
+      errors = {};
+      message.replyPort.send(null);
+      receivePort.close();
+    }
+  });
+}
+
+List<String> _singleWordStems(
+  List<_LoadedHunspellSource> dictionaries,
+  String word,
+) {
+  final results = <String>{};
+  for (final item in dictionaries) {
+    results.addAll(
+      item.dictionary.stem(word, twoPass: item.source.twoPassLookup),
+    );
+  }
+  return results.toList(growable: false);
+}
+
+List<String> _phraseStems(
+  List<_LoadedHunspellSource> dictionaries,
+  List<String> tokens,
+  String originalPhrase,
+) {
+  const maxPhraseWords = 5;
+  const maxCombinations = 32;
+
+  if (tokens.length > maxPhraseWords) {
+    return _singleWordStems(dictionaries, originalPhrase);
+  }
+
+  final direct = _singleWordStems(dictionaries, originalPhrase);
+
+  var hasAnyStem = false;
+  final tokenCandidates = <List<String>>[];
+  for (final token in tokens) {
+    final stems = _singleWordStems(dictionaries, token);
+    if (stems.isNotEmpty && !(stems.length == 1 && stems.first == token)) {
+      hasAnyStem = true;
+    }
+    tokenCandidates.add(<String>{token, ...stems}.toList(growable: false));
+  }
+
+  if (!hasAnyStem) {
+    return direct;
+  }
+
+  final normalizedOriginal = tokens.join(" ");
+  final results = <String>{...direct};
+
+  var combinations = <List<String>>[[]];
+  for (final candidates in tokenCandidates) {
+    final next = <List<String>>[];
+    for (final prefix in combinations) {
+      for (final candidate in candidates) {
+        next.add([...prefix, candidate]);
+        if (next.length >= maxCombinations) break;
+      }
+      if (next.length >= maxCombinations) break;
+    }
+    combinations = next;
+  }
+
+  for (final combo in combinations) {
+    final phrase = combo.join(" ");
+    if (phrase.toLowerCase() != normalizedOriginal.toLowerCase()) {
+      results.add(phrase);
+    }
+  }
+
+  return results.toList(growable: false);
+}
+
 final hunspellManager = HunspellManager();
 
+/// Hunspell morphology provider backed by a dedicated worker isolate.
+///
+/// All native HunspellDictionary handles live in the worker isolate, so the
+/// synchronous FFI calls in `stems`/`suggestions` never block the UI thread.
+/// Reloads run asynchronously in the worker without head-of-line blocking
+/// queries (queries keep using the previous dictionaries until the reload
+/// completes and swaps atomically).
 class HunspellManager implements MorphologyProvider {
-  final List<_LoadedHunspellSource> _loadedSources = [];
-  final Map<int, String> errors = {};
-  Future<void> _operationTail = Future<void>.value();
+  SendPort? _workerPort;
+  Future<void>? _spawnFuture;
 
-  int get loadedSourceCount => _loadedSources.length;
+  int _loadedSourceCount = 0;
+  final Map<int, String> errors = {};
+
+  int get loadedSourceCount => _loadedSourceCount;
+
+  Future<SendPort> _ensureWorker() async {
+    final existing = _workerPort;
+    if (existing != null) return existing;
+
+    var spawn = _spawnFuture;
+    if (spawn == null) {
+      final receivePort = ReceivePort();
+      spawn = Isolate.spawn(_hunspellWorker, receivePort.sendPort).then((
+        _,
+      ) async {
+        final port = await receivePort.first as SendPort;
+        _workerPort = port;
+      });
+      _spawnFuture = spawn;
+    }
+    await spawn;
+    return _workerPort!;
+  }
+
+  Future<T> _request<T>(Object Function(SendPort) buildRequest) async {
+    final worker = await _ensureWorker();
+    final replyPort = ReceivePort();
+    worker.send(buildRequest(replyPort.sendPort));
+    try {
+      return await replyPort.first as T;
+    } finally {
+      replyPort.close();
+    }
+  }
 
   Future<void> reloadFromDatabase() async {
     final sources = await hunspellSourceDao.all();
@@ -45,155 +290,37 @@ class HunspellManager implements MorphologyProvider {
     );
   }
 
-  Future<void> reload(Iterable<HunspellSourceInfo> sources) {
-    final sourceList = sources.toList(growable: false);
-    return _enqueue(() async {
-      _closeLoadedDictionaries();
-      errors.clear();
-
-      for (final source in sourceList) {
-        if (!source.enabled) {
-          continue;
-        }
-
-        if (!await File(source.affPath).exists() ||
-            !await File(source.dicPath).exists()) {
-          errors[source.id] = "Hunspell files are missing";
-          continue;
-        }
-
-        try {
-          final dictionary = HunspellDictionary.open(
-            affPath: source.affPath,
-            dicPath: source.dicPath,
-          );
-          _loadedSources.add(
-            _LoadedHunspellSource(source: source, dictionary: dictionary),
-          );
-        } catch (error) {
-          errors[source.id] = error.toString();
-        }
-      }
-    });
+  Future<void> reload(Iterable<HunspellSourceInfo> sources) async {
+    final result = await _request<_ReloadResult>(
+      (reply) => _ReloadRequest(sources.toList(growable: false), reply),
+    );
+    _loadedSourceCount = result.loadedCount;
+    errors
+      ..clear()
+      ..addAll(result.errors);
   }
 
   @override
   Future<List<String>> stems(String word) {
-    return _enqueue(() {
-      final trimmed = word.trim();
-      if (trimmed.isEmpty) {
-        return const <String>[];
-      }
-
-      final tokens = trimmed.split(RegExp(r"\s+"));
-      if (tokens.length == 1) {
-        return _singleWordStems(trimmed);
-      }
-
-      return _phraseStems(tokens, trimmed);
-    });
-  }
-
-  List<String> _singleWordStems(String word) {
-    final results = <String>{};
-    for (final item in _loadedSources) {
-      results.addAll(
-        item.dictionary.stem(word, twoPass: item.source.twoPassLookup),
-      );
-    }
-    return results.toList(growable: false);
-  }
-
-  List<String> _phraseStems(List<String> tokens, String originalPhrase) {
-    const maxPhraseWords = 5;
-    const maxCombinations = 32;
-
-    if (tokens.length > maxPhraseWords) {
-      return _singleWordStems(originalPhrase);
-    }
-
-    final direct = _singleWordStems(originalPhrase);
-
-    var hasAnyStem = false;
-    final tokenCandidates = <List<String>>[];
-    for (final token in tokens) {
-      final stems = _singleWordStems(token);
-      if (stems.isNotEmpty && !(stems.length == 1 && stems.first == token)) {
-        hasAnyStem = true;
-      }
-      tokenCandidates.add(<String>{token, ...stems}.toList(growable: false));
-    }
-
-    if (!hasAnyStem) {
-      return direct;
-    }
-
-    final normalizedOriginal = tokens.join(" ");
-    final results = <String>{...direct};
-
-    var combinations = <List<String>>[[]];
-    for (final candidates in tokenCandidates) {
-      final next = <List<String>>[];
-      for (final prefix in combinations) {
-        for (final candidate in candidates) {
-          next.add([...prefix, candidate]);
-          if (next.length >= maxCombinations) {
-            break;
-          }
-        }
-        if (next.length >= maxCombinations) {
-          break;
-        }
-      }
-      combinations = next;
-    }
-
-    for (final combo in combinations) {
-      final phrase = combo.join(" ");
-      if (phrase.toLowerCase() != normalizedOriginal.toLowerCase()) {
-        results.add(phrase);
-      }
-    }
-
-    return results.toList(growable: false);
+    return _request<List<String>>((reply) => _StemsRequest(word, reply));
   }
 
   @override
   Future<List<String>> suggestions(String word) {
-    return _enqueue(() {
-      final results = <String>{};
-      for (final item in _loadedSources) {
-        results.addAll(item.dictionary.suggest(word));
-      }
-      return results.toList(growable: false);
-    });
+    return _request<List<String>>((reply) => _SuggestionsRequest(word, reply));
   }
 
-  Future<void> close() {
-    return _enqueue(() {
-      _closeLoadedDictionaries();
-      errors.clear();
-    });
-  }
-
-  void _closeLoadedDictionaries() {
-    for (final item in _loadedSources) {
-      item.dictionary.close();
+  Future<void> close() async {
+    final worker = _workerPort;
+    _workerPort = null;
+    _spawnFuture = null;
+    _loadedSourceCount = 0;
+    errors.clear();
+    if (worker != null) {
+      final replyPort = ReceivePort();
+      worker.send(_CloseRequest(replyPort.sendPort));
+      await replyPort.first;
+      replyPort.close();
     }
-    _loadedSources.clear();
-  }
-
-  Future<T> _enqueue<T>(FutureOr<T> Function() operation) {
-    final completer = Completer<T>();
-
-    _operationTail = _operationTail.then<void>((_) async {
-      try {
-        completer.complete(await operation());
-      } catch (error, stackTrace) {
-        completer.completeError(error, stackTrace);
-      }
-    });
-
-    return completer.future;
   }
 }

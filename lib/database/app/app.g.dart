@@ -4550,6 +4550,10 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     'idx_wordbook_created_at',
     'CREATE INDEX idx_wordbook_created_at ON wordbook (created_at)',
   );
+  late final drift.Index idxWordbookWordTag = drift.Index(
+    'idx_wordbook_word_tag',
+    'CREATE UNIQUE INDEX idx_wordbook_word_tag ON wordbook (word, tag)',
+  );
   late final drift.Index idxWordbookTags = drift.Index(
     'idx_wordbook_tags',
     'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)',
@@ -4568,7 +4572,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   );
   late final drift.Index idxTranslateHistoryInputText = drift.Index(
     'idx_translate_history_input_text',
-    'CREATE INDEX idx_translate_history_input_text ON translate_history (input_text)',
+    'CREATE UNIQUE INDEX idx_translate_history_input_text ON translate_history (input_text)',
   );
   late final drift.Index idxOpenRecords = drift.Index(
     'idx_open_records',
@@ -4638,6 +4642,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     idxDictionaryListPath,
     idxWordbook,
     idxWordbookCreatedAt,
+    idxWordbookWordTag,
     idxWordbookTags,
     idxHistoryWord,
     idxMddAudioResource,

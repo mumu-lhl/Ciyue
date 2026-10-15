@@ -102,13 +102,18 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     }
 
     for (final dictId in widget.validDictIds) {
+      final expanded = _isExpanded[panelIndex];
       panels.add(
         ExpansionPanel(
           headerBuilder: (context, isExpanded) {
             return ListTile(title: Text(dictManager.dicts[dictId]!.title));
           },
-          body: buildWebView(widget.word, dictId, true),
-          isExpanded: _isExpanded[panelIndex],
+          // Lazy-load the WebView only when expanded; collapsed panels
+          // keep a placeholder instead of instantiating N WebViews upfront.
+          body: expanded
+              ? buildWebView(widget.word, dictId, true)
+              : const SizedBox.shrink(),
+          isExpanded: expanded,
           canTapOnHeader: true,
         ),
       );

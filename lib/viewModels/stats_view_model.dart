@@ -60,12 +60,26 @@ abstract class StatsViewModel<T> with ChangeNotifier {
   Future<List<T>> fetchData();
   DateTime getCreatedAt(T item);
 
+  /// Override to fetch pre-aggregated counts from SQL instead of pulling
+  /// the full table and aggregating in Dart. If null, falls back to
+  /// fetchData() + Dart aggregation.
+  Future<Map<DateTime, int>>? fetchCounts() => null;
+
   void _fetchStats() async {
-    final items = await fetchData();
-    for (final item in items) {
-      final createdAt = getCreatedAt(item);
-      final day = DateTime.utc(createdAt.year, createdAt.month, createdAt.day);
-      _counts[day] = (_counts[day] ?? 0) + 1;
+    final counts = await fetchCounts();
+    if (counts != null) {
+      _counts.addAll(counts);
+    } else {
+      final items = await fetchData();
+      for (final item in items) {
+        final createdAt = getCreatedAt(item);
+        final day = DateTime.utc(
+          createdAt.year,
+          createdAt.month,
+          createdAt.day,
+        );
+        _counts[day] = (_counts[day] ?? 0) + 1;
+      }
     }
     _isLoading = false;
     notifyListeners();

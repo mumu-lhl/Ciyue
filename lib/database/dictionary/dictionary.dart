@@ -51,9 +51,10 @@ class DictionaryDatabase extends _$DictionaryDatabase {
   int get schemaVersion => 5;
 
   Future<DictionaryData> getOffset(String word) async {
-    return (await (select(
-      dictionary,
-    )..where((u) => u.key.isValue(word))).get())[0];
+    return (await (select(dictionary)
+          ..where((u) => u.key.isValue(word))
+          ..limit(1))
+        .get())[0];
   }
 
   Future<void> insertResource(List<ResourceCompanion> resource) async {

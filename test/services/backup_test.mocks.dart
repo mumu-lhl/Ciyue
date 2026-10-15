@@ -272,6 +272,12 @@ class MockWordbookDao extends _i1.Mock implements _i6.WordbookDao {
   ) as _i7.Future<int>);
 
   @override
+  _i7.Future<Map<DateTime, int>> countWordsByDay() => (super.noSuchMethod(
+    Invocation.method(#countWordsByDay, []),
+    returnValue: _i7.Future<Map<DateTime, int>>.value(<DateTime, int>{}),
+  ) as _i7.Future<Map<DateTime, int>>);
+
+  @override
   _i7.Future<int> addWord(String? word, {int? tag}) => (super.noSuchMethod(
     Invocation.method(#addWord, [word], {#tag: tag}),
     returnValue: _i7.Future<int>.value(0),
@@ -309,6 +315,15 @@ class MockWordbookDao extends _i1.Mock implements _i6.WordbookDao {
   _i7.Future<List<_i2.WordbookData>> searchWords(String? query) =>
       (super.noSuchMethod(
         Invocation.method(#searchWords, [query]),
+        returnValue: _i7.Future<List<_i2.WordbookData>>.value(
+          <_i2.WordbookData>[],
+        ),
+      ) as _i7.Future<List<_i2.WordbookData>>);
+
+  @override
+  _i7.Future<List<_i2.WordbookData>> searchWordsForFuzzy(String? query) =>
+      (super.noSuchMethod(
+        Invocation.method(#searchWordsForFuzzy, [query]),
         returnValue: _i7.Future<List<_i2.WordbookData>>.value(
           <_i2.WordbookData>[],
         ),

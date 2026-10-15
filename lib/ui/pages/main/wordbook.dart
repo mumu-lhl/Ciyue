@@ -76,135 +76,7 @@ class WordView extends ConsumerWidget {
       future: allWords,
       builder:
           (BuildContext context, AsyncSnapshot<List<WordbookData>> snapshot) {
-            final list = <Widget>[];
-            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              final firstWord = snapshot.data![0];
-              var lastDate = DateTime(
-                firstWord.createdAt.year,
-                firstWord.createdAt.month,
-                firstWord.createdAt.day,
-              );
-              list.add(DateDivider(date: lastDate));
-
-              for (final data in snapshot.data!) {
-                final date = DateTime(
-                  data.createdAt.year,
-                  data.createdAt.month,
-                  data.createdAt.day,
-                );
-
-                if (date != lastDate) {
-                  lastDate = date;
-                  list.add(DateDivider(date: date));
-                }
-
-                list.add(
-                  Consumer(
-                    builder: (context, ref, child) {
-                      final isMultiSelectMode = ref.watch(
-                        wordbookModelProvider.select(
-                          (m) => m.isMultiSelectMode,
-                        ),
-                      );
-                      final isSelected = ref.watch(
-                        wordbookModelProvider.select(
-                          (m) => m.selectedWords.contains(data),
-                        ),
-                      );
-                      final selectedWord = ref.watch(
-                        wordbookModelProvider.select((m) => m.selectedWord),
-                      );
-                      final model = ref.read(wordbookModelProvider);
-
-                      final isDesktop = isLargeScreen(context);
-                      final isWordSelected =
-                          !isMultiSelectMode && selectedWord == data.word;
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 2,
-                        ),
-                        child: ListTile(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          selected: isWordSelected,
-                          selectedTileColor: Theme.of(context)
-                              .colorScheme
-                              .primaryContainer
-                              .withValues(alpha: 0.45),
-                          leading: isMultiSelectMode
-                              ? Checkbox(
-                                  value: isSelected,
-                                  onChanged: (value) {
-                                    model.selectWord(data);
-                                  },
-                                )
-                              : Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .surfaceContainerHighest
-                                        .withValues(alpha: 0.5),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.bookmark_outline_rounded,
-                                    size: 16,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary,
-                                  ),
-                                ),
-                          title: Text(
-                            data.word,
-                            style: const TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                          trailing: isMultiSelectMode
-                              ? null
-                              : const Icon(
-                                  Icons.chevron_right_rounded,
-                                  size: 18,
-                                ),
-                          onLongPress: () {
-                            if (!isMultiSelectMode) {
-                              model.toggleMultiSelectMode();
-                              model.selectWord(data);
-                            }
-                          },
-                          onTap: () async {
-                            if (isMultiSelectMode) {
-                              model.selectWord(data);
-                            } else if (isDesktop) {
-                              model.selectedWord = data.word;
-                            } else {
-                              if (context.mounted) {
-                                final words = snapshot.data!
-                                    .map((e) => e.word)
-                                    .toList();
-                                final index = snapshot.data!.indexOf(data);
-                                context.push(
-                                  "/word/${Uri.encodeComponent(data.word)}",
-                                  extra: WordListContext(
-                                    words: words,
-                                    initialIndex: index >= 0 ? index : 0,
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                );
-              }
-            }
-
-            if (list.isEmpty) {
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return FutureBuilder(
                 future: ref.read(wordbookModelProvider).tags,
                 builder: (context, tagSnapshot) {
@@ -218,10 +90,133 @@ class WordView extends ConsumerWidget {
                   );
                 },
               );
-            } else {
-              return Expanded(child: ListView(children: list));
             }
+
+            // Build a flat list of items (dates and words), not widgets.
+            // ListView.builder only instantiates widgets for visible items.
+            final items = <Object>[];
+            var lastDate = DateTime(
+              snapshot.data![0].createdAt.year,
+              snapshot.data![0].createdAt.month,
+              snapshot.data![0].createdAt.day,
+            );
+            items.add(lastDate);
+            for (final data in snapshot.data!) {
+              final date = DateTime(
+                data.createdAt.year,
+                data.createdAt.month,
+                data.createdAt.day,
+              );
+              if (date != lastDate) {
+                lastDate = date;
+                items.add(date);
+              }
+              items.add(data);
+            }
+
+            final allWordsList = snapshot.data!;
+            return Expanded(
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  if (item is DateTime) {
+                    return DateDivider(date: item);
+                  }
+                  final data = item as WordbookData;
+                  return _WordListTile(data: data, allWords: allWordsList);
+                },
+              ),
+            );
           },
+    );
+  }
+}
+
+/// Single word tile extracted for ListView.builder (only visible items built).
+class _WordListTile extends ConsumerWidget {
+  final WordbookData data;
+  final List<WordbookData> allWords;
+
+  const _WordListTile({required this.data, required this.allWords});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isMultiSelectMode = ref.watch(
+      wordbookModelProvider.select((m) => m.isMultiSelectMode),
+    );
+    final isSelected = ref.watch(
+      wordbookModelProvider.select((m) => m.selectedWords.contains(data)),
+    );
+    final selectedWord = ref.watch(
+      wordbookModelProvider.select((m) => m.selectedWord),
+    );
+    final model = ref.read(wordbookModelProvider);
+
+    final isDesktop = isLargeScreen(context);
+    final isWordSelected = !isMultiSelectMode && selectedWord == data.word;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        selected: isWordSelected,
+        selectedTileColor: Theme.of(context).colorScheme.primaryContainer
+            .withValues(alpha: 0.45),
+        leading: isMultiSelectMode
+            ? Checkbox(
+                value: isSelected,
+                onChanged: (value) {
+                  model.selectWord(data);
+                },
+              )
+            : Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.bookmark_outline_rounded,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+        title: Text(
+          data.word,
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        trailing: isMultiSelectMode
+            ? null
+            : const Icon(Icons.chevron_right_rounded, size: 18),
+        onLongPress: () {
+          if (!isMultiSelectMode) {
+            model.toggleMultiSelectMode();
+            model.selectWord(data);
+          }
+        },
+        onTap: () async {
+          if (isMultiSelectMode) {
+            model.selectWord(data);
+          } else if (isDesktop) {
+            model.selectedWord = data.word;
+          } else {
+            if (context.mounted) {
+              final words = allWords.map((e) => e.word).toList();
+              final index = allWords.indexOf(data);
+              context.push(
+                "/word/${Uri.encodeComponent(data.word)}",
+                extra: WordListContext(
+                  words: words,
+                  initialIndex: index >= 0 ? index : 0,
+                ),
+              );
+            }
+          }
+        },
+      ),
     );
   }
 }

@@ -59,6 +59,10 @@ class AppDatabase extends _$AppDatabase {
       onCreate: (Migrator m) async {
         await m.createAll();
       },
+      beforeOpen: (details) async {
+        // WAL mode: readers don't block writers and vice versa.
+        await customStatement("PRAGMA journal_mode=WAL;");
+      },
       onUpgrade: stepByStep(
         from1To2: (m, schema) async {
           await m.addColumn(
@@ -151,10 +155,16 @@ class AppDatabase extends _$AppDatabase {
           await m.createIndex(schema.idxFlashcardReviewLogsReviewedAt);
           await m.createIndex(schema.idxWordbookCreatedAt);
         },
+        from21To22: (m, schema) async {
+          await m.createIndex(schema.idxWordbookWordTag);
+          // Replace the non-unique inputText index with the unique one.
+          await m.drop(schema.idxTranslateHistoryInputText);
+          await m.createIndex(schema.idxTranslateHistoryInputText);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 }

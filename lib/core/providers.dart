@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:convert";
 
 import "package:ciyue/core/app_globals.dart";
@@ -126,11 +127,15 @@ final dictionaryLookupProvider =
 /// FutureProvider that fetches the HTML content of a word for a specific
 /// dictionary. Multiple matching headwords are rendered in one dictionary
 /// panel so the existing tab/expansion layout does not change.
-final wordContentProvider =
-    FutureProvider.family<String, ({String word, int dictId})>((
-      ref,
-      params,
-    ) async {
+///
+/// Auto-dispose with a 5-minute keep-alive: bounds memory (no unbounded
+/// per-(word, dictId) cache) while avoiding refetch when switching tabs.
+final wordContentProvider = FutureProvider.autoDispose
+    .family<String, ({String word, int dictId})>((ref, params) async {
+      final link = ref.keepAlive();
+      final timer = Timer(const Duration(minutes: 5), link.close);
+      ref.onDispose(timer.cancel);
+
       final dict = dictManager.dicts[params.dictId];
       if (dict == null) return "";
 

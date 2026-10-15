@@ -1,6 +1,7 @@
 import "dart:async";
 import "dart:convert";
 import "dart:io";
+import "dart:isolate";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
@@ -211,6 +212,13 @@ class Mdict implements DictionarySource {
     }
   }
 
+  /// Cache of successful resource key resolutions: requested key ->
+  /// (found key, reader index). MDD files use inconsistent key formats, but
+  /// for a given dictionary the working variant is stable, so cache it to
+  /// avoid trying up to 9 variants x N readers on every lookup.
+  final Map<String, ({String foundKey, int readerIndex})> _resourceKeyCache =
+      {};
+
   Completer<void>? _loadingCompleter;
   Future<void>? _metadataInitialization;
   Future<void>? _initialization;
@@ -344,7 +352,14 @@ class Mdict implements DictionarySource {
     }
 
     try {
-      final cache = await cacheFile.readAsString();
+      // 1.12: Read the cache file off the UI isolate to avoid blocking
+      // the UI thread on large (tens of MB) file IO. Note: dict_reader's
+      // importCacheFromString only accepts a String, so the content must
+      // still come back to this isolate for parsing.
+      // Capture the path as a String: File objects hold native resources
+      // and cannot be sent across isolates.
+      final cachePath = cacheFile.path;
+      final cache = await Isolate.run(() => File(cachePath).readAsString());
       await reader.importCacheFromString(cache);
       return true;
     } catch (e, stackTrace) {
@@ -767,6 +782,21 @@ class Mdict implements DictionarySource {
   Future<List<MddResourceData>> readResource(String key) async {
     final resourceData = <MddResourceData>[];
 
+    // Fast path: use cached key mapping if we've resolved this key before.
+    final cached = _resourceKeyCache[key];
+    if (cached != null && cached.readerIndex < readerResources.length) {
+      final readerResource = readerResources[cached.readerIndex];
+      final offsetInfo = await readerResource.locate(cached.foundKey);
+      if (offsetInfo != null) {
+        resourceData.add(
+          MddResourceData(offsetInfo: offsetInfo, part: cached.readerIndex),
+        );
+        return resourceData;
+      }
+      // Cache entry went stale; fall through to full lookup.
+      _resourceKeyCache.remove(key);
+    }
+
     final slashKey = key.replaceAll("\\", "/");
     final backslashKey = key.replaceAll("/", "\\");
     final keysToTry = <String>{
@@ -781,7 +811,8 @@ class Mdict implements DictionarySource {
       if (!backslashKey.startsWith("\\")) "\\$backslashKey",
     }.toList();
 
-    for (final readerResource in readerResources) {
+    for (var i = 0; i < readerResources.length; i++) {
+      final readerResource = readerResources[i];
       String? foundKey;
       for (final k in keysToTry) {
         if (readerResource.exist(k)) {
@@ -794,17 +825,16 @@ class Mdict implements DictionarySource {
         continue;
       }
 
+      // Cache the successful mapping for future lookups.
+      _resourceKeyCache[key] = (foundKey: foundKey, readerIndex: i);
+
       final offsetInfo = await readerResource.locate(foundKey);
 
       if (offsetInfo == null) {
         continue;
       }
 
-      final part = readerResources.indexOf(readerResource);
-
-      resourceData.add(
-        MddResourceData(offsetInfo: offsetInfo, part: part == -1 ? null : part),
-      );
+      resourceData.add(MddResourceData(offsetInfo: offsetInfo, part: i));
     }
 
     return resourceData;

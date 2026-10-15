@@ -196,7 +196,10 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
 
   await initPrefs();
 
-  await initGroup();
+  // Don't block the real app's first frame on dictionary loading.
+  // The UI shows loading state via dictManager.isLoading (Completer-based
+  // waitForLoading notifies when done).
+  unawaited(initGroup());
   unawaited(reloadHunspell());
 
   flutterTts = FlutterTts();

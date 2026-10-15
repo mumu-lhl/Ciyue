@@ -42,9 +42,10 @@ class WordbookModel extends ChangeNotifier {
       searchResults.clear();
     } else {
       if (fuzzySearch) {
-        final allWords = await wordbookDao.getAllWords();
+        // SQL pre-filter limits candidates instead of full table scan.
+        final candidates = await wordbookDao.searchWordsForFuzzy(query);
         final fuse = Fuzzy(
-          allWords.map((e) => e.word).toList(),
+          candidates.map((e) => e.word).toList(),
           options: FuzzyOptions(threshold: 0.2),
         );
         final results = fuse.search(query, 40);

@@ -58,6 +58,7 @@ class MddAudioResource extends Table {
 
 @TableIndex(name: "idx_wordbook", columns: {#word, #createdAt})
 @TableIndex(name: "idx_wordbook_created_at", columns: {#createdAt})
+@TableIndex(name: "idx_wordbook_word_tag", columns: {#word, #tag}, unique: true)
 class Wordbook extends Table {
   DateTimeColumn get createdAt => dateTime()();
   IntColumn get tag => integer().nullable()();
@@ -83,7 +84,11 @@ class WritingCheckHistory extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-@TableIndex(name: "idx_translate_history_input_text", columns: {#inputText})
+@TableIndex(
+  name: "idx_translate_history_input_text",
+  columns: {#inputText},
+  unique: true,
+)
 class TranslateHistory extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get inputText => text()();

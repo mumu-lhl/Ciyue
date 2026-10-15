@@ -102,9 +102,11 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<bool> dictionaryExist(String path) async {
-    return (await (select(
-      dictionaryList,
-    )..where((t) => t.path.isValue(path))).get()).isNotEmpty;
+    return (await (select(dictionaryList)
+              ..where((t) => t.path.isValue(path))
+              ..limit(1))
+            .get())
+        .isNotEmpty;
   }
 
   Future<String?> getTitle(int id) async {
@@ -319,12 +321,18 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<Flashcard>> getDueCards({required DateTime now, int? tag}) async {
-    final activeWords = await _activeWords(tag: tag);
-    if (activeWords.isEmpty) return [];
+    // Use a subquery instead of expanding active words into IN (?,...):
+    // avoids the SQLite variable limit (crash over ~999 words) and the
+    // full wordbook table pull.
+    final wordbookQuery = selectOnly(wordbook)..addColumns([wordbook.word]);
+    if (tag != null) {
+      wordbookQuery.where(wordbook.tag.equals(tag));
+    }
     return (select(flashcards)
           ..where(
             (row) =>
-                row.word.isIn(activeWords) & row.due.isSmallerOrEqualValue(now),
+                row.word.isInQuery(wordbookQuery) &
+                row.due.isSmallerOrEqualValue(now),
           )
           ..orderBy([(row) => OrderingTerm(expression: row.due)]))
         .get();
@@ -332,21 +340,17 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<String>> getNewWords({required int limit, int? tag}) async {
     if (limit <= 0) return [];
-    final query = select(wordbook)
-      ..orderBy([(row) => OrderingTerm(expression: row.createdAt)]);
-    if (tag != null) query.where((row) => row.tag.equals(tag));
-    final words = await query.get();
-    final existing = (await select(
-      flashcards,
-    ).get()).map((e) => e.word).toSet();
-    final result = <String>[];
-    for (final entry in words) {
-      if (!existing.contains(entry.word) && !result.contains(entry.word)) {
-        result.add(entry.word);
-        if (result.length == limit) break;
-      }
-    }
-    return result;
+    // NOT IN subquery: no full table pulls, no Dart-side diff, limit in SQL.
+    // DISTINCT because the same word can appear under multiple tags.
+    final flashcardsQuery = selectOnly(flashcards)
+      ..addColumns([flashcards.word]);
+    final query = selectOnly(wordbook, distinct: true)
+      ..addColumns([wordbook.word])
+      ..where(wordbook.word.isNotInQuery(flashcardsQuery))
+      ..orderBy([OrderingTerm(expression: wordbook.createdAt)])
+      ..limit(limit);
+    if (tag != null) query.where(wordbook.tag.equals(tag));
+    return query.map((row) => row.read(wordbook.word)!).get();
   }
 
   Future<int> countIntroduced({
@@ -490,12 +494,6 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
           );
         }
       });
-
-  Future<List<String>> _activeWords({int? tag}) async {
-    final query = select(wordbook);
-    if (tag != null) query.where((row) => row.tag.equals(tag));
-    return (await query.get()).map((row) => row.word).toSet().toList();
-  }
 }
 
 @DriftAccessor(tables: [Wordbook])
@@ -504,7 +502,13 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   WordbookDao(super.attachedDatabase);
 
   Future<void> addAllWords(List<WordbookData> data) async {
-    final existing = await getAllWords();
+    if (data.isEmpty) return;
+
+    // Query only the words being inserted (not the full table) for dedup.
+    final wordsToCheck = data.map((e) => e.word).toSet();
+    final existing = await (select(
+      wordbook,
+    )..where((t) => t.word.isIn(wordsToCheck))).get();
     final existingSet = existing.map((e) => "${e.word}_${e.tag}").toSet();
 
     final toInsert = data
@@ -513,7 +517,8 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
 
     if (toInsert.isNotEmpty) {
       await batch((batch) {
-        batch.insertAll(wordbook, toInsert);
+        // Unique index on (word, tag) handles race-condition duplicates.
+        batch.insertAll(wordbook, toInsert, mode: InsertMode.insertOrIgnore);
       });
     }
   }
@@ -523,6 +528,20 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     final query = selectOnly(wordbook)..addColumns([count]);
     final result = await query.getSingle();
     return result.read(count) ?? 0;
+  }
+
+  /// Count words grouped by day in SQL (not full table pull + Dart aggregation).
+  Future<Map<DateTime, int>> countWordsByDay() async {
+    final day = wordbook.createdAt.date;
+    final count = wordbook.word.count();
+    final query = selectOnly(wordbook)
+      ..addColumns([day, count])
+      ..groupBy([day]);
+    final rows = await query.get();
+    return {
+      for (final row in rows)
+        DateTime.parse("${row.read(day)}T00:00:00Z"): row.read(count)!,
+    };
   }
 
   Future<int> addWord(String word, {int? tag}) {
@@ -602,6 +621,23 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
+  /// Get candidates for fuzzy search: SQL LIKE pre-filter (uses idx_wordbook)
+  /// to limit the candidate set instead of pulling the full table.
+  /// Falls back to full table only if the pre-filter returns too few.
+  Future<List<WordbookData>> searchWordsForFuzzy(String query) async {
+    // Try substring match first (fast, indexed).
+    var candidates =
+        await (select(wordbook)
+              ..where((t) => t.word.like("%$query%"))
+              ..limit(200))
+            .get();
+    if (candidates.length < 50) {
+      // Too few substring matches; fall back to full table for fuzzy.
+      candidates = await getAllWords();
+    }
+    return candidates;
+  }
+
   Future<int> removeWord(String word, {int? tag}) {
     if (tag == null) {
       return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
@@ -644,9 +680,11 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<bool> wordExist(String word) async {
-    return (await (select(
-      wordbook,
-    )..where((u) => u.word.isValue(word))).get()).isNotEmpty;
+    return (await (select(wordbook)
+              ..where((u) => u.word.isValue(word))
+              ..limit(1))
+            .get())
+        .isNotEmpty;
   }
 
   Future<Set<String>> wordsExist(Iterable<String> words) async {
@@ -834,15 +872,35 @@ class WritingCheckHistoryDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> addAllHistory(List<WritingCheckHistoryData> data) async {
-    final existing = await getAllHistory();
-    final existingSet = existing
-        .map(
-          (e) =>
-              "${e.inputText}_${e.outputText}_${e.createdAt.millisecondsSinceEpoch}",
-        )
-        .toSet();
+    if (data.isEmpty) return;
 
-    final toInsert = data.where((e) {
+    // Dedup the batch in memory first (cheap).
+    final seen = <String>{};
+    final deduped = data.where((e) {
+      final key =
+          "${e.inputText}_${e.outputText}_${e.createdAt.millisecondsSinceEpoch}";
+      return seen.add(key);
+    }).toList();
+
+    // Query only key columns for existing entries (not full rows with
+    // potentially long outputText).
+    final inputTexts = deduped.map((e) => e.inputText).toSet();
+    final existingKeys =
+        await (selectOnly(writingCheckHistory)
+              ..addColumns([
+                writingCheckHistory.inputText,
+                writingCheckHistory.outputText,
+                writingCheckHistory.createdAt,
+              ])
+              ..where(writingCheckHistory.inputText.isIn(inputTexts)))
+            .map(
+              (row) =>
+                  "${row.read(writingCheckHistory.inputText)}_${row.read(writingCheckHistory.outputText)}_${row.read(writingCheckHistory.createdAt)!.millisecondsSinceEpoch}",
+            )
+            .get();
+    final existingSet = existingKeys.toSet();
+
+    final toInsert = deduped.where((e) {
       final key =
           "${e.inputText}_${e.outputText}_${e.createdAt.millisecondsSinceEpoch}";
       return !existingSet.contains(key);
@@ -894,18 +952,12 @@ class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> addAllHistory(List<TranslateHistoryData> data) async {
-    final existing = await getAllHistory();
-    final existingSet = existing.map((e) => e.inputText).toSet();
+    if (data.isEmpty) return;
 
-    final toInsert = data
-        .where((e) => !existingSet.contains(e.inputText))
-        .toList();
-
-    if (toInsert.isNotEmpty) {
-      await batch((batch) {
-        batch.insertAll(translateHistory, toInsert);
-      });
-    }
+    // Unique index on inputText: use insertOrIgnore, no pre-read needed.
+    await batch((batch) {
+      batch.insertAll(translateHistory, data, mode: InsertMode.insertOrIgnore);
+    });
   }
 
   Future<List<TranslateHistoryData>> getAllHistory() {
@@ -947,5 +999,19 @@ class OpenRecordsDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<OpenRecord>> getAll() {
     return select(openRecords).get();
+  }
+
+  /// Count records grouped by day in SQL.
+  Future<Map<DateTime, int>> countByDay() async {
+    final day = openRecords.createdAt.date;
+    final count = openRecords.word.count();
+    final query = selectOnly(openRecords)
+      ..addColumns([day, count])
+      ..groupBy([day]);
+    final rows = await query.get();
+    return {
+      for (final row in rows)
+        DateTime.parse("${row.read(day)}T00:00:00Z"): row.read(count)!,
+    };
   }
 }

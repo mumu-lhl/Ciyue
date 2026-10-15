@@ -13,6 +13,11 @@ class OpenRecordStatsViewModel extends StatsViewModel<OpenRecord> {
   }
 
   @override
+  Future<Map<DateTime, int>>? fetchCounts() {
+    return _openRecordsRepository.countByDay();
+  }
+
+  @override
   DateTime getCreatedAt(OpenRecord item) {
     return item.createdAt;
   }

@@ -13,6 +13,11 @@ class WordbookStatsViewModel extends StatsViewModel<WordbookData> {
   }
 
   @override
+  Future<Map<DateTime, int>>? fetchCounts() {
+    return _wordbookDao.countWordsByDay();
+  }
+
+  @override
   DateTime getCreatedAt(WordbookData item) {
     return item.createdAt;
   }

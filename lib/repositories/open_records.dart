@@ -9,4 +9,8 @@ class OpenRecordsRepository {
   Future<List<OpenRecord>> getAll() {
     return mainDatabase.openRecordsDao.getAll();
   }
+
+  Future<Map<DateTime, int>> countByDay() {
+    return mainDatabase.openRecordsDao.countByDay();
+  }
 }

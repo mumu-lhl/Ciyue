@@ -171,6 +171,16 @@ class WebviewAndroid extends ConsumerStatefulWidget {
 }
 
 class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
+  InAppWebViewController? _webViewController;
+  String _selectedText = "";
+
+  // Memoized build objects (3.8): avoid recreating on every build.
+  InAppWebViewSettings? _cachedSettings;
+  bool? _cachedIsLightTheme;
+  int? _cachedSettingsDictId;
+  ContextMenu? _cachedContextMenu;
+  String? _cachedMenuLocaleKey;
+
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
@@ -187,64 +197,78 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         settings.themeMode == ThemeMode.light ||
         settings.themeMode == ThemeMode.system &&
             MediaQuery.of(context).platformBrightness == Brightness.light;
-    final webviewSettings = InAppWebViewSettings(
-      useWideViewPort: false,
-      algorithmicDarkeningAllowed: !isLightTheme,
-      resourceCustomSchemes: ["entry", "gdlookup", "sound"],
-      transparentBackground: true,
-      useHybridComposition: true,
-      webViewAssetLoader: WebViewAssetLoader(
-        domain: "ciyue.internal",
-        httpAllowed: true,
-        pathHandlers: [
-          LocalResourcesPathHandler(path: "/", dictId: widget.dictId),
-        ],
-      ),
-    );
 
-    InAppWebViewController? webViewController;
-    String selectedText = "";
+    // Rebuild settings only when dependencies change.
+    var webviewSettings = _cachedSettings;
+    if (webviewSettings == null ||
+        _cachedIsLightTheme != isLightTheme ||
+        _cachedSettingsDictId != widget.dictId) {
+      webviewSettings = InAppWebViewSettings(
+        useWideViewPort: false,
+        algorithmicDarkeningAllowed: !isLightTheme,
+        resourceCustomSchemes: ["entry", "gdlookup", "sound"],
+        transparentBackground: true,
+        useHybridComposition: true,
+        webViewAssetLoader: WebViewAssetLoader(
+          domain: "ciyue.internal",
+          httpAllowed: true,
+          pathHandlers: [
+            LocalResourcesPathHandler(path: "/", dictId: widget.dictId),
+          ],
+        ),
+      );
+      _cachedSettings = webviewSettings;
+      _cachedIsLightTheme = isLightTheme;
+      _cachedSettingsDictId = widget.dictId;
+    }
 
     final locale = AppLocalizations.of(context)!;
+    final localeKey = "${locale.copy}|${locale.lookup}|${locale.readLoudly}";
 
-    final contextMenu = ContextMenu(
-      settings: ContextMenuSettings(hideDefaultSystemContextMenuItems: true),
-      menuItems: [
-        ContextMenuItem(
-          id: 1,
-          title: locale.copy,
-          action: () async {
-            await webViewController!.clearFocus();
-            Clipboard.setData(ClipboardData(text: selectedText));
-          },
-        ),
-        ContextMenuItem(
-          id: 2,
-          title: locale.lookup,
-          action: () async {
-            context.push(
-              "/word/${Uri.encodeComponent(selectedText)}?dictId=${widget.dictId}",
-            );
-          },
-        ),
-        ContextMenuItem(
-          id: 3,
-          title: locale.readLoudly,
-          action: () async {
-            await webViewController!.clearFocus();
-            if (context.mounted) {
-              await playSoundOfWord(
-                selectedText,
-                ref.read(audioModelProvider).mddAudioList,
+    // Rebuild context menu only when locale strings change.
+    var contextMenu = _cachedContextMenu;
+    if (contextMenu == null || _cachedMenuLocaleKey != localeKey) {
+      contextMenu = ContextMenu(
+        settings: ContextMenuSettings(hideDefaultSystemContextMenuItems: true),
+        menuItems: [
+          ContextMenuItem(
+            id: 1,
+            title: locale.copy,
+            action: () async {
+              await _webViewController!.clearFocus();
+              Clipboard.setData(ClipboardData(text: _selectedText));
+            },
+          ),
+          ContextMenuItem(
+            id: 2,
+            title: locale.lookup,
+            action: () async {
+              context.push(
+                "/word/${Uri.encodeComponent(_selectedText)}?dictId=${widget.dictId}",
               );
-            }
-          },
-        ),
-      ],
-      onCreateContextMenu: (hitTestResult) async {
-        selectedText = await webViewController?.getSelectedText() ?? "";
-      },
-    );
+            },
+          ),
+          ContextMenuItem(
+            id: 3,
+            title: locale.readLoudly,
+            action: () async {
+              await _webViewController!.clearFocus();
+              if (context.mounted) {
+                await playSoundOfWord(
+                  _selectedText,
+                  ref.read(audioModelProvider).mddAudioList,
+                );
+              }
+            },
+          ),
+        ],
+        onCreateContextMenu: (hitTestResult) async {
+          _selectedText = await _webViewController?.getSelectedText() ?? "";
+        },
+      );
+      _cachedContextMenu = contextMenu;
+      _cachedMenuLocaleKey = localeKey;
+    }
 
     final webview = InAppWebView(
       initialUserScripts: dictionaryUserScripts(
@@ -275,7 +299,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         context,
       ),
       onWebViewCreated: (controller) async {
-        webViewController = controller;
+        _webViewController = controller;
 
         controller.addJavaScriptHandler(
           handlerName: "openInNewTab",

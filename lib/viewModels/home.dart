@@ -45,21 +45,50 @@ class HistoryModel extends HistoryViewModel<HistoryData> {
   Future<void> addSelectedToWordbook([WordbookModel? wordbookModel]) async {
     final words = history
         .where((element) => selectedIds.contains(element.id))
-        .map((e) => e.word);
+        .map((e) => e.word)
+        .toList();
     final existWords = await wordbookDao.wordsExist(words);
+
+    // Batch the adds/deletes instead of looping with individual ops.
+    final toAdd = <String>[];
+    final toDelete = <String>[];
     for (final word in words) {
       if (existWords.contains(word)) {
-        if (wordbookModel != null) {
-          await wordbookModel.delete(word);
-        } else {
-          await wordbookDao.removeWord(word);
-        }
+        toDelete.add(word);
       } else {
-        if (wordbookModel != null) {
-          await wordbookModel.add(word);
-        } else {
-          await wordbookDao.addWord(word);
-        }
+        toAdd.add(word);
+      }
+    }
+
+    if (wordbookModel != null) {
+      if (toDelete.isNotEmpty) {
+        await wordbookModel.removeWords(
+          toDelete
+              .map((w) => WordbookData(word: w, createdAt: DateTime.now()))
+              .toList(),
+        );
+      }
+      if (toAdd.isNotEmpty) {
+        await wordbookModel.addAllWords(
+          toAdd
+              .map((w) => WordbookData(word: w, createdAt: DateTime.now()))
+              .toList(),
+        );
+      }
+    } else {
+      if (toDelete.isNotEmpty) {
+        await wordbookDao.removeWords(
+          toDelete
+              .map((w) => WordbookData(word: w, createdAt: DateTime.now()))
+              .toList(),
+        );
+      }
+      if (toAdd.isNotEmpty) {
+        await wordbookDao.addAllWords(
+          toAdd
+              .map((w) => WordbookData(word: w, createdAt: DateTime.now()))
+              .toList(),
+        );
       }
     }
     clearSelection();
