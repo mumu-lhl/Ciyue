@@ -120,15 +120,19 @@ class Updater {
 
   /// Checks the legacy GitHub Releases endpoint used by mobile clients.
   static Future<Update> check() async {
+    final channel = settings.updateChannel;
     try {
       final response = await AppHttp.get(
-        settings.includePrereleaseUpdates
-            ? "https://api.github.com/repos/mumu-lhl/Ciyue/releases"
-            : "https://api.github.com/repos/mumu-lhl/Ciyue/releases/latest",
+        channel == UpdateChannel.stable
+            ? "https://api.github.com/repos/mumu-lhl/Ciyue/releases/latest"
+            : "https://api.github.com/repos/mumu-lhl/Ciyue/releases",
       );
       if (response.statusCode == 200) {
         final dynamic latestRelease;
-        if (settings.includePrereleaseUpdates) {
+        if (channel == UpdateChannel.stable) {
+          latestRelease = response.data;
+        } else if (channel == UpdateChannel.preview) {
+          // Beta/Alpha: prereleases excluding nightly builds.
           latestRelease = (response.data as List).firstWhere(
             (r) =>
                 !(r["prerelease"] == true &&
@@ -138,7 +142,12 @@ class Updater {
             orElse: () => null,
           );
         } else {
-          latestRelease = response.data;
+          // Nightly: only nightly builds.
+          latestRelease = (response.data as List).firstWhere(
+            (r) =>
+                (r["name"] as String? ?? "").toLowerCase().contains("nightly"),
+            orElse: () => null,
+          );
         }
 
         if (latestRelease == null) {
@@ -264,8 +273,16 @@ class Updater {
   }
 
   static String get _desktopChannel {
-    // Alpha and beta releases intentionally share one opt-in preview stream.
-    return settings.includePrereleaseUpdates ? "preview" : "stable";
+    // Map update channel to desktop updater channel name.
+    switch (settings.updateChannel) {
+      case UpdateChannel.stable:
+        return "stable";
+      case UpdateChannel.preview:
+        // Alpha and beta releases intentionally share one opt-in preview stream.
+        return "preview";
+      case UpdateChannel.nightly:
+        return "nightly";
+    }
   }
 
   static String get _expectedPackageId {

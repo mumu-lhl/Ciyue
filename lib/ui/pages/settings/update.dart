@@ -1,4 +1,3 @@
-import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/updater.dart";
@@ -70,19 +69,40 @@ class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.includePrerelease),
-      value: settings.includePrereleaseUpdates,
-      onChanged: (value) async {
-        await prefs.setBool("includePrereleaseUpdates", value);
-        settings.includePrereleaseUpdates = value;
-        if (Updater.supportsDesktopUpdates) {
-          await Updater.resetDesktopController();
-        }
-        setState(() {});
-      },
-      secondary: const Icon(Icons.settings_suggest_outlined),
+    return ListTile(
+      title: Text(locale!.updateChannel),
+      subtitle: Text(_channelDisplayName(settings.updateChannel, locale)),
+      trailing: DropdownButton<UpdateChannel>(
+        value: settings.updateChannel,
+        underline: const SizedBox.shrink(),
+        onChanged: (channel) async {
+          if (channel == null) return;
+          await settings.setUpdateChannel(channel);
+          if (Updater.supportsDesktopUpdates) {
+            await Updater.resetDesktopController();
+          }
+          setState(() {});
+        },
+        items: UpdateChannel.values.map((channel) {
+          return DropdownMenuItem(
+            value: channel,
+            child: Text(_channelDisplayName(channel, locale)),
+          );
+        }).toList(),
+      ),
+      leading: const Icon(Icons.settings_suggest_outlined),
     );
+  }
+
+  String _channelDisplayName(UpdateChannel channel, AppLocalizations locale) {
+    switch (channel) {
+      case UpdateChannel.stable:
+        return locale.updateChannelStable;
+      case UpdateChannel.preview:
+        return locale.updateChannelPreview;
+      case UpdateChannel.nightly:
+        return locale.updateChannelNightly;
+    }
   }
 }
 

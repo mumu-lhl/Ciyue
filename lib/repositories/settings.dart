@@ -12,6 +12,18 @@ enum TabBarPosition { top, bottom }
 
 enum DictionarySwitchStyle { expansion, tag }
 
+/// Update channel for app updates.
+enum UpdateChannel {
+  /// Stable releases only.
+  stable,
+
+  /// Beta/Alpha prereleases (excludes nightly builds).
+  preview,
+
+  /// Nightly builds (bleeding edge).
+  nightly,
+}
+
 class Settings extends ChangeNotifier {
   late bool autoExport;
   late String exportFileName;
@@ -46,7 +58,7 @@ class Settings extends ChangeNotifier {
 
   late bool autoUpdate;
   late bool enableHistory;
-  late bool includePrereleaseUpdates;
+  late UpdateChannel updateChannel;
   late bool skipTaggedWord;
   late bool advance;
 
@@ -114,8 +126,21 @@ class Settings extends ChangeNotifier {
     }
 
     autoUpdate = prefs.getBool("autoUpdate") ?? false;
-    includePrereleaseUpdates =
-        prefs.getBool("includePrereleaseUpdates") ?? false;
+    // Migrate from old bool pref to enum. Old true -> preview channel.
+    final channelString = prefs.getString("updateChannel");
+    if (channelString != null) {
+      updateChannel = UpdateChannel.values.firstWhere(
+        (c) => c.name == channelString,
+        orElse: () => UpdateChannel.stable,
+      );
+    } else {
+      // Fallback to legacy bool pref.
+      final legacyPrerelease =
+          prefs.getBool("includePrereleaseUpdates") ?? false;
+      updateChannel = legacyPrerelease
+          ? UpdateChannel.preview
+          : UpdateChannel.stable;
+    }
 
     notification = prefs.getBool("notification") ?? false;
 
@@ -295,6 +320,12 @@ class Settings extends ChangeNotifier {
   Future<void> setAutoUpdate(bool value) async {
     autoUpdate = value;
     await prefs.setBool("autoUpdate", value);
+    notifyListeners();
+  }
+
+  Future<void> setUpdateChannel(UpdateChannel channel) async {
+    updateChannel = channel;
+    await prefs.setString("updateChannel", channel.name);
     notifyListeners();
   }
 
