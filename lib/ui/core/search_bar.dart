@@ -96,6 +96,11 @@ class _WordSearchBarWithSuggestionsState
     } else {
       final location = GoRouterState.of(context).uri.toString();
       final target = "/word/${Uri.encodeComponent(normalizedWord)}";
+      // Sync tab history so back/forward buttons work (the tab system and
+      // router system were out of sync).
+      try {
+        ref.read(homeModelProvider).navigateInCurrentTab(normalizedWord);
+      } catch (_) {}
       // If already on a word page, replace instead of pushing to avoid
       // accumulating a deep stack of word pages (user reported: hard to
       // go back to home after many lookups).

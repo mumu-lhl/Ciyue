@@ -13,6 +13,13 @@ class LookupMenuItem extends ContextMenuButtonItem {
           final String text = textToLookup;
           if (text.isNotEmpty && context.mounted) {
             final target = "/word/${Uri.encodeComponent(text)}";
+            // Sync tab history so back/forward buttons work.
+            try {
+              ProviderScope.containerOf(
+                context,
+                listen: false,
+              ).read(homeModelProvider).navigateInCurrentTab(text);
+            } catch (_) {}
             // Replace instead of push when already on a word page to avoid
             // deep navigation stacks.
             try {
