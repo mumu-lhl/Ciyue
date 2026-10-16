@@ -23,7 +23,7 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_riverpod/legacy.dart";
 
 /// Provider for global settings.
-final settingsProvider = Provider((ref) => settings);
+final settingsProvider = ChangeNotifierProvider((ref) => settings);
 
 /// HomeModel provider.
 final homeModelProvider = ChangeNotifierProvider<HomeModel>(

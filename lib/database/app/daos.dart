@@ -722,7 +722,7 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   }
 }
 
-@DriftAccessor(tables: [WordbookTags])
+@DriftAccessor(tables: [WordbookTags, Wordbook])
 class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
     with _$WordbookTagsDaoMixin {
   bool tagExist = false;
@@ -734,6 +734,16 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
     await batch((batch) {
       batch.insertAllOnConflictUpdate(wordbookTags, data);
     });
+    // Refresh tagsOrder to include imported tags. Otherwise the in-memory
+    // order goes stale after backup restore / cloud sync import.
+    final allTags = await select(wordbookTags).get();
+    final existingIds = tagsOrder.toSet();
+    for (final tag in allTags) {
+      if (!existingIds.contains(tag.id)) {
+        tagsOrder.add(tag.id);
+      }
+    }
+    await updateTagsOrder();
   }
 
   Future<void> addTag(String tag) async {
@@ -766,6 +776,11 @@ class WordbookTagsDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> removeTag(int tagId) async {
     await (delete(wordbookTags)..where((t) => t.id.isValue(tagId))).go();
+
+    // Clear the tag from words that used it, otherwise wordbook.tag dangles.
+    await (update(wordbook)..where((t) => t.tag.isValue(tagId))).write(
+      const WordbookCompanion(tag: Value(null)),
+    );
 
     tagsOrder.remove(tagId);
     await updateTagsOrder();

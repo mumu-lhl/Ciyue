@@ -3,6 +3,7 @@ import "dart:convert";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/models/hunspell.dart";
+import "package:flutter/foundation.dart";
 import "package:material_ui/material_ui.dart";
 
 final settings = Settings();
@@ -11,11 +12,15 @@ enum TabBarPosition { top, bottom }
 
 enum DictionarySwitchStyle { expansion, tag }
 
-class Settings {
+class Settings extends ChangeNotifier {
   late bool autoExport;
   late String exportFileName;
   late String? exportDirectory;
   late String? exportPath;
+
+  /// Notify listeners that settings have changed. Use when a field is
+  /// modified directly (bypassing a setter).
+  void refresh() => notifyListeners();
 
   late ThemeMode themeMode;
   late bool enableDynamicColor;
@@ -232,26 +237,31 @@ class Settings {
 
     aiProviderConfigs[aiProvider]!["apiUrl"] = apiUrl;
     await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
+    notifyListeners();
   }
 
   Future<void> setEnableDynamicColor(bool value) async {
     enableDynamicColor = value;
     await prefs.setBool("enableDynamicColor", value);
+    notifyListeners();
   }
 
   Future<void> setThemeSeedColor(Color color) async {
     themeSeedColor = color;
     await prefs.setInt("themeSeedColor", color.toARGB32());
+    notifyListeners();
   }
 
   Future<void> setPureBlackDarkMode(bool value) async {
     pureBlackDarkMode = value;
     await prefs.setBool("pureBlackDarkMode", value);
+    notifyListeners();
   }
 
   Future<void> setDictionaryCustomCss(String value) async {
     dictionaryCustomCss = value;
     await prefs.setString("dictionaryCustomCss", value);
+    notifyListeners();
   }
 
   Future<void> setDictionaryBackgroundColor(Color? color) async {
@@ -261,90 +271,108 @@ class Settings {
     } else {
       await prefs.setInt("dictionaryBackgroundColor", color.toARGB32());
     }
+    notifyListeners();
   }
 
   Future<void> setDictionaryDarkReaderEnabled(bool value) async {
     dictionaryDarkReaderEnabled = value;
     await prefs.setBool("dictionaryDarkReaderEnabled", value);
+    notifyListeners();
   }
 
   Future<void> setTabBarPosition(TabBarPosition position) async {
     tabBarPosition = position;
     await prefs.setString("tabBarPosition", position.name);
+    notifyListeners();
   }
 
   Future<void> setDictionarySwitchStyle(DictionarySwitchStyle style) async {
     dictionarySwitchStyle = style;
     await prefs.setString("dictionarySwitchStyle", style.name);
+    notifyListeners();
   }
 
   Future<void> setAutoUpdate(bool value) async {
     autoUpdate = value;
     await prefs.setBool("autoUpdate", value);
+    notifyListeners();
   }
 
   Future<void> setTTSEngine(String engine) async {
     ttsEngine = engine;
     await prefs.setString("ttsEngine", engine);
+    notifyListeners();
   }
 
   Future<void> setTTSLanguage(String lang) async {
     ttsLanguage = lang;
     await prefs.setString("ttsLanguage", lang);
+    notifyListeners();
   }
 
   Future<void> setAdvance(bool value) async {
     advance = value;
     await prefs.setBool("advance", value);
+    notifyListeners();
   }
 
   Future<void> setEnableHunspellMorphology(bool value) async {
     enableHunspellMorphology = value;
     await prefs.setBool("enableHunspellMorphology", value);
+    notifyListeners();
   }
 
   Future<void> setHunspellLookupMode(HunspellLookupMode mode) async {
     hunspellLookupMode = mode;
     await prefs.setString("hunspellLookupMode", mode.name);
+    notifyListeners();
   }
 
   Future<void> setEnableHistory(bool value) async {
     enableHistory = value;
     await prefs.setBool("enableHistory", value);
+    notifyListeners();
   }
 
   Future<void> setTranslationProvider(String provider) async {
     translationProvider = provider;
     await prefs.setString("translationProvider", provider);
+    notifyListeners();
   }
 
   Future<void> setDeeplxUrl(String url) async {
     deeplxUrl = url;
     await prefs.setString("deeplxUrl", url);
+    notifyListeners();
   }
 
   Future<void> setRichOutput(bool value) async {
     isRichOutput = value;
     await prefs.setBool("isRichOutput", value);
+    notifyListeners();
   }
 
   Future<void> setEnableTranslationHistory(bool value) async {
     enableTranslationHistory = value;
     await prefs.setBool("enableTranslationHistory", value);
+    notifyListeners();
   }
 
   Future<void> setEnableWritingCheckHistory(bool value) async {
     enableWritingCheckHistory = value;
     await prefs.setBool("enableWritingCheckHistory", value);
+    notifyListeners();
   }
 
   Future<void> setLaunchAtStartup(bool value) async {
     launchAtStartup = value;
     await prefs.setBool("launchAtStartup", value);
+    notifyListeners();
   }
 
   Future<void> setFlashcardDailyNewLimit(int value) async {
     flashcardDailyNewLimit = value.clamp(0, 9999);
     await prefs.setInt("flashcardDailyNewLimit", flashcardDailyNewLimit);
+    notifyListeners();
   }
 }

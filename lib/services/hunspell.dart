@@ -68,6 +68,9 @@ void _hunspellWorker(SendPort sendPort) {
   var dictionaries = <_LoadedHunspellSource>[];
   var errors = <int, String>{};
   var reloadInProgress = false;
+  // Pending reload request that arrived while a reload was in progress.
+  // Latest-wins: only the most recent pending request is kept.
+  _ReloadRequest? pendingReload;
 
   Future<_ReloadResult> doReload(List<HunspellSourceInfo> sources) async {
     final newDictionaries = <_LoadedHunspellSource>[];
@@ -127,9 +130,14 @@ void _hunspellWorker(SendPort sendPort) {
   receivePort.listen((message) {
     if (message is _ReloadRequest) {
       if (reloadInProgress) {
-        // A reload is already running; ack with current state to avoid
-        // stacking redundant reloads.
-        message.replyPort.send(
+        // Latest-wins: queue the newest request, drop any older pending one.
+        // The previous pending request's reply port will get the result of
+        // the latest reload (or we could reply immediately, but waiting for
+        // the latest is more correct).
+        final oldPending = pendingReload;
+        pendingReload = message;
+        // Reply to the superseded request immediately to avoid hanging it.
+        oldPending?.replyPort.send(
           _ReloadResult(dictionaries.length, Map.of(errors)),
         );
         return;
@@ -138,8 +146,18 @@ void _hunspellWorker(SendPort sendPort) {
       // Don't await: keep serving queries with the old dictionaries
       // while the new ones load.
       doReload(message.sources).then((result) {
-        reloadInProgress = false;
         message.replyPort.send(result);
+        // Process pending reload if one arrived during this reload.
+        final pending = pendingReload;
+        pendingReload = null;
+        if (pending != null) {
+          doReload(pending.sources).then((pendingResult) {
+            reloadInProgress = false;
+            pending.replyPort.send(pendingResult);
+          });
+        } else {
+          reloadInProgress = false;
+        }
       });
     } else if (message is _StemsRequest) {
       message.replyPort.send(doStems(message.word));
@@ -249,16 +267,37 @@ class HunspellManager implements MorphologyProvider {
     var spawn = _spawnFuture;
     if (spawn == null) {
       final receivePort = ReceivePort();
-      spawn = Isolate.spawn(_hunspellWorker, receivePort.sendPort).then((
-        _,
-      ) async {
-        final port = await receivePort.first as SendPort;
-        _workerPort = port;
-      });
+      spawn = Isolate.spawn(_hunspellWorker, receivePort.sendPort)
+          .then((_) async {
+            final port = await receivePort.first as SendPort;
+            // Only assign if not closed during spawn (avoids zombie worker).
+            if (_spawnFuture != null) {
+              _workerPort = port;
+            } else {
+              // Closed during spawn; tell the new worker to shut down.
+              final cleanupPort = ReceivePort();
+              port.send(_CloseRequest(cleanupPort.sendPort));
+              await cleanupPort.first;
+              cleanupPort.close();
+            }
+          })
+          .catchError((e) {
+            // Clear failed spawn so next call retries instead of permanently failing.
+            if (_spawnFuture == spawn) {
+              _spawnFuture = null;
+            }
+            throw e;
+          });
       _spawnFuture = spawn;
     }
     await spawn;
-    return _workerPort!;
+    final worker = _workerPort;
+    if (worker == null) {
+      // Closed during spawn; retry (will spawn a new worker).
+      _spawnFuture = null;
+      return _ensureWorker();
+    }
+    return worker;
   }
 
   Future<T> _request<T>(Object Function(SendPort) buildRequest) async {

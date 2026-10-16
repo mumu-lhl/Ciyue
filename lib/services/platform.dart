@@ -151,6 +151,8 @@ class PlatformMethod {
           final directory = call.arguments as String;
           settings.exportDirectory = directory;
           prefs.setString("exportDirectory", directory);
+          // Notify listeners since this bypasses a setter.
+          settings.refresh();
           break;
       }
     });

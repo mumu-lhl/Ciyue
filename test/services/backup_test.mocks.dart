@@ -835,6 +835,12 @@ class MockWordbookTagsDao extends _i1.Mock implements _i6.WordbookTagsDao {
   ) as _i2.$WordbookTagsTable);
 
   @override
+  _i2.$WordbookTable get wordbook => (super.noSuchMethod(
+    Invocation.getter(#wordbook),
+    returnValue: _Fake$WordbookTable_6(this, Invocation.getter(#wordbook)),
+  ) as _i2.$WordbookTable);
+
+  @override
   _i6.WordbookTagsDaoManager get managers => (super.noSuchMethod(
     Invocation.getter(#managers),
     returnValue: _FakeWordbookTagsDaoManager_18(

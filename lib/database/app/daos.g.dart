@@ -93,6 +93,7 @@ class WordbookDaoManager {
 
 mixin _$WordbookTagsDaoMixin on DatabaseAccessor<AppDatabase> {
   $WordbookTagsTable get wordbookTags => attachedDatabase.wordbookTags;
+  $WordbookTable get wordbook => attachedDatabase.wordbook;
   WordbookTagsDaoManager get managers => WordbookTagsDaoManager(this);
 }
 
@@ -101,6 +102,8 @@ class WordbookTagsDaoManager {
   WordbookTagsDaoManager(this._db);
   $$WordbookTagsTableTableManager get wordbookTags =>
       $$WordbookTagsTableTableManager(_db.attachedDatabase, _db.wordbookTags);
+  $$WordbookTableTableManager get wordbook =>
+      $$WordbookTableTableManager(_db.attachedDatabase, _db.wordbook);
 }
 
 mixin _$MddAudioListDaoMixin on DatabaseAccessor<AppDatabase> {
