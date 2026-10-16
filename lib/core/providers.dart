@@ -115,10 +115,16 @@ final dictManagerProvider = Provider((ref) => dictManager);
 
 /// Resolves a word once so the preview and its dictionary tabs use the same
 /// set of exact and morphology matches.
-final dictionaryLookupProvider =
-    FutureProvider.family<DictionaryLookupResult, String>((ref, word) async {
-      while (dictManager.isLoading) {
+///
+/// autoDispose: bounds memory (no unbounded per-word cache). The wait for
+/// dictionary loading is bounded too: without a timeout a stuck init would
+/// hang this future (and its polling timer) forever, even after dispose.
+final dictionaryLookupProvider = FutureProvider.autoDispose
+    .family<DictionaryLookupResult, String>((ref, word) async {
+      var waited = 0;
+      while (dictManager.isLoading && waited < 200) {
         await Future.delayed(const Duration(milliseconds: 50));
+        waited++;
       }
 
       return dictionaryLookup.lookup(word);
@@ -162,14 +168,12 @@ final wordContentProvider = FutureProvider.autoDispose
 
 /// FutureProvider that returns dictionary IDs with at least one exact or
 /// morphology-resolved entry for the given word.
-final validDictIdsProvider = FutureProvider.family<List<int>, String>((
-  ref,
-  word,
-) async {
-  if (word.isEmpty) return [];
-  final lookup = await ref.watch(dictionaryLookupProvider(word).future);
-  return lookup.validDictionaryIds;
-});
+final validDictIdsProvider = FutureProvider.autoDispose
+    .family<List<int>, String>((ref, word) async {
+      if (word.isEmpty) return [];
+      final lookup = await ref.watch(dictionaryLookupProvider(word).future);
+      return lookup.validDictionaryIds;
+    });
 
 /// Notifier for managing the heights of multiple WebViews.
 class WebViewHeightsNotifier extends Notifier<Map<String, double>> {

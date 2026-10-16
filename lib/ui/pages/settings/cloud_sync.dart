@@ -11,18 +11,21 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/settings_group.dart";
 import "package:dio/dio.dart";
 import "package:file_selector/file_selector.dart" show openFile;
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
+import "package:ciyue/core/providers.dart";
 
-class CloudSyncSettingsPage extends StatefulWidget {
+class CloudSyncSettingsPage extends ConsumerStatefulWidget {
   final CloudSyncSessionService? sessionService;
 
   const CloudSyncSettingsPage({super.key, this.sessionService});
 
   @override
-  State<CloudSyncSettingsPage> createState() => _CloudSyncSettingsPageState();
+  ConsumerState<CloudSyncSettingsPage> createState() =>
+      _CloudSyncSettingsPageState();
 }
 
-class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
+class _CloudSyncSettingsPageState extends ConsumerState<CloudSyncSettingsPage> {
   late final CloudSyncSessionService _session;
   final _endpointController = TextEditingController();
   final _remoteRootController = TextEditingController(text: "Ciyue");
@@ -303,6 +306,7 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
           _selectedDictionaryPackageIds,
         ),
         dictionaryPreview: preview.dictionaryPreview,
+        onApplied: _refreshModelsAfterSync,
       );
       final configuration = await _session.loadConfiguration();
       if (!mounted) return;
@@ -333,6 +337,14 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
     }
   }
 
+  /// Refresh UI models after cloud sync applies remote data.
+  /// Called via onApplied callback from the sync service.
+  void _refreshModelsAfterSync() {
+    // Invalidate Riverpod providers so wordbook/flashcard UIs reload
+    // from the database on next build.
+    ref.invalidate(wordbookModelProvider);
+  }
+
   Future<void> _syncNow() async {
     final l10n = AppLocalizations.of(context)!;
     setState(() {
@@ -341,7 +353,9 @@ class _CloudSyncSettingsPageState extends State<CloudSyncSettingsPage> {
       _mismatchedCloudSpaceId = null;
     });
     try {
-      final outcome = await _session.syncConfigured();
+      final outcome = await _session.syncConfigured(
+        onApplied: _refreshModelsAfterSync,
+      );
       final configuration = await _session.loadConfiguration();
       if (!mounted) return;
       setState(() {

@@ -30,6 +30,7 @@ class CloudSyncApplyService {
     SyncSnapshot? expectedLocalSnapshot,
     SyncSnapshot? previousLocalSnapshot,
     bool allowAutoResolve = false,
+    void Function()? onApplied,
   }) async {
     await database.transaction(() async {
       if (expectedLocalSnapshot != null) {
@@ -61,6 +62,8 @@ class CloudSyncApplyService {
       await database.flashcardDao.addAllCards(backup.flashcards);
       await database.flashcardDao.addAllReviewLogs(backup.flashcardReviewLogs);
     });
+    // Notify UI models to refresh; called outside the transaction.
+    onApplied?.call();
   }
 
   Future<BackupData> _readLocalData() async => BackupData(

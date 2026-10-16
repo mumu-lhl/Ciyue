@@ -101,6 +101,7 @@ class CloudSyncSessionService {
     required String previewedSpaceId,
     Set<String> selectedDictionaryPackageIds = const {},
     DictionarySyncPreview? dictionaryPreview,
+    void Function()? onApplied,
   }) async {
     final normalizedRoot = normalizeCloudSyncRemoteRoot(settings.remoteRoot);
     final normalizedSettings = settings.copyWith(remoteRoot: normalizedRoot);
@@ -139,6 +140,7 @@ class CloudSyncSessionService {
         configuration: await configurationStore.load(),
         fileStore: fileStore,
         spaceId: spaceId,
+        onApplied: onApplied,
       );
       if (selectedDictionaryPackageIds.isNotEmpty) {
         if (dictionaryPreview == null) {
@@ -163,7 +165,7 @@ class CloudSyncSessionService {
     }
   }
 
-  Future<CloudSyncOutcome> syncConfigured() async {
+  Future<CloudSyncOutcome> syncConfigured({void Function()? onApplied}) async {
     final configuration = await configurationStore.load();
     if (!configuration.isConfigured || configuration.spaceId == null) {
       throw StateError("Cloud sync has not been connected yet.");
@@ -197,6 +199,7 @@ class CloudSyncSessionService {
         configuration: configuration,
         fileStore: fileStore,
         spaceId: spaceId,
+        onApplied: onApplied,
       );
     } finally {
       await fileStore.close();
@@ -212,6 +215,7 @@ class CloudSyncSessionService {
     required CloudSyncConfiguration configuration,
     required CloudFileStore fileStore,
     required String spaceId,
+    void Function()? onApplied,
   }) async {
     final appSupport = await appSupportDirectoryProvider();
     final syncService = CloudSyncService(
@@ -222,7 +226,7 @@ class CloudSyncSessionService {
       fileStore: fileStore,
       stateStore: fileSyncSnapshotStateStore(appSupport, spaceId),
     );
-    return syncService.sync();
+    return syncService.sync(onApplied: onApplied);
   }
 
   CloudFileStore _createFileStore(CloudSyncConnectionSettings settings) {

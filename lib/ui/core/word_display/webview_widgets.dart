@@ -174,6 +174,22 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
   InAppWebViewController? _webViewController;
   String _selectedText = "";
 
+  @override
+  void didUpdateWidget(WebviewAndroid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // When the word/content changes, reload the WebView with new data.
+    // Without this, the WebView keeps showing the previous word's content
+    // (initialData is only used at creation time).
+    if (widget.content != oldWidget.content && _webViewController != null) {
+      _webViewController!.loadData(
+        data: widget.content,
+        mimeType: "text/html",
+        encoding: "utf-8",
+        baseUrl: WebUri("http://ciyue.internal/"),
+      );
+    }
+  }
+
   // Memoized build objects (3.8): avoid recreating on every build.
   InAppWebViewSettings? _cachedSettings;
   bool? _cachedIsLightTheme;
@@ -492,6 +508,12 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   Uint8List? _postData;
   String? _postDataContent;
 
+  /// Cached future for Windows WebView setup. Creating a new future on every
+  /// build causes the FutureBuilder to restart and the WebView to be destroyed
+  /// and recreated. Only recreate when useDarkReader changes.
+  Future<_WindowsWebViewSetup>? _setupFuture;
+  bool? _setupFutureDarkReader;
+
   /// The POST body is the whole dictionary HTML (up to MBs) JSON-encoded.
   /// Recompute only when the content actually changes, not on every build.
   Uint8List _getPostData() {
@@ -611,8 +633,14 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
           webview = buildDesktopWebView("");
         }
       } else {
+        // Cache the setup future to avoid recreating the WebView on every
+        // rebuild. Only recreate when useDarkReader changes.
+        if (_setupFuture == null || _setupFutureDarkReader != useDarkReader) {
+          _setupFutureDarkReader = useDarkReader;
+          _setupFuture = _prepareWindowsWebView(useDarkReader: useDarkReader);
+        }
         webview = FutureBuilder<_WindowsWebViewSetup>(
-          future: _prepareWindowsWebView(useDarkReader: useDarkReader),
+          future: _setupFuture,
           builder: (context, snapshot) {
             if (snapshot.hasData || snapshot.hasError) {
               final darkReaderSource = snapshot.data?.darkReaderSource ?? "";

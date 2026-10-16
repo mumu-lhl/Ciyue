@@ -156,7 +156,18 @@ class AppDatabase extends _$AppDatabase {
           await m.createIndex(schema.idxWordbookCreatedAt);
         },
         from21To22: (m, schema) async {
+          // Deduplicate before creating UNIQUE indexes, otherwise the
+          // migration fails on old duplicate rows and the app can't open
+          // the database (critical: bricks the app on upgrade).
+          // Keep the row with the largest rowid per (word, tag).
+          await m.database.customStatement(
+            "DELETE FROM wordbook WHERE rowid NOT IN (SELECT MAX(rowid) FROM wordbook GROUP BY word, tag)",
+          );
           await m.createIndex(schema.idxWordbookWordTag);
+          // Deduplicate translate_history.input_text the same way.
+          await m.database.customStatement(
+            "DELETE FROM translate_history WHERE rowid NOT IN (SELECT MAX(rowid) FROM translate_history GROUP BY input_text)",
+          );
           // Replace the non-unique inputText index with the unique one.
           await m.drop(schema.idxTranslateHistoryInputText);
           await m.createIndex(schema.idxTranslateHistoryInputText);

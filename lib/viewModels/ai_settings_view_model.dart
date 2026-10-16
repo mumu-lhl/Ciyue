@@ -18,6 +18,14 @@ class AISettingsViewModel with ChangeNotifier {
   bool _isFetchingModels = false;
   bool get isFetchingModels => _isFetchingModels;
 
+  bool _disposed = false;
+
+  /// Safe notify that no-ops if the view model was disposed.
+  /// Prevents crashes when async operations complete after autoDispose.
+  void _safeNotifyListeners() {
+    if (!_disposed) notifyListeners();
+  }
+
   String? _fetchError;
   String? get fetchError => _fetchError;
 
@@ -117,7 +125,7 @@ class AISettingsViewModel with ChangeNotifier {
   Future<bool> fetchModels() async {
     _isFetchingModels = true;
     _fetchError = null;
-    notifyListeners();
+    _safeNotifyListeners();
 
     try {
       final models = await ModelProviderManager.fetchModels(
@@ -136,19 +144,20 @@ class AISettingsViewModel with ChangeNotifier {
         }
       }
       _isFetchingModels = false;
-      notifyListeners();
+      _safeNotifyListeners();
       return true;
     } catch (e) {
       talker.error("Failed to fetch models for $_provider", e);
       _fetchError = e.toString().replaceFirst("Exception: ", "");
       _isFetchingModels = false;
-      notifyListeners();
+      _safeNotifyListeners();
       return false;
     }
   }
 
   @override
   void dispose() {
+    _disposed = true;
     apiKeyController.dispose();
     modelController.dispose();
     apiUrlController.dispose();

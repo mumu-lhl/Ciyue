@@ -52,8 +52,16 @@ class DictionaryLookup {
       return const DictionaryLookupResult(entriesByDictionary: {});
     }
 
+    // A single broken dictionary must not take down the whole lookup:
+    // isolate per-dictionary failures instead of letting Future.wait rethrow.
     final exactKeys = await Future.wait(
-      activeDictionaries.map((dict) => dict.resolveExactKey(word)),
+      activeDictionaries.map((dict) async {
+        try {
+          return await dict.resolveExactKey(word);
+        } catch (_) {
+          return null;
+        }
+      }),
     );
 
     final currentMode = lookupMode();
@@ -87,7 +95,15 @@ class DictionaryLookup {
 
         // Query all dictionaries concurrently instead of awaiting each
         // disk read + record-block decompression in series.
-        return MapEntry(dict.id, await dict.readExactEntries({...candidates}));
+        // A failing dictionary yields no entries instead of failing lookup.
+        try {
+          return MapEntry(
+            dict.id,
+            await dict.readExactEntries({...candidates}),
+          );
+        } catch (_) {
+          return MapEntry(dict.id, const <DictionaryEntryData>[]);
+        }
       }),
     );
     final matches = <int, List<DictionaryEntryData>>{
@@ -107,8 +123,16 @@ class DictionaryLookup {
     }
 
     final activeDictionaries = dictionaries();
+    // Skip dictionaries that fail instead of failing the whole suggestion
+    // list: a single broken dictionary must not break global search.
     final prefixResults = await Future.wait(
-      activeDictionaries.map((dict) => dict.search(query)),
+      activeDictionaries.map((dict) async {
+        try {
+          return await dict.search(query);
+        } catch (_) {
+          return const <String>[];
+        }
+      }),
     );
     // `seen` backs O(1) dedup; `results` preserves display order.
     final seen = <String>{
@@ -124,7 +148,13 @@ class DictionaryLookup {
     }
 
     final exactKeys = await Future.wait(
-      activeDictionaries.map((dict) => dict.resolveExactKey(query)),
+      activeDictionaries.map((dict) async {
+        try {
+          return await dict.resolveExactKey(query);
+        } catch (_) {
+          return null;
+        }
+      }),
     );
     final someDictionaryMissed =
         activeDictionaries.isEmpty || exactKeys.any((key) => key == null);
@@ -138,7 +168,13 @@ class DictionaryLookup {
     final stemKeyLists = await Future.wait(
       stems.map(
         (stem) => Future.wait(
-          activeDictionaries.map((dict) => dict.resolveExactKey(stem)),
+          activeDictionaries.map((dict) async {
+            try {
+              return await dict.resolveExactKey(stem);
+            } catch (_) {
+              return null;
+            }
+          }),
         ),
       ),
     );

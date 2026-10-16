@@ -193,6 +193,7 @@ class _FakeCloudSyncSessionService extends CloudSyncSessionService {
     required String previewedSpaceId,
     Set<String> selectedDictionaryPackageIds = const {},
     DictionarySyncPreview? dictionaryPreview,
+    void Function()? onApplied,
   }) async {
     connectCalls++;
     this.selectedDictionaryPackageIds = selectedDictionaryPackageIds;

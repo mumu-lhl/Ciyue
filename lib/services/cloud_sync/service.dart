@@ -77,7 +77,10 @@ class CloudSyncService {
   }) : coordinator = coordinator ?? CloudSyncCoordinator(),
        applyService = applyService ?? CloudSyncApplyService(database: database);
 
-  Future<CloudSyncOutcome> sync({bool autoResolveConflicts = true}) async {
+  Future<CloudSyncOutcome> sync({
+    bool autoResolveConflicts = true,
+    void Function()? onApplied,
+  }) async {
     const maxAttempts = 3;
     for (var attempt = 0; attempt < maxAttempts; attempt++) {
       final previous = await stateStore.read();
@@ -108,6 +111,7 @@ class CloudSyncService {
           expectedLocalSnapshot: localSnapshot,
           previousLocalSnapshot: previous,
           allowAutoResolve: autoResolveConflicts,
+          onApplied: onApplied,
         );
       } on CloudSyncLocalChangedException {
         if (attempt + 1 == maxAttempts) rethrow;

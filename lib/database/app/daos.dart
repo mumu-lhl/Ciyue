@@ -5,6 +5,16 @@ import "package:drift/drift.dart";
 
 part "daos.g.dart";
 
+/// Splits [list] into sublists of at most [size] elements, so that generated
+/// SQL stays under SQLite's variable limit (999 by default) when expanding
+/// `IN` lists or multi-row inserts.
+Iterable<List<T>> _chunks<T>(List<T> list, int size) sync* {
+  for (var i = 0; i < list.length; i += size) {
+    final end = i + size < list.length ? i + size : list.length;
+    yield list.sublist(i, end);
+  }
+}
+
 @DriftAccessor(tables: [DictGroup])
 class DictGroupDao extends DatabaseAccessor<AppDatabase>
     with _$DictGroupDaoMixin {
@@ -276,16 +286,16 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
     // DESC used by getAllHistory).
     final ordered = newestFirst.reversed.toList();
     // Delete in chunks to stay under SQLite's variable limit.
-    for (var i = 0; i < ordered.length; i += 500) {
-      final end = i + 500 < ordered.length ? i + 500 : ordered.length;
-      await (delete(
-        history,
-      )..where((t) => t.word.isIn(ordered.sublist(i, end)))).go();
+    for (final chunk in _chunks(ordered, 500)) {
+      await (delete(history)..where((t) => t.word.isIn(chunk))).go();
     }
+    // HistoryCompanion carries a single variable (word) per row.
     await batch((b) {
-      b.insertAll(history, [
+      for (final chunk in _chunks([
         for (final word in ordered) HistoryCompanion(word: Value(word)),
-      ]);
+      ], 999)) {
+        b.insertAll(history, chunk);
+      }
     });
   }
 
@@ -477,7 +487,10 @@ class FlashcardDao extends DatabaseAccessor<AppDatabase>
   Future<List<Flashcard>> getAllCards() => select(flashcards).get();
 
   Future<void> addAllCards(List<Flashcard> cards) => batch((batch) {
-    batch.insertAllOnConflictUpdate(flashcards, cards);
+    // 8 variables per row: stay under SQLite's variable limit.
+    for (final chunk in _chunks(cards, 999 ~/ 8)) {
+      batch.insertAllOnConflictUpdate(flashcards, chunk);
+    }
   });
 
   Future<void> addAllReviewLogs(List<FlashcardReviewLog> logs) =>
@@ -504,12 +517,16 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   Future<void> addAllWords(List<WordbookData> data) async {
     if (data.isEmpty) return;
 
-    // Query only the words being inserted (not the full table) for dedup.
-    final wordsToCheck = data.map((e) => e.word).toSet();
-    final existing = await (select(
-      wordbook,
-    )..where((t) => t.word.isIn(wordsToCheck))).get();
-    final existingSet = existing.map((e) => "${e.word}_${e.tag}").toSet();
+    // Query only the words being inserted (not the full table) for dedup,
+    // chunked to stay under SQLite's variable limit.
+    final wordsToCheck = data.map((e) => e.word).toSet().toList();
+    final existingSet = <String>{};
+    for (final chunk in _chunks(wordsToCheck, 500)) {
+      final existing = await (select(
+        wordbook,
+      )..where((t) => t.word.isIn(chunk))).get();
+      existingSet.addAll(existing.map((e) => "${e.word}_${e.tag}"));
+    }
 
     final toInsert = data
         .where((e) => !existingSet.contains("${e.word}_${e.tag}"))
@@ -517,8 +534,11 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
 
     if (toInsert.isNotEmpty) {
       await batch((batch) {
-        // Unique index on (word, tag) handles race-condition duplicates.
-        batch.insertAll(wordbook, toInsert, mode: InsertMode.insertOrIgnore);
+        // 3 variables per row (createdAt, tag, word): chunk the insert.
+        for (final chunk in _chunks(toInsert, 999 ~/ 3)) {
+          // Unique index on (word, tag) handles race-condition duplicates.
+          batch.insertAll(wordbook, chunk, mode: InsertMode.insertOrIgnore);
+        }
       });
     }
   }
@@ -640,7 +660,9 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
 
   Future<int> removeWord(String word, {int? tag}) {
     if (tag == null) {
-      return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
+      return (delete(
+        wordbook,
+      )..where((t) => t.word.isValue(word) & t.tag.isNull())).go();
     } else {
       return (delete(
         wordbook,
@@ -688,10 +710,15 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<Set<String>> wordsExist(Iterable<String> words) async {
-    final result = await (select(
-      wordbook,
-    )..where((u) => u.word.isIn(words))).get();
-    return result.map((e) => e.word).toSet();
+    final result = <String>{};
+    // Chunk the IN list to stay under SQLite's variable limit.
+    for (final chunk in _chunks(words.toList(), 500)) {
+      final rows = await (select(
+        wordbook,
+      )..where((u) => u.word.isIn(chunk))).get();
+      result.addAll(rows.map((e) => e.word));
+    }
+    return result;
   }
 }
 
@@ -804,7 +831,10 @@ class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> add(List<MddAudioResourceCompanion> data) async {
     await batch((batch) {
-      batch.insertAll(mddAudioResource, data);
+      // 6 variables per row: stay under SQLite's variable limit.
+      for (final chunk in _chunks(data, 999 ~/ 6)) {
+        batch.insertAll(mddAudioResource, chunk);
+      }
     });
   }
 
@@ -883,21 +913,26 @@ class WritingCheckHistoryDao extends DatabaseAccessor<AppDatabase>
     }).toList();
 
     // Query only key columns for existing entries (not full rows with
-    // potentially long outputText).
-    final inputTexts = deduped.map((e) => e.inputText).toSet();
-    final existingKeys =
-        await (selectOnly(writingCheckHistory)
-              ..addColumns([
-                writingCheckHistory.inputText,
-                writingCheckHistory.outputText,
-                writingCheckHistory.createdAt,
-              ])
-              ..where(writingCheckHistory.inputText.isIn(inputTexts)))
-            .map(
-              (row) =>
-                  "${row.read(writingCheckHistory.inputText)}_${row.read(writingCheckHistory.outputText)}_${row.read(writingCheckHistory.createdAt)!.millisecondsSinceEpoch}",
-            )
-            .get();
+    // potentially long outputText), chunked to stay under SQLite's
+    // variable limit.
+    final inputTexts = deduped.map((e) => e.inputText).toSet().toList();
+    final existingKeys = <String>[];
+    for (final chunk in _chunks(inputTexts, 500)) {
+      final rows =
+          await (selectOnly(writingCheckHistory)
+                ..addColumns([
+                  writingCheckHistory.inputText,
+                  writingCheckHistory.outputText,
+                  writingCheckHistory.createdAt,
+                ])
+                ..where(writingCheckHistory.inputText.isIn(chunk)))
+              .map(
+                (row) =>
+                    "${row.read(writingCheckHistory.inputText)}_${row.read(writingCheckHistory.outputText)}_${row.read(writingCheckHistory.createdAt)!.millisecondsSinceEpoch}",
+              )
+              .get();
+      existingKeys.addAll(rows);
+    }
     final existingSet = existingKeys.toSet();
 
     final toInsert = deduped.where((e) {
@@ -908,7 +943,10 @@ class WritingCheckHistoryDao extends DatabaseAccessor<AppDatabase>
 
     if (toInsert.isNotEmpty) {
       await batch((batch) {
-        batch.insertAll(writingCheckHistory, toInsert);
+        // 4 variables per row: stay under SQLite's variable limit.
+        for (final chunk in _chunks(toInsert, 999 ~/ 4)) {
+          batch.insertAll(writingCheckHistory, chunk);
+        }
       });
     }
   }
@@ -956,7 +994,14 @@ class TranslateHistoryDao extends DatabaseAccessor<AppDatabase>
 
     // Unique index on inputText: use insertOrIgnore, no pre-read needed.
     await batch((batch) {
-      batch.insertAll(translateHistory, data, mode: InsertMode.insertOrIgnore);
+      // 3 variables per row: stay under SQLite's variable limit.
+      for (final chunk in _chunks(data, 999 ~/ 3)) {
+        batch.insertAll(
+          translateHistory,
+          chunk,
+          mode: InsertMode.insertOrIgnore,
+        );
+      }
     });
   }
 
