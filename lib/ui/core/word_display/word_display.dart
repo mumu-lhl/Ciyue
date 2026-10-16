@@ -280,6 +280,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     final settings = ref.watch(settingsProvider);
     final isDesktopScreen = app_utils.isLargeScreen(context);
     final locale = AppLocalizations.of(context)!;
+    // Desktop: show browser-like back/forward buttons (mobile has them in
+    // the bottom bar). Uses the tab's word history.
+    final homeModel = isDesktopScreen ? ref.watch(homeModelProvider) : null;
     return AppBar(
       leading: widget.showBackButton
           ? BackButton(onPressed: () => _goBack(context))
@@ -303,6 +306,21 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   )
                 : Text(widget.word, overflow: TextOverflow.ellipsis)),
       actions: [
+        // Desktop back/forward (mobile has these in the bottom bar).
+        if (isDesktopScreen && homeModel != null) ...[
+          IconButton(
+            tooltip: locale.back,
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: homeModel.canGoBack ? () => homeModel.goBack() : null,
+          ),
+          IconButton(
+            tooltip: locale.forward,
+            icon: const Icon(Icons.arrow_forward_rounded),
+            onPressed: homeModel.canGoForward
+                ? () => homeModel.goForward()
+                : null,
+          ),
+        ],
         if (settings.searchBarInAppBar && widget.pagerInfo != null)
           Center(
             child: Padding(
