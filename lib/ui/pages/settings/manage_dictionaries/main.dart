@@ -722,6 +722,22 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                         model.checkIsEmpty();
 
                         await model.updateDictIds();
+                      } catch (e, stackTrace) {
+                        // Enabling a corrupted dictionary throws; without a
+                        // catch the checkbox silently snaps back with no
+                        // feedback to the user.
+                        talker.error(
+                          "Failed to toggle dictionary ${dictionary.id}",
+                          e,
+                          stackTrace,
+                        );
+                        if (context.mounted) {
+                          ToastService.show(
+                            e.toString(),
+                            context,
+                            type: ToastType.error,
+                          );
+                        }
                       } finally {
                         if (mounted) {
                           setState(() => _isToggling = false);

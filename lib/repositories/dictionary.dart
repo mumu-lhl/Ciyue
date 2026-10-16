@@ -729,7 +729,12 @@ class Mdict implements DictionarySource {
         "dictionary_$removeId.sqlite",
       );
       final file = File(databasePath);
-      await file.delete();
+      // The cache file only exists if the dictionary was ever enabled.
+      // Deleting a never-enabled dictionary would throw FileSystemException
+      // and leave a ghost row in the UI list.
+      if (await file.exists()) {
+        await file.delete();
+      }
     }
 
     await dictionaryListDao.remove(path);
