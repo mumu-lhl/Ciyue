@@ -1081,6 +1081,10 @@ class ManageDictionariesBody extends ConsumerWidget {
     final dictionaries = ref.watch(
       manageDictionariesModelProvider.select((model) => model.dictionaries),
     );
+    // Watch dictManager state so the enabled-count in _GroupStatusBar
+    // refreshes when dictionaries are enabled/disabled. Without this,
+    // the "x/y" count stays stale after toggling.
+    ref.watch(dictManagerModelProvider.select((model) => model.state));
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
