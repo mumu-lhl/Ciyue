@@ -94,7 +94,16 @@ class _WordSearchBarWithSuggestionsState
     if (widget.onWordSelected != null) {
       widget.onWordSelected!(normalizedWord);
     } else {
-      context.push("/word/${Uri.encodeComponent(normalizedWord)}");
+      final location = GoRouterState.of(context).uri.toString();
+      final target = "/word/${Uri.encodeComponent(normalizedWord)}";
+      // If already on a word page, replace instead of pushing to avoid
+      // accumulating a deep stack of word pages (user reported: hard to
+      // go back to home after many lookups).
+      if (location.startsWith("/word/")) {
+        context.go(target);
+      } else {
+        context.push(target);
+      }
     }
   }
 

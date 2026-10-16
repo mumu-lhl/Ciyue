@@ -12,7 +12,19 @@ class LookupMenuItem extends ContextMenuButtonItem {
         onPressed: () async {
           final String text = textToLookup;
           if (text.isNotEmpty && context.mounted) {
-            context.push("/word/${Uri.encodeComponent(text)}");
+            final target = "/word/${Uri.encodeComponent(text)}";
+            // Replace instead of push when already on a word page to avoid
+            // deep navigation stacks.
+            try {
+              final currentRoute = GoRouterState.of(context).uri.toString();
+              if (currentRoute.startsWith("/word/")) {
+                context.go(target);
+              } else {
+                context.push(target);
+              }
+            } catch (_) {
+              context.push(target);
+            }
           }
           ContextMenuController.removeAny();
         },
