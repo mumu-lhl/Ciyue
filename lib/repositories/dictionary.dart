@@ -874,7 +874,9 @@ class Mdict implements DictionarySource {
             return;
           }
           request.response
-            ..headers.contentType = ContentType.parse(lookupMimeType(filename)!)
+            ..headers.contentType = ContentType.parse(
+              lookupMimeType(filename) ?? "application/octet-stream",
+            )
             ..add(resource)
             ..close();
           return;

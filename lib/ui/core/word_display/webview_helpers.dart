@@ -132,7 +132,7 @@ onLoadResourceWithCustomSchemeWarpper(int dictId) {
           }
           talker.info("Playing sound (2): $filename");
           return CustomSchemeResponse(
-            contentType: lookupMimeType(filename)!,
+            contentType: lookupMimeType(filename) ?? "application/octet-stream",
             data: data,
           );
         } catch (e) {
@@ -201,7 +201,7 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
 
         await playSound(
           data,
-          lookupMimeType(filename)!,
+          lookupMimeType(filename) ?? "application/octet-stream",
           label: basenameWithoutExtension(filename),
         );
         talker.info("Playing sound (1): $filename");

@@ -826,6 +826,8 @@ class GroupDialog extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    // Watch dictManager state so the group list refreshes after add/delete.
+    ref.watch(dictManagerModelProvider.select((model) => model.state));
 
     return AlertDialog(
       title: Row(

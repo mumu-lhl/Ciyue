@@ -177,6 +177,10 @@ final validDictIdsProvider = FutureProvider.autoDispose
 
 /// Notifier for managing the heights of multiple WebViews.
 class WebViewHeightsNotifier extends Notifier<Map<String, double>> {
+  /// Max cached heights. Prevents unbounded memory growth as the user
+  /// looks up more words.
+  static const _maxEntries = 200;
+
   @override
   Map<String, double> build() => {};
 
@@ -185,7 +189,22 @@ class WebViewHeightsNotifier extends Notifier<Map<String, double>> {
     // Skip notifying when the height didn't change: every notification
     // rebuilds all WebViews that watch the heights map.
     if (state[key] == height) return;
-    state = {...state, key: height};
+    var newState = {...state, key: height};
+    // Evict oldest entries when over capacity (Map preserves insertion order).
+    if (newState.length > _maxEntries) {
+      final keysToRemove = newState.keys.take(newState.length - _maxEntries);
+      newState = Map.fromEntries(
+        newState.entries.where((e) => !keysToRemove.contains(e.key)),
+      );
+      // Ensure the just-set key survives eviction.
+      newState[key] = height;
+    }
+    state = newState;
+  }
+
+  /// Clear cached heights, e.g. when dictionaries change.
+  void clear() {
+    state = {};
   }
 }
 
