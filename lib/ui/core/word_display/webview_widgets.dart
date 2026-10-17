@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:collection";
 import "dart:convert";
 import "dart:io";
@@ -507,6 +508,56 @@ class WebviewWindows extends ConsumerStatefulWidget {
 class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   Uint8List? _postData;
   String? _postDataContent;
+  InAppWebViewController? _desktopController;
+  Future<void> _desktopContentLoad = Future<void>.value();
+
+  @override
+  void didUpdateWidget(WebviewWindows oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!Platform.isWindows &&
+        (widget.content != oldWidget.content ||
+            widget.dictId != oldWidget.dictId)) {
+      final controller = _desktopController;
+      if (controller != null) {
+        unawaited(_scheduleDesktopContentLoad(controller));
+      }
+    }
+  }
+
+  Future<void> _scheduleDesktopContentLoad(InAppWebViewController controller) {
+    final requestedContent = widget.content;
+    final requestedDictId = widget.dictId;
+    final load = _desktopContentLoad
+        .catchError((Object error) {
+          talker.warning("Previous dictionary content load failed: $error");
+        })
+        .then((_) async {
+          if (!mounted ||
+              !identical(_desktopController, controller) ||
+              requestedContent != widget.content ||
+              requestedDictId != widget.dictId) {
+            return;
+          }
+
+          final dict = ref.read(dictManagerProvider).dicts[requestedDictId];
+          if (dict == null || dict.port == 0) return;
+          final desktopLoad = desktopWebViewLoad(
+            requestedContent,
+            "http://127.0.0.1:${dict.port}/",
+          );
+          await controller.loadData(
+            data: desktopLoad.deferredData.data,
+            mimeType: desktopLoad.deferredData.mimeType,
+            encoding: desktopLoad.deferredData.encoding,
+            baseUrl: desktopLoad.deferredData.baseUrl,
+          );
+        })
+        .catchError((Object error) {
+          talker.warning("Failed to update dictionary content: $error");
+        });
+    _desktopContentLoad = load;
+    return load;
+  }
 
   /// Cached future for Windows WebView setup. Creating a new future on every
   /// build causes the FutureBuilder to restart and the WebView to be destroyed
@@ -592,6 +643,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
               context,
             ),
             onWebViewCreated: (controller) async {
+              _desktopController = controller;
               controller.addJavaScriptHandler(
                 handlerName: "openInNewTab",
                 callback: (args) {
@@ -605,12 +657,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   }
                 },
               );
-              await controller.loadData(
-                data: load.deferredData.data,
-                mimeType: load.deferredData.mimeType,
-                encoding: load.deferredData.encoding,
-                baseUrl: load.deferredData.baseUrl,
-              );
+              await _scheduleDesktopContentLoad(controller);
             },
             onRenderProcessGone: (controller, detail) async {
               talker.warning("InAppWebView render process gone, reloading...");

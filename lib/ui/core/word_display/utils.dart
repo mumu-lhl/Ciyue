@@ -40,32 +40,73 @@ Widget withFloatingWindowBackHandler(BuildContext context, Widget child) {
 }
 
 Widget buildWebView(String word, int id, bool isExpansion) {
-  return Consumer(
-    builder: (context, ref, child) {
-      final contentAsync = ref.watch(
-        wordContentProvider((word: word, dictId: id)),
-      );
+  return _WordContentView(word: word, dictId: id, isExpansion: isExpansion);
+}
 
-      return contentAsync.when(
-        data: (content) {
-          if (Platform.isAndroid) {
-            return WebviewAndroid(
-              word: word,
-              content: content,
-              dictId: id,
-              isExpansion: isExpansion,
-            );
-          } else if (isDesktop()) {
-            return WebviewWindows(content: content, dictId: id);
-          } else {
-            return FakeWebViewByAI(html: content);
-          }
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
+class _WordContentView extends ConsumerStatefulWidget {
+  final String word;
+  final int dictId;
+  final bool isExpansion;
+
+  const _WordContentView({
+    required this.word,
+    required this.dictId,
+    required this.isExpansion,
+  });
+
+  @override
+  ConsumerState<_WordContentView> createState() => _WordContentViewState();
+}
+
+class _WordContentViewState extends ConsumerState<_WordContentView> {
+  String? _lastLinuxContent;
+
+  @override
+  void didUpdateWidget(_WordContentView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.dictId != oldWidget.dictId) _lastLinuxContent = null;
+  }
+
+  Widget _buildContent(String content) {
+    if (Platform.isAndroid) {
+      return WebviewAndroid(
+        word: widget.word,
+        content: content,
+        dictId: widget.dictId,
+        isExpansion: widget.isExpansion,
       );
-    },
-  );
+    } else if (isDesktop()) {
+      return WebviewWindows(content: content, dictId: widget.dictId);
+    } else {
+      return FakeWebViewByAI(html: content);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final contentAsync = ref.watch(
+      wordContentProvider((word: widget.word, dictId: widget.dictId)),
+    );
+
+    // Keep the Linux platform view mounted while the next word is looked up.
+    // Recreating WPEBackend-FDO views can crash the WebProcess and leave a
+    // blank texture; WebviewWindows reloads this retained view when content
+    // changes.
+    if (Platform.isLinux &&
+        contentAsync.isLoading &&
+        _lastLinuxContent != null) {
+      return WebviewWindows(content: _lastLinuxContent!, dictId: widget.dictId);
+    }
+
+    return contentAsync.when(
+      data: (content) {
+        if (Platform.isLinux) _lastLinuxContent = content;
+        return _buildContent(content);
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text("Error: $err")),
+    );
+  }
 }
 
 class KeepAliveWidget extends StatefulWidget {
