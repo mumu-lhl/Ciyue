@@ -11,6 +11,7 @@ import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/utils.dart" as app_utils;
+import "package:flutter/foundation.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
@@ -39,6 +40,7 @@ class ExpansionWordDisplay extends ConsumerStatefulWidget {
 }
 
 class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
+  late List<Object> _panelIds;
   late List<bool> _isExpanded;
   late final SearchController _searchController;
   late final bool _ownsController;
@@ -70,19 +72,35 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     super.initState();
     _ownsController = widget.searchController == null;
     _searchController = widget.searchController ?? SearchController();
-    // We can't use ref here easily for initialization if it depends on ref.watch,
-    // but since settings is a singleton for now, it's okay.
-    // Long term we should probably pass settings in or use ref in build.
-    final length = settings.aiExplainWord
-        ? widget.validDictIds.length + 1
-        : widget.validDictIds.length;
-    _isExpanded = List<bool>.generate(length, (_) => true);
+    _panelIds = _getPanelIds(settings.aiExplainWord, widget.validDictIds);
+    _isExpanded = List<bool>.filled(_panelIds.length, true);
+  }
+
+  List<Object> _getPanelIds(bool includeAI, List<int> validDictIds) => [
+    if (includeAI) "ai",
+    ...validDictIds.map((id) => "dict:$id"),
+  ];
+
+  void _syncPanelState(bool includeAI, List<int> validDictIds) {
+    final nextPanelIds = _getPanelIds(includeAI, validDictIds);
+    if (listEquals(_panelIds, nextPanelIds)) return;
+
+    final expandedById = <Object, bool>{};
+    for (var index = 0; index < _panelIds.length; index++) {
+      expandedById[_panelIds[index]] = _isExpanded[index];
+    }
+
+    _panelIds = nextPanelIds;
+    _isExpanded = [
+      for (final panelId in nextPanelIds) expandedById[panelId] ?? true,
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final dictManager = ref.watch(dictManagerProvider);
+    _syncPanelState(settings.aiExplainWord, widget.validDictIds);
 
     final panels = <ExpansionPanel>[];
     int panelIndex = 0;

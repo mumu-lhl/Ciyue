@@ -39,6 +39,7 @@ class WordDisplay extends ConsumerStatefulWidget {
 
 class _WordDisplayState extends ConsumerState<WordDisplay> {
   final SearchController _searchController = SearchController();
+  List<int>? _lastValidDictIds;
 
   Widget? _buildSearchBar(Settings settings) {
     return buildTitle(widget.word, settings, controller: _searchController);
@@ -64,10 +65,22 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final validDictIdsAsync = ref.watch(validDictIdsProvider(widget.word));
+    if (validDictIdsAsync.hasValue) {
+      _lastValidDictIds = validDictIdsAsync.requireValue;
+    }
+
+    // Keep the current dictionary view in the tree while checking the next
+    // word. The WebView's content provider retains the previous HTML until the
+    // new entry arrives; switching to the generic loading scaffold here would
+    // dispose the native WPE platform view on every word change.
+    final displayedValidDictIdsAsync =
+        validDictIdsAsync.isLoading && _lastValidDictIds != null
+        ? AsyncData<List<int>>(_lastValidDictIds!)
+        : validDictIdsAsync;
 
     return withFloatingWindowBackHandler(
       context,
-      validDictIdsAsync.when(
+      displayedValidDictIdsAsync.when(
         data: (validDictIds) {
           if (validDictIds.isEmpty && !settings.aiExplainWord) {
             final searchBar = _buildSearchBar(settings);
@@ -108,7 +121,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
 
           final isDesktopScreen = app_utils.isLargeScreen(context);
 
-          if (!showTab) {
+          // Keep a single dictionary entry in the same tab/expansion layout it
+          // will use if the next word matches more dictionaries.
+          if (!showTab && validDictIds.isEmpty) {
             final searchBar = _buildSearchBar(settings);
             return Scaffold(
               appBar: buildAppBar(

@@ -13,6 +13,18 @@ import "actions.dart";
 import "history.dart";
 import "search.dart";
 
+/// Keeps the desktop WordDisplay state alive as the selected word changes.
+class DesktopWordDisplayPane extends StatelessWidget {
+  final String word;
+
+  const DesktopWordDisplayPane({super.key, required this.word});
+
+  @override
+  Widget build(BuildContext context) {
+    return WordDisplay(word: word, showBackButton: false);
+  }
+}
+
 class HomeBody extends ConsumerWidget {
   const HomeBody({super.key});
 
@@ -176,21 +188,9 @@ class _DesktopHomeSplitView extends ConsumerWidget {
                   if (!tabsEmpty) const _DesktopWordTabBar(),
                   Expanded(
                     child: selectedWord != null && selectedWord.isNotEmpty
-                        ? KeyedSubtree(
-                            key: ValueKey(selectedWord),
-                            child: WordDisplay(
-                              word: selectedWord,
-                              showBackButton: false,
-                            ),
-                          )
+                        ? DesktopWordDisplayPane(word: selectedWord)
                         : (!historyEmpty && tabsEmpty
-                              ? KeyedSubtree(
-                                  key: ValueKey(firstHistoryWord),
-                                  child: WordDisplay(
-                                    word: firstHistoryWord!,
-                                    showBackButton: false,
-                                  ),
-                                )
+                              ? DesktopWordDisplayPane(word: firstHistoryWord!)
                               : Center(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,

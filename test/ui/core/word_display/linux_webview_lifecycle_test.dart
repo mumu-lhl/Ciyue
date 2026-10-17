@@ -3,14 +3,25 @@ import "dart:async";
 import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/pages/main/home/body.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/core/word_display/webview_widgets.dart";
-import "package:flutter/material.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
+import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
+import "package:go_router/go_router.dart";
 import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
 import "package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart";
+
+class _ReadyMdict extends Mdict {
+  _ReadyMdict() : super(path: "unused");
+
+  @override
+  bool get isReady => true;
+}
 
 class _FakeInAppWebViewPlatform extends InAppWebViewPlatform {
   int created = 0;
@@ -121,4 +132,99 @@ void main() {
       "<p>second entry</p>",
     );
   });
+
+  testWidgets(
+    "desktop word selection keeps WebView when dictionary matches change",
+    (tester) async {
+      final nextValidDicts = Completer<List<int>>();
+      final nextContent = Completer<String>();
+      final previousSwitchStyle = settings.dictionarySwitchStyle;
+      await settings.setDictionarySwitchStyle(DictionarySwitchStyle.tag);
+      addTearDown(() => settings.setDictionarySwitchStyle(previousSwitchStyle));
+      var word = "first";
+      late StateSetter setWord;
+
+      dictManager.dicts[1] = _ReadyMdict()
+        ..port = 42433
+        ..title = "first dictionary";
+      dictManager.dicts[2] = _ReadyMdict()
+        ..port = 42434
+        ..title = "second dictionary";
+
+      final testRouter = GoRouter(
+        initialLocation: "/",
+        routes: [
+          GoRoute(
+            path: "/",
+            builder: (context, state) => Scaffold(
+              body: StatefulBuilder(
+                builder: (context, update) {
+                  setWord = update;
+                  return DesktopWordDisplayPane(word: word);
+                },
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(testRouter.dispose);
+
+      Widget buildTestWidget() {
+        return ProviderScope(
+          overrides: [
+            validDictIdsProvider.overrideWith((ref, requestedWord) {
+              return requestedWord == "first"
+                  ? Future<List<int>>.value([1])
+                  : nextValidDicts.future;
+            }),
+            wordContentProvider.overrideWith((ref, params) {
+              return params.word == "first"
+                  ? Future<String>.value("<p>first entry</p>")
+                  : nextContent.future;
+            }),
+          ],
+          child: MaterialApp.router(
+            routerConfig: testRouter,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        );
+      }
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(fakePlatform.created, 1);
+      expect(fakePlatform.disposed, 0);
+
+      setWord(() => word = "second");
+      await tester.pump();
+
+      expect(
+        fakePlatform.disposed,
+        0,
+        reason: "selecting a word must not destroy the WPE platform view",
+      );
+
+      nextValidDicts.complete([1, 2]);
+      nextContent.complete("<p>second entry</p>");
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(
+        fakePlatform.disposed,
+        0,
+        reason: "adding a matching dictionary must retain the existing view",
+      );
+      final webviews = tester.widgetList<WebviewWindows>(
+        find.byType(WebviewWindows),
+      );
+      expect(webviews, isNotEmpty);
+      expect(
+        webviews.map((webview) => webview.content),
+        everyElement("<p>second entry</p>"),
+      );
+    },
+  );
 }
