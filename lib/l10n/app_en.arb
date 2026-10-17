@@ -645,6 +645,92 @@
   "switchTab": "Switch Tab",
   "@switchTab": {},
   "groupNameAlreadyExists": "Group name already exists",
-  "@groupNameAlreadyExists": {}
+  "@groupNameAlreadyExists": {},
+  "flashcards": "Flashcards",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "Today's review",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} due · {newCards} new · {done} done",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {"type": "int"},
+      "newCards": {"type": "int"},
+      "done": {"type": "int"}
+    }
+  },
+  "flashcardsStudy": "Study",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "Unable to load flashcards",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "Rating saved",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "Undo",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "Again",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "Hard",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "Good",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "Easy",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days}d",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "flashcardsHoursShort": "{hours}h",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {"type": "int"}
+    }
+  },
+  "flashcardsMinutesShort": "{minutes}m",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "flashcardsNewCardsPerDay": "New cards per day",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "Allowed range: 0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "cards",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "Scheduling",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · 90% desired retention",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "Show answer",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "Show answer (Space)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "No definition found",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "Open full dictionary",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "Session complete",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "{count} cards reviewed",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "flashcardsMinutes": "{minutes} min",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "flashcardsDone": "Done",
+  "@flashcardsDone": {},
+  "flashcardsError": "Error: {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  }
 }
 

@@ -1,3 +1,4 @@
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/flashcards/providers.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -11,6 +12,7 @@ class FlashcardOverviewCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final overview = ref.watch(flashcardOverviewProvider(tag));
+    final l10n = AppLocalizations.of(context)!;
     return overview.when(
       data: (data) {
         final theme = Theme.of(context);
@@ -47,14 +49,18 @@ class FlashcardOverviewCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Today's review",
+                        l10n.flashcardsTodaysReview,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "${data.due} due · ${data.newCards} new · ${data.done} done",
+                        l10n.flashcardsOverviewStats(
+                          data.due,
+                          data.newCards,
+                          data.done,
+                        ),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -74,7 +80,7 @@ class FlashcardOverviewCard extends ConsumerWidget {
                           "/flashcards/review${tag == null ? "" : "?tag=$tag"}",
                         ),
                   icon: const Icon(Icons.play_arrow_rounded, size: 18),
-                  label: const Text("Study"),
+                  label: Text(l10n.flashcardsStudy),
                 ),
               ],
             ),
@@ -91,7 +97,7 @@ class FlashcardOverviewCard extends ConsumerWidget {
       error: (error, stackTrace) => Card(
         margin: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         child: ListTile(
-          title: const Text("Unable to load flashcards"),
+          title: Text(l10n.flashcardsUnableToLoad),
           subtitle: Text("$error"),
           trailing: IconButton(
             icon: const Icon(Icons.refresh),

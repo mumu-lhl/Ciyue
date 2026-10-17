@@ -1,11 +1,16 @@
 import "package:ciyue/services/flashcard_scheduler.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/src/generated/i18n/app_localizations_en.dart";
 import "package:ciyue/ui/pages/flashcards/rating_buttons.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_test/flutter_test.dart";
 
 void main() {
   test("rating snackbar expires even with undo action", () {
-    final snackBar = buildRatingSavedSnackBar(onUndo: () {});
+    final snackBar = buildRatingSavedSnackBar(
+      l10n: AppLocalizationsEn(),
+      onUndo: () {},
+    );
 
     expect(snackBar.persist, isFalse);
     expect(snackBar.duration, const Duration(seconds: 4));
@@ -30,6 +35,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: FlashcardRatingButtons(
             now: due,

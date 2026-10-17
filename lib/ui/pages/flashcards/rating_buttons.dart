@@ -1,13 +1,17 @@
 import "package:ciyue/services/flashcard_scheduler.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 
-SnackBar buildRatingSavedSnackBar({required VoidCallback onUndo}) {
+SnackBar buildRatingSavedSnackBar({
+  required AppLocalizations l10n,
+  required VoidCallback onUndo,
+}) {
   return SnackBar(
-    content: const Text("Rating saved"),
+    content: Text(l10n.flashcardsRatingSaved),
     duration: const Duration(seconds: 4),
     persist: false,
-    action: SnackBarAction(label: "Undo", onPressed: onUndo),
+    action: SnackBarAction(label: l10n.flashcardsUndo, onPressed: onUndo),
   );
 }
 
@@ -25,6 +29,7 @@ class FlashcardRatingButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -42,11 +47,11 @@ class FlashcardRatingButtons extends StatelessWidget {
                   children: [
                     Text(
                       isLargeScreen(context)
-                          ? "${_label(rating)} (${index + 1})"
-                          : _label(rating),
+                          ? "${_label(l10n, rating)} (${index + 1})"
+                          : _label(l10n, rating),
                     ),
                     Text(
-                      _interval(previews[rating]!.due.difference(now)),
+                      _interval(l10n, previews[rating]!.due.difference(now)),
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ],
@@ -58,16 +63,19 @@ class FlashcardRatingButtons extends StatelessWidget {
     );
   }
 
-  String _label(FlashcardRating rating) => switch (rating) {
-    FlashcardRating.again => "Again",
-    FlashcardRating.hard => "Hard",
-    FlashcardRating.good => "Good",
-    FlashcardRating.easy => "Easy",
-  };
+  String _label(AppLocalizations l10n, FlashcardRating rating) =>
+      switch (rating) {
+        FlashcardRating.again => l10n.flashcardsRatingAgain,
+        FlashcardRating.hard => l10n.flashcardsRatingHard,
+        FlashcardRating.good => l10n.flashcardsRatingGood,
+        FlashcardRating.easy => l10n.flashcardsRatingEasy,
+      };
 
-  String _interval(Duration duration) {
-    if (duration.inDays >= 1) return "${duration.inDays}d";
-    if (duration.inHours >= 1) return "${duration.inHours}h";
-    return "${duration.inMinutes.clamp(1, 59)}m";
+  String _interval(AppLocalizations l10n, Duration duration) {
+    if (duration.inDays >= 1) return l10n.flashcardsDaysShort(duration.inDays);
+    if (duration.inHours >= 1) {
+      return l10n.flashcardsHoursShort(duration.inHours);
+    }
+    return l10n.flashcardsMinutesShort(duration.inMinutes.clamp(1, 59));
   }
 }

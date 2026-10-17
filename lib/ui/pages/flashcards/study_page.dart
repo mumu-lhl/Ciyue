@@ -2,6 +2,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/services/flashcard_scheduler.dart";
 import "package:ciyue/services/flashcard_study_service.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/pages/flashcards/providers.dart";
 import "package:ciyue/ui/pages/flashcards/rating_buttons.dart";
@@ -24,12 +25,13 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(flashcardSessionProvider(widget.tag));
+    final l10n = AppLocalizations.of(context)!;
     return session.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, stackTrace) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text("Error: $error")),
+        body: Center(child: Text(l10n.flashcardsError("$error"))),
       ),
       data: (state) {
         if (state.complete) return _buildSummary(state);
@@ -92,6 +94,7 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
   }
 
   Widget _buildCard(FlashcardSessionState state) {
+    final l10n = AppLocalizations.of(context)!;
     final item = state.current;
     final wide = MediaQuery.sizeOf(context).width >= 800;
     final word = _wordPanel(item.word);
@@ -141,8 +144,8 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
                     onPressed: notifier.showAnswer,
                     child: Text(
                       isLargeScreen(context)
-                          ? "Show answer (Space)"
-                          : "Show answer",
+                          ? l10n.flashcardsShowAnswerShortcut
+                          : l10n.flashcardsShowAnswer,
                     ),
                   ),
           ),
@@ -169,6 +172,7 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
   );
 
   Widget _answerPanel(FlashcardSessionItem item) {
+    final l10n = AppLocalizations.of(context)!;
     final validIds = ref.watch(validDictIdsProvider(item.word));
     return validIds.when(
       data: (ids) => ids.isEmpty
@@ -176,18 +180,19 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text("No definition found"),
+                  Text(l10n.flashcardsNoDefinitionFound),
                   TextButton(
                     onPressed: () =>
                         context.push("/word/${Uri.encodeComponent(item.word)}"),
-                    child: const Text("Open full dictionary"),
+                    child: Text(l10n.flashcardsOpenFullDictionary),
                   ),
                 ],
               ),
             )
           : buildWebView(item.word, ids.first, false),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(child: Text("Error: $error")),
+      error: (error, stackTrace) =>
+          Center(child: Text(l10n.flashcardsError("$error"))),
     );
   }
 
@@ -195,53 +200,65 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
     final notifier = ref.read(flashcardSessionProvider(widget.tag).notifier);
     final undo = await notifier.rate(rating, now: DateTime.now().toUtc());
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
-      buildRatingSavedSnackBar(onUndo: () => notifier.undo(undo, rating)),
+      buildRatingSavedSnackBar(
+        l10n: l10n,
+        onUndo: () => notifier.undo(undo, rating),
+      ),
     );
   }
 
-  Widget _buildSummary(FlashcardSessionState state) => Scaffold(
-    appBar: AppBar(),
-    body: Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.check_circle, size: 72),
-          const SizedBox(height: 16),
-          Text(
-            "Session complete",
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          Text("${state.items.length} cards reviewed"),
-          Text("${DateTime.now().difference(state.startedAt).inMinutes} min"),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 12,
-            children: [
-              for (final rating in FlashcardRating.values)
-                Chip(
-                  label: Text(
-                    "${_ratingLabel(rating)} ${state.ratings[rating]}",
+  Widget _buildSummary(FlashcardSessionState state) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, size: 72),
+            const SizedBox(height: 16),
+            Text(
+              l10n.flashcardsSessionComplete,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            Text(l10n.flashcardsCardsReviewed(state.items.length)),
+            Text(
+              l10n.flashcardsMinutes(
+                DateTime.now().difference(state.startedAt).inMinutes,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              children: [
+                for (final rating in FlashcardRating.values)
+                  Chip(
+                    label: Text(
+                      "${_ratingLabel(l10n, rating)} ${state.ratings[rating]}",
+                    ),
                   ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: () => context.pop(),
-            child: const Text("Done"),
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () => context.pop(),
+              child: Text(l10n.flashcardsDone),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
-  String _ratingLabel(FlashcardRating rating) => switch (rating) {
-    FlashcardRating.again => "Again",
-    FlashcardRating.hard => "Hard",
-    FlashcardRating.good => "Good",
-    FlashcardRating.easy => "Easy",
-  };
+  String _ratingLabel(AppLocalizations l10n, FlashcardRating rating) =>
+      switch (rating) {
+        FlashcardRating.again => l10n.flashcardsRatingAgain,
+        FlashcardRating.hard => l10n.flashcardsRatingHard,
+        FlashcardRating.good => l10n.flashcardsRatingGood,
+        FlashcardRating.easy => l10n.flashcardsRatingEasy,
+      };
 }
