@@ -3318,11 +3318,14 @@ void InAppWebView::SetPointerButton(int kind, int button, int clickCount) {
   wpe_view_event(wpe_view_, button_event);
   wpe_event_unref(button_event);
 
-  // Clear button state AFTER sending the UP event
+  // Clear button state AFTER sending the UP event.
+  // Clear ALL button bits, not just the specific one: if a previous UP was
+  // lost (e.g. released outside the widget), the stale bit would keep WebKit
+  // thinking a drag is in progress, causing sticky selection.
   if (action == WpePointerButtonAction::Release) {
-    button_state_ &= ~button_modifier_bit;
+    button_state_ = 0;
     // If a resize was deferred during the drag, trigger it now.
-    if (button_state_ == 0 && resize_deferred_during_drag_) {
+    if (resize_deferred_during_drag_) {
       resize_deferred_during_drag_ = false;
       schedulePendingResize();
     }
