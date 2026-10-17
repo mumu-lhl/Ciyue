@@ -3257,6 +3257,11 @@ void InAppWebView::SetPointerButton(int kind, int button, int clickCount) {
   switch (action) {
     case WpePointerButtonAction::Press:
       event_type = WPE_EVENT_POINTER_DOWN;
+      // If the button is already down (e.g. a previous UP was lost),
+      // clear the stale state first to avoid confusing WebKit's selection.
+      if (button_state_ & button_modifier_bit) {
+        button_state_ &= ~button_modifier_bit;
+      }
       // Update button state BEFORE creating the event
       button_state_ |= button_modifier_bit;
       break;

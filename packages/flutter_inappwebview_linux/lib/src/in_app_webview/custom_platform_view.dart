@@ -555,13 +555,16 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     _activeTouchPoints.remove(ev.pointer);
                     return;
                   }
-                  final button = _downButtons.remove(ev.pointer);
-                  if (button != null) {
-                    _controller._setPointerButtonState(
-                      InAppWebViewPointerEventKind.up,
-                      button,
-                    );
-                  }
+                  // If we don't have a record of the button (e.g. State was
+                  // recreated mid-drag), default to primary instead of dropping
+                  // the UP event. A lost UP leaves WPE thinking the button is
+                  // still down, causing sticky selection.
+                  final button =
+                      _downButtons.remove(ev.pointer) ?? PointerButton.primary;
+                  _controller._setPointerButtonState(
+                    InAppWebViewPointerEventKind.up,
+                    button,
+                  );
                 },
                 onPointerCancel: (ev) {
                   _pointerKind = ev.kind;
@@ -575,13 +578,13 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     ); // 3 = cancel
                     return;
                   }
-                  final button = _downButtons.remove(ev.pointer);
-                  if (button != null) {
-                    _controller._setPointerButtonState(
-                      InAppWebViewPointerEventKind.cancel,
-                      button,
-                    );
-                  }
+                  // Same as onPointerUp: don't drop the event if state was lost.
+                  final button =
+                      _downButtons.remove(ev.pointer) ?? PointerButton.primary;
+                  _controller._setPointerButtonState(
+                    InAppWebViewPointerEventKind.cancel,
+                    button,
+                  );
                 },
                 onPointerMove: (ev) {
                   _pointerKind = ev.kind;
