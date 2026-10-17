@@ -16,6 +16,8 @@
 * 🌐 AI 翻译 (支持 OpenAI, Gemini, Deepseek...)
 * 🔈 支持朗读
 * 🔖 收藏单词到单词本
+* 🃏 抽认卡 (FSRS 间隔重复)
+* ✍️ AI 写作检查
 
 ## 截图
 
@@ -29,9 +31,12 @@
 [<img src="https://github.com/NeoApplications/Neo-Backup/raw/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
     alt="Get it on GitHub"
     height="80">](https://github.com/mumu-lhl/Ciyue/releases/latest)
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+[<img src="https://f-droid.org/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/org.eu.mumulhl.ciyue/)
+[<img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png"
+     alt="Get it on Obtainium"
+     height="80">](https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/mumu-lhl/Ciyue)
 
 ### Arch Linux
 

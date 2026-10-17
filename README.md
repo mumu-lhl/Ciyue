@@ -17,6 +17,8 @@ A mdict dictionary with Android/Windows/Linux/macOS support.
 * 🌐 AI Translate (Support OpenAI, Gemini, Deepseek...)
 * 🔈 Support reading aloud
 * 🔖 Bookmarking words to the word book
+* 🃏 Flashcards with FSRS spaced repetition
+* ✍️ AI writing check
 
 ## Screenshots
 
@@ -30,9 +32,12 @@ A mdict dictionary with Android/Windows/Linux/macOS support.
 [<img src="https://github.com/NeoApplications/Neo-Backup/raw/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
     alt="Get it on GitHub"
     height="80">](https://github.com/mumu-lhl/Ciyue/releases/latest)
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+[<img src="https://f-droid.org/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/org.eu.mumulhl.ciyue/)
+[<img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png"
+     alt="Get it on Obtainium"
+     height="80">](https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/mumu-lhl/Ciyue)
 
 ### Arch Linux
 
