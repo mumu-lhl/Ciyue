@@ -487,10 +487,6 @@ class InAppWebView {
   WPEView* wpe_view_ = nullptr;           // From webkit_web_view_get_wpe_view, not owned
   WPEToplevel* wpe_toplevel_ = nullptr;   // From wpe_view_get_toplevel, not owned
   guint force_resize_source_id_ = 0;
-  // Debounce rapid setSize calls: coalesce to a single WPE resize per idle tick.
-  // Without this, a resize->relayout->height-change feedback loop thrashes WPE's
-  // compositor with synchronous resizes.
-  guint pending_resize_source_id_ = 0;
   
   // Buffer rendering for WPEPlatform
   WPEBuffer* current_buffer_ = nullptr;   // Current frame buffer (borrowed, not owned)

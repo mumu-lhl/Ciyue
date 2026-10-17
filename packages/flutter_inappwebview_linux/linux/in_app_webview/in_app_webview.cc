@@ -374,10 +374,6 @@ InAppWebView::~InAppWebView() {
     g_source_remove(force_resize_source_id_);
     force_resize_source_id_ = 0;
   }
-  if (pending_resize_source_id_ != 0) {
-    g_source_remove(pending_resize_source_id_);
-    pending_resize_source_id_ = 0;
-  }
 #endif
   CloseActiveDialogs();
   SetOnFrameAvailable(nullptr);
@@ -1322,20 +1318,12 @@ void InAppWebView::OnWpePlatformBufferRendered(WPEBuffer* buffer) {
     // Check buffer type to determine best rendering path
     bool is_dma_buf = WPE_IS_BUFFER_DMA_BUF(buffer);
     bool is_shm = WPE_IS_BUFFER_SHM(buffer);
-
-    // Allow forcing the SHM/pixel path via env var for debugging.
-    // The zero-copy EGL path has subtle GPU synchronization requirements
-    // (cross-display fencing); if rendering is corrupted, setting
-    // FLUTTER_INAPPWEBVIEW_LINUX_FORCE_SHM=1 bypasses EGL entirely.
-    static bool force_shm = [] {
-      return g_getenv("FLUTTER_INAPPWEBVIEW_LINUX_FORCE_SHM") != nullptr;
-    }();
-
+    
     // === Priority 1: Try EGL image import (zero-copy, best performance) ===
     // Only attempt EGL for DMA-BUF buffers (SHM buffers cannot be imported via EGL)
-    // Skip if previous EGL attempts failed, or if SHM is forced via env var.
-    if (egl_display_ != nullptr && is_dma_buf && !egl_import_failed_permanently_ &&
-        !force_shm) {
+    // Skip if previous EGL attempts failed
+    if (egl_display_ != nullptr && 
+        is_dma_buf && !egl_import_failed_permanently_) {
       GError* error = nullptr;
       void* egl_image = wpe_buffer_import_to_egl_image(buffer, &error);
       
@@ -2796,43 +2784,16 @@ void InAppWebView::setSize(int width, int height) {
   width_ = width;
   height_ = height;
 
-  // Debounce: coalesce rapid successive resizes to a single WPE resize on the
-  // next idle tick. A synchronous resize here can trigger a feedback loop
-  // (resize -> WPE relayout -> content height change -> Dart rebuild -> setSize),
-  // thrashing the compositor. Cancel any pending resize and schedule a new one.
-  if (pending_resize_source_id_ != 0) {
-    g_source_remove(pending_resize_source_id_);
-    pending_resize_source_id_ = 0;
-  }
-  struct ResizeData {
-    InAppWebView* webview;
-    int width;
-    int height;
-  };
-  auto* data = new ResizeData{this, width_, height_};
-  pending_resize_source_id_ = g_idle_add_full(
-      G_PRIORITY_DEFAULT_IDLE,
-      [](gpointer user_data) -> gboolean {
-        auto* data = static_cast<ResizeData*>(user_data);
-        InAppWebView* webview = data->webview;
-        webview->pending_resize_source_id_ = 0;
-        if (!webview->is_disposing_.load()) {
-          // Resize the WPE backend
+  // Resize the WPE backend
 #ifdef HAVE_WPE_PLATFORM
-          if (webview->wpe_toplevel_ != nullptr) {
-            wpe_toplevel_resize(webview->wpe_toplevel_, data->width, data->height);
-          }
+  if (wpe_toplevel_ != nullptr) {
+    wpe_toplevel_resize(wpe_toplevel_, width_, height_);
+  }
 #elif defined(HAVE_WPE_BACKEND_LEGACY)
-          if (webview->wpe_backend_ != nullptr) {
-            wpe_view_backend_dispatch_set_size(webview->wpe_backend_, data->width,
-                                               data->height);
-          }
+  if (wpe_backend_ != nullptr) {
+    wpe_view_backend_dispatch_set_size(wpe_backend_, width_, height_);
+  }
 #endif
-        }
-        return G_SOURCE_REMOVE;
-      },
-      data,
-      [](gpointer user_data) { delete static_cast<ResizeData*>(user_data); });
 }
 
 void InAppWebView::setScaleFactor(double scale_factor) {
