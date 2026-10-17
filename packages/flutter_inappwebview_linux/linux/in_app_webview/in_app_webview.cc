@@ -1563,6 +1563,10 @@ void InAppWebView::loadUrl(const std::string& url) {
   if (webview_ == nullptr)
     return;
 
+  // Reset button state on navigation (see loadData).
+  button_state_ = 0;
+  resize_deferred_during_drag_ = false;
+
   webkit_web_view_load_uri(webview_, url.c_str());
 }
 
@@ -1599,6 +1603,11 @@ void InAppWebView::loadData(const std::string& data, const std::string& mime_typ
                             const std::string& encoding, const std::string& base_url) {
   if (webview_ == nullptr)
     return;
+
+  // Reset button state: if a drag was in progress when new content loads
+  // (WebView retention), the stale state would cause sticky selection.
+  button_state_ = 0;
+  resize_deferred_during_drag_ = false;
 
   GBytes* bytes = g_bytes_new(data.data(), data.size());
   webkit_web_view_load_bytes(webview_, bytes, mime_type.c_str(), encoding.c_str(),
