@@ -2,6 +2,7 @@
 
 #include <gdk/gdk.h>
 
+#include <atomic>
 #include <cstring>
 
 #include "../utils/flutter.h"
@@ -11,7 +12,54 @@
 
 namespace flutter_inappwebview_plugin {
 
+struct TextureFrameNotificationState {
+  TextureFrameNotificationState(FlTextureRegistrar* registrar, FlTexture* frame_texture)
+      : registrar(FL_TEXTURE_REGISTRAR(g_object_ref(registrar))),
+        texture(FL_TEXTURE(g_object_ref(frame_texture))) {}
+
+  ~TextureFrameNotificationState() {
+    g_object_unref(texture);
+    g_object_unref(registrar);
+  }
+
+  std::atomic_bool active{true};
+  std::atomic_bool pending{false};
+  FlTextureRegistrar* registrar;
+  FlTexture* texture;
+};
+
 namespace {
+
+gboolean DispatchTextureFrameNotification(gpointer user_data) {
+  const auto& state =
+      *static_cast<std::shared_ptr<TextureFrameNotificationState>*>(user_data);
+  state->pending.store(false, std::memory_order_release);
+  if (state->active.load(std::memory_order_acquire)) {
+    fl_texture_registrar_mark_texture_frame_available(state->registrar, state->texture);
+  }
+  return G_SOURCE_REMOVE;
+}
+
+void DestroyTextureFrameNotification(gpointer user_data) {
+  delete static_cast<std::shared_ptr<TextureFrameNotificationState>*>(user_data);
+}
+
+void ScheduleTextureFrameNotification(
+    const std::shared_ptr<TextureFrameNotificationState>& state) {
+  if (!state->active.load(std::memory_order_acquire)) {
+    return;
+  }
+
+  bool expected = false;
+  if (!state->pending.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
+    return;
+  }
+
+  auto* queued_state = new std::shared_ptr<TextureFrameNotificationState>(state);
+  g_idle_add_full(G_PRIORITY_DEFAULT, DispatchTextureFrameNotification, queued_state,
+                  DestroyTextureFrameNotification);
+}
+
 // Check if GL textures should be used (enabled by default, can be disabled)
 // Disable with FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL=1 to force software rendering.
 bool UseGLTextureEnvOverride() {
@@ -136,10 +184,15 @@ CustomPlatformView::CustomPlatformView(FlBinaryMessenger* messenger,
     webview_->AttachChannel(messenger, texture_id_);
   }
 
-  // Set up the webview's callback to mark frame available
-  // For EGL texture, we also update the EGL image reference
-  webview_->SetOnFrameAvailable([this]() {
-    // If using EGL texture, update the EGL image reference before marking available
+  // Keep refs alive for frame notifications queued from WPE's rendering thread.
+  frame_notification_state_ =
+      std::make_shared<TextureFrameNotificationState>(texture_registrar_, texture_);
+  std::weak_ptr<TextureFrameNotificationState> weak_frame_notification_state =
+      frame_notification_state_;
+
+  // Set up the webview's callback to mark frame available on the GTK/Flutter platform loop.
+  // For EGL texture, update the image reference before queuing the notification.
+  webview_->SetOnFrameAvailable([this, weak_frame_notification_state]() {
     if (egl_texture_ != nullptr && webview_ != nullptr) {
       uint32_t width = 0;
       uint32_t height = 0;
@@ -148,7 +201,10 @@ CustomPlatformView::CustomPlatformView(FlBinaryMessenger* messenger,
         inappwebview_egl_texture_set_egl_image(egl_texture_, egl_image, width, height);
       }
     }
-    MarkTextureFrameAvailable();
+
+    if (auto state = weak_frame_notification_state.lock()) {
+      ScheduleTextureFrameNotification(state);
+    }
   });
 
   // If an EGL image is already available from early rendering, register it now
@@ -189,6 +245,10 @@ CustomPlatformView::CustomPlatformView(FlBinaryMessenger* messenger,
 
 CustomPlatformView::~CustomPlatformView() {
   debugLog("dealloc CustomPlatformView");
+
+  if (frame_notification_state_ != nullptr) {
+    frame_notification_state_->active.store(false, std::memory_order_release);
+  }
 
   if (webview_ != nullptr) {
     webview_->SetOnFrameAvailable(nullptr);

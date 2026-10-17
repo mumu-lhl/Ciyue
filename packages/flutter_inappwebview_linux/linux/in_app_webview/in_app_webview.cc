@@ -1249,26 +1249,25 @@ void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
     ReadPixelsFromEglImage(egl_image, img_width, img_height);
   }
 
-  // Protect exported_image_ access - this method is called from WPE's thread
-  // while GetCurrentEglImage may be called from Flutter's rendering thread
+  // Swap the exported image under the same lock used by GetCurrentEglImage.
+  // Keep the previous image alive until the texture callback has switched its
+  // EGLImage reference; otherwise Flutter's raster thread can still bind an
+  // image that WPE has already released.
+  ::wpe_fdo_egl_exported_image* previous_image = nullptr;
   {
     std::lock_guard<std::mutex> lock(exported_image_mutex_);
-    
-    // Release previous exported image
-    if (exported_image_ != nullptr && exportable_ != nullptr) {
-      ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
-                                                                            exported_image_);
-    }
-
+    previous_image = exported_image_;
     exported_image_ = image;
   }
 
-  // Notify before dispatch_frame_complete so the EGL image is captured before
-  // WPE is signaled that it can render the next frame.
   NotifyFrameAvailable();
 
-  // Dispatch frame complete to allow WebKit to render next frame
-  // Note: This is moved AFTER on_frame_available to ensure the EGL image is used first
+  if (previous_image != nullptr && exportable_ != nullptr) {
+    ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
+                                                                          previous_image);
+  }
+
+  // Dispatch frame complete only after the new EGL image has been published.
   if (exportable_ != nullptr) {
     wpe_view_backend_exportable_fdo_dispatch_frame_complete(exportable_);
   }
@@ -3210,20 +3209,20 @@ void InAppWebView::SetPointerButton(int kind, int button, int clickCount) {
   const uint32_t button_modifier_bit = 1u << (7 + wpe_button);
 
   guint32 time = static_cast<guint32>(g_get_monotonic_time() / 1000);
+  const auto action = GetWpePointerButtonAction(static_cast<WpePointerEventKind>(kind));
   WPEEventType event_type;
 
-  switch (static_cast<WpePointerEventKind>(kind)) {
-    case WpePointerEventKind::Down:
+  switch (action) {
+    case WpePointerButtonAction::Press:
       event_type = WPE_EVENT_POINTER_DOWN;
       // Update button state BEFORE creating the event
       button_state_ |= button_modifier_bit;
       break;
-    case WpePointerEventKind::Up:
+    case WpePointerButtonAction::Release:
       event_type = WPE_EVENT_POINTER_UP;
       // Update button state AFTER the event (but include in modifiers)
       break;
-    default:
-      // Ignore enter/leave/cancel etc for button events
+    case WpePointerButtonAction::Ignore:
       return;
   }
 
@@ -3267,7 +3266,7 @@ void InAppWebView::SetPointerButton(int kind, int button, int clickCount) {
   wpe_event_unref(button_event);
 
   // Clear button state AFTER sending the UP event
-  if (event_type == WPE_EVENT_POINTER_UP) {
+  if (action == WpePointerButtonAction::Release) {
     button_state_ &= ~button_modifier_bit;
   }
 
@@ -3323,23 +3322,22 @@ void InAppWebView::SetPointerButton(int kind, int button, int clickCount) {
   event.y = scaled_y;
   event.button = wpe_button;
 
-  switch (static_cast<WpePointerEventKind>(kind)) {
-    case WpePointerEventKind::Down:
+  switch (GetWpePointerButtonAction(static_cast<WpePointerEventKind>(kind))) {
+    case WpePointerButtonAction::Press:
       event.type = wpe_input_pointer_event_type_button;
       // state=1 means button is pressed (see WebEventFactory: event->state ? MouseDown : MouseUp)
       event.state = 1;
       button_state_ |= button_modifier_bit;
       event.modifiers = current_modifiers_ | button_state_;
       break;
-    case WpePointerEventKind::Up:
+    case WpePointerButtonAction::Release:
       event.type = wpe_input_pointer_event_type_button;
       // state=0 means button is released
       event.state = 0;
       button_state_ &= ~button_modifier_bit;
       event.modifiers = current_modifiers_ | button_state_;
       break;
-    default:
-      // Ignore enter/leave/cancel etc for button events
+    case WpePointerButtonAction::Ignore:
       return;
   }
 

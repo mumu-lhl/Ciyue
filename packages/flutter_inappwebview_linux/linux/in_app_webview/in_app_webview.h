@@ -113,6 +113,20 @@ enum class WpePointerEventKind {
   Cancel = 6
 };
 
+enum class WpePointerButtonAction { Press, Release, Ignore };
+
+constexpr WpePointerButtonAction GetWpePointerButtonAction(WpePointerEventKind kind) {
+  switch (kind) {
+    case WpePointerEventKind::Down:
+      return WpePointerButtonAction::Press;
+    case WpePointerEventKind::Up:
+    case WpePointerEventKind::Cancel:
+      return WpePointerButtonAction::Release;
+    default:
+      return WpePointerButtonAction::Ignore;
+  }
+}
+
 // Pointer button type (matches Dart side)
 enum class WpePointerButton { None = 0, Primary = 1, Secondary = 2, Tertiary = 3 };
 

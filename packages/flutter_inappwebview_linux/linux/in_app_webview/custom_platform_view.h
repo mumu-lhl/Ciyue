@@ -11,6 +11,8 @@
 
 namespace flutter_inappwebview_plugin {
 
+struct TextureFrameNotificationState;
+
 using WebViewType = InAppWebView;
 
 /// CustomPlatformView handles the method channel communication for
@@ -36,6 +38,7 @@ class CustomPlatformView {
  private:
   std::shared_ptr<WebViewType> webview_;
   FlTextureRegistrar* texture_registrar_;
+  std::shared_ptr<TextureFrameNotificationState> frame_notification_state_;
   FlTexture* texture_ = nullptr;
   InAppWebViewEGLTexture* egl_texture_ = nullptr;  // Pointer to EGL texture if using zero-copy mode
   int64_t texture_id_ = -1;
