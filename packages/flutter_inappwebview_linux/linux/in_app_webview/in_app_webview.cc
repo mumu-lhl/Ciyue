@@ -1423,8 +1423,17 @@ void InAppWebView::OnWpePlatformBufferRendered(WPEBuffer* buffer) {
         }
         memcpy(pixel_buffer.data.data(), data, size);
         
-        // GBM pixel import also returns ARGB8888, convert to RGBA
+        // GBM pixel import also returns ARGB8888, convert to RGBA.
+        // Don't assume tight packing: if the buffer has row padding,
+        // size > width*height*4. Derive stride from actual size.
         uint32_t stride = buf_width * 4;
+        if (size > (gsize)buf_width * buf_height * 4 && buf_height > 0) {
+          uint32_t derived_stride = (uint32_t)(size / buf_height);
+          // Sanity: stride must be at least width*4 and 4-byte aligned.
+          if (derived_stride >= buf_width * 4 && (derived_stride % 4) == 0) {
+            stride = derived_stride;
+          }
+        }
         ConvertARGB32ToRGBA(pixel_buffer.data.data(),
                             pixel_buffer.data.data(),
                             buf_width, buf_height,
