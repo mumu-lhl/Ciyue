@@ -496,6 +496,9 @@ class InAppWebView {
   gulong buffer_rendered_handler_ = 0;    // Signal handler ID for buffer-rendered
   gulong scale_changed_handler_ = 0;      // Signal handler ID for notify::scale-factor
   mutable std::mutex wpe_buffer_mutex_;   // Mutex for thread-safe buffer access
+  // Per-instance (not static): if EGL import fails once it will likely keep
+  // failing for this view (e.g. no GPU), but other WebViews should not be affected.
+  bool egl_import_failed_permanently_ = false;
 #endif
 
 #ifdef HAVE_WPE_BACKEND_LEGACY

@@ -492,13 +492,17 @@ Future<_WindowsWebViewSetup> _prepareWindowsWebView({
 }
 
 class WebviewWindows extends ConsumerStatefulWidget {
+  final String word;
   final String content;
   final int dictId;
+  final bool isExpansion;
 
   const WebviewWindows({
     super.key,
+    this.word = "",
     required this.content,
     required this.dictId,
+    this.isExpansion = false,
   });
 
   @override
@@ -657,7 +661,49 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   }
                 },
               );
+              if (widget.isExpansion) {
+                controller.addJavaScriptHandler(
+                  handlerName: "WebViewHeight",
+                  callback: (args) {
+                    double newHeight = (args[0] as num).toDouble();
+                    ref
+                        .read(webviewHeightsProvider.notifier)
+                        .setHeight(widget.word, dictId, newHeight);
+                  },
+                );
+              }
               await _scheduleDesktopContentLoad(controller);
+            },
+            onPageCommitVisible: (controller, url) async {
+              // Report content height for expansion panels so the WebView is
+              // sized to its content (like Android). This avoids nested scrolling
+              // (WebView internal scroll + Flutter outer scroll fighting).
+              if (widget.isExpansion) {
+                controller.evaluateJavascript(
+                  source: """
+(function() {
+  if (!document.body) return;
+  var lastHeight = 0;
+  function reportHeight() {
+    var currentHeight = document.body.scrollHeight;
+    // Only report if changed by more than 2px to avoid micro-oscillation
+    // feedback loops (resize -> relayout -> slightly different height).
+    if (Math.abs(currentHeight - lastHeight) > 2) {
+      lastHeight = currentHeight;
+      window.flutter_inappwebview.callHandler('WebViewHeight', currentHeight);
+    }
+  }
+  new MutationObserver(reportHeight).observe(document.body, {
+    childList: true, subtree: true, attributes: true, characterData: true
+  });
+  if (window.ResizeObserver) {
+    new ResizeObserver(reportHeight).observe(document.body);
+  }
+  reportHeight();
+})();
+""",
+                );
+              }
             },
             onRenderProcessGone: (controller, detail) async {
               talker.warning("InAppWebView render process gone, reloading...");
@@ -747,9 +793,25 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
       }
     }
 
-    // ExpansionPanelList lays out panel bodies with unbounded height. The
-    // Linux platform view uses SizedBox.expand internally, so it must receive
-    // a finite constraint; the WebView can scroll its own content.
+    // In expansion mode, size the WebView to its content height (reported via
+    // JS) so only the outer Flutter SingleChildScrollView scrolls. This avoids
+    // nested scrolling where the WebView's internal scroll fights the outer
+    // scroll, causing rapid jitter on tall pages.
+    // In non-expansion mode (full page), constrain to screen height and let
+    // the WebView scroll internally.
+    if (widget.isExpansion) {
+      final height =
+          ref.watch(
+            webviewHeightsProvider.select(
+              (m) => m["${widget.word}:${widget.dictId}"],
+            ),
+          ) ??
+          0;
+      // ExpansionPanelList gives unbounded height; the Linux platform view
+      // uses SizedBox.expand internally so it needs a finite constraint.
+      // Use at least 1 to avoid zero-size issues before JS reports height.
+      return SizedBox(height: height > 0 ? height : 1, child: webview);
+    }
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height),
       child: webview,

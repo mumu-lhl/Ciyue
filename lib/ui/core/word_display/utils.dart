@@ -76,7 +76,12 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
         isExpansion: widget.isExpansion,
       );
     } else if (isDesktop()) {
-      return WebviewWindows(content: content, dictId: widget.dictId);
+      return WebviewWindows(
+        word: widget.word,
+        content: content,
+        dictId: widget.dictId,
+        isExpansion: widget.isExpansion,
+      );
     } else {
       return FakeWebViewByAI(html: content);
     }

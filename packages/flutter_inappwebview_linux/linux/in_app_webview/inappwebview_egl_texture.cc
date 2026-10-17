@@ -49,6 +49,14 @@ struct _InAppWebViewEGLTexture {
   uint32_t height;
   gboolean has_new_frame;
 
+  // EGL images pending destruction. An EGL image must not be destroyed until
+  // Flutter's raster thread has bound a NEWER image via glEGLImageTargetTexture2DOES.
+  // Destroying it earlier (e.g. when WPE produces the next frame) is a use-after-free
+  // that corrupts rendering (e.g. selected text visible but rest disappears).
+  // These are destroyed in populate() after a newer image is successfully bound,
+  // where a GL context is current.
+  GQueue* pending_destroy_images;
+
   // Fallback: pixel buffer for when EGL is not available (SHM mode)
   uint8_t* fallback_buffer;
   size_t fallback_buffer_size;
@@ -102,6 +110,32 @@ static gboolean check_egl_image_extension(InAppWebViewEGLTexture* self) {
   }
 
   return self->extension_available;
+}
+
+static void destroy_pending_egl_images(InAppWebViewEGLTexture* self) {
+  if (self->pending_destroy_images == nullptr ||
+      g_queue_is_empty(self->pending_destroy_images)) {
+    return;
+  }
+  // populate() runs with a GL context current, so eglGetCurrentDisplay() is valid.
+  EGLDisplay display = eglGetCurrentDisplay();
+  if (display == EGL_NO_DISPLAY) {
+    return;
+  }
+  static PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR = nullptr;
+  if (eglDestroyImageKHR == nullptr) {
+    eglDestroyImageKHR =
+        (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
+  }
+  if (eglDestroyImageKHR == nullptr) {
+    return;
+  }
+  while (!g_queue_is_empty(self->pending_destroy_images)) {
+    void* image = g_queue_pop_head(self->pending_destroy_images);
+    if (image != nullptr) {
+      eglDestroyImageKHR(display, static_cast<EGLImageKHR>(image));
+    }
+  }
 }
 
 // Populate callback - called by Flutter to get the OpenGL texture
@@ -175,6 +209,10 @@ static gboolean inappwebview_egl_texture_populate(FlTextureGL* texture, uint32_t
       *out_height = self->height;
       
       self->has_new_frame = FALSE;
+
+      // Now that a newer image is bound, it's safe to destroy the older ones.
+      // The GL texture holds a reference to the new image's buffer.
+      destroy_pending_egl_images(self);
 
       g_mutex_unlock(&self->mutex);
       return TRUE;
@@ -299,6 +337,16 @@ static void inappwebview_egl_texture_dispose(GObject* object) {
     self->fallback_buffer_size = 0;
   }
 
+  // Note: pending_destroy_images are EGL images that were retired but not yet
+  // destroyed because Flutter hadn't bound a newer frame. At dispose time the
+  // GL context may not be current, so we just drop the queue without calling
+  // eglDestroyImageKHR; the EGL display teardown reclaims them. The WPE buffers
+  // backing them are released separately by InAppWebView.
+  if (self->pending_destroy_images != nullptr) {
+    g_queue_free(self->pending_destroy_images);
+    self->pending_destroy_images = nullptr;
+  }
+
   // Note: We don't call glDeleteTextures here because:
   // 1. The GL context may not be current
   // 2. Flutter's texture registrar will handle texture cleanup
@@ -337,6 +385,7 @@ static void inappwebview_egl_texture_init(InAppWebViewEGLTexture* self) {
   self->width = 0;
   self->height = 0;
   self->has_new_frame = FALSE;
+  self->pending_destroy_images = g_queue_new();
   self->fallback_buffer = nullptr;
   self->fallback_buffer_size = 0;
   self->default_texture_id = 0;
@@ -363,6 +412,13 @@ void inappwebview_egl_texture_set_egl_image(InAppWebViewEGLTexture* self, void* 
   }
 
   g_mutex_lock(&self->mutex);
+
+  // Retire the previous image instead of dropping it: it may still be bound
+  // by Flutter's raster thread. It will be destroyed in populate() after the
+  // new image is successfully bound (see destroy_pending_egl_images).
+  if (self->current_egl_image != nullptr && self->current_egl_image != egl_image) {
+    g_queue_push_tail(self->pending_destroy_images, self->current_egl_image);
+  }
 
   self->current_egl_image = egl_image;
   self->width = width;

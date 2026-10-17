@@ -1296,10 +1296,10 @@ void InAppWebView::OnWpePlatformBufferRendered(WPEBuffer* buffer) {
   
   WPEBuffer* previous_buffer = nullptr;
   bool buffer_handled = false;
-  
-  // Track EGL import failures to avoid repeated attempts
-  // Static because if EGL fails once, it will likely keep failing (e.g., no GPU)
-  static bool egl_import_failed_permanently = false;
+
+  // Track EGL import failures to avoid repeated attempts.
+  // Per-instance (member): if EGL fails once for this view it will likely keep
+  // failing (e.g. no GPU), but other WebViews must not be affected.
   
   {
     std::lock_guard<std::mutex> lock(wpe_buffer_mutex_);
@@ -1307,19 +1307,13 @@ void InAppWebView::OnWpePlatformBufferRendered(WPEBuffer* buffer) {
     // Store reference to previous buffer - we'll release it AFTER importing the new one
     // This ensures the EGL image's backing memory stays valid until we have a new frame
     previous_buffer = current_buffer_;
-    
-    // Destroy previous EGL image if we created one
-    if (current_egl_image_ != nullptr && egl_display_ != nullptr) {
-      static PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR = nullptr;
-      if (eglDestroyImageKHR == nullptr) {
-        eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
-      }
-      if (eglDestroyImageKHR != nullptr) {
-        eglDestroyImageKHR(static_cast<EGLDisplay>(egl_display_), 
-                           static_cast<EGLImageKHR>(current_egl_image_));
-      }
-      current_egl_image_ = nullptr;
-    }
+
+    // Do NOT destroy the previous EGL image here. Flutter's raster thread may
+    // still be binding it in FlTextureGL::populate(). The EGL texture takes
+    // ownership of retired images via inappwebview_egl_texture_set_egl_image()
+    // and destroys them after a newer image is successfully bound.
+    // (Destroying here was a use-after-free causing corrupted rendering.)
+    current_egl_image_ = nullptr;
     
     // Check buffer type to determine best rendering path
     bool is_dma_buf = WPE_IS_BUFFER_DMA_BUF(buffer);
@@ -1329,7 +1323,7 @@ void InAppWebView::OnWpePlatformBufferRendered(WPEBuffer* buffer) {
     // Only attempt EGL for DMA-BUF buffers (SHM buffers cannot be imported via EGL)
     // Skip if previous EGL attempts failed
     if (egl_display_ != nullptr && 
-        is_dma_buf && !egl_import_failed_permanently) {
+        is_dma_buf && !egl_import_failed_permanently_) {
       GError* error = nullptr;
       void* egl_image = wpe_buffer_import_to_egl_image(buffer, &error);
       
@@ -1341,7 +1335,7 @@ void InAppWebView::OnWpePlatformBufferRendered(WPEBuffer* buffer) {
       } else {
         // Mark EGL as permanently failed so we don't keep trying
         // This is common in VMs or software-only environments
-        egl_import_failed_permanently = true;
+        egl_import_failed_permanently_ = true;
         if (error != nullptr) {
           g_clear_error(&error);
         }
