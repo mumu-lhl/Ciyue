@@ -296,7 +296,6 @@ class InAppWebView {
   bool requestPointerUnlock();
 
   // Input handling
-  void SetTextureOffset(double x, double y);
   void SetCursorPos(double x, double y);
   void SetPointerButton(int kind, int button, int clickCount = 1);
   void SetScrollDelta(double dx, double dy);
@@ -674,8 +673,6 @@ class InAppWebView {
   WebKitHitTestResult* pending_hit_test_result_ = nullptr;
   double context_menu_x_ = 0;  // Mouse position when context menu was requested
   double context_menu_y_ = 0;
-  double texture_offset_x_ = 0;  // Texture offset within the Flutter window
-  double texture_offset_y_ = 0;
 
   // Option menu state (for HTML <select> dropdowns)
   std::unique_ptr<OptionMenuPopup> option_menu_popup_;

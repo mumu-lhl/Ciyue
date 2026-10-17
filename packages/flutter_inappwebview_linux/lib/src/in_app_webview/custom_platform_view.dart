@@ -209,18 +209,6 @@ class CustomPlatformViewController
     ]);
   }
 
-  /// Sets the texture offset (position within the Flutter window).
-  Future<void> _setTextureOffset(Offset offset) async {
-    if (_isDisposed) {
-      return;
-    }
-    assert(value.isInitialized);
-    return _methodChannel.invokeMethod('setTextureOffset', [
-      offset.dx,
-      offset.dy,
-    ]);
-  }
-
   /// Moves the virtual cursor to [position].
   Future<void> _setCursorPos(Offset position) async {
     if (_isDisposed) {
@@ -672,10 +660,6 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
           widget.scaleFactor ?? window.devicePixelRatio,
         ),
       );
-
-      // Also report the texture offset (position within the window)
-      final globalPosition = box.localToGlobal(Offset.zero);
-      unawaited(_controller._setTextureOffset(globalPosition));
     }
   }
 

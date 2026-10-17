@@ -3169,11 +3169,6 @@ bool InAppWebView::OnDomFullscreenRequest(bool fullscreen) {
 
 // === Input Handling ===
 
-void InAppWebView::SetTextureOffset(double x, double y) {
-  texture_offset_x_ = x;
-  texture_offset_y_ = y;
-}
-
 void InAppWebView::SetCursorPos(double x, double y) {
   // Store logical coordinates
   cursor_x_ = x;
