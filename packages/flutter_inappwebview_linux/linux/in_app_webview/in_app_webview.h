@@ -547,6 +547,11 @@ class InAppWebView {
   int height_ = 600;
   double scale_factor_ = 1.0;
 
+  // Debounce rapid setSize calls: coalesce to a single WPE resize per idle tick.
+  // Without this, a resize->relayout->height-change feedback loop thrashes WPE's
+  // compositor with synchronous resizes. Applies to both WPE backends.
+  guint pending_resize_source_id_ = 0;
+
   // Channel delegate
   std::unique_ptr<WebViewChannelDelegate> channel_delegate_;
 
