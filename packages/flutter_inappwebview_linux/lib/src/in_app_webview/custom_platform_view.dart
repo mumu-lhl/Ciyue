@@ -237,6 +237,16 @@ class CustomPlatformViewController
     });
   }
 
+  /// Sends a pointer CANCEL directly, bypassing the _isDisposed check.
+  /// Used during dispose() to clear native button state if a drag was in progress.
+  Future<void> forceCancelPointerButton(PointerButton button) {
+    return _methodChannel.invokeMethod('setPointerButton', <String, dynamic>{
+      'kind': InAppWebViewPointerEventKind.cancel.index,
+      'button': button.index,
+      'clickCount': 1,
+    }).catchError((_) {});
+  }
+
   /// Indicates whether the specified [button] is currently down with click count.
   Future<void> _setPointerButtonStateWithClickCount(
     InAppWebViewPointerEventKind kind,
@@ -665,6 +675,15 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
 
   @override
   void dispose() {
+    // If a drag was in progress when the widget is disposed (e.g. word changed
+    // mid-drag with WebView retention), the native button state would be stuck.
+    // Send a synthetic CANCEL to clear it, bypassing the _isDisposed check.
+    if (_downButtons.isNotEmpty) {
+      for (final button in _downButtons.values) {
+        _controller.forceCancelPointerButton(button);
+      }
+      _downButtons.clear();
+    }
     super.dispose();
     _cursorSubscription?.cancel();
     _controller.dispose();
