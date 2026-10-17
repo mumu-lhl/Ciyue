@@ -363,5 +363,109 @@
   "launchAtStartup": "স্টার্টআপে লঞ্চ করুন",
   "@launchAtStartup": {},
   "openRecordStats": "রেকর্ড পরিসংখ্যান খুলুন",
-  "@openRecordStats": {}
+  "@openRecordStats": {},
+  "flashcards": "ফ্ল্যাশকার্ড",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "আজকের পুনরালোচনা",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} বাকি · {newCards} নতুন · {done} সম্পন্ন",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "পড়ুন",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "ফ্ল্যাশকার্ড লোড করা যায়নি",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "রেটিং সংরক্ষিত হয়েছে",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "পূর্বাবস্থায় ফেরান",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "আবার",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "কঠিন",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "ভালো",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "সহজ",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days}দিন",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours}ঘণ্টা",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes}মিনিট",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "প্রতিদিন নতুন কার্ড",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "অনুমোদিত সীমা: ০–৯৯৯৯",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "কার্ড",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "সময়সূচি",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · ৯০% কাঙ্ক্ষিত ধারণক্ষমতা",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "উত্তর দেখুন",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "উত্তর দেখুন (স্পেস)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "কোনো সংজ্ঞা পাওয়া যায়নি",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "সম্পূর্ণ অভিধান খুলুন",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "সেশন সম্পন্ন",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "{count}টি কার্ড পুনরালোচনা করা হয়েছে",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} মিনিট",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "সম্পন্ন",
+  "@flashcardsDone": {},
+  "flashcardsError": "ত্রুটি: {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -348,7 +348,7 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "Sponsorkoder",
   "@sponsorCodes": {},
-    "wechat": "WeChat",
+  "wechat": "WeChat",
   "@wechat": {},
   "pressAgainToExit": "Trykk igjen for å avslutte",
   "@pressAgainToExit": {},
@@ -363,5 +363,109 @@
   "launchAtStartup": "Start ved oppstart",
   "@launchAtStartup": {},
   "openRecordStats": "Åpne poststatistikk",
-  "@openRecordStats": {}
+  "@openRecordStats": {},
+  "flashcards": "Flashkort",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "Dagens repetisjon",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} forfaller · {newCards} nye · {done} ferdige",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "Øv",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "Kunne ikke laste flashkort",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "Vurdering lagret",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "Angre",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "Igjen",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "Vanskelig",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "Bra",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "Lett",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days} d",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours} t",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes} min",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "Nye kort per dag",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "Tillatt område: 0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "kort",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "Planlegging",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · 90 % ønsket oppbevaring",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "Vis svar",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "Vis svar (Mellomrom)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "Ingen definisjon funnet",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "Åpne full ordbok",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "Økt fullført",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "{count} kort repetert",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} min",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "Ferdig",
+  "@flashcardsDone": {},
+  "flashcardsError": "Feil: {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

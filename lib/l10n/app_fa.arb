@@ -348,7 +348,7 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "کدهای حامی",
   "@sponsorCodes": {},
-    "wechat": "وی‌چت",
+  "wechat": "وی‌چت",
   "@wechat": {},
   "pressAgainToExit": "برای خروج دوباره فشار دهید",
   "@pressAgainToExit": {},
@@ -363,5 +363,109 @@
   "launchAtStartup": "راه اندازی در هنگام راه اندازی",
   "@launchAtStartup": {},
   "openRecordStats": "باز کردن آمار رکورد",
-  "@openRecordStats": {}
+  "@openRecordStats": {},
+  "flashcards": "فلش‌کارت‌ها",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "مرور امروز",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} سررسیده · {newCards} جدید · {done} انجام‌شده",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "مطالعه",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "بارگذاری فلش‌کارت‌ها ممکن نشد",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "امتیاز ذخیره شد",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "واگرد",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "دوباره",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "سخت",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "خوب",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "آسان",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days} روز",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours} ساعت",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes} دقیقه",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "کارت‌های جدید در روز",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "بازه مجاز: ۰–۹۹۹۹",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "کارت",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "زمان‌بندی",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · ۹۰٪ ماندگاری مطلوب",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "نمایش پاسخ",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "نمایش پاسخ (فاصله)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "تعریفی یافت نشد",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "باز کردن دیکشنری کامل",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "جلسه تمام شد",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "{count} کارت مرور شد",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} دقیقه",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "انجام شد",
+  "@flashcardsDone": {},
+  "flashcardsError": "خطا: {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

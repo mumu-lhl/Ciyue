@@ -685,5 +685,109 @@
   "noOpenTabs": "沒有開啟的分頁",
   "@noOpenTabs": {},
   "switchTab": "切換分頁",
-  "@switchTab": {}
+  "@switchTab": {},
+  "flashcards": "抽認卡",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "今日複習",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} 待複習 · {newCards} 新卡 · {done} 已完成",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "學習",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "無法載入抽認卡",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "評分已儲存",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "復原",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "重來",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "困難",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "良好",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "容易",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days}日",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours}小時",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes}分鐘",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "每日新卡數量",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "允許範圍：0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "張",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "排程",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · 目標記憶保持率 90%",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "顯示答案",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "顯示答案（空格鍵）",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "未找到釋義",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "開啟完整詞典",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "今次學習完成",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "已複習 {count} 張卡片",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} 分鐘",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "完成",
+  "@flashcardsDone": {},
+  "flashcardsError": "錯誤：{error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

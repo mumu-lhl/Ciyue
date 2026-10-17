@@ -342,7 +342,7 @@
   "@tab": {},
   "advanceSwitchDescription": "𐌲𐌰𐌻𐌰𐌲𐌾𐌰𐌽 𐌳𐌿 𐌱𐌰𐌽𐌳𐍅𐌾𐌰𐌽 𐌼𐌰𐌽𐌰𐌲𐌹𐌶𐌴𐌹𐌽𐍃 𐌻𐌰𐌲𐌴𐌹𐌽𐌹𐌽𐍃 𐌼𐌰𐌷𐍄𐌴",
   "@advanceSwitchDescription": {},
-    "backup": "𐌰𐌽𐌸𐌰𐍂𐌰 𐌲𐌰𐍆𐌰𐍃𐍄𐌰𐌹𐌽𐍃",
+  "backup": "𐌰𐌽𐌸𐌰𐍂𐌰 𐌲𐌰𐍆𐌰𐍃𐍄𐌰𐌹𐌽𐍃",
   "@backup": {},
   "autoFocusSearch": "𐍃𐌹𐌻𐌱𐌰𐍄𐌰𐌿𐌾𐌰𐌽𐌳𐍉 𐍃𐍉𐌺𐌽𐌹-𐌰𐌽𐍃",
   "@autoFocusSearch": {},
@@ -355,5 +355,109 @@
   "launchAtStartup": "𐌿𐍃𐌼𐌴𐍂𐌴𐌹𐌽𐍃 𐌰𐍄 𐌿𐍃𐌼𐌴𐍂𐌴𐌹𐌽𐌰𐌹",
   "@launchAtStartup": {},
   "openRecordStats": "𐌿𐍃𐌻𐌿𐌺 𐍃𐍄𐌰𐍄𐌹𐍃𐍄𐌹𐌺𐌰 𐌲𐌰𐌼𐌴𐌻𐌴𐌹𐌽𐌰𐌹𐍃",
-  "@openRecordStats": {}
+  "@openRecordStats": {},
+  "flashcards": "𐍆𐌻𐌰𐍃𐌺𐌰𐍂𐌳𐍃",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "𐌷𐌹𐌼𐌼𐌰 𐌳𐌰𐌲 𐌿𐍆𐌰𐍂𐌸𐌰𐌲𐌺𐍃",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} 𐌿𐍆𐌰𐍂 · {newCards} 𐌽𐌹𐌿𐌾𐌰 · {done} 𐌲𐌰𐍅𐌰𐌿𐍂𐌷𐍄",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "𐌻𐌰𐌹𐍃𐌾𐌰𐌽",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "𐌽𐌹 𐌼𐌰𐌷𐍄𐌴𐌳𐌿𐌽 𐌻𐌰𐌳𐌰𐌽 𐍆𐌻𐌰𐍃𐌺𐌰𐍂𐌳𐍃",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "𐌼𐌴𐍄𐍃 𐌲𐌰𐍆𐌰𐍃𐍄𐌹𐌳𐌰",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "𐌿𐌽𐌳𐍉𐌽",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "𐌰𐍆𐍄𐍂𐌰",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "𐌰𐌲𐌲𐍅𐌿",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "𐌲𐍉𐌸",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "𐌰𐌶𐌴𐍄",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days}𐌳",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours}𐍈",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes}𐌼",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "𐌽𐌹𐌿𐌾𐍉𐍃 𐌺𐌰𐍂𐌳𐍉𐍃 𐌳𐌰𐌲 𐍈𐌰𐍂𐌾𐌹𐌶𐌿𐌷",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "𐍆𐍂𐌹𐌾𐌰 𐌼𐌰𐍂𐌺𐌰: 0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "𐌺𐌰𐍂𐌳𐍉𐍃",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "𐍂𐌰𐌲𐌹𐌽𐌴𐌹𐌽𐍃",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · 90% 𐍅𐌹𐌻𐌾𐌰 𐌷𐌰𐌱𐌰𐌽",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "𐌰𐍄𐌰𐌿𐌲𐌾𐌰𐌽 𐌰𐌽𐌳𐌷𐌰𐍆𐍄",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "𐌰𐍄𐌰𐌿𐌲𐌾𐌰𐌽 𐌰𐌽𐌳𐌷𐌰𐍆𐍄 (𐍃𐍀𐌴𐌹𐍃)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "𐌽𐌹 𐌱𐌹𐌲𐌹𐍄𐌰𐌽 𐌲𐌰𐍃𐌺𐌴𐌹𐍂𐌴𐌹𐌽",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "𐌿𐍃𐌻𐌿𐌺𐌽 𐌰𐌻𐌻 𐌱𐍉𐌺𐍉𐍃",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "𐌲𐌰𐍅𐌰𐌿𐍂𐌷𐍄 𐍃𐌹𐌽𐌸𐍃",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "{count} 𐌺𐌰𐍂𐌳𐍉𐍃 𐌿𐍆𐌰𐍂𐌸𐌰𐌲𐌺𐌹𐌳𐌰",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} 𐌼𐌹𐌽𐌿𐍄𐍉𐍃",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "𐌲𐌰𐍅𐌰𐌿𐍂𐌷𐍄",
+  "@flashcardsDone": {},
+  "flashcardsError": "𐌰𐌹𐍂𐌶𐌴𐌹: {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

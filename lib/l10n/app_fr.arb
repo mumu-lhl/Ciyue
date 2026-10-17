@@ -1,119 +1,223 @@
 {
-    "addDictionary": "Veuillez ajouter un dictionnaire MDX dans les paramètres en premier",
-    "startToSearch": "Lancer une recherche de mots :)",
-    "manageDictionaries": "Gérer les dictionnaires",
-    "home": "Acceuil",
-    "wordBook": "Carnet de mots",
-    "settings": "Paramètres",
-    "permissionDenied": "Vous devez autoriser l'accès",
-    "close": "Fermer",
-    "search": "Rechercher",
-    "theme": "Thème",
-    "light": "Clair",
-    "dark": "Sombre",
-    "system": "Système",
-    "language": "Language",
-    "lookup": "Chercher",
-    "notFound": "Introuvable",
-    "notSupport": "Non compatible avec ce fichier MDX",
-    "copy": "Copier",
-    "readLoudly": "Prononcer",
-    "recommendedDictionaries": "Dictionnaires recommandés",
-    "feedback": "Retours",
-    "copied": "Copié",
-    "export": "Exporter",
-    "import": "Importer",
-    "customFont": "Police Personnalisée",
-    "empty": "Vide...",
-    "add": "Ajouter",
-    "autoExport": "Exporter Automatiquement",
-    "tags": "Étiquettes",
-    "addTag": "Ajouter une Étiquette",
-    "tagName": "Nom de l'Étiquette",
-    "tagList": "Liste d'Étiquettes",
-    "remove": "Supprimer",
-    "confirm": "Confirmer",
-    "noResult": "Aucun Résultat",
-    "updateAnnouncement": "Annonce de mise à jour à {version}",
-    "@updateAnnouncement": {
-        "placeholders": {
-            "version": {
-                "type": "String"
-            }
-        }
-    },
-    "description": "Description",
-    "properties": "Propriétés",
-    "removeOneHistory": "Supprimer de l'Historique",
-    "removeOneHistoryConfirm": "Êtes‑vous sûr de vouloir supprimer '{word}' de l’historique ?",
-    "@removeOneHistoryConfirm": {
-        "placeholders": {
-            "word": {
-                "type": "String"
-            }
-        }
-    },
-    "clearHistory": "Effacer l'Historique",
-    "clearHistoryConfirm": "Êtes‑vous sûr de vouloir effacer l’historique ?",
-    "default_": "Dictionnaire par défaut",
-    "manageGroups": "Gérer les Groupes",
-    "exportFileName": "Exporter le Nom du Fichier",
-    "exportDirectory": "Exporter le Répertoire",
-    "title": "Titre",
-    "totalNumberOfEntries": "Nombre Total d’Entrées",
-    "sponsor": "Sponsoriser",
-    "more": "Plus",
-    "autoRemoveSearchWord": "Effacement Auto du Mot de Recherche",
-    "secureScreen": "Anti-capture d’écran",
-    "searchBarLocation": "Localisation de la Barre de Recherche",
-    "top": "Haut",
-    "bottom": "Bas",
-    "sidebarIcon": "Symbole de la barre latérale",
-    "exportPath": "Exporter le Chemin d'Accès",
-    "editWord": "Éditer un Mot",
-    "notification": "Notification",
-    "moreOptionsButton": "Bouton \"Plus d'Options\"",
-    "titleAlias": "Alias de titre",
-    "skipTaggedWord": "Ignorer le Mot Étiqueté",
-    "dictionaryGroups": "Groupes de Dictionnaires",
-    "history": "Historique",
-    "appearance": "Apparence",
-    "privacy": "Confidentialité",
-    "privacyPolicy": "Politique de Confidentialité",
-    "aiSettings": "Paramètres de l'IA",
-    "aiProvider": "Fournisseur d’IA",
-    "aiModel": "Modele d'IA",
-    "apiKey": "Clé API",
-    "aiExplainWord": "Explication du Mot par l'IA",
-    "outputType": "Type de Résultat",
-    "richOutput": "Résultat Enrichi",
-    "simpleOutput": "Résultat Simple",
-    "enterTextToTranslate": "Entrer du texte à traduire",
-    "translate": "Traduire",
-    "sourceLanguage": "Langue Source",
-    "targetLanguage": "Langue Cible",
-    "termsOfService": "Conditions générales d’utilisation",
-    "autoDetect": "Détection Auto",
-    "checkForUpdates": "Vérifier les mises à jour",
-    "updateAvailable": "Mise à jour Disponible",
-    "updateAvailableContent": "Nouvelle version {version} est disponible. Voulez-vous mettre à jour l'application ?",
-    "@updateAvailableContent": {
-        "placeholders": {
-            "version": {
-                "type": "String"
-            }
-        }
-    },
-    "update": "Mettre à jour",
-    "noUpdateAvailable": "Pas de mise à jour disponible",
-    "updateCheckFailed": "Échec de la recherche des mises à jour",
-    "includePrerelease": "Inclure les mises à jour préliminaires",
-    "checkingForUpdates": "Recherche de mises à jour...",
-    "aiExplainWordPrompt": "Expliquer le mot en requête",
-    "customExplainPromptHelper": "Vous pouvez utiliser $word et $targetLanguage dans votre requête.",
-    "aiTranslatePrompt": "Traduction de la requête par l'IA",
-    "customTranslatePromptHelper": "Vous pouvez utiliser $sourceLanguage, $targetLanguage, et $text dans votre requête.",
-    "tabBarPosition": "Position de la Barre dans l'Affichage des Mots",
-    "showSearchBarInWordDisplayPage": "Montrer la Barre de Recherche dans l'Affichage des Mots",
-    "autoUpdate": "Actualisation Automatique"
+  "addDictionary": "Veuillez ajouter un dictionnaire MDX dans les paramètres en premier",
+  "startToSearch": "Lancer une recherche de mots :)",
+  "manageDictionaries": "Gérer les dictionnaires",
+  "home": "Acceuil",
+  "wordBook": "Carnet de mots",
+  "settings": "Paramètres",
+  "permissionDenied": "Vous devez autoriser l'accès",
+  "close": "Fermer",
+  "search": "Rechercher",
+  "theme": "Thème",
+  "light": "Clair",
+  "dark": "Sombre",
+  "system": "Système",
+  "language": "Language",
+  "lookup": "Chercher",
+  "notFound": "Introuvable",
+  "notSupport": "Non compatible avec ce fichier MDX",
+  "copy": "Copier",
+  "readLoudly": "Prononcer",
+  "recommendedDictionaries": "Dictionnaires recommandés",
+  "feedback": "Retours",
+  "copied": "Copié",
+  "export": "Exporter",
+  "import": "Importer",
+  "customFont": "Police Personnalisée",
+  "empty": "Vide...",
+  "add": "Ajouter",
+  "autoExport": "Exporter Automatiquement",
+  "tags": "Étiquettes",
+  "addTag": "Ajouter une Étiquette",
+  "tagName": "Nom de l'Étiquette",
+  "tagList": "Liste d'Étiquettes",
+  "remove": "Supprimer",
+  "confirm": "Confirmer",
+  "noResult": "Aucun Résultat",
+  "updateAnnouncement": "Annonce de mise à jour à {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "description": "Description",
+  "properties": "Propriétés",
+  "removeOneHistory": "Supprimer de l'Historique",
+  "removeOneHistoryConfirm": "Êtes‑vous sûr de vouloir supprimer '{word}' de l’historique ?",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "clearHistory": "Effacer l'Historique",
+  "clearHistoryConfirm": "Êtes‑vous sûr de vouloir effacer l’historique ?",
+  "default_": "Dictionnaire par défaut",
+  "manageGroups": "Gérer les Groupes",
+  "exportFileName": "Exporter le Nom du Fichier",
+  "exportDirectory": "Exporter le Répertoire",
+  "title": "Titre",
+  "totalNumberOfEntries": "Nombre Total d’Entrées",
+  "sponsor": "Sponsoriser",
+  "more": "Plus",
+  "autoRemoveSearchWord": "Effacement Auto du Mot de Recherche",
+  "secureScreen": "Anti-capture d’écran",
+  "searchBarLocation": "Localisation de la Barre de Recherche",
+  "top": "Haut",
+  "bottom": "Bas",
+  "sidebarIcon": "Symbole de la barre latérale",
+  "exportPath": "Exporter le Chemin d'Accès",
+  "editWord": "Éditer un Mot",
+  "notification": "Notification",
+  "moreOptionsButton": "Bouton \"Plus d'Options\"",
+  "titleAlias": "Alias de titre",
+  "skipTaggedWord": "Ignorer le Mot Étiqueté",
+  "dictionaryGroups": "Groupes de Dictionnaires",
+  "history": "Historique",
+  "appearance": "Apparence",
+  "privacy": "Confidentialité",
+  "privacyPolicy": "Politique de Confidentialité",
+  "aiSettings": "Paramètres de l'IA",
+  "aiProvider": "Fournisseur d’IA",
+  "aiModel": "Modele d'IA",
+  "apiKey": "Clé API",
+  "aiExplainWord": "Explication du Mot par l'IA",
+  "outputType": "Type de Résultat",
+  "richOutput": "Résultat Enrichi",
+  "simpleOutput": "Résultat Simple",
+  "enterTextToTranslate": "Entrer du texte à traduire",
+  "translate": "Traduire",
+  "sourceLanguage": "Langue Source",
+  "targetLanguage": "Langue Cible",
+  "termsOfService": "Conditions générales d’utilisation",
+  "autoDetect": "Détection Auto",
+  "checkForUpdates": "Vérifier les mises à jour",
+  "updateAvailable": "Mise à jour Disponible",
+  "updateAvailableContent": "Nouvelle version {version} est disponible. Voulez-vous mettre à jour l'application ?",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "update": "Mettre à jour",
+  "noUpdateAvailable": "Pas de mise à jour disponible",
+  "updateCheckFailed": "Échec de la recherche des mises à jour",
+  "includePrerelease": "Inclure les mises à jour préliminaires",
+  "checkingForUpdates": "Recherche de mises à jour...",
+  "aiExplainWordPrompt": "Expliquer le mot en requête",
+  "customExplainPromptHelper": "Vous pouvez utiliser $word et $targetLanguage dans votre requête.",
+  "aiTranslatePrompt": "Traduction de la requête par l'IA",
+  "customTranslatePromptHelper": "Vous pouvez utiliser $sourceLanguage, $targetLanguage, et $text dans votre requête.",
+  "tabBarPosition": "Position de la Barre dans l'Affichage des Mots",
+  "showSearchBarInWordDisplayPage": "Montrer la Barre de Recherche dans l'Affichage des Mots",
+  "autoUpdate": "Actualisation Automatique",
+  "flashcards": "Cartes mémoire",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "Révision du jour",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} à réviser · {newCards} nouvelles · {done} terminées",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "Étudier",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "Impossible de charger les cartes mémoire",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "Évaluation enregistrée",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "Annuler",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "Encore",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "Difficile",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "Bien",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "Facile",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days} j",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours} h",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes} min",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "Nouvelles cartes par jour",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "Plage autorisée : 0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "cartes",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "Planification",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · 90 % de rétention souhaitée",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "Afficher la réponse",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "Afficher la réponse (Espace)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "Aucune définition trouvée",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "Ouvrir le dictionnaire complet",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "Session terminée",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "{count} cartes révisées",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} min",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "Terminé",
+  "@flashcardsDone": {},
+  "flashcardsError": "Erreur : {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

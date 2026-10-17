@@ -1,228 +1,332 @@
 {
-    "@@locale": "es",
-    "addDictionary": "Primero añada un diccionario MDX en la configuración",
-    "startToSearch": "Empiece buscando una palabra :)",
-    "manageDictionaries": "Gestionar diccionarios",
-    "home": "Inicio",
-    "wordBook": "Diccionario",
-    "settings": "Configuración",
-    "permissionDenied": "Tiene que conceder los permisos",
-    "close": "Cerrar",
-    "search": "Buscar",
-    "theme": "Tema",
-    "light": "Claro",
-    "dark": "Oscuro",
-    "system": "Del sistema",
-    "language": "Idioma",
-    "lookup": "Búsqueda",
-    "notFound": "No se ha encontrado",
-    "notSupport": "No se admite este archivo MDX",
-    "copy": "Copiar",
-    "readLoudly": "Leer en voz alta",
-    "recommendedDictionaries": "Diccionarios recomendados",
-    "feedback": "Retroalimentación",
-    "copied": "Copiado",
-    "export": "Exportar",
-    "import": "Importar",
-    "customFont": "Tipo de letra personalizado",
-    "empty": "Vacío…",
-    "add": "Añadir",
-    "autoExport": "Exportar automáticamente",
-    "tags": "Etiquetas",
-    "addTag": "Añadir etiqueta",
-    "tagName": "Nombre de la etiqueta",
-    "tagList": "Lista de etiquetas",
-    "remove": "Quitar",
-    "confirm": "Confirmar",
-    "noResult": "Ningún resultado",
-    "updateAnnouncement": "Anuncio de la actualización a {version}",
-    "@updateAnnouncement": {
-        "placeholders": {
-            "version": {
-                "type": "String"
-            }
-        }
-    },
-    "description": "Descripción",
-    "properties": "Propiedades",
-    "removeOneHistory": "Eliminar historial",
-    "removeOneHistoryConfirm": "¿Confirma que quiere quitar '{word}' del historial?",
-    "@removeOneHistoryConfirm": {
-        "placeholders": {
-            "word": {
-                "type": "String"
-            }
-        }
-    },
-    "clearHistory": "Vaciar historial",
-    "clearHistoryConfirm": "¿Confirma que quiere vaciar el historial?",
-    "default_": "Predeterminado",
-    "manageGroups": "Gestionar grupos",
-    "exportFileName": "Nombre de archivo de exportación",
-    "exportDirectory": "Directorio de exportación",
-    "title": "Título",
-    "totalNumberOfEntries": "Número total de entradas",
-    "sponsor": "Patrocinador",
-    "more": "Más",
-    "autoRemoveSearchWord": "Eliminar automáticamente la palabra de búsqueda",
-    "secureScreen": "Bloquear capturas de pantalla",
-    "searchBarLocation": "Ubicación de la barra de búsqueda",
-    "top": "Arriba",
-    "bottom": "Abajo",
-    "sidebarIcon": "Icono de la barra lateral",
-    "exportPath": "Ruta de exportación",
-    "editWord": "Editar palabra",
-    "notification": "Notificación",
-    "moreOptionsButton": "Botón de más opciones",
-    "titleAlias": "Alias de título",
-    "skipTaggedWord": "Omitir palabra etiquetada",
-    "dictionaryGroups": "Grupos de diccionarios",
-    "history": "Historial",
-    "appearance": "Apariencia",
-    "privacy": "Privacidad",
-    "privacyPolicy": "Normativa de privacidad",
-    "aiSettings": "Configuración de IA",
-    "aiProvider": "Proveedor de IA",
-    "aiModel": "Modelo de IA",
-    "apiKey": "Clave de API",
-    "aiExplainWord": "IA Explica Palabra",
-    "outputType": "Tipo de salida",
-    "richOutput": "Salida enriquecida",
-    "simpleOutput": "Salida simple",
-    "enterTextToTranslate": "Introduce texto para traducir",
-    "translate": "Traducir",
-    "sourceLanguage": "Idioma de origen",
-    "targetLanguage": "Idioma de destino",
-    "termsOfService": "Términos de servicio",
-    "autoDetect": "Detección automática",
-    "checkForUpdates": "Buscar actualizaciones",
-    "updateAvailable": "Actualización disponible",
-    "updateAvailableContent": "Nueva versión {version} disponible. ¿Quiere actualizar?",
-    "@updateAvailableContent": {
-        "placeholders": {
-            "version": {
-                "type": "String"
-            }
-        }
-    },
-    "update": "Actualizar",
-    "noUpdateAvailable": "No hay actualizaciones disponibles",
-    "updateCheckFailed": "Error al buscar actualizaciones",
-    "includePrerelease": "Incluir actualizaciones preliminares",
-    "checkingForUpdates": "Buscando actualizaciones...",
-    "aiExplainWordPrompt": "Indicación de explicar palabra",
-    "promptMode": "Modo de indicación",
-    "customOption": "Personalizado",
-    "customExplainPrompt": "Indicación personalizada para explicar",
-    "customExplainPromptHelper": "Puede usar $word y $targetLanguage en su indicación.",
-    "aiTranslatePrompt": "Indicación de traducción de IA",
-    "customTranslatePrompt": "Indicación personalizada de traducción",
-    "customTranslatePromptHelper": "Puedes usar $sourceLanguage, $targetLanguage y $text en tu indicación.",
-    "tabBarPosition": "Posición de la barra de pestañas en la visualización de palabras",
-    "showSearchBarInWordDisplayPage": "Mostrar barra de búsqueda en la visualización de palabras",
-    "autoUpdate": "Actualizar automáticamente",
-    "legacyImport": "Importación heredada (se eliminará en el futuro)",
-    "audioSettings": "Configuración de audio",
-    "ttsEngines": "Motores TTS",
-    "ttsLanguages": "Idiomas TTS",
-    "apiUrl": "URL de la API",
-    "floatingWindow": "Ventana flotante",
-    "loading": "Cargando...",
-    "addingWord": "Añadiendo palabra: {word}",
-    "@addingWord": {
-        "placeholders": {
-            "word": {
-                "type": "String"
-            }
-        }
-    },
-    "copyingFiles": "Copiando archivos...",
-    "addingResource": "Añadiendo recurso: {resource}",
-    "@addingResource": {
-        "placeholders": {
-            "resource": {
-                "type": "String"
-            }
-        }
-    },
-    "other": "Otro",
-    "about": "Acerca de",
-    "backup": "Copia de seguridad",
-    "advance": "Avanzado",
-    "advanceSwitchDescription": "Habilitar para mostrar más opciones de configuración",
-    "enableHistory": "Habilitar historial",
-    "changelog": "Registro de cambios",
-    "editAIExplanation": "Editar explicación de IA",
-    "enterAIExplanation": "Introducir explicación de IA",
-    "save": "Guardar",
-    "dictionarySwitchStyle": "Estilo de cambio de diccionario",
-    "expansion": "Expansión",
-    "tab": "Etiqueta",
-    "manageStorage": "Gestionar almacenamiento",
-    "confirmDelete": "Confirmar eliminación",
-    "confirmDeleteMessage": "¿Seguro que quieres eliminar '{name}'?",
-    "@confirmDeleteMessage": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "delete": "Eliminar",
-    "cancel": "Cancelar",
-    "back": "Atrás",
-    "dictionaryFileNotFound": "Archivo de diccionario no encontrado. Eliminando de la base de datos.",
-    "confirmDeleteWords": "¿Está seguro de que desea eliminar las {count} palabras seleccionadas?",
-    "@confirmDeleteWords": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "writingCheck": "Comprobación de escritura",
-    "label_enter_to_check": "Introduzca texto para comprobar",
-    "check": "Comprobar",
-    "resetToDefault": "Restablecer valores predeterminados",
-    "writingCheckPromptTitle": "Solicitud de comprobación de escritura",
-    "writingCheckPromptHelper": "Puede utilizar $text y $targetLanguage en su solicitud.",
-    "logs": "Registros",
-    "translationProvider": "Proveedor de traducción",
-    "searchLanguage": "Idioma de búsqueda",
-    "writingCheckHistory": "Historial de comprobación de escritura",
-    "nSelected": "{count} seleccionados",
-    "@nSelected": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "translationHistory": "Historial de traducciones",
-    "enableTranslationHistory": "Habilitar historial de traducciones",
-    "enableWritingCheckHistory": "Habilitar historial de comprobación de escritura",
-    "alternatives": "Alternativas",
-    "openLink": "Abrir enlace",
-    "copyLink": "Copiar enlace",
-    "sponsorSupportTip": "Su apoyo ayudará a que el proyecto se desarrolle continuamente ❤",
-    "sponsorCodes": "Códigos de patrocinador",
-    "wechat": "WeChat",
-    "pressAgainToExit": "Presiona atrás nuevamente para salir",
-    "autoFocusSearch": "Barra de búsqueda de auto‐enfoque",
-    "wordbookStats": "Estadísticas del libro de palabras",
-    "month": "Mes",
-    "totalWordsInWordbook": "Total de palabras en el libro de palabras",
-    "launchAtStartup": "Lanzar al inicio",
-    "openRecordStats": "Abrir estadísticas de registro",
-    "dynamicColor": "Color de material dinámico",
-    "dynamicColorDescription": "Utiliza esquema de color dinámico del sistema",
-    "customThemeColor": "Control temático personal",
-    "pureBlackDarkMode": "Modo oscuro negro puro (AMOLED)",
-    "pureBlackDarkModeDescription": "Utilice superficie en negro verdadero en el tema oscuro",
-    "appThemeColor": "Color del tema",
-    "chooseThemeColor": "Elegir color del tema",
-    "customColor": "Personalizado",
-    "showWindow": "Mostrar ventana",
-    "noDictionariesFound": "Ningún diccionario encontrado",
-    "exitApp": "Salir"
+  "@@locale": "es",
+  "addDictionary": "Primero añada un diccionario MDX en la configuración",
+  "startToSearch": "Empiece buscando una palabra :)",
+  "manageDictionaries": "Gestionar diccionarios",
+  "home": "Inicio",
+  "wordBook": "Diccionario",
+  "settings": "Configuración",
+  "permissionDenied": "Tiene que conceder los permisos",
+  "close": "Cerrar",
+  "search": "Buscar",
+  "theme": "Tema",
+  "light": "Claro",
+  "dark": "Oscuro",
+  "system": "Del sistema",
+  "language": "Idioma",
+  "lookup": "Búsqueda",
+  "notFound": "No se ha encontrado",
+  "notSupport": "No se admite este archivo MDX",
+  "copy": "Copiar",
+  "readLoudly": "Leer en voz alta",
+  "recommendedDictionaries": "Diccionarios recomendados",
+  "feedback": "Retroalimentación",
+  "copied": "Copiado",
+  "export": "Exportar",
+  "import": "Importar",
+  "customFont": "Tipo de letra personalizado",
+  "empty": "Vacío…",
+  "add": "Añadir",
+  "autoExport": "Exportar automáticamente",
+  "tags": "Etiquetas",
+  "addTag": "Añadir etiqueta",
+  "tagName": "Nombre de la etiqueta",
+  "tagList": "Lista de etiquetas",
+  "remove": "Quitar",
+  "confirm": "Confirmar",
+  "noResult": "Ningún resultado",
+  "updateAnnouncement": "Anuncio de la actualización a {version}",
+  "@updateAnnouncement": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "description": "Descripción",
+  "properties": "Propiedades",
+  "removeOneHistory": "Eliminar historial",
+  "removeOneHistoryConfirm": "¿Confirma que quiere quitar '{word}' del historial?",
+  "@removeOneHistoryConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "clearHistory": "Vaciar historial",
+  "clearHistoryConfirm": "¿Confirma que quiere vaciar el historial?",
+  "default_": "Predeterminado",
+  "manageGroups": "Gestionar grupos",
+  "exportFileName": "Nombre de archivo de exportación",
+  "exportDirectory": "Directorio de exportación",
+  "title": "Título",
+  "totalNumberOfEntries": "Número total de entradas",
+  "sponsor": "Patrocinador",
+  "more": "Más",
+  "autoRemoveSearchWord": "Eliminar automáticamente la palabra de búsqueda",
+  "secureScreen": "Bloquear capturas de pantalla",
+  "searchBarLocation": "Ubicación de la barra de búsqueda",
+  "top": "Arriba",
+  "bottom": "Abajo",
+  "sidebarIcon": "Icono de la barra lateral",
+  "exportPath": "Ruta de exportación",
+  "editWord": "Editar palabra",
+  "notification": "Notificación",
+  "moreOptionsButton": "Botón de más opciones",
+  "titleAlias": "Alias de título",
+  "skipTaggedWord": "Omitir palabra etiquetada",
+  "dictionaryGroups": "Grupos de diccionarios",
+  "history": "Historial",
+  "appearance": "Apariencia",
+  "privacy": "Privacidad",
+  "privacyPolicy": "Normativa de privacidad",
+  "aiSettings": "Configuración de IA",
+  "aiProvider": "Proveedor de IA",
+  "aiModel": "Modelo de IA",
+  "apiKey": "Clave de API",
+  "aiExplainWord": "IA Explica Palabra",
+  "outputType": "Tipo de salida",
+  "richOutput": "Salida enriquecida",
+  "simpleOutput": "Salida simple",
+  "enterTextToTranslate": "Introduce texto para traducir",
+  "translate": "Traducir",
+  "sourceLanguage": "Idioma de origen",
+  "targetLanguage": "Idioma de destino",
+  "termsOfService": "Términos de servicio",
+  "autoDetect": "Detección automática",
+  "checkForUpdates": "Buscar actualizaciones",
+  "updateAvailable": "Actualización disponible",
+  "updateAvailableContent": "Nueva versión {version} disponible. ¿Quiere actualizar?",
+  "@updateAvailableContent": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "update": "Actualizar",
+  "noUpdateAvailable": "No hay actualizaciones disponibles",
+  "updateCheckFailed": "Error al buscar actualizaciones",
+  "includePrerelease": "Incluir actualizaciones preliminares",
+  "checkingForUpdates": "Buscando actualizaciones...",
+  "aiExplainWordPrompt": "Indicación de explicar palabra",
+  "promptMode": "Modo de indicación",
+  "customOption": "Personalizado",
+  "customExplainPrompt": "Indicación personalizada para explicar",
+  "customExplainPromptHelper": "Puede usar $word y $targetLanguage en su indicación.",
+  "aiTranslatePrompt": "Indicación de traducción de IA",
+  "customTranslatePrompt": "Indicación personalizada de traducción",
+  "customTranslatePromptHelper": "Puedes usar $sourceLanguage, $targetLanguage y $text en tu indicación.",
+  "tabBarPosition": "Posición de la barra de pestañas en la visualización de palabras",
+  "showSearchBarInWordDisplayPage": "Mostrar barra de búsqueda en la visualización de palabras",
+  "autoUpdate": "Actualizar automáticamente",
+  "legacyImport": "Importación heredada (se eliminará en el futuro)",
+  "audioSettings": "Configuración de audio",
+  "ttsEngines": "Motores TTS",
+  "ttsLanguages": "Idiomas TTS",
+  "apiUrl": "URL de la API",
+  "floatingWindow": "Ventana flotante",
+  "loading": "Cargando...",
+  "addingWord": "Añadiendo palabra: {word}",
+  "@addingWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "copyingFiles": "Copiando archivos...",
+  "addingResource": "Añadiendo recurso: {resource}",
+  "@addingResource": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  },
+  "other": "Otro",
+  "about": "Acerca de",
+  "backup": "Copia de seguridad",
+  "advance": "Avanzado",
+  "advanceSwitchDescription": "Habilitar para mostrar más opciones de configuración",
+  "enableHistory": "Habilitar historial",
+  "changelog": "Registro de cambios",
+  "editAIExplanation": "Editar explicación de IA",
+  "enterAIExplanation": "Introducir explicación de IA",
+  "save": "Guardar",
+  "dictionarySwitchStyle": "Estilo de cambio de diccionario",
+  "expansion": "Expansión",
+  "tab": "Etiqueta",
+  "manageStorage": "Gestionar almacenamiento",
+  "confirmDelete": "Confirmar eliminación",
+  "confirmDeleteMessage": "¿Seguro que quieres eliminar '{name}'?",
+  "@confirmDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "Eliminar",
+  "cancel": "Cancelar",
+  "back": "Atrás",
+  "dictionaryFileNotFound": "Archivo de diccionario no encontrado. Eliminando de la base de datos.",
+  "confirmDeleteWords": "¿Está seguro de que desea eliminar las {count} palabras seleccionadas?",
+  "@confirmDeleteWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "writingCheck": "Comprobación de escritura",
+  "label_enter_to_check": "Introduzca texto para comprobar",
+  "check": "Comprobar",
+  "resetToDefault": "Restablecer valores predeterminados",
+  "writingCheckPromptTitle": "Solicitud de comprobación de escritura",
+  "writingCheckPromptHelper": "Puede utilizar $text y $targetLanguage en su solicitud.",
+  "logs": "Registros",
+  "translationProvider": "Proveedor de traducción",
+  "searchLanguage": "Idioma de búsqueda",
+  "writingCheckHistory": "Historial de comprobación de escritura",
+  "nSelected": "{count} seleccionados",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translationHistory": "Historial de traducciones",
+  "enableTranslationHistory": "Habilitar historial de traducciones",
+  "enableWritingCheckHistory": "Habilitar historial de comprobación de escritura",
+  "alternatives": "Alternativas",
+  "openLink": "Abrir enlace",
+  "copyLink": "Copiar enlace",
+  "sponsorSupportTip": "Su apoyo ayudará a que el proyecto se desarrolle continuamente ❤",
+  "sponsorCodes": "Códigos de patrocinador",
+  "wechat": "WeChat",
+  "pressAgainToExit": "Presiona atrás nuevamente para salir",
+  "autoFocusSearch": "Barra de búsqueda de auto‐enfoque",
+  "wordbookStats": "Estadísticas del libro de palabras",
+  "month": "Mes",
+  "totalWordsInWordbook": "Total de palabras en el libro de palabras",
+  "launchAtStartup": "Lanzar al inicio",
+  "openRecordStats": "Abrir estadísticas de registro",
+  "dynamicColor": "Color de material dinámico",
+  "dynamicColorDescription": "Utiliza esquema de color dinámico del sistema",
+  "customThemeColor": "Control temático personal",
+  "pureBlackDarkMode": "Modo oscuro negro puro (AMOLED)",
+  "pureBlackDarkModeDescription": "Utilice superficie en negro verdadero en el tema oscuro",
+  "appThemeColor": "Color del tema",
+  "chooseThemeColor": "Elegir color del tema",
+  "customColor": "Personalizado",
+  "showWindow": "Mostrar ventana",
+  "noDictionariesFound": "Ningún diccionario encontrado",
+  "exitApp": "Salir",
+  "flashcards": "Tarjetas",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "Repaso de hoy",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} pendientes · {newCards} nuevas · {done} hechas",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "Estudiar",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "No se pudieron cargar las tarjetas",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "Calificación guardada",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "Deshacer",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "Otra vez",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "Difícil",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "Bien",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "Fácil",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days} d",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours} h",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes} min",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "Tarjetas nuevas por día",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "Rango permitido: 0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "tarjetas",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "Programación",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · 90 % de retención deseada",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "Mostrar respuesta",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "Mostrar respuesta (Espacio)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "No se encontró definición",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "Abrir diccionario completo",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "Sesión completada",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "{count} tarjetas repasadas",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} min",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "Listo",
+  "@flashcardsDone": {},
+  "flashcardsError": "Error: {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

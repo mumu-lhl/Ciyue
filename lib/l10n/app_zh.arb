@@ -677,5 +677,109 @@
   "noOpenTabs": "无打开的标签页",
   "@noOpenTabs": {},
   "switchTab": "切换标签页",
-  "@switchTab": {}
+  "@switchTab": {},
+  "flashcards": "抽认卡",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "今日复习",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} 待复习 · {newCards} 新卡 · {done} 已完成",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "学习",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "无法加载抽认卡",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "评分已保存",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "撤销",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "重来",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "困难",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "良好",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "简单",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days}天",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours}小时",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes}分",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "每日新卡数",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "允许范围：0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "张",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "调度",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · 目标记忆保持率 90%",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "显示答案",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "显示答案（空格）",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "未找到释义",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "打开完整词典",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "本次学习完成",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "已复习 {count} 张卡片",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} 分钟",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "完成",
+  "@flashcardsDone": {},
+  "flashcardsError": "错误：{error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

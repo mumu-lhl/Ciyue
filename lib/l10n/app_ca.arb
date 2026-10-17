@@ -348,7 +348,7 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "Codis de patrocinador",
   "@sponsorCodes": {},
-    "wechat": "WeChat",
+  "wechat": "WeChat",
   "@wechat": {},
   "pressAgainToExit": "Premeu de nou per sortir",
   "@pressAgainToExit": {},
@@ -363,5 +363,109 @@
   "launchAtStartup": "Inicia a l'inici",
   "@launchAtStartup": {},
   "openRecordStats": "Obre les estadístiques de registre",
-  "@openRecordStats": {}
+  "@openRecordStats": {},
+  "flashcards": "Targetes",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "Repàs d'avui",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} pendents · {newCards} noves · {done} fetes",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "Estudiar",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "No s'han pogut carregar les targetes",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "Qualificació desada",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "Desfés",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "Un altre cop",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "Difícil",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "Bé",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "Fàcil",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days} d",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours} h",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes} min",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "Targetes noves per dia",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "Interval permès: 0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "targetes",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "Planificació",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · 90 % de retenció desitjada",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "Mostra la resposta",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "Mostra la resposta (Espai)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "No s'ha trobat cap definició",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "Obre el diccionari complet",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "Sessió completada",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "{count} targetes repassades",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} min",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "Fet",
+  "@flashcardsDone": {},
+  "flashcardsError": "Error: {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

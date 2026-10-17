@@ -348,7 +348,7 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "Sponsoren-Codes",
   "@sponsorCodes": {},
-    "wechat": "WeChat",
+  "wechat": "WeChat",
   "@wechat": {},
   "pressAgainToExit": "Drücken Sie erneut, um zu beenden",
   "@pressAgainToExit": {},
@@ -363,5 +363,109 @@
   "launchAtStartup": "Beim Start starten",
   "@launchAtStartup": {},
   "openRecordStats": "Datensatzstatistik öffnen",
-  "@openRecordStats": {}
+  "@openRecordStats": {},
+  "flashcards": "Karteikarten",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "Heutige Wiederholung",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} fällig · {newCards} neu · {done} erledigt",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "Lernen",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "Karteikarten konnten nicht geladen werden",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "Bewertung gespeichert",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "Rückgängig",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "Nochmal",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "Schwer",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "Gut",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "Einfach",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days}T",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours}Std",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes}Min",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "Neue Karten pro Tag",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "Erlaubter Bereich: 0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "Karten",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "Planung",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · 90 % gewünschte Behaltensrate",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "Antwort zeigen",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "Antwort zeigen (Leertaste)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "Keine Definition gefunden",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "Vollständiges Wörterbuch öffnen",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "Sitzung abgeschlossen",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "{count} Karten wiederholt",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} Min",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "Fertig",
+  "@flashcardsDone": {},
+  "flashcardsError": "Fehler: {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

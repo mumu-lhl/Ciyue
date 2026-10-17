@@ -348,7 +348,7 @@
   "@sponsorSupportTip": {},
   "sponsorCodes": "Còdighes de patrotzìniu",
   "@sponsorCodes": {},
-    "wechat": "WeChat",
+  "wechat": "WeChat",
   "@wechat": {},
   "pressAgainToExit": "Preme torra pro essire",
   "@pressAgainToExit": {},
@@ -363,5 +363,109 @@
   "launchAtStartup": "Avia a s'aviu",
   "@launchAtStartup": {},
   "openRecordStats": "Abre sas istatìsticas de registratzione",
-  "@openRecordStats": {}
+  "@openRecordStats": {},
+  "flashcards": "Carteddas",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "Ripassu de oe",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} pendentes · {newCards} novas · {done} fatas",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "Istudia",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "No at fatu a carrigare sas carteddas",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "Valutatzione sarvada",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "Annulla",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "Un'atra bia",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "Difìtzile",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "Bene",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "Fàtzile",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days} dies",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours} oras",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes} min",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "Carteddas novas pro die",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "Intervallu permìtiu: 0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "carteddas",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "Programmatzione",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · 90% de ritenimentu disigiadu",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "Mustra sa risposta",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "Mustra sa risposta (Ispàtziu)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "Peruna definitzione agatada",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "Aberi su ditzionàriu cumpridu",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "Sessione acabada",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "{count} carteddas ripassadas",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} min",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "Fatu",
+  "@flashcardsDone": {},
+  "flashcardsError": "Errore: {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

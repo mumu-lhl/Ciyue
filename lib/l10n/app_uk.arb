@@ -1,1 +1,106 @@
-{}
+{
+  "flashcards": "Картки",
+  "@flashcards": {},
+  "flashcardsTodaysReview": "Повторення на сьогодні",
+  "@flashcardsTodaysReview": {},
+  "flashcardsOverviewStats": "{due} до повторення · {newCards} нових · {done} готово",
+  "@flashcardsOverviewStats": {
+    "placeholders": {
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsStudy": "Вчити",
+  "@flashcardsStudy": {},
+  "flashcardsUnableToLoad": "Не вдалося завантажити картки",
+  "@flashcardsUnableToLoad": {},
+  "flashcardsRatingSaved": "Оцінку збережено",
+  "@flashcardsRatingSaved": {},
+  "flashcardsUndo": "Скасувати",
+  "@flashcardsUndo": {},
+  "flashcardsRatingAgain": "Знову",
+  "@flashcardsRatingAgain": {},
+  "flashcardsRatingHard": "Складно",
+  "@flashcardsRatingHard": {},
+  "flashcardsRatingGood": "Добре",
+  "@flashcardsRatingGood": {},
+  "flashcardsRatingEasy": "Легко",
+  "@flashcardsRatingEasy": {},
+  "flashcardsDaysShort": "{days} дн",
+  "@flashcardsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsHoursShort": "{hours} год",
+  "@flashcardsHoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutesShort": "{minutes} хв",
+  "@flashcardsMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsNewCardsPerDay": "Нових карток на день",
+  "@flashcardsNewCardsPerDay": {},
+  "flashcardsAllowedRange": "Допустимий діапазон: 0–9999",
+  "@flashcardsAllowedRange": {},
+  "flashcardsCardsUnit": "карток",
+  "@flashcardsCardsUnit": {},
+  "flashcardsScheduling": "Планування",
+  "@flashcardsScheduling": {},
+  "flashcardsFsrsInfo": "FSRS · бажане утримання 90 %",
+  "@flashcardsFsrsInfo": {},
+  "flashcardsShowAnswer": "Показати відповідь",
+  "@flashcardsShowAnswer": {},
+  "flashcardsShowAnswerShortcut": "Показати відповідь (Пробіл)",
+  "@flashcardsShowAnswerShortcut": {},
+  "flashcardsNoDefinitionFound": "Визначення не знайдено",
+  "@flashcardsNoDefinitionFound": {},
+  "flashcardsOpenFullDictionary": "Відкрити повний словник",
+  "@flashcardsOpenFullDictionary": {},
+  "flashcardsSessionComplete": "Сесію завершено",
+  "@flashcardsSessionComplete": {},
+  "flashcardsCardsReviewed": "Повторено карток: {count}",
+  "@flashcardsCardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMinutes": "{minutes} хв",
+  "@flashcardsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDone": "Готово",
+  "@flashcardsDone": {},
+  "flashcardsError": "Помилка: {error}",
+  "@flashcardsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
+}
