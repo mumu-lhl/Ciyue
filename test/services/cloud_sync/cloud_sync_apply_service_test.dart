@@ -1,16 +1,28 @@
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/models/backup/backup.dart";
 import "package:ciyue/services/cloud_sync/sync_models.dart";
 import "package:ciyue/services/cloud_sync/apply_service.dart";
 import "package:ciyue/services/cloud_sync/snapshot_builder.dart";
 import "package:drift/native.dart";
 import "package:flutter_test/flutter_test.dart";
+import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
+import "package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart";
 
 void main() {
   late AppDatabase database;
   late CloudSyncApplyService service;
   const builder = CloudSyncSnapshotBuilder();
   final now = DateTime.utc(2026, 3, 1);
+
+  // WordbookTagsDao persists tagsOrder through the global prefs; the app
+  // initializes it at startup, so tests must do the same (once per file,
+  // since prefs is a late final).
+  setUpAll(() async {
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+    await initPrefs();
+  });
 
   setUp(() {
     database = AppDatabase(NativeDatabase.memory());

@@ -24,6 +24,16 @@ enum UpdateChannel {
 }
 
 class Settings extends ChangeNotifier {
+  // Deliberately does not call super.dispose(): the app uses a single
+  // process-lifetime [settings] singleton, which is also what
+  // `settingsProvider` exposes. Riverpod's ChangeNotifierProvider disposes
+  // its notifier when the provider scope tears down; disposing the shared
+  // singleton here would break every later scope
+  // ("A Settings was used after being disposed").
+  @override
+  // ignore: must_call_super
+  void dispose() {}
+
   late bool autoExport;
   late String exportFileName;
   late String? exportDirectory;

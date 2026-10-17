@@ -116,9 +116,20 @@ void main() {
     );
   }
 
+  /// Use a phone-sized surface: in production the router only shows
+  /// MobileWordBrowser below 600dp, while the default 800x600 test surface
+  /// would additionally render the desktop AppBar back/forward buttons.
+  void usePhoneSurface(WidgetTester tester) {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+  }
+
   testWidgets(
     "renders Chrome bottom bar with back, forward, new tab, tabs badge",
     (tester) async {
+      usePhoneSurface(tester);
       final homeModel = HomeModel();
       await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
       await tester.pump();
@@ -148,6 +159,7 @@ void main() {
   testWidgets("navigating in current tab enables back and forward", (
     tester,
   ) async {
+    usePhoneSurface(tester);
     final homeModel = HomeModel();
     await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
     await tester.pump();
@@ -189,6 +201,7 @@ void main() {
   testWidgets("tapping tab switcher toggles Tab Overview and shows open tabs", (
     tester,
   ) async {
+    usePhoneSurface(tester);
     final homeModel = HomeModel();
     homeModel.openWordInNewTab("apple");
     homeModel.openWordInNewTab("banana");
@@ -220,6 +233,7 @@ void main() {
   testWidgets("tapping add button opens MobileNewTabPage and loads word", (
     tester,
   ) async {
+    usePhoneSurface(tester);
     final homeModel = HomeModel();
     await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
     await tester.pump();
@@ -248,6 +262,7 @@ void main() {
   testWidgets(
     "submitting search on MobileNewTabPage transitions to WordDisplay without error",
     (tester) async {
+      usePhoneSurface(tester);
       final homeModel = HomeModel();
       await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
       await tester.pump();
@@ -275,6 +290,7 @@ void main() {
   testWidgets(
     "exiting MobileWordBrowser closes all tabs so next word lookup starts fresh",
     (tester) async {
+      usePhoneSurface(tester);
       final homeModel = HomeModel();
       late BuildContext rootContext;
       final router = GoRouter(

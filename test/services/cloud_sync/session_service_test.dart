@@ -1,6 +1,7 @@
 import "dart:io";
 import "dart:typed_data";
 
+import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/services/cloud_sync/configuration.dart";
 import "package:ciyue/services/cloud_sync/file_store.dart";
@@ -21,6 +22,15 @@ void main() {
   late _MemoryCloudFileStore cloud;
   late Directory supportDirectory;
   late CloudSyncSessionService session;
+
+  // WordbookTagsDao persists tagsOrder through the global prefs; the app
+  // initializes it at startup, so tests must do the same (once per file,
+  // since prefs is a late final).
+  setUpAll(() async {
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+    await initPrefs();
+  });
 
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());

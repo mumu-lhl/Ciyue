@@ -1,6 +1,7 @@
 import "dart:io";
 import "dart:typed_data";
 
+import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/services/cloud_sync/file_store.dart";
 import "package:ciyue/services/cloud_sync/sync_models.dart";
@@ -9,6 +10,8 @@ import "package:drift/native.dart";
 import "package:dio/dio.dart" show ProgressCallback;
 import "package:drift/drift.dart" show Value, driftRuntimeOptions;
 import "package:flutter_test/flutter_test.dart";
+import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
+import "package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart";
 
 void main() {
   late AppDatabase firstDatabase;
@@ -18,10 +21,16 @@ void main() {
   late _MemorySyncStateStore secondState;
   late bool previousMultipleDatabaseWarning;
 
-  setUpAll(() {
+  setUpAll(() async {
     previousMultipleDatabaseWarning =
         driftRuntimeOptions.dontWarnAboutMultipleDatabases;
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+    // WordbookTagsDao persists tagsOrder through the global prefs; the app
+    // initializes it at startup, so tests must do the same (once per file,
+    // since prefs is a late final).
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+    await initPrefs();
   });
 
   tearDownAll(() {
