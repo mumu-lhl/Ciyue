@@ -2805,6 +2805,16 @@ void InAppWebView::setSize(int width, int height) {
   width_ = width;
   height_ = height;
 
+  // Don't resize mid-drag: it disrupts WebKit's selection state.
+  // Defer until the button is released (see SetPointerButton).
+  if (button_state_ != 0) {
+    resize_deferred_during_drag_ = true;
+    return;
+  }
+  schedulePendingResize();
+}
+
+void InAppWebView::schedulePendingResize() {
   // Debounce: coalesce rapid successive resizes to a single WPE resize on the
   // next idle tick. A synchronous resize here can trigger a feedback loop
   // (resize -> WPE relayout -> content height change -> Dart rebuild -> setSize),
@@ -2838,10 +2848,11 @@ void InAppWebView::setSize(int width, int height) {
           }
 #endif
         }
+        delete data;
         return G_SOURCE_REMOVE;
       },
       data,
-      [](gpointer user_data) { delete static_cast<ResizeData*>(user_data); });
+      nullptr);
 }
 
 void InAppWebView::setScaleFactor(double scale_factor) {
@@ -3310,6 +3321,11 @@ void InAppWebView::SetPointerButton(int kind, int button, int clickCount) {
   // Clear button state AFTER sending the UP event
   if (action == WpePointerButtonAction::Release) {
     button_state_ &= ~button_modifier_bit;
+    // If a resize was deferred during the drag, trigger it now.
+    if (button_state_ == 0 && resize_deferred_during_drag_) {
+      resize_deferred_during_drag_ = false;
+      schedulePendingResize();
+    }
   }
 
 #elif defined(HAVE_WPE_BACKEND_LEGACY)

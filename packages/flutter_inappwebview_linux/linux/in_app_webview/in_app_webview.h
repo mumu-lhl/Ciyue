@@ -268,6 +268,7 @@ class InAppWebView {
   // Size management
   void setSize(int width, int height);
   void setScaleFactor(double scale_factor);
+  void schedulePendingResize();  // Schedules the debounced WPE resize
 
   // Focus/Activity state management (from WPE view-backend API)
   void setFocused(bool focused);
@@ -550,6 +551,9 @@ class InAppWebView {
   // Without this, a resize->relayout->height-change feedback loop thrashes WPE's
   // compositor with synchronous resizes. Applies to both WPE backends.
   guint pending_resize_source_id_ = 0;
+  // Set when setSize() is called mid-drag; the resize is deferred until
+  // the button is released to avoid disrupting WebKit's selection.
+  bool resize_deferred_during_drag_ = false;
 
   // Channel delegate
   std::unique_ptr<WebViewChannelDelegate> channel_delegate_;
