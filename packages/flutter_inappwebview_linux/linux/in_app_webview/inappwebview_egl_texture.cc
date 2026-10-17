@@ -311,14 +311,20 @@ static void inappwebview_egl_texture_dispose(GObject* object) {
   self->current_egl_image = nullptr;
 
   g_mutex_unlock(&self->mutex);
-  g_mutex_clear(&self->mutex);
 
   G_OBJECT_CLASS(inappwebview_egl_texture_parent_class)->dispose(object);
+}
+
+static void inappwebview_egl_texture_finalize(GObject* object) {
+  InAppWebViewEGLTexture* self = INAPPWEBVIEW_EGL_TEXTURE(object);
+  g_mutex_clear(&self->mutex);
+  G_OBJECT_CLASS(inappwebview_egl_texture_parent_class)->finalize(object);
 }
 
 static void inappwebview_egl_texture_class_init(InAppWebViewEGLTextureClass* klass) {
   FL_TEXTURE_GL_CLASS(klass)->populate = inappwebview_egl_texture_populate;
   G_OBJECT_CLASS(klass)->dispose = inappwebview_egl_texture_dispose;
+  G_OBJECT_CLASS(klass)->finalize = inappwebview_egl_texture_finalize;
 }
 
 static void inappwebview_egl_texture_init(InAppWebViewEGLTexture* self) {

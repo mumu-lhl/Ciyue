@@ -138,6 +138,7 @@ class InAppBrowser {
   // WebView rendering
   std::shared_ptr<InAppWebView> webView_;
   GtkWidget* drawingArea_ = nullptr;
+  guint createdSourceId_ = 0;
   guint frameSourceId_ = 0;
   GdkCursor* currentCursor_ = nullptr;
 

@@ -345,7 +345,7 @@ class InAppWebView {
   // Hide and cleanup any visible color picker
   void HideColorPicker();
   // Hide and cleanup any visible file chooser dialog
-  void HideFileChooser();
+  void HideFileChooser(bool force = false);
   // Hide and cleanup any visible option menu (HTML <select>)
   void HideOptionMenu();
 
@@ -472,6 +472,7 @@ class InAppWebView {
   WPEDisplay* wpe_display_ = nullptr;     // Owned headless display
   WPEView* wpe_view_ = nullptr;           // From webkit_web_view_get_wpe_view, not owned
   WPEToplevel* wpe_toplevel_ = nullptr;   // From wpe_view_get_toplevel, not owned
+  guint force_resize_source_id_ = 0;
   
   // Buffer rendering for WPEPlatform
   WPEBuffer* current_buffer_ = nullptr;   // Current frame buffer (borrowed, not owned)
@@ -580,6 +581,7 @@ class InAppWebView {
   std::map<WebKitURISchemeRequest*, int64_t> pending_custom_scheme_requests_;
 
   // Frame available callback
+  std::mutex frame_callback_mutex_;
   std::function<void()> on_frame_available_;
 
   // Cursor change callback
@@ -605,6 +607,7 @@ class InAppWebView {
   // Public so the WPE FDO C callbacks (free functions outside the class)
   // can read it; the flag is only ever set inside the class.
   std::atomic<bool> is_disposing_{false};
+  std::shared_ptr<void> async_lifetime_token_ = std::make_shared<int>(0);
  private:
 
   // Mouse state
@@ -635,7 +638,9 @@ class InAppWebView {
   uint32_t target_refresh_rate_ = 0;
 
   // Monitor change tracking for refresh rate updates
+  GdkDisplay* monitor_display_ = nullptr;
   gulong monitors_changed_handler_id_ = 0;
+  gulong monitor_removed_handler_id_ = 0;
   gulong configure_event_handler_id_ = 0;
 
   // Download signal handler ID
@@ -665,6 +670,11 @@ class InAppWebView {
   void SetupMonitorChangeHandlers();
   void CleanupMonitorChangeHandlers();
   void UpdateMonitorRefreshRate();
+  void NotifyFrameAvailable();
+  bool HasFrameAvailableCallback();
+  void CloseActiveDialogs();
+  void CloseColorDialog();
+  void CloseDateDialog();
 
  public:
 #ifdef HAVE_WPE_BACKEND_LEGACY
@@ -698,6 +708,7 @@ class InAppWebView {
   std::string pending_date_input_min_;       // Min constraint
   std::string pending_date_input_max_;       // Max constraint
   GtkWidget* active_date_dialog_ = nullptr;  // Active date picker dialog
+  void* date_dialog_context_ = nullptr;       // Opaque DateDialogContext for cleanup
   int64_t date_dialog_show_time_ = 0;        // Time when dialog was shown
   WebKitScriptMessageReply* pending_date_reply_ = nullptr;  // WebKit reply for Promise resolution
 

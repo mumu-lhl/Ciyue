@@ -368,7 +368,15 @@ void InAppWebView::AttachChannel(FlBinaryMessenger* messenger, const std::string
 InAppWebView::~InAppWebView() {
   debugLog("dealloc InAppWebView");
   is_disposing_.store(true);
-  on_frame_available_ = nullptr;
+  async_lifetime_token_.reset();
+#ifdef HAVE_WPE_PLATFORM
+  if (force_resize_source_id_ != 0) {
+    g_source_remove(force_resize_source_id_);
+    force_resize_source_id_ = 0;
+  }
+#endif
+  CloseActiveDialogs();
+  SetOnFrameAvailable(nullptr);
 
   if (webview_ != nullptr) {
     g_object_set_data(G_OBJECT(webview_), kInAppWebViewInstanceDataKey, nullptr);
@@ -524,8 +532,6 @@ InAppWebView::~InAppWebView() {
     exportable_ = nullptr;
     wpe_backend_ = nullptr;
   }
-
-  on_frame_available_ = nullptr;
 
   if (webview_ != nullptr) {
     g_object_unref(webview_);
@@ -805,9 +811,7 @@ void InAppWebView::InitWebView(const InAppWebViewCreationParams& params) {
             }
             
             // Notify Flutter that dimensions may have changed
-            if (self->on_frame_available_) {
-              self->on_frame_available_();
-            }
+            self->NotifyFrameAvailable();
           }
         }), this);
   } else {
@@ -1137,9 +1141,11 @@ void InAppWebView::SetupMonitorChangeHandlers() {
     return;
   }
 
-  // Get the GdkDisplay to connect to monitors-changed signal
+  // Keep the exact display alive so every connected signal can be disconnected
+  // from the same object during teardown.
   GdkDisplay* display = gdk_display_get_default();
   if (display != nullptr) {
+    monitor_display_ = GDK_DISPLAY(g_object_ref(display));
     // Connect to monitors-changed signal on the display
     // This fires when monitors are added, removed, or their properties change
     monitors_changed_handler_id_ = g_signal_connect(
@@ -1151,7 +1157,7 @@ void InAppWebView::SetupMonitorChangeHandlers() {
         this);
 
     // Also connect to monitor-removed in case the window moves to another monitor
-    g_signal_connect(
+    monitor_removed_handler_id_ = g_signal_connect(
         display, "monitor-removed",
         G_CALLBACK(+[](GdkDisplay*, GdkMonitor*, gpointer user_data) {
           auto* self = static_cast<InAppWebView*>(user_data);
@@ -1175,13 +1181,19 @@ void InAppWebView::SetupMonitorChangeHandlers() {
 }
 
 void InAppWebView::CleanupMonitorChangeHandlers() {
-  // Disconnect monitors-changed signal
-  if (monitors_changed_handler_id_ != 0) {
-    GdkDisplay* display = gdk_display_get_default();
-    if (display != nullptr) {
-      g_signal_handler_disconnect(display, monitors_changed_handler_id_);
+  // Disconnect monitor signals before releasing the display. Both callbacks
+  // carry this pointer as user data.
+  if (monitor_display_ != nullptr) {
+    if (monitors_changed_handler_id_ != 0) {
+      g_signal_handler_disconnect(monitor_display_, monitors_changed_handler_id_);
+      monitors_changed_handler_id_ = 0;
     }
-    monitors_changed_handler_id_ = 0;
+    if (monitor_removed_handler_id_ != 0) {
+      g_signal_handler_disconnect(monitor_display_, monitor_removed_handler_id_);
+      monitor_removed_handler_id_ = 0;
+    }
+    g_object_unref(monitor_display_);
+    monitor_display_ = nullptr;
   }
 
   // Disconnect configure-event signal
@@ -1214,9 +1226,7 @@ void InAppWebView::UpdateMonitorRefreshRate() {
 void InAppWebView::OnFrameDisplayed(void* data) {
   auto* self = static_cast<InAppWebView*>(data);
 
-  if (self->on_frame_available_) {
-    self->on_frame_available_();
-  }
+  self->NotifyFrameAvailable();
 }
 
 #ifdef HAVE_WPE_BACKEND_LEGACY
@@ -1253,11 +1263,9 @@ void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
     exported_image_ = image;
   }
 
-  // Call on_frame_available BEFORE dispatch_frame_complete
-  // This ensures the EGL image is captured before we signal WPE we're ready for more
-  if (on_frame_available_) {
-    on_frame_available_();
-  }
+  // Notify before dispatch_frame_complete so the EGL image is captured before
+  // WPE is signaled that it can render the next frame.
+  NotifyFrameAvailable();
 
   // Dispatch frame complete to allow WebKit to render next frame
   // Note: This is moved AFTER on_frame_available to ensure the EGL image is used first
@@ -1454,8 +1462,8 @@ void InAppWebView::OnWpePlatformBufferRendered(WPEBuffer* buffer) {
     wpe_view_buffer_released(wpe_view_, previous_buffer);
   }
   
-  if (buffer_handled && on_frame_available_) {
-    on_frame_available_();
+  if (buffer_handled) {
+    NotifyFrameAvailable();
   }
 }
 #endif
@@ -1670,24 +1678,40 @@ void InAppWebView::postUrl(const std::string& url, const std::vector<uint8_t>& p
 
   // Use evaluateJavascript to run the XHR after the blank page loads
   // We need to wait for the load to complete, so we use a delayed approach
-  std::string* js_copy = new std::string(js);
-  g_timeout_add(100, [](gpointer user_data) -> gboolean {
-    auto* data = static_cast<std::pair<InAppWebView*, std::string*>*>(user_data);
-    if (data->first->webview() != nullptr) {
-      webkit_web_view_evaluate_javascript(
-          data->first->webview(),
-          data->second->c_str(),
-          -1,
-          nullptr,  // world
-          nullptr,  // source_uri
-          nullptr,  // cancellable
-          nullptr,  // callback
-          nullptr); // user_data
-    }
-    delete data->second;
-    delete data;
-    return G_SOURCE_REMOVE;
-  }, new std::pair<InAppWebView*, std::string*>(this, js_copy));
+  struct PostUrlCallbackData {
+    GWeakRef webview;
+    std::weak_ptr<void> lifetime_token;
+    std::string javascript;
+  };
+  auto* callback_data = new PostUrlCallbackData{};
+  g_weak_ref_init(&callback_data->webview, G_OBJECT(webview_));
+  callback_data->lifetime_token = async_lifetime_token_;
+  callback_data->javascript = std::move(js);
+
+  // Keep only a weak reference to the WebView: this timeout can outlive the
+  // InAppWebView wrapper if it is disposed before the callback runs.
+  g_timeout_add_full(
+      G_PRIORITY_DEFAULT, 100,
+      [](gpointer user_data) -> gboolean {
+        auto* data = static_cast<PostUrlCallbackData*>(user_data);
+        auto lifetime = data->lifetime_token.lock();
+        auto* webview = WEBKIT_WEB_VIEW(g_weak_ref_get(&data->webview));
+        if (lifetime && webview != nullptr) {
+          webkit_web_view_evaluate_javascript(
+              webview, data->javascript.c_str(), -1, nullptr, nullptr,
+              nullptr, nullptr, nullptr);
+        }
+        if (webview != nullptr) {
+          g_object_unref(webview);
+        }
+        return G_SOURCE_REMOVE;
+      },
+      callback_data,
+      [](gpointer user_data) {
+        auto* data = static_cast<PostUrlCallbackData*>(user_data);
+        g_weak_ref_clear(&data->webview);
+        delete data;
+      });
 }
 
 void InAppWebView::reload() {
@@ -3731,7 +3755,10 @@ void* InAppWebView::GetCurrentEglImage(uint32_t* out_width, uint32_t* out_height
 }
 
 void InAppWebView::SetOnFrameAvailable(std::function<void()> callback) {
-  on_frame_available_ = std::move(callback);
+  {
+    std::lock_guard<std::mutex> lock(frame_callback_mutex_);
+    on_frame_available_ = std::move(callback);
+  }
   
 #ifdef HAVE_WPE_PLATFORM
   // Force WPE to render a new frame by triggering a resize.
@@ -3741,39 +3768,65 @@ void InAppWebView::SetOnFrameAvailable(std::function<void()> callback) {
   //    old EGL images may be invalid
   // 3. A resize notification causes WPE to re-render with the current content
   //
-  // We use g_idle_add to defer this slightly, ensuring the texture registration
-  // is complete before we trigger the new frame.
-  if (on_frame_available_ && wpe_toplevel_ != nullptr) {
-    WPEToplevel* toplevel = wpe_toplevel_;
-    int w = width_;
-    int h = height_;
-    g_idle_add_full(G_PRIORITY_HIGH, [](gpointer user_data) -> gboolean {
-      auto* data = static_cast<std::tuple<WPEToplevel*, int, int>*>(user_data);
-      WPEToplevel* tl = std::get<0>(*data);
-      int width = std::get<1>(*data);
-      int height = std::get<2>(*data);
-      // Trigger a resize to force WPE to render a new frame
-      if (tl != nullptr) {
-        wpe_toplevel_resize(tl, width, height);
-      }
-      delete data;
-      return G_SOURCE_REMOVE;
-    }, new std::tuple<WPEToplevel*, int, int>(toplevel, w, h), nullptr);
+  // Replace any pending resize. Its source ID is retained so disposal can cancel
+  // it before the non-owned WPEToplevel is torn down.
+  if (force_resize_source_id_ != 0) {
+    g_source_remove(force_resize_source_id_);
+    force_resize_source_id_ = 0;
+  }
+  if (HasFrameAvailableCallback() && wpe_toplevel_ != nullptr) {
+    struct ForceResizeData {
+      InAppWebView* webview;
+      WPEToplevel* toplevel;
+      int width;
+      int height;
+    };
+    auto* data = new ForceResizeData{this, wpe_toplevel_, width_, height_};
+    force_resize_source_id_ = g_idle_add_full(
+        G_PRIORITY_HIGH,
+        [](gpointer user_data) -> gboolean {
+          auto* data = static_cast<ForceResizeData*>(user_data);
+          InAppWebView* webview = data->webview;
+          webview->force_resize_source_id_ = 0;
+          if (!webview->is_disposing_.load() &&
+              webview->wpe_toplevel_ == data->toplevel) {
+            wpe_toplevel_resize(data->toplevel, data->width, data->height);
+          }
+          return G_SOURCE_REMOVE;
+        },
+        data,
+        [](gpointer user_data) {
+          delete static_cast<ForceResizeData*>(user_data);
+        });
   }
 #elif defined(HAVE_WPE_BACKEND_LEGACY)
-  if (on_frame_available_) {
+  if (HasFrameAvailableCallback()) {
     bool has_image = false;
     {
       std::lock_guard<std::mutex> lock(exported_image_mutex_);
       has_image = (exported_image_ != nullptr);
     }
     if (has_image) {
-      on_frame_available_();
+      NotifyFrameAvailable();
     } else if (wpe_backend_ != nullptr) {
       wpe_view_backend_dispatch_set_size(wpe_backend_, width_, height_);
     }
   }
 #endif
+}
+
+bool InAppWebView::HasFrameAvailableCallback() {
+  std::lock_guard<std::mutex> lock(frame_callback_mutex_);
+  return static_cast<bool>(on_frame_available_);
+}
+
+void InAppWebView::NotifyFrameAvailable() {
+  // Keep the lock for the duration of the callback. Clearing/replacing it then
+  // waits for any in-flight notification, protecting captured platform-view data.
+  std::lock_guard<std::mutex> lock(frame_callback_mutex_);
+  if (on_frame_available_) {
+    on_frame_available_();
+  }
 }
 
 void InAppWebView::SetOnCursorChanged(std::function<void(const std::string&)> callback) {
@@ -5391,38 +5444,30 @@ static std::string RgbaToHexColor(const GdkRGBA* rgba, bool includeAlpha) {
 // Static callback for non-blocking color dialog response
 static void OnColorDialogResponse(GtkDialog* dialog, gint response_id, gpointer user_data) {
   auto* self = static_cast<InAppWebView*>(user_data);
-  
-  // Capture and clear reply before resolving (to prevent use after cleanup)
+
   WebKitScriptMessageReply* reply = self->pending_color_reply_;
   self->pending_color_reply_ = nullptr;
-  
-  if (reply == nullptr) {
-    // No reply object - just cleanup
-    gtk_widget_destroy(GTK_WIDGET(dialog));
-    g_object_unref(dialog);
-    self->active_color_dialog_ = nullptr;
-    self->color_dialog_show_time_ = 0;
-    return;
-  }
-  
-  if (response_id == GTK_RESPONSE_OK) {
-    // User selected a color
+  std::string jsonResult = "null";
+
+  if (reply != nullptr && response_id == GTK_RESPONSE_OK) {
     GdkRGBA selectedRgba;
     gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(dialog), &selectedRgba);
-    
     std::string hexColor = RgbaToHexColor(&selectedRgba, self->active_color_alpha_enabled_);
-    // Resolve the Promise with the selected color via webkit reply
-    self->ResolveInternalHandlerWithReply(reply, "\"" + hexColor + "\"");
-  } else {
-    // User cancelled or closed the dialog - resolve with null
-    self->ResolveInternalHandlerWithReply(reply, "null");
+    jsonResult = "\"" + hexColor + "\"";
   }
-  
-  // Cleanup
+
+  if (self->active_color_dialog_ == GTK_WIDGET(dialog)) {
+    self->active_color_dialog_ = nullptr;
+    self->color_dialog_show_time_ = 0;
+  }
   gtk_widget_destroy(GTK_WIDGET(dialog));
-  g_object_unref(dialog);  // Release our extra reference
-  self->active_color_dialog_ = nullptr;
-  self->color_dialog_show_time_ = 0;
+  g_object_unref(dialog);
+
+  // Resolve after detaching the dialog so reentrant script handling cannot see
+  // stale picker state.
+  if (reply != nullptr) {
+    self->ResolveInternalHandlerWithReply(reply, jsonResult);
+  }
 }
 
 void InAppWebView::ShowColorPicker(const std::string& initialColor, int x, int y,
@@ -5433,12 +5478,8 @@ void InAppWebView::ShowColorPicker(const std::string& initialColor, int x, int y
   (void)y;
   (void)colorSpace;  // GTK3 color chooser doesn't support color spaces
   
-  // Close any existing color dialog first
-  if (active_color_dialog_ != nullptr) {
-    gtk_widget_destroy(active_color_dialog_);
-    g_object_unref(active_color_dialog_);
-    active_color_dialog_ = nullptr;
-  }
+  // Existing dialogs are closed before replacing their pending WebKit reply.
+  // This method is called only after that state transition is complete.
   
   // Store the initial color for cancel restoration
   pending_color_input_value_ = initialColor;
@@ -5504,13 +5545,32 @@ void InAppWebView::HideColorPicker() {
   // This is intentionally a no-op - the dialog manages its own lifecycle.
 }
 
-void InAppWebView::HideFileChooser() {
+void InAppWebView::CloseColorDialog() {
+  GtkWidget* dialog = active_color_dialog_;
+  active_color_dialog_ = nullptr;
+  color_dialog_show_time_ = 0;
+
+  if (dialog != nullptr) {
+    // Prevent the response callback from using this while teardown is in progress.
+    g_signal_handlers_disconnect_by_data(dialog, this);
+    gtk_widget_destroy(dialog);
+    g_object_unref(dialog);
+  }
+
+  WebKitScriptMessageReply* reply = pending_color_reply_;
+  pending_color_reply_ = nullptr;
+  if (reply != nullptr) {
+    ResolveInternalHandlerWithReply(reply, "null");
+  }
+}
+
+void InAppWebView::HideFileChooser(bool force) {
   if (active_file_dialog_ != nullptr) {
-    // Don't close the dialog if it was just shown (within 200ms)
-    // This prevents the click that triggered the file chooser from immediately closing it
+    // Don't close the dialog if it was just shown (within 200ms), except during
+    // owner teardown where leaving it open would retain a callback to this object.
     int64_t now = g_get_monotonic_time();
     int64_t elapsed_us = now - file_dialog_show_time_;
-    if (elapsed_us < 200000) {
+    if (!force && elapsed_us < 200000) {
       return;
     }
     
@@ -5709,42 +5769,25 @@ static void OnCalendarDaySelected(GtkCalendar* calendar, gpointer user_data) {
 static void OnDateDialogResponse(GtkDialog* dialog, gint response_id, gpointer user_data) {
   auto* ctx = static_cast<DateDialogContext*>(user_data);
   InAppWebView* self = ctx->webview;
-  
-  // Capture and clear reply before resolving (to prevent use after cleanup)
+
   WebKitScriptMessageReply* reply = self->pending_date_reply_;
   self->pending_date_reply_ = nullptr;
-  
-  // Helper lambda for cleanup
-  auto cleanup = [&]() {
-    delete ctx;
-    gtk_widget_destroy(GTK_WIDGET(dialog));
-    g_object_unref(dialog);
-    self->active_date_dialog_ = nullptr;
-    self->date_dialog_show_time_ = 0;
-  };
-  
-  if (reply == nullptr) {
-    // No reply object - just cleanup
-    cleanup();
-    return;
-  }
-  
-  if (response_id == GTK_RESPONSE_OK) {
+  std::string jsonResult = "null";
+
+  if (reply != nullptr && response_id == GTK_RESPONSE_OK) {
     std::string result;
-    
+
     if (ctx->inputType == "time") {
-      // Time only
       int hour = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(ctx->hourSpin));
       int minute = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(ctx->minuteSpin));
       char buf[16];
       snprintf(buf, sizeof(buf), "%02d:%02d", hour, minute);
       result = buf;
     } else if (ctx->calendar != nullptr) {
-      // Get date from calendar
       guint year, month, day;
       gtk_calendar_get_date(GTK_CALENDAR(ctx->calendar), &year, &month, &day);
       month += 1;  // GtkCalendar months are 0-based
-      
+
       if (ctx->inputType == "date") {
         char buf[16];
         snprintf(buf, sizeof(buf), "%04d-%02d-%02d", year, month, day);
@@ -5760,7 +5803,6 @@ static void OnDateDialogResponse(GtkDialog* dialog, gint response_id, gpointer u
         snprintf(buf, sizeof(buf), "%04d-%02d", year, month);
         result = buf;
       } else if (ctx->inputType == "week") {
-        // Calculate ISO week number
         GDateTime* dt = g_date_time_new_local(year, month, day, 0, 0, 0);
         if (dt) {
           int isoYear = g_date_time_get_year(dt);
@@ -5772,21 +5814,28 @@ static void OnDateDialogResponse(GtkDialog* dialog, gint response_id, gpointer u
         }
       }
     }
-    
+
     if (!result.empty()) {
-      // Resolve the Promise with the selected value via webkit reply
-      self->ResolveInternalHandlerWithReply(reply, "\"" + result + "\"");
-    } else {
-      // No valid result - resolve with null
-      self->ResolveInternalHandlerWithReply(reply, "null");
+      jsonResult = "\"" + result + "\"";
     }
-  } else {
-    // User cancelled - resolve with null
-    self->ResolveInternalHandlerWithReply(reply, "null");
   }
-  
-  // Cleanup
-  cleanup();
+
+  // Detach state and destroy the dialog before resolving, because resolving can
+  // re-enter JavaScript and request another native picker.
+  if (self->date_dialog_context_ == ctx) {
+    self->date_dialog_context_ = nullptr;
+    if (self->active_date_dialog_ == GTK_WIDGET(dialog)) {
+      self->active_date_dialog_ = nullptr;
+      self->date_dialog_show_time_ = 0;
+    }
+  }
+  delete ctx;
+  gtk_widget_destroy(GTK_WIDGET(dialog));
+  g_object_unref(dialog);
+
+  if (reply != nullptr) {
+    self->ResolveInternalHandlerWithReply(reply, jsonResult);
+  }
 }
 
 void InAppWebView::ShowDatePicker(const std::string& inputType, const std::string& value,
@@ -5795,13 +5844,7 @@ void InAppWebView::ShowDatePicker(const std::string& inputType, const std::strin
   (void)x;     // Position not used - GTK handles dialog placement
   (void)y;
   
-  // Close any existing date dialog
-  if (active_date_dialog_ != nullptr) {
-    gtk_widget_destroy(active_date_dialog_);
-    g_object_unref(active_date_dialog_);
-    active_date_dialog_ = nullptr;
-  }
-  
+  // Any previous dialog and reply are closed before this method is called.
   pending_date_input_value_ = value;
   pending_date_input_type_ = inputType;
   pending_date_input_min_ = min;
@@ -5841,6 +5884,7 @@ void InAppWebView::ShowDatePicker(const std::string& inputType, const std::strin
   
   // Create context for callback
   auto* ctx = new DateDialogContext();
+  date_dialog_context_ = ctx;
   ctx->webview = this;
   ctx->inputType = inputType;
   ctx->calendar = nullptr;
@@ -6007,21 +6051,42 @@ void InAppWebView::HideDatePicker() {
     if (elapsed_us < 200000) {
       return;  // Don't close if just shown
     }
-    
-    // Capture and clear reply before resolving
-    WebKitScriptMessageReply* reply = pending_date_reply_;
-    pending_date_reply_ = nullptr;
-    
-    // Resolve the pending Promise with null when hiding the picker
-    if (reply != nullptr) {
-      ResolveInternalHandlerWithReply(reply, "null");
-    }
-    
-    gtk_widget_destroy(active_date_dialog_);
-    g_object_unref(active_date_dialog_);
-    active_date_dialog_ = nullptr;
-    date_dialog_show_time_ = 0;
   }
+  CloseDateDialog();
+}
+
+void InAppWebView::CloseDateDialog() {
+  auto* ctx = static_cast<DateDialogContext*>(date_dialog_context_);
+  GtkWidget* dialog = active_date_dialog_ != nullptr
+      ? active_date_dialog_
+      : (ctx != nullptr ? ctx->dialog : nullptr);
+  active_date_dialog_ = nullptr;
+  date_dialog_context_ = nullptr;
+  date_dialog_show_time_ = 0;
+
+  if (ctx != nullptr && ctx->dialog != nullptr) {
+    // Disconnect the response callback before freeing its user data. Child
+    // widgets are destroyed with the dialog and cannot dispatch more events.
+    g_signal_handlers_disconnect_by_data(ctx->dialog, ctx);
+  }
+
+  if (dialog != nullptr) {
+    gtk_widget_destroy(dialog);
+    g_object_unref(dialog);
+  }
+  delete ctx;
+
+  WebKitScriptMessageReply* reply = pending_date_reply_;
+  pending_date_reply_ = nullptr;
+  if (reply != nullptr) {
+    ResolveInternalHandlerWithReply(reply, "null");
+  }
+}
+
+void InAppWebView::CloseActiveDialogs() {
+  CloseColorDialog();
+  CloseDateDialog();
+  HideFileChooser(true);
 }
 
 // === Clipboard Operations ===
@@ -6830,11 +6895,15 @@ static void OnFileChooserDialogResponse(GtkDialog* dialog, gint response_id, gpo
     webkit_file_chooser_request_cancel(context->request);
   }
 
-  // Clear tracking in webview
-  if (context->webview) {
-    context->webview->active_file_dialog_ = nullptr;
-    context->webview->file_dialog_show_time_ = 0;
-    context->webview->file_chooser_context_ = nullptr;
+  // Clear tracking only if this is still the active request/dialog.
+  if (context->webview != nullptr) {
+    if (context->webview->active_file_dialog_ == GTK_WIDGET(dialog)) {
+      context->webview->active_file_dialog_ = nullptr;
+      context->webview->file_dialog_show_time_ = 0;
+    }
+    if (context->webview->file_chooser_context_ == context) {
+      context->webview->file_chooser_context_ = nullptr;
+    }
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -6848,21 +6917,10 @@ static void ShowNativeFileChooser(InAppWebView* webview,
                                    bool selectMultiple,
                                    const std::vector<std::string>& mimeTypes,
                                    GtkWindow* parentWindow) {
-  // Close any existing file dialog first
-  if (webview && webview->active_file_dialog_ != nullptr) {
-    // Clean up old context if it exists
-    if (webview->file_chooser_context_ != nullptr) {
-      auto* old_context = static_cast<FileChooserContext*>(webview->file_chooser_context_);
-      if (old_context->response_handler_id != 0) {
-        g_signal_handler_disconnect(webview->active_file_dialog_, old_context->response_handler_id);
-      }
-      webkit_file_chooser_request_cancel(old_context->request);
-      delete old_context;
-      webview->file_chooser_context_ = nullptr;
-    }
-    gtk_widget_destroy(webview->active_file_dialog_);
-    g_object_unref(webview->active_file_dialog_);
-    webview->active_file_dialog_ = nullptr;
+  // Cancel and dispose an existing chooser before replacing its request.
+  if (webview != nullptr &&
+      (webview->active_file_dialog_ != nullptr || webview->file_chooser_context_ != nullptr)) {
+    webview->HideFileChooser(true);
   }
 
   // Create the file chooser dialog with parent window
@@ -7638,10 +7696,12 @@ bool InAppWebView::handleScriptMessageWithReply(const std::string& body, WebKitS
       }
     }
 
-    // Store the reply object for async response (add ref to keep it alive)
-    if (pending_color_reply_ != nullptr) {
-      webkit_script_message_reply_unref(pending_color_reply_);
+    // Finish any previous picker request before replacing its reply handle.
+    if (active_color_dialog_ != nullptr || pending_color_reply_ != nullptr) {
+      CloseColorDialog();
     }
+
+    // Store the reply object for async response (add ref to keep it alive)
     pending_color_reply_ = reply;
     webkit_script_message_reply_ref(reply);
 
@@ -7707,10 +7767,12 @@ bool InAppWebView::handleScriptMessageWithReply(const std::string& body, WebKitS
       }
     }
 
-    // Store the reply object for async response (add ref to keep it alive)
-    if (pending_date_reply_ != nullptr) {
-      webkit_script_message_reply_unref(pending_date_reply_);
+    // Finish any previous picker request before replacing its reply handle.
+    if (active_date_dialog_ != nullptr || pending_date_reply_ != nullptr) {
+      CloseDateDialog();
     }
+
+    // Store the reply object for async response (add ref to keep it alive)
     pending_date_reply_ = reply;
     webkit_script_message_reply_ref(reply);
 
@@ -7900,9 +7962,7 @@ void InAppWebView::OnExportShmBuffer(struct wpe_fdo_shm_exported_buffer* buffer)
   }
 
   // Notify that a new frame is available
-  if (on_frame_available_) {
-    on_frame_available_();
-  }
+  NotifyFrameAvailable();
 }
 #endif  // HAVE_WPE_BACKEND_LEGACY
 

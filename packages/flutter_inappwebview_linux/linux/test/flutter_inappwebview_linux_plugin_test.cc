@@ -1,15 +1,17 @@
 #include <gtest/gtest.h>
 
-// Placeholder test for the flutter_inappwebview_linux plugin.
-// More comprehensive tests can be added as features are implemented.
+#include "in_app_webview/inappwebview_egl_texture.h"
 
 namespace flutter_inappwebview_plugin {
 namespace test {
 
-TEST(FlutterInappwebviewLinuxPlugin, Placeholder) {
-  // This is a placeholder test to satisfy the CMake build.
-  // Real tests should be added for the WebView functionality.
-  EXPECT_TRUE(true);
+TEST(InAppWebViewEGLTexture, DisposeCanBeRunMoreThanOnce) {
+  InAppWebViewEGLTexture* texture = inappwebview_egl_texture_new(nullptr);
+  ASSERT_NE(texture, nullptr);
+
+  g_object_run_dispose(G_OBJECT(texture));
+  g_object_run_dispose(G_OBJECT(texture));
+  g_object_unref(texture);
 }
 
 }  // namespace test

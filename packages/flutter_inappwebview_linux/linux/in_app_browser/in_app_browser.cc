@@ -92,10 +92,11 @@ InAppBrowser::InAppBrowser(InAppBrowserManager* manager, FlBinaryMessenger* mess
   }
 
   // Load initial content (async, WebView needs time to initialize)
-  g_idle_add(
+  createdSourceId_ = g_idle_add(
       [](gpointer user_data) -> gboolean {
         auto* browser = static_cast<InAppBrowser*>(user_data);
-        if (browser && !browser->destroyed_) {
+        browser->createdSourceId_ = 0;
+        if (!browser->destroyed_) {
           // Notify Dart that browser is created
           if (browser->channelDelegate_) {
             browser->channelDelegate_->onBrowserCreated();
@@ -117,7 +118,11 @@ void InAppBrowser::cleanup() {
   }
   destroyed_ = true;
 
-  // Cancel frame callback
+  // Cancel deferred callbacks before releasing this object.
+  if (createdSourceId_ != 0) {
+    g_source_remove(createdSourceId_);
+    createdSourceId_ = 0;
+  }
   if (frameSourceId_ != 0) {
     g_source_remove(frameSourceId_);
     frameSourceId_ = 0;
