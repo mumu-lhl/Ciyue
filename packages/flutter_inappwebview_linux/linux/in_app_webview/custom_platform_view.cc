@@ -341,7 +341,7 @@ void CustomPlatformView::HandleMethodCallImpl(FlMethodCall* method_call) {
 
   // setTextureOffset: removed (was dead code, never used)
 
-  // setCursorPos: [double x, double y]
+  // setCursorPos: [double x, double y, (optional) int modifiers]
   if (strcmp(method, "setCursorPos") == 0) {
     if (fl_value_get_type(args) == FL_VALUE_TYPE_LIST && fl_value_get_length(args) >= 2) {
       FlValue* x_value = fl_value_get_list_value(args, 0);
@@ -360,6 +360,16 @@ void CustomPlatformView::HandleMethodCallImpl(FlMethodCall* method_call) {
         y = static_cast<double>(fl_value_get_int(y_value));
       }
 
+      if (fl_value_get_length(args) >= 3) {
+        FlValue* mod_value = fl_value_get_list_value(args, 2);
+        if (mod_value != nullptr && fl_value_get_type(mod_value) == FL_VALUE_TYPE_INT) {
+          uint32_t modifiers = static_cast<uint32_t>(fl_value_get_int(mod_value));
+          if (webview_) {
+            webview_->setCurrentModifiers(modifiers);
+          }
+        }
+      }
+
       if (webview_) {
         webview_->SetCursorPos(x, y);
       }
@@ -368,12 +378,13 @@ void CustomPlatformView::HandleMethodCallImpl(FlMethodCall* method_call) {
     return;
   }
 
-  // setPointerButton: {"kind": int, "button": int, "clickCount": int}
+  // setPointerButton: {"kind": int, "button": int, "clickCount": int, (optional) "modifiers": int}
   if (strcmp(method, "setPointerButton") == 0) {
     if (fl_value_get_type(args) == FL_VALUE_TYPE_MAP) {
       FlValue* kind_value = fl_value_lookup_string(args, "kind");
       FlValue* button_value = fl_value_lookup_string(args, "button");
       FlValue* click_count_value = fl_value_lookup_string(args, "clickCount");
+      FlValue* modifiers_value = fl_value_lookup_string(args, "modifiers");
 
       if (kind_value != nullptr && button_value != nullptr) {
         int kind = 0, button = 0, clickCount = 1;
@@ -388,11 +399,27 @@ void CustomPlatformView::HandleMethodCallImpl(FlMethodCall* method_call) {
             fl_value_get_type(click_count_value) == FL_VALUE_TYPE_INT) {
           clickCount = static_cast<int>(fl_value_get_int(click_count_value));
         }
+        if (modifiers_value != nullptr &&
+            fl_value_get_type(modifiers_value) == FL_VALUE_TYPE_INT) {
+          uint32_t modifiers = static_cast<uint32_t>(fl_value_get_int(modifiers_value));
+          if (webview_) {
+            webview_->setCurrentModifiers(modifiers);
+          }
+        }
 
         if (webview_) {
           webview_->SetPointerButton(kind, button, clickCount);
         }
       }
+    }
+    fl_method_call_respond_success(method_call, nullptr, nullptr);
+    return;
+  }
+
+  // clearSelection
+  if (strcmp(method, "clearSelection") == 0) {
+    if (webview_) {
+      webview_->clearSelection();
     }
     fl_method_call_respond_success(method_call, nullptr, nullptr);
     return;

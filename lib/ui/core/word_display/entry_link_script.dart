@@ -79,4 +79,34 @@ document.addEventListener('auxclick', function (event) {
     _openWordInNewTab(_decodeWord(rawWord));
   }
 }, true);
+
+document.addEventListener('dragstart', function (event) {
+  event.preventDefault();
+}, true);
+
+document.addEventListener('mousedown', function (event) {
+  if (event.button === 0 && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey && event.detail <= 1) {
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) {
+      sel.removeAllRanges();
+    }
+  }
+}, true);
+
+(function () {
+  function injectNoDrag() {
+    const root = document.head || document.documentElement;
+    if (root && !document.getElementById('ciyue-no-drag')) {
+      const style = document.createElement('style');
+      style.id = 'ciyue-no-drag';
+      style.textContent = '* { -webkit-user-drag: none !important; }';
+      root.appendChild(style);
+      return true;
+    }
+    return false;
+  }
+  if (!injectNoDrag()) {
+    document.addEventListener('DOMContentLoaded', injectNoDrag);
+  }
+})();
 """;

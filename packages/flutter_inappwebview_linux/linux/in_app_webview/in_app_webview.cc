@@ -518,6 +518,11 @@ InAppWebView::~InAppWebView() {
   
   egl_display_ = nullptr;
 #elif defined(HAVE_WPE_BACKEND_LEGACY)
+  if (release_idle_source_id_ != 0) {
+    g_source_remove(release_idle_source_id_);
+    release_idle_source_id_ = 0;
+  }
+
   if (wpe_backend_ != nullptr) {
     wpe_view_backend_remove_activity_state(
         wpe_backend_,
@@ -528,10 +533,23 @@ InAppWebView::~InAppWebView() {
 
   {
     std::lock_guard<std::mutex> lock(exported_image_mutex_);
-    if (exported_image_ != nullptr && exportable_ != nullptr) {
-      ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
-                                                                            exported_image_);
-      exported_image_ = nullptr;
+    if (exportable_ != nullptr) {
+      for (auto* img : retired_images_) {
+        if (img != nullptr) {
+          ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_, img);
+        }
+      }
+      retired_images_.clear();
+      if (displayed_image_ != nullptr) {
+        ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
+                                                                              displayed_image_);
+        displayed_image_ = nullptr;
+      }
+      if (exported_image_ != nullptr && exported_image_ != displayed_image_) {
+        ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
+                                                                              exported_image_);
+        exported_image_ = nullptr;
+      }
     }
     exportable_ = nullptr;
     wpe_backend_ = nullptr;
@@ -1236,6 +1254,9 @@ void InAppWebView::OnFrameDisplayed(void* data) {
 #ifdef HAVE_WPE_BACKEND_LEGACY
 void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
   if (is_disposing_.load() || image == nullptr) {
+    if (image != nullptr && exportable_ != nullptr) {
+      ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_, image);
+    }
     return;
   }
 
@@ -1253,28 +1274,46 @@ void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
     ReadPixelsFromEglImage(egl_image, img_width, img_height);
   }
 
-  // Swap the exported image under the same lock used by GetCurrentEglImage.
-  // Keep the previous image alive until the texture callback has switched its
-  // EGLImage reference; otherwise Flutter's raster thread can still bind an
-  // image that WPE has already released.
-  ::wpe_fdo_egl_exported_image* previous_image = nullptr;
+  if (!skip_pixel_readback_) {
+    // In software readback mode, pixels were synchronously copied into pixel_buffers_.
+    // The image can be released immediately and frame_complete dispatched.
+    ::wpe_fdo_egl_exported_image* previous_image = nullptr;
+    {
+      std::lock_guard<std::mutex> lock(exported_image_mutex_);
+      previous_image = exported_image_;
+      exported_image_ = image;
+    }
+    NotifyFrameAvailable();
+    if (previous_image != nullptr && exportable_ != nullptr) {
+      ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
+                                                                            previous_image);
+    }
+    if (exportable_ != nullptr) {
+      wpe_view_backend_exportable_fdo_dispatch_frame_complete(exportable_);
+    }
+    return;
+  }
+
+  // Zero-copy mode: Flutter's compositor samples the GPU buffer directly.
+  // The buffer backing displayed_image_ MUST NOT be released until Flutter's
+  // raster thread binds the new image in FlTextureGL::populate(). Releasing it
+  // earlier causes WPE to reuse the buffer while Flutter is reading it, leading
+  // to texture tearing and text selection misalignment.
+  ::wpe_fdo_egl_exported_image* skipped_image = nullptr;
   {
     std::lock_guard<std::mutex> lock(exported_image_mutex_);
-    previous_image = exported_image_;
+    if (exported_image_ != nullptr && exported_image_ != displayed_image_) {
+      skipped_image = exported_image_;
+      retired_images_.push_back(skipped_image);
+    }
     exported_image_ = image;
   }
 
+  if (skipped_image != nullptr) {
+    ScheduleReleaseImages();
+  }
+
   NotifyFrameAvailable();
-
-  if (previous_image != nullptr && exportable_ != nullptr) {
-    ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
-                                                                          previous_image);
-  }
-
-  // Dispatch frame complete only after the new EGL image has been published.
-  if (exportable_ != nullptr) {
-    wpe_view_backend_exportable_fdo_dispatch_frame_complete(exportable_);
-  }
 }
 #endif
 
@@ -1308,9 +1347,11 @@ void InAppWebView::OnWpePlatformBufferRendered(WPEBuffer* buffer) {
   {
     std::lock_guard<std::mutex> lock(wpe_buffer_mutex_);
     
-    // Store reference to previous buffer - we'll release it AFTER importing the new one
-    // This ensures the EGL image's backing memory stays valid until we have a new frame
-    previous_buffer = current_buffer_;
+    // If previous current_buffer_ was never displayed, we'll release it.
+    // displayed_buffer_ remains protected until OnFramePresented.
+    if (current_buffer_ != nullptr && current_buffer_ != displayed_buffer_) {
+      previous_buffer = current_buffer_;
+    }
 
     // Do NOT destroy the previous EGL image here. Flutter's raster thread may
     // still be binding it in FlTextureGL::populate(). The EGL texture takes
@@ -3893,6 +3934,92 @@ void InAppWebView::NotifyFrameAvailable() {
   std::lock_guard<std::mutex> lock(frame_callback_mutex_);
   if (on_frame_available_) {
     on_frame_available_();
+  }
+}
+
+void InAppWebView::OnFramePresented(void* egl_image) {
+#ifdef HAVE_WPE_BACKEND_LEGACY
+  ::wpe_fdo_egl_exported_image* image_to_retire = nullptr;
+  {
+    std::lock_guard<std::mutex> lock(exported_image_mutex_);
+    if (is_disposing_.load()) {
+      return;
+    }
+    // Now that Flutter has bound exported_image_ into the GL texture,
+    // the previous displayed_image_ is no longer being sampled by Flutter.
+    // It can now be safely retired and released back to WPE.
+    if (displayed_image_ != nullptr && displayed_image_ != exported_image_) {
+      image_to_retire = displayed_image_;
+      retired_images_.push_back(image_to_retire);
+    }
+    displayed_image_ = exported_image_;
+    pending_frame_complete_ = true;
+  }
+  ScheduleReleaseImages();
+#elif defined(HAVE_WPE_PLATFORM)
+  WPEBuffer* buffer_to_release = nullptr;
+  {
+    std::lock_guard<std::mutex> lock(wpe_buffer_mutex_);
+    if (is_disposing_.load()) {
+      return;
+    }
+    if (displayed_buffer_ != nullptr && displayed_buffer_ != current_buffer_) {
+      buffer_to_release = displayed_buffer_;
+    }
+    displayed_buffer_ = current_buffer_;
+  }
+  if (buffer_to_release != nullptr && wpe_view_ != nullptr && WPE_IS_BUFFER(buffer_to_release)) {
+    wpe_view_buffer_released(wpe_view_, buffer_to_release);
+  }
+#endif
+}
+
+#ifdef HAVE_WPE_BACKEND_LEGACY
+void InAppWebView::ScheduleReleaseImages() {
+  if (is_disposing_.load() || exportable_ == nullptr) {
+    return;
+  }
+  if (release_idle_source_id_ == 0) {
+    release_idle_source_id_ = g_idle_add_full(
+        G_PRIORITY_DEFAULT,
+        [](gpointer user_data) -> gboolean {
+          auto* self = static_cast<InAppWebView*>(user_data);
+          self->release_idle_source_id_ = 0;
+          self->ReleaseRetiredImages();
+          return G_SOURCE_REMOVE;
+        },
+        this,
+        nullptr);
+  }
+}
+
+void InAppWebView::ReleaseRetiredImages() {
+  std::vector<::wpe_fdo_egl_exported_image*> to_release;
+  bool need_frame_complete = false;
+  {
+    std::lock_guard<std::mutex> lock(exported_image_mutex_);
+    to_release.swap(retired_images_);
+    need_frame_complete = pending_frame_complete_;
+    pending_frame_complete_ = false;
+  }
+
+  if (exportable_ != nullptr) {
+    for (auto* img : to_release) {
+      if (img != nullptr) {
+        ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_, img);
+      }
+    }
+    if (need_frame_complete) {
+      wpe_view_backend_exportable_fdo_dispatch_frame_complete(exportable_);
+    }
+  }
+}
+#endif
+
+void InAppWebView::clearSelection() {
+  if (webview_ != nullptr) {
+    webkit_web_view_evaluate_javascript(
+        webview_, "window.getSelection()?.removeAllRanges();", -1, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
 }
 

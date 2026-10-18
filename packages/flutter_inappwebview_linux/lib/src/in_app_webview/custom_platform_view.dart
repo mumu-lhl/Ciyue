@@ -210,7 +210,7 @@ class CustomPlatformViewController
   }
 
   /// Moves the virtual cursor to [position].
-  Future<void> _setCursorPos(Offset position) async {
+  Future<void> _setCursorPos(Offset position, {int? modifiers}) async {
     if (_isDisposed) {
       return;
     }
@@ -218,14 +218,16 @@ class CustomPlatformViewController
     return _methodChannel.invokeMethod('setCursorPos', [
       position.dx,
       position.dy,
+      if (modifiers != null) modifiers,
     ]);
   }
 
   /// Indicates whether the specified [button] is currently down.
   Future<void> _setPointerButtonState(
     InAppWebViewPointerEventKind kind,
-    PointerButton button,
-  ) async {
+    PointerButton button, {
+    int? modifiers,
+  }) async {
     if (_isDisposed) {
       return;
     }
@@ -234,6 +236,7 @@ class CustomPlatformViewController
       'kind': kind.index,
       'button': button.index,
       'clickCount': 1,
+      if (modifiers != null) 'modifiers': modifiers,
     });
   }
 
@@ -253,8 +256,9 @@ class CustomPlatformViewController
   Future<void> _setPointerButtonStateWithClickCount(
     InAppWebViewPointerEventKind kind,
     PointerButton button,
-    int clickCount,
-  ) async {
+    int clickCount, {
+    int? modifiers,
+  }) async {
     if (_isDisposed) {
       return;
     }
@@ -263,7 +267,17 @@ class CustomPlatformViewController
       'kind': kind.index,
       'button': button.index,
       'clickCount': clickCount,
+      if (modifiers != null) 'modifiers': modifiers,
     });
+  }
+
+  /// Clears active DOM selection.
+  Future<void> _clearSelection() async {
+    if (_isDisposed) {
+      return;
+    }
+    assert(value.isInitialized);
+    return _methodChannel.invokeMethod('clearSelection');
   }
 
   /// Sets the horizontal and vertical scroll delta.
@@ -403,6 +417,23 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
     });
   }
 
+  int _getCurrentModifiers() {
+    int modifiers = 0;
+    if (HardwareKeyboard.instance.isControlPressed) {
+      modifiers |= 1;
+    }
+    if (HardwareKeyboard.instance.isShiftPressed) {
+      modifiers |= 2;
+    }
+    if (HardwareKeyboard.instance.isAltPressed) {
+      modifiers |= 4;
+    }
+    if (HardwareKeyboard.instance.isMetaPressed) {
+      modifiers |= 8;
+    }
+    return modifiers;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Focus(
@@ -411,12 +442,14 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
       canRequestFocus: true,
       debugLabel: "flutter_inappwebview_linux_custom_platform_view",
       onFocusChange: (focused) {
-        // Notify the native webview when focus changes.
-        // This is important for proper text input handling - without this,
-        // clicking inside text fields requires double-click because the
-        // webview doesn't know it has focus.
+        if (!focused) {
+          _downButtons.clear();
+          if (_controller.value.isInitialized) {
+            unawaited(_controller._clearSelection());
+          }
+        }
         if (_controller.value.isInitialized) {
-          _controller._setFocused(focused);
+          unawaited(_controller._setFocused(focused));
         }
       },
       onKeyEvent: _handleKeyEvent,
@@ -483,7 +516,10 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                   if (_pointerKind == PointerDeviceKind.touch) {
                     return;
                   }
-                  _controller._setCursorPos(ev.localPosition);
+                  _controller._setCursorPos(
+                    ev.localPosition,
+                    modifiers: _getCurrentModifiers(),
+                  );
                 },
                 onPointerDown: (ev) {
                   _reportSurfaceSize();
@@ -508,8 +544,12 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     return;
                   }
 
+                  final modifiers = _getCurrentModifiers();
                   // Update cursor position first
-                  _controller._setCursorPos(ev.localPosition);
+                  _controller._setCursorPos(
+                    ev.localPosition,
+                    modifiers: modifiers,
+                  );
 
                   final button = _getButton(ev.buttons);
                   _downButtons[ev.pointer] = button;
@@ -539,6 +579,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     InAppWebViewPointerEventKind.down,
                     button,
                     _clickCount,
+                    modifiers: modifiers,
                   );
                 },
                 onPointerUp: (ev) {
@@ -550,6 +591,11 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     _activeTouchPoints.remove(ev.pointer);
                     return;
                   }
+                  final modifiers = _getCurrentModifiers();
+                  _controller._setCursorPos(
+                    ev.localPosition,
+                    modifiers: modifiers,
+                  );
                   // If we don't have a record of the button (e.g. State was
                   // recreated mid-drag), default to primary instead of dropping
                   // the UP event. A lost UP leaves WPE thinking the button is
@@ -559,6 +605,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                   _controller._setPointerButtonState(
                     InAppWebViewPointerEventKind.up,
                     button,
+                    modifiers: modifiers,
                   );
                 },
                 onPointerCancel: (ev) {
@@ -573,12 +620,14 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     ); // 3 = cancel
                     return;
                   }
+                  final modifiers = _getCurrentModifiers();
                   // Same as onPointerUp: don't drop the event if state was lost.
                   final button =
                       _downButtons.remove(ev.pointer) ?? PointerButton.primary;
                   _controller._setPointerButtonState(
                     InAppWebViewPointerEventKind.cancel,
                     button,
+                    modifiers: modifiers,
                   );
                 },
                 onPointerMove: (ev) {
@@ -593,7 +642,10 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     ); // 2 = move
                     return;
                   }
-                  _controller._setCursorPos(ev.localPosition);
+                  _controller._setCursorPos(
+                    ev.localPosition,
+                    modifiers: _getCurrentModifiers(),
+                  );
                 },
                 onPointerSignal: (signal) {
                   if (signal is PointerScrollEvent) {
@@ -613,13 +665,16 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     _controller._setPointerButtonState(
                       InAppWebViewPointerEventKind.enter,
                       button,
+                      modifiers: _getCurrentModifiers(),
                     );
                   },
                   onExit: (ev) {
                     final button = _getButton(ev.buttons);
+                    final modifiers = _getCurrentModifiers();
                     _controller._setPointerButtonState(
                       InAppWebViewPointerEventKind.leave,
                       button,
+                      modifiers: modifiers,
                     );
                     // If any buttons were left in down state when the pointer exited
                     // (e.g. user dragged out of the webview and released outside),
@@ -629,6 +684,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                         _controller._setPointerButtonState(
                           InAppWebViewPointerEventKind.up,
                           btn,
+                          modifiers: modifiers,
                         );
                       }
                       _downButtons.clear();

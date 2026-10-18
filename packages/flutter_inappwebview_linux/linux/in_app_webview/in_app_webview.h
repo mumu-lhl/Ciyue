@@ -270,6 +270,11 @@ class InAppWebView {
   void setScaleFactor(double scale_factor);
   void schedulePendingResize();  // Schedules the debounced WPE resize
 
+  // DOM selection management
+  void clearSelection();
+  void setCurrentModifiers(uint32_t modifiers) { current_modifiers_ = modifiers; }
+  void OnFramePresented(void* egl_image);
+
   // Focus/Activity state management (from WPE view-backend API)
   void setFocused(bool focused);
   void setVisible(bool visible);
@@ -489,13 +494,14 @@ class InAppWebView {
   guint force_resize_source_id_ = 0;
   
   // Buffer rendering for WPEPlatform
-  WPEBuffer* current_buffer_ = nullptr;   // Current frame buffer (borrowed, not owned)
-  void* current_egl_image_ = nullptr;     // EGL image created from current buffer
-  uint32_t current_buffer_width_ = 0;     // Width of current buffer
-  uint32_t current_buffer_height_ = 0;    // Height of current buffer
-  gulong buffer_rendered_handler_ = 0;    // Signal handler ID for buffer-rendered
-  gulong scale_changed_handler_ = 0;      // Signal handler ID for notify::scale-factor
-  mutable std::mutex wpe_buffer_mutex_;   // Mutex for thread-safe buffer access
+  WPEBuffer* current_buffer_ = nullptr;    // Current frame buffer (borrowed, not owned)
+  WPEBuffer* displayed_buffer_ = nullptr;  // Currently displayed/bound buffer
+  void* current_egl_image_ = nullptr;      // EGL image created from current buffer
+  uint32_t current_buffer_width_ = 0;      // Width of current buffer
+  uint32_t current_buffer_height_ = 0;     // Height of current buffer
+  gulong buffer_rendered_handler_ = 0;     // Signal handler ID for buffer-rendered
+  gulong scale_changed_handler_ = 0;       // Signal handler ID for notify::scale-factor
+  mutable std::mutex wpe_buffer_mutex_;    // Mutex for thread-safe buffer access
   // Per-instance (not static): if EGL import fails once it will likely keep
   // failing for this view (e.g. no GPU), but other WebViews should not be affected.
   bool egl_import_failed_permanently_ = false;
@@ -511,6 +517,15 @@ class InAppWebView {
   
   // Current EGL image from WPE (for zero-copy GPU texture sharing).
   ::wpe_fdo_egl_exported_image* exported_image_ = nullptr;
+  // Currently displayed/bound EGL image in Flutter texture.
+  ::wpe_fdo_egl_exported_image* displayed_image_ = nullptr;
+  // Retired images waiting to be released back to WPE on the main loop.
+  std::vector<::wpe_fdo_egl_exported_image*> retired_images_;
+  guint release_idle_source_id_ = 0;
+  bool pending_frame_complete_ = false;
+
+  void ScheduleReleaseImages();
+  void ReleaseRetiredImages();
   
   // Mutex for protecting exported_image_ access from multiple threads
   mutable std::mutex exported_image_mutex_;

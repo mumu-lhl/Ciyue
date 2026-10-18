@@ -117,7 +117,10 @@ static void destroy_pending_egl_images(InAppWebViewEGLTexture* self) {
       g_queue_is_empty(self->pending_destroy_images)) {
     return;
   }
-  // populate() runs with a GL context current, so eglGetCurrentDisplay() is valid.
+#ifdef HAVE_WPE_PLATFORM
+  // WPEPlatform imports EGL images that must be freed via eglDestroyImageKHR.
+  // In legacy WPEBackend-FDO, the EGLImageKHR belongs to wpe_fdo_egl_exported_image
+  // and is managed by WPE. Calling eglDestroyImageKHR destroys WPE's internal handles.
   EGLDisplay display = eglGetCurrentDisplay();
   if (display == EGL_NO_DISPLAY) {
     return;
@@ -136,6 +139,12 @@ static void destroy_pending_egl_images(InAppWebViewEGLTexture* self) {
       eglDestroyImageKHR(display, static_cast<EGLImageKHR>(image));
     }
   }
+#else
+  // For legacy WPEBackend-FDO, clear the queue without calling eglDestroyImageKHR.
+  while (!g_queue_is_empty(self->pending_destroy_images)) {
+    g_queue_pop_head(self->pending_destroy_images);
+  }
+#endif
 }
 
 // Populate callback - called by Flutter to get the OpenGL texture
@@ -214,7 +223,15 @@ static gboolean inappwebview_egl_texture_populate(FlTextureGL* texture, uint32_t
       // The GL texture holds a reference to the new image's buffer.
       destroy_pending_egl_images(self);
 
+      void* bound_image = self->current_egl_image;
+      flutter_inappwebview_plugin::WebViewType* webview = self->webview;
+
       g_mutex_unlock(&self->mutex);
+
+      if (webview != nullptr) {
+        webview->OnFramePresented(bound_image);
+      }
+
       return TRUE;
     }
   }
