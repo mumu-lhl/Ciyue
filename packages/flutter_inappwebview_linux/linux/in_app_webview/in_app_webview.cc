@@ -3214,8 +3214,8 @@ void InAppWebView::SetCursorPos(double x, double y) {
     event.type = wpe_input_pointer_event_type_motion;
     event.time = g_get_monotonic_time() / 1000;  // Convert to milliseconds
     // Scale coordinates from logical to physical pixels
-    event.x = static_cast<int>(x * scale_factor_);
-    event.y = static_cast<int>(y * scale_factor_);
+    event.x = static_cast<int>(std::round(x * scale_factor_));
+    event.y = static_cast<int>(std::round(y * scale_factor_));
     event.state = 0;  // No button state change for motion events
     event.modifiers = current_modifiers_ | button_state_;  // Include pressed button modifiers
     wpe_view_backend_dispatch_pointer_event(wpe_backend_, &event);
@@ -3334,36 +3334,39 @@ void InAppWebView::SetPointerButton(int kind, int button, int clickCount) {
     return;
 
   // Scale coordinates from logical to physical pixels
-  int scaled_x = static_cast<int>(cursor_x_ * scale_factor_);
-  int scaled_y = static_cast<int>(cursor_y_ * scale_factor_);
+  int scaled_x = static_cast<int>(std::round(cursor_x_ * scale_factor_));
+  int scaled_y = static_cast<int>(std::round(cursor_y_ * scale_factor_));
 
-  // Map button: Flutter uses 0=none, 1=primary, 2=secondary, 3=tertiary
-  // WPE/WebKit uses: 1=Left, 2=Right, 3=Middle (see WebEventFactory.cpp)
-  // This is a 1:1 mapping for Flutter -> WPE
+  // Map button: Flutter uses 0=none, 1=primary, 2=secondary, 3=tertiary.
+  // In WebKit's WebEventFactory.cpp (libwpe):
+  //   event->button: 1=Left, 2=Right, 3=Middle
+  //   modifiers bitmask: button1=Left (1<<20), button2=Middle (1<<21), button3=Right (1<<22)
   uint32_t wpe_button;
+  uint32_t button_modifier_bit;
   switch (button) {
     case 1:
-      wpe_button = 1;
-      break;  // Primary -> Left
+      wpe_button = 1;  // Primary -> Left
+      button_modifier_bit = 1u << 20;  // wpe_input_pointer_modifier_button1
+      break;
     case 2:
-      wpe_button = 2;
-      break;  // Secondary -> Right (context menu)
+      wpe_button = 2;  // Secondary -> Right
+      button_modifier_bit = 1u << 22;  // wpe_input_pointer_modifier_button3 (Right)
+      break;
     case 3:
-      wpe_button = 3;
-      break;  // Tertiary -> Middle
+      wpe_button = 3;  // Tertiary -> Middle
+      button_modifier_bit = 1u << 21;  // wpe_input_pointer_modifier_button2 (Middle)
+      break;
     default:
       wpe_button = 1;
-      break;  // Default to primary
+      button_modifier_bit = 1u << 20;
+      break;
   }
 
-  // WPE button modifier bits for tracking pressed buttons in modifiers field
-  // See wpe_input_pointer_modifier_button* in wpe/input.h: button1=1<<20, button2=1<<21,
-  // button3=1<<22
-  const uint32_t button_modifier_bit = 1u << (19 + wpe_button);
+  const auto action = GetWpePointerButtonAction(static_cast<WpePointerEventKind>(kind));
 
-  // First send a motion event to ensure WebKit has the correct cursor position
-  // This is important because the button event needs to know where the click occurred
-  {
+  // Only send a motion event before Press to ensure WebKit has the correct cursor position.
+  // Do NOT send motion right before Release with pressed button modifiers.
+  if (action == WpePointerButtonAction::Press) {
     struct wpe_input_pointer_event motion_event = {};
     motion_event.type = wpe_input_pointer_event_type_motion;
     motion_event.time = g_get_monotonic_time() / 1000;
@@ -3381,11 +3384,16 @@ void InAppWebView::SetPointerButton(int kind, int button, int clickCount) {
   event.y = scaled_y;
   event.button = wpe_button;
 
-  switch (GetWpePointerButtonAction(static_cast<WpePointerEventKind>(kind))) {
+  switch (action) {
     case WpePointerButtonAction::Press:
       event.type = wpe_input_pointer_event_type_button;
       // state=1 means button is pressed (see WebEventFactory: event->state ? MouseDown : MouseUp)
       event.state = 1;
+      // If the button is already down (e.g. a previous UP was lost),
+      // clear the stale state first to avoid confusing WebKit's selection.
+      if (button_state_ & button_modifier_bit) {
+        button_state_ &= ~button_modifier_bit;
+      }
       button_state_ |= button_modifier_bit;
       event.modifiers = current_modifiers_ | button_state_;
       break;
@@ -3393,7 +3401,9 @@ void InAppWebView::SetPointerButton(int kind, int button, int clickCount) {
       event.type = wpe_input_pointer_event_type_button;
       // state=0 means button is released
       event.state = 0;
-      button_state_ &= ~button_modifier_bit;
+      // Clear button state AFTER creating the event, clearing ALL button bits.
+      // If a previous UP was lost, clearing all bits prevents sticky selection.
+      button_state_ = 0;
       event.modifiers = current_modifiers_ | button_state_;
       break;
     case WpePointerButtonAction::Ignore:
@@ -3444,8 +3454,8 @@ void InAppWebView::SetScrollDelta(double dx, double dy) {
     return;
 
   // Scale coordinates from logical to physical pixels
-  int scaled_x = static_cast<int>(cursor_x_ * scale_factor_);
-  int scaled_y = static_cast<int>(cursor_y_ * scale_factor_);
+  int scaled_x = static_cast<int>(std::round(cursor_x_ * scale_factor_));
+  int scaled_y = static_cast<int>(std::round(cursor_y_ * scale_factor_));
 
   // Use the 2D axis event with smooth scrolling for proper pixel-based scrolling
   // The wpe_input_axis_2d_event provides x_axis and y_axis as doubles

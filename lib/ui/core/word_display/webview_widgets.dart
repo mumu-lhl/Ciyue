@@ -684,7 +684,16 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
 (function() {
   if (!document.body) return;
   var lastHeight = 0;
+  var isMouseDown = false;
+  window.addEventListener('mousedown', function() { isMouseDown = true; }, true);
+  window.addEventListener('mouseup', function() {
+    if (isMouseDown) {
+      isMouseDown = false;
+      reportHeight();
+    }
+  }, true);
   function reportHeight() {
+    if (isMouseDown) return;
     var currentHeight = document.body.scrollHeight;
     // Only report if changed by more than 2px to avoid micro-oscillation
     // feedback loops (resize -> relayout -> slightly different height).

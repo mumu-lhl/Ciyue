@@ -3,6 +3,7 @@
 #include <gdk/gdk.h>
 
 #include <atomic>
+#include <cmath>
 #include <cstring>
 
 #include "../utils/flutter.h"
@@ -329,11 +330,9 @@ void CustomPlatformView::HandleMethodCallImpl(FlMethodCall* method_call) {
           }
         }
         webview_->setScaleFactor(scale_factor);
-        // IMPORTANT: GTK/WebKit may already apply the monitor scale factor to
-        // offscreen rendering. Passing physical pixels here can double-scale
-        // the snapshot size. Keep the widget size in logical pixels and use
-        // scaleFactor only for input coordinate conversion.
-        webview_->setSize(static_cast<int>(width), static_cast<int>(height));
+        int physical_width = static_cast<int>(std::round(width * scale_factor));
+        int physical_height = static_cast<int>(std::round(height * scale_factor));
+        webview_->setSize(physical_width, physical_height);
       }
     }
     fl_method_call_respond_success(method_call, nullptr, nullptr);

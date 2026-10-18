@@ -240,11 +240,13 @@ class CustomPlatformViewController
   /// Sends a pointer CANCEL directly, bypassing the _isDisposed check.
   /// Used during dispose() to clear native button state if a drag was in progress.
   Future<void> forceCancelPointerButton(PointerButton button) {
-    return _methodChannel.invokeMethod('setPointerButton', <String, dynamic>{
-      'kind': InAppWebViewPointerEventKind.cancel.index,
-      'button': button.index,
-      'clickCount': 1,
-    }).catchError((_) {});
+    return _methodChannel
+        .invokeMethod('setPointerButton', <String, dynamic>{
+          'kind': InAppWebViewPointerEventKind.cancel.index,
+          'button': button.index,
+          'clickCount': 1,
+        })
+        .catchError((_) {});
   }
 
   /// Indicates whether the specified [button] is currently down with click count.
@@ -483,18 +485,13 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                   }
                   _controller._setCursorPos(ev.localPosition);
                 },
-                onPointerDown: (ev) async {
+                onPointerDown: (ev) {
                   _reportSurfaceSize();
 
                   final needsFocus = !_focusNode.hasFocus;
                   if (needsFocus) {
-                    // IMPORTANT: Set the native focus state BEFORE sending the click
-                    // and AWAIT it to ensure WebKit has processed the focus change.
-                    // Without awaiting, WebKit may receive the click before it has
-                    // the focused activity state, causing the click to only activate
-                    // the view rather than focusing the clicked element.
                     if (_controller.value.isInitialized) {
-                      await _controller._setFocused(true);
+                      unawaited(_controller._setFocused(true));
                     }
                     _focusNode.requestFocus();
                   }
@@ -624,6 +621,18 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                       InAppWebViewPointerEventKind.leave,
                       button,
                     );
+                    // If any buttons were left in down state when the pointer exited
+                    // (e.g. user dragged out of the webview and released outside),
+                    // clear them so native doesn't keep a stuck drag state.
+                    if (ev.buttons == 0 && _downButtons.isNotEmpty) {
+                      for (final btn in _downButtons.values) {
+                        _controller._setPointerButtonState(
+                          InAppWebViewPointerEventKind.up,
+                          btn,
+                        );
+                      }
+                      _downButtons.clear();
+                    }
                   },
                   child: Texture(
                     textureId: _controller._textureId,
@@ -661,15 +670,18 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
   }
 
   void _reportSurfaceSize() async {
-    final box = _key.currentContext?.findRenderObject() as RenderBox?;
-    if (box != null) {
+    final context = _key.currentContext;
+    final box = context?.findRenderObject() as RenderBox?;
+    if (box != null && mounted) {
       await _controller.ready;
-      unawaited(
-        _controller._setSize(
-          box.size,
-          widget.scaleFactor ?? window.devicePixelRatio,
-        ),
-      );
+      final scale =
+          widget.scaleFactor ??
+          (context != null
+              ? (View.maybeOf(context)?.devicePixelRatio ??
+                    MediaQuery.maybeDevicePixelRatioOf(context) ??
+                    1.0)
+              : 1.0);
+      unawaited(_controller._setSize(box.size, scale));
     }
   }
 
