@@ -1566,7 +1566,6 @@ void InAppWebView::loadUrl(const std::string& url) {
   // Reset button state on navigation (see loadData).
   button_state_ = 0;
   current_modifiers_ = 0;
-  resize_deferred_during_drag_ = false;
 
   webkit_web_view_load_uri(webview_, url.c_str());
 }
@@ -1609,7 +1608,6 @@ void InAppWebView::loadData(const std::string& data, const std::string& mime_typ
   // (WebView retention), the stale state would cause sticky selection.
   button_state_ = 0;
   current_modifiers_ = 0;
-  resize_deferred_during_drag_ = false;
 
   GBytes* bytes = g_bytes_new(data.data(), data.size());
   webkit_web_view_load_bytes(webview_, bytes, mime_type.c_str(), encoding.c_str(),
@@ -2816,12 +2814,6 @@ void InAppWebView::setSize(int width, int height) {
   width_ = width;
   height_ = height;
 
-  // Don't resize mid-drag: it disrupts WebKit's selection state.
-  // Defer until the button is released (see SetPointerButton).
-  if (button_state_ != 0) {
-    resize_deferred_during_drag_ = true;
-    return;
-  }
   schedulePendingResize();
 }
 
@@ -3335,11 +3327,6 @@ void InAppWebView::SetPointerButton(int kind, int button, int clickCount) {
   // thinking a drag is in progress, causing sticky selection.
   if (action == WpePointerButtonAction::Release) {
     button_state_ = 0;
-    // If a resize was deferred during the drag, trigger it now.
-    if (resize_deferred_during_drag_) {
-      resize_deferred_during_drag_ = false;
-      schedulePendingResize();
-    }
   }
 
 #elif defined(HAVE_WPE_BACKEND_LEGACY)
