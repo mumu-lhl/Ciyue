@@ -219,6 +219,14 @@ static gboolean inappwebview_egl_texture_populate(FlTextureGL* texture, uint32_t
       
       self->has_new_frame = FALSE;
 
+      // GPU SYNC: Ensure the GL commands (including the EGL image bind above)
+      // have completed before destroying old images and releasing WPE buffers.
+      // Without this, WPE may reuse a DMA-BUF while the GPU is still reading
+      // it, causing tearing/corruption during rapid updates (e.g. text selection
+      // dragging). glFinish() stalls the pipeline but guarantees correctness.
+      // TODO: Replace with EGLSyncKHR fences for async synchronization.
+      glFinish();
+
       // Now that a newer image is bound, it's safe to destroy the older ones.
       // The GL texture holds a reference to the new image's buffer.
       destroy_pending_egl_images(self);
