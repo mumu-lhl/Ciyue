@@ -15,8 +15,9 @@ class AIMarkdown extends StatefulWidget {
 
 class _AIMarkdownState extends State<AIMarkdown> {
   late final AI ai;
-  late Future<String> _requestFuture;
+  late Stream<String> _requestStream;
   bool _isResultReported = false;
+  String _accumulated = "";
 
   @override
   void initState() {
@@ -26,7 +27,25 @@ class _AIMarkdownState extends State<AIMarkdown> {
       model: settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
       apikey: settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
     );
-    _requestFuture = ai.request(widget.prompt);
+    _requestStream = _streamText(widget.prompt);
+  }
+
+  /// Accumulate chunks so the markdown renders progressively.
+  /// Calls [onResult] once with the full text when the stream closes.
+  Stream<String> _streamText(String prompt) async* {
+    final buffer = StringBuffer();
+    await for (final chunk in ai.requestStream(prompt)) {
+      buffer.write(chunk);
+      _accumulated = buffer.toString();
+      yield _accumulated;
+    }
+    final fullText = buffer.toString();
+    if (!_isResultReported) {
+      _isResultReported = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.onResult?.call(fullText);
+      });
+    }
   }
 
   @override
@@ -35,44 +54,37 @@ class _AIMarkdownState extends State<AIMarkdown> {
     if (oldWidget.prompt != widget.prompt) {
       setState(() {
         _isResultReported = false;
-        _requestFuture = ai.request(widget.prompt);
+        _accumulated = "";
+        _requestStream = _streamText(widget.prompt);
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _requestFuture,
+    return StreamBuilder(
+      stream: _requestStream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasData) {
-            if (!_isResultReported) {
-              _isResultReported = true;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                widget.onResult?.call(snapshot.data!);
-              });
-            }
-            return Center(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SelectionArea(child: GptMarkdown(snapshot.data!)),
-                ),
+        if (snapshot.hasData) {
+          return Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SelectionArea(child: GptMarkdown(snapshot.data!)),
               ),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Theme.of(context).colorScheme.error,
-                ),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              snapshot.error.toString(),
+              style: TextStyle(
+                fontSize: 20,
+                color: Theme.of(context).colorScheme.error,
               ),
-            );
-          }
+            ),
+          );
         }
         return const Center(child: CircularProgressIndicator());
       },

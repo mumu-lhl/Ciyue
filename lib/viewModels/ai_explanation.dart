@@ -75,9 +75,16 @@ class AIExplanationModel extends ChangeNotifier {
         .replaceAll(r"$word", word)
         .replaceAll(r"$targetLanguage", targetLanguage);
 
+    final buffer = StringBuffer();
     try {
-      final fullExplanation = await _ai.request(prompt);
-      _explanation = fullExplanation;
+      await for (final chunk in _ai.requestStream(prompt)) {
+        if (!_mounted) return;
+        buffer.write(chunk);
+        _explanation = buffer.toString();
+        _isLoading = false;
+        notifyListeners();
+      }
+      final fullExplanation = buffer.toString();
 
       final existing = await _aiExplanationDao.getAiExplanation(word);
       if (existing != null) {

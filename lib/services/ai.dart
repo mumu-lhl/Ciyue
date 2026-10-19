@@ -36,10 +36,21 @@ class AI {
   Future<String> request(String prompt) async {
     return aiProvider.request(prompt);
   }
+
+  /// Stream the response as text chunks arrive.
+  Stream<String> requestStream(String prompt) {
+    return aiProvider.requestStream(prompt);
+  }
 }
 
 abstract class AIProvider {
   Future<String> request(String prompt);
+
+  /// Stream response text chunks. Default implementation falls back to
+  /// emitting the full response as a single chunk.
+  Stream<String> requestStream(String prompt) async* {
+    yield await request(prompt);
+  }
 }
 
 /// Strip a trailing `/chat/completions` (or similar) to get the OpenAI API
@@ -79,6 +90,24 @@ class GeminiProvider implements AIProvider {
       throw Exception("Error requesting Gemini API: $e");
     }
   }
+
+  @override
+  Stream<String> requestStream(String prompt) async* {
+    try {
+      final stream = _ai.generateStream(
+        model: googleAI.gemini(model),
+        prompt: prompt,
+      );
+      await for (final chunk in stream) {
+        final text = chunk.text;
+        if (text.isNotEmpty) yield text;
+      }
+      // Surface any error from the stream.
+      await stream.onResult;
+    } catch (e) {
+      throw Exception("Error requesting Gemini API: $e");
+    }
+  }
 }
 
 class AnthropicProvider implements AIProvider {
@@ -100,6 +129,23 @@ class AnthropicProvider implements AIProvider {
         prompt: prompt,
       );
       return response.text;
+    } catch (e) {
+      throw Exception("Error requesting Anthropic API: $e");
+    }
+  }
+
+  @override
+  Stream<String> requestStream(String prompt) async* {
+    try {
+      final stream = _ai.generateStream(
+        model: anthropic.model(model),
+        prompt: prompt,
+      );
+      await for (final chunk in stream) {
+        final text = chunk.text;
+        if (text.isNotEmpty) yield text;
+      }
+      await stream.onResult;
     } catch (e) {
       throw Exception("Error requesting Anthropic API: $e");
     }
@@ -145,6 +191,23 @@ class OllamaProvider implements AIProvider {
         prompt: prompt,
       );
       return response.text;
+    } catch (e) {
+      throw Exception("Error requesting Ollama API: $e");
+    }
+  }
+
+  @override
+  Stream<String> requestStream(String prompt) async* {
+    try {
+      final stream = _ai.generateStream(
+        model: openAI.model(model, namespace: "ollama"),
+        prompt: prompt,
+      );
+      await for (final chunk in stream) {
+        final text = chunk.text;
+        if (text.isNotEmpty) yield text;
+      }
+      await stream.onResult;
     } catch (e) {
       throw Exception("Error requesting Ollama API: $e");
     }
@@ -201,6 +264,23 @@ class OpenAICompatibleProvider implements AIProvider {
         prompt: prompt,
       );
       return response.text;
+    } catch (e) {
+      throw Exception("Error requesting $provider API: $e");
+    }
+  }
+
+  @override
+  Stream<String> requestStream(String prompt) async* {
+    try {
+      final stream = _ai.generateStream(
+        model: openAI.model(model, namespace: namespace),
+        prompt: prompt,
+      );
+      await for (final chunk in stream) {
+        final text = chunk.text;
+        if (text.isNotEmpty) yield text;
+      }
+      await stream.onResult;
     } catch (e) {
       throw Exception("Error requesting $provider API: $e");
     }

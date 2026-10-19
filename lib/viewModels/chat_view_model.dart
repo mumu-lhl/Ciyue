@@ -42,14 +42,26 @@ class ChatViewModel extends ChangeNotifier {
 
     textController.clear();
     _messages.add(ChatMessage(text: text, isUser: true));
+    // Placeholder for the streaming AI response.
+    _messages.add(ChatMessage(text: "", isUser: false));
     notifyListeners();
 
+    final buffer = StringBuffer();
     try {
-      final response = await _ai.request(text);
-      _messages.add(ChatMessage(text: response, isUser: false));
+      await for (final chunk in _ai.requestStream(text)) {
+        buffer.write(chunk);
+        _messages[_messages.length - 1] = ChatMessage(
+          text: buffer.toString(),
+          isUser: false,
+        );
+        notifyListeners();
+      }
     } catch (e) {
-      _messages.add(ChatMessage(text: "Error: $e", isUser: false));
+      _messages[_messages.length - 1] = ChatMessage(
+        text: "Error: $e",
+        isUser: false,
+      );
+      notifyListeners();
     }
-    notifyListeners();
   }
 }
