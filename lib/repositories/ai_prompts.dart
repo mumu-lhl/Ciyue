@@ -5,6 +5,9 @@ class AIPrompts with ChangeNotifier {
   late String _explainPrompt;
   late String _translatePrompt;
   late String _writingCheckPrompt;
+  late String _quizPrompt;
+  late String _vocabularyPrompt;
+  late String _scenarioPrompt;
 
   static const String defaultExplainPrompt = """Explain the word "\$word" in detail using markdown. Structure your response with these sections:
 
@@ -41,6 +44,28 @@ Example:
 Text:
 \$text""";
 
+  static const String defaultQuizPrompt =
+      """Generate a vocabulary quiz with \$count multiple-choice questions using these words: \$words.
+For each word, ask for its meaning in \$targetLanguage. Provide 4 options per question (1 correct, 3 plausible but incorrect distractors).
+
+Respond with ONLY a JSON object, no other text:
+{"questions": [{"word": "...", "question": "...", "options": ["...", "...", "...", "..."], "correctIndex": 0, "explanation": "..."}]}
+
+The explanation should briefly explain the correct meaning in \$targetLanguage.""";
+
+  static const String defaultVocabularyPrompt =
+      """From the following text, extract up to \$count vocabulary words that are worth learning for a language learner. Focus on \$difficulty words/phrases. Skip basic words.
+
+Text:
+\$text
+
+Respond with ONLY a JSON array of strings, no other text. Example: ["word1", "word2"]""";
+
+  static const String defaultScenarioPrompt =
+      """You are roleplaying the following scenario: \$scenarioTitle.
+\$scenarioDescription
+Stay in character throughout the conversation. Gently correct the user's language mistakes and suggest more natural expressions when appropriate.""";
+
   AIPrompts() {
     _explainPrompt =
         prefs.getString("customExplainPrompt") ?? defaultExplainPrompt;
@@ -49,11 +74,19 @@ Text:
     _writingCheckPrompt =
         prefs.getString("customWritingCheckPrompt") ??
         defaultWritingCheckPrompt;
+    _quizPrompt = prefs.getString("customQuizPrompt") ?? defaultQuizPrompt;
+    _vocabularyPrompt =
+        prefs.getString("customVocabularyPrompt") ?? defaultVocabularyPrompt;
+    _scenarioPrompt =
+        prefs.getString("customScenarioPrompt") ?? defaultScenarioPrompt;
   }
 
   String get explainPrompt => _explainPrompt;
   String get translatePrompt => _translatePrompt;
   String get writingCheckPrompt => _writingCheckPrompt;
+  String get quizPrompt => _quizPrompt;
+  String get vocabularyPrompt => _vocabularyPrompt;
+  String get scenarioPrompt => _scenarioPrompt;
 
   Future<void> setExplainPrompt(String prompt) async {
     _explainPrompt = prompt;
@@ -85,6 +118,39 @@ Text:
   Future<void> resetWritingCheckPrompt() async {
     _writingCheckPrompt = defaultWritingCheckPrompt;
     await prefs.remove("customWritingCheckPrompt");
+    notifyListeners();
+  }
+
+  Future<void> setQuizPrompt(String prompt) async {
+    _quizPrompt = prompt;
+    await prefs.setString("customQuizPrompt", prompt);
+  }
+
+  Future<void> resetQuizPrompt() async {
+    _quizPrompt = defaultQuizPrompt;
+    await prefs.remove("customQuizPrompt");
+    notifyListeners();
+  }
+
+  Future<void> setVocabularyPrompt(String prompt) async {
+    _vocabularyPrompt = prompt;
+    await prefs.setString("customVocabularyPrompt", prompt);
+  }
+
+  Future<void> resetVocabularyPrompt() async {
+    _vocabularyPrompt = defaultVocabularyPrompt;
+    await prefs.remove("customVocabularyPrompt");
+    notifyListeners();
+  }
+
+  Future<void> setScenarioPrompt(String prompt) async {
+    _scenarioPrompt = prompt;
+    await prefs.setString("customScenarioPrompt", prompt);
+  }
+
+  Future<void> resetScenarioPrompt() async {
+    _scenarioPrompt = defaultScenarioPrompt;
+    await prefs.remove("customScenarioPrompt");
     notifyListeners();
   }
 }

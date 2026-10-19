@@ -1,3 +1,4 @@
+import "package:ciyue/repositories/chat_scenarios.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/chat_view_model.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -126,6 +127,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildEmptyState(BuildContext context) {
     final theme = Theme.of(context);
     final locale = AppLocalizations.of(context)!;
+    final scenarioManager = ChatScenarioManager();
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -147,28 +149,42 @@ class _ChatPageState extends State<ChatPage> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          Text(
-            locale.chooseScenario,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                locale.chooseScenario,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              IconButton(
+                iconSize: 18,
+                icon: const Icon(Icons.settings_outlined),
+                tooltip: locale.manageScenarios,
+                onPressed: () => _showScenarioManager(context, scenarioManager),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: [
-              for (final scenario in ChatScenario.presets)
-                ActionChip(
-                  avatar: Icon(
-                    _scenarioIcon(scenario.id),
-                    size: 18,
+          ListenableBuilder(
+            listenable: scenarioManager,
+            builder: (context, _) => Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                for (final scenario in scenarioManager.allScenarios)
+                  ActionChip(
+                    avatar: Icon(
+                      _scenarioIcon(scenario.id),
+                      size: 18,
+                    ),
+                    label: Text(_scenarioTitle(context, scenario)),
+                    onPressed: () => _viewModel.startScenario(scenario),
                   ),
-                  label: Text(_scenarioTitle(context, scenario)),
-                  onPressed: () => _viewModel.startScenario(scenario),
-                ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -191,6 +207,10 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   String _scenarioTitle(BuildContext context, ChatScenario scenario) {
+    // Custom scenarios store the actual title in titleKey.
+    if (scenario.id.startsWith("custom_")) {
+      return scenario.titleKey;
+    }
     final locale = AppLocalizations.of(context)!;
     switch (scenario.id) {
       case "restaurant":
@@ -204,6 +224,16 @@ class _ChatPageState extends State<ChatPage> {
       default:
         return locale.scenarioDaily;
     }
+  }
+
+  void _showScenarioManager(
+    BuildContext context,
+    ChatScenarioManager manager,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => _ScenarioManagerDialog(manager: manager),
+    );
   }
 
   Widget _buildInputArea(BuildContext context, ChatViewModel model) {
@@ -528,6 +558,152 @@ class _VocabularyDialogState extends State<_VocabularyDialog> {
           child: Text(locale.close),
         ),
       ],
+    );
+  }
+}
+
+class _ScenarioManagerDialog extends StatelessWidget {
+  final ChatScenarioManager manager;
+
+  const _ScenarioManagerDialog({required this.manager});
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(locale.manageScenarios),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 400,
+        child: ListenableBuilder(
+          listenable: manager,
+          builder: (context, _) => ListView(
+            children: [
+              Text(
+                locale.presetScenarios,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              for (final s in ChatScenario.presets)
+                SwitchListTile(
+                  title: Text(_presetTitle(context, s)),
+                  value: !manager.isPresetDisabled(s.id),
+                  onChanged: (v) => manager.setPresetDisabled(s.id, !v),
+                ),
+              const Divider(),
+              Text(
+                locale.customScenarios,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              for (final s in manager.customScenarios)
+                ListTile(
+                  title: Text(s.titleKey),
+                  subtitle: Text(
+                    s.systemPrompt,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: () => _showEditDialog(context, manager, s),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => manager.deleteScenario(s.id),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => _showEditDialog(context, manager, null),
+          child: Text(locale.addScenario),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(locale.close),
+        ),
+      ],
+    );
+  }
+
+  String _presetTitle(BuildContext context, ChatScenario s) {
+    final locale = AppLocalizations.of(context)!;
+    switch (s.id) {
+      case "restaurant":
+        return locale.scenarioRestaurant;
+      case "travel":
+        return locale.scenarioTravel;
+      case "business":
+        return locale.scenarioBusiness;
+      case "shopping":
+        return locale.scenarioShopping;
+      default:
+        return locale.scenarioDaily;
+    }
+  }
+
+  void _showEditDialog(
+    BuildContext context,
+    ChatScenarioManager manager,
+    ChatScenario? existing,
+  ) {
+    final titleController = TextEditingController(text: existing?.titleKey ?? "");
+    final descController = TextEditingController(
+      text: existing?.systemPrompt ?? "",
+    );
+    final locale = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          existing == null ? locale.addScenario : locale.editScenario,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: InputDecoration(labelText: locale.scenarioTitle),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: descController,
+              decoration: InputDecoration(
+                labelText: locale.scenarioDescription,
+              ),
+              maxLines: 4,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(locale.close),
+          ),
+          FilledButton(
+            onPressed: () {
+              final title = titleController.text.trim();
+              final desc = descController.text.trim();
+              if (title.isNotEmpty && desc.isNotEmpty) {
+                if (existing == null) {
+                  manager.addScenario(title, desc);
+                } else {
+                  manager.updateScenario(existing.id, title, desc);
+                }
+                Navigator.pop(context);
+              }
+            },
+            child: Text(locale.save),
+          ),
+        ],
+      ),
     );
   }
 }

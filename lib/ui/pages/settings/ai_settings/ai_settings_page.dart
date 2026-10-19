@@ -6,6 +6,7 @@ import "package:ciyue/ui/core/title_text.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/ai_api_url.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/api_key_setting.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/explain_word_setting.dart";
+import "package:ciyue/ui/pages/settings/ai_settings/learning_settings.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/model_setting.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/prompt_setting.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/provider_setting.dart";
@@ -37,6 +38,21 @@ class AiSettingsPage extends ConsumerWidget {
     final writingCheckPrompt = ref.watch(
       aiSettingsViewModelProvider.select(
         (AISettingsViewModel vm) => vm.aiPrompts.writingCheckPrompt,
+      ),
+    );
+    final quizPrompt = ref.watch(
+      aiSettingsViewModelProvider.select(
+        (AISettingsViewModel vm) => vm.aiPrompts.quizPrompt,
+      ),
+    );
+    final vocabularyPrompt = ref.watch(
+      aiSettingsViewModelProvider.select(
+        (AISettingsViewModel vm) => vm.aiPrompts.vocabularyPrompt,
+      ),
+    );
+    final scenarioPrompt = ref.watch(
+      aiSettingsViewModelProvider.select(
+        (AISettingsViewModel vm) => vm.aiPrompts.scenarioPrompt,
       ),
     );
 
@@ -112,6 +128,49 @@ class AiSettingsPage extends ConsumerWidget {
                           .writingCheckPromptHelper,
                       onChanged: viewModel.aiPrompts.setWritingCheckPrompt,
                       onReset: viewModel.aiPrompts.resetWritingCheckPrompt,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Learning Settings
+                    TitleText(
+                      AppLocalizations.of(context)!.learningSettings,
+                    ),
+                    const SizedBox(height: 6),
+                    const SettingsFieldCard(child: LearningSettings()),
+                    const SizedBox(height: 24),
+
+                    // Quiz Prompt Setting
+                    PromptSetting(
+                      title: AppLocalizations.of(context)!.quizPromptTitle,
+                      initialValue: quizPrompt,
+                      helperText: AppLocalizations.of(context)!
+                          .quizPromptHelper,
+                      onChanged: viewModel.aiPrompts.setQuizPrompt,
+                      onReset: viewModel.aiPrompts.resetQuizPrompt,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Vocabulary Prompt Setting
+                    PromptSetting(
+                      title: AppLocalizations.of(context)!
+                          .vocabularyPromptTitle,
+                      initialValue: vocabularyPrompt,
+                      helperText: AppLocalizations.of(context)!
+                          .vocabularyPromptHelper,
+                      onChanged: viewModel.aiPrompts.setVocabularyPrompt,
+                      onReset: viewModel.aiPrompts.resetVocabularyPrompt,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Scenario Prompt Setting
+                    PromptSetting(
+                      title: AppLocalizations.of(context)!
+                          .scenarioPromptTitle,
+                      initialValue: scenarioPrompt,
+                      helperText: AppLocalizations.of(context)!
+                          .scenarioPromptHelper,
+                      onChanged: viewModel.aiPrompts.setScenarioPrompt,
+                      onReset: viewModel.aiPrompts.resetScenarioPrompt,
                     ),
                   ],
                 ),

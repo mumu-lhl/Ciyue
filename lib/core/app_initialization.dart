@@ -385,6 +385,16 @@ const preferencesAllowList = <String>{
   "customExplainPrompt",
   "customTranslatePrompt",
   "customWritingCheckPrompt",
+  "customQuizPrompt",
+  "customVocabularyPrompt",
+  "customScenarioPrompt",
+
+  // Learning Settings
+  "quizQuestionCount",
+  "vocabularyExtractCount",
+  "vocabularyDifficulty",
+  "customChatScenarios",
+  "disabledPresetScenarios",
 
   "tabBarPosition",
   "showSearchBarInWordDisplay",

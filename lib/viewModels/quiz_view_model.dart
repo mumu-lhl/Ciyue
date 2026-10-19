@@ -5,6 +5,7 @@ import "dart:ui" as ui;
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
+import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:material_ui/material_ui.dart";
@@ -58,7 +59,7 @@ class QuizViewModel extends ChangeNotifier {
 
   bool _mounted = true;
 
-  static const int questionCount = 5;
+  static const int defaultQuestionCount = 5;
 
   QuizViewModel({WordbookDao? dao})
     : _wordbookDao = dao ?? WordbookDao(mainDatabase),
@@ -68,6 +69,14 @@ class QuizViewModel extends ChangeNotifier {
         apikey:
             settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
       );
+
+  int get questionCount =>
+      prefs.getInt("quizQuestionCount") ?? defaultQuestionCount;
+
+  Future<void> setQuestionCount(int count) async {
+    await prefs.setInt("quizQuestionCount", count);
+    notifyListeners();
+  }
 
   @override
   void dispose() {
@@ -103,8 +112,9 @@ class QuizViewModel extends ChangeNotifier {
       // Pick random words for the quiz.
       final random = math.Random();
       final shuffled = List<WordbookData>.from(allWords)..shuffle(random);
+      final count = questionCount.clamp(1, allWords.length);
       final quizWords = shuffled
-          .take(questionCount.clamp(1, allWords.length))
+          .take(count)
           .map((w) => w.word)
           .toList();
 
@@ -112,14 +122,11 @@ class QuizViewModel extends ChangeNotifier {
           ? ui.PlatformDispatcher.instance.locale.languageCode
           : settings.language!;
 
-      final prompt =
-          """Generate a vocabulary quiz with ${quizWords.length} multiple-choice questions using these words: ${quizWords.join(", ")}.
-For each word, ask for its meaning in $targetLanguage. Provide 4 options per question (1 correct, 3 plausible but incorrect distractors).
-
-Respond with ONLY a JSON object, no other text:
-{"questions": [{"word": "...", "question": "...", "options": ["...", "...", "...", "..."], "correctIndex": 0, "explanation": "..."}]}
-
-The explanation should briefly explain the correct meaning in $targetLanguage.""";
+      final template = AIPrompts().quizPrompt;
+      final prompt = template
+          .replaceAll(r"$count", count.toString())
+          .replaceAll(r"$words", quizWords.join(", "))
+          .replaceAll(r"$targetLanguage", targetLanguage);
 
       final response = await _ai.request(prompt);
       if (!_mounted) return;

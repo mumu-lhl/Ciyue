@@ -2,6 +2,7 @@ import "dart:convert";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/daos.dart";
+import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:material_ui/material_ui.dart";
@@ -114,11 +115,17 @@ class ChatViewModel extends ChangeNotifier {
     _isStreaming = true;
     notifyListeners();
 
+    // Build the system prompt from the customizable template.
+    final template = AIPrompts().scenarioPrompt;
+    final systemPrompt = template
+        .replaceAll(r"$scenarioTitle", _scenario!.titleKey)
+        .replaceAll(r"$scenarioDescription", _scenario!.systemPrompt);
+
     final buffer = StringBuffer();
     try {
       await for (final chunk in _ai.requestStreamWithHistory(
         "Start the roleplay. Greet the user and set the scene in one or two sentences.",
-        history: [ChatTurn(_scenario!.systemPrompt, false)],
+        history: [ChatTurn(systemPrompt, false)],
       )) {
         buffer.write(chunk);
         _messages[_messages.length - 1] = ChatMessage(
@@ -141,13 +148,14 @@ class ChatViewModel extends ChangeNotifier {
   /// Extract vocabulary words from a message using AI.
   /// Returns a list of words worth learning.
   Future<List<String>> extractVocabulary(String messageText) async {
-    final prompt =
-        """From the following text, extract up to 10 vocabulary words that are worth learning for a language learner. Focus on uncommon, academic, or idiomatic words/phrases. Skip basic words.
+    final count = prefs.getInt("vocabularyExtractCount") ?? 10;
+    final difficulty = prefs.getString("vocabularyDifficulty") ?? "uncommon, academic, or idiomatic";
 
-Text:
-$messageText
-
-Respond with ONLY a JSON array of strings, no other text. Example: ["word1", "word2"]""";
+    final template = AIPrompts().vocabularyPrompt;
+    final prompt = template
+        .replaceAll(r"$count", count.toString())
+        .replaceAll(r"$difficulty", difficulty)
+        .replaceAll(r"$text", messageText);
 
     try {
       final response = await _ai.request(prompt);
@@ -190,9 +198,16 @@ Respond with ONLY a JSON array of strings, no other text. Example: ["word1", "wo
 
     // Build history from prior turns (excluding the placeholder).
     // If there's initial context (e.g. a word), prepend it as a system hint.
-    // If in a scenario, prepend the scenario system prompt.
+    // If in a scenario, prepend the scenario system prompt from the template.
+    String? scenarioSystemPrompt;
+    if (_scenario != null) {
+      final template = AIPrompts().scenarioPrompt;
+      scenarioSystemPrompt = template
+          .replaceAll(r"$scenarioTitle", _scenario!.titleKey)
+          .replaceAll(r"$scenarioDescription", _scenario!.systemPrompt);
+    }
     final history = [
-      if (_scenario != null) ChatTurn(_scenario!.systemPrompt, false),
+      if (scenarioSystemPrompt != null) ChatTurn(scenarioSystemPrompt, false),
       for (final m in _messages.sublist(0, _messages.length - 2))
         ChatTurn(m.text, m.isUser),
     ];
