@@ -1513,10 +1513,10 @@ packages:
     dependency: transitive
     description:
       name: sembast
-      sha256: a976f04d492b82b06c74b3c654795ca5bbf9b670468081a339f6035f121359a3
+      sha256: "05da81104e6d4a1ecbeb9aa92062231620d360c8bd9303b82495842c4d92632b"
       url: "https://pub.dev"
     source: hosted
-    version: "3.8.11"
+    version: "3.9.0"
   sembast_web:
     dependency: transitive
     description:
@@ -1641,26 +1641,26 @@ packages:
     dependency: "direct main"
     description:
       name: simple_secure_storage
-      sha256: "4ed368264661a132b6232ca72d5938755a960d4e2560b406a3cb3ed72d279128"
+      sha256: ed3957b7c6d33b03a5443aa509b2c80b0f15d8764f0851a069d33ca583386e06
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.2"
+    version: "0.4.3"
   simple_secure_storage_android:
     dependency: transitive
     description:
       name: simple_secure_storage_android
-      sha256: "50fb27267755843af039da116d0e545f313ae329ef8838101880802259e0f741"
+      sha256: "447dd1a995a5fe17c6dacab4ef7a11b441214c25edc446506cbbbc5256f2bf4d"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.1"
+    version: "0.3.2"
   simple_secure_storage_darwin:
     dependency: transitive
     description:
       name: simple_secure_storage_darwin
-      sha256: a87ed5ee90162048386a9a178840a222d2002e6833771f92f4e95681a89767a2
+      sha256: "501f5b1862367004c2c1a2752fa23f202d90f6c423a64a58b0bbd5185665ea58"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.3"
+    version: "0.2.4"
   simple_secure_storage_linux:
     dependency: "direct overridden"
     description:
@@ -1672,26 +1672,26 @@ packages:
     dependency: transitive
     description:
       name: simple_secure_storage_platform_interface
-      sha256: "04fd4ce4c2b97c01a12eba46f51e3075a793d11f13340d06a64eb9b45a463ca5"
+      sha256: eddd4614498cc93ed6f50ef7a3de090ee19dfe28d11b665b4e745495401b436e
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.3"
+    version: "0.2.4"
   simple_secure_storage_web:
     dependency: transitive
     description:
       name: simple_secure_storage_web
-      sha256: a390490e22056b7a404ed22e124e4ef0bab9ffd09d9d1f318f786c61fac91ea8
+      sha256: c6442512409374790738546cbec031e41343085d728691001f34ca380ddf87a3
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.0"
+    version: "0.3.1"
   simple_secure_storage_windows:
     dependency: transitive
     description:
       name: simple_secure_storage_windows
-      sha256: cf31d2a97c26cf854aeb3c9774cd253f6600fb3fdfc6d807d480afae678cef10
+      sha256: "641ddc2224955bf6b0e6f4d7046a4cdfa3ff1d3bdbf391379549c2d9ba390a65"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.2"
+    version: "0.3.3"
   sky_engine:
     dependency: transitive
     description: flutter
