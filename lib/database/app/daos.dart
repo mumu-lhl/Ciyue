@@ -551,8 +551,10 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   }
 
   /// Count words grouped by day in SQL (not full table pull + Dart aggregation).
+  /// Grouped by *local* day so 00:00–08:00 entries in UTC+8 land on the right
+  /// calendar day, matching the Dart-side fallback in StatsViewModel.
   Future<Map<DateTime, int>> countWordsByDay() async {
-    final day = wordbook.createdAt.date;
+    final day = wordbook.createdAt.modify(DateTimeModifier.localTime()).date;
     final count = wordbook.word.count();
     final query = selectOnly(wordbook)
       ..addColumns([day, count])
@@ -1061,9 +1063,9 @@ class OpenRecordsDao extends DatabaseAccessor<AppDatabase>
     return select(openRecords).get();
   }
 
-  /// Count records grouped by day in SQL.
+  /// Count records grouped by *local* day (see countWordsByDay).
   Future<Map<DateTime, int>> countByDay() async {
-    final day = openRecords.createdAt.date;
+    final day = openRecords.createdAt.modify(DateTimeModifier.localTime()).date;
     final count = openRecords.word.count();
     final query = selectOnly(openRecords)
       ..addColumns([day, count])

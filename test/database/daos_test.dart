@@ -7,6 +7,7 @@ import "package:flutter_test/flutter_test.dart";
 void main() {
   late AppDatabase database;
   late WordbookDao wordbookDao;
+  late OpenRecordsDao openRecordsDao;
   late TranslateHistoryDao translateHistoryDao;
   late WritingCheckHistoryDao writingCheckHistoryDao;
 
@@ -14,6 +15,7 @@ void main() {
     // Use an in-memory database for testing
     database = AppDatabase(NativeDatabase.memory());
     wordbookDao = WordbookDao(database);
+    openRecordsDao = OpenRecordsDao(database);
     translateHistoryDao = TranslateHistoryDao(database);
     writingCheckHistoryDao = WritingCheckHistoryDao(database);
   });
@@ -23,6 +25,21 @@ void main() {
   });
 
   group("WordbookDao", () {
+    test("countWordsByDay groups by local day", () async {
+      await wordbookDao.addWord("apple");
+      await wordbookDao.addWord("banana");
+
+      final counts = await wordbookDao.countWordsByDay();
+
+      // Both words were just added, so they must land in today's *local*
+      // day bucket (SQL used to group by UTC day, misfiling 00:00–08:00
+      // entries for UTC+8 users).
+      final now = DateTime.now();
+      final today = DateTime.utc(now.year, now.month, now.day);
+      expect(counts.length, 1);
+      expect(counts[today], 2);
+    });
+
     test("addAllWords should avoid duplicates based on word and tag", () async {
       // 1. Insert an initial record
       await wordbookDao.addWord("apple", tag: 1);
@@ -56,6 +73,21 @@ void main() {
       // Verify new records were added
       expect(allWords.where((w) => w.word == "apple" && w.tag == 2).length, 1);
       expect(allWords.where((w) => w.word == "banana").length, 1);
+    });
+  });
+
+  group("OpenRecordsDao", () {
+    test("countByDay groups by local day", () async {
+      await openRecordsDao.add("apple");
+      await openRecordsDao.add("banana");
+
+      final counts = await openRecordsDao.countByDay();
+
+      // Same local-day bucketing contract as WordbookDao.countWordsByDay.
+      final now = DateTime.now();
+      final today = DateTime.utc(now.year, now.month, now.day);
+      expect(counts.length, 1);
+      expect(counts[today], 2);
     });
   });
 
