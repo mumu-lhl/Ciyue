@@ -1,5 +1,6 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/ui/pages/chat/chat.dart";
+import "package:ciyue/ui/pages/quiz/quiz_page.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check_history.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check_settings.dart";
@@ -194,6 +195,7 @@ final router = GoRouter(
         return ChatPage(initialContext: word);
       },
     ),
+    GoRoute(path: "/quiz", builder: (context, state) => const QuizPage()),
     GoRoute(
       path: "/settings/wordbook_stats",
       builder: (context, state) => const WordbookStatsPage(),

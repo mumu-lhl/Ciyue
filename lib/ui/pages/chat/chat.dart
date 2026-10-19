@@ -58,12 +58,20 @@ class _ChatPageState extends State<ChatPage> {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              widget.initialContext != null
+              model.scenario != null
+                  ? _scenarioTitle(context, model.scenario!)
+                  : widget.initialContext != null
                   ? "${locale.aiChat} - ${widget.initialContext}"
                   : locale.aiChat,
             ),
             actions: [
-              if (model.messages.isNotEmpty)
+              if (model.scenario != null)
+                IconButton(
+                  tooltip: locale.exitScenario,
+                  icon: const Icon(Icons.exit_to_app),
+                  onPressed: model.clearChat,
+                ),
+              if (model.messages.isNotEmpty && model.scenario == null)
                 IconButton(
                   tooltip: locale.clearChat,
                   icon: const Icon(Icons.delete_outline),
@@ -99,6 +107,8 @@ class _ChatPageState extends State<ChatPage> {
                               return ChatBubble(
                                 message: message.text,
                                 isUser: message.isUser,
+                                onExtractVocabulary: model.extractVocabulary,
+                                onSaveWord: model.saveWordToWordbook,
                               );
                             },
                           ),
@@ -116,7 +126,8 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildEmptyState(BuildContext context) {
     final theme = Theme.of(context);
     final locale = AppLocalizations.of(context)!;
-    return Center(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -135,9 +146,64 @@ class _ChatPageState extends State<ChatPage> {
             ),
             textAlign: TextAlign.center,
           ),
+          const SizedBox(height: 24),
+          Text(
+            locale.chooseScenario,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              for (final scenario in ChatScenario.presets)
+                ActionChip(
+                  avatar: Icon(
+                    _scenarioIcon(scenario.id),
+                    size: 18,
+                  ),
+                  label: Text(_scenarioTitle(context, scenario)),
+                  onPressed: () => _viewModel.startScenario(scenario),
+                ),
+            ],
+          ),
         ],
       ),
     );
+  }
+
+  IconData _scenarioIcon(String id) {
+    switch (id) {
+      case "restaurant":
+        return Icons.restaurant;
+      case "travel":
+        return Icons.flight;
+      case "business":
+        return Icons.business_center;
+      case "shopping":
+        return Icons.shopping_bag;
+      default:
+        return Icons.chat;
+    }
+  }
+
+  String _scenarioTitle(BuildContext context, ChatScenario scenario) {
+    final locale = AppLocalizations.of(context)!;
+    switch (scenario.id) {
+      case "restaurant":
+        return locale.scenarioRestaurant;
+      case "travel":
+        return locale.scenarioTravel;
+      case "business":
+        return locale.scenarioBusiness;
+      case "shopping":
+        return locale.scenarioShopping;
+      default:
+        return locale.scenarioDaily;
+    }
   }
 
   Widget _buildInputArea(BuildContext context, ChatViewModel model) {
@@ -269,8 +335,16 @@ class _TypingIndicatorState extends State<_TypingIndicator>
 class ChatBubble extends StatelessWidget {
   final String message;
   final bool isUser;
+  final Future<List<String>> Function(String)? onExtractVocabulary;
+  final Future<bool> Function(String)? onSaveWord;
 
-  const ChatBubble({super.key, required this.message, required this.isUser});
+  const ChatBubble({
+    super.key,
+    required this.message,
+    required this.isUser,
+    this.onExtractVocabulary,
+    this.onSaveWord,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -318,29 +392,142 @@ class ChatBubble extends StatelessWidget {
                   ),
                 ),
               if (!isUser && message.isNotEmpty)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    iconSize: 16,
-                    visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.copy),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: message));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            AppLocalizations.of(context)!.copied,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      iconSize: 16,
+                      visualDensity: VisualDensity.compact,
+                      tooltip: "Extract vocabulary",
+                      icon: const Icon(Icons.school_outlined),
+                      onPressed: () {
+                        if (onExtractVocabulary != null &&
+                            onSaveWord != null) {
+                          _showVocabularyDialog(
+                            context,
+                            message,
+                            onExtractVocabulary!,
+                            onSaveWord!,
+                          );
+                        }
+                      },
+                    ),
+                    IconButton(
+                      iconSize: 16,
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.copy),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: message));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              AppLocalizations.of(context)!.copied,
+                            ),
+                            duration: const Duration(seconds: 1),
                           ),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+void _showVocabularyDialog(
+  BuildContext context,
+  String message,
+  Future<List<String>> Function(String) onExtract,
+  Future<bool> Function(String) onSave,
+) {
+  showDialog(
+    context: context,
+    builder: (context) => _VocabularyDialog(
+      message: message,
+      onExtract: onExtract,
+      onSave: onSave,
+    ),
+  );
+}
+
+class _VocabularyDialog extends StatefulWidget {
+  final String message;
+  final Future<List<String>> Function(String) onExtract;
+  final Future<bool> Function(String) onSave;
+
+  const _VocabularyDialog({
+    required this.message,
+    required this.onExtract,
+    required this.onSave,
+  });
+
+  @override
+  State<_VocabularyDialog> createState() => _VocabularyDialogState();
+}
+
+class _VocabularyDialogState extends State<_VocabularyDialog> {
+  List<String>? _words;
+  final Set<String> _saved = {};
+
+  @override
+  void initState() {
+    super.initState();
+    widget.onExtract(widget.message).then((words) {
+      if (mounted) {
+        setState(() => _words = words);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(locale.extractVocabulary),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: _words == null
+            ? const Center(child: CircularProgressIndicator())
+            : _words!.isEmpty
+            ? Text(locale.noVocabularyFound)
+            : Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final word in _words!)
+                    FilterChip(
+                      label: Text(word),
+                      selected: _saved.contains(word),
+                      onSelected: (selected) async {
+                        if (selected) {
+                          final messenger = ScaffoldMessenger.of(context);
+                          final ok = await widget.onSave(word);
+                          if (ok && mounted) {
+                            setState(() => _saved.add(word));
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(locale.savedToWordbook),
+                                duration: const Duration(seconds: 1),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                ],
+              ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(locale.close),
+        ),
+      ],
     );
   }
 }

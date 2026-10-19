@@ -1,7 +1,9 @@
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:go_router/go_router.dart";
 
 import "dialogs.dart";
 
@@ -34,6 +36,11 @@ class _NormalActions extends ConsumerWidget {
 
     return Row(
       children: [
+        IconButton(
+          tooltip: AppLocalizations.of(context)!.wordQuiz,
+          icon: const Icon(Icons.quiz_outlined),
+          onPressed: () => context.push("/quiz"),
+        ),
         if (isDesktop) ...[
           IconButton(
             tooltip: "Search",
