@@ -369,6 +369,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           ],
         ],
         IconButton(
+          tooltip: locale.aiChat,
+          icon: const Icon(Icons.chat_bubble_outline),
+          onPressed: () => context.push("/chat?word=${Uri.encodeComponent(widget.word)}"),
+        ),
+        IconButton(
           tooltip: locale.copy,
           icon: const Icon(Icons.copy),
           onPressed: () => app_utils.addToClipboard(context, widget.word),

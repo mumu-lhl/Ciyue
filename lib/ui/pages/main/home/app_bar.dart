@@ -4,6 +4,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:go_router/go_router.dart";
 
 import "more_button.dart";
 import "search.dart";
@@ -59,6 +60,11 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
         title: searchBar,
         automaticallyImplyLeading: settings.showSidebarIcon && !isDesktop,
         actions: [
+          IconButton(
+            tooltip: AppLocalizations.of(context)!.aiChat,
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () => context.push("/chat"),
+          ),
           const GroupSelectorButton(),
           if (settings.showMoreOptionsButton) const MoreButton(),
         ],

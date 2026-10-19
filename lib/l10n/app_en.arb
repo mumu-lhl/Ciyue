@@ -356,7 +356,11 @@
   "@cloudSyncSftpPrivateKey": {},
   "cloudSyncSftpPrivateKeySelected": "Private key selected: {name}",
   "@cloudSyncSftpPrivateKeySelected": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "cloudSyncSftpRemovePrivateKey": "Remove key",
   "@cloudSyncSftpRemovePrivateKey": {},
@@ -396,7 +400,11 @@
   "@cloudSyncDisconnect": {},
   "cloudSyncSavedProfile": "Connected to {provider}",
   "@cloudSyncSavedProfile": {
-    "placeholders": { "provider": { "type": "String" } }
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
   },
   "cloudSyncPreviewHeading": "Sync preview",
   "@cloudSyncPreviewHeading": {},
@@ -405,46 +413,76 @@
   "cloudSyncPreviewIntro": "Review the contents before syncing to {folder}.",
   "@cloudSyncPreviewIntro": {
     "placeholders": {
-      "folder": { "type": "String" }
+      "folder": {
+        "type": "String"
+      }
     }
   },
   "cloudSyncLocalSummary": "This device: {words} words, {tags} tags, {cards} cards, {reviews} reviews",
   "@cloudSyncLocalSummary": {
     "placeholders": {
-      "words": { "type": "int" },
-      "tags": { "type": "int" },
-      "cards": { "type": "int" },
-      "reviews": { "type": "int" }
+      "words": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
     }
   },
   "cloudSyncRemoteSummary": "Cloud: {words} words, {tags} tags, {cards} cards, {reviews} reviews",
   "@cloudSyncRemoteSummary": {
     "placeholders": {
-      "words": { "type": "int" },
-      "tags": { "type": "int" },
-      "cards": { "type": "int" },
-      "reviews": { "type": "int" }
+      "words": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
     }
   },
   "cloudSyncMergedSummary": "After sync: {words} words, {tags} tags, {cards} cards, {reviews} reviews",
   "@cloudSyncMergedSummary": {
     "placeholders": {
-      "words": { "type": "int" },
-      "tags": { "type": "int" },
-      "cards": { "type": "int" },
-      "reviews": { "type": "int" }
+      "words": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
     }
   },
   "cloudSyncRemoteDevices": "Remote devices: {count}",
   "@cloudSyncRemoteDevices": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "cloudSyncConflicts": "Conflicts found: {count}. Sync will preserve the changes and will not apply data until conflicts are resolved.",
   "@cloudSyncConflicts": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "cloudSyncNoConflicts": "No conflicts detected.",
@@ -464,8 +502,12 @@
   "cloudSyncDictionaryDetails": "{files} files · {size}",
   "@cloudSyncDictionaryDetails": {
     "placeholders": {
-      "files": { "type": "int" },
-      "size": { "type": "String" }
+      "files": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
     }
   },
   "cloudSyncSyncComplete": "Sync complete.",
@@ -653,9 +695,15 @@
   "flashcardsOverviewStats": "{due} due · {newCards} new · {done} done",
   "@flashcardsOverviewStats": {
     "placeholders": {
-      "due": {"type": "int"},
-      "newCards": {"type": "int"},
-      "done": {"type": "int"}
+      "due": {
+        "type": "int"
+      },
+      "newCards": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
     }
   },
   "flashcardsStudy": "Study",
@@ -677,19 +725,25 @@
   "flashcardsDaysShort": "{days}d",
   "@flashcardsDaysShort": {
     "placeholders": {
-      "days": {"type": "int"}
+      "days": {
+        "type": "int"
+      }
     }
   },
   "flashcardsHoursShort": "{hours}h",
   "@flashcardsHoursShort": {
     "placeholders": {
-      "hours": {"type": "int"}
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "flashcardsMinutesShort": "{minutes}m",
   "@flashcardsMinutesShort": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "flashcardsNewCardsPerDay": "New cards per day",
@@ -715,13 +769,17 @@
   "flashcardsCardsReviewed": "{count} cards reviewed",
   "@flashcardsCardsReviewed": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "flashcardsMinutes": "{minutes} min",
   "@flashcardsMinutes": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "flashcardsDone": "Done",
@@ -729,8 +787,25 @@
   "flashcardsError": "Error: {error}",
   "@flashcardsError": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
-  }
+  },
+  "aiChat": "AI Chat",
+  "@aiChat": {},
+  "typeMessage": "Type a message...",
+  "@typeMessage": {},
+  "startConversation": "Start a conversation with AI",
+  "@startConversation": {},
+  "askAboutWord": "Ask AI about \"{word}\"",
+  "@askAboutWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "clearChat": "Clear chat",
+  "@clearChat": {}
 }
-

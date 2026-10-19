@@ -187,7 +187,13 @@ final router = GoRouter(
       path: "/settings/logs",
       builder: (context, state) => const LogsPage(),
     ),
-    GoRoute(path: "/chat", builder: (context, state) => const ChatPage()),
+    GoRoute(
+      path: "/chat",
+      builder: (context, state) {
+        final word = state.uri.queryParameters["word"];
+        return ChatPage(initialContext: word);
+      },
+    ),
     GoRoute(
       path: "/settings/wordbook_stats",
       builder: (context, state) => const WordbookStatsPage(),
