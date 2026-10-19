@@ -391,10 +391,12 @@ const preferencesAllowList = <String>{
 
   // Learning Settings
   "quizQuestionCount",
+  "quizQuestionTypes",
   "vocabularyExtractCount",
   "vocabularyDifficulty",
   "customChatScenarios",
   "disabledPresetScenarios",
+  "chatHistory",
 
   "tabBarPosition",
   "showSearchBarInWordDisplay",

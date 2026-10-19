@@ -1077,3 +1077,59 @@ class OpenRecordsDao extends DatabaseAccessor<AppDatabase>
     };
   }
 }
+
+@DriftAccessor(tables: [QuizMistakes])
+class QuizMistakeDao extends DatabaseAccessor<AppDatabase>
+    with _$QuizMistakeDaoMixin {
+  QuizMistakeDao(super.attachedDatabase);
+
+  /// Record a wrong answer. Same word answered wrong again bumps it to the
+  /// top (delete + insert) so review order reflects recency.
+  Future<void> addMistake({
+    required String word,
+    required String questionType,
+    required String question,
+    required String correctAnswer,
+    String? userAnswer,
+  }) {
+    return transaction(() async {
+      await (delete(quizMistakes)..where((t) => t.word.isValue(word))).go();
+      await into(quizMistakes).insert(
+        QuizMistakesCompanion(
+          word: Value(word),
+          questionType: Value(questionType),
+          question: Value(question),
+          correctAnswer: Value(correctAnswer),
+          userAnswer: Value(userAnswer),
+          createdAt: Value(DateTime.now()),
+        ),
+      );
+    });
+  }
+
+  Future<List<QuizMistake>> getMistakes({int? limit}) {
+    final query = select(quizMistakes)
+      ..orderBy([
+        (t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc),
+      ]);
+    if (limit != null) query.limit(limit);
+    return query.get();
+  }
+
+  Future<int> getMistakeCount() async {
+    final count = quizMistakes.id.count();
+    final row = await (selectOnly(
+      quizMistakes,
+    )..addColumns([count])).getSingle();
+    return row.read(count) ?? 0;
+  }
+
+  /// Remove a word from mistakes once the user answers it correctly in review.
+  Future<void> removeMistake(String word) {
+    return (delete(quizMistakes)..where((t) => t.word.isValue(word))).go();
+  }
+
+  Future<void> clearMistakes() {
+    return delete(quizMistakes).go();
+  }
+}

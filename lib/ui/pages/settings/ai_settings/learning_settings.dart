@@ -1,5 +1,8 @@
+import "dart:convert";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/viewModels/quiz_view_model.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
@@ -14,6 +17,7 @@ class _LearningSettingsState extends ConsumerState<LearningSettings> {
   late int _quizCount;
   late int _vocabCount;
   late String _difficulty;
+  late Set<String> _questionTypes;
 
   static const List<String> difficulties = [
     "uncommon, academic, or idiomatic",
@@ -27,8 +31,33 @@ class _LearningSettingsState extends ConsumerState<LearningSettings> {
     super.initState();
     _quizCount = prefs.getInt("quizQuestionCount") ?? 5;
     _vocabCount = prefs.getInt("vocabularyExtractCount") ?? 10;
-    _difficulty =
-        prefs.getString("vocabularyDifficulty") ?? difficulties[0];
+    _difficulty = prefs.getString("vocabularyDifficulty") ?? difficulties[0];
+    _questionTypes = _loadQuestionTypes();
+  }
+
+  Set<String> _loadQuestionTypes() {
+    try {
+      final raw = prefs.getString("quizQuestionTypes");
+      if (raw == null) return Set.of(QuizQuestionType.all);
+      final list = (json.decode(raw) as List).cast<String>();
+      final valid = list.where((t) => QuizQuestionType.all.contains(t)).toSet();
+      return valid.isEmpty ? Set.of(QuizQuestionType.all) : valid;
+    } catch (_) {
+      return Set.of(QuizQuestionType.all);
+    }
+  }
+
+  String _typeLabel(AppLocalizations locale, String type) {
+    switch (type) {
+      case QuizQuestionType.choice:
+        return locale.questionTypeChoice;
+      case QuizQuestionType.spelling:
+        return locale.questionTypeSpelling;
+      case QuizQuestionType.cloze:
+        return locale.questionTypeCloze;
+      default:
+        return type;
+    }
   }
 
   @override
@@ -50,6 +79,39 @@ class _LearningSettingsState extends ConsumerState<LearningSettings> {
             },
           ),
           trailing: Text(_quizCount.toString()),
+        ),
+        const Divider(),
+        ListTile(
+          title: Text(locale.questionTypes),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Wrap(
+              spacing: 8,
+              children: [
+                for (final type in QuizQuestionType.all)
+                  FilterChip(
+                    label: Text(_typeLabel(locale, type)),
+                    selected: _questionTypes.contains(type),
+                    onSelected: (selected) async {
+                      setState(() {
+                        if (selected) {
+                          _questionTypes.add(type);
+                        } else {
+                          // Keep at least one type enabled.
+                          if (_questionTypes.length > 1) {
+                            _questionTypes.remove(type);
+                          }
+                        }
+                      });
+                      await prefs.setString(
+                        "quizQuestionTypes",
+                        json.encode(_questionTypes.toList()),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
         ),
         const Divider(),
         ListTile(

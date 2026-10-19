@@ -129,3 +129,16 @@ class FlashcardReviewLogs extends Table {
   DateTimeColumn get reviewedAt => dateTime()();
   IntColumn get durationMs => integer().nullable()();
 }
+
+/// Wrong answers from vocabulary quizzes, for mistake review.
+@TableIndex(name: "idx_quiz_mistakes_word", columns: {#word})
+class QuizMistakes extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get word => text()();
+  // Question type: "choice", "spelling" or "cloze".
+  TextColumn get questionType => text()();
+  TextColumn get question => text()();
+  TextColumn get correctAnswer => text()();
+  TextColumn get userAnswer => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+}

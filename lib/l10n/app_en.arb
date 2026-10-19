@@ -824,6 +824,40 @@
   "@retryQuiz": {},
   "retry": "Retry",
   "@retry": {},
+  "reviewMistakes": "Review mistakes",
+  "@reviewMistakes": {},
+  "reviewMistakesWithCount": "Review mistakes ({count})",
+  "@reviewMistakesWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mistakesCount": "{count} mistakes",
+  "@mistakesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "questionTypes": "Question types",
+  "@questionTypes": {},
+  "questionTypeChoice": "Multiple choice",
+  "@questionTypeChoice": {},
+  "questionTypeSpelling": "Spelling",
+  "@questionTypeSpelling": {},
+  "questionTypeCloze": "Fill in the blank",
+  "@questionTypeCloze": {},
+  "typeTheWord": "Type the word",
+  "@typeTheWord": {},
+  "submit": "Submit",
+  "@submit": {},
+  "correctAnswer": "Correct answer",
+  "@correctAnswer": {},
+  "readAloud": "Read aloud",
+  "@readAloud": {},
   "extractVocabulary": "Extract Vocabulary",
   "@extractVocabulary": {},
   "noVocabularyFound": "No vocabulary words found",

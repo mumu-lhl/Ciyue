@@ -1,10 +1,12 @@
 import "package:ciyue/repositories/chat_scenarios.dart";
+import "package:ciyue/services/tts.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/chat_view_model.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
+
 import "dart:math" as math;
 
 class ChatPage extends StatefulWidget {
@@ -176,10 +178,7 @@ class _ChatPageState extends State<ChatPage> {
               children: [
                 for (final scenario in scenarioManager.allScenarios)
                   ActionChip(
-                    avatar: Icon(
-                      _scenarioIcon(scenario.id),
-                      size: 18,
-                    ),
+                    avatar: Icon(_scenarioIcon(scenario.id), size: 18),
                     label: Text(_scenarioTitle(context, scenario)),
                     onPressed: () => _viewModel.startScenario(scenario),
                   ),
@@ -226,10 +225,7 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void _showScenarioManager(
-    BuildContext context,
-    ChatScenarioManager manager,
-  ) {
+  void _showScenarioManager(BuildContext context, ChatScenarioManager manager) {
     showDialog(
       context: context,
       builder: (context) => _ScenarioManagerDialog(manager: manager),
@@ -337,8 +333,11 @@ class _TypingIndicatorState extends State<_TypingIndicator>
               children: List.generate(3, (index) {
                 final delay = index * 0.2;
                 final value = (_controller.value - delay).clamp(0.0, 1.0);
-                final opacity = (0.3 + 0.7 * (0.5 + 0.5 * math.sin(value * 6.28)))
-                    .clamp(0.0, 1.0);
+                final opacity =
+                    (0.3 + 0.7 * (0.5 + 0.5 * math.sin(value * 6.28))).clamp(
+                      0.0,
+                      1.0,
+                    );
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 2),
                   child: Opacity(
@@ -429,11 +428,17 @@ class ChatBubble extends StatelessWidget {
                     IconButton(
                       iconSize: 16,
                       visualDensity: VisualDensity.compact,
+                      tooltip: AppLocalizations.of(context)!.readAloud,
+                      icon: const Icon(Icons.volume_up_outlined),
+                      onPressed: () => TtsHelper.toggleSpeak(message),
+                    ),
+                    IconButton(
+                      iconSize: 16,
+                      visualDensity: VisualDensity.compact,
                       tooltip: "Extract vocabulary",
                       icon: const Icon(Icons.school_outlined),
                       onPressed: () {
-                        if (onExtractVocabulary != null &&
-                            onSaveWord != null) {
+                        if (onExtractVocabulary != null && onSaveWord != null) {
                           _showVocabularyDialog(
                             context,
                             message,
@@ -451,9 +456,7 @@ class ChatBubble extends StatelessWidget {
                         Clipboard.setData(ClipboardData(text: message));
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(
-                              AppLocalizations.of(context)!.copied,
-                            ),
+                            content: Text(AppLocalizations.of(context)!.copied),
                             duration: const Duration(seconds: 1),
                           ),
                         );
@@ -654,7 +657,9 @@ class _ScenarioManagerDialog extends StatelessWidget {
     ChatScenarioManager manager,
     ChatScenario? existing,
   ) {
-    final titleController = TextEditingController(text: existing?.titleKey ?? "");
+    final titleController = TextEditingController(
+      text: existing?.titleKey ?? "",
+    );
     final descController = TextEditingController(
       text: existing?.systemPrompt ?? "",
     );

@@ -33,6 +33,7 @@ AppDatabase appDatabase() {
     OpenRecords,
     Flashcards,
     FlashcardReviewLogs,
+    QuizMistakes,
   ],
   daos: [
     DictionaryListDao,
@@ -48,6 +49,7 @@ AppDatabase appDatabase() {
     TranslateHistoryDao,
     OpenRecordsDao,
     FlashcardDao,
+    QuizMistakeDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -172,10 +174,14 @@ class AppDatabase extends _$AppDatabase {
           await m.drop(schema.idxTranslateHistoryInputText);
           await m.createIndex(schema.idxTranslateHistoryInputText);
         },
+        from22To23: (m, schema) async {
+          await m.create(schema.quizMistakes);
+          await m.createIndex(schema.idxQuizMistakesWord);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 }

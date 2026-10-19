@@ -4515,6 +4515,476 @@ class FlashcardReviewLogsCompanion
   }
 }
 
+class $QuizMistakesTable extends QuizMistakes
+    with drift.TableInfo<$QuizMistakesTable, QuizMistake> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $QuizMistakesTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
+    'id',
+  );
+  @override
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const drift.VerificationMeta _wordMeta = const drift.VerificationMeta(
+    'word',
+  );
+  @override
+  late final drift.GeneratedColumn<String> word = drift.GeneratedColumn<String>(
+    'word',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const drift.VerificationMeta _questionTypeMeta =
+      const drift.VerificationMeta('questionType');
+  @override
+  late final drift.GeneratedColumn<String> questionType =
+      drift.GeneratedColumn<String>(
+        'question_type',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _questionMeta =
+      const drift.VerificationMeta('question');
+  @override
+  late final drift.GeneratedColumn<String> question =
+      drift.GeneratedColumn<String>(
+        'question',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _correctAnswerMeta =
+      const drift.VerificationMeta('correctAnswer');
+  @override
+  late final drift.GeneratedColumn<String> correctAnswer =
+      drift.GeneratedColumn<String>(
+        'correct_answer',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _userAnswerMeta =
+      const drift.VerificationMeta('userAnswer');
+  @override
+  late final drift.GeneratedColumn<String> userAnswer =
+      drift.GeneratedColumn<String>(
+        'user_answer',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const drift.VerificationMeta _createdAtMeta =
+      const drift.VerificationMeta('createdAt');
+  @override
+  late final drift.GeneratedColumn<DateTime> createdAt =
+      drift.GeneratedColumn<DateTime>(
+        'created_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  @override
+  List<drift.GeneratedColumn> get $columns => [
+    id,
+    word,
+    questionType,
+    question,
+    correctAnswer,
+    userAnswer,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'quiz_mistakes';
+  @override
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<QuizMistake> instance, {
+    bool isInserting = false,
+  }) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('word')) {
+      context.handle(
+        _wordMeta,
+        word.isAcceptableOrUnknown(data['word']!, _wordMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_wordMeta);
+    }
+    if (data.containsKey('question_type')) {
+      context.handle(
+        _questionTypeMeta,
+        questionType.isAcceptableOrUnknown(
+          data['question_type']!,
+          _questionTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_questionTypeMeta);
+    }
+    if (data.containsKey('question')) {
+      context.handle(
+        _questionMeta,
+        question.isAcceptableOrUnknown(data['question']!, _questionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_questionMeta);
+    }
+    if (data.containsKey('correct_answer')) {
+      context.handle(
+        _correctAnswerMeta,
+        correctAnswer.isAcceptableOrUnknown(
+          data['correct_answer']!,
+          _correctAnswerMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_correctAnswerMeta);
+    }
+    if (data.containsKey('user_answer')) {
+      context.handle(
+        _userAnswerMeta,
+        userAnswer.isAcceptableOrUnknown(data['user_answer']!, _userAnswerMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
+  @override
+  QuizMistake map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return QuizMistake(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      word: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}word'],
+      )!,
+      questionType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}question_type'],
+      )!,
+      question: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}question'],
+      )!,
+      correctAnswer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}correct_answer'],
+      )!,
+      userAnswer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_answer'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $QuizMistakesTable createAlias(String alias) {
+    return $QuizMistakesTable(attachedDatabase, alias);
+  }
+}
+
+class QuizMistake extends drift.DataClass
+    implements drift.Insertable<QuizMistake> {
+  final int id;
+  final String word;
+  final String questionType;
+  final String question;
+  final String correctAnswer;
+  final String? userAnswer;
+  final DateTime createdAt;
+  const QuizMistake({
+    required this.id,
+    required this.word,
+    required this.questionType,
+    required this.question,
+    required this.correctAnswer,
+    this.userAnswer,
+    required this.createdAt,
+  });
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['word'] = drift.Variable<String>(word);
+    map['question_type'] = drift.Variable<String>(questionType);
+    map['question'] = drift.Variable<String>(question);
+    map['correct_answer'] = drift.Variable<String>(correctAnswer);
+    if (!nullToAbsent || userAnswer != null) {
+      map['user_answer'] = drift.Variable<String>(userAnswer);
+    }
+    map['created_at'] = drift.Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  QuizMistakesCompanion toCompanion(bool nullToAbsent) {
+    return QuizMistakesCompanion(
+      id: drift.Value(id),
+      word: drift.Value(word),
+      questionType: drift.Value(questionType),
+      question: drift.Value(question),
+      correctAnswer: drift.Value(correctAnswer),
+      userAnswer: userAnswer == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(userAnswer),
+      createdAt: drift.Value(createdAt),
+    );
+  }
+
+  factory QuizMistake.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return QuizMistake(
+      id: serializer.fromJson<int>(json['id']),
+      word: serializer.fromJson<String>(json['word']),
+      questionType: serializer.fromJson<String>(json['questionType']),
+      question: serializer.fromJson<String>(json['question']),
+      correctAnswer: serializer.fromJson<String>(json['correctAnswer']),
+      userAnswer: serializer.fromJson<String?>(json['userAnswer']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'word': serializer.toJson<String>(word),
+      'questionType': serializer.toJson<String>(questionType),
+      'question': serializer.toJson<String>(question),
+      'correctAnswer': serializer.toJson<String>(correctAnswer),
+      'userAnswer': serializer.toJson<String?>(userAnswer),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  QuizMistake copyWith({
+    int? id,
+    String? word,
+    String? questionType,
+    String? question,
+    String? correctAnswer,
+    drift.Value<String?> userAnswer = const drift.Value.absent(),
+    DateTime? createdAt,
+  }) => QuizMistake(
+    id: id ?? this.id,
+    word: word ?? this.word,
+    questionType: questionType ?? this.questionType,
+    question: question ?? this.question,
+    correctAnswer: correctAnswer ?? this.correctAnswer,
+    userAnswer: userAnswer.present ? userAnswer.value : this.userAnswer,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  QuizMistake copyWithCompanion(QuizMistakesCompanion data) {
+    return QuizMistake(
+      id: data.id.present ? data.id.value : this.id,
+      word: data.word.present ? data.word.value : this.word,
+      questionType: data.questionType.present
+          ? data.questionType.value
+          : this.questionType,
+      question: data.question.present ? data.question.value : this.question,
+      correctAnswer: data.correctAnswer.present
+          ? data.correctAnswer.value
+          : this.correctAnswer,
+      userAnswer: data.userAnswer.present
+          ? data.userAnswer.value
+          : this.userAnswer,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QuizMistake(')
+          ..write('id: $id, ')
+          ..write('word: $word, ')
+          ..write('questionType: $questionType, ')
+          ..write('question: $question, ')
+          ..write('correctAnswer: $correctAnswer, ')
+          ..write('userAnswer: $userAnswer, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    word,
+    questionType,
+    question,
+    correctAnswer,
+    userAnswer,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is QuizMistake &&
+          other.id == this.id &&
+          other.word == this.word &&
+          other.questionType == this.questionType &&
+          other.question == this.question &&
+          other.correctAnswer == this.correctAnswer &&
+          other.userAnswer == this.userAnswer &&
+          other.createdAt == this.createdAt);
+}
+
+class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
+  final drift.Value<int> id;
+  final drift.Value<String> word;
+  final drift.Value<String> questionType;
+  final drift.Value<String> question;
+  final drift.Value<String> correctAnswer;
+  final drift.Value<String?> userAnswer;
+  final drift.Value<DateTime> createdAt;
+  const QuizMistakesCompanion({
+    this.id = const drift.Value.absent(),
+    this.word = const drift.Value.absent(),
+    this.questionType = const drift.Value.absent(),
+    this.question = const drift.Value.absent(),
+    this.correctAnswer = const drift.Value.absent(),
+    this.userAnswer = const drift.Value.absent(),
+    this.createdAt = const drift.Value.absent(),
+  });
+  QuizMistakesCompanion.insert({
+    this.id = const drift.Value.absent(),
+    required String word,
+    required String questionType,
+    required String question,
+    required String correctAnswer,
+    this.userAnswer = const drift.Value.absent(),
+    required DateTime createdAt,
+  }) : word = drift.Value(word),
+       questionType = drift.Value(questionType),
+       question = drift.Value(question),
+       correctAnswer = drift.Value(correctAnswer),
+       createdAt = drift.Value(createdAt);
+  static drift.Insertable<QuizMistake> custom({
+    drift.Expression<int>? id,
+    drift.Expression<String>? word,
+    drift.Expression<String>? questionType,
+    drift.Expression<String>? question,
+    drift.Expression<String>? correctAnswer,
+    drift.Expression<String>? userAnswer,
+    drift.Expression<DateTime>? createdAt,
+  }) {
+    return drift.RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (word != null) 'word': word,
+      if (questionType != null) 'question_type': questionType,
+      if (question != null) 'question': question,
+      if (correctAnswer != null) 'correct_answer': correctAnswer,
+      if (userAnswer != null) 'user_answer': userAnswer,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  QuizMistakesCompanion copyWith({
+    drift.Value<int>? id,
+    drift.Value<String>? word,
+    drift.Value<String>? questionType,
+    drift.Value<String>? question,
+    drift.Value<String>? correctAnswer,
+    drift.Value<String?>? userAnswer,
+    drift.Value<DateTime>? createdAt,
+  }) {
+    return QuizMistakesCompanion(
+      id: id ?? this.id,
+      word: word ?? this.word,
+      questionType: questionType ?? this.questionType,
+      question: question ?? this.question,
+      correctAnswer: correctAnswer ?? this.correctAnswer,
+      userAnswer: userAnswer ?? this.userAnswer,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (id.present) {
+      map['id'] = drift.Variable<int>(id.value);
+    }
+    if (word.present) {
+      map['word'] = drift.Variable<String>(word.value);
+    }
+    if (questionType.present) {
+      map['question_type'] = drift.Variable<String>(questionType.value);
+    }
+    if (question.present) {
+      map['question'] = drift.Variable<String>(question.value);
+    }
+    if (correctAnswer.present) {
+      map['correct_answer'] = drift.Variable<String>(correctAnswer.value);
+    }
+    if (userAnswer.present) {
+      map['user_answer'] = drift.Variable<String>(userAnswer.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = drift.Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QuizMistakesCompanion(')
+          ..write('id: $id, ')
+          ..write('word: $word, ')
+          ..write('questionType: $questionType, ')
+          ..write('question: $question, ')
+          ..write('correctAnswer: $correctAnswer, ')
+          ..write('userAnswer: $userAnswer, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4538,6 +5008,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final $FlashcardsTable flashcards = $FlashcardsTable(this);
   late final $FlashcardReviewLogsTable flashcardReviewLogs =
       $FlashcardReviewLogsTable(this);
+  late final $QuizMistakesTable quizMistakes = $QuizMistakesTable(this);
   late final drift.Index idxDictionaryListPath = drift.Index(
     'idx_dictionary_list_path',
     'CREATE INDEX idx_dictionary_list_path ON dictionary_list (path)',
@@ -4590,6 +5061,10 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     'idx_flashcard_review_logs_reviewed_at',
     'CREATE INDEX idx_flashcard_review_logs_reviewed_at ON flashcard_review_logs (reviewed_at)',
   );
+  late final drift.Index idxQuizMistakesWord = drift.Index(
+    'idx_quiz_mistakes_word',
+    'CREATE INDEX idx_quiz_mistakes_word ON quiz_mistakes (word)',
+  );
   late final DictionaryListDao dictionaryListDao = DictionaryListDao(
     this as AppDatabase,
   );
@@ -4620,6 +5095,9 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     this as AppDatabase,
   );
   late final FlashcardDao flashcardDao = FlashcardDao(this as AppDatabase);
+  late final QuizMistakeDao quizMistakeDao = QuizMistakeDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
@@ -4639,6 +5117,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     openRecords,
     flashcards,
     flashcardReviewLogs,
+    quizMistakes,
     idxDictionaryListPath,
     idxWordbook,
     idxWordbookCreatedAt,
@@ -4652,6 +5131,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     idxFlashcardsDue,
     idxFlashcardReviewLogsWord,
     idxFlashcardReviewLogsReviewedAt,
+    idxQuizMistakesWord,
   ];
 }
 
@@ -7397,6 +7877,257 @@ typedef $$FlashcardReviewLogsTableProcessedTableManager =
       FlashcardReviewLog,
       drift.PrefetchHooks Function()
     >;
+typedef $$QuizMistakesTableCreateCompanionBuilder =
+    QuizMistakesCompanion Function({
+      drift.Value<int> id,
+      required String word,
+      required String questionType,
+      required String question,
+      required String correctAnswer,
+      drift.Value<String?> userAnswer,
+      required DateTime createdAt,
+    });
+typedef $$QuizMistakesTableUpdateCompanionBuilder =
+    QuizMistakesCompanion Function({
+      drift.Value<int> id,
+      drift.Value<String> word,
+      drift.Value<String> questionType,
+      drift.Value<String> question,
+      drift.Value<String> correctAnswer,
+      drift.Value<String?> userAnswer,
+      drift.Value<DateTime> createdAt,
+    });
+
+class $$QuizMistakesTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $QuizMistakesTable> {
+  $$QuizMistakesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get word => $composableBuilder(
+    column: $table.word,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get questionType => $composableBuilder(
+    column: $table.questionType,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get question => $composableBuilder(
+    column: $table.question,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get correctAnswer => $composableBuilder(
+    column: $table.correctAnswer,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get userAnswer => $composableBuilder(
+    column: $table.userAnswer,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+}
+
+class $$QuizMistakesTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $QuizMistakesTable> {
+  $$QuizMistakesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get word => $composableBuilder(
+    column: $table.word,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get questionType => $composableBuilder(
+    column: $table.questionType,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get question => $composableBuilder(
+    column: $table.question,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get correctAnswer => $composableBuilder(
+    column: $table.correctAnswer,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get userAnswer => $composableBuilder(
+    column: $table.userAnswer,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+}
+
+class $$QuizMistakesTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $QuizMistakesTable> {
+  $$QuizMistakesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get word =>
+      $composableBuilder(column: $table.word, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get questionType => $composableBuilder(
+    column: $table.questionType,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<String> get question =>
+      $composableBuilder(column: $table.question, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get correctAnswer => $composableBuilder(
+    column: $table.correctAnswer,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<String> get userAnswer => $composableBuilder(
+    column: $table.userAnswer,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$QuizMistakesTableTableManager
+    extends
+        drift.RootTableManager<
+          _$AppDatabase,
+          $QuizMistakesTable,
+          QuizMistake,
+          $$QuizMistakesTableFilterComposer,
+          $$QuizMistakesTableOrderingComposer,
+          $$QuizMistakesTableAnnotationComposer,
+          $$QuizMistakesTableCreateCompanionBuilder,
+          $$QuizMistakesTableUpdateCompanionBuilder,
+          (
+            QuizMistake,
+            drift.BaseReferences<
+              _$AppDatabase,
+              $QuizMistakesTable,
+              QuizMistake
+            >,
+          ),
+          QuizMistake,
+          drift.PrefetchHooks Function()
+        > {
+  $$QuizMistakesTableTableManager(_$AppDatabase db, $QuizMistakesTable table)
+    : super(
+        drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$QuizMistakesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$QuizMistakesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$QuizMistakesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                drift.Value<int> id = const drift.Value.absent(),
+                drift.Value<String> word = const drift.Value.absent(),
+                drift.Value<String> questionType = const drift.Value.absent(),
+                drift.Value<String> question = const drift.Value.absent(),
+                drift.Value<String> correctAnswer = const drift.Value.absent(),
+                drift.Value<String?> userAnswer = const drift.Value.absent(),
+                drift.Value<DateTime> createdAt = const drift.Value.absent(),
+              }) => QuizMistakesCompanion(
+                id: id,
+                word: word,
+                questionType: questionType,
+                question: question,
+                correctAnswer: correctAnswer,
+                userAnswer: userAnswer,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                drift.Value<int> id = const drift.Value.absent(),
+                required String word,
+                required String questionType,
+                required String question,
+                required String correctAnswer,
+                drift.Value<String?> userAnswer = const drift.Value.absent(),
+                required DateTime createdAt,
+              }) => QuizMistakesCompanion.insert(
+                id: id,
+                word: word,
+                questionType: questionType,
+                question: question,
+                correctAnswer: correctAnswer,
+                userAnswer: userAnswer,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$QuizMistakesTable, QuizMistake>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $QuizMistakesTable,
+                    QuizMistake
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$QuizMistakesTableProcessedTableManager =
+    drift.ProcessedTableManager<
+      _$AppDatabase,
+      $QuizMistakesTable,
+      QuizMistake,
+      $$QuizMistakesTableFilterComposer,
+      $$QuizMistakesTableOrderingComposer,
+      $$QuizMistakesTableAnnotationComposer,
+      $$QuizMistakesTableCreateCompanionBuilder,
+      $$QuizMistakesTableUpdateCompanionBuilder,
+      (
+        QuizMistake,
+        drift.BaseReferences<_$AppDatabase, $QuizMistakesTable, QuizMistake>,
+      ),
+      QuizMistake,
+      drift.PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7429,4 +8160,6 @@ class $AppDatabaseManager {
       $$FlashcardsTableTableManager(_db, _db.flashcards);
   $$FlashcardReviewLogsTableTableManager get flashcardReviewLogs =>
       $$FlashcardReviewLogsTableTableManager(_db, _db.flashcardReviewLogs);
+  $$QuizMistakesTableTableManager get quizMistakes =>
+      $$QuizMistakesTableTableManager(_db, _db.quizMistakes);
 }

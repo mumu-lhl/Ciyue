@@ -193,3 +193,15 @@ class OpenRecordsDaoManager {
   $$OpenRecordsTableTableManager get openRecords =>
       $$OpenRecordsTableTableManager(_db.attachedDatabase, _db.openRecords);
 }
+
+mixin _$QuizMistakeDaoMixin on DatabaseAccessor<AppDatabase> {
+  $QuizMistakesTable get quizMistakes => attachedDatabase.quizMistakes;
+  QuizMistakeDaoManager get managers => QuizMistakeDaoManager(this);
+}
+
+class QuizMistakeDaoManager {
+  final _$QuizMistakeDaoMixin _db;
+  QuizMistakeDaoManager(this._db);
+  $$QuizMistakesTableTableManager get quizMistakes =>
+      $$QuizMistakesTableTableManager(_db.attachedDatabase, _db.quizMistakes);
+}

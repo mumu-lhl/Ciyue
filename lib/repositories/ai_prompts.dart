@@ -44,17 +44,17 @@ Example:
 Text:
 \$text""";
 
-  static const String defaultQuizPrompt =
-      """Generate a vocabulary quiz with \$count multiple-choice questions using these words: \$words.
-For each word, ask for its meaning in \$targetLanguage. Provide 4 options per question (1 correct, 3 plausible but incorrect distractors).
+  static const String defaultQuizPrompt = """Generate a vocabulary quiz with \$count questions using these words: \$words.
+Mix the following question types:
+\$types
 
 Respond with ONLY a JSON object, no other text:
-{"questions": [{"word": "...", "question": "...", "options": ["...", "...", "...", "..."], "correctIndex": 0, "explanation": "..."}]}
+{"questions": [{"word": "...", "type": "choice|spelling|cloze", "question": "...", "options": ["...", "...", "...", "..."], "correctIndex": 0, "explanation": "..."}]}
 
-The explanation should briefly explain the correct meaning in \$targetLanguage.""";
+For "choice" and "cloze" provide 4 options (1 correct, 3 plausible distractors). For "spelling" set "options" to [] and "correctIndex" to 0.
+The explanation should briefly explain the correct answer in \$targetLanguage.""";
 
-  static const String defaultVocabularyPrompt =
-      """From the following text, extract up to \$count vocabulary words that are worth learning for a language learner. Focus on \$difficulty words/phrases. Skip basic words.
+  static const String defaultVocabularyPrompt = """From the following text, extract up to \$count vocabulary words that are worth learning for a language learner. Focus on \$difficulty words/phrases. Skip basic words.
 
 Text:
 \$text

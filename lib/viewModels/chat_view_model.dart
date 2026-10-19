@@ -3,6 +3,7 @@ import "dart:convert";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
+import "package:ciyue/repositories/chat_scenarios.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:material_ui/material_ui.dart";
@@ -12,6 +13,13 @@ class ChatMessage {
   final bool isUser;
 
   const ChatMessage({required this.text, required this.isUser});
+
+  Map<String, dynamic> toJson() => {"text": text, "isUser": isUser};
+
+  factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
+    text: json["text"] as String? ?? "",
+    isUser: json["isUser"] as bool? ?? false,
+  );
 }
 
 /// A preset roleplay scenario for language learning.
@@ -30,32 +38,27 @@ class ChatScenario {
     ChatScenario(
       id: "restaurant",
       titleKey: "scenarioRestaurant",
-      systemPrompt:
-          "You are a waiter at a restaurant. Roleplay a dining scenario with the user to help them practice ordering food and conversing in a restaurant. Stay in character. Gently correct their language mistakes.",
+      systemPrompt: "You are a waiter at a restaurant. Roleplay a dining scenario with the user to help them practice ordering food and conversing in a restaurant. Stay in character. Gently correct their language mistakes.",
     ),
     ChatScenario(
       id: "travel",
       titleKey: "scenarioTravel",
-      systemPrompt:
-          "You are a friendly local tour guide. Roleplay a travel scenario with the user to help them practice asking for directions, booking hotels, and sightseeing conversations. Stay in character. Gently correct their language mistakes.",
+      systemPrompt: "You are a friendly local tour guide. Roleplay a travel scenario with the user to help them practice asking for directions, booking hotels, and sightseeing conversations. Stay in character. Gently correct their language mistakes.",
     ),
     ChatScenario(
       id: "business",
       titleKey: "scenarioBusiness",
-      systemPrompt:
-          "You are a business colleague. Roleplay a workplace scenario with the user to help them practice meetings, emails, and professional small talk. Stay in character. Gently correct their language mistakes.",
+      systemPrompt: "You are a business colleague. Roleplay a workplace scenario with the user to help them practice meetings, emails, and professional small talk. Stay in character. Gently correct their language mistakes.",
     ),
     ChatScenario(
       id: "shopping",
       titleKey: "scenarioShopping",
-      systemPrompt:
-          "You are a shop assistant. Roleplay a shopping scenario with the user to help them practice asking about prices, sizes, and making purchases. Stay in character. Gently correct their language mistakes.",
+      systemPrompt: "You are a shop assistant. Roleplay a shopping scenario with the user to help them practice asking about prices, sizes, and making purchases. Stay in character. Gently correct their language mistakes.",
     ),
     ChatScenario(
       id: "daily",
       titleKey: "scenarioDaily",
-      systemPrompt:
-          "You are a friendly language partner. Have a casual daily conversation with the user to help them practice everyday speaking. Gently correct their language mistakes and suggest more natural expressions.",
+      systemPrompt: "You are a friendly language partner. Have a casual daily conversation with the user to help them practice everyday speaking. Gently correct their language mistakes and suggest more natural expressions.",
     ),
   ];
 }
@@ -84,6 +87,61 @@ class ChatViewModel extends ChangeNotifier {
       model: config["model"] ?? "",
       apikey: config["apiKey"] ?? "",
     );
+    // Restore the previous session when opened without fresh context.
+    if (initialContext == null) {
+      _restoreHistory();
+    }
+  }
+
+  /// Persist the last N messages so the conversation survives navigation.
+  static const _historyKey = "chatHistory";
+  static const _maxPersistedMessages = 100;
+
+  void _persistHistory() {
+    try {
+      final messages = _messages.length > _maxPersistedMessages
+          ? _messages.sublist(_messages.length - _maxPersistedMessages)
+          : _messages;
+      // Don't persist empty streaming placeholders.
+      final clean = messages
+          .where((m) => !(m.text.isEmpty && !m.isUser))
+          .map((m) => m.toJson())
+          .toList();
+      prefs.setString(
+        _historyKey,
+        json.encode({
+          "messages": clean,
+          "scenarioId": _scenario?.id,
+          "initialContext": initialContext,
+        }),
+      );
+    } catch (_) {}
+  }
+
+  void _restoreHistory() {
+    try {
+      final raw = prefs.getString(_historyKey);
+      if (raw == null || raw.isEmpty) return;
+      final data = json.decode(raw) as Map<String, dynamic>;
+      final messagesJson = data["messages"] as List?;
+      if (messagesJson == null || messagesJson.isEmpty) return;
+      _messages.addAll(
+        messagesJson.map(
+          (m) => ChatMessage.fromJson(m as Map<String, dynamic>),
+        ),
+      );
+      final scenarioId = data["scenarioId"] as String?;
+      if (scenarioId != null) {
+        final manager = ChatScenarioManager();
+        for (final s in manager.allScenarios) {
+          if (s.id == scenarioId) {
+            _scenario = s;
+            break;
+          }
+        }
+      }
+      notifyListeners();
+    } catch (_) {}
   }
 
   @override
@@ -98,6 +156,7 @@ class ChatViewModel extends ChangeNotifier {
   void clearChat() {
     _messages.clear();
     _scenario = null;
+    _persistHistory();
     notifyListeners();
   }
 
@@ -141,6 +200,7 @@ class ChatViewModel extends ChangeNotifier {
       );
     } finally {
       _isStreaming = false;
+      _persistHistory();
       notifyListeners();
     }
   }
@@ -149,7 +209,9 @@ class ChatViewModel extends ChangeNotifier {
   /// Returns a list of words worth learning.
   Future<List<String>> extractVocabulary(String messageText) async {
     final count = prefs.getInt("vocabularyExtractCount") ?? 10;
-    final difficulty = prefs.getString("vocabularyDifficulty") ?? "uncommon, academic, or idiomatic";
+    final difficulty =
+        prefs.getString("vocabularyDifficulty") ??
+        "uncommon, academic, or idiomatic";
 
     final template = AIPrompts().vocabularyPrompt;
     final prompt = template
@@ -236,6 +298,7 @@ class ChatViewModel extends ChangeNotifier {
       );
     } finally {
       _isStreaming = false;
+      _persistHistory();
       notifyListeners();
     }
   }

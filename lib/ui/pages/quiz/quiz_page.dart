@@ -1,3 +1,4 @@
+import "package:ciyue/services/tts.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/quiz_view_model.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -13,6 +14,8 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   late final QuizViewModel _viewModel;
+  final _spellingController = TextEditingController();
+  String? _lastSpellingWord;
 
   @override
   void initState() {
@@ -24,6 +27,7 @@ class _QuizPageState extends State<QuizPage> {
   @override
   void dispose() {
     _viewModel.dispose();
+    _spellingController.dispose();
     super.dispose();
   }
 
@@ -38,7 +42,9 @@ class _QuizPageState extends State<QuizPage> {
         final model = _viewModel;
         return Scaffold(
           appBar: AppBar(
-            title: Text(locale.wordQuiz),
+            title: Text(
+              model.reviewMode ? locale.reviewMistakes : locale.wordQuiz,
+            ),
             actions: [
               if (model.state == QuizState.answering)
                 Center(
@@ -78,6 +84,7 @@ class _QuizPageState extends State<QuizPage> {
 
   Widget _buildIdle(BuildContext context, QuizViewModel model) {
     final locale = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -85,21 +92,24 @@ class _QuizPageState extends State<QuizPage> {
           Icon(
             Icons.quiz_outlined,
             size: 64,
-            color: Theme.of(
-              context,
-            ).colorScheme.primary.withValues(alpha: 0.5),
+            color: theme.colorScheme.primary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
             locale.quizNeedWords,
-            style: Theme.of(context).textTheme.titleMedium,
+            style: theme.textTheme.titleMedium,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          FilledButton(
-            onPressed: model.startQuiz,
-            child: Text(locale.retry),
-          ),
+          FilledButton(onPressed: model.startQuiz, child: Text(locale.retry)),
+          if (model.mistakeCount > 0) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.history),
+              label: Text(locale.reviewMistakesWithCount(model.mistakeCount)),
+              onPressed: model.startMistakeReview,
+            ),
+          ],
         ],
       ),
     );
@@ -107,45 +117,89 @@ class _QuizPageState extends State<QuizPage> {
 
   Widget _buildQuestion(BuildContext context, QuizViewModel model) {
     final question = model.currentQuestion!;
+    if (question.type == QuizQuestionType.spelling) {
+      return _buildSpellingQuestion(context, model, question);
+    }
+    return _buildChoiceQuestion(context, model, question);
+  }
+
+  Widget _questionHeader(
+    BuildContext context,
+    QuizViewModel model,
+    QuizQuestion question,
+  ) {
     final theme = Theme.of(context);
     final locale = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        LinearProgressIndicator(
+          value: (model.currentIndex + 1) / model.totalQuestions,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "${locale.question} ${model.currentIndex + 1} / ${model.totalQuestions}",
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildChoiceQuestion(
+    BuildContext context,
+    QuizViewModel model,
+    QuizQuestion question,
+  ) {
+    final theme = Theme.of(context);
+    final locale = AppLocalizations.of(context)!;
+    final isCloze = question.type == QuizQuestionType.cloze;
 
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Progress
-          LinearProgressIndicator(
-            value: (model.currentIndex + 1) / model.totalQuestions,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "${locale.question} ${model.currentIndex + 1} / ${model.totalQuestions}",
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          _questionHeader(context, model, question),
+          // Word (choice) or sentence (cloze)
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    isCloze ? question.question : question.word,
+                    style:
+                        (isCloze
+                                ? theme.textTheme.titleLarge
+                                : theme.textTheme.headlineMedium)
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                if (!isCloze)
+                  IconButton(
+                    icon: const Icon(Icons.volume_up_outlined),
+                    tooltip: locale.readAloud,
+                    onPressed: () => TtsHelper.toggleSpeak(question.word),
+                  ),
+              ],
             ),
           ),
-          const SizedBox(height: 24),
-          // Word
-          Center(
-            child: Text(
-              question.word,
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+          if (!isCloze) ...[
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                question.question,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              question.question,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          ],
           const SizedBox(height: 24),
           // Options
           Expanded(
@@ -175,28 +229,13 @@ class _QuizPageState extends State<QuizPage> {
                         : showResult && isSelected
                         ? const Icon(Icons.cancel, color: Colors.red)
                         : null,
-                    onTap: showResult
-                        ? null
-                        : () => model.selectAnswer(index),
+                    onTap: showResult ? null : () => model.selectAnswer(index),
                   ),
                 );
               },
             ),
           ),
-          // Explanation after answering
-          if (model.isAnswered && question.explanation.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: SelectionArea(
-                child: GptMarkdown(question.explanation),
-              ),
-            ),
-          // Next button
+          _buildExplanation(context, model, question),
           if (model.isAnswered)
             FilledButton(
               onPressed: model.nextQuestion,
@@ -211,12 +250,151 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
+  Widget _buildSpellingQuestion(
+    BuildContext context,
+    QuizViewModel model,
+    QuizQuestion question,
+  ) {
+    final theme = Theme.of(context);
+    final locale = AppLocalizations.of(context)!;
+    final answered = model.isAnswered;
+    // Clear stale input when moving to a new spelling question.
+    if (_lastSpellingWord != question.word) {
+      _lastSpellingWord = question.word;
+      _spellingController.clear();
+    }
+    final correct =
+        answered &&
+        model.spellingAnswer!.trim().toLowerCase() ==
+            question.word.trim().toLowerCase();
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _questionHeader(context, model, question),
+          Center(
+            child: Text(
+              question.question,
+              style: theme.textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Text(
+              locale.typeTheWord,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          TextField(
+            controller: _spellingController,
+            enabled: !answered,
+            autofocus: true,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineSmall,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              hintText: locale.typeTheWord,
+              suffixIcon: answered
+                  ? Icon(
+                      correct ? Icons.check_circle : Icons.cancel,
+                      color: correct ? Colors.green : Colors.red,
+                    )
+                  : null,
+            ),
+            onSubmitted: (_) {
+              if (!answered) {
+                model.submitSpelling(_spellingController.text);
+              }
+            },
+          ),
+          if (answered && !correct) ...[
+            const SizedBox(height: 12),
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "${locale.correctAnswer}: ",
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  Text(
+                    question.word,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.volume_up_outlined),
+                    tooltip: locale.readAloud,
+                    onPressed: () => TtsHelper.toggleSpeak(question.word),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          _buildExplanation(context, model, question),
+          const Spacer(),
+          if (!answered)
+            FilledButton(
+              onPressed: () {
+                if (_spellingController.text.trim().isNotEmpty) {
+                  model.submitSpelling(_spellingController.text);
+                }
+              },
+              child: Text(locale.submit),
+            )
+          else
+            FilledButton(
+              onPressed: () {
+                _spellingController.clear();
+                model.nextQuestion();
+              },
+              child: Text(
+                model.currentIndex < model.totalQuestions - 1
+                    ? locale.next
+                    : locale.finish,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExplanation(
+    BuildContext context,
+    QuizViewModel model,
+    QuizQuestion question,
+  ) {
+    final theme = Theme.of(context);
+    if (!model.isAnswered || question.explanation.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: SelectionArea(child: GptMarkdown(question.explanation)),
+    );
+  }
+
   Widget _buildResult(BuildContext context, QuizViewModel model) {
     final theme = Theme.of(context);
     final locale = AppLocalizations.of(context)!;
     final percentage = model.totalQuestions > 0
         ? (model.score / model.totalQuestions * 100).round()
         : 0;
+    final wrongCount = model.totalQuestions - model.score;
 
     return Center(
       child: Column(
@@ -234,11 +412,25 @@ class _QuizPageState extends State<QuizPage> {
             "${locale.score}: ${model.score} / ${model.totalQuestions}",
             style: theme.textTheme.titleLarge,
           ),
+          if (wrongCount > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              locale.mistakesCount(wrongCount),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
           const SizedBox(height: 32),
-          FilledButton(
-            onPressed: model.restart,
-            child: Text(locale.retryQuiz),
-          ),
+          FilledButton(onPressed: model.restart, child: Text(locale.retryQuiz)),
+          if (!model.reviewMode && model.mistakeCount > 0) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.history),
+              label: Text(locale.reviewMistakesWithCount(model.mistakeCount)),
+              onPressed: model.startMistakeReview,
+            ),
+          ],
         ],
       ),
     );
