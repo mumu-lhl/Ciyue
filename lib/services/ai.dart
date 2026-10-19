@@ -3,7 +3,10 @@ import "dart:convert";
 import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/core/http_client.dart";
-import "package:dio/dio.dart";
+import "package:genkit/genkit.dart" hide ModelInfo;
+import "package:genkit_anthropic/genkit_anthropic.dart";
+import "package:genkit_google_genai/genkit_google_genai.dart";
+import "package:genkit_openai/genkit_openai.dart";
 
 class AI {
   final String provider;
@@ -14,8 +17,13 @@ class AI {
   AI({required this.provider, required this.model, required this.apikey}) {
     if (provider == "gemini") {
       aiProvider = GeminiProvider(apikey: apikey, model: model);
+    } else if (provider == "anthropic") {
+      aiProvider = AnthropicProvider(apikey: apikey, model: model);
     } else if (provider == "ollama") {
-      aiProvider = OllamaProvider(model: model, apiUrl: settings.aiAPIUrl);
+      aiProvider = OllamaProvider(
+        model: model,
+        apiUrl: settings.aiAPIUrl,
+      );
     } else {
       aiProvider = OpenAICompatibleProvider(
         provider: provider,
@@ -34,50 +42,167 @@ abstract class AIProvider {
   Future<String> request(String prompt);
 }
 
+/// Strip a trailing `/chat/completions` (or similar) to get the OpenAI API
+/// base URL expected by the Genkit OpenAI plugin.
+String _openAIBaseUrl(String apiUrl) {
+  var base = apiUrl.trim();
+  const suffixes = ["/chat/completions", "/chat/completion"];
+  for (final suffix in suffixes) {
+    if (base.endsWith(suffix)) {
+      base = base.substring(0, base.length - suffix.length);
+      break;
+    }
+  }
+  return base;
+}
+
 class GeminiProvider implements AIProvider {
   final String apikey;
   final String model;
+  late final Genkit _ai;
 
-  GeminiProvider({required this.apikey, required this.model});
+  GeminiProvider({required this.apikey, required this.model}) {
+    _ai = Genkit(
+      plugins: [googleAI(apiKey: apikey)],
+    );
+  }
 
   @override
   Future<String> request(String prompt) async {
-    final formattedApiUrl = ModelProviderManager
-        .modelProviders["gemini"]!
-        .apiUrl
-        .replaceFirst("{model}", model);
-
-    final params = {"key": apikey};
-
-    final headers = {"Content-Type": "application/json"};
-    final data = {
-      "contents": [
-        {
-          "parts": [
-            {"text": prompt},
-          ],
-        },
-      ],
-    };
-
     try {
-      final response = await AppHttp.post(
-        formattedApiUrl,
-        query: params,
-        headers: headers,
-        data: jsonEncode(data),
+      final response = await _ai.generate(
+        model: googleAI.gemini(model),
+        prompt: prompt,
       );
-
-      if (response.statusCode == 200) {
-        final decodedResponse = response.data;
-        return decodedResponse["candidates"][0]["content"]["parts"][0]["text"];
-      } else {
-        throw Exception(
-          "Failed to fetch response from Gemini API. Status code: ${response.statusCode}, body: ${response.data}",
-        );
-      }
+      return response.text;
     } catch (e) {
       throw Exception("Error requesting Gemini API: $e");
+    }
+  }
+}
+
+class AnthropicProvider implements AIProvider {
+  final String apikey;
+  final String model;
+  late final Genkit _ai;
+
+  AnthropicProvider({required this.apikey, required this.model}) {
+    _ai = Genkit(
+      plugins: [anthropic(apiKey: apikey)],
+    );
+  }
+
+  @override
+  Future<String> request(String prompt) async {
+    try {
+      final response = await _ai.generate(
+        model: anthropic.model(model),
+        prompt: prompt,
+      );
+      return response.text;
+    } catch (e) {
+      throw Exception("Error requesting Anthropic API: $e");
+    }
+  }
+}
+
+class OllamaProvider implements AIProvider {
+  final String model;
+  final String apiUrl;
+  late final Genkit _ai;
+
+  OllamaProvider({required this.model, required this.apiUrl}) {
+    // Ollama exposes an OpenAI-compatible API under /v1.
+    var base = apiUrl.trim();
+    if (base.isEmpty) {
+      base = "http://localhost:11434/v1";
+    } else if (base.contains("/api/chat")) {
+      base = base.replaceAll("/api/chat", "/v1");
+    } else if (base.endsWith("/")) {
+      base = "${base}v1";
+    } else if (!base.endsWith("/v1")) {
+      base = "$base/v1";
+    }
+    _ai = Genkit(
+      plugins: [
+        openAI(
+          name: "ollama",
+          // Ollama typically needs no key; pass a dummy value when empty
+          // so the plugin doesn't fall back to the env var.
+          apiKey: "ollama",
+          baseUrl: base,
+          models: [CustomModelDefinition(name: model)],
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<String> request(String prompt) async {
+    try {
+      final response = await _ai.generate(
+        model: openAI.model(model, namespace: "ollama"),
+        prompt: prompt,
+      );
+      return response.text;
+    } catch (e) {
+      throw Exception("Error requesting Ollama API: $e");
+    }
+  }
+}
+
+class OpenAICompatibleProvider implements AIProvider {
+  final String provider;
+  final String apikey;
+  final String model;
+  late final Genkit _ai;
+  late final String namespace;
+
+  OpenAICompatibleProvider({
+    required this.provider,
+    required this.apikey,
+    required this.model,
+  }) {
+    final String apiUrl;
+    if (provider == "openai_compatible") {
+      apiUrl = settings.aiAPIUrl;
+    } else if (ModelProviderManager.modelProviders.containsKey(provider)) {
+      apiUrl = ModelProviderManager.modelProviders[provider]!.apiUrl;
+    } else {
+      apiUrl = ModelProviderManager.modelProviders["openai"]!.apiUrl;
+    }
+
+    namespace = provider;
+    final headers = <String, String>{};
+    // OpenRouter App Attribution
+    if (provider == "openrouter") {
+      headers["HTTP-Referer"] = "https://github.com/mumu-lhl/Ciyue";
+      headers["X-Title"] = "Ciyue";
+    }
+
+    _ai = Genkit(
+      plugins: [
+        openAI(
+          name: namespace,
+          apiKey: apikey,
+          baseUrl: _openAIBaseUrl(apiUrl),
+          models: [CustomModelDefinition(name: model)],
+          headers: headers.isEmpty ? null : headers,
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<String> request(String prompt) async {
+    try {
+      final response = await _ai.generate(
+        model: openAI.model(model, namespace: namespace),
+        prompt: prompt,
+      );
+      return response.text;
+    } catch (e) {
+      throw Exception("Error requesting $provider API: $e");
     }
   }
 }
@@ -119,7 +244,8 @@ class ModelProviderManager {
     "gemini": ModelProvider(
       name: "gemini",
       displayedName: "Gemini",
-      apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+      apiUrl:
+          "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
       models: [
         ModelInfo("gemini-3.8-flash", "Gemini 3.8 Flash"),
         ModelInfo("gemini-3.8-flash-lite", "Gemini 3.8 Flash Lite"),
@@ -487,113 +613,5 @@ class ModelProviderManager {
     }
 
     return result;
-  }
-}
-
-class OllamaProvider implements AIProvider {
-  final String model;
-  final String apiUrl;
-
-  const OllamaProvider({required this.model, required this.apiUrl});
-
-  @override
-  Future<String> request(String prompt) async {
-    final headers = {"Content-Type": "application/json"};
-
-    final data = {
-      "model": model,
-      "messages": [
-        {"role": "user", "content": prompt},
-      ],
-      "stream": false,
-    };
-
-    try {
-      final response = await AppHttp.post(
-        apiUrl,
-        headers: headers,
-        data: jsonEncode(data),
-      );
-
-      if (response.statusCode == 200) {
-        final decodedResponse = response.data;
-        return decodedResponse["message"]["content"];
-      } else {
-        throw Exception(
-          "Failed to fetch response from Ollama API. Status code: ${response.statusCode}, body: ${response.data}",
-        );
-      }
-    } on DioException catch (e) {
-      throw Exception("Error requesting Ollama API: $e\nBody: ${e.response}");
-    }
-  }
-}
-
-class OpenAICompatibleProvider implements AIProvider {
-  final String provider;
-  final String apikey;
-  final String model;
-  late final String apiUrl;
-
-  OpenAICompatibleProvider({
-    required this.provider,
-    required this.apikey,
-    required this.model,
-  }) {
-    if (provider == "openai_compatible") {
-      final aiAPIUrl = settings.aiAPIUrl;
-      if (aiAPIUrl.endsWith("/chat/completions")) {
-        apiUrl = aiAPIUrl;
-      } else {
-        apiUrl = "$aiAPIUrl/chat/completions";
-      }
-    } else if (ModelProviderManager.modelProviders.containsKey(provider)) {
-      apiUrl = ModelProviderManager.modelProviders[provider]!.apiUrl;
-    } else {
-      apiUrl = ModelProviderManager.modelProviders["openai"]!.apiUrl;
-    }
-  }
-
-  @override
-  Future<String> request(String prompt) async {
-    final headers = {"Content-Type": "application/json"};
-
-    if (provider == "anthropic") {
-      headers["x-api-key"] = apikey;
-    } else {
-      headers["Authorization"] = "Bearer $apikey";
-    }
-
-    // OpenRouter App Attribution
-    if (provider == "openrouter") {
-      headers["HTTP-Referer"] = "https://github.com/mumu-lhl/Ciyue";
-      headers["X-Title"] = "Ciyue";
-    }
-
-    final data = {
-      "model": model,
-      "messages": [
-        {"role": "user", "content": prompt},
-      ],
-    };
-
-    try {
-      final response = await AppHttp.post(
-        apiUrl,
-        headers: headers,
-        data: jsonEncode(data),
-      );
-
-      if (response.statusCode == 200) {
-        final decodedResponse = response.data;
-        return decodedResponse["choices"][0]["message"]["content"];
-      } else {
-        throw Exception(
-          "Failed to fetch response from OpenAI API. Status code: ${response.statusCode}, body: ${response.data}",
-        );
-      }
-    } on DioException catch (e) {
-      throw Exception("Error requesting OpenAI API: $e\nBody: ${e.response}");
-    }
   }
 }

@@ -33,6 +33,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  anthropic_sdk_dart:
+    dependency: transitive
+    description:
+      name: anthropic_sdk_dart
+      sha256: "68e4f7d5a7dd441e49d7faaaf81ce75cb1190d682da928c083cc22b807533192"
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.0.0"
   archive:
     dependency: transitive
     description:
@@ -377,6 +385,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.15"
+  decimal:
+    dependency: transitive
+    description:
+      name: decimal
+      sha256: "2c3c8b74f2948066d3f42585477aec9cfc48fefd7a723a4d4274a6c71a5c0df7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.6"
   desktop_updater:
     dependency: "direct main"
     description:
@@ -426,6 +442,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.2"
+  dotprompt:
+    dependency: transitive
+    description:
+      name: dotprompt
+      sha256: d588959f509a67062874c4378085f982a7ed4d10ae521c9504cd9c3331f13304
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   drift:
     dependency: "direct main"
     description:
@@ -458,6 +482,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  email_validator:
+    dependency: transitive
+    description:
+      name: email_validator
+      sha256: b19aa5d92fdd76fbc65112060c94d45ba855105a28bb6e462de7ff03b12fa1fb
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   fake_async:
     dependency: transitive
     description:
@@ -765,6 +797,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.2"
+  genkit:
+    dependency: "direct main"
+    description:
+      name: genkit
+      sha256: "478f914efde52c6c1c0f2177b5a1632c2e5dc39e88cab29b48930d80137c1a2a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+  genkit_anthropic:
+    dependency: "direct main"
+    description:
+      name: genkit_anthropic
+      sha256: "99ea31e75b61ad22cd81835ee76c34afed00996177a4d446fca1016a052153e0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+  genkit_google_genai:
+    dependency: "direct main"
+    description:
+      name: genkit_google_genai
+      sha256: d308e31d60d89c3ed8484347aab1db16ba6e150e325b10e41550b677fe6adc10
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+  genkit_openai:
+    dependency: "direct main"
+    description:
+      name: genkit_openai
+      sha256: "963843257ad027c641e4fcc5594a174f035be413137093a6c0c6903c23b2b80c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   glob:
     dependency: transitive
     description:
@@ -805,6 +869,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.3.4"
+  handlebars_dart:
+    dependency: transitive
+    description:
+      name: handlebars_dart
+      sha256: "267f946bae6b46be5f80150a4572740098a460866ee2b6cb7ac39cd463eb7562"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   hashlib:
     dependency: transitive
     description:
@@ -981,6 +1053,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.12.0"
+  json_schema_builder:
+    dependency: transitive
+    description:
+      name: json_schema_builder
+      sha256: "657db3229ba10305c48e8686e8b3aca16e12e639c3a7b96687a6eeb7836b6e1b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.7"
   launch_at_startup:
     dependency: "direct main"
     description:
@@ -1125,6 +1205,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.6.2"
+  openai_dart:
+    dependency: transitive
+    description:
+      name: openai_dart
+      sha256: "75612562082498b8271ffa030308db032c65b68aa862b458ee752376e0341311"
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.1.0"
   package_config:
     dependency: transitive
     description:
@@ -1333,6 +1421,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.6.0"
+  rational:
+    dependency: transitive
+    description:
+      name: rational
+      sha256: cb808fb6f1a839e6fc5f7d8cb3b0a10e1db48b3be102de73938c627f0b636336
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.3"
   recase:
     dependency: transitive
     description:
@@ -1362,6 +1458,14 @@ packages:
     description:
       name: s3_client
       sha256: e0da69bd839f8b11308cad973b2a99f22caa988f37995a84af9785130a4d345f
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+  schemantic:
+    dependency: transitive
+    description:
+      name: schemantic
+      sha256: f56f27cfc1db2466f3102b4d2814e184128df43aee92e093a880273dd1bccb75
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
