@@ -431,57 +431,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
 
-      return Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: _WordbookStats(),
-              ),
-              buildGroup(
-                title: l10n?.manageDictionaries ?? "Dictionaries & AI",
-                children: [
-                  const ManageDictionariesPageListTile(),
-                  const AiSettingsPageListTile(),
-                  const AudioSettingsPageListTile(),
-                  if (Platform.isAndroid && !isFullFlavor())
-                    const ManageStorageListTile(),
-                ],
-              ),
-              buildGroup(
-                title: l10n?.appearance ?? "Appearance & History",
-                children: [
-                  const AppearanceSettingsPageListTile(),
-                  const HistoryPageListTile(),
-                  ListTile(
-                    leading: const Icon(Icons.style),
-                    title: const Text("Flashcards"),
-                    trailing: const Icon(Icons.chevron_right_rounded, size: 20),
-                    onTap: () => context.push("/settings/flashcards"),
-                  ),
-                  const HunspellPageListTile(),
-                ],
-              ),
-              buildGroup(
-                title: l10n?.backup ?? "Data & Sync",
-                children: [
-                  const BackupPageListTile(),
-                  const CloudSyncPageListTile(),
-                ],
-              ),
-              buildGroup(
-                title: l10n?.about ?? "System & About",
-                children: [
-                  const UpdatePageListTile(),
-                  const OtherPageListTile(),
-                  const LoggerPageListTile(),
-                  const AboutPageListTile(),
-                ],
-              ),
-            ],
+      return SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 16),
+                  child: _WordbookStats(),
+                ),
+                buildGroup(
+                  title: l10n?.manageDictionaries ?? "Dictionaries & AI",
+                  children: [
+                    const ManageDictionariesPageListTile(),
+                    const AiSettingsPageListTile(),
+                    const AudioSettingsPageListTile(),
+                    if (Platform.isAndroid && !isFullFlavor())
+                      const ManageStorageListTile(),
+                  ],
+                ),
+                buildGroup(
+                  title: l10n?.appearance ?? "Appearance & History",
+                  children: [
+                    const AppearanceSettingsPageListTile(),
+                    const HistoryPageListTile(),
+                    ListTile(
+                      leading: const Icon(Icons.style),
+                      title: const Text("Flashcards"),
+                      trailing: const Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                      ),
+                      onTap: () => context.push("/settings/flashcards"),
+                    ),
+                    const HunspellPageListTile(),
+                  ],
+                ),
+                buildGroup(
+                  title: l10n?.backup ?? "Data & Sync",
+                  children: [
+                    const BackupPageListTile(),
+                    const CloudSyncPageListTile(),
+                  ],
+                ),
+                buildGroup(
+                  title: l10n?.about ?? "System & About",
+                  children: [
+                    const UpdatePageListTile(),
+                    const OtherPageListTile(),
+                    const LoggerPageListTile(),
+                    const AboutPageListTile(),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       );
