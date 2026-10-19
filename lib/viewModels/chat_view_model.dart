@@ -46,9 +46,16 @@ class ChatViewModel extends ChangeNotifier {
     _messages.add(ChatMessage(text: "", isUser: false));
     notifyListeners();
 
+    // Build history from prior turns (excluding the placeholder).
+    final history = [
+      for (final m in _messages.sublist(0, _messages.length - 2))
+        ChatTurn(m.text, m.isUser),
+    ];
+
     final buffer = StringBuffer();
     try {
-      await for (final chunk in _ai.requestStream(text)) {
+      await for (final chunk
+          in _ai.requestStreamWithHistory(text, history: history)) {
         buffer.write(chunk);
         _messages[_messages.length - 1] = ChatMessage(
           text: buffer.toString(),

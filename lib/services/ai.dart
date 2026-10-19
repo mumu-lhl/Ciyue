@@ -38,9 +38,40 @@ class AI {
   }
 
   /// Stream the response as text chunks arrive.
-  Stream<String> requestStream(String prompt) {
-    return aiProvider.requestStream(prompt);
+  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) {
+    return aiProvider.requestStream(prompt, cancel: cancel);
   }
+
+  /// Stream with conversation history for multi-turn chat.
+  Stream<String> requestStreamWithHistory(
+    String prompt, {
+    List<ChatTurn> history = const [],
+    CancellationToken? cancel,
+  }) {
+    return aiProvider.requestStreamWithHistory(
+      prompt,
+      history: history,
+      cancel: cancel,
+    );
+  }
+}
+
+/// A single turn in a conversation.
+class ChatTurn {
+  final String text;
+  final bool isUser;
+  const ChatTurn(this.text, this.isUser);
+}
+
+/// Convert [ChatTurn]s to Genkit messages.
+List<Message> chatTurnsToGenkitMessages(List<ChatTurn> history) {
+  return [
+    for (final turn in history)
+      Message(
+        role: turn.isUser ? Role.user : Role.model,
+        content: [TextPart(text: turn.text)],
+      ),
+  ];
 }
 
 abstract class AIProvider {
@@ -48,8 +79,17 @@ abstract class AIProvider {
 
   /// Stream response text chunks. Default implementation falls back to
   /// emitting the full response as a single chunk.
-  Stream<String> requestStream(String prompt) async* {
+  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) async* {
     yield await request(prompt);
+  }
+
+  /// Stream with conversation history. Default ignores history.
+  Stream<String> requestStreamWithHistory(
+    String prompt, {
+    List<ChatTurn> history = const [],
+    CancellationToken? cancel,
+  }) {
+    return requestStream(prompt, cancel: cancel);
   }
 }
 
@@ -92,17 +132,44 @@ class GeminiProvider implements AIProvider {
   }
 
   @override
-  Stream<String> requestStream(String prompt) async* {
+  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) async* {
     try {
       final stream = _ai.generateStream(
         model: googleAI.gemini(model),
         prompt: prompt,
+        cancel: cancel,
       );
       await for (final chunk in stream) {
         final text = chunk.text;
         if (text.isNotEmpty) yield text;
       }
       // Surface any error from the stream.
+      await stream.onResult;
+    } catch (e) {
+      throw Exception("Error requesting Gemini API: $e");
+    }
+  }
+
+  @override
+  Stream<String> requestStreamWithHistory(
+    String prompt, {
+    List<ChatTurn> history = const [],
+    CancellationToken? cancel,
+  }) async* {
+    try {
+      final messages = [
+        ...chatTurnsToGenkitMessages(history),
+        Message(role: Role.user, content: [TextPart(text: prompt)]),
+      ];
+      final stream = _ai.generateStream(
+        model: googleAI.gemini(model),
+        messages: messages,
+        cancel: cancel,
+      );
+      await for (final chunk in stream) {
+        final text = chunk.text;
+        if (text.isNotEmpty) yield text;
+      }
       await stream.onResult;
     } catch (e) {
       throw Exception("Error requesting Gemini API: $e");
@@ -135,11 +202,38 @@ class AnthropicProvider implements AIProvider {
   }
 
   @override
-  Stream<String> requestStream(String prompt) async* {
+  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) async* {
     try {
       final stream = _ai.generateStream(
         model: anthropic.model(model),
         prompt: prompt,
+        cancel: cancel,
+      );
+      await for (final chunk in stream) {
+        final text = chunk.text;
+        if (text.isNotEmpty) yield text;
+      }
+      await stream.onResult;
+    } catch (e) {
+      throw Exception("Error requesting Anthropic API: $e");
+    }
+  }
+
+  @override
+  Stream<String> requestStreamWithHistory(
+    String prompt, {
+    List<ChatTurn> history = const [],
+    CancellationToken? cancel,
+  }) async* {
+    try {
+      final messages = [
+        ...chatTurnsToGenkitMessages(history),
+        Message(role: Role.user, content: [TextPart(text: prompt)]),
+      ];
+      final stream = _ai.generateStream(
+        model: anthropic.model(model),
+        messages: messages,
+        cancel: cancel,
       );
       await for (final chunk in stream) {
         final text = chunk.text;
@@ -197,11 +291,38 @@ class OllamaProvider implements AIProvider {
   }
 
   @override
-  Stream<String> requestStream(String prompt) async* {
+  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) async* {
     try {
       final stream = _ai.generateStream(
         model: openAI.model(model, namespace: "ollama"),
         prompt: prompt,
+        cancel: cancel,
+      );
+      await for (final chunk in stream) {
+        final text = chunk.text;
+        if (text.isNotEmpty) yield text;
+      }
+      await stream.onResult;
+    } catch (e) {
+      throw Exception("Error requesting Ollama API: $e");
+    }
+  }
+
+  @override
+  Stream<String> requestStreamWithHistory(
+    String prompt, {
+    List<ChatTurn> history = const [],
+    CancellationToken? cancel,
+  }) async* {
+    try {
+      final messages = [
+        ...chatTurnsToGenkitMessages(history),
+        Message(role: Role.user, content: [TextPart(text: prompt)]),
+      ];
+      final stream = _ai.generateStream(
+        model: openAI.model(model, namespace: "ollama"),
+        messages: messages,
+        cancel: cancel,
       );
       await for (final chunk in stream) {
         final text = chunk.text;
@@ -270,11 +391,38 @@ class OpenAICompatibleProvider implements AIProvider {
   }
 
   @override
-  Stream<String> requestStream(String prompt) async* {
+  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) async* {
     try {
       final stream = _ai.generateStream(
         model: openAI.model(model, namespace: namespace),
         prompt: prompt,
+        cancel: cancel,
+      );
+      await for (final chunk in stream) {
+        final text = chunk.text;
+        if (text.isNotEmpty) yield text;
+      }
+      await stream.onResult;
+    } catch (e) {
+      throw Exception("Error requesting $provider API: $e");
+    }
+  }
+
+  @override
+  Stream<String> requestStreamWithHistory(
+    String prompt, {
+    List<ChatTurn> history = const [],
+    CancellationToken? cancel,
+  }) async* {
+    try {
+      final messages = [
+        ...chatTurnsToGenkitMessages(history),
+        Message(role: Role.user, content: [TextPart(text: prompt)]),
+      ];
+      final stream = _ai.generateStream(
+        model: openAI.model(model, namespace: namespace),
+        messages: messages,
+        cancel: cancel,
       );
       await for (final chunk in stream) {
         final text = chunk.text;

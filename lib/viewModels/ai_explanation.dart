@@ -6,6 +6,7 @@ import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
+import "package:genkit/genkit.dart";
 import "package:material_ui/material_ui.dart";
 
 class AIExplanationModel extends ChangeNotifier {
@@ -23,6 +24,7 @@ class AIExplanationModel extends ChangeNotifier {
   int get refreshKey => _refreshKey;
 
   bool _mounted = true;
+  CancellationController? _streamController;
 
   AIExplanationModel({this._aiPrompts, AiExplanationDao? dao})
     : _aiExplanationDao = dao ?? AiExplanationDao(mainDatabase),
@@ -36,10 +38,13 @@ class AIExplanationModel extends ChangeNotifier {
   @override
   void dispose() {
     _mounted = false;
+    _streamController?.cancel();
     super.dispose();
   }
 
   Future<void> getExplanation(String word) async {
+    // Cancel any in-flight stream from a previous word.
+    _streamController?.cancel();
     _isLoading = true;
     _explanation = null;
     notifyListeners();
@@ -59,6 +64,7 @@ class AIExplanationModel extends ChangeNotifier {
   }
 
   Future<void> refreshExplanation(String word) async {
+    _streamController?.cancel();
     _isLoading = true;
     _explanation = null;
     notifyListeners();
@@ -75,16 +81,23 @@ class AIExplanationModel extends ChangeNotifier {
         .replaceAll(r"$word", word)
         .replaceAll(r"$targetLanguage", targetLanguage);
 
+    final controller = CancellationController();
+    _streamController = controller;
+
     final buffer = StringBuffer();
     try {
-      await for (final chunk in _ai.requestStream(prompt)) {
+      await for (final chunk
+          in _ai.requestStream(prompt, cancel: controller.token)) {
         if (!_mounted) return;
+        // Ignore chunks from a cancelled (superseded) stream.
+        if (controller.isCancelled) return;
         buffer.write(chunk);
         _explanation = buffer.toString();
         _isLoading = false;
         notifyListeners();
       }
       final fullExplanation = buffer.toString();
+      if (fullExplanation.isEmpty) return;
 
       final existing = await _aiExplanationDao.getAiExplanation(word);
       if (existing != null) {
@@ -97,6 +110,8 @@ class AIExplanationModel extends ChangeNotifier {
         );
       }
     } catch (e) {
+      // Cancelled streams throw CancelledException; don't show as error.
+      if (e is CancelledException) return;
       _explanation = "Error: ${e.toString()}";
     } finally {
       // ignore: control_flow_in_finally

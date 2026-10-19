@@ -6,14 +6,23 @@ class AIPrompts with ChangeNotifier {
   late String _translatePrompt;
   late String _writingCheckPrompt;
 
-  static const String defaultExplainPrompt = """Generate a detailed explanation for the word "\$word". If it has multiple meanings, list as many as possible. Include pronunciation, part of speech, meaning(s), examples, synonyms, and antonyms.
-The output is entirely and exclusively in \$targetLanguage.
-NO OTHER WORD LIKE 'OK, here is...'""";
+  static const String defaultExplainPrompt = """Explain the word "\$word" in detail using markdown. Structure your response with these sections:
+
+## Pronunciation
+## Part of Speech
+## Meanings
+List each meaning with a brief definition. If the word has multiple meanings, list them all numbered.
+## Examples
+Give 1-2 example sentences for the most common meanings, with translations.
+## Synonyms & Antonyms
+List common synonyms and antonyms if any.
+
+The output is entirely and exclusively in \$targetLanguage. Start directly with the first section header, no intro or outro text.""";
   static const String defaultTranslatePrompt =
-      "Translate the following text from \$sourceLanguage to \$targetLanguage. Please provide multiple translation options if possible. You must output the translation entirely and exclusively in \$targetLanguage: \$text";
-  static const String defaultWritingCheckPrompt = """Please evaluate the text from a grammatical and orthographical standpoint, offering suggestions to enhance its composition for a more idiomatic and authentic expression in the given language. 
-Source language: auto decect
-You must output the translation entirely, exclusively and naturally in \$targetLanguage.
+      "Translate the following text from \$sourceLanguage to \$targetLanguage. Provide only the single most natural and accurate translation, no alternatives or explanations. Output the translation entirely and exclusively in \$targetLanguage: \$text";
+  static const String defaultWritingCheckPrompt = """Please evaluate the text from a grammatical and orthographical standpoint, offering suggestions to enhance its composition for a more idiomatic and authentic expression in the given language.
+Source language: auto detect
+You must output the evaluation entirely, exclusively and naturally in \$targetLanguage.
 
 Example:
 
