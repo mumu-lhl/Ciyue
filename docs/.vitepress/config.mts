@@ -25,7 +25,7 @@ export default defineConfig({
             items: [
               { text: 'Overview', link: '/guide/' },
               { text: 'Getting Started', link: '/guide/getting-started' },
-              { text: 'Translation Sources', link: '/guide/translation-sources' },
+              { text: 'Translation', link: '/guide/translation' },
               { text: 'Cloud Sync', link: '/guide/cloud-sync' },
               { text: 'FAQ', link: '/guide/faq' },
             ]
@@ -55,7 +55,7 @@ export default defineConfig({
             items: [
               { text: '总览', link: '/zh/guide/' },
               { text: '快速上手', link: '/zh/guide/getting-started' },
-              { text: '翻译源', link: '/zh/guide/translation-sources' },
+              { text: '翻译', link: '/zh/guide/translation' },
               { text: '云同步', link: '/zh/guide/cloud-sync' },
               { text: '常见问题', link: '/zh/guide/faq' },
             ]
