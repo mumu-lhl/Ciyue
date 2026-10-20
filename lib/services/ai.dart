@@ -20,10 +20,7 @@ class AI {
     } else if (provider == "anthropic") {
       aiProvider = AnthropicProvider(apikey: apikey, model: model);
     } else if (provider == "ollama") {
-      aiProvider = OllamaProvider(
-        model: model,
-        apiUrl: settings.aiAPIUrl,
-      );
+      aiProvider = OllamaProvider(model: model, apiUrl: settings.aiAPIUrl);
     } else {
       aiProvider = OpenAICompatibleProvider(
         provider: provider,
@@ -60,7 +57,14 @@ class AI {
 class ChatTurn {
   final String text;
   final bool isUser;
-  const ChatTurn(this.text, this.isUser);
+
+  /// System instructions (e.g. a roleplay scenario prompt) are sent
+  /// with the system role instead of as a fake model turn.
+  final bool isSystem;
+
+  const ChatTurn(this.text, this.isUser, {this.isSystem = false});
+
+  const ChatTurn.system(this.text) : isUser = false, isSystem = true;
 }
 
 /// Convert [ChatTurn]s to Genkit messages.
@@ -68,7 +72,11 @@ List<Message> chatTurnsToGenkitMessages(List<ChatTurn> history) {
   return [
     for (final turn in history)
       Message(
-        role: turn.isUser ? Role.user : Role.model,
+        role: turn.isSystem
+            ? Role.system
+            : turn.isUser
+            ? Role.user
+            : Role.model,
         content: [TextPart(text: turn.text)],
       ),
   ];
@@ -79,7 +87,10 @@ abstract class AIProvider {
 
   /// Stream response text chunks. Default implementation falls back to
   /// emitting the full response as a single chunk.
-  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) async* {
+  Stream<String> requestStream(
+    String prompt, {
+    CancellationToken? cancel,
+  }) async* {
     yield await request(prompt);
   }
 
@@ -113,9 +124,7 @@ class GeminiProvider implements AIProvider {
   late final Genkit _ai;
 
   GeminiProvider({required this.apikey, required this.model}) {
-    _ai = Genkit(
-      plugins: [googleAI(apiKey: apikey)],
-    );
+    _ai = Genkit(plugins: [googleAI(apiKey: apikey)]);
   }
 
   @override
@@ -132,7 +141,10 @@ class GeminiProvider implements AIProvider {
   }
 
   @override
-  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) async* {
+  Stream<String> requestStream(
+    String prompt, {
+    CancellationToken? cancel,
+  }) async* {
     try {
       final stream = _ai.generateStream(
         model: googleAI.gemini(model),
@@ -159,7 +171,10 @@ class GeminiProvider implements AIProvider {
     try {
       final messages = [
         ...chatTurnsToGenkitMessages(history),
-        Message(role: Role.user, content: [TextPart(text: prompt)]),
+        Message(
+          role: Role.user,
+          content: [TextPart(text: prompt)],
+        ),
       ];
       final stream = _ai.generateStream(
         model: googleAI.gemini(model),
@@ -183,9 +198,7 @@ class AnthropicProvider implements AIProvider {
   late final Genkit _ai;
 
   AnthropicProvider({required this.apikey, required this.model}) {
-    _ai = Genkit(
-      plugins: [anthropic(apiKey: apikey)],
-    );
+    _ai = Genkit(plugins: [anthropic(apiKey: apikey)]);
   }
 
   @override
@@ -202,7 +215,10 @@ class AnthropicProvider implements AIProvider {
   }
 
   @override
-  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) async* {
+  Stream<String> requestStream(
+    String prompt, {
+    CancellationToken? cancel,
+  }) async* {
     try {
       final stream = _ai.generateStream(
         model: anthropic.model(model),
@@ -228,7 +244,10 @@ class AnthropicProvider implements AIProvider {
     try {
       final messages = [
         ...chatTurnsToGenkitMessages(history),
-        Message(role: Role.user, content: [TextPart(text: prompt)]),
+        Message(
+          role: Role.user,
+          content: [TextPart(text: prompt)],
+        ),
       ];
       final stream = _ai.generateStream(
         model: anthropic.model(model),
@@ -291,7 +310,10 @@ class OllamaProvider implements AIProvider {
   }
 
   @override
-  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) async* {
+  Stream<String> requestStream(
+    String prompt, {
+    CancellationToken? cancel,
+  }) async* {
     try {
       final stream = _ai.generateStream(
         model: openAI.model(model, namespace: "ollama"),
@@ -317,7 +339,10 @@ class OllamaProvider implements AIProvider {
     try {
       final messages = [
         ...chatTurnsToGenkitMessages(history),
-        Message(role: Role.user, content: [TextPart(text: prompt)]),
+        Message(
+          role: Role.user,
+          content: [TextPart(text: prompt)],
+        ),
       ];
       final stream = _ai.generateStream(
         model: openAI.model(model, namespace: "ollama"),
@@ -391,7 +416,10 @@ class OpenAICompatibleProvider implements AIProvider {
   }
 
   @override
-  Stream<String> requestStream(String prompt, {CancellationToken? cancel}) async* {
+  Stream<String> requestStream(
+    String prompt, {
+    CancellationToken? cancel,
+  }) async* {
     try {
       final stream = _ai.generateStream(
         model: openAI.model(model, namespace: namespace),
@@ -417,7 +445,10 @@ class OpenAICompatibleProvider implements AIProvider {
     try {
       final messages = [
         ...chatTurnsToGenkitMessages(history),
-        Message(role: Role.user, content: [TextPart(text: prompt)]),
+        Message(
+          role: Role.user,
+          content: [TextPart(text: prompt)],
+        ),
       ];
       final stream = _ai.generateStream(
         model: openAI.model(model, namespace: namespace),
@@ -472,8 +503,7 @@ class ModelProviderManager {
     "gemini": ModelProvider(
       name: "gemini",
       displayedName: "Gemini",
-      apiUrl:
-          "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+      apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
       models: [
         ModelInfo("gemini-3.8-flash", "Gemini 3.8 Flash"),
         ModelInfo("gemini-3.8-flash-lite", "Gemini 3.8 Flash Lite"),

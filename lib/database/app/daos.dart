@@ -1084,7 +1084,9 @@ class QuizMistakeDao extends DatabaseAccessor<AppDatabase>
   QuizMistakeDao(super.attachedDatabase);
 
   /// Record a wrong answer. Same word answered wrong again bumps it to the
-  /// top (delete + insert) so review order reflects recency.
+  /// top (delete + insert) so review order reflects recency. Word matching
+  /// is case-insensitive: AI-generated questions don't always reproduce
+  /// the stored word's exact casing.
   Future<void> addMistake({
     required String word,
     required String questionType,
@@ -1093,10 +1095,12 @@ class QuizMistakeDao extends DatabaseAccessor<AppDatabase>
     String? userAnswer,
   }) {
     return transaction(() async {
-      await (delete(quizMistakes)..where((t) => t.word.isValue(word))).go();
+      await (delete(
+        quizMistakes,
+      )..where((t) => t.word.lower().isValue(word.trim().toLowerCase()))).go();
       await into(quizMistakes).insert(
         QuizMistakesCompanion(
-          word: Value(word),
+          word: Value(word.trim()),
           questionType: Value(questionType),
           question: Value(question),
           correctAnswer: Value(correctAnswer),
@@ -1124,9 +1128,12 @@ class QuizMistakeDao extends DatabaseAccessor<AppDatabase>
     return row.read(count) ?? 0;
   }
 
-  /// Remove a word from mistakes once the user answers it correctly in review.
+  /// Remove a word from mistakes once the user answers it correctly.
+  /// Case-insensitive, matching [addMistake].
   Future<void> removeMistake(String word) {
-    return (delete(quizMistakes)..where((t) => t.word.isValue(word))).go();
+    return (delete(
+      quizMistakes,
+    )..where((t) => t.word.lower().isValue(word.trim().toLowerCase()))).go();
   }
 
   Future<void> clearMistakes() {
