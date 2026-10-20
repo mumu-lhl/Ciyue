@@ -15,7 +15,7 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   late final QuizViewModel _viewModel;
   final _spellingController = TextEditingController();
-  String? _lastSpellingWord;
+  int? _lastSpellingIndex;
 
   @override
   void initState() {
@@ -96,8 +96,14 @@ class _QuizPageState extends State<QuizPage> {
           ),
           const SizedBox(height: 16),
           Text(
-            locale.quizNeedWords,
-            style: theme.textTheme.titleMedium,
+            model.loadFailed
+                ? AppLocalizations.of(context)!.quizLoadFailed
+                : locale.quizNeedWords,
+            style: model.loadFailed
+                ? theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.error,
+                  )
+                : theme.textTheme.titleMedium,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -259,8 +265,10 @@ class _QuizPageState extends State<QuizPage> {
     final locale = AppLocalizations.of(context)!;
     final answered = model.isAnswered;
     // Clear stale input when moving to a new spelling question.
-    if (_lastSpellingWord != question.word) {
-      _lastSpellingWord = question.word;
+    // Keyed on the question index, not the word: two questions for
+    // the same word must not inherit the previous typed answer.
+    if (_lastSpellingIndex != model.currentIndex) {
+      _lastSpellingIndex = model.currentIndex;
       _spellingController.clear();
     }
     final correct =

@@ -540,11 +540,21 @@ class _VocabularyDialogState extends State<_VocabularyDialog> {
                         if (selected) {
                           final messenger = ScaffoldMessenger.of(context);
                           final ok = await widget.onSave(word);
-                          if (ok && mounted) {
+                          if (!mounted) return;
+                          if (ok) {
                             setState(() => _saved.add(word));
                             messenger.showSnackBar(
                               SnackBar(
                                 content: Text(locale.savedToWordbook),
+                                duration: const Duration(seconds: 1),
+                              ),
+                            );
+                          } else {
+                            // Most likely already in the wordbook —
+                            // say so instead of silently doing nothing.
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(locale.alreadyInWordbook),
                                 duration: const Duration(seconds: 1),
                               ),
                             );
