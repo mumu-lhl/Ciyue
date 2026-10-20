@@ -91,6 +91,27 @@ void main() {
       expect(await dao.getMistakeCount(), 0);
       expect(await dao.getMistakes(), isEmpty);
     });
+
+    test("mistake matching is case-insensitive", () async {
+      await dao.addMistake(
+        word: "Apple",
+        questionType: QuizQuestionType.choice,
+        question: "q",
+        correctAnswer: "a",
+      );
+      // Same word in a different case must not create a second row.
+      await dao.addMistake(
+        word: "apple",
+        questionType: QuizQuestionType.choice,
+        question: "q2",
+        correctAnswer: "a",
+      );
+      expect(await dao.getMistakeCount(), 1);
+
+      // Removal works regardless of the casing the AI produced.
+      await dao.removeMistake("APPLE");
+      expect(await dao.getMistakeCount(), 0);
+    });
   });
 
   group("QuizQuestion", () {
@@ -139,6 +160,57 @@ void main() {
       });
       expect(q.type, QuizQuestionType.choice);
     });
+
+    test("fromJson coerces drifting correctIndex values", () {
+      final fromDouble = QuizQuestion.fromJson({
+        "word": "apple",
+        "question": "q",
+        "options": ["a", "b", "c", "d"],
+        "correctIndex": 1.0,
+      });
+      expect(fromDouble.correctIndex, 1);
+
+      final fromString = QuizQuestion.fromJson({
+        "word": "apple",
+        "question": "q",
+        "options": ["a", "b", "c", "d"],
+        "correctIndex": "2",
+      });
+      expect(fromString.correctIndex, 2);
+
+      final outOfRange = QuizQuestion.fromJson({
+        "word": "apple",
+        "question": "q",
+        "options": ["a", "b", "c", "d"],
+        "correctIndex": 99,
+      });
+      expect(outOfRange.correctIndex, 3);
+      expect(outOfRange.correctAnswer, "d");
+    });
+
+    test("isUsable rejects unanswerable questions", () {
+      final noOptions = QuizQuestion.fromJson({
+        "word": "apple",
+        "type": "choice",
+        "question": "q",
+        "options": <String>[],
+      });
+      expect(noOptions.isUsable, isFalse);
+
+      final emptyWord = QuizQuestion.fromJson({
+        "word": "",
+        "type": "spelling",
+        "question": "q",
+      });
+      expect(emptyWord.isUsable, isFalse);
+
+      final spelling = QuizQuestion.fromJson({
+        "word": "apple",
+        "type": "spelling",
+        "question": "A round fruit",
+      });
+      expect(spelling.isUsable, isTrue);
+    });
   });
 
   group("TtsHelper.stripMarkdown", () {
@@ -178,6 +250,25 @@ void main() {
       final m = ChatMessage.fromJson({});
       expect(m.text, "");
       expect(m.isUser, isFalse);
+    });
+  });
+
+  group("ChatScenario.promptTitle", () {
+    test("presets use plain titles, never l10n keys", () {
+      for (final s in ChatScenario.presets) {
+        expect(s.promptTitle, isNot(startsWith("scenario")));
+        expect(s.promptTitle, isNotEmpty);
+      }
+      expect(ChatScenario.presets.first.promptTitle, "At a Restaurant");
+    });
+
+    test("custom scenarios use their own title", () {
+      const custom = ChatScenario(
+        id: "custom_1",
+        titleKey: "At the Airport",
+        systemPrompt: "You are a check-in agent.",
+      );
+      expect(custom.promptTitle, "At the Airport");
     });
   });
 }

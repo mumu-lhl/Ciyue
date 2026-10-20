@@ -66,21 +66,30 @@ class TtsHelper {
   }
 
   /// Speak [text]. Tapping again while the same text is speaking stops it.
+  /// All platform errors are swallowed: on platforms without a working
+  /// TTS engine (e.g. Linux desktop) flutter_tts throws, which must not
+  /// surface as an unhandled async error from a button tap.
   static Future<void> toggleSpeak(String text) async {
-    await _ensureInitialized();
-    final clean = stripMarkdown(text);
-    if (clean.isEmpty) return;
-    if (_speaking == clean) {
-      await stop();
-      return;
+    try {
+      await _ensureInitialized();
+      final clean = stripMarkdown(text);
+      if (clean.isEmpty) return;
+      if (_speaking == clean) {
+        await stop();
+        return;
+      }
+      _speaking = clean;
+      await _tts.speak(clean);
+    } catch (_) {
+      _speaking = null;
     }
-    _speaking = clean;
-    await _tts.speak(clean);
   }
 
   static Future<void> stop() async {
     _speaking = null;
-    await _tts.stop();
+    try {
+      await _tts.stop();
+    } catch (_) {}
   }
 
   static bool get isSpeaking => _speaking != null;

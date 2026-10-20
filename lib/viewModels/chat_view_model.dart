@@ -34,6 +34,26 @@ class ChatScenario {
     required this.systemPrompt,
   });
 
+  /// Human-readable title for use inside AI prompts. Presets store an
+  /// l10n key in [titleKey], which must never leak into a prompt;
+  /// custom scenarios store their actual title in [titleKey].
+  String get promptTitle {
+    switch (id) {
+      case "restaurant":
+        return "At a Restaurant";
+      case "travel":
+        return "Travel";
+      case "business":
+        return "Business Meeting";
+      case "shopping":
+        return "Shopping";
+      case "daily":
+        return "Daily Chat";
+      default:
+        return titleKey;
+    }
+  }
+
   static const List<ChatScenario> presets = [
     ChatScenario(
       id: "restaurant",
@@ -73,14 +93,25 @@ class ChatViewModel extends ChangeNotifier {
   bool _isStreaming = false;
   bool get isStreaming => _isStreaming;
 
+  bool _disposed = false;
+
+  /// Incremented whenever the conversation is reset (clear, new
+  /// scenario) or the view model is disposed. Streaming loops capture
+  /// their generation and stop writing once it no longer matches, so a
+  /// stale stream can never write into a fresh conversation.
+  int _streamGeneration = 0;
+
   /// Optional initial context, e.g. the word from the word detail page.
-  final String? initialContext;
+  /// Restored from the persisted history when the chat is reopened
+  /// without fresh context.
+  String? _initialContext;
+  String? get initialContext => _initialContext;
 
   /// Active scenario for roleplay, null for free chat.
   ChatScenario? _scenario;
   ChatScenario? get scenario => _scenario;
 
-  ChatViewModel({this.initialContext}) {
+  ChatViewModel({String? initialContext}) : _initialContext = initialContext {
     final config = settings.getAiProviderConfig(settings.aiProvider);
     _ai = AI(
       provider: settings.aiProvider,
@@ -112,7 +143,7 @@ class ChatViewModel extends ChangeNotifier {
         json.encode({
           "messages": clean,
           "scenarioId": _scenario?.id,
-          "initialContext": initialContext,
+          "initialContext": _initialContext,
         }),
       );
     } catch (_) {}
@@ -140,68 +171,92 @@ class ChatViewModel extends ChangeNotifier {
           }
         }
       }
+      // Restore the word context so follow-up questions still refer
+      // to the same word after reopening the chat.
+      _initialContext = data["initialContext"] as String?;
       notifyListeners();
     } catch (_) {}
   }
 
   @override
   void dispose() {
+    _disposed = true;
+    _streamGeneration++;
     textController.dispose();
     focusNode.dispose();
     super.dispose();
   }
 
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
+  /// Write a streaming chunk into the placeholder at [index], unless
+  /// the stream's generation is stale (chat cleared / scenario
+  /// changed / disposed) or the placeholder is gone.
+  bool _writeStreamChunk(int generation, int index, String text) {
+    if (_disposed || generation != _streamGeneration) return false;
+    if (index < 0 || index >= _messages.length) return false;
+    _messages[index] = ChatMessage(text: text, isUser: false);
+    notifyListeners();
+    return true;
+  }
+
   List<ChatMessage> get messages => _messages;
 
   void clearChat() {
+    _streamGeneration++;
+    _isStreaming = false;
     _messages.clear();
     _scenario = null;
     _persistHistory();
-    notifyListeners();
+    _notify();
   }
 
   /// Start a roleplay scenario. Clears current chat.
   void startScenario(ChatScenario scenario) {
+    _streamGeneration++;
+    _isStreaming = false;
     _messages.clear();
     _scenario = scenario;
-    notifyListeners();
+    _notify();
     // Send an opening message from the AI.
     _sendScenarioOpener();
   }
 
-  Future<void> _sendScenarioOpener() async {
-    _messages.add(const ChatMessage(text: "", isUser: false));
-    _isStreaming = true;
-    notifyListeners();
-
-    // Build the system prompt from the customizable template.
+  String _buildScenarioSystemPrompt() {
     final template = AIPrompts().scenarioPrompt;
-    final systemPrompt = template
-        .replaceAll(r"$scenarioTitle", _scenario!.titleKey)
+    return template
+        .replaceAll(r"$scenarioTitle", _scenario!.promptTitle)
         .replaceAll(r"$scenarioDescription", _scenario!.systemPrompt);
+  }
+
+  Future<void> _sendScenarioOpener() async {
+    final generation = _streamGeneration;
+    _messages.add(const ChatMessage(text: "", isUser: false));
+    final index = _messages.length - 1;
+    _isStreaming = true;
+    _notify();
+
+    final systemPrompt = _buildScenarioSystemPrompt();
 
     final buffer = StringBuffer();
     try {
       await for (final chunk in _ai.requestStreamWithHistory(
         "Start the roleplay. Greet the user and set the scene in one or two sentences.",
-        history: [ChatTurn(systemPrompt, false)],
+        history: [ChatTurn.system(systemPrompt)],
       )) {
         buffer.write(chunk);
-        _messages[_messages.length - 1] = ChatMessage(
-          text: buffer.toString(),
-          isUser: false,
-        );
-        notifyListeners();
+        if (!_writeStreamChunk(generation, index, buffer.toString())) return;
       }
     } catch (e) {
-      _messages[_messages.length - 1] = ChatMessage(
-        text: "Error: $e",
-        isUser: false,
-      );
+      _writeStreamChunk(generation, index, "Error: $e");
     } finally {
-      _isStreaming = false;
-      _persistHistory();
-      notifyListeners();
+      if (generation == _streamGeneration) {
+        _isStreaming = false;
+        _persistHistory();
+        _notify();
+      }
     }
   }
 
@@ -228,7 +283,16 @@ class ChatViewModel extends ChangeNotifier {
         jsonStr = jsonStr.substring(start, end).trim();
       }
       final list = json.decode(jsonStr) as List;
-      return list.cast<String>();
+      // Materialize eagerly: AI output often drifts from plain
+      // strings ({"word": ...} objects, numbers). A lazy cast would
+      // throw later, inside the dialog's build.
+      return [
+        for (final e in list)
+          if (e is String && e.trim().isNotEmpty)
+            e.trim()
+          else if (e is Map && e["word"] != null)
+            e["word"].toString(),
+      ];
     } catch (e) {
       return [];
     }
@@ -251,31 +315,26 @@ class ChatViewModel extends ChangeNotifier {
       return;
     }
 
+    final generation = _streamGeneration;
     textController.clear();
     _messages.add(ChatMessage(text: text, isUser: true));
     // Placeholder for the streaming AI response.
     _messages.add(ChatMessage(text: "", isUser: false));
+    final index = _messages.length - 1;
     _isStreaming = true;
     notifyListeners();
 
     // Build history from prior turns (excluding the placeholder).
     // If there's initial context (e.g. a word), prepend it as a system hint.
     // If in a scenario, prepend the scenario system prompt from the template.
-    String? scenarioSystemPrompt;
-    if (_scenario != null) {
-      final template = AIPrompts().scenarioPrompt;
-      scenarioSystemPrompt = template
-          .replaceAll(r"$scenarioTitle", _scenario!.titleKey)
-          .replaceAll(r"$scenarioDescription", _scenario!.systemPrompt);
-    }
     final history = [
-      if (scenarioSystemPrompt != null) ChatTurn(scenarioSystemPrompt, false),
+      if (_scenario != null) ChatTurn.system(_buildScenarioSystemPrompt()),
       for (final m in _messages.sublist(0, _messages.length - 2))
         ChatTurn(m.text, m.isUser),
     ];
 
-    final effectivePrompt = initialContext != null && history.isEmpty
-        ? "The user is asking about the word \"$initialContext\".\n\n$text"
+    final effectivePrompt = _initialContext != null && history.isEmpty
+        ? "The user is asking about the word \"$_initialContext\".\n\n$text"
         : text;
 
     final buffer = StringBuffer();
@@ -285,21 +344,16 @@ class ChatViewModel extends ChangeNotifier {
         history: history,
       )) {
         buffer.write(chunk);
-        _messages[_messages.length - 1] = ChatMessage(
-          text: buffer.toString(),
-          isUser: false,
-        );
-        notifyListeners();
+        if (!_writeStreamChunk(generation, index, buffer.toString())) return;
       }
     } catch (e) {
-      _messages[_messages.length - 1] = ChatMessage(
-        text: "Error: $e",
-        isUser: false,
-      );
+      _writeStreamChunk(generation, index, "Error: $e");
     } finally {
-      _isStreaming = false;
-      _persistHistory();
-      notifyListeners();
+      if (generation == _streamGeneration) {
+        _isStreaming = false;
+        _persistHistory();
+        _notify();
+      }
     }
   }
 }

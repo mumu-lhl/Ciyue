@@ -21,9 +21,13 @@ class ChatScenarioManager with ChangeNotifier {
     if (jsonStr != null) {
       try {
         final list = json.decode(jsonStr) as List;
-        _customScenarios = list
-            .map((e) => _scenarioFromJson(e as Map<String, dynamic>))
-            .toList();
+        // Parse per entry: one malformed scenario must not wipe the
+        // user's whole custom list.
+        _customScenarios = [
+          for (final e in list)
+            if (e is Map<String, dynamic>)
+              for (final s in _tryParse(e)) s,
+        ];
       } catch (_) {
         _customScenarios = [];
       }
@@ -31,11 +35,19 @@ class ChatScenarioManager with ChangeNotifier {
     final disabledJson = prefs.getString(_disabledKey);
     if (disabledJson != null) {
       try {
-        _disabledPresets = (json.decode(disabledJson) as List).cast<String>().toSet();
+        _disabledPresets = (json.decode(disabledJson) as List)
+            .whereType<String>()
+            .toSet();
       } catch (_) {
         _disabledPresets = {};
       }
     }
+  }
+
+  Iterable<ChatScenario> _tryParse(Map<String, dynamic> json) sync* {
+    try {
+      yield _scenarioFromJson(json);
+    } catch (_) {}
   }
 
   List<ChatScenario> get customScenarios => List.unmodifiable(_customScenarios);
@@ -70,7 +82,11 @@ class ChatScenarioManager with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateScenario(String id, String title, String description) async {
+  Future<void> updateScenario(
+    String id,
+    String title,
+    String description,
+  ) async {
     final index = _customScenarios.indexWhere((s) => s.id == id);
     if (index != -1) {
       _customScenarios[index] = ChatScenario(

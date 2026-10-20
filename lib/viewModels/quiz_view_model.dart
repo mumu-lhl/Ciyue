@@ -37,14 +37,41 @@ class QuizQuestion {
   });
 
   factory QuizQuestion.fromJson(Map<String, dynamic> json) {
+    // AI output drifts: numbers arrive as doubles or strings, options
+    // may contain non-strings. Coerce everything instead of casting.
+    final options = (json["options"] as List?)
+        ?.map((e) => e.toString())
+        .toList();
+    final rawIndex = json["correctIndex"];
+    var correctIndex = switch (rawIndex) {
+      int i => i,
+      double d => d.toInt(),
+      String s => int.tryParse(s) ?? double.tryParse(s)?.toInt() ?? 0,
+      _ => 0,
+    };
+    if (options != null && options.isNotEmpty) {
+      correctIndex = correctIndex.clamp(0, options.length - 1);
+    } else {
+      correctIndex = 0;
+    }
     return QuizQuestion(
-      word: json["word"] as String,
-      type: json["type"] as String? ?? QuizQuestionType.choice,
-      question: json["question"] as String,
-      options: (json["options"] as List?)?.cast<String>() ?? const [],
-      correctIndex: json["correctIndex"] as int? ?? 0,
-      explanation: json["explanation"] as String? ?? "",
+      word: json["word"]?.toString() ?? "",
+      type: json["type"]?.toString() ?? QuizQuestionType.choice,
+      question: json["question"]?.toString() ?? "",
+      options: options ?? const [],
+      correctIndex: correctIndex,
+      explanation: json["explanation"]?.toString() ?? "",
     );
+  }
+
+  /// Whether this question can actually be answered: choice/cloze
+  /// questions need options with a valid correct index.
+  bool get isUsable {
+    if (word.isEmpty || question.isEmpty) return false;
+    if (type == QuizQuestionType.spelling) return true;
+    return options.length >= 2 &&
+        correctIndex >= 0 &&
+        correctIndex < options.length;
   }
 
   /// The canonical correct answer text, regardless of type.
@@ -89,6 +116,12 @@ class QuizViewModel extends ChangeNotifier {
 
   bool _reviewMode = false;
   bool get reviewMode => _reviewMode;
+
+  /// Set when quiz generation failed (network, API, malformed AI
+  /// output) so the UI can show an error instead of the misleading
+  /// "not enough words" message.
+  bool _loadFailed = false;
+  bool get loadFailed => _loadFailed;
 
   int _mistakeCount = 0;
   int get mistakeCount => _mistakeCount;
@@ -189,6 +222,7 @@ class QuizViewModel extends ChangeNotifier {
 
   Future<void> _startQuiz({required bool reviewOnly}) async {
     _state = QuizState.loading;
+    _loadFailed = false;
     _questions = [];
     _currentIndex = 0;
     _score = 0;
@@ -256,10 +290,20 @@ class QuizViewModel extends ChangeNotifier {
       final questionsJson = data["questions"] as List;
       _questions = questionsJson
           .map((q) => QuizQuestion.fromJson(q as Map<String, dynamic>))
+          .where((q) => q.isUsable)
           .toList();
 
-      _state = QuizState.answering;
+      if (_questions.isEmpty) {
+        // The AI returned nothing usable (empty array, refusal, or
+        // unanswerable questions) — report failure instead of
+        // entering the answering state with no questions.
+        _loadFailed = true;
+        _state = QuizState.idle;
+      } else {
+        _state = QuizState.answering;
+      }
     } catch (e) {
+      _loadFailed = true;
       _state = QuizState.idle;
     } finally {
       if (_mounted) notifyListeners();
@@ -272,10 +316,9 @@ class QuizViewModel extends ChangeNotifier {
     final q = currentQuestion!;
     if (index == q.correctIndex) {
       _score++;
-      // Answered correctly in review: drop it from mistakes.
-      if (_reviewMode) {
-        _mistakeDao.removeMistake(q.word).then((_) => _loadMistakeCount());
-      }
+      // A correct answer clears the word from the mistake book in
+      // both modes — it has been mastered either way.
+      _mistakeDao.removeMistake(q.word).then((_) => _loadMistakeCount());
     } else {
       _recordMistake(q, userAnswer: q.options[index]);
     }
@@ -291,9 +334,7 @@ class QuizViewModel extends ChangeNotifier {
     final correct = answer.trim().toLowerCase() == q.word.trim().toLowerCase();
     if (correct) {
       _score++;
-      if (_reviewMode) {
-        _mistakeDao.removeMistake(q.word).then((_) => _loadMistakeCount());
-      }
+      _mistakeDao.removeMistake(q.word).then((_) => _loadMistakeCount());
     } else {
       _recordMistake(q, userAnswer: answer.trim());
     }
