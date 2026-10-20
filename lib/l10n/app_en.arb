@@ -630,6 +630,10 @@
   "@translating": {},
   "translationFailed": "Translation failed",
   "@translationFailed": {},
+  "configureInAiSettings": "Model & API key are configured in AI Settings",
+  "@configureInAiSettings": {},
+  "openAiSettings": "Open AI Settings",
+  "@openAiSettings": {},
   "sourcesNotConfigured": "Skipped (not configured): {names}",
   "@sourcesNotConfigured": {
     "placeholders": {

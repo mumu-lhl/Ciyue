@@ -27,11 +27,13 @@ class AITranslationService implements TranslationService {
     required String sourceLanguage,
     required String targetLanguage,
     required bool isRichOutput,
+    String? providerOverride,
   }) async {
+    final provider = providerOverride ?? settings.aiProvider;
     final ai = AI(
-      provider: settings.aiProvider,
-      model: settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
-      apikey: settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
+      provider: provider,
+      model: settings.getAiProviderConfig(provider)["model"] ?? "",
+      apikey: settings.getAiProviderConfig(provider)["apiKey"] ?? "",
     );
 
     final sourceLangName = languageMap[sourceLanguage] ?? sourceLanguage;

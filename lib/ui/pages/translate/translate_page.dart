@@ -369,7 +369,7 @@ class _ResultText extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final child = entry.source.id == "ai"
+    final child = entry.source.isAi
         ? GptMarkdown(text)
         : Text(text, style: const TextStyle(fontSize: 17, height: 1.45));
 

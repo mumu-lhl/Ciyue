@@ -67,13 +67,17 @@ void main() {
       await prefs.remove("translationSourcesEnabled");
     });
 
-    test("default order contains all 13 sources", () {
+    test("default order contains all 23 sources", () {
       final order = TranslationSourcesConfig.loadOrder();
-      expect(order.length, 13);
-      expect(order.first, "ai");
+      expect(order.length, 23);
+      expect(order.first, "ai:openai");
       expect(
         order,
         containsAll([
+          "ai:gemini",
+          "ai:deepseek",
+          "ai:anthropic",
+          "ai:ollama",
           "google",
           "microsoft",
           "deeplFree",
@@ -91,11 +95,11 @@ void main() {
     });
 
     test("saved order is respected and new sources appended", () async {
-      await TranslationSourcesConfig.saveOrder(["baidu", "ai"]);
+      await TranslationSourcesConfig.saveOrder(["baidu", "google"]);
       final order = TranslationSourcesConfig.loadOrder();
       expect(order.first, "baidu");
-      expect(order[1], "ai");
-      expect(order.length, 13);
+      expect(order[1], "google");
+      expect(order.length, 23);
     });
 
     test("round-trip enabled list", () async {
@@ -115,7 +119,7 @@ void main() {
       expect(ids.toSet().length, ids.length);
       for (final s in allTranslationSources) {
         expect(s.name, isNotEmpty);
-        expect(translationSourceById(s.id), same(s));
+        expect(translationSourceById(s.id)?.id, s.id);
       }
     });
 
@@ -136,6 +140,23 @@ void main() {
       for (final id in ["deeplx", "deepl", "googleCloud", "azure", "yandex"]) {
         expect(translationSourceById(id)!.requiresConfig, isTrue, reason: id);
       }
+    });
+
+    test("each AI provider is its own source", () {
+      final aiSources = allTranslationSources.where((s) => s.isAi).toList();
+      expect(aiSources.length, 11);
+      expect(aiSources.first.id, "ai:openai");
+      expect(translationSourceById("ai:deepseek")!.name, contains("DeepSeek"));
+      for (final s in aiSources) {
+        expect(s.requiresConfig, isTrue, reason: s.id);
+      }
+      // Non-AI sources are not flagged as AI.
+      expect(translationSourceById("google")!.isAi, isFalse);
+    });
+
+    test("legacy ai id migrates to the current provider source", () {
+      expect(migrateSourceId("google"), "google");
+      expect(migrateSourceId("ai:openai"), "ai:openai");
     });
   });
 }

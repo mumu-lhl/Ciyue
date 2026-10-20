@@ -1,5 +1,6 @@
 import "package:ciyue/services/translation_sources.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/pages/settings/ai_settings/ai_settings_page.dart";
 import "package:ciyue/viewModels/translate_settings_view_model.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -235,6 +236,31 @@ class _SourceConfigFields extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (source.isAi) {
+      final locale = AppLocalizations.of(context)!;
+      return Row(
+        children: [
+          Expanded(
+            child: Text(
+              locale.configureInAiSettings,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: Text(locale.openAiSettings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AiSettingsPage()),
+              );
+            },
+          ),
+        ],
+      );
+    }
     switch (source.id) {
       case "deeplx":
         return TextFormField(

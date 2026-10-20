@@ -5,6 +5,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/http_client.dart";
 import "package:ciyue/models/translation_result.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/ai.dart" show ModelProviderManager;
 import "package:ciyue/services/translation.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -24,6 +25,9 @@ abstract class TranslationSource {
   /// Whether this source needs user configuration (API key / URL)
   /// before it can run.
   bool get requiresConfig;
+
+  /// Whether this is an AI provider source (renders markdown output).
+  bool get isAi => id.startsWith("ai:");
 
   /// Whether the required configuration is present.
   bool get isConfigured;
@@ -669,22 +673,37 @@ class YandexCloudSource extends TranslationSource {
   }
 }
 
-/// Adapters wrapping the pre-existing services (AI / DeepLX) so every
-/// source shares one interface.
-class AiSource extends TranslationSource {
-  const AiSource();
+/// One AI provider as a translation source. Every provider configured
+/// in AI Settings (model + API key) can be enabled independently, so a
+/// translation can fan out to several LLMs at once.
+class AiProviderSource extends TranslationSource {
+  const AiProviderSource(this.providerId);
+
+  /// The AI provider id, e.g. "openai", "deepseek".
+  final String providerId;
 
   @override
-  String get id => "ai";
+  String get id => "ai:$providerId";
 
   @override
-  String get name => "AI";
+  String get name =>
+      "AI · ${ModelProviderManager.modelProviders[providerId]?.displayedName ?? providerId}";
 
   @override
-  bool get requiresConfig => false;
+  bool get requiresConfig => true;
 
   @override
-  bool get isConfigured => true;
+  bool get isConfigured {
+    final config = settings.getAiProviderConfig(providerId);
+    final model = (config["model"] as String? ?? "").trim();
+    if (model.isEmpty) return false;
+    final apiKey = (config["apiKey"] as String? ?? "").trim();
+    // Local providers work without an API key.
+    if (providerId == "ollama" || providerId == "openai_compatible") {
+      return true;
+    }
+    return apiKey.isNotEmpty;
+  }
 
   @override
   Future<TranslationResult> translate(
@@ -699,6 +718,7 @@ class AiSource extends TranslationSource {
       sourceLanguage: sourceLanguage,
       targetLanguage: targetLanguage,
       isRichOutput: settings.isRichOutput,
+      providerOverride: providerId,
     );
   }
 }
@@ -735,21 +755,23 @@ class DeepLXSource extends TranslationSource {
   }
 }
 
-/// All available sources, in default display order.
-const List<TranslationSource> allTranslationSources = [
-  AiSource(),
-  GoogleFreeSource(),
-  MicrosoftFreeSource(),
-  DeepLFreeSource(),
-  BaiduFreeSource(),
-  TencentFreeSource(),
-  VolcengineFreeSource(),
-  YandexFreeSource(),
-  DeepLXSource(),
-  DeepLSource(),
-  GoogleCloudSource(),
-  AzureSource(),
-  YandexCloudSource(),
+/// All available sources, in default display order: AI providers
+/// first (in [ModelProviderManager] order), then the web/API sources.
+List<TranslationSource> get allTranslationSources => [
+  for (final providerId in ModelProviderManager.modelProviders.keys)
+    AiProviderSource(providerId),
+  const GoogleFreeSource(),
+  const MicrosoftFreeSource(),
+  const DeepLFreeSource(),
+  const BaiduFreeSource(),
+  const TencentFreeSource(),
+  const VolcengineFreeSource(),
+  const YandexFreeSource(),
+  const DeepLXSource(),
+  const DeepLSource(),
+  const GoogleCloudSource(),
+  const AzureSource(),
+  const YandexCloudSource(),
 ];
 
 TranslationSource? translationSourceById(String id) {
@@ -758,6 +780,11 @@ TranslationSource? translationSourceById(String id) {
   }
   return null;
 }
+
+/// The legacy single "ai" source id maps to the currently selected
+/// AI provider's source.
+String migrateSourceId(String id) =>
+    id == "ai" ? "ai:${settings.aiProvider}" : id;
 
 /// User's multi-source configuration: which sources are enabled and in
 /// what order results appear. Stored as JSON lists in prefs.
@@ -771,7 +798,10 @@ class TranslationSourcesConfig {
     try {
       final raw = prefs.getString(_orderKey);
       if (raw == null) return defaults;
-      final saved = (json.decode(raw) as List).cast<String>();
+      final saved = (json.decode(raw) as List)
+          .cast<String>()
+          .map(migrateSourceId)
+          .toList();
       // Keep saved order, append any new sources at the end.
       final ordered = saved.where((id) => defaults.contains(id)).toList();
       for (final id in defaults) {
@@ -790,12 +820,21 @@ class TranslationSourcesConfig {
       final raw = prefs.getString(_enabledKey);
       if (raw == null) {
         final legacy = settings.translationProvider;
-        return [if (translationSourceById(legacy) != null) legacy else "ai"];
+        if (legacy == "ai") return ["ai:${settings.aiProvider}"];
+        return [
+          if (translationSourceById(legacy) != null)
+            legacy
+          else
+            "ai:${settings.aiProvider}",
+        ];
       }
-      final saved = (json.decode(raw) as List).cast<String>();
+      final saved = (json.decode(raw) as List)
+          .cast<String>()
+          .map(migrateSourceId)
+          .toList();
       return saved.where((id) => translationSourceById(id) != null).toList();
     } catch (_) {
-      return ["ai"];
+      return ["ai:${settings.aiProvider}"];
     }
   }
 
