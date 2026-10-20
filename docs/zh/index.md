@@ -29,7 +29,7 @@ features:
     details: 把单词本变成抽认卡，用 FSRS 间隔重复算法安排复习。
   - icon: 🌐
     title: AI 翻译与释义
-    details: 支持 OpenAI、Gemini、DeepSeek 等 providers 的翻译和 AI 释义。
+    details: 20 多个翻译源同时查询——Google、DeepL、百度与全部 AI 服务商——结果并排对比。
   - icon: 🔖
     title: 单词本与历史
     details: 收藏单词、查看查词历史，还能在多设备间同步。

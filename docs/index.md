@@ -29,7 +29,7 @@ features:
     details: Turn your wordbook into flashcards scheduled by the FSRS spaced-repetition algorithm.
   - icon: 🌐
     title: AI translation & explanation
-    details: Translate and explain words with OpenAI, Gemini, DeepSeek and other providers.
+    details: Translate with 20+ sources at once — Google, DeepL, Baidu and every AI provider — and compare results side by side.
   - icon: 🔖
     title: Wordbook & history
     details: Bookmark words, review your lookup history, and keep everything in sync across devices.

@@ -58,3 +58,7 @@ Translations are managed on [Weblate](https://hosted.weblate.org/engage/ciyue/).
 ## I found a bug / have a feature request. Where do I report it?
 
 Open an issue on [GitHub](https://github.com/mumu-lhl/Ciyue/issues). Please include your app version, platform, and steps to reproduce.
+
+## A translation source suddenly stopped working. Why?
+
+The free translation sources use public web endpoints rather than official APIs, so a provider can change or block an endpoint at any time. Disable that source in the translation settings and use the others, or switch to an official API source. See [Translation Sources](./translation-sources) for details and the disclaimer.

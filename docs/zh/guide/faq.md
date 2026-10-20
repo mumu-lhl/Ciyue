@@ -58,3 +58,7 @@ F-Droid 按自己的节奏构建和发布应用，所以版本会比 GitHub 晚�
 ## 发现 bug / 有功能建议，去哪里反馈？
 
 到 [GitHub](https://github.com/mumu-lhl/Ciyue/issues) 提 issue。请附上应用版本、平台和复现步骤。
+
+## 某个翻译源突然不能用了，为什么？
+
+免费翻译源用的是网页公开接口而非官方 API，服务商可能随时变更或封禁接口。请在翻译设置里停用该源、改用其他源，或换成官方 API 源。详见[翻译源](./translation-sources)页（含免责声明）。
