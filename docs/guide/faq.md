@@ -61,4 +61,4 @@ Open an issue on [GitHub](https://github.com/mumu-lhl/Ciyue/issues). Please incl
 
 ## A translation source suddenly stopped working. Why?
 
-The free translation sources use public web endpoints rather than official APIs, so a provider can change or block an endpoint at any time. Disable that source in the translation settings and use the others, or switch to an official API source. See [Translation Sources](./translation-sources) for details and the disclaimer.
+The free translation sources use public web endpoints rather than official APIs, so a provider can change or block an endpoint at any time. Disable that source in the translation settings and use the others, or switch to an official API source. See [Translation Sources](./translation-sources) for details.
