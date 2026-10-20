@@ -1,4 +1,5 @@
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/services/tts.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/language_picker.dart";
 import "package:ciyue/ui/core/custom_context_menu.dart";
@@ -84,53 +85,45 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
                   )
                 : ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 500),
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _InputSection(
-                              inputController: viewModel.inputController,
-                            ),
-                            _LanguageSelectionRow(
-                              sourceLanguage: viewModel.sourceLanguage,
-                              targetLanguage: viewModel.targetLanguage,
-                              getLanguageName: viewModel.getLanguageName,
-                              onSwap: viewModel.swapLanguages,
-                              onSourceTap: () =>
-                                  _showLanguagePicker(context, viewModel, true),
-                              onTargetTap: () => _showLanguagePicker(
-                                context,
-                                viewModel,
-                                false,
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                          sliver: SliverList(
+                            delegate: SliverChildListDelegate([
+                              _InputSection(
+                                inputController: viewModel.inputController,
                               ),
-                            ),
-                            _TranslateButton(
-                              onPressed: viewModel.inputController.text.isEmpty
-                                  ? null
-                                  : () => viewModel.translateText(context),
-                            ),
-                            if (viewModel.isLoading)
-                              const Padding(
-                                padding: EdgeInsets.only(bottom: 16.0),
-                                child: Center(
-                                  child: CircularProgressIndicator(),
+                              _LanguageSelectionRow(
+                                sourceLanguage: viewModel.sourceLanguage,
+                                targetLanguage: viewModel.targetLanguage,
+                                getLanguageName: viewModel.getLanguageName,
+                                onSwap: viewModel.swapLanguages,
+                                onSourceTap: () => _showLanguagePicker(
+                                  context,
+                                  viewModel,
+                                  true,
+                                ),
+                                onTargetTap: () => _showLanguagePicker(
+                                  context,
+                                  viewModel,
+                                  false,
                                 ),
                               ),
-                            _TranslatedTextSection(
-                              translatedText: viewModel.translatedText,
-                              translationProvider:
-                                  viewModel.translationProvider,
-                              isError: viewModel.isError,
-                            ),
-                            if (viewModel.alternativeTexts.isNotEmpty)
-                              _AlternativesSection(
-                                alternatives: viewModel.alternativeTexts,
+                              _TranslateButton(
+                                onPressed:
+                                    viewModel.inputController.text.isEmpty
+                                    ? null
+                                    : () => viewModel.translateText(context),
                               ),
-                          ],
+                            ]),
+                          ),
                         ),
-                      ),
+                        _ResultsSliver(viewModel: viewModel),
+                        const SliverPadding(
+                          padding: EdgeInsets.only(bottom: 16),
+                        ),
+                      ],
                     ),
                   ),
           ),
@@ -172,6 +165,318 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
   }
 }
 
+/// The list of per-source result cards (+ skipped-source hints).
+class _ResultsSliver extends StatelessWidget {
+  const _ResultsSliver({required this.viewModel});
+  final AiTranslateViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!viewModel.hasTranslated) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate([
+          for (final entry in viewModel.results)
+            _SourceResultCard(entry: entry),
+          if (viewModel.skippedSources.isNotEmpty)
+            _SkippedSourcesHint(viewModel: viewModel),
+        ]),
+      ),
+    );
+  }
+}
+
+class _ResultsList extends StatelessWidget {
+  const _ResultsList({required this.viewModel});
+  final AiTranslateViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!viewModel.hasTranslated) {
+      return Center(
+        child: Text(
+          AppLocalizations.of(context)!.translation,
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
+      );
+    }
+    return ListView(
+      children: [
+        for (final entry in viewModel.results) _SourceResultCard(entry: entry),
+        if (viewModel.skippedSources.isNotEmpty)
+          _SkippedSourcesHint(viewModel: viewModel),
+      ],
+    );
+  }
+}
+
+/// One translation source's result card: header (source badge + name +
+/// actions), body (loading shimmer / result / error), alternatives.
+class _SourceResultCard extends StatelessWidget {
+  const _SourceResultCard({required this.entry});
+  final SourceResult entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final locale = AppLocalizations.of(context)!;
+    final source = entry.source;
+
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      color: theme.colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: entry.isError
+              ? theme.colorScheme.error.withValues(alpha: 0.35)
+              : theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                _SourceBadge(name: source.name),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    source.name,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                if (entry.status == SourceResultStatus.success) ...[
+                  IconButton(
+                    iconSize: 18,
+                    visualDensity: VisualDensity.compact,
+                    tooltip: locale.readAloud,
+                    icon: const Icon(Icons.volume_up_outlined),
+                    onPressed: () => TtsHelper.toggleSpeak(entry.result!.text),
+                  ),
+                  IconButton(
+                    iconSize: 18,
+                    visualDensity: VisualDensity.compact,
+                    tooltip: locale.copy,
+                    icon: const Icon(Icons.copy_outlined),
+                    onPressed: () {
+                      Clipboard.setData(
+                        ClipboardData(text: entry.result!.text),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(locale.copied),
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 10),
+            _buildBody(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    final theme = Theme.of(context);
+    switch (entry.status) {
+      case SourceResultStatus.loading:
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 12),
+              _ShimmerText(),
+            ],
+          ),
+        );
+      case SourceResultStatus.error:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.error_outline, size: 18, color: theme.colorScheme.error),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context)!.translationFailed,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+              ),
+            ),
+          ],
+        );
+      case SourceResultStatus.success:
+        final result = entry.result!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _ResultText(entry: entry, text: result.text),
+            if (result.alternatives.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final alt in result.alternatives)
+                    ActionChip(
+                      label: Text(alt),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: alt));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(AppLocalizations.of(context)!.copied),
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ],
+          ],
+        );
+    }
+  }
+}
+
+/// Result text: AI source renders markdown, others plain text with the
+/// app's text-selection integration.
+class _ResultText extends ConsumerWidget {
+  const _ResultText({required this.entry, required this.text});
+  final SourceResult entry;
+  final String text;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final child = entry.source.id == "ai"
+        ? GptMarkdown(text)
+        : Text(text, style: const TextStyle(fontSize: 17, height: 1.45));
+
+    return SelectionArea(
+      onSelectionChanged: ref
+          .read(selectionTextViewModelProvider)
+          .setSelectedText,
+      contextMenuBuilder: buildCustomContextMenu(fallbackText: text),
+      child: child,
+    );
+  }
+}
+
+/// Colored circular badge with the source's initial.
+class _SourceBadge extends StatelessWidget {
+  const _SourceBadge({required this.name});
+  final String name;
+
+  static const _palette = [
+    Color(0xFF5B8DEF),
+    Color(0xFF34A853),
+    Color(0xFFFB8C00),
+    Color(0xFF8E24AA),
+    Color(0xFF00897B),
+    Color(0xFFE53935),
+    Color(0xFF3949AB),
+    Color(0xFF6D4C41),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _palette[name.hashCode.abs() % _palette.length];
+    return CircleAvatar(
+      radius: 14,
+      backgroundColor: color.withValues(alpha: 0.16),
+      child: Text(
+        name.isEmpty ? "?" : name[0].toUpperCase(),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class _ShimmerText extends StatelessWidget {
+  const _ShimmerText();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Text(
+      AppLocalizations.of(context)!.translating,
+      style: theme.textTheme.bodyMedium?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+}
+
+/// Hint listing enabled-but-unconfigured sources, linking to settings.
+class _SkippedSourcesHint extends StatelessWidget {
+  const _SkippedSourcesHint({required this.viewModel});
+  final AiTranslateViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final locale = AppLocalizations.of(context)!;
+    final names = viewModel.skippedSources.map((s) => s.name).join(", ");
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 16,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              locale.sourcesNotConfigured(names),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AiTranslateSettingsPage(),
+                ),
+              );
+            },
+            child: Text(locale.settings),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _InputSection extends StatelessWidget {
   const _InputSection({required this.inputController});
 
@@ -190,7 +495,7 @@ class _InputSection extends StatelessWidget {
         contextMenuBuilder: buildEditableTextCustomContextMenu(
           fallbackText: inputController.text,
         ),
-        maxLines: null, // Allow multiple lines
+        maxLines: null,
       ),
     );
   }
@@ -308,129 +613,6 @@ class _TranslateButton extends StatelessWidget {
   }
 }
 
-class _AlternativesSection extends StatelessWidget {
-  const _AlternativesSection({required this.alternatives});
-  final List<String> alternatives;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = theme.colorScheme.primary;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(Icons.auto_awesome, size: 20, color: color),
-              const SizedBox(width: 8),
-              Text(
-                AppLocalizations.of(context)!.alternatives,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Divider(
-                  color: color.withValues(alpha: 0.3),
-                  thickness: 1,
-                  height: 1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ...alternatives.map(
-            (t) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: _AlternativeItem(text: t),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AlternativeItem extends StatefulWidget {
-  const _AlternativeItem({required this.text});
-  final String text;
-
-  @override
-  State<_AlternativeItem> createState() => _AlternativeItemState();
-}
-
-class _AlternativeItemState extends State<_AlternativeItem> {
-  bool _hover = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color hoverBg = Theme.of(context).colorScheme.primary
-        .withValues(alpha: 0.06);
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hover = true),
-      onExit: (_) => setState(() => _hover = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: _hover ? hoverBg : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(widget.text, style: Theme.of(context).textTheme.bodyLarge),
-      ),
-    );
-  }
-}
-
-class _TranslatedTextSection extends ConsumerWidget {
-  const _TranslatedTextSection({
-    required this.translatedText,
-    required this.translationProvider,
-    required this.isError,
-  });
-
-  final String translatedText;
-  final String translationProvider;
-  final bool isError;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final Widget child;
-    if (translationProvider == "AI" && !isError) {
-      child = GptMarkdown(translatedText);
-    } else {
-      child = Text(
-        translatedText,
-        style: TextStyle(
-          fontSize: 20.0,
-          color: isError ? Theme.of(context).colorScheme.error : null,
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 16.0),
-      child: SelectionArea(
-        onSelectionChanged: ref
-            .read(selectionTextViewModelProvider)
-            .setSelectedText,
-        contextMenuBuilder: buildCustomContextMenu(
-          fallbackText: translatedText,
-        ),
-        child: child,
-      ),
-    );
-  }
-}
-
 class _DesktopTranslateView extends StatelessWidget {
   final AiTranslateViewModel viewModel;
   final VoidCallback onSourceTap;
@@ -524,74 +706,7 @@ class _DesktopTranslateView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Expanded(
-                    child: Card(
-                      elevation: 0,
-                      color: Theme.of(context).colorScheme.surfaceContainerLow,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    if (viewModel.isLoading)
-                                      const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 32.0,
-                                        ),
-                                        child: Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                      )
-                                    else if (viewModel
-                                        .translatedText
-                                        .isNotEmpty)
-                                      _TranslatedTextSection(
-                                        translatedText:
-                                            viewModel.translatedText,
-                                        translationProvider:
-                                            viewModel.translationProvider,
-                                        isError: viewModel.isError,
-                                      )
-                                    else
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 32.0,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            AppLocalizations.of(context)!
-                                                .translation,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurfaceVariant,
-                                                ),
-                                          ),
-                                        ),
-                                      ),
-                                    if (viewModel.alternativeTexts.isNotEmpty)
-                                      _AlternativesSection(
-                                        alternatives:
-                                            viewModel.alternativeTexts,
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  Expanded(child: _ResultsList(viewModel: viewModel)),
                 ],
               ),
             ),

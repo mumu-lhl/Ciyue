@@ -2,9 +2,26 @@ import "dart:ui" as ui;
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/daos.dart";
+import "package:ciyue/models/translation_result.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/translation.dart";
+import "package:ciyue/services/translation_sources.dart";
 import "package:material_ui/material_ui.dart";
+
+enum SourceResultStatus { loading, success, error }
+
+/// One source's outcome in a multi-source translation run.
+class SourceResult {
+  final TranslationSource source;
+  SourceResultStatus status = SourceResultStatus.loading;
+  TranslationResult? result;
+  String? error;
+
+  SourceResult(this.source);
+
+  bool get isLoading => status == SourceResultStatus.loading;
+  bool get isError => status == SourceResultStatus.error;
+}
 
 class AiTranslateViewModel extends ChangeNotifier {
   final TextEditingController inputController = TextEditingController();
@@ -13,10 +30,17 @@ class AiTranslateViewModel extends ChangeNotifier {
   String _targetLanguage = settings.language! == "system"
       ? ui.PlatformDispatcher.instance.locale.languageCode
       : settings.language!;
-  String _translatedText = "";
-  List<String> _alternativeTexts = const [];
-  bool _isLoading = false;
-  bool _isError = false;
+
+  /// Per-source results of the latest run, in the user's display order.
+  List<SourceResult> _results = [];
+  List<SourceResult> get results => _results;
+
+  /// Enabled sources skipped because their API key/URL is missing.
+  List<TranslationSource> _skippedSources = [];
+  List<TranslationSource> get skippedSources => _skippedSources;
+
+  bool _hasTranslated = false;
+  bool get hasTranslated => _hasTranslated;
 
   AiTranslateViewModel([TranslateHistoryDao? historyDao])
     : _historyDao = historyDao ?? translateHistoryDao {
@@ -28,10 +52,7 @@ class AiTranslateViewModel extends ChangeNotifier {
   bool get isRichOutput => settings.isRichOutput;
   String get sourceLanguage => _sourceLanguage;
   String get targetLanguage => _targetLanguage;
-  String get translatedText => _translatedText;
-  List<String> get alternativeTexts => _alternativeTexts;
-  bool get isLoading => _isLoading;
-  bool get isError => _isError;
+  bool get isLoading => _results.any((r) => r.isLoading);
   String get translationProvider => settings.translationProvider;
 
   void setSourceLanguage(String value) {
@@ -63,53 +84,58 @@ class AiTranslateViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Query every enabled+configured source in parallel. Each source
+  /// updates its own [SourceResult] as it finishes, so fast sources
+  /// render immediately instead of waiting for the slowest one.
   Future<void> translateText(BuildContext context) async {
-    if (inputController.text.trim().isEmpty) return;
-    _isLoading = true;
-    _translatedText = "";
-    _alternativeTexts = const [];
-    _isError = false;
+    final text = inputController.text.trim();
+    if (text.isEmpty) return;
+
+    if (settings.enableTranslationHistory) {
+      _historyDao.addHistory(text);
+    }
+
+    final resolved = TranslationSourcesConfig.resolve();
+    _skippedSources = resolved.skipped;
+    _results = resolved.active.map(SourceResult.new).toList();
+    _hasTranslated = true;
     notifyListeners();
 
+    final futures = <Future<void>>[];
+    for (final entry in _results) {
+      futures.add(
+        _runSource(context, entry, text).whenComplete(() {
+          if (!_disposed) notifyListeners();
+        }),
+      );
+    }
+    await Future.wait(futures);
+  }
+
+  Future<void> _runSource(
+    BuildContext context,
+    SourceResult entry,
+    String text,
+  ) async {
     try {
-      if (settings.enableTranslationHistory) {
-        _historyDao.addHistory(inputController.text.trim());
-      }
-
-      TranslationService service;
-      switch (settings.translationProvider) {
-        case "google":
-          service = GoogleTranslationService();
-          break;
-        case "deeplx":
-          service = DeepLXTranslationService();
-          break;
-        default:
-          service = AITranslationService();
-      }
-
-      final translationResult = await service.translate(
+      entry.result = await entry.source.translate(
         context,
-        text: inputController.text.trim(),
+        text: text,
         sourceLanguage: _sourceLanguage,
         targetLanguage: _targetLanguage,
-        isRichOutput: settings.isRichOutput,
       );
-
-      _translatedText = translationResult.text;
-      _alternativeTexts = translationResult.alternatives;
+      entry.status = SourceResultStatus.success;
     } catch (e) {
-      _translatedText = "Error: Failed to translate. $e";
-      _alternativeTexts = const [];
-      _isError = true;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+      entry.error = e.toString();
+      entry.status = SourceResultStatus.error;
     }
   }
 
+  bool _disposed = false;
+
   @override
   void dispose() {
+    _disposed = true;
     inputController.dispose();
     super.dispose();
   }
