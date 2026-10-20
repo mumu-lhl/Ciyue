@@ -45,6 +45,25 @@ void main() {
       expect(mapLang(yandexLangMap, "nb"), "no");
       expect(mapLang(yandexLangMap, "auto"), "");
     });
+
+    test("deepl official codes use HANS/HANT", () {
+      expect(deeplOfficialTargetLang("zh"), "ZH-HANS");
+      expect(deeplOfficialTargetLang("zh_TW"), "ZH-HANT");
+      expect(deeplOfficialTargetLang("zh_HK"), "ZH-HANT");
+      expect(deeplOfficialTargetLang("en"), "EN-US");
+      expect(deeplOfficialSourceLang("auto"), "");
+      expect(deeplOfficialSourceLang("zh"), "ZH-HANS");
+      expect(deeplOfficialSourceLang("zh_TW"), "ZH-HANT");
+      // The Free source keeps plain ZH (with regionalVariant instead).
+      expect(deeplTargetLang("zh"), "ZH");
+    });
+
+    test("tencent codes", () {
+      expect(mapLang(tencentLangMap, "zh"), "zh");
+      expect(mapLang(tencentLangMap, "zh_TW"), "zh");
+      expect(mapLang(tencentLangMap, "zh_HK"), "zh");
+      expect(mapLang(tencentLangMap, "en"), "en");
+    });
   });
 
   group("TranslationSourcesConfig", () {
@@ -109,6 +128,22 @@ void main() {
 
     test("unknown ids are filtered out", () async {
       await TranslationSourcesConfig.saveEnabled(["nope", "google"]);
+      expect(TranslationSourcesConfig.loadEnabled(), ["google"]);
+    });
+
+    test("saved order and enabled lists are deduped", () async {
+      await TranslationSourcesConfig.saveOrder([
+        "google",
+        "google",
+        "baidu",
+        "baidu",
+      ]);
+      final order = TranslationSourcesConfig.loadOrder();
+      expect(order.where((id) => id == "google").length, 1);
+      expect(order.where((id) => id == "baidu").length, 1);
+      expect(order.first, "google");
+
+      await TranslationSourcesConfig.saveEnabled(["google", "google"]);
       expect(TranslationSourcesConfig.loadEnabled(), ["google"]);
     });
   });

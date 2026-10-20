@@ -60,7 +60,14 @@ class AITranslationService implements TranslationService {
 }
 
 class DeepLXTranslationService implements TranslationService {
-  static const languageCodeMap = {"auto": "auto", "zh_HK": "ZH", "zh_TW": "ZH"};
+  // DeepLX follows DeepL codes: plain ZH means Simplified Chinese, so
+  // Traditional targets must use ZH-HANT (and Simplified ZH-HANS).
+  static const languageCodeMap = {
+    "auto": "auto",
+    "zh": "ZH-HANS",
+    "zh_HK": "ZH-HANT",
+    "zh_TW": "ZH-HANT",
+  };
 
   @override
   Future<TranslationResult> translate(
@@ -93,9 +100,10 @@ class DeepLXTranslationService implements TranslationService {
     if (response.statusCode == 200) {
       final body = response.data;
       final primary = body["data"];
-      final alternatives = (body["alternatives"] is List<String>)
-          ? body["alternatives"] as List<String>
-          : const <String>[];
+      // Dio-decoded JSON arrays are List<dynamic>, never List<String>.
+      final alternatives =
+          (body["alternatives"] as List?)?.map((e) => e.toString()).toList() ??
+          const <String>[];
       return TranslationResult(text: primary, alternatives: alternatives);
     } else {
       throw Exception("Failed to translate with DeepLX: ${response.data}");

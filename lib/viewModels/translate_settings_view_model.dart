@@ -82,19 +82,35 @@ class AiTranslateSettingsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setDeeplApiKey(String value) => settings.setDeeplApiKey(value);
+  Future<void> setDeeplApiKey(String value) async {
+    await settings.setDeeplApiKey(value);
+    notifyListeners();
+  }
 
-  Future<void> setGoogleCloudApiKey(String value) =>
-      settings.setGoogleCloudApiKey(value);
+  Future<void> setGoogleCloudApiKey(String value) async {
+    await settings.setGoogleCloudApiKey(value);
+    notifyListeners();
+  }
 
-  Future<void> setAzureApiKey(String value) => settings.setAzureApiKey(value);
+  Future<void> setAzureApiKey(String value) async {
+    await settings.setAzureApiKey(value);
+    notifyListeners();
+  }
 
-  Future<void> setAzureRegion(String value) => settings.setAzureRegion(value);
+  Future<void> setAzureRegion(String value) async {
+    await settings.setAzureRegion(value);
+    notifyListeners();
+  }
 
-  Future<void> setYandexApiKey(String value) => settings.setYandexApiKey(value);
+  Future<void> setYandexApiKey(String value) async {
+    await settings.setYandexApiKey(value);
+    notifyListeners();
+  }
 
-  Future<void> setYandexFolderId(String value) =>
-      settings.setYandexFolderId(value);
+  Future<void> setYandexFolderId(String value) async {
+    await settings.setYandexFolderId(value);
+    notifyListeners();
+  }
 
   @override
   void dispose() {

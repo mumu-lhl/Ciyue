@@ -72,6 +72,36 @@ String deeplSourceLang(String code) {
   return mapLang(deeplLangMap, code).toUpperCase();
 }
 
+/// Language codes for the *official* DeepL API: plain "ZH" means
+/// Simplified Chinese there, so Chinese variants need the explicit
+/// ZH-HANS / ZH-HANT codes (unlike DeepL Free, which uses ZH plus a
+/// regional variant).
+String deeplOfficialTargetLang(String code) {
+  switch (code) {
+    case "zh":
+      return "ZH-HANS";
+    case "zh_HK":
+    case "zh_TW":
+      return "ZH-HANT";
+    default:
+      return deeplTargetLang(code);
+  }
+}
+
+String deeplOfficialSourceLang(String code) {
+  switch (code) {
+    case "auto":
+      return "";
+    case "zh":
+      return "ZH-HANS";
+    case "zh_HK":
+    case "zh_TW":
+      return "ZH-HANT";
+    default:
+      return deeplSourceLang(code);
+  }
+}
+
 const baiduLangMap = {
   "zh": "zh",
   "zh_HK": "cht",
@@ -88,6 +118,8 @@ const baiduLangMap = {
   "ta": "tam",
   "vi": "vie",
 };
+
+const tencentLangMap = {"zh": "zh", "zh_HK": "zh", "zh_TW": "zh"};
 
 const volcengineLangMap = {"zh": "zh", "zh_HK": "zh", "zh_TW": "zh-Hant"};
 
@@ -292,9 +324,9 @@ class TencentFreeSource extends TranslationSource {
         "model_category": "normal",
         "source": {
           "text_list": [text],
-          "lang": sourceLanguage,
+          "lang": mapLang(tencentLangMap, sourceLanguage),
         },
-        "target": {"lang": targetLanguage},
+        "target": {"lang": mapLang(tencentLangMap, targetLanguage)},
       }),
     );
     final body = response.data;
@@ -435,7 +467,12 @@ class DeepLFreeSource extends TranslationSource {
         "splitting": "newlines",
         "lang": {
           "target_lang": to,
-          "source_lang_user_selected": deeplSourceLang(sourceLanguage),
+          // The web endpoint expects "auto" for auto-detect, not ""
+          // (the empty value is only for the official API, which
+          // omits the field instead).
+          "source_lang_user_selected": sourceLanguage == "auto"
+              ? "auto"
+              : deeplSourceLang(sourceLanguage),
         },
         "commonJobParams": {
           "wasSpoken": false,
@@ -512,7 +549,7 @@ class DeepLSource extends TranslationSource {
     final host = key.endsWith(":fx")
         ? "https://api-free.deepl.com"
         : "https://api.deepl.com";
-    final source = deeplSourceLang(sourceLanguage);
+    final source = deeplOfficialSourceLang(sourceLanguage);
     final response = await AppHttp.post(
       "$host/v2/translate",
       headers: {
@@ -521,7 +558,7 @@ class DeepLSource extends TranslationSource {
       },
       data: jsonEncode({
         "text": [text],
-        "target_lang": deeplTargetLang(targetLanguage),
+        "target_lang": deeplOfficialTargetLang(targetLanguage),
         if (source.isNotEmpty) "source_lang": source,
       }),
     );
@@ -695,9 +732,11 @@ class AiProviderSource extends TranslationSource {
   @override
   bool get isConfigured {
     final config = settings.getAiProviderConfig(providerId);
-    final model = (config["model"] as String? ?? "").trim();
+    // Coerce defensively: a malformed persisted config must disable
+    // this one source, not crash the whole translate flow.
+    final model = (config["model"]?.toString() ?? "").trim();
     if (model.isEmpty) return false;
-    final apiKey = (config["apiKey"] as String? ?? "").trim();
+    final apiKey = (config["apiKey"]?.toString() ?? "").trim();
     // Local providers work without an API key.
     if (providerId == "ollama" || providerId == "openai_compatible") {
       return true;
@@ -802,8 +841,12 @@ class TranslationSourcesConfig {
           .cast<String>()
           .map(migrateSourceId)
           .toList();
-      // Keep saved order, append any new sources at the end.
-      final ordered = saved.where((id) => defaults.contains(id)).toList();
+      // Keep saved order (deduped — migration can produce repeats),
+      // then append any new sources at the end.
+      final ordered = <String>[];
+      for (final id in saved) {
+        if (defaults.contains(id) && !ordered.contains(id)) ordered.add(id);
+      }
       for (final id in defaults) {
         if (!ordered.contains(id)) ordered.add(id);
       }
@@ -832,7 +875,16 @@ class TranslationSourcesConfig {
           .cast<String>()
           .map(migrateSourceId)
           .toList();
-      return saved.where((id) => translationSourceById(id) != null).toList();
+      final enabled = <String>[];
+      for (final id in saved) {
+        if (translationSourceById(id) != null && !enabled.contains(id)) {
+          enabled.add(id);
+        }
+      }
+      // Never end up with zero sources (e.g. every saved id became
+      // unknown after an upgrade) — fall back to the legacy default.
+      if (enabled.isEmpty) return ["ai:${settings.aiProvider}"];
+      return enabled;
     } catch (_) {
       return ["ai:${settings.aiProvider}"];
     }
