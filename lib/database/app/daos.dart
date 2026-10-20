@@ -1,3 +1,5 @@
+import "dart:convert";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/tables.dart";
@@ -1093,6 +1095,7 @@ class QuizMistakeDao extends DatabaseAccessor<AppDatabase>
     required String question,
     required String correctAnswer,
     String? userAnswer,
+    List<String>? options,
   }) {
     return transaction(() async {
       await (delete(
@@ -1105,6 +1108,7 @@ class QuizMistakeDao extends DatabaseAccessor<AppDatabase>
           question: Value(question),
           correctAnswer: Value(correctAnswer),
           userAnswer: Value(userAnswer),
+          options: Value(options == null ? null : jsonEncode(options)),
           createdAt: Value(DateTime.now()),
         ),
       );

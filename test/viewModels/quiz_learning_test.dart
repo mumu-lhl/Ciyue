@@ -112,6 +112,49 @@ void main() {
       await dao.removeMistake("APPLE");
       expect(await dao.getMistakeCount(), 0);
     });
+
+    test("options round-trip and question rebuild", () async {
+      await dao.addMistake(
+        word: "apple",
+        questionType: QuizQuestionType.choice,
+        question: "What does apple mean?",
+        correctAnswer: "苹果",
+        userAnswer: "香蕉",
+        options: ["苹果", "香蕉", "橙子"],
+      );
+      final row = (await dao.getMistakes()).single;
+      final rebuilt = quizQuestionFromMistake(row);
+      expect(rebuilt, isNotNull);
+      expect(rebuilt!.options, ["苹果", "香蕉", "橙子"]);
+      expect(rebuilt.correctIndex, 0);
+      expect(rebuilt.correctAnswer, "苹果");
+      expect(rebuilt.isUsable, isTrue);
+    });
+
+    test("rows without options cannot be rebuilt (legacy)", () async {
+      await dao.addMistake(
+        word: "apple",
+        questionType: QuizQuestionType.choice,
+        question: "q",
+        correctAnswer: "a",
+      );
+      final row = (await dao.getMistakes()).single;
+      expect(quizQuestionFromMistake(row), isNull);
+
+      // Spelling rows rebuild fine without options.
+      await dao.addMistake(
+        word: "banana",
+        questionType: QuizQuestionType.spelling,
+        question: "A yellow fruit",
+        correctAnswer: "banana",
+      );
+      final spellingRow = (await dao.getMistakes()).firstWhere(
+        (m) => m.word == "banana",
+      );
+      final spelling = quizQuestionFromMistake(spellingRow);
+      expect(spelling, isNotNull);
+      expect(spelling!.correctAnswer, "banana");
+    });
   });
 
   group("QuizQuestion", () {

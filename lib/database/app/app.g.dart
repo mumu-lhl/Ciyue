@@ -4591,6 +4591,17 @@ class $QuizMistakesTable extends QuizMistakes
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const drift.VerificationMeta _optionsMeta =
+      const drift.VerificationMeta('options');
+  @override
+  late final drift.GeneratedColumn<String> options =
+      drift.GeneratedColumn<String>(
+        'options',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const drift.VerificationMeta _createdAtMeta =
       const drift.VerificationMeta('createdAt');
   @override
@@ -4610,6 +4621,7 @@ class $QuizMistakesTable extends QuizMistakes
     question,
     correctAnswer,
     userAnswer,
+    options,
     createdAt,
   ];
   @override
@@ -4671,6 +4683,12 @@ class $QuizMistakesTable extends QuizMistakes
         userAnswer.isAcceptableOrUnknown(data['user_answer']!, _userAnswerMeta),
       );
     }
+    if (data.containsKey('options')) {
+      context.handle(
+        _optionsMeta,
+        options.isAcceptableOrUnknown(data['options']!, _optionsMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -4712,6 +4730,10 @@ class $QuizMistakesTable extends QuizMistakes
         DriftSqlType.string,
         data['${effectivePrefix}user_answer'],
       ),
+      options: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}options'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -4733,6 +4755,7 @@ class QuizMistake extends drift.DataClass
   final String question;
   final String correctAnswer;
   final String? userAnswer;
+  final String? options;
   final DateTime createdAt;
   const QuizMistake({
     required this.id,
@@ -4741,6 +4764,7 @@ class QuizMistake extends drift.DataClass
     required this.question,
     required this.correctAnswer,
     this.userAnswer,
+    this.options,
     required this.createdAt,
   });
   @override
@@ -4753,6 +4777,9 @@ class QuizMistake extends drift.DataClass
     map['correct_answer'] = drift.Variable<String>(correctAnswer);
     if (!nullToAbsent || userAnswer != null) {
       map['user_answer'] = drift.Variable<String>(userAnswer);
+    }
+    if (!nullToAbsent || options != null) {
+      map['options'] = drift.Variable<String>(options);
     }
     map['created_at'] = drift.Variable<DateTime>(createdAt);
     return map;
@@ -4768,6 +4795,9 @@ class QuizMistake extends drift.DataClass
       userAnswer: userAnswer == null && nullToAbsent
           ? const drift.Value.absent()
           : drift.Value(userAnswer),
+      options: options == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(options),
       createdAt: drift.Value(createdAt),
     );
   }
@@ -4784,6 +4814,7 @@ class QuizMistake extends drift.DataClass
       question: serializer.fromJson<String>(json['question']),
       correctAnswer: serializer.fromJson<String>(json['correctAnswer']),
       userAnswer: serializer.fromJson<String?>(json['userAnswer']),
+      options: serializer.fromJson<String?>(json['options']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -4797,6 +4828,7 @@ class QuizMistake extends drift.DataClass
       'question': serializer.toJson<String>(question),
       'correctAnswer': serializer.toJson<String>(correctAnswer),
       'userAnswer': serializer.toJson<String?>(userAnswer),
+      'options': serializer.toJson<String?>(options),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -4808,6 +4840,7 @@ class QuizMistake extends drift.DataClass
     String? question,
     String? correctAnswer,
     drift.Value<String?> userAnswer = const drift.Value.absent(),
+    drift.Value<String?> options = const drift.Value.absent(),
     DateTime? createdAt,
   }) => QuizMistake(
     id: id ?? this.id,
@@ -4816,6 +4849,7 @@ class QuizMistake extends drift.DataClass
     question: question ?? this.question,
     correctAnswer: correctAnswer ?? this.correctAnswer,
     userAnswer: userAnswer.present ? userAnswer.value : this.userAnswer,
+    options: options.present ? options.value : this.options,
     createdAt: createdAt ?? this.createdAt,
   );
   QuizMistake copyWithCompanion(QuizMistakesCompanion data) {
@@ -4832,6 +4866,7 @@ class QuizMistake extends drift.DataClass
       userAnswer: data.userAnswer.present
           ? data.userAnswer.value
           : this.userAnswer,
+      options: data.options.present ? data.options.value : this.options,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -4845,6 +4880,7 @@ class QuizMistake extends drift.DataClass
           ..write('question: $question, ')
           ..write('correctAnswer: $correctAnswer, ')
           ..write('userAnswer: $userAnswer, ')
+          ..write('options: $options, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -4858,6 +4894,7 @@ class QuizMistake extends drift.DataClass
     question,
     correctAnswer,
     userAnswer,
+    options,
     createdAt,
   );
   @override
@@ -4870,6 +4907,7 @@ class QuizMistake extends drift.DataClass
           other.question == this.question &&
           other.correctAnswer == this.correctAnswer &&
           other.userAnswer == this.userAnswer &&
+          other.options == this.options &&
           other.createdAt == this.createdAt);
 }
 
@@ -4880,6 +4918,7 @@ class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
   final drift.Value<String> question;
   final drift.Value<String> correctAnswer;
   final drift.Value<String?> userAnswer;
+  final drift.Value<String?> options;
   final drift.Value<DateTime> createdAt;
   const QuizMistakesCompanion({
     this.id = const drift.Value.absent(),
@@ -4888,6 +4927,7 @@ class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
     this.question = const drift.Value.absent(),
     this.correctAnswer = const drift.Value.absent(),
     this.userAnswer = const drift.Value.absent(),
+    this.options = const drift.Value.absent(),
     this.createdAt = const drift.Value.absent(),
   });
   QuizMistakesCompanion.insert({
@@ -4897,6 +4937,7 @@ class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
     required String question,
     required String correctAnswer,
     this.userAnswer = const drift.Value.absent(),
+    this.options = const drift.Value.absent(),
     required DateTime createdAt,
   }) : word = drift.Value(word),
        questionType = drift.Value(questionType),
@@ -4910,6 +4951,7 @@ class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
     drift.Expression<String>? question,
     drift.Expression<String>? correctAnswer,
     drift.Expression<String>? userAnswer,
+    drift.Expression<String>? options,
     drift.Expression<DateTime>? createdAt,
   }) {
     return drift.RawValuesInsertable({
@@ -4919,6 +4961,7 @@ class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
       if (question != null) 'question': question,
       if (correctAnswer != null) 'correct_answer': correctAnswer,
       if (userAnswer != null) 'user_answer': userAnswer,
+      if (options != null) 'options': options,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -4930,6 +4973,7 @@ class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
     drift.Value<String>? question,
     drift.Value<String>? correctAnswer,
     drift.Value<String?>? userAnswer,
+    drift.Value<String?>? options,
     drift.Value<DateTime>? createdAt,
   }) {
     return QuizMistakesCompanion(
@@ -4939,6 +4983,7 @@ class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
       question: question ?? this.question,
       correctAnswer: correctAnswer ?? this.correctAnswer,
       userAnswer: userAnswer ?? this.userAnswer,
+      options: options ?? this.options,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -4964,6 +5009,9 @@ class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
     if (userAnswer.present) {
       map['user_answer'] = drift.Variable<String>(userAnswer.value);
     }
+    if (options.present) {
+      map['options'] = drift.Variable<String>(options.value);
+    }
     if (createdAt.present) {
       map['created_at'] = drift.Variable<DateTime>(createdAt.value);
     }
@@ -4979,6 +5027,7 @@ class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
           ..write('question: $question, ')
           ..write('correctAnswer: $correctAnswer, ')
           ..write('userAnswer: $userAnswer, ')
+          ..write('options: $options, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -7885,6 +7934,7 @@ typedef $$QuizMistakesTableCreateCompanionBuilder =
       required String question,
       required String correctAnswer,
       drift.Value<String?> userAnswer,
+      drift.Value<String?> options,
       required DateTime createdAt,
     });
 typedef $$QuizMistakesTableUpdateCompanionBuilder =
@@ -7895,6 +7945,7 @@ typedef $$QuizMistakesTableUpdateCompanionBuilder =
       drift.Value<String> question,
       drift.Value<String> correctAnswer,
       drift.Value<String?> userAnswer,
+      drift.Value<String?> options,
       drift.Value<DateTime> createdAt,
     });
 
@@ -7934,6 +7985,11 @@ class $$QuizMistakesTableFilterComposer
 
   drift.ColumnFilters<String> get userAnswer => $composableBuilder(
     column: $table.userAnswer,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get options => $composableBuilder(
+    column: $table.options,
     builder: (column) => drift.ColumnFilters(column),
   );
 
@@ -7982,6 +8038,11 @@ class $$QuizMistakesTableOrderingComposer
     builder: (column) => drift.ColumnOrderings(column),
   );
 
+  drift.ColumnOrderings<String> get options => $composableBuilder(
+    column: $table.options,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
   drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => drift.ColumnOrderings(column),
@@ -8020,6 +8081,9 @@ class $$QuizMistakesTableAnnotationComposer
     column: $table.userAnswer,
     builder: (column) => column,
   );
+
+  drift.GeneratedColumn<String> get options =>
+      $composableBuilder(column: $table.options, builder: (column) => column);
 
   drift.GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -8066,6 +8130,7 @@ class $$QuizMistakesTableTableManager
                 drift.Value<String> question = const drift.Value.absent(),
                 drift.Value<String> correctAnswer = const drift.Value.absent(),
                 drift.Value<String?> userAnswer = const drift.Value.absent(),
+                drift.Value<String?> options = const drift.Value.absent(),
                 drift.Value<DateTime> createdAt = const drift.Value.absent(),
               }) => QuizMistakesCompanion(
                 id: id,
@@ -8074,6 +8139,7 @@ class $$QuizMistakesTableTableManager
                 question: question,
                 correctAnswer: correctAnswer,
                 userAnswer: userAnswer,
+                options: options,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -8084,6 +8150,7 @@ class $$QuizMistakesTableTableManager
                 required String question,
                 required String correctAnswer,
                 drift.Value<String?> userAnswer = const drift.Value.absent(),
+                drift.Value<String?> options = const drift.Value.absent(),
                 required DateTime createdAt,
               }) => QuizMistakesCompanion.insert(
                 id: id,
@@ -8092,6 +8159,7 @@ class $$QuizMistakesTableTableManager
                 question: question,
                 correctAnswer: correctAnswer,
                 userAnswer: userAnswer,
+                options: options,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0

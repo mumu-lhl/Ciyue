@@ -86,6 +86,43 @@ class QuizQuestion {
   }
 }
 
+/// Rebuild the original question from a stored mistake row, so review
+/// works offline without asking the AI to regenerate questions.
+/// Returns null when the row can't be rebuilt (rows written before
+/// schema v24 have no stored options) — the caller falls back to AI
+/// generation for those words.
+QuizQuestion? quizQuestionFromMistake(QuizMistake mistake) {
+  if (mistake.questionType == QuizQuestionType.spelling) {
+    return QuizQuestion(
+      word: mistake.word,
+      type: QuizQuestionType.spelling,
+      question: mistake.question,
+      options: const [],
+      correctIndex: 0,
+      explanation: "",
+    );
+  }
+  final raw = mistake.options;
+  if (raw == null) return null;
+  try {
+    final options = (json.decode(raw) as List)
+        .map((e) => e.toString())
+        .toList();
+    final correctIndex = options.indexOf(mistake.correctAnswer);
+    if (options.length < 2 || correctIndex < 0) return null;
+    return QuizQuestion(
+      word: mistake.word,
+      type: mistake.questionType,
+      question: mistake.question,
+      options: options,
+      correctIndex: correctIndex,
+      explanation: "",
+    );
+  } catch (_) {
+    return null;
+  }
+}
+
 enum QuizState { idle, loading, answering, finished }
 
 class QuizViewModel extends ChangeNotifier {
@@ -232,6 +269,9 @@ class QuizViewModel extends ChangeNotifier {
     _reviewMode = reviewOnly;
     notifyListeners();
 
+    // Questions rebuilt locally from stored mistake rows (review
+    // mode). Only words that can't be rebuilt go to the AI.
+    var localQuestions = <QuizQuestion>[];
     try {
       List<String> quizWords;
       if (reviewOnly) {
@@ -242,10 +282,25 @@ class QuizViewModel extends ChangeNotifier {
           notifyListeners();
           return;
         }
-        // Re-quiz the words; keep original question types for variety.
         final random = math.Random();
         final shuffled = List.of(mistakes)..shuffle(random);
-        quizWords = shuffled.map((m) => m.word).toList();
+        final aiWords = <String>[];
+        for (final m in shuffled) {
+          final q = quizQuestionFromMistake(m);
+          if (q != null) {
+            localQuestions.add(q);
+          } else {
+            aiWords.add(m.word);
+          }
+        }
+        if (aiWords.isEmpty) {
+          // Everything rebuilt locally — review works fully offline.
+          _questions = localQuestions;
+          _state = QuizState.answering;
+          notifyListeners();
+          return;
+        }
+        quizWords = aiWords;
       } else {
         final allWords = await _wordbookDao.getAllWords();
         if (!_mounted) return;
@@ -288,10 +343,12 @@ class QuizViewModel extends ChangeNotifier {
 
       final data = json.decode(jsonStr) as Map<String, dynamic>;
       final questionsJson = data["questions"] as List;
-      _questions = questionsJson
-          .map((q) => QuizQuestion.fromJson(q as Map<String, dynamic>))
-          .where((q) => q.isUsable)
-          .toList();
+      _questions = [
+        ...localQuestions,
+        ...questionsJson
+            .map((q) => QuizQuestion.fromJson(q as Map<String, dynamic>))
+            .where((q) => q.isUsable),
+      ];
 
       if (_questions.isEmpty) {
         // The AI returned nothing usable (empty array, refusal, or
@@ -303,8 +360,15 @@ class QuizViewModel extends ChangeNotifier {
         _state = QuizState.answering;
       }
     } catch (e) {
-      _loadFailed = true;
-      _state = QuizState.idle;
+      if (localQuestions.isNotEmpty) {
+        // Review mode: the AI fallback failed (e.g. offline) but the
+        // locally rebuilt questions are still usable on their own.
+        _questions = localQuestions;
+        _state = QuizState.answering;
+      } else {
+        _loadFailed = true;
+        _state = QuizState.idle;
+      }
     } finally {
       if (_mounted) notifyListeners();
     }
@@ -350,6 +414,9 @@ class QuizViewModel extends ChangeNotifier {
           question: q.question,
           correctAnswer: q.correctAnswer,
           userAnswer: userAnswer,
+          // Persist the options so review can rebuild this exact
+          // question offline (spelling needs none).
+          options: q.type == QuizQuestionType.spelling ? null : q.options,
         )
         .then((_) => _loadMistakeCount())
         .catchError((_) {});

@@ -178,10 +178,13 @@ class AppDatabase extends _$AppDatabase {
           await m.create(schema.quizMistakes);
           await m.createIndex(schema.idxQuizMistakesWord);
         },
+        from23To24: (m, schema) async {
+          await m.addColumn(schema.quizMistakes, schema.quizMistakes.options);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 }

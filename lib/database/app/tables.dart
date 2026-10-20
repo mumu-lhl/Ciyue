@@ -140,5 +140,10 @@ class QuizMistakes extends Table {
   TextColumn get question => text()();
   TextColumn get correctAnswer => text()();
   TextColumn get userAnswer => text().nullable()();
+  // JSON-encoded option list for choice/cloze questions, so mistake
+  // review can rebuild the original question offline instead of
+  // asking the AI to regenerate one. Null for spelling questions
+  // and for rows written before schema v24.
+  TextColumn get options => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 }
