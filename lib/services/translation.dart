@@ -8,7 +8,6 @@ import "package:material_ui/material_ui.dart";
 import "package:ciyue/core/http_client.dart";
 import "package:ciyue/core/providers.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
-import "package:translator/translator.dart";
 
 abstract class TranslationService {
   Future<TranslationResult> translate(
@@ -55,31 +54,6 @@ class AITranslationService implements TranslationService {
 
     final result = await ai.request(prompt);
     return TranslationResult(text: result);
-  }
-}
-
-class GoogleTranslationService implements TranslationService {
-  static const languageCodeMap = {
-    "zh": "zh-cn",
-    "zh_HK": "zh-tw",
-    "zh_TW": "zh-tw",
-  };
-  final _translator = GoogleTranslator();
-
-  @override
-  Future<TranslationResult> translate(
-    BuildContext context, {
-    required String text,
-    required String sourceLanguage,
-    required String targetLanguage,
-    required bool isRichOutput,
-  }) async {
-    final translation = await _translator.translate(
-      text,
-      from: sourceLanguage,
-      to: languageCodeMap[targetLanguage] ?? targetLanguage,
-    );
-    return TranslationResult(text: translation.text);
   }
 }
 

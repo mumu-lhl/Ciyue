@@ -616,6 +616,28 @@
   "@logs": {},
   "translationProvider": "Translation Provider",
   "@translationProvider": {},
+  "translationSources": "Translation Sources",
+  "@translationSources": {},
+  "translationSourcesHint": "Enabled sources are queried in parallel. Drag to reorder results.",
+  "@translationSourcesHint": {},
+  "freeSource": "Free, no key needed",
+  "@freeSource": {},
+  "configured": "Configured",
+  "@configured": {},
+  "notConfigured": "Not configured",
+  "@notConfigured": {},
+  "translating": "Translating...",
+  "@translating": {},
+  "translationFailed": "Translation failed",
+  "@translationFailed": {},
+  "sourcesNotConfigured": "Skipped (not configured): {names}",
+  "@sourcesNotConfigured": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
   "searchLanguage": "Search language",
   "@searchLanguage": {},
   "writingCheckHistory": "Writing Check History",

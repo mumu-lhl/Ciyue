@@ -86,6 +86,14 @@ class Settings extends ChangeNotifier {
   late String? deeplxUrl;
   late bool isRichOutput;
 
+  // API keys for key-based translation sources.
+  late String? deeplApiKey;
+  late String? googleCloudApiKey;
+  late String? azureApiKey;
+  late String? azureRegion;
+  late String? yandexApiKey;
+  late String? yandexFolderId;
+
   late bool enableTranslationHistory;
   late bool enableWritingCheckHistory;
 
@@ -172,6 +180,12 @@ class Settings extends ChangeNotifier {
     translationProvider = prefs.getString("translationProvider") ?? "ai";
     deeplxUrl = prefs.getString("deeplxUrl");
     isRichOutput = prefs.getBool("isRichOutput") ?? false;
+    deeplApiKey = prefs.getString("deeplApiKey");
+    googleCloudApiKey = prefs.getString("googleCloudApiKey");
+    azureApiKey = prefs.getString("azureApiKey");
+    azureRegion = prefs.getString("azureRegion");
+    yandexApiKey = prefs.getString("yandexApiKey");
+    yandexFolderId = prefs.getString("yandexFolderId");
 
     enableTranslationHistory =
         prefs.getBool("enableTranslationHistory") ?? true;
@@ -383,6 +397,42 @@ class Settings extends ChangeNotifier {
   Future<void> setDeeplxUrl(String url) async {
     deeplxUrl = url;
     await prefs.setString("deeplxUrl", url);
+    notifyListeners();
+  }
+
+  Future<void> setDeeplApiKey(String? value) async {
+    deeplApiKey = value;
+    await prefs.setString("deeplApiKey", value ?? "");
+    notifyListeners();
+  }
+
+  Future<void> setGoogleCloudApiKey(String? value) async {
+    googleCloudApiKey = value;
+    await prefs.setString("googleCloudApiKey", value ?? "");
+    notifyListeners();
+  }
+
+  Future<void> setAzureApiKey(String? value) async {
+    azureApiKey = value;
+    await prefs.setString("azureApiKey", value ?? "");
+    notifyListeners();
+  }
+
+  Future<void> setAzureRegion(String? value) async {
+    azureRegion = value;
+    await prefs.setString("azureRegion", value ?? "");
+    notifyListeners();
+  }
+
+  Future<void> setYandexApiKey(String? value) async {
+    yandexApiKey = value;
+    await prefs.setString("yandexApiKey", value ?? "");
+    notifyListeners();
+  }
+
+  Future<void> setYandexFolderId(String? value) async {
+    yandexFolderId = value;
+    await prefs.setString("yandexFolderId", value ?? "");
     notifyListeners();
   }
 
