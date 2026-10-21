@@ -22,6 +22,75 @@ class ChatMessage {
   );
 }
 
+/// One conversation thread. The chat keeps many of these and the
+/// user can switch between them, instead of the old single history
+/// that could only be resumed or deleted wholesale.
+class ChatSession {
+  final String id;
+  final int createdAt;
+  int updatedAt;
+
+  /// Word this conversation is about (word-detail entry), if any.
+  String? initialContext;
+
+  /// Active roleplay scenario id, if any.
+  String? scenarioId;
+
+  final List<ChatMessage> messages;
+
+  ChatSession({
+    required this.id,
+    required this.createdAt,
+    required this.updatedAt,
+    this.initialContext,
+    this.scenarioId,
+    List<ChatMessage>? messages,
+  }) : messages = messages ?? [];
+
+  /// True when nothing has happened in this session yet — such
+  /// sessions are discarded when the user switches away, so the
+  /// session list doesn't fill up with untouched "new chat" rows.
+  bool get isPristine =>
+      messages.isEmpty && scenarioId == null && initialContext == null;
+
+  /// Title derived from content: the first user message, else the
+  /// word the conversation is about. Empty when neither exists
+  /// (callers fall back to a scenario name or a generic label).
+  String get displayTitle {
+    for (final message in messages) {
+      final text = message.text.trim();
+      if (message.isUser && text.isNotEmpty) {
+        return text.length > 40 ? "${text.substring(0, 40)}…" : text;
+      }
+    }
+    return initialContext ?? "";
+  }
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "createdAt": createdAt,
+    "updatedAt": updatedAt,
+    "initialContext": initialContext,
+    "scenarioId": scenarioId,
+    "messages": messages.map((m) => m.toJson()).toList(),
+  };
+
+  factory ChatSession.fromJson(Map<String, dynamic> json) {
+    final messagesJson = json["messages"] as List? ?? const [];
+    return ChatSession(
+      id: json["id"] as String? ?? "",
+      createdAt: (json["createdAt"] as num?)?.toInt() ?? 0,
+      updatedAt: (json["updatedAt"] as num?)?.toInt() ?? 0,
+      initialContext: json["initialContext"] as String?,
+      scenarioId: json["scenarioId"] as String?,
+      messages: [
+        for (final m in messagesJson)
+          if (m is Map<String, dynamic>) ChatMessage.fromJson(m),
+      ],
+    );
+  }
+}
+
 /// A preset roleplay scenario for language learning.
 class ChatScenario {
   final String id;
@@ -87,7 +156,8 @@ class ChatViewModel extends ChangeNotifier {
   final textController = TextEditingController();
   final focusNode = FocusNode();
 
-  final List<ChatMessage> _messages = [];
+  final List<ChatSession> _sessions = [];
+  late ChatSession _active;
   late final AI _ai;
 
   bool _isStreaming = false;
@@ -95,88 +165,248 @@ class ChatViewModel extends ChangeNotifier {
 
   bool _disposed = false;
 
-  /// Incremented whenever the conversation is reset (clear, new
-  /// scenario) or the view model is disposed. Streaming loops capture
-  /// their generation and stop writing once it no longer matches, so a
-  /// stale stream can never write into a fresh conversation.
+  /// Incremented whenever the active conversation changes (switch,
+  /// new, clear, scenario) or the view model is disposed. Streaming
+  /// loops capture their generation and stop writing once it no
+  /// longer matches, so a stale stream can never write into a
+  /// different conversation.
   int _streamGeneration = 0;
 
-  /// Optional initial context, e.g. the word from the word detail page.
-  /// Restored from the persisted history when the chat is reopened
-  /// without fresh context.
-  String? _initialContext;
-  String? get initialContext => _initialContext;
-
-  /// Active scenario for roleplay, null for free chat.
+  /// Active scenario for roleplay, synced from the active session.
   ChatScenario? _scenario;
   ChatScenario? get scenario => _scenario;
 
-  ChatViewModel({String? initialContext}) : _initialContext = initialContext {
+  ChatViewModel({String? initialContext}) {
     final config = settings.getAiProviderConfig(settings.aiProvider);
     _ai = AI(
       provider: settings.aiProvider,
       model: config["model"] ?? "",
       apikey: config["apiKey"] ?? "",
     );
-    // Restore the previous session when opened without fresh context.
-    if (initialContext == null) {
-      _restoreHistory();
+    _loadSessions();
+    if (initialContext != null) {
+      // Reuse the word's existing conversation if there is one, so
+      // asking about the same word twice continues the same thread.
+      final existing = _sessions
+          .where((s) => s.initialContext == initialContext)
+          .toList();
+      _active = existing.isNotEmpty
+          ? existing.reduce((a, b) => a.updatedAt >= b.updatedAt ? a : b)
+          : _createSession(initialContext: initialContext);
+    } else if (_sessions.isNotEmpty) {
+      final lastActiveId = prefs.getString(_activeSessionKey);
+      final lastActive = _sessions.where((s) => s.id == lastActiveId);
+      _active = lastActive.isNotEmpty ? lastActive.first : _mostRecent();
+    } else {
+      _active = _createSession();
+    }
+    _syncScenario();
+  }
+
+  // --- Session access -------------------------------------------------
+
+  /// All sessions, most recently updated first.
+  List<ChatSession> get sessions {
+    final sorted = List<ChatSession>.of(_sessions)
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return List.unmodifiable(sorted);
+  }
+
+  String get activeSessionId => _active.id;
+
+  List<ChatMessage> get messages => _active.messages;
+
+  /// The active session's word context, restored from storage when
+  /// the chat is reopened without fresh context.
+  String? get initialContext => _active.initialContext;
+
+  /// Whether the current AI provider has a model (and API key,
+  /// where required) configured. AI actions gate on this so a
+  /// missing configuration surfaces as an explanation in the UI
+  /// instead of a silent no-op.
+  bool get aiConfigured => isAiProviderConfigured(settings.aiProvider);
+
+  ChatSession _mostRecent() =>
+      _sessions.reduce((a, b) => a.updatedAt >= b.updatedAt ? a : b);
+
+  ChatSession _createSession({String? initialContext, String? scenarioId}) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final session = ChatSession(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      createdAt: now,
+      updatedAt: now,
+      initialContext: initialContext,
+      scenarioId: scenarioId,
+    );
+    _sessions.add(session);
+    return session;
+  }
+
+  void _syncScenario() {
+    final id = _active.scenarioId;
+    if (id == null) {
+      _scenario = null;
+      return;
+    }
+    for (final s in ChatScenarioManager().allScenarios) {
+      if (s.id == id) {
+        _scenario = s;
+        return;
+      }
+    }
+    _scenario = null;
+  }
+
+  void _activate(ChatSession session) {
+    _active = session;
+    _syncScenario();
+  }
+
+  /// Discard the active session if it is pristine (nothing sent, no
+  /// scenario, no word context) — used when leaving it for another
+  /// session, so untouched sessions don't pile up.
+  void _discardPristineActive({ChatSession? except}) {
+    if (_active.isPristine && _active != except) {
+      _sessions.remove(_active);
     }
   }
 
-  /// Persist the last N messages so the conversation survives navigation.
-  static const _historyKey = "chatHistory";
-  static const _maxPersistedMessages = 100;
+  void _stopStream() {
+    _streamGeneration++;
+    _isStreaming = false;
+  }
 
-  void _persistHistory() {
+  /// Start a fresh conversation and switch to it.
+  void newSession() {
+    _stopStream();
+    _discardPristineActive();
+    _activate(_createSession());
+    _persistSessions();
+    _notify();
+  }
+
+  void switchSession(String id) {
+    if (id == _active.id) return;
+    final target = _sessions.where((s) => s.id == id).toList();
+    if (target.isEmpty) return;
+    _stopStream();
+    _discardPristineActive(except: target.first);
+    _activate(target.first);
+    _persistSessions();
+    _notify();
+  }
+
+  void deleteSession(String id) {
+    final index = _sessions.indexWhere((s) => s.id == id);
+    if (index < 0) return;
+    final wasActive = _sessions[index] == _active;
+    _sessions.removeAt(index);
+    if (wasActive) {
+      _stopStream();
+      _activate(_sessions.isEmpty ? _createSession() : _mostRecent());
+    }
+    _persistSessions();
+    _notify();
+  }
+
+  void clearChat() {
+    _stopStream();
+    _active.messages.clear();
+    _active.scenarioId = null;
+    _scenario = null;
+    _persistSessions();
+    _notify();
+  }
+
+  // --- Persistence ------------------------------------------------------
+
+  static const _sessionsKey = "chatSessions";
+  static const _activeSessionKey = "chatActiveSessionId";
+  static const _legacyHistoryKey = "chatHistory";
+  static const _maxPersistedMessages = 100;
+  static const _maxSessions = 30;
+
+  void _persistSessions() {
     try {
-      final messages = _messages.length > _maxPersistedMessages
-          ? _messages.sublist(_messages.length - _maxPersistedMessages)
-          : _messages;
-      // Don't persist empty streaming placeholders.
-      final clean = messages
-          .where((m) => !(m.text.isEmpty && !m.isUser))
-          .map((m) => m.toJson())
-          .toList();
-      prefs.setString(
-        _historyKey,
-        json.encode({
-          "messages": clean,
-          "scenarioId": _scenario?.id,
-          "initialContext": _initialContext,
-        }),
-      );
+      _active.updatedAt = DateTime.now().millisecondsSinceEpoch;
+      // Cap the stored count, dropping the least recently updated
+      // non-active sessions first.
+      if (_sessions.length > _maxSessions) {
+        final byRecency = List<ChatSession>.of(_sessions)
+          ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        final keep = byRecency.take(_maxSessions).toSet();
+        keep.add(_active);
+        _sessions.removeWhere((s) => !keep.contains(s));
+      }
+      final data = [
+        for (final session in _sessions)
+          {
+            ...session.toJson(),
+            // Cap per-session history and drop empty streaming
+            // placeholders.
+            "messages": _cleanMessages(session.messages)
+                .map((m) => m.toJson())
+                .toList(),
+          },
+      ];
+      prefs.setString(_sessionsKey, json.encode(data));
+      prefs.setString(_activeSessionKey, _active.id);
     } catch (_) {}
   }
 
-  void _restoreHistory() {
+  List<ChatMessage> _cleanMessages(List<ChatMessage> messages) {
+    final capped = messages.length > _maxPersistedMessages
+        ? messages.sublist(messages.length - _maxPersistedMessages)
+        : messages;
+    return capped.where((m) => !(m.text.isEmpty && !m.isUser)).toList();
+  }
+
+  void _loadSessions() {
     try {
-      final raw = prefs.getString(_historyKey);
+      final raw = prefs.getString(_sessionsKey);
+      if (raw != null && raw.isNotEmpty) {
+        final list = json.decode(raw) as List;
+        for (final item in list) {
+          try {
+            final session = ChatSession.fromJson(item as Map<String, dynamic>);
+            if (session.id.isNotEmpty) _sessions.add(session);
+          } catch (_) {
+            // One corrupt session must not take the rest down.
+          }
+        }
+        if (_sessions.isNotEmpty) return;
+      }
+      _migrateLegacyHistory();
+    } catch (_) {}
+  }
+
+  /// The pre-multi-session storage kept exactly one conversation in
+  /// `chatHistory`; wrap it as the first session.
+  void _migrateLegacyHistory() {
+    try {
+      final raw = prefs.getString(_legacyHistoryKey);
       if (raw == null || raw.isEmpty) return;
       final data = json.decode(raw) as Map<String, dynamic>;
       final messagesJson = data["messages"] as List?;
       if (messagesJson == null || messagesJson.isEmpty) return;
-      _messages.addAll(
-        messagesJson.map(
-          (m) => ChatMessage.fromJson(m as Map<String, dynamic>),
+      final now = DateTime.now().millisecondsSinceEpoch;
+      _sessions.add(
+        ChatSession(
+          id: "legacy",
+          createdAt: now,
+          updatedAt: now,
+          initialContext: data["initialContext"] as String?,
+          scenarioId: data["scenarioId"] as String?,
+          messages: [
+            for (final m in messagesJson)
+              if (m is Map<String, dynamic>) ChatMessage.fromJson(m),
+          ],
         ),
       );
-      final scenarioId = data["scenarioId"] as String?;
-      if (scenarioId != null) {
-        final manager = ChatScenarioManager();
-        for (final s in manager.allScenarios) {
-          if (s.id == scenarioId) {
-            _scenario = s;
-            break;
-          }
-        }
-      }
-      // Restore the word context so follow-up questions still refer
-      // to the same word after reopening the chat.
-      _initialContext = data["initialContext"] as String?;
-      notifyListeners();
     } catch (_) {}
   }
+
+  // --- Chat actions -----------------------------------------------------
 
   @override
   void dispose() {
@@ -191,34 +421,23 @@ class ChatViewModel extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
-  /// Write a streaming chunk into the placeholder at [index], unless
-  /// the stream's generation is stale (chat cleared / scenario
-  /// changed / disposed) or the placeholder is gone.
+  /// Write a streaming chunk into the placeholder at [index] of the
+  /// active session, unless the stream's generation is stale (chat
+  /// switched/cleared/disposed) or the placeholder is gone.
   bool _writeStreamChunk(int generation, int index, String text) {
     if (_disposed || generation != _streamGeneration) return false;
-    if (index < 0 || index >= _messages.length) return false;
-    _messages[index] = ChatMessage(text: text, isUser: false);
+    if (index < 0 || index >= _active.messages.length) return false;
+    _active.messages[index] = ChatMessage(text: text, isUser: false);
     notifyListeners();
     return true;
   }
 
-  List<ChatMessage> get messages => _messages;
-
-  void clearChat() {
-    _streamGeneration++;
-    _isStreaming = false;
-    _messages.clear();
-    _scenario = null;
-    _persistHistory();
-    _notify();
-  }
-
-  /// Start a roleplay scenario. Clears current chat.
+  /// Start a roleplay scenario in its own new session.
   void startScenario(ChatScenario scenario) {
-    _streamGeneration++;
-    _isStreaming = false;
-    _messages.clear();
-    _scenario = scenario;
+    _stopStream();
+    _discardPristineActive();
+    _activate(_createSession(scenarioId: scenario.id));
+    _persistSessions();
     _notify();
     // Send an opening message from the AI.
     _sendScenarioOpener();
@@ -232,9 +451,15 @@ class ChatViewModel extends ChangeNotifier {
   }
 
   Future<void> _sendScenarioOpener() async {
+    if (!aiConfigured) {
+      // The configuration banner explains; don't add a dead
+      // streaming placeholder.
+      _notify();
+      return;
+    }
     final generation = _streamGeneration;
-    _messages.add(const ChatMessage(text: "", isUser: false));
-    final index = _messages.length - 1;
+    _active.messages.add(const ChatMessage(text: "", isUser: false));
+    final index = _active.messages.length - 1;
     _isStreaming = true;
     _notify();
 
@@ -249,12 +474,15 @@ class ChatViewModel extends ChangeNotifier {
         buffer.write(chunk);
         if (!_writeStreamChunk(generation, index, buffer.toString())) return;
       }
+      if (buffer.isEmpty) {
+        throw Exception("The AI provider returned an empty response.");
+      }
     } catch (e) {
       _writeStreamChunk(generation, index, "Error: $e");
     } finally {
       if (generation == _streamGeneration) {
         _isStreaming = false;
-        _persistHistory();
+        _persistSessions();
         _notify();
       }
     }
@@ -263,6 +491,12 @@ class ChatViewModel extends ChangeNotifier {
   /// Extract vocabulary words from a message using AI.
   /// Returns a list of words worth learning.
   Future<List<String>> extractVocabulary(String messageText) async {
+    if (!aiConfigured) {
+      // Surface the configuration problem via the banner instead
+      // of pretending no words were found.
+      _notify();
+      return [];
+    }
     final count = prefs.getInt("vocabularyExtractCount") ?? 10;
     final difficulty =
         prefs.getString("vocabularyDifficulty") ??
@@ -314,13 +548,20 @@ class ChatViewModel extends ChangeNotifier {
     if (text.isEmpty || _isStreaming) {
       return;
     }
+    if (!aiConfigured) {
+      // Keep the typed text, change nothing, and let the rebuild
+      // show the configuration banner — a silent no-op here is how
+      // a missing model/key used to look like a dead feature.
+      _notify();
+      return;
+    }
 
     final generation = _streamGeneration;
     textController.clear();
-    _messages.add(ChatMessage(text: text, isUser: true));
+    _active.messages.add(ChatMessage(text: text, isUser: true));
     // Placeholder for the streaming AI response.
-    _messages.add(ChatMessage(text: "", isUser: false));
-    final index = _messages.length - 1;
+    _active.messages.add(ChatMessage(text: "", isUser: false));
+    final index = _active.messages.length - 1;
     _isStreaming = true;
     notifyListeners();
 
@@ -329,12 +570,12 @@ class ChatViewModel extends ChangeNotifier {
     // If in a scenario, prepend the scenario system prompt from the template.
     final history = [
       if (_scenario != null) ChatTurn.system(_buildScenarioSystemPrompt()),
-      for (final m in _messages.sublist(0, _messages.length - 2))
+      for (final m in _active.messages.sublist(0, _active.messages.length - 2))
         ChatTurn(m.text, m.isUser),
     ];
 
-    final effectivePrompt = _initialContext != null && history.isEmpty
-        ? "The user is asking about the word \"$_initialContext\".\n\n$text"
+    final effectivePrompt = _active.initialContext != null && history.isEmpty
+        ? "The user is asking about the word \"${_active.initialContext}\".\n\n$text"
         : text;
 
     final buffer = StringBuffer();
@@ -346,12 +587,15 @@ class ChatViewModel extends ChangeNotifier {
         buffer.write(chunk);
         if (!_writeStreamChunk(generation, index, buffer.toString())) return;
       }
+      if (buffer.isEmpty) {
+        throw Exception("The AI provider returned an empty response.");
+      }
     } catch (e) {
       _writeStreamChunk(generation, index, "Error: $e");
     } finally {
       if (generation == _streamGeneration) {
         _isStreaming = false;
-        _persistHistory();
+        _persistSessions();
         _notify();
       }
     }

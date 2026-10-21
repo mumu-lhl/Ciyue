@@ -1,10 +1,14 @@
 import "package:ciyue/repositories/chat_scenarios.dart";
+import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/tts.dart";
+import "package:ciyue/ui/pages/chat/chat_sessions_page.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/chat_view_model.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
+import "package:go_router/go_router.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 
 import "dart:math" as math;
@@ -68,6 +72,21 @@ class _ChatPageState extends State<ChatPage> {
                   : locale.aiChat,
             ),
             actions: [
+              IconButton(
+                tooltip: locale.newChat,
+                icon: const Icon(Icons.add_comment_outlined),
+                onPressed: model.newSession,
+              ),
+              IconButton(
+                tooltip: locale.chatHistory,
+                icon: const Icon(Icons.history),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChatSessionsPage(viewModel: model),
+                  ),
+                ),
+              ),
               if (model.scenario != null)
                 IconButton(
                   tooltip: locale.exitScenario,
@@ -116,6 +135,7 @@ class _ChatPageState extends State<ChatPage> {
                             },
                           ),
                   ),
+                  if (!model.aiConfigured) _buildConfigurationBanner(context),
                   _buildInputArea(context, model),
                 ],
               ),
@@ -229,6 +249,50 @@ class _ChatPageState extends State<ChatPage> {
     showDialog(
       context: context,
       builder: (context) => _ScenarioManagerDialog(manager: manager),
+    );
+  }
+
+  /// Shown while the current AI provider lacks a model or API key:
+  /// without it, sending a message used to be a silent no-op that
+  /// looked exactly like a broken feature. Names what is missing
+  /// and links straight to AI Settings.
+  Widget _buildConfigurationBanner(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final gaps = aiConfigurationGaps(settings.aiProvider);
+    final problems = [
+      if (gaps.missingModel) locale.aiMissingModel,
+      if (gaps.missingApiKey) locale.aiMissingApiKey,
+    ].join(" ");
+    return Container(
+      width: double.infinity,
+      color: theme.colorScheme.errorContainer,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Icon(
+            Icons.warning_amber,
+            size: 20,
+            color: theme.colorScheme.onErrorContainer,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              problems,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onErrorContainer,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              await context.push("/settings/ai_settings");
+              if (mounted) setState(() {});
+            },
+            child: Text(locale.openAiSettings),
+          ),
+        ],
+      ),
     );
   }
 
