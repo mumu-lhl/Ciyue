@@ -832,11 +832,12 @@ class DeepLXSource extends TranslationSource {
   }
 }
 
-/// All available sources, in default display order: AI providers
-/// first (in [ModelProviderManager] order), then the web/API sources.
+/// All available sources, in default display order, grouped by how
+/// much setup they need: free sources first (they work with zero
+/// configuration), then AI providers (configured once in AI
+/// Settings), then the API-key sources and DeepLX (each needs its
+/// own third-party credential or endpoint).
 List<TranslationSource> get allTranslationSources => [
-  for (final providerId in ModelProviderManager.modelProviders.keys)
-    AiProviderSource(providerId),
   const GoogleFreeSource(),
   const MicrosoftFreeSource(),
   const DeepLFreeSource(),
@@ -844,6 +845,8 @@ List<TranslationSource> get allTranslationSources => [
   const TencentFreeSource(),
   const VolcengineFreeSource(),
   const YandexFreeSource(),
+  for (final providerId in ModelProviderManager.modelProviders.keys)
+    AiProviderSource(providerId),
   const DeepLXSource(),
   const DeepLSource(),
   const GoogleCloudSource(),
@@ -888,10 +891,39 @@ class TranslationSourcesConfig {
       for (final id in defaults) {
         if (!ordered.contains(id)) ordered.add(id);
       }
+      // A saved order that is exactly the old AI-first default
+      // arrangement was never a deliberate customization (at most an
+      // accidental drag-and-drop back to the same spot) — adopt the
+      // new free-first default instead of freezing the old layout.
+      if (_sameOrder(ordered, _legacyDefaultOrder())) return defaults;
       return ordered;
     } catch (_) {
       return defaults;
     }
+  }
+
+  /// The pre-free-first default arrangement (AI sources first, then
+  /// free, then key-based), derived from the registry by category.
+  /// Group-internal order is unchanged between the arrangements, so
+  /// this reproduces the old default exactly.
+  static List<String> _legacyDefaultOrder() {
+    final sources = allTranslationSources;
+    return [
+      for (final s in sources)
+        if (s.isAi) s.id,
+      for (final s in sources)
+        if (!s.isAi && !s.requiresConfig) s.id,
+      for (final s in sources)
+        if (!s.isAi && s.requiresConfig) s.id,
+    ];
+  }
+
+  static bool _sameOrder(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   /// Enabled source ids. Defaults to the legacy single provider so

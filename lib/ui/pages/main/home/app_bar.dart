@@ -65,7 +65,10 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
             icon: const Icon(Icons.chat_bubble_outline),
             onPressed: () => context.push("/chat"),
           ),
-          const GroupSelectorButton(),
+          // On mobile the drawer already hosts the dictionary-group
+          // list; a second switcher here (icon + group name +
+          // dropdown arrow) eats a wide slice of the search row.
+          if (isDesktop) const GroupSelectorButton(),
           if (settings.showMoreOptionsButton) const MoreButton(),
         ],
       );

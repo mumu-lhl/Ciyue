@@ -110,7 +110,7 @@ void main() {
     test("default order contains all 23 sources", () {
       final order = TranslationSourcesConfig.loadOrder();
       expect(order.length, 23);
-      expect(order.first, "ai:openai");
+      expect(order.first, "google");
       expect(
         order,
         containsAll([
@@ -132,6 +132,47 @@ void main() {
           "yandex",
         ]),
       );
+    });
+
+    test("default order groups free, then AI, then key sources", () {
+      final order = TranslationSourcesConfig.loadOrder();
+      // Free sources (zero configuration) come first, in order.
+      expect(order.sublist(0, 7), [
+        "google",
+        "microsoft",
+        "deeplFree",
+        "baidu",
+        "tencent",
+        "volcengine",
+        "yandexFree",
+      ]);
+      // Then the AI provider sources.
+      expect(order.sublist(7, 18).every((id) => id.startsWith("ai:")), isTrue);
+      // Key-based sources and DeepLX come last.
+      expect(order.sublist(18), [
+        "deeplx",
+        "deepl",
+        "googleCloud",
+        "azure",
+        "yandex",
+      ]);
+    });
+
+    test("saved order equal to the old AI-first default migrates", () async {
+      final expected = TranslationSourcesConfig.loadOrder();
+      expect(expected.first, "google");
+      final sources = allTranslationSources;
+      final legacy = [
+        for (final s in sources)
+          if (s.isAi) s.id,
+        for (final s in sources)
+          if (!s.isAi && !s.requiresConfig) s.id,
+        for (final s in sources)
+          if (!s.isAi && s.requiresConfig) s.id,
+      ];
+      expect(legacy.first, startsWith("ai:"));
+      await TranslationSourcesConfig.saveOrder(legacy);
+      expect(TranslationSourcesConfig.loadOrder(), expected);
     });
 
     test("saved order is respected and new sources appended", () async {
