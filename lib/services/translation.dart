@@ -54,7 +54,16 @@ class AITranslationService implements TranslationService {
         .replaceAll(r"$targetLanguage", targetLangName)
         .replaceAll(r"$text", text);
 
-    final result = await ai.request(prompt);
+    // Bound the wait: a stalled endpoint must fail its card instead
+    // of spinning forever (the HTTP sources have Dio timeouts; the
+    // Genkit path has none of its own).
+    final result = await ai
+        .request(prompt)
+        .timeout(
+          const Duration(seconds: 60),
+          onTimeout: () =>
+              throw Exception("AI translation timed out after 60s"),
+        );
     return TranslationResult(text: result);
   }
 }

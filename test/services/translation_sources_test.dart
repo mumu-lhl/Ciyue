@@ -64,6 +64,27 @@ void main() {
       expect(mapLang(tencentLangMap, "zh_HK"), "zh");
       expect(mapLang(tencentLangMap, "en"), "en");
     });
+
+    test("joinFragments keeps CJK tight and spaces Latin", () {
+      expect(joinFragments(["你好", "世界"]), "你好世界");
+      expect(joinFragments(["こんにちは", "世界"]), "こんにちは世界");
+      expect(joinFragments(["Hello ", "world"]), "Hello  world");
+      expect(joinFragments(["Hello", "world"]), "Hello world");
+      expect(joinFragments(["하나", "둘"]), "하나둘");
+    });
+
+    test("normalizeDetectedLanguage maps provider codes", () {
+      expect(normalizeDetectedLanguage("zh-CN"), "zh");
+      expect(normalizeDetectedLanguage("zh-Hans"), "zh");
+      expect(normalizeDetectedLanguage("zh-TW"), "zh_TW");
+      expect(normalizeDetectedLanguage("zh-Hant"), "zh_TW");
+      expect(normalizeDetectedLanguage("zh-HK"), "zh_HK");
+      expect(normalizeDetectedLanguage("en-US"), "en");
+      expect(normalizeDetectedLanguage("ja"), "ja");
+      expect(normalizeDetectedLanguage("xx-YY"), isNull);
+      expect(normalizeDetectedLanguage(null), isNull);
+      expect(normalizeDetectedLanguage(""), isNull);
+    });
   });
 
   group("TranslationSourcesConfig", () {

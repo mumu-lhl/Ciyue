@@ -251,11 +251,15 @@ class _SourceConfigFields extends StatelessWidget {
           TextButton.icon(
             icon: const Icon(Icons.open_in_new, size: 16),
             label: Text(locale.openAiSettings),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const AiSettingsPage()),
               );
+              // The configured state may have changed in AI
+              // Settings; refresh so the tile doesn't keep showing
+              // a stale "Not configured".
+              viewModel.refresh();
             },
           ),
         ],

@@ -17,6 +17,10 @@ mixin _$TranslationResult {
   String get text;
   List<String> get alternatives;
 
+  /// Source language the provider detected (app language code),
+  /// when the provider reports one and the request was auto-detect.
+  String? get detectedLanguage;
+
   /// Create a copy of TranslationResult
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -37,7 +41,9 @@ mixin _$TranslationResult {
             const DeepCollectionEquality().equals(
               other.alternatives,
               _this.alternatives,
-            ));
+            ) &&
+            (identical(other.detectedLanguage, _this.detectedLanguage) ||
+                other.detectedLanguage == _this.detectedLanguage));
   }
 
   @override
@@ -47,13 +53,14 @@ mixin _$TranslationResult {
       runtimeType,
       _this.text,
       const DeepCollectionEquality().hash(_this.alternatives),
+      _this.detectedLanguage,
     );
   }
 
   @override
   String toString() {
     final _this = this as TranslationResult;
-    return 'TranslationResult(text: ${_this.text}, alternatives: ${_this.alternatives})';
+    return 'TranslationResult(text: ${_this.text}, alternatives: ${_this.alternatives}, detectedLanguage: ${_this.detectedLanguage})';
   }
 }
 
@@ -64,7 +71,7 @@ abstract mixin class $TranslationResultCopyWith<$Res> {
     $Res Function(TranslationResult) _then,
   ) = _$TranslationResultCopyWithImpl;
   @useResult
-  $Res call({String text, List<String> alternatives});
+  $Res call({String text, List<String> alternatives, String? detectedLanguage});
 }
 
 /// @nodoc
@@ -79,7 +86,11 @@ class _$TranslationResultCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? text = null, Object? alternatives = null}) {
+  $Res call({
+    Object? text = null,
+    Object? alternatives = null,
+    Object? detectedLanguage = freezed,
+  }) {
     return _then(
       TranslationResult(
         text: null == text
@@ -90,6 +101,10 @@ class _$TranslationResultCopyWithImpl<$Res>
             ? _self.alternatives
             : alternatives // ignore: cast_nullable_to_non_nullable
                   as List<String>,
+        detectedLanguage: freezed == detectedLanguage
+            ? _self.detectedLanguage
+            : detectedLanguage // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -188,13 +203,18 @@ extension TranslationResultPatterns on TranslationResult {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(String text, List<String> alternatives)? $default, {
+    TResult Function(
+      String text,
+      List<String> alternatives,
+      String? detectedLanguage,
+    )?
+    $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _TranslationResult() when $default != null:
-        return $default(_that.text, _that.alternatives);
+        return $default(_that.text, _that.alternatives, _that.detectedLanguage);
       case _:
         return orElse();
     }
@@ -215,12 +235,17 @@ extension TranslationResultPatterns on TranslationResult {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(String text, List<String> alternatives) $default,
+    TResult Function(
+      String text,
+      List<String> alternatives,
+      String? detectedLanguage,
+    )
+    $default,
   ) {
     final _that = this;
     switch (_that) {
       case _TranslationResult():
-        return $default(_that.text, _that.alternatives);
+        return $default(_that.text, _that.alternatives, _that.detectedLanguage);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -240,12 +265,17 @@ extension TranslationResultPatterns on TranslationResult {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(String text, List<String> alternatives)? $default,
+    TResult? Function(
+      String text,
+      List<String> alternatives,
+      String? detectedLanguage,
+    )?
+    $default,
   ) {
     final _that = this;
     switch (_that) {
       case _TranslationResult() when $default != null:
-        return $default(_that.text, _that.alternatives);
+        return $default(_that.text, _that.alternatives, _that.detectedLanguage);
       case _:
         return null;
     }
@@ -258,6 +288,7 @@ class _TranslationResult implements TranslationResult {
   const _TranslationResult({
     required this.text,
     List<String> alternatives = const <String>[],
+    this.detectedLanguage,
   }) : _alternatives = alternatives;
 
   @override
@@ -270,6 +301,11 @@ class _TranslationResult implements TranslationResult {
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_alternatives);
   }
+
+  /// Source language the provider detected (app language code),
+  /// when the provider reports one and the request was auto-detect.
+  @override
+  final String? detectedLanguage;
 
   /// Create a copy of TranslationResult
   /// with the given fields replaced by the non-null parameter values.
@@ -288,7 +324,9 @@ class _TranslationResult implements TranslationResult {
             const DeepCollectionEquality().equals(
               other.alternatives,
               _alternatives,
-            ));
+            ) &&
+            (identical(other.detectedLanguage, detectedLanguage) ||
+                other.detectedLanguage == detectedLanguage));
   }
 
   @override
@@ -297,12 +335,13 @@ class _TranslationResult implements TranslationResult {
       runtimeType,
       text,
       const DeepCollectionEquality().hash(_alternatives),
+      detectedLanguage,
     );
   }
 
   @override
   String toString() {
-    return 'TranslationResult(text: $text, alternatives: $alternatives)';
+    return 'TranslationResult(text: $text, alternatives: $alternatives, detectedLanguage: $detectedLanguage)';
   }
 }
 
@@ -315,7 +354,7 @@ abstract mixin class _$TranslationResultCopyWith<$Res>
   ) = __$TranslationResultCopyWithImpl;
   @override
   @useResult
-  $Res call({String text, List<String> alternatives});
+  $Res call({String text, List<String> alternatives, String? detectedLanguage});
 }
 
 /// @nodoc
@@ -330,7 +369,11 @@ class __$TranslationResultCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $Res call({Object? text = null, Object? alternatives = null}) {
+  $Res call({
+    Object? text = null,
+    Object? alternatives = null,
+    Object? detectedLanguage = freezed,
+  }) {
     return _then(
       _TranslationResult(
         text: null == text
@@ -341,6 +384,10 @@ class __$TranslationResultCopyWithImpl<$Res>
             ? _self._alternatives
             : alternatives // ignore: cast_nullable_to_non_nullable
                   as List<String>,
+        detectedLanguage: freezed == detectedLanguage
+            ? _self.detectedLanguage
+            : detectedLanguage // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }

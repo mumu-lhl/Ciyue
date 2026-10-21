@@ -41,6 +41,10 @@ class AiTranslateSettingsViewModel extends ChangeNotifier {
   bool get isRichOutput => settings.isRichOutput;
   bool get enableTranslationHistory => settings.enableTranslationHistory;
 
+  /// Re-read the (live) source configuration state, e.g. after
+  /// returning from AI Settings where a provider's model/key changed.
+  void refresh() => notifyListeners();
+
   Future<void> setEnableTranslationHistory(bool value) async {
     await settings.setEnableTranslationHistory(value);
     notifyListeners();

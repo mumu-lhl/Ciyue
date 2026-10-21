@@ -44,6 +44,36 @@ abstract class TranslationSource {
 /// `zh_TW`, `ja`, ...) to a provider's codes. Unknown codes pass through.
 String mapLang(Map<String, String> table, String code) => table[code] ?? code;
 
+/// Join translated sentence fragments. Providers split results into
+/// fragments that carry their own spacing in space-separated
+/// languages; blindly joining with " " inserts spurious spaces
+/// between every fragment of Chinese/Japanese/Korean output.
+String joinFragments(Iterable<String> fragments) {
+  final list = fragments.toList();
+  final joined = list.join();
+  final hasCjk = joined.runes.any(
+    (r) =>
+        (r >= 0x2E80 && r <= 0x9FFF) || // CJK radicals + ideographs
+        (r >= 0xF900 && r <= 0xFAFF) || // CJK compatibility ideographs
+        (r >= 0x3040 && r <= 0x30FF) || // Hiragana + Katakana
+        (r >= 0xAC00 && r <= 0xD7AF), // Hangul syllables
+  );
+  return hasCjk ? joined : list.join(" ");
+}
+
+/// Normalize a provider-reported detected language code (e.g.
+/// "zh-CN", "zh-Hant", "en-US") to an app language code, or null
+/// when it doesn't correspond to a language the app offers.
+String? normalizeDetectedLanguage(String? code) {
+  if (code == null || code.isEmpty) return null;
+  final c = code.toLowerCase().replaceAll("_", "-");
+  if (c == "zh" || c == "zh-cn" || c == "zh-hans") return "zh";
+  if (c == "zh-tw" || c == "zh-hant") return "zh_TW";
+  if (c == "zh-hk") return "zh_HK";
+  final base = c.split("-").first;
+  return languageMap.containsKey(base) ? base : null;
+}
+
 const googleLangMap = {"zh": "zh-CN", "zh_HK": "zh-TW", "zh_TW": "zh-TW"};
 
 const microsoftLangMap = {
@@ -172,10 +202,13 @@ class GoogleFreeSource extends TranslationSource {
     if (sentences == null) {
       throw Exception("Unexpected Google response");
     }
-    final translated = sentences
-        .map((s) => (s as Map)["trans"] as String? ?? "")
-        .join(" ");
-    return TranslationResult(text: translated);
+    final translated = joinFragments(
+      sentences.map((s) => (s as Map)["trans"] as String? ?? ""),
+    );
+    return TranslationResult(
+      text: translated,
+      detectedLanguage: normalizeDetectedLanguage(body["src"] as String?),
+    );
   }
 }
 
@@ -215,10 +248,15 @@ class MicrosoftFreeSource extends TranslationSource {
     final body = response.data as List;
     final first = body.first as Map;
     final translations = first["translations"] as List;
-    final translated = translations
-        .map((t) => (t as Map)["text"] as String? ?? "")
-        .join(" ");
-    return TranslationResult(text: translated);
+    final translated = joinFragments(
+      translations.map((t) => (t as Map)["text"] as String? ?? ""),
+    );
+    final detected =
+        (first["detectedLanguage"] as Map?)?["language"] as String?;
+    return TranslationResult(
+      text: translated,
+      detectedLanguage: normalizeDetectedLanguage(detected),
+    );
   }
 }
 
@@ -265,9 +303,9 @@ class BaiduFreeSource extends TranslationSource {
     final type = body["type"];
     if (type == 2) {
       final data = body["data"] as List;
-      final translated = data
-          .map((d) => (d as Map)["dst"] as String? ?? "")
-          .join(" ");
+      final translated = joinFragments(
+        data.map((d) => (d as Map)["dst"] as String? ?? ""),
+      );
       return TranslationResult(text: translated);
     } else if (type == 1) {
       // Dictionary-style result for single words.
@@ -334,7 +372,7 @@ class TencentFreeSource extends TranslationSource {
     if (list == null || list.isEmpty) {
       throw Exception("Unexpected Tencent response");
     }
-    return TranslationResult(text: list.cast<String>().join(" "));
+    return TranslationResult(text: joinFragments(list.cast<String>()));
   }
 }
 
