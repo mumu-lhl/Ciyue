@@ -834,6 +834,22 @@
   },
   "clearChat": "Clear chat",
   "@clearChat": {},
+  "newChat": "New chat",
+  "@newChat": {},
+  "chatHistory": "Chat History",
+  "@chatHistory": {},
+  "messageCount": "{count} messages",
+  "@messageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiMissingModel": "No model is set for the current AI provider.",
+  "@aiMissingModel": {},
+  "aiMissingApiKey": "No API key is set for the current AI provider.",
+  "@aiMissingApiKey": {},
   "wordQuiz": "Word Quiz",
   "@wordQuiz": {},
   "quizNeedWords": "Add at least 4 words to your wordbook to start a quiz",

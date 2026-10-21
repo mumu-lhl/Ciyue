@@ -8,6 +8,55 @@ import "package:genkit_anthropic/genkit_anthropic.dart";
 import "package:genkit_google_genai/genkit_google_genai.dart";
 import "package:genkit_openai/genkit_openai.dart";
 
+/// Thrown when an AI feature is used before the provider has the
+/// configuration it needs (model and, for hosted providers, an API
+/// key). AI entry points must fail loudly with this instead of
+/// silently producing nothing: an unconfigured provider otherwise
+/// tends to surface as an empty response or a blank UI.
+class AiNotConfiguredException implements Exception {
+  final String provider;
+  final bool missingModel;
+  final bool missingApiKey;
+
+  const AiNotConfiguredException(
+    this.provider, {
+    required this.missingModel,
+    required this.missingApiKey,
+  });
+
+  @override
+  String toString() {
+    final missing = [
+      if (missingModel) "model",
+      if (missingApiKey) "API key",
+    ].join(" and ");
+    return "AI provider \"$provider\" is not configured: no $missing set. "
+        "Set it in AI Settings first.";
+  }
+}
+
+/// Providers that run against a local endpoint and work without an
+/// API key.
+const keylessAiProviders = {"ollama", "openai_compatible"};
+
+/// What is missing for [provider] to be usable, based on the config
+/// saved in AI Settings. Both flags false means fully configured.
+({bool missingModel, bool missingApiKey}) aiConfigurationGaps(String provider) {
+  final config = settings.getAiProviderConfig(provider);
+  final model = (config["model"]?.toString() ?? "").trim();
+  final apiKey = (config["apiKey"]?.toString() ?? "").trim();
+  return (
+    missingModel: model.isEmpty,
+    missingApiKey: !keylessAiProviders.contains(provider) && apiKey.isEmpty,
+  );
+}
+
+/// Whether [provider] has everything it needs in AI Settings.
+bool isAiProviderConfigured(String provider) {
+  final gaps = aiConfigurationGaps(provider);
+  return !gaps.missingModel && !gaps.missingApiKey;
+}
+
 class AI {
   final String provider;
   final String model;
@@ -30,12 +79,30 @@ class AI {
     }
   }
 
+  /// Fail fast when this instance was built from an incomplete
+  /// configuration, instead of letting the provider call surface
+  /// as a hang, an empty stream, or an opaque network error.
+  void _ensureConfigured() {
+    final missingModel = model.trim().isEmpty;
+    final missingApiKey =
+        !keylessAiProviders.contains(provider) && apikey.trim().isEmpty;
+    if (missingModel || missingApiKey) {
+      throw AiNotConfiguredException(
+        provider,
+        missingModel: missingModel,
+        missingApiKey: missingApiKey,
+      );
+    }
+  }
+
   Future<String> request(String prompt) async {
+    _ensureConfigured();
     return aiProvider.request(prompt);
   }
 
   /// Stream the response as text chunks arrive.
   Stream<String> requestStream(String prompt, {CancellationToken? cancel}) {
+    _ensureConfigured();
     return aiProvider.requestStream(prompt, cancel: cancel);
   }
 
@@ -45,6 +112,7 @@ class AI {
     List<ChatTurn> history = const [],
     CancellationToken? cancel,
   }) {
+    _ensureConfigured();
     return aiProvider.requestStreamWithHistory(
       prompt,
       history: history,

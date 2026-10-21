@@ -397,6 +397,8 @@ const preferencesAllowList = <String>{
   "customChatScenarios",
   "disabledPresetScenarios",
   "chatHistory",
+  "chatSessions",
+  "chatActiveSessionId",
 
   "tabBarPosition",
   "showSearchBarInWordDisplay",

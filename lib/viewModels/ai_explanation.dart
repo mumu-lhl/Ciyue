@@ -86,8 +86,10 @@ class AIExplanationModel extends ChangeNotifier {
 
     final buffer = StringBuffer();
     try {
-      await for (final chunk
-          in _ai.requestStream(prompt, cancel: controller.token)) {
+      await for (final chunk in _ai.requestStream(
+        prompt,
+        cancel: controller.token,
+      )) {
         if (!_mounted) return;
         // Ignore chunks from a cancelled (superseded) stream.
         if (controller.isCancelled) return;
@@ -97,7 +99,12 @@ class AIExplanationModel extends ChangeNotifier {
         notifyListeners();
       }
       final fullExplanation = buffer.toString();
-      if (fullExplanation.isEmpty) return;
+      if (fullExplanation.isEmpty) {
+        // A stream that completes without producing anything must
+        // not leave a silently blank explanation.
+        _explanation = "Error: The AI provider returned an empty response.";
+        return;
+      }
 
       final existing = await _aiExplanationDao.getAiExplanation(word);
       if (existing != null) {

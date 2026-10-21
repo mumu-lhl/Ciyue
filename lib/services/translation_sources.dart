@@ -5,7 +5,8 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/http_client.dart";
 import "package:ciyue/models/translation_result.dart";
 import "package:ciyue/repositories/settings.dart";
-import "package:ciyue/services/ai.dart" show ModelProviderManager;
+import "package:ciyue/services/ai.dart"
+    show ModelProviderManager, isAiProviderConfigured;
 import "package:ciyue/services/translation.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -769,17 +770,10 @@ class AiProviderSource extends TranslationSource {
 
   @override
   bool get isConfigured {
-    final config = settings.getAiProviderConfig(providerId);
-    // Coerce defensively: a malformed persisted config must disable
-    // this one source, not crash the whole translate flow.
-    final model = (config["model"]?.toString() ?? "").trim();
-    if (model.isEmpty) return false;
-    final apiKey = (config["apiKey"]?.toString() ?? "").trim();
-    // Local providers work without an API key.
-    if (providerId == "ollama" || providerId == "openai_compatible") {
-      return true;
-    }
-    return apiKey.isNotEmpty;
+    // Shared with every other AI entry point (ai.dart). A malformed
+    // persisted config disables this one source instead of crashing
+    // the whole translate flow (the helper coerces via toString).
+    return isAiProviderConfigured(providerId);
   }
 
   @override
