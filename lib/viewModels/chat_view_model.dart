@@ -1,4 +1,6 @@
+import "dart:async";
 import "dart:convert";
+import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/daos.dart";
@@ -7,18 +9,35 @@ import "package:ciyue/repositories/chat_scenarios.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:material_ui/material_ui.dart";
+import "package:path_provider/path_provider.dart";
 
 class ChatMessage {
   final String text;
   final bool isUser;
 
-  const ChatMessage({required this.text, required this.isUser});
+  /// Local files of images attached to (or generated for) this
+  /// message, kept in the app's chat_images directory.
+  final List<String> imagePaths;
 
-  Map<String, dynamic> toJson() => {"text": text, "isUser": isUser};
+  const ChatMessage({
+    required this.text,
+    required this.isUser,
+    this.imagePaths = const [],
+  });
+
+  Map<String, dynamic> toJson() => {
+    "text": text,
+    "isUser": isUser,
+    if (imagePaths.isNotEmpty) "imagePaths": imagePaths,
+  };
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
     text: json["text"] as String? ?? "",
     isUser: json["isUser"] as bool? ?? false,
+    imagePaths: [
+      for (final path in (json["imagePaths"] as List? ?? const []))
+        if (path is String) path,
+    ],
   );
 }
 
@@ -300,6 +319,7 @@ class ChatViewModel extends ChangeNotifier {
     final index = _sessions.indexWhere((s) => s.id == id);
     if (index < 0) return;
     final wasActive = _sessions[index] == _active;
+    _deleteMessageImages(_sessions[index].messages);
     _sessions.removeAt(index);
     if (wasActive) {
       _stopStream();
@@ -311,6 +331,7 @@ class ChatViewModel extends ChangeNotifier {
 
   void clearChat() {
     _stopStream();
+    _deleteMessageImages(_active.messages);
     _active.messages.clear();
     _active.scenarioId = null;
     _scenario = null;
@@ -336,6 +357,9 @@ class ChatViewModel extends ChangeNotifier {
           ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
         final keep = byRecency.take(_maxSessions).toSet();
         keep.add(_active);
+        for (final session in _sessions.where((s) => !keep.contains(s))) {
+          _deleteMessageImages(session.messages);
+        }
         _sessions.removeWhere((s) => !keep.contains(s));
       }
       final data = [
@@ -358,7 +382,11 @@ class ChatViewModel extends ChangeNotifier {
     final capped = messages.length > _maxPersistedMessages
         ? messages.sublist(messages.length - _maxPersistedMessages)
         : messages;
-    return capped.where((m) => !(m.text.isEmpty && !m.isUser)).toList();
+    // Drop empty streaming placeholders, but keep generated-image
+    // messages (empty text, image attached).
+    return capped
+        .where((m) => !(m.text.isEmpty && !m.isUser && m.imagePaths.isEmpty))
+        .toList();
   }
 
   void _loadSessions() {
@@ -543,9 +571,171 @@ class ChatViewModel extends ChangeNotifier {
     }
   }
 
+  // --- Images -----------------------------------------------------------
+
+  final List<String> _pendingImagePaths = [];
+
+  /// Images attached to the message being composed.
+  List<String> get pendingImagePaths => List.unmodifiable(_pendingImagePaths);
+
+  Future<Directory> _chatImagesDir() async {
+    final docs = await getApplicationDocumentsDirectory();
+    final dir = Directory("${docs.path}/chat_images");
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    return dir;
+  }
+
+  /// Copy a picked image into app storage and attach it to the
+  /// message being composed. False when the copy failed.
+  Future<bool> addPendingImage(String sourcePath) async {
+    try {
+      final dir = await _chatImagesDir();
+      final dot = sourcePath.lastIndexOf(".");
+      final ext = dot >= 0 ? sourcePath.substring(dot) : ".jpg";
+      final name = "${DateTime.now().microsecondsSinceEpoch}$ext";
+      final dest = "${dir.path}/$name";
+      await File(sourcePath).copy(dest);
+      _pendingImagePaths.add(dest);
+      _notify();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void removePendingImage(String path) {
+    _pendingImagePaths.remove(path);
+    _notify();
+    unawaited(_deleteFile(path));
+  }
+
+  Future<void> _deleteFile(String path) async {
+    try {
+      await File(path).delete();
+    } catch (_) {}
+  }
+
+  void _deleteMessageImages(Iterable<ChatMessage> messages) {
+    for (final message in messages) {
+      for (final path in message.imagePaths) {
+        unawaited(_deleteFile(path));
+      }
+    }
+  }
+
+  /// Encode an image file as a base64 data URL for the AI request.
+  /// Null when the file is gone or unreadable.
+  Future<String?> _imageDataUrl(String path) async {
+    try {
+      final bytes = await File(path).readAsBytes();
+      final lower = path.toLowerCase();
+      final contentType = lower.endsWith(".png")
+          ? "image/png"
+          : lower.endsWith(".webp")
+          ? "image/webp"
+          : lower.endsWith(".gif")
+          ? "image/gif"
+          : "image/jpeg";
+      return "data:$contentType;base64,${base64Encode(bytes)}";
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Whether the current provider can generate images at all.
+  bool get imageGenerationSupported =>
+      ModelProviderManager.supportsImageGeneration(settings.aiProvider);
+
+  /// The image model that generation will use: the one saved for
+  /// the provider, else its first known image model, else "".
+  String get currentImageModel {
+    final saved =
+        settings
+            .getAiProviderConfig(settings.aiProvider)["imageModel"]
+            ?.toString()
+            .trim() ??
+        "";
+    if (saved.isNotEmpty) return saved;
+    final known = ModelProviderManager.getImageModels(settings.aiProvider);
+    return known.isNotEmpty ? known.first.originName : "";
+  }
+
+  Future<void> setImageModel(String model) async {
+    await settings.saveAiProviderImageModel(settings.aiProvider, model);
+    _notify();
+  }
+
+  /// Write a generated image into the placeholder at [index],
+  /// under the same staleness rules as streamed text.
+  bool _writeGeneratedImage(int generation, int index, String path) {
+    if (_disposed || generation != _streamGeneration) return false;
+    if (index < 0 || index >= _active.messages.length) return false;
+    _active.messages[index] = ChatMessage(
+      text: "",
+      isUser: false,
+      imagePaths: [path],
+    );
+    notifyListeners();
+    return true;
+  }
+
+  /// Generate an image from the typed prompt with the current
+  /// provider's image model. The result lands as an AI message
+  /// holding the saved image file.
+  Future<void> generateImage() async {
+    final prompt = textController.text.trim();
+    if (prompt.isEmpty || _isStreaming) {
+      return;
+    }
+    final provider = settings.aiProvider;
+    final config = settings.getAiProviderConfig(provider);
+    final imageModel = currentImageModel;
+    final apiKey = config["apiKey"]?.toString() ?? "";
+    if (!imageGenerationSupported ||
+        imageModel.isEmpty ||
+        (!keylessAiProviders.contains(provider) && apiKey.trim().isEmpty)) {
+      // The image-mode bar in the UI explains what is missing;
+      // keep the typed prompt and do nothing.
+      _notify();
+      return;
+    }
+
+    final generation = _streamGeneration;
+    textController.clear();
+    _active.messages.add(ChatMessage(text: prompt, isUser: true));
+    _active.messages.add(const ChatMessage(text: "", isUser: false));
+    final index = _active.messages.length - 1;
+    _isStreaming = true;
+    notifyListeners();
+
+    try {
+      final bytes = await AiImageGenerator.generate(
+        provider: provider,
+        model: imageModel,
+        prompt: prompt,
+        apiKey: apiKey,
+        customApiUrl: settings.aiAPIUrl,
+      );
+      final dir = await _chatImagesDir();
+      final path = "${dir.path}/${DateTime.now().microsecondsSinceEpoch}.png";
+      await File(path).writeAsBytes(bytes);
+      _writeGeneratedImage(generation, index, path);
+    } catch (e) {
+      _writeStreamChunk(generation, index, "Error: $e");
+    } finally {
+      if (generation == _streamGeneration) {
+        _isStreaming = false;
+        _persistSessions();
+        _notify();
+      }
+    }
+  }
+
   Future<void> sendMessage() async {
     final text = textController.text.trim();
-    if (text.isEmpty || _isStreaming) {
+    if ((text.isEmpty && _pendingImagePaths.isEmpty) || _isStreaming) {
       return;
     }
     if (!aiConfigured) {
@@ -557,25 +747,44 @@ class ChatViewModel extends ChangeNotifier {
     }
 
     final generation = _streamGeneration;
+    final session = _active;
+    final attachedPaths = List<String>.of(_pendingImagePaths);
+    _pendingImagePaths.clear();
     textController.clear();
-    _active.messages.add(ChatMessage(text: text, isUser: true));
+
+    // Encode attachments before adding messages, so a slow read
+    // cannot interleave with the placeholder bookkeeping.
+    final imageDataUrls = <String>[];
+    for (final path in attachedPaths) {
+      final dataUrl = await _imageDataUrl(path);
+      if (dataUrl != null) imageDataUrls.add(dataUrl);
+    }
+    if (generation != _streamGeneration) return;
+
+    session.messages.add(
+      ChatMessage(text: text, isUser: true, imagePaths: attachedPaths),
+    );
     // Placeholder for the streaming AI response.
-    _active.messages.add(ChatMessage(text: "", isUser: false));
-    final index = _active.messages.length - 1;
+    session.messages.add(const ChatMessage(text: "", isUser: false));
+    final index = session.messages.length - 1;
     _isStreaming = true;
     notifyListeners();
 
     // Build history from prior turns (excluding the placeholder).
     // If there's initial context (e.g. a word), prepend it as a system hint.
     // If in a scenario, prepend the scenario system prompt from the template.
+    // History is text-only: attached images are sent with the turn
+    // they belong to, not re-uploaded on every later turn.
     final history = [
       if (_scenario != null) ChatTurn.system(_buildScenarioSystemPrompt()),
-      for (final m in _active.messages.sublist(0, _active.messages.length - 2))
+      for (final m in session.messages.sublist(0, session.messages.length - 2))
         ChatTurn(m.text, m.isUser),
     ];
 
-    final effectivePrompt = _active.initialContext != null && history.isEmpty
-        ? "The user is asking about the word \"${_active.initialContext}\".\n\n$text"
+    final effectivePrompt = session.initialContext != null && history.isEmpty
+        ? "The user is asking about the word \"${session.initialContext}\".\n\n$text"
+        : text.isEmpty && imageDataUrls.isNotEmpty
+        ? "Describe this image."
         : text;
 
     final buffer = StringBuffer();
@@ -583,6 +792,7 @@ class ChatViewModel extends ChangeNotifier {
       await for (final chunk in _ai.requestStreamWithHistory(
         effectivePrompt,
         history: history,
+        promptImages: imageDataUrls,
       )) {
         buffer.write(chunk);
         if (!_writeStreamChunk(generation, index, buffer.toString())) return;

@@ -88,6 +88,9 @@ class ChatSessionsPage extends StatelessWidget {
         if (s.id == scenarioId) return _scenarioTitle(context, s);
       }
     }
+    if (session.messages.any((m) => m.imagePaths.isNotEmpty)) {
+      return locale.imageMessage;
+    }
     return locale.newChat;
   }
 

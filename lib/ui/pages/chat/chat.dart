@@ -2,6 +2,7 @@ import "package:ciyue/repositories/chat_scenarios.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/tts.dart";
+import "package:ciyue/ui/pages/chat/chat_image_viewer.dart";
 import "package:ciyue/ui/pages/chat/chat_sessions_page.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/chat_view_model.dart";
@@ -10,7 +11,9 @@ import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
 import "package:go_router/go_router.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
+import "package:image_picker/image_picker.dart";
 
+import "dart:io";
 import "dart:math" as math;
 
 class ChatPage extends StatefulWidget {
@@ -25,6 +28,10 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   late final ChatViewModel _viewModel;
   final _scrollController = ScrollController();
+
+  /// When on, sending generates an image from the prompt instead
+  /// of chatting.
+  bool _imageMode = false;
 
   @override
   void initState() {
@@ -123,12 +130,14 @@ class _ChatPageState extends State<ChatPage> {
                               // Skip empty placeholder while streaming
                               if (!message.isUser &&
                                   message.text.isEmpty &&
+                                  message.imagePaths.isEmpty &&
                                   model.isStreaming) {
                                 return const SizedBox.shrink();
                               }
                               return ChatBubble(
                                 message: message.text,
                                 isUser: message.isUser,
+                                imagePaths: message.imagePaths,
                                 onExtractVocabulary: model.extractVocabulary,
                                 onSaveWord: model.saveWordToWordbook,
                               );
@@ -296,55 +305,282 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  void _send(ChatViewModel model) {
+    if (_imageMode) {
+      model.generateImage();
+    } else {
+      model.sendMessage();
+    }
+  }
+
+  Future<void> _pickImage(ChatViewModel model, ImageSource source) async {
+    final picked = await ImagePicker().pickImage(source: source);
+    if (picked != null) {
+      await model.addPendingImage(picked.path);
+    }
+  }
+
+  void _showAttachSheet(BuildContext context, ChatViewModel model) {
+    final locale = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(locale.fromGallery),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(model, ImageSource.gallery);
+              },
+            ),
+            if (Platform.isAndroid || Platform.isIOS)
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: Text(locale.takePhoto),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(model, ImageSource.camera);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showImageModelPicker(
+    BuildContext context,
+    ChatViewModel model,
+  ) async {
+    final locale = AppLocalizations.of(context)!;
+    final known = ModelProviderManager.getImageModels(settings.aiProvider);
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(locale.imageModel),
+        children: [
+          for (final info in known)
+            ListTile(
+              title: Text(info.shownName),
+              subtitle: Text(info.originName),
+              trailing: model.currentImageModel == info.originName
+                  ? const Icon(Icons.check)
+                  : null,
+              onTap: () => Navigator.pop(context, info.originName),
+            ),
+          ListTile(
+            leading: const Icon(Icons.edit_outlined),
+            title: Text(locale.enterCustomModel),
+            onTap: () => Navigator.pop(context, ""),
+          ),
+        ],
+      ),
+    );
+    if (selected == null || !context.mounted) return;
+    if (selected.isNotEmpty) {
+      await model.setImageModel(selected);
+      return;
+    }
+    // Custom model id typed by hand.
+    final controller = TextEditingController(text: model.currentImageModel);
+    final custom = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(locale.imageModel),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: locale.enterCustomModel),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(locale.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: Text(locale.confirm),
+          ),
+        ],
+      ),
+    );
+    if (custom != null && custom.isNotEmpty) {
+      await model.setImageModel(custom);
+    }
+  }
+
+  Widget _buildPendingImagesRow(ChatViewModel model) {
+    return Container(
+      height: 72,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: model.pendingImagePaths.length,
+        itemBuilder: (context, index) {
+          final path = model.pendingImagePaths[index];
+          return Stack(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                margin: const EdgeInsets.only(right: 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.file(
+                    File(path),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) =>
+                        const Icon(Icons.broken_image_outlined),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                right: 4,
+                child: GestureDetector(
+                  onTap: () => model.removePendingImage(path),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.black54,
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(2),
+                    child: const Icon(
+                      Icons.close,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildImageModeBar(BuildContext context, ChatViewModel model) {
+    final locale = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    if (!model.imageGenerationSupported) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(
+          locale.providerNoImageGeneration,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.error,
+          ),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Text(locale.imageModel, style: theme.textTheme.labelLarge),
+          const SizedBox(width: 8),
+          ActionChip(
+            label: Text(
+              model.currentImageModel.isEmpty ? "—" : model.currentImageModel,
+            ),
+            onPressed: () => _showImageModelPicker(context, model),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInputArea(BuildContext context, ChatViewModel model) {
     final locale = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Focus(
-          focusNode: model.focusNode,
-          onKeyEvent: (node, event) {
-            if (event.logicalKey == LogicalKeyboardKey.enter &&
-                !HardwareKeyboard.instance.isControlPressed &&
-                !HardwareKeyboard.instance.isShiftPressed) {
-              if (event is KeyDownEvent) {
-                model.sendMessage();
-              }
-              return KeyEventResult.handled;
-            }
-            return KeyEventResult.ignored;
-          },
-          child: TextField(
-            onSubmitted: (_) => model.sendMessage(),
-            controller: model.textController,
-            maxLines: null,
-            textInputAction: TextInputAction.send,
-            decoration: InputDecoration(
-              hintText: locale.typeMessage,
-              filled: true,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24.0),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 12,
-              ),
-              suffixIcon: Padding(
-                padding: const EdgeInsets.only(right: 4.0),
-                child: IconButton(
-                  icon: model.isStreaming
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.send),
-                  onPressed: model.isStreaming ? null : model.sendMessage,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (model.pendingImagePaths.isNotEmpty)
+              _buildPendingImagesRow(model),
+            if (_imageMode) _buildImageModeBar(context, model),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                IconButton(
+                  tooltip: locale.attachImage,
+                  icon: const Icon(Icons.add_photo_alternate_outlined),
+                  onPressed: _imageMode
+                      ? null
+                      : () => _showAttachSheet(context, model),
                 ),
-              ),
+                IconButton(
+                  tooltip: locale.generateImage,
+                  icon: Icon(
+                    Icons.brush_outlined,
+                    color: _imageMode
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
+                  onPressed: () => setState(() => _imageMode = !_imageMode),
+                ),
+                Expanded(
+                  child: Focus(
+                    focusNode: model.focusNode,
+                    onKeyEvent: (node, event) {
+                      if (event.logicalKey == LogicalKeyboardKey.enter &&
+                          !HardwareKeyboard.instance.isControlPressed &&
+                          !HardwareKeyboard.instance.isShiftPressed) {
+                        if (event is KeyDownEvent) {
+                          _send(model);
+                        }
+                        return KeyEventResult.handled;
+                      }
+                      return KeyEventResult.ignored;
+                    },
+                    child: TextField(
+                      onSubmitted: (_) => _send(model),
+                      controller: model.textController,
+                      maxLines: null,
+                      textInputAction: TextInputAction.send,
+                      decoration: InputDecoration(
+                        hintText: _imageMode
+                            ? locale.describeImage
+                            : locale.typeMessage,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.only(right: 4.0),
+                          child: IconButton(
+                            icon: model.isStreaming
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.send),
+                            onPressed: model.isStreaming
+                                ? null
+                                : () => _send(model),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -428,6 +664,7 @@ class _TypingIndicatorState extends State<_TypingIndicator>
 class ChatBubble extends StatelessWidget {
   final String message;
   final bool isUser;
+  final List<String> imagePaths;
   final Future<List<String>> Function(String)? onExtractVocabulary;
   final Future<bool> Function(String)? onSaveWord;
 
@@ -435,6 +672,7 @@ class ChatBubble extends StatelessWidget {
     super.key,
     required this.message,
     required this.isUser,
+    this.imagePaths = const [],
     this.onExtractVocabulary,
     this.onSaveWord,
   });
@@ -466,24 +704,50 @@ class ChatBubble extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (isUser)
-                SelectableText(
-                  message,
-                  style: TextStyle(
-                    color: theme.colorScheme.onPrimaryContainer,
-                    height: 1.4,
-                  ),
-                )
-              else
-                SelectionArea(
-                  child: GptMarkdown(
-                    message,
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface,
-                      height: 1.4,
+              for (final path in imagePaths)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChatImageViewerPage(path: path),
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.file(
+                        File(path),
+                        width: 220,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox(
+                          width: 220,
+                          height: 120,
+                          child: Icon(Icons.broken_image_outlined),
+                        ),
+                      ),
                     ),
                   ),
                 ),
+              if (message.isNotEmpty)
+                if (isUser)
+                  SelectableText(
+                    message,
+                    style: TextStyle(
+                      color: theme.colorScheme.onPrimaryContainer,
+                      height: 1.4,
+                    ),
+                  )
+                else
+                  SelectionArea(
+                    child: GptMarkdown(
+                      message,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
               if (!isUser && message.isNotEmpty)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,

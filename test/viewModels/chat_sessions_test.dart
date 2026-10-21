@@ -5,6 +5,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/viewModels/chat_view_model.dart";
 import "package:flutter_test/flutter_test.dart";
+import "package:genkit/genkit.dart" hide ModelInfo;
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
 import "package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart";
@@ -237,6 +238,153 @@ void main() {
       final empty = ChatSession(id: "y", createdAt: 0, updatedAt: 0);
       expect(empty.isPristine, isTrue);
       expect(empty.displayTitle, "");
+    });
+  });
+
+  group("chat images", () {
+    test("message JSON round-trips image paths and tolerates legacy data", () {
+      const message = ChatMessage(
+        text: "look",
+        isUser: true,
+        imagePaths: ["/tmp/a.jpg", "/tmp/b.png"],
+      );
+      final restored = ChatMessage.fromJson(message.toJson());
+      expect(restored.text, "look");
+      expect(restored.imagePaths, ["/tmp/a.jpg", "/tmp/b.png"]);
+      // Pre-image messages have no imagePaths key at all.
+      final legacy = ChatMessage.fromJson({"text": "hi", "isUser": false});
+      expect(legacy.imagePaths, isEmpty);
+      expect(const ChatMessage(text: "x", isUser: true).toJson(), {
+        "text": "x",
+        "isUser": true,
+      });
+    });
+
+    test("promptParts attaches images as media parts", () {
+      final textOnly = promptParts("hello", const []);
+      expect(textOnly.length, 1);
+      expect(textOnly.single, isA<TextPart>());
+
+      final parts = promptParts("what is this", const [
+        "data:image/png;base64,AAAA",
+        "data:image/jpeg;base64,BBBB",
+      ]);
+      expect(parts.length, 3);
+      final media = parts.whereType<MediaPart>().toList();
+      expect(media.length, 2);
+      expect(media[0].media.contentType, "image/png");
+      expect(media[1].media.contentType, "image/jpeg");
+      expect(dataUrlContentType("data:image/webp;base64,CC"), "image/webp");
+      expect(dataUrlContentType("https://example.com/x.png"), isNull);
+    });
+
+    test("image generation support matrix and endpoint derivation", () {
+      expect(ModelProviderManager.supportsImageGeneration("agnes"), isTrue);
+      expect(ModelProviderManager.supportsImageGeneration("gemini"), isTrue);
+      expect(ModelProviderManager.supportsImageGeneration("openai"), isTrue);
+      expect(ModelProviderManager.supportsImageGeneration("deepseek"), isFalse);
+      expect(
+        ModelProviderManager.supportsImageGeneration("anthropic"),
+        isFalse,
+      );
+      expect(ModelProviderManager.supportsImageGeneration("ollama"), isFalse);
+      expect(
+        ModelProviderManager.imageGenerationsUrl("agnes"),
+        "https://apihub.agnes-ai.com/v1/images/generations",
+      );
+      expect(
+        ModelProviderManager.imageGenerationsUrl("openai"),
+        "https://api.openai.com/v1/images/generations",
+      );
+      expect(
+        ModelProviderManager.imageGenerationsUrl("zhipu"),
+        "https://open.bigmodel.cn/api/paas/v4/images/generations",
+      );
+      // Gemini uses the Genkit path, not the REST endpoint.
+      expect(ModelProviderManager.imageGenerationsUrl("gemini"), isNull);
+      expect(
+        ModelProviderManager.getImageModels("agnes").single.originName,
+        "agnes-image-2.1-flash",
+      );
+    });
+
+    test("image payload extraction accepts provider response shapes", () {
+      expect(
+        AiImageGenerator.extractImagePayload({
+          "data": [
+            {"b64_json": "QUJD", "url": null},
+          ],
+        }),
+        ("QUJD", null),
+      );
+      expect(
+        AiImageGenerator.extractImagePayload({
+          "data": [
+            {"url": "https://img.example/x.png"},
+          ],
+        }),
+        (null, "https://img.example/x.png"),
+      );
+      expect(
+        AiImageGenerator.extractImagePayload({
+          "images": [
+            {"url": "https://img.example/y.png"},
+          ],
+        }),
+        (null, "https://img.example/y.png"),
+      );
+      expect(AiImageGenerator.extractImagePayload({"data": []}), (null, null));
+      expect(AiImageGenerator.extractImagePayload("nope"), (null, null));
+    });
+
+    test("generate() gates unsupported providers and missing config", () async {
+      await expectLater(
+        AiImageGenerator.generate(
+          provider: "deepseek",
+          model: "any",
+          prompt: "a cat",
+          apiKey: "k",
+        ),
+        throwsA(isA<AiImageGenerationUnsupported>()),
+      );
+      await expectLater(
+        AiImageGenerator.generate(
+          provider: "agnes",
+          model: "",
+          prompt: "a cat",
+          apiKey: "k",
+        ),
+        throwsA(isA<AiNotConfiguredException>()),
+      );
+      await expectLater(
+        AiImageGenerator.generate(
+          provider: "agnes",
+          model: "agnes-image-2.1-flash",
+          prompt: "a cat",
+          apiKey: "",
+        ),
+        throwsA(isA<AiNotConfiguredException>()),
+      );
+    });
+
+    test("view model resolves image models and gates generation", () async {
+      settings.aiProvider = "agnes";
+      final vm = ChatViewModel();
+      expect(vm.imageGenerationSupported, isTrue);
+      // Falls back to the provider's first known image model.
+      expect(vm.currentImageModel, "agnes-image-2.1-flash");
+      // No API key saved: generation is blocked, nothing is sent.
+      vm.textController.text = "draw a cat";
+      await vm.generateImage();
+      expect(vm.messages, isEmpty);
+      expect(vm.isStreaming, isFalse);
+      vm.dispose();
+
+      settings.aiProvider = "deepseek";
+      final vm2 = ChatViewModel();
+      expect(vm2.imageGenerationSupported, isFalse);
+      expect(vm2.currentImageModel, "");
+      vm2.dispose();
     });
   });
 }
