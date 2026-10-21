@@ -8,10 +8,10 @@ import "package:ciyue/ui/pages/settings/ai_settings/api_key_setting.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/explain_word_setting.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/learning_settings.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/model_setting.dart";
-import "package:ciyue/ui/pages/settings/ai_settings/prompt_setting.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/provider_setting.dart";
 import "package:ciyue/viewModels/ai_settings_view_model.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:go_router/go_router.dart";
 import "package:material_ui/material_ui.dart";
 
 class AiSettingsPage extends ConsumerWidget {
@@ -19,41 +19,13 @@ class AiSettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.read(aiSettingsViewModelProvider);
     final provider = ref.watch(
       aiSettingsViewModelProvider.select(
         (AISettingsViewModel vm) => vm.provider,
       ),
     );
-    final explainPrompt = ref.watch(
-      aiSettingsViewModelProvider.select(
-        (AISettingsViewModel vm) => vm.aiPrompts.explainPrompt,
-      ),
-    );
-    final translatePrompt = ref.watch(
-      aiSettingsViewModelProvider.select(
-        (AISettingsViewModel vm) => vm.aiPrompts.translatePrompt,
-      ),
-    );
-    final writingCheckPrompt = ref.watch(
-      aiSettingsViewModelProvider.select(
-        (AISettingsViewModel vm) => vm.aiPrompts.writingCheckPrompt,
-      ),
-    );
-    final quizPrompt = ref.watch(
-      aiSettingsViewModelProvider.select(
-        (AISettingsViewModel vm) => vm.aiPrompts.quizPrompt,
-      ),
-    );
-    final vocabularyPrompt = ref.watch(
-      aiSettingsViewModelProvider.select(
-        (AISettingsViewModel vm) => vm.aiPrompts.vocabularyPrompt,
-      ),
-    );
-    final scenarioPrompt = ref.watch(
-      aiSettingsViewModelProvider.select(
-        (AISettingsViewModel vm) => vm.aiPrompts.scenarioPrompt,
-      ),
+    final customizedPromptCount = ref.watch(
+      aiPromptsProvider.select((prompts) => prompts.customizedCount),
     );
 
     return GestureDetector(
@@ -97,81 +69,31 @@ class AiSettingsPage extends ConsumerWidget {
                     const SettingsFieldCard(child: ExplainWordSetting()),
                     const SizedBox(height: 24),
 
-                    // Explain Word Prompt Setting
-                    PromptSetting(
-                      title: AppLocalizations.of(context)!.aiExplainWordPrompt,
-                      initialValue: explainPrompt,
-                      helperText: AppLocalizations.of(context)!
-                          .customExplainPromptHelper,
-                      onChanged: viewModel.aiPrompts.setExplainPrompt,
-                      onReset: viewModel.aiPrompts.resetExplainPrompt,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // AI Translate Prompt Setting
-                    PromptSetting(
-                      title: AppLocalizations.of(context)!.aiTranslatePrompt,
-                      initialValue: translatePrompt,
-                      helperText: AppLocalizations.of(context)!
-                          .customTranslatePromptHelper,
-                      onChanged: viewModel.aiPrompts.setTranslatePrompt,
-                      onReset: viewModel.aiPrompts.resetTranslatePrompt,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Writing Check Prompt Setting
-                    PromptSetting(
-                      title: AppLocalizations.of(context)!
-                          .writingCheckPromptTitle,
-                      initialValue: writingCheckPrompt,
-                      helperText: AppLocalizations.of(context)!
-                          .writingCheckPromptHelper,
-                      onChanged: viewModel.aiPrompts.setWritingCheckPrompt,
-                      onReset: viewModel.aiPrompts.resetWritingCheckPrompt,
+                    // Prompt Management (dedicated page)
+                    SettingsFieldCard(
+                      child: ListTile(
+                        leading: const Icon(Icons.edit_note_outlined),
+                        title: Text(
+                          AppLocalizations.of(context)!.promptManagement,
+                        ),
+                        subtitle: Text(
+                          customizedPromptCount > 0
+                              ? AppLocalizations.of(
+                                  context,
+                                )!.customizedPromptsCount(customizedPromptCount)
+                              : AppLocalizations.of(context)!.promptsAllDefault,
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () =>
+                            context.push("/settings/ai_settings/prompts"),
+                      ),
                     ),
                     const SizedBox(height: 24),
 
                     // Learning Settings
-                    TitleText(
-                      AppLocalizations.of(context)!.learningSettings,
-                    ),
+                    TitleText(AppLocalizations.of(context)!.learningSettings),
                     const SizedBox(height: 6),
                     const SettingsFieldCard(child: LearningSettings()),
-                    const SizedBox(height: 24),
-
-                    // Quiz Prompt Setting
-                    PromptSetting(
-                      title: AppLocalizations.of(context)!.quizPromptTitle,
-                      initialValue: quizPrompt,
-                      helperText: AppLocalizations.of(context)!
-                          .quizPromptHelper,
-                      onChanged: viewModel.aiPrompts.setQuizPrompt,
-                      onReset: viewModel.aiPrompts.resetQuizPrompt,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Vocabulary Prompt Setting
-                    PromptSetting(
-                      title: AppLocalizations.of(context)!
-                          .vocabularyPromptTitle,
-                      initialValue: vocabularyPrompt,
-                      helperText: AppLocalizations.of(context)!
-                          .vocabularyPromptHelper,
-                      onChanged: viewModel.aiPrompts.setVocabularyPrompt,
-                      onReset: viewModel.aiPrompts.resetVocabularyPrompt,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Scenario Prompt Setting
-                    PromptSetting(
-                      title: AppLocalizations.of(context)!
-                          .scenarioPromptTitle,
-                      initialValue: scenarioPrompt,
-                      helperText: AppLocalizations.of(context)!
-                          .scenarioPromptHelper,
-                      onChanged: viewModel.aiPrompts.setScenarioPrompt,
-                      onReset: viewModel.aiPrompts.resetScenarioPrompt,
-                    ),
                   ],
                 ),
               ),

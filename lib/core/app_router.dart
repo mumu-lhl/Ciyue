@@ -112,6 +112,10 @@ final router = GoRouter(
       builder: (context, state) => const AiSettingsPage(),
     ),
     GoRoute(
+      path: "/settings/ai_settings/prompts",
+      builder: (context, state) => const AiPromptsPage(),
+    ),
+    GoRoute(
       path: "/settings/terms_of_service",
       builder: (context, state) => const TermsOfServicePage(),
     ),

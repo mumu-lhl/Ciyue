@@ -920,6 +920,34 @@
   "@scenarioPromptTitle": {},
   "scenarioPromptHelper": "Template for roleplay scenarios. Variables: $scenarioTitle, $scenarioDescription",
   "@scenarioPromptHelper": {},
+  "promptManagement": "Prompt Management",
+  "@promptManagement": {},
+  "promptsAllDefault": "All prompts are using the default text",
+  "@promptsAllDefault": {},
+  "customizedPromptsCount": "{count} customized",
+  "@customizedPromptsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "promptCustomized": "Customized",
+  "@promptCustomized": {},
+  "promptIsDefault": "Default",
+  "@promptIsDefault": {},
+  "resetAllPrompts": "Reset all prompts",
+  "@resetAllPrompts": {},
+  "resetAllPromptsConfirmation": "Reset all prompts to their default text?",
+  "@resetAllPromptsConfirmation": {},
+  "insertVariableHint": "Tap a variable to insert it at the cursor:",
+  "@insertVariableHint": {},
+  "viewDefaultPrompt": "View default prompt",
+  "@viewDefaultPrompt": {},
+  "promptsGroupWord": "Word & Translation",
+  "@promptsGroupWord": {},
+  "promptsGroupLearning": "Learning",
+  "@promptsGroupLearning": {},
   "learningSettings": "Learning Settings",
   "@learningSettings": {},
   "quizQuestionCount": "Quiz questions",

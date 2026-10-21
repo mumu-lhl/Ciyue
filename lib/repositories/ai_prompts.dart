@@ -1,14 +1,29 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:flutter/foundation.dart";
 
-class AIPrompts with ChangeNotifier {
-  late String _explainPrompt;
-  late String _translatePrompt;
-  late String _writingCheckPrompt;
-  late String _quizPrompt;
-  late String _vocabularyPrompt;
-  late String _scenarioPrompt;
+/// Static description of one customizable prompt: where it is
+/// stored, its default text, and the variables the app substitutes
+/// into it. Drives the generic accessors on [AIPrompts] and the
+/// prompt management UI, so a prompt is defined in exactly one
+/// place instead of six parallel field/getter/setter quadruples.
+class AiPromptDefinition {
+  final String id;
+  final String prefsKey;
+  final String defaultText;
 
+  /// Variables substituted by the app, e.g. `$word`. Shown in the
+  /// editor as tap-to-insert chips.
+  final List<String> variables;
+
+  const AiPromptDefinition({
+    required this.id,
+    required this.prefsKey,
+    required this.defaultText,
+    required this.variables,
+  });
+}
+
+class AIPrompts with ChangeNotifier {
   static const String defaultExplainPrompt = """Explain the word "\$word" in detail using markdown. Structure your response with these sections:
 
 ## Pronunciation
@@ -66,91 +81,133 @@ Respond with ONLY a JSON array of strings, no other text. Example: ["word1", "wo
 \$scenarioDescription
 Stay in character throughout the conversation. Gently correct the user's language mistakes and suggest more natural expressions when appropriate.""";
 
+  static const explainDefinition = AiPromptDefinition(
+    id: "explain",
+    prefsKey: "customExplainPrompt",
+    defaultText: defaultExplainPrompt,
+    variables: [r"$word", r"$targetLanguage"],
+  );
+  static const translateDefinition = AiPromptDefinition(
+    id: "translate",
+    prefsKey: "customTranslatePrompt",
+    defaultText: defaultTranslatePrompt,
+    variables: [r"$sourceLanguage", r"$targetLanguage", r"$text"],
+  );
+  static const writingCheckDefinition = AiPromptDefinition(
+    id: "writingCheck",
+    prefsKey: "customWritingCheckPrompt",
+    defaultText: defaultWritingCheckPrompt,
+    variables: [r"$text", r"$targetLanguage"],
+  );
+  static const quizDefinition = AiPromptDefinition(
+    id: "quiz",
+    prefsKey: "customQuizPrompt",
+    defaultText: defaultQuizPrompt,
+    variables: [r"$count", r"$words", r"$types", r"$targetLanguage"],
+  );
+  static const vocabularyDefinition = AiPromptDefinition(
+    id: "vocabulary",
+    prefsKey: "customVocabularyPrompt",
+    defaultText: defaultVocabularyPrompt,
+    variables: [r"$count", r"$difficulty", r"$text"],
+  );
+  static const scenarioDefinition = AiPromptDefinition(
+    id: "scenario",
+    prefsKey: "customScenarioPrompt",
+    defaultText: defaultScenarioPrompt,
+    variables: [r"$scenarioTitle", r"$scenarioDescription"],
+  );
+
+  /// All customizable prompts, in management-page display order.
+  static const allDefinitions = <AiPromptDefinition>[
+    explainDefinition,
+    translateDefinition,
+    writingCheckDefinition,
+    quizDefinition,
+    vocabularyDefinition,
+    scenarioDefinition,
+  ];
+
+  final Map<String, String> _values = {};
+
   AIPrompts() {
-    _explainPrompt =
-        prefs.getString("customExplainPrompt") ?? defaultExplainPrompt;
-    _translatePrompt =
-        prefs.getString("customTranslatePrompt") ?? defaultTranslatePrompt;
-    _writingCheckPrompt =
-        prefs.getString("customWritingCheckPrompt") ??
-        defaultWritingCheckPrompt;
-    _quizPrompt = prefs.getString("customQuizPrompt") ?? defaultQuizPrompt;
-    _vocabularyPrompt =
-        prefs.getString("customVocabularyPrompt") ?? defaultVocabularyPrompt;
-    _scenarioPrompt =
-        prefs.getString("customScenarioPrompt") ?? defaultScenarioPrompt;
+    for (final definition in allDefinitions) {
+      _values[definition.id] =
+          prefs.getString(definition.prefsKey) ?? definition.defaultText;
+    }
   }
 
-  String get explainPrompt => _explainPrompt;
-  String get translatePrompt => _translatePrompt;
-  String get writingCheckPrompt => _writingCheckPrompt;
-  String get quizPrompt => _quizPrompt;
-  String get vocabularyPrompt => _vocabularyPrompt;
-  String get scenarioPrompt => _scenarioPrompt;
+  String promptFor(AiPromptDefinition definition) =>
+      _values[definition.id] ?? definition.defaultText;
 
-  Future<void> setExplainPrompt(String prompt) async {
-    _explainPrompt = prompt;
-    await prefs.setString("customExplainPrompt", prompt);
-  }
+  /// Whether the current text differs from the default. Content
+  /// based, so re-typing the default text counts as back-to-default
+  /// regardless of what is stored.
+  bool isCustomized(AiPromptDefinition definition) =>
+      promptFor(definition) != definition.defaultText;
 
-  Future<void> resetExplainPrompt() async {
-    _explainPrompt = defaultExplainPrompt;
-    await prefs.remove("customExplainPrompt");
+  int get customizedCount => allDefinitions.where(isCustomized).length;
+
+  Future<void> setPrompt(AiPromptDefinition definition, String prompt) async {
+    _values[definition.id] = prompt;
+    if (prompt == definition.defaultText) {
+      // Storing the default verbatim is indistinguishable from
+      // never having customized — keep storage clean.
+      await prefs.remove(definition.prefsKey);
+    } else {
+      await prefs.setString(definition.prefsKey, prompt);
+    }
     notifyListeners();
   }
 
-  Future<void> setTranslatePrompt(String prompt) async {
-    _translatePrompt = prompt;
-    await prefs.setString("customTranslatePrompt", prompt);
-  }
-
-  Future<void> resetTranslatePrompt() async {
-    _translatePrompt = defaultTranslatePrompt;
-    await prefs.remove("customTranslatePrompt");
+  Future<void> resetPrompt(AiPromptDefinition definition) async {
+    _values[definition.id] = definition.defaultText;
+    await prefs.remove(definition.prefsKey);
     notifyListeners();
   }
 
-  Future<void> setWritingCheckPrompt(String prompt) async {
-    _writingCheckPrompt = prompt;
-    await prefs.setString("customWritingCheckPrompt", prompt);
-  }
-
-  Future<void> resetWritingCheckPrompt() async {
-    _writingCheckPrompt = defaultWritingCheckPrompt;
-    await prefs.remove("customWritingCheckPrompt");
+  Future<void> resetAllPrompts() async {
+    for (final definition in allDefinitions) {
+      _values[definition.id] = definition.defaultText;
+      await prefs.remove(definition.prefsKey);
+    }
     notifyListeners();
   }
 
-  Future<void> setQuizPrompt(String prompt) async {
-    _quizPrompt = prompt;
-    await prefs.setString("customQuizPrompt", prompt);
-  }
+  String get explainPrompt => promptFor(explainDefinition);
+  String get translatePrompt => promptFor(translateDefinition);
+  String get writingCheckPrompt => promptFor(writingCheckDefinition);
+  String get quizPrompt => promptFor(quizDefinition);
+  String get vocabularyPrompt => promptFor(vocabularyDefinition);
+  String get scenarioPrompt => promptFor(scenarioDefinition);
 
-  Future<void> resetQuizPrompt() async {
-    _quizPrompt = defaultQuizPrompt;
-    await prefs.remove("customQuizPrompt");
-    notifyListeners();
-  }
+  Future<void> setExplainPrompt(String prompt) =>
+      setPrompt(explainDefinition, prompt);
 
-  Future<void> setVocabularyPrompt(String prompt) async {
-    _vocabularyPrompt = prompt;
-    await prefs.setString("customVocabularyPrompt", prompt);
-  }
+  Future<void> resetExplainPrompt() => resetPrompt(explainDefinition);
 
-  Future<void> resetVocabularyPrompt() async {
-    _vocabularyPrompt = defaultVocabularyPrompt;
-    await prefs.remove("customVocabularyPrompt");
-    notifyListeners();
-  }
+  Future<void> setTranslatePrompt(String prompt) =>
+      setPrompt(translateDefinition, prompt);
 
-  Future<void> setScenarioPrompt(String prompt) async {
-    _scenarioPrompt = prompt;
-    await prefs.setString("customScenarioPrompt", prompt);
-  }
+  Future<void> resetTranslatePrompt() => resetPrompt(translateDefinition);
 
-  Future<void> resetScenarioPrompt() async {
-    _scenarioPrompt = defaultScenarioPrompt;
-    await prefs.remove("customScenarioPrompt");
-    notifyListeners();
-  }
+  Future<void> setWritingCheckPrompt(String prompt) =>
+      setPrompt(writingCheckDefinition, prompt);
+
+  Future<void> resetWritingCheckPrompt() => resetPrompt(writingCheckDefinition);
+
+  Future<void> setQuizPrompt(String prompt) =>
+      setPrompt(quizDefinition, prompt);
+
+  Future<void> resetQuizPrompt() => resetPrompt(quizDefinition);
+
+  Future<void> setVocabularyPrompt(String prompt) =>
+      setPrompt(vocabularyDefinition, prompt);
+
+  Future<void> resetVocabularyPrompt() => resetPrompt(vocabularyDefinition);
+
+  Future<void> setScenarioPrompt(String prompt) =>
+      setPrompt(scenarioDefinition, prompt);
+
+  Future<void> resetScenarioPrompt() => resetPrompt(scenarioDefinition);
 }
