@@ -725,6 +725,17 @@ class ModelProviderManager {
       ],
       allowCustomModel: true,
     ),
+    "agnes": ModelProvider(
+      name: "agnes",
+      displayedName: "Agnes AI",
+      apiUrl: "https://apihub.agnes-ai.com/v1/chat/completions",
+      models: [
+        ModelInfo("agnes-3.0-flash", "Agnes 3.0 Flash"),
+        ModelInfo("agnes-2.5-flash", "Agnes 2.5 Flash"),
+        ModelInfo("agnes-2.0-flash", "Agnes 2.0 Flash"),
+      ],
+      allowCustomModel: true,
+    ),
     "openai_compatible": ModelProvider(
       name: "openai_compatible",
       displayedName: "OpenAI Compatible",
@@ -889,6 +900,11 @@ class ModelProviderManager {
           throw Exception("API key is required to fetch Zhipu models");
         }
         url = "https://open.bigmodel.cn/api/paas/v4/models";
+      case "agnes":
+        if (trimmedKey.isEmpty) {
+          throw Exception("API key is required to fetch Agnes AI models");
+        }
+        url = "https://apihub.agnes-ai.com/v1/models";
       case "openai_compatible":
         var base = (customApiUrl != null && customApiUrl.isNotEmpty)
             ? customApiUrl
@@ -935,6 +951,15 @@ class ModelProviderManager {
         return id.startsWith("gpt-") ||
             RegExp(r"^o\d").hasMatch(id) ||
             id.startsWith("chatgpt-");
+      });
+    }
+
+    if (provider == "agnes") {
+      // The models endpoint also lists image and video models;
+      // the AI features here are text-only.
+      result.retainWhere((m) {
+        final id = m.originName.toLowerCase();
+        return !id.contains("image") && !id.contains("video");
       });
     }
 

@@ -107,9 +107,9 @@ void main() {
       await prefs.remove("translationSourcesEnabled");
     });
 
-    test("default order contains all 23 sources", () {
+    test("default order contains all 24 sources", () {
       final order = TranslationSourcesConfig.loadOrder();
-      expect(order.length, 23);
+      expect(order.length, 24);
       expect(order.first, "google");
       expect(
         order,
@@ -117,6 +117,7 @@ void main() {
           "ai:gemini",
           "ai:deepseek",
           "ai:anthropic",
+          "ai:agnes",
           "ai:ollama",
           "google",
           "microsoft",
@@ -147,9 +148,9 @@ void main() {
         "yandexFree",
       ]);
       // Then the AI provider sources.
-      expect(order.sublist(7, 18).every((id) => id.startsWith("ai:")), isTrue);
+      expect(order.sublist(7, 19).every((id) => id.startsWith("ai:")), isTrue);
       // Key-based sources and DeepLX come last.
-      expect(order.sublist(18), [
+      expect(order.sublist(19), [
         "deeplx",
         "deepl",
         "googleCloud",
@@ -180,7 +181,7 @@ void main() {
       final order = TranslationSourcesConfig.loadOrder();
       expect(order.first, "baidu");
       expect(order[1], "google");
-      expect(order.length, 23);
+      expect(order.length, 24);
     });
 
     test("round-trip enabled list", () async {
@@ -241,9 +242,10 @@ void main() {
 
     test("each AI provider is its own source", () {
       final aiSources = allTranslationSources.where((s) => s.isAi).toList();
-      expect(aiSources.length, 11);
+      expect(aiSources.length, 12);
       expect(aiSources.first.id, "ai:openai");
       expect(translationSourceById("ai:deepseek")!.name, contains("DeepSeek"));
+      expect(translationSourceById("ai:agnes")!.name, contains("Agnes AI"));
       for (final s in aiSources) {
         expect(s.requiresConfig, isTrue, reason: s.id);
       }
