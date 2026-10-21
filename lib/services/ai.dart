@@ -1,8 +1,10 @@
 import "dart:convert";
+import "dart:typed_data";
 
 import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/core/http_client.dart";
+import "package:dio/dio.dart";
 import "package:genkit/genkit.dart" hide ModelInfo;
 import "package:genkit_anthropic/genkit_anthropic.dart";
 import "package:genkit_google_genai/genkit_google_genai.dart";
@@ -110,12 +112,14 @@ class AI {
   Stream<String> requestStreamWithHistory(
     String prompt, {
     List<ChatTurn> history = const [],
+    List<String> promptImages = const [],
     CancellationToken? cancel,
   }) {
     _ensureConfigured();
     return aiProvider.requestStreamWithHistory(
       prompt,
       history: history,
+      promptImages: promptImages,
       cancel: cancel,
     );
   }
@@ -150,6 +154,28 @@ List<Message> chatTurnsToGenkitMessages(List<ChatTurn> history) {
   ];
 }
 
+/// Parts for the final user message of a request: the prompt text
+/// plus any attached images, given as base64 data URLs, for
+/// vision-capable models. Providers/models without vision support
+/// reject these at the API, which surfaces as a normal error.
+List<Part> promptParts(String prompt, List<String> imageDataUrls) {
+  return [
+    TextPart(text: prompt),
+    for (final dataUrl in imageDataUrls)
+      MediaPart(
+        media: Media(contentType: dataUrlContentType(dataUrl), url: dataUrl),
+      ),
+  ];
+}
+
+/// The MIME type of a `data:` URL, e.g. `image/png` out of
+/// `data:image/png;base64,...`. Null for non-data URLs.
+String? dataUrlContentType(String dataUrl) {
+  if (!dataUrl.startsWith("data:")) return null;
+  final end = dataUrl.indexOf(";");
+  return end > 5 ? dataUrl.substring(5, end) : null;
+}
+
 abstract class AIProvider {
   Future<String> request(String prompt);
 
@@ -162,10 +188,12 @@ abstract class AIProvider {
     yield await request(prompt);
   }
 
-  /// Stream with conversation history. Default ignores history.
+  /// Stream with conversation history. Default ignores history
+  /// and attached images.
   Stream<String> requestStreamWithHistory(
     String prompt, {
     List<ChatTurn> history = const [],
+    List<String> promptImages = const [],
     CancellationToken? cancel,
   }) {
     return requestStream(prompt, cancel: cancel);
@@ -234,15 +262,13 @@ class GeminiProvider implements AIProvider {
   Stream<String> requestStreamWithHistory(
     String prompt, {
     List<ChatTurn> history = const [],
+    List<String> promptImages = const [],
     CancellationToken? cancel,
   }) async* {
     try {
       final messages = [
         ...chatTurnsToGenkitMessages(history),
-        Message(
-          role: Role.user,
-          content: [TextPart(text: prompt)],
-        ),
+        Message(role: Role.user, content: promptParts(prompt, promptImages)),
       ];
       final stream = _ai.generateStream(
         model: googleAI.gemini(model),
@@ -307,15 +333,13 @@ class AnthropicProvider implements AIProvider {
   Stream<String> requestStreamWithHistory(
     String prompt, {
     List<ChatTurn> history = const [],
+    List<String> promptImages = const [],
     CancellationToken? cancel,
   }) async* {
     try {
       final messages = [
         ...chatTurnsToGenkitMessages(history),
-        Message(
-          role: Role.user,
-          content: [TextPart(text: prompt)],
-        ),
+        Message(role: Role.user, content: promptParts(prompt, promptImages)),
       ];
       final stream = _ai.generateStream(
         model: anthropic.model(model),
@@ -402,15 +426,13 @@ class OllamaProvider implements AIProvider {
   Stream<String> requestStreamWithHistory(
     String prompt, {
     List<ChatTurn> history = const [],
+    List<String> promptImages = const [],
     CancellationToken? cancel,
   }) async* {
     try {
       final messages = [
         ...chatTurnsToGenkitMessages(history),
-        Message(
-          role: Role.user,
-          content: [TextPart(text: prompt)],
-        ),
+        Message(role: Role.user, content: promptParts(prompt, promptImages)),
       ];
       final stream = _ai.generateStream(
         model: openAI.model(model, namespace: "ollama"),
@@ -508,15 +530,13 @@ class OpenAICompatibleProvider implements AIProvider {
   Stream<String> requestStreamWithHistory(
     String prompt, {
     List<ChatTurn> history = const [],
+    List<String> promptImages = const [],
     CancellationToken? cancel,
   }) async* {
     try {
       final messages = [
         ...chatTurnsToGenkitMessages(history),
-        Message(
-          role: Role.user,
-          content: [TextPart(text: prompt)],
-        ),
+        Message(role: Role.user, content: promptParts(prompt, promptImages)),
       ];
       final stream = _ai.generateStream(
         model: openAI.model(model, namespace: namespace),
@@ -779,6 +799,59 @@ class ModelProviderManager {
     return modelProviders[provider]?.models ?? [];
   }
 
+  /// Image-generation models per provider, for the providers whose
+  /// APIs can generate images at all. Providers absent here
+  /// (Anthropic, DeepSeek, OpenRouter, Ollama) cannot generate
+  /// images, and the UI says so instead of failing obscurely.
+  static const Map<String, List<ModelInfo>> providerImageModels = {
+    "openai": [
+      ModelInfo("gpt-image-1", "GPT Image 1"),
+      ModelInfo("dall-e-3", "DALL-E 3"),
+    ],
+    "gemini": [
+      ModelInfo("gemini-3.1-flash-image", "Gemini 3.1 Flash Image"),
+      ModelInfo("gemini-2.5-flash-image", "Gemini 2.5 Flash Image"),
+    ],
+    "agnes": [ModelInfo("agnes-image-2.1-flash", "Agnes Image 2.1 Flash")],
+    "siliconflow": [
+      ModelInfo("Kwai-Kolors/Kolors", "Kolors"),
+      ModelInfo("black-forest-labs/FLUX.1-schnell", "FLUX.1 Schnell"),
+    ],
+    "siliconflowcn": [
+      ModelInfo("Kwai-Kolors/Kolors", "Kolors"),
+      ModelInfo("black-forest-labs/FLUX.1-schnell", "FLUX.1 Schnell"),
+    ],
+    "zhipu": [
+      ModelInfo("cogview-4", "CogView-4"),
+      ModelInfo("cogview-3-flash", "CogView-3 Flash"),
+    ],
+    "xai": [ModelInfo("grok-2-image", "Grok 2 Image")],
+    "openai_compatible": [
+      ModelInfo("gpt-image-1", "GPT Image 1"),
+      ModelInfo("dall-e-3", "DALL-E 3"),
+    ],
+  };
+
+  static List<ModelInfo> getImageModels(String provider) =>
+      providerImageModels[provider] ?? const [];
+
+  static bool supportsImageGeneration(String provider) =>
+      providerImageModels.containsKey(provider);
+
+  /// The provider's `/images/generations` endpoint, derived from
+  /// its chat-completions URL. Gemini generates images through the
+  /// Genkit path instead, so it returns null here.
+  static String? imageGenerationsUrl(String provider, {String? customApiUrl}) {
+    if (provider == "gemini") return null;
+    final apiUrl = provider == "openai_compatible"
+        ? (customApiUrl ?? settings.aiAPIUrl)
+        : modelProviders[provider]?.apiUrl;
+    if (apiUrl == null || apiUrl.trim().isEmpty) return null;
+    final base = _openAIBaseUrl(apiUrl);
+    if (base.isEmpty) return null;
+    return "$base/images/generations";
+  }
+
   static Future<List<ModelInfo>> fetchModels({
     required String provider,
     required String apiKey,
@@ -964,5 +1037,150 @@ class ModelProviderManager {
     }
 
     return result;
+  }
+}
+
+/// Thrown when the selected provider has no image-generation API.
+class AiImageGenerationUnsupported implements Exception {
+  final String provider;
+
+  const AiImageGenerationUnsupported(this.provider);
+
+  @override
+  String toString() =>
+      "AI provider \"$provider\" does not support image generation.";
+}
+
+/// Generates one image from a text prompt and returns its bytes.
+///
+/// Routes per provider family: Gemini image models go through
+/// Genkit (they answer with a media part); every other supported
+/// provider exposes an OpenAI-style `/images/generations` endpoint
+/// whose response is normalized here (URL or base64 payload).
+class AiImageGenerator {
+  static Future<Uint8List> generate({
+    required String provider,
+    required String model,
+    required String prompt,
+    required String apiKey,
+    String? customApiUrl,
+  }) async {
+    if (!ModelProviderManager.supportsImageGeneration(provider)) {
+      throw AiImageGenerationUnsupported(provider);
+    }
+    final missingModel = model.trim().isEmpty;
+    final missingApiKey =
+        !keylessAiProviders.contains(provider) && apiKey.trim().isEmpty;
+    if (missingModel || missingApiKey) {
+      throw AiNotConfiguredException(
+        provider,
+        missingModel: missingModel,
+        missingApiKey: missingApiKey,
+      );
+    }
+    if (provider == "gemini") {
+      return _generateWithGemini(model: model, prompt: prompt, apiKey: apiKey);
+    }
+    return _generateWithImagesEndpoint(
+      provider: provider,
+      model: model,
+      prompt: prompt,
+      apiKey: apiKey,
+      customApiUrl: customApiUrl,
+    );
+  }
+
+  static Future<Uint8List> _generateWithGemini({
+    required String model,
+    required String prompt,
+    required String apiKey,
+  }) async {
+    final ai = Genkit(plugins: [googleAI(apiKey: apiKey)]);
+    try {
+      final response = await ai.generate(
+        model: googleAI.gemini(model),
+        prompt: prompt,
+      );
+      final url = response.media?.url ?? "";
+      if (!url.startsWith("data:") || !url.contains(",")) {
+        throw Exception("The Gemini image model returned no image.");
+      }
+      return base64Decode(url.substring(url.indexOf(",") + 1));
+    } catch (e) {
+      throw Exception("Error generating image with Gemini: $e");
+    }
+  }
+
+  static Future<Uint8List> _generateWithImagesEndpoint({
+    required String provider,
+    required String model,
+    required String prompt,
+    required String apiKey,
+    String? customApiUrl,
+  }) async {
+    final url = ModelProviderManager.imageGenerationsUrl(
+      provider,
+      customApiUrl: customApiUrl,
+    );
+    if (url == null) {
+      throw AiImageGenerationUnsupported(provider);
+    }
+    final headers = <String, String>{
+      "Content-Type": "application/json",
+      if (apiKey.trim().isNotEmpty) "Authorization": "Bearer ${apiKey.trim()}",
+    };
+    final body = <String, dynamic>{
+      "model": model,
+      "prompt": prompt,
+      "n": 1,
+      // Agnes requires the response format inside extra_body and
+      // answers with a URL.
+      if (provider == "agnes") "extra_body": {"response_format": "url"},
+    };
+    try {
+      final response = await AppHttp.dio.post(
+        url,
+        data: body,
+        options: Options(
+          headers: headers,
+          receiveTimeout: const Duration(seconds: 180),
+        ),
+      );
+      final data = response.data is String
+          ? jsonDecode(response.data as String)
+          : response.data;
+      final (b64, imageUrl) = extractImagePayload(data);
+      if (b64 != null && b64.isNotEmpty) {
+        return base64Decode(b64);
+      }
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        final fileResponse = await AppHttp.dio.get<List<int>>(
+          imageUrl,
+          options: Options(
+            responseType: ResponseType.bytes,
+            receiveTimeout: const Duration(seconds: 180),
+          ),
+        );
+        final bytes = fileResponse.data;
+        if (bytes != null && bytes.isNotEmpty) {
+          return Uint8List.fromList(bytes);
+        }
+      }
+      throw Exception("The image endpoint returned no image.");
+    } catch (e) {
+      throw Exception("Error generating image with $provider: $e");
+    }
+  }
+
+  /// Providers disagree on the response shape: OpenAI-style
+  /// `data: [{b64_json | url}]`, SiliconFlow `images: [{url}]`.
+  static (String?, String?) extractImagePayload(dynamic data) {
+    if (data is! Map) return (null, null);
+    final list = data["data"] ?? data["images"];
+    if (list is List && list.isNotEmpty && list.first is Map) {
+      final first = list.first as Map;
+      return (first["b64_json"]?.toString(), first["url"]?.toString());
+    }
+    return (null, null);
   }
 }

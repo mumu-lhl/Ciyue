@@ -94,6 +94,7 @@ dependencies:
   dartssh2: ^4.1.0
   s3_client: ^1.0.0
   http: ^1.6.0
+  image_picker: ^1.2.4
 
 dependency_overrides:
   flutter_inappwebview_linux:

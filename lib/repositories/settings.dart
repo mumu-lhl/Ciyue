@@ -257,6 +257,18 @@ class Settings extends ChangeNotifier {
     await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
   }
 
+  /// The image-generation model chosen for a provider, stored in
+  /// the same per-provider config map under `imageModel`.
+  Future<void> saveAiProviderImageModel(
+    String provider,
+    String imageModel,
+  ) async {
+    final currentConfig = aiProviderConfigs[provider] ?? {};
+    currentConfig["imageModel"] = imageModel;
+    aiProviderConfigs[provider] = currentConfig;
+    await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
+  }
+
   List<ModelInfo> getFetchedModels(String provider) {
     final list = aiProviderFetchedModels[provider];
     if (list == null || list.isEmpty) return [];
