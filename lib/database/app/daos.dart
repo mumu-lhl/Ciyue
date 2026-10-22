@@ -74,7 +74,7 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
     with _$DictionaryListDaoMixin {
   DictionaryListDao(super.attachedDatabase);
 
-  Future<int> add(String path, String title) async {
+  Future<int> add(String path, String title, {int type = 1}) async {
     final maxOrder =
         await (select(dictionaryList)
               ..orderBy([
@@ -89,7 +89,7 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
       DictionaryListCompanion(
         path: Value(path),
         title: Value(title),
-        type: const Value(1),
+        type: Value(type),
         order: Value(order),
       ),
     );
