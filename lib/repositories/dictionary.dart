@@ -7,6 +7,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
+import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/utils.dart";
@@ -39,7 +40,7 @@ class MddResourceData {
 }
 
 class DictManager {
-  final Map<int, Mdict> dicts = {};
+  final Map<int, LoadedDictionary> dicts = {};
   List<DictGroupData> groups = [];
   List<int> dictIds = [];
   int groupId = 0;
@@ -53,9 +54,12 @@ class DictManager {
   ///
   /// The expensive key/record/resource loading is started in the background.
   /// Callers that need the dictionary to be ready should await the individual
-  /// [Mdict.waitForLoading] call instead.
+  /// [LoadedDictionary.waitForLoading] call instead.
   Future<void> add(int id, String path) async {
-    final dict = Mdict(path: path);
+    final type = await dictionaryListDao.getType(id);
+    final LoadedDictionary dict = DictionaryType.isStardict(type)
+        ? Stardict(path: path)
+        : Mdict(path: path);
     try {
       await dict.initMetadata();
     } catch (e, stackTrace) {
@@ -179,29 +183,35 @@ class DictManager {
   }
 }
 
-class Mdict implements DictionarySource {
+class Mdict implements LoadedDictionary {
   @override
   late int id;
+  @override
   final String path;
   String? fontName;
   String? fontPath;
   late final DictReader reader;
   List<DictReader> readerResources = [];
+  @override
   late String title;
+  @override
   late final int entriesTotal;
 
+  @override
   late final int type;
 
   bool hasCss = false;
   bool hasJs = false;
 
   late HttpServer? server;
+  @override
   int port = 0;
 
   static const maxBatchSize = 50000;
   static const maxLoadingCount = 5000;
 
   bool _isLoading = true;
+  @override
   bool get isLoading => _isLoading;
   set isLoading(bool value) {
     _isLoading = value;
@@ -227,11 +237,13 @@ class Mdict implements DictionarySource {
   bool _serverInitialized = false;
   Object? _initializationError;
 
+  @override
   bool get isReady =>
       _initialization != null && !isLoading && _initializationError == null;
 
   Mdict({required this.path});
 
+  @override
   Future<void> initMetadata() =>
       _metadataInitialization ??= _initializeMetadata();
 
@@ -258,6 +270,7 @@ class Mdict implements DictionarySource {
     isLoading = false;
   }
 
+  @override
   Future<void> close({bool waitForLoading = true}) {
     final existing = _closeFuture;
     if (existing != null) {
@@ -386,6 +399,7 @@ class Mdict implements DictionarySource {
     }
   }
 
+  @override
   Future<void> init() => _initialization ??= _initialize();
 
   Future<void> _initialize() async {
@@ -478,6 +492,7 @@ class Mdict implements DictionarySource {
     }
   }
 
+  @override
   Future<void> initOnlyMetadata(int id) async {
     this.id = id;
     reader = DictReader("$path.mdx");
@@ -498,6 +513,7 @@ class Mdict implements DictionarySource {
     }
   }
 
+  @override
   Future<void> waitForLoading() async {
     final initialization = _initialization ?? _metadataInitialization;
     if (initialization != null) {
@@ -704,6 +720,7 @@ class Mdict implements DictionarySource {
     return wrapContentWithResources(entry.content);
   }
 
+  @override
   String wrapContentWithResources(String content) {
     final name = basename(path);
     final encodedName = Uri.encodeComponent(name);
@@ -717,6 +734,7 @@ class Mdict implements DictionarySource {
     return header + content;
   }
 
+  @override
   Future<void> removeDictionary({int? dictionaryId}) async {
     final removeId = dictionaryId ?? id;
     final removeType = dictionaryId == null
@@ -759,9 +777,13 @@ class Mdict implements DictionarySource {
     }
   }
 
+  @override
   void setDefaultTitle() {
     title = HtmlUnescape().convert(reader.header["Title"] ?? basename(path));
   }
+
+  @override
+  String get description => reader.header["Description"] ?? "";
 
   @override
   Future<List<String>> search(String query) async {
@@ -955,6 +977,66 @@ Future<void> selectMdx(
   }
 }
 
+/// The StarDict counterpart of [selectMdx]: same registration rules — the
+/// extension-less path is the dictionary's identity, existing paths are
+/// skipped, failures surface the same toast.
+Future<void> selectStardict(
+  BuildContext context,
+  List<String> paths, {
+  bool closeLoadingWhenEmpty = false,
+}) async {
+  if (paths.isEmpty) {
+    if (closeLoadingWhenEmpty && context.mounted) {
+      context.pop();
+    }
+    if (context.mounted) {
+      ToastService.show(
+        AppLocalizations.of(context)!.noDictionariesFound,
+        context,
+        type: ToastType.info,
+      );
+    }
+    return;
+  }
+
+  for (final path in paths) {
+    final pathNoExtension = setExtension(path, "");
+
+    if (await dictionaryListDao.dictionaryExist(pathNoExtension)) {
+      continue;
+    }
+
+    final dict = Stardict(path: pathNoExtension);
+    try {
+      await dict.add();
+      talker.info("Added dictionary: $pathNoExtension");
+    } catch (e) {
+      if (context.mounted) {
+        ToastService.show(
+          AppLocalizations.of(context)!.notSupport,
+          context,
+          type: ToastType.error,
+        );
+        talker.error(
+          "Failed to add dictionary: $pathNoExtension, error: $e",
+          e,
+          StackTrace.current,
+        );
+      }
+    } finally {
+      await dict.close();
+    }
+  }
+
+  if (context.mounted) {
+    ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(manageDictionariesModelProvider).update();
+    context.pop();
+  }
+}
+
 Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
   for (final path in paths) {
     if (await mddAudioListDao.existMddAudio(path)) {
@@ -1021,10 +1103,49 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
   }
 }
 
-Future<void> selectMdxOrMddOnDesktop(BuildContext context, bool isMdx) async {
+/// Desktop file import for dictionaries: one picker accepting both MDict
+/// (.mdx) and StarDict (.ifo) files, each routed to its format's add
+/// pipeline.
+Future<void> importDictionaryFilesOnDesktop(BuildContext context) async {
   final XTypeGroup typeGroup = XTypeGroup(
-    label: "${isMdx ? "MDX" : "MDD"} File",
-    extensions: <String>[isMdx ? "mdx" : "mdd"],
+    label: "Dictionary File",
+    extensions: <String>["mdx", "ifo"],
+  );
+
+  final files = await openFiles(acceptedTypeGroups: [typeGroup]);
+  if (files.isEmpty) {
+    return;
+  }
+
+  final paths = files.map((e) => e.path).toList();
+  final mdxPaths = paths
+      .where((path) => path.toLowerCase().endsWith(".mdx"))
+      .toList();
+  final ifoPaths = paths
+      .where((path) => path.toLowerCase().endsWith(".ifo"))
+      .toList();
+
+  if (mdxPaths.isNotEmpty) {
+    if (context.mounted) {
+      showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
+    }
+    if (context.mounted) {
+      await selectMdx(context, mdxPaths);
+    }
+  }
+
+  if (ifoPaths.isNotEmpty && context.mounted) {
+    showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
+    if (context.mounted) {
+      await selectStardict(context, ifoPaths);
+    }
+  }
+}
+
+Future<void> selectMddOnDesktop(BuildContext context) async {
+  final XTypeGroup typeGroup = XTypeGroup(
+    label: "MDD File",
+    extensions: <String>["mdd"],
   );
 
   final files = await openFiles(acceptedTypeGroups: [typeGroup]);
@@ -1037,11 +1158,7 @@ Future<void> selectMdxOrMddOnDesktop(BuildContext context, bool isMdx) async {
   }
 
   if (context.mounted) {
-    if (isMdx) {
-      await selectMdx(context, files.map((e) => e.path).toList());
-    } else {
-      await selectAudioMdd(context, files.map((e) => e.path).toList());
-    }
+    await selectAudioMdd(context, files.map((e) => e.path).toList());
   }
 }
 
@@ -1112,7 +1229,45 @@ Future<List<String>> findMdxFilesOnAndroid(String? directory) async {
   return findMdxFilesInDirectories([documentsDir.path]);
 }
 
-Future<void> selectMdxFromDirectoriesOnDesktop(BuildContext context) async {
+Future<List<String>> findStardictFilesInDirectories(
+  Iterable<String> directories,
+) async {
+  final ifoFiles = <String>[];
+  final seen = <String>{};
+
+  for (final directoryPath in directories) {
+    final filesInDirectory = <String>[];
+    await findAllFileByExtension(
+      Directory(directoryPath),
+      filesInDirectory,
+      "ifo",
+    );
+
+    for (final filePath in filesInDirectory) {
+      if (seen.add(_normalizeScannedPath(filePath))) {
+        ifoFiles.add(filePath);
+      }
+    }
+  }
+
+  ifoFiles.sort();
+  return ifoFiles;
+}
+
+Future<List<String>> findStardictFilesOnAndroid(String? directory) async {
+  final documentsDir = Directory(
+    directory ??
+        join((await getApplicationSupportDirectory()).path, "dictionaries"),
+  );
+  return findStardictFilesInDirectories([documentsDir.path]);
+}
+
+/// Desktop folder import: scans the picked directories for both MDict
+/// (.mdx) and StarDict (.ifo) dictionaries and registers what it finds,
+/// through each format's own add pipeline.
+Future<void> importDictionariesFromDirectoriesOnDesktop(
+  BuildContext context,
+) async {
   final selectedPaths = await getDirectoryPaths();
   final directories = selectedPaths
       .where((path) => path != null && path.isNotEmpty)
@@ -1125,8 +1280,19 @@ Future<void> selectMdxFromDirectoriesOnDesktop(BuildContext context) async {
 
   showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
   final mdxFiles = await findMdxFilesInDirectories(directories);
+  final ifoFiles = await findStardictFilesInDirectories(directories);
 
-  if (context.mounted) {
+  // The dialog above is closed by whichever add pipeline runs; when both
+  // formats were found, it is shown again for the second one.
+  final mdxHandled = mdxFiles.isNotEmpty || ifoFiles.isEmpty;
+  if (mdxHandled && context.mounted) {
     await selectMdx(context, mdxFiles, closeLoadingWhenEmpty: true);
+  }
+
+  if (ifoFiles.isNotEmpty && context.mounted) {
+    if (mdxHandled) {
+      showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
+    }
+    await selectStardict(context, ifoFiles, closeLoadingWhenEmpty: true);
   }
 }

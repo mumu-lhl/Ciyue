@@ -100,11 +100,23 @@ class PlatformMethod {
           );
 
           final mdxFiles = await findMdxFilesOnAndroid(null);
-          await selectMdx(
-            navigatorKey.currentContext!,
-            mdxFiles,
-            closeLoadingWhenEmpty: true,
-          );
+          final ifoFiles = await findStardictFilesOnAndroid(null);
+          final mdxHandled = mdxFiles.isNotEmpty || ifoFiles.isEmpty;
+          if (mdxHandled) {
+            await selectMdx(
+              navigatorKey.currentContext!,
+              mdxFiles,
+              closeLoadingWhenEmpty: true,
+            );
+          }
+          if (ifoFiles.isNotEmpty) {
+            showLoadingDialog(navigatorKey.currentContext!);
+            await selectStardict(
+              navigatorKey.currentContext!,
+              ifoFiles,
+              closeLoadingWhenEmpty: true,
+            );
+          }
           await addHunspellPairs(await findHunspellPairsOnAndroid(null));
 
           break;
@@ -218,11 +230,25 @@ class PlatformMethod {
     } else {
       showLoadingDialog(navigatorKey.currentContext!);
       final paths = await findMdxFilesOnAndroid(directory);
-      selectMdx(
-        navigatorKey.currentContext!,
-        paths,
-        closeLoadingWhenEmpty: true,
-      );
+      final ifoPaths = await findStardictFilesOnAndroid(directory);
+      final mdxHandled = paths.isNotEmpty || ifoPaths.isEmpty;
+      if (mdxHandled) {
+        selectMdx(
+          navigatorKey.currentContext!,
+          paths,
+          closeLoadingWhenEmpty: true,
+        );
+      }
+      if (ifoPaths.isNotEmpty) {
+        if (mdxHandled) {
+          showLoadingDialog(navigatorKey.currentContext!);
+        }
+        await selectStardict(
+          navigatorKey.currentContext!,
+          ifoPaths,
+          closeLoadingWhenEmpty: true,
+        );
+      }
     }
   }
 
