@@ -460,10 +460,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ListTile(
                       leading: const Icon(Icons.style),
                       title: const Text("Flashcards"),
-                      trailing: const Icon(
-                        Icons.chevron_right_rounded,
-                        size: 20,
-                      ),
                       onTap: () => context.push("/settings/flashcards"),
                     ),
                     const HunspellPageListTile(),

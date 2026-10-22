@@ -165,7 +165,7 @@ class QuizViewModel extends ChangeNotifier {
 
   bool _mounted = true;
 
-  static const int defaultQuestionCount = 5;
+  static const int defaultQuestionCount = 20;
 
   QuizViewModel({WordbookDao? dao, QuizMistakeDao? mistakeDao})
     : _wordbookDao = dao ?? WordbookDao(mainDatabase),
