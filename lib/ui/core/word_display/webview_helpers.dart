@@ -112,23 +112,23 @@ onLoadResourceWithCustomSchemeWarpper(int dictId) {
   return (controller, request) async {
     final url = request.url;
     if (url.scheme == "sound") {
+      final dict = dictManager.dicts[dictId];
+      // Pronunciation audio lives in MDD resources; other dictionary
+      // formats have none to serve here.
+      if (dict is! Mdict) return null;
       final filename = Uri.decodeFull(url.toString())
           .replaceFirst("sound://", "");
-      final results = await dictManager.dicts[dictId]!.readResource(filename);
+      final results = await dict.readResource(filename);
       for (final result in results) {
         final info = result.offsetInfo;
         try {
           final Uint8List data;
           if (result.part == null) {
-            data =
-                await dictManager.dicts[dictId]!.readerResources[0].readOneMdd(
-                  info,
-                ) as Uint8List;
+            data = await dict.readerResources[0].readOneMdd(info) as Uint8List;
           } else {
-            data =
-                await dictManager.dicts[dictId]!.readerResources[result.part!]
-                        .readOneMdd(info)
-                    as Uint8List;
+            data = await dict.readerResources[result.part!].readOneMdd(
+              info,
+            ) as Uint8List;
           }
           talker.info("Playing sound (2): $filename");
           return CustomSchemeResponse(
@@ -156,7 +156,8 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
     if (_isEntryUrl(url)) {
       final isNewTab = url.scheme == "ciyue-open-new-tab";
       final word = _wordFromEntryUrl(url);
-      if (!isNewTab && !(await dictManager.dicts[dictId]!.wordExist(word))) {
+      if (!isNewTab &&
+          (await dictManager.dicts[dictId]!.resolveExactKey(word)) == null) {
         talker.info("Word not found: ${url.toString()}");
         return NavigationActionPolicy.CANCEL;
       }
@@ -174,38 +175,40 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
       final filename = Uri.decodeFull(url.toString())
           .replaceFirst("sound://", "");
 
-      final results = await dictManager.dicts[dictId]!.readResource(filename);
+      // Pronunciation audio lives in MDD resources; other dictionary
+      // formats have none to play here.
+      final dict = dictManager.dicts[dictId];
+      if (dict is Mdict) {
+        final results = await dict.readResource(filename);
 
-      for (final result in results) {
-        final info = result.offsetInfo;
-        final Uint8List data;
-        try {
-          if (result.part == null) {
-            data =
-                await dictManager.dicts[dictId]!.readerResources[0].readOneMdd(
-                  info,
-                ) as Uint8List;
-          } else {
-            data =
-                await dictManager.dicts[dictId]!.readerResources[result.part!]
-                        .readOneMdd(info)
-                    as Uint8List;
+        for (final result in results) {
+          final info = result.offsetInfo;
+          final Uint8List data;
+          try {
+            if (result.part == null) {
+              data =
+                  await dict.readerResources[0].readOneMdd(info) as Uint8List;
+            } else {
+              data = await dict.readerResources[result.part!].readOneMdd(
+                info,
+              ) as Uint8List;
+            }
+          } catch (e) {
+            talker.error(
+              "Failed to read sound resource (${result.part == null ? 0 : result.part!}): $filename",
+              e,
+            );
+            continue;
           }
-        } catch (e) {
-          talker.error(
-            "Failed to read sound resource (${result.part == null ? 0 : result.part!}): $filename",
-            e,
-          );
-          continue;
-        }
 
-        await playSound(
-          data,
-          lookupMimeType(filename) ?? "application/octet-stream",
-          label: basenameWithoutExtension(filename),
-        );
-        talker.info("Playing sound (1): $filename");
-        return NavigationActionPolicy.CANCEL;
+          await playSound(
+            data,
+            lookupMimeType(filename) ?? "application/octet-stream",
+            label: basenameWithoutExtension(filename),
+          );
+          talker.info("Playing sound (1): $filename");
+          return NavigationActionPolicy.CANCEL;
+        }
       }
     }
 
@@ -238,8 +241,10 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       return WebResourceResponse(data: null);
     }
 
-    if (path == dictManager.dicts[dictId]!.fontName) {
-      final file = File(dictManager.dicts[dictId]!.fontPath!);
+    final dict = dictManager.dicts[dictId]!;
+
+    if (dict is Mdict && path == dict.fontName) {
+      final file = File(dict.fontPath!);
       final data = await file.readAsBytes();
       return WebResourceResponse(data: data, contentType: lookupMimeType(path));
     }
@@ -247,19 +252,18 @@ class LocalResourcesPathHandler extends CustomPathHandler {
     try {
       Uint8List? data;
 
-      if (dictManager.dicts[dictId]!.readerResources.isEmpty) {
-        // Find resource under directory if no mdd
-        final file = File("${dirname(dictManager.dicts[dictId]!.path)}/$path");
+      if (dict is! Mdict || dict.readerResources.isEmpty) {
+        // Find resource under directory if no mdd (StarDict dictionaries
+        // keep their resources, e.g. res/ images, as plain files).
+        final file = File("${dirname(dict.path)}/$path");
         data = await file.readAsBytes();
       } else {
         List<MddResourceData> results;
-        results = await dictManager.dicts[dictId]!.readResource(path);
+        results = await dict.readResource(path);
 
         if (results.isEmpty) {
           // Find resource under directory if resource is not in mdd
-          final file = File(
-            "${dirname(dictManager.dicts[dictId]!.path)}/$path",
-          );
+          final file = File("${dirname(dict.path)}/$path");
           data = await file.readAsBytes();
           return WebResourceResponse(
             data: data,
@@ -273,14 +277,11 @@ class LocalResourcesPathHandler extends CustomPathHandler {
           try {
             if (result.part == null) {
               data =
-                  await dictManager.dicts[dictId]!.readerResources[0]
-                          .readOneMdd(info)
-                      as Uint8List;
+                  await dict.readerResources[0].readOneMdd(info) as Uint8List;
             } else {
-              data =
-                  await dictManager.dicts[dictId]!.readerResources[result.part!]
-                          .readOneMdd(info)
-                      as Uint8List;
+              data = await dict.readerResources[result.part!].readOneMdd(
+                info,
+              ) as Uint8List;
             }
             break;
           } on FileSystemException catch (_) {

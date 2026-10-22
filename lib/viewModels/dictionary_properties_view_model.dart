@@ -1,4 +1,7 @@
+import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/stardict.dart";
 import "package:material_ui/material_ui.dart";
 
 class DictionaryPropertiesViewModel extends ChangeNotifier {
@@ -27,7 +30,10 @@ class DictionaryPropertiesViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchProperties(String path, int id) async {
-    final dict = Mdict(path: path);
+    final type = await dictionaryListDao.getType(id);
+    final LoadedDictionary dict = DictionaryType.isStardict(type)
+        ? Stardict(path: path)
+        : Mdict(path: path);
     try {
       await dict.initOnlyMetadata(id);
       _title = dict.title;

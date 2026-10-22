@@ -119,7 +119,7 @@ class AudioList extends StatelessWidget {
                     PlatformMethod.openAudioDirectory();
                   }
                 } else {
-                  await selectMdxOrMddOnDesktop(context, false);
+                  await selectMddOnDesktop(context);
                 }
               },
             ),

@@ -5,7 +5,9 @@ import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
@@ -375,11 +377,12 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
           );
         }
 
-        if (dictManager.dicts[widget.dictId]!.fontName != null) {
+        final loadedDict = dictManager.dicts[widget.dictId];
+        if (loadedDict is Mdict && loadedDict.fontName != null) {
           await controller.evaluateJavascript(
             source:
                 """
-const font = new FontFace('Custom Font', 'url(/${dictManager.dicts[widget.dictId]!.fontName})');
+const font = new FontFace('Custom Font', 'url(/${loadedDict.fontName})');
 font.load();
 document.fonts.add(font);
 document.body.style.fontFamily = 'Custom Font';
@@ -441,8 +444,8 @@ class WebviewDisplayDescription extends ConsumerWidget {
     );
   }
 
-  Widget _buildDescription(Mdict dict) {
-    var html = dict.reader.header["Description"]!;
+  Widget _buildDescription(LoadedDictionary dict) {
+    var html = dict.description;
     html = HtmlUnescape().convert(html);
     html = dict.wrapContentWithResources(html);
 
@@ -457,9 +460,12 @@ class WebviewDisplayDescription extends ConsumerWidget {
     if (path == null) {
       return "";
     }
-    final dict = Mdict(path: path);
+    final type = await dictionaryListDao.getType(dictId);
+    final LoadedDictionary dict = DictionaryType.isStardict(type)
+        ? Stardict(path: path)
+        : Mdict(path: path);
     await dict.initOnlyMetadata(dictId);
-    var html = dict.reader.header["Description"] ?? "";
+    var html = dict.description;
     html = HtmlUnescape().convert(html);
     html = dict.wrapContentWithResources(html);
     await dict.close();

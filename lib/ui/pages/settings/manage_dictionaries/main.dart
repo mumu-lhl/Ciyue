@@ -3,8 +3,10 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/hunspell.dart";
+import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -73,8 +75,22 @@ Future<void> importDictionariesFromFiles(BuildContext context) async {
       showLoadingDialog(context, text: AppLocalizations.of(context)!.loading);
 
       final paths = await findMdxFilesOnAndroid(path);
-      if (context.mounted) {
+      final ifoPaths = await findStardictFilesOnAndroid(path);
+      // The loading dialog above is closed by whichever add pipeline
+      // runs; when both formats were found, the dialog is shown again
+      // for the second one.
+      final mdxHandled = paths.isNotEmpty || ifoPaths.isEmpty;
+      if (mdxHandled && context.mounted) {
         await selectMdx(context, paths, closeLoadingWhenEmpty: true);
+      }
+      if (ifoPaths.isNotEmpty && context.mounted) {
+        if (mdxHandled) {
+          showLoadingDialog(
+            context,
+            text: AppLocalizations.of(context)!.loading,
+          );
+        }
+        await selectStardict(context, ifoPaths, closeLoadingWhenEmpty: true);
       }
       await addHunspellPairs(await findHunspellPairsOnAndroid(path));
       return;
@@ -84,7 +100,7 @@ Future<void> importDictionariesFromFiles(BuildContext context) async {
     return;
   }
 
-  selectMdxOrMddOnDesktop(context, true);
+  importDictionaryFilesOnDesktop(context);
 }
 
 void showRecommendedDialog(BuildContext context) {
@@ -145,11 +161,11 @@ class AddButton extends StatelessWidget {
   const AddButton({super.key});
 
   Future<void> _addFromFiles(BuildContext context) {
-    return selectMdxOrMddOnDesktop(context, true);
+    return importDictionaryFilesOnDesktop(context);
   }
 
   Future<void> _addFromDirectories(BuildContext context) {
-    return selectMdxFromDirectoriesOnDesktop(context);
+    return importDictionariesFromDirectoriesOnDesktop(context);
   }
 
   @override
@@ -397,7 +413,12 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                                           .dicts[dictionary.id]!
                                           .title;
                                     } else {
-                                      final dict = Mdict(path: dictionary.path);
+                                      final LoadedDictionary dict =
+                                          DictionaryType.isStardict(
+                                            dictionary.type,
+                                          )
+                                          ? Stardict(path: dictionary.path)
+                                          : Mdict(path: dictionary.path);
                                       try {
                                         await dict.initOnlyMetadata(
                                           dictionary.id,
@@ -525,7 +546,10 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                         dictionary.id,
                       );
 
-                      final tmpDict = Mdict(path: dictionary.path);
+                      final LoadedDictionary tmpDict =
+                          DictionaryType.isStardict(dictionary.type)
+                          ? Stardict(path: dictionary.path)
+                          : Mdict(path: dictionary.path);
                       await tmpDict.removeDictionary(
                         dictionaryId: dictionary.id,
                       );

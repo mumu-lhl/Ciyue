@@ -34,11 +34,13 @@ class _Body extends StatefulWidget {
 
 class _BodyState extends State<_Body> {
   void customFont(String? path) async {
-    if (dictManager.dicts.containsKey(widget.dictId)) {
-      await dictManager.dicts[widget.dictId]!.customFont(path);
+    final dict = dictManager.dicts[widget.dictId];
+    if (dict is Mdict) {
+      await dict.customFont(path);
     } else {
       // Updating the font only touches the database; do not initialize and
-      // scan an inactive dictionary just for this setting.
+      // scan an inactive dictionary just for this setting. (Only MDict
+      // dictionaries apply a custom font when loaded.)
       await dictionaryListDao.updateFont(widget.dictId, path);
     }
   }
@@ -47,8 +49,9 @@ class _BodyState extends State<_Body> {
   Widget build(BuildContext context) {
     Widget? fontPathSubtitle;
     Widget? removeButton;
-    if (dictManager.dicts.values.first.fontName != null) {
-      fontPathSubtitle = Text(dictManager.dicts.values.first.fontName!);
+    final firstDict = dictManager.dicts.values.first;
+    if (firstDict is Mdict && firstDict.fontName != null) {
+      fontPathSubtitle = Text(firstDict.fontName!);
       removeButton = IconButton(
         icon: Icon(Icons.delete_sweep),
         onPressed: () {
