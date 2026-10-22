@@ -57,9 +57,20 @@ jobs:
           fi
           flutter build macos --release "${extra_args[@]}"
 
+      # The products directory is named after the effective build
+      # configuration (e.g. Release-common since the pubspec declares a
+      # default flavor), so locate the built bundle instead of assuming a
+      # fixed path.
+      - name: Locate app bundle
+        run: |
+          app_path="$(find build/macos/Build/Products -maxdepth 2 -type d -name 'Ciyue.app' | head -n 1)"
+          test -d "$app_path"
+          echo "APP_BUNDLE=$app_path" >> "$GITHUB_ENV"
+          echo "PRODUCTS_DIR=$(dirname "$app_path")" >> "$GITHUB_ENV"
+
       - name: Verify app bundle signature
         run: |
-          app="build/macos/Build/Products/Release/Ciyue.app"
+          app="$APP_BUNDLE"
           test -d "$app"
           codesign --verify --deep "$app"
           codesign -dv "$app" 2>&1 | grep -E "Signature|Identifier="
@@ -67,7 +78,7 @@ jobs:
       - name: Compression
         if: ${{ inputs.package_release_artifacts }}
         run: |
-          cd build/macos/Build/Products/Release
+          cd "$PRODUCTS_DIR"
           # ditto preserves the resource forks, symlinks and extended
           # attributes that a .app bundle needs to stay valid on macOS.
           ditto -c -k --sequesterRsrc --keepParent Ciyue.app ciyue-macos.zip
@@ -75,7 +86,7 @@ jobs:
       - name: Build DMG
         if: ${{ inputs.package_release_artifacts }}
         run: |
-          cd build/macos/Build/Products/Release
+          cd "$PRODUCTS_DIR"
           hdiutil create -volname Ciyue -srcfolder Ciyue.app -ov -format UDZO ciyue-macos.dmg
 
       - name: Upload app bundle
@@ -83,7 +94,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.artifact_name }}
-          path: build/macos/Build/Products/Release/Ciyue.app
+          path: ${{ env.APP_BUNDLE }}
           if-no-files-found: error
 
       - name: Upload release artifacts
@@ -92,6 +103,6 @@ jobs:
         with:
           name: ${{ inputs.artifact_name }}
           path: |
-            build/macos/Build/Products/Release/ciyue-macos.zip
-            build/macos/Build/Products/Release/ciyue-macos.dmg
+            ${{ env.PRODUCTS_DIR }}/ciyue-macos.zip
+            ${{ env.PRODUCTS_DIR }}/ciyue-macos.dmg
           if-no-files-found: error
