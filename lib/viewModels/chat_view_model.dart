@@ -775,15 +775,20 @@ class ChatViewModel extends ChangeNotifier {
     // If in a scenario, prepend the scenario system prompt from the template.
     // History is text-only: attached images are sent with the turn
     // they belong to, not re-uploaded on every later turn.
+    // The word context lives in history (not inlined into the first
+    // prompt) so every round's message list is a strict prefix-extension
+    // of the previous round's — the shape prefix caching needs.
     final history = [
       if (_scenario != null) ChatTurn.system(_buildScenarioSystemPrompt()),
+      if (session.initialContext != null)
+        ChatTurn.system(
+          "The user is asking about the word \"${session.initialContext}\".",
+        ),
       for (final m in session.messages.sublist(0, session.messages.length - 2))
         ChatTurn(m.text, m.isUser),
     ];
 
-    final effectivePrompt = session.initialContext != null && history.isEmpty
-        ? "The user is asking about the word \"${session.initialContext}\".\n\n$text"
-        : text.isEmpty && imageDataUrls.isNotEmpty
+    final effectivePrompt = text.isEmpty && imageDataUrls.isNotEmpty
         ? "Describe this image."
         : text;
 
