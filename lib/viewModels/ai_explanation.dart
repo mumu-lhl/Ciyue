@@ -3,6 +3,7 @@ import "dart:ui" as ui;
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
+import "package:ciyue/models/ai_explanation_data.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
@@ -16,6 +17,13 @@ class AIExplanationModel extends ChangeNotifier {
 
   String? _explanation;
   String? get explanation => _explanation;
+
+  /// The current explanation parsed as structured data, when
+  /// structured mode is on and the text parsed. Null means the view
+  /// renders [explanation] as markdown (legacy cache entries, manual
+  /// edits, or a model response that was not valid JSON).
+  AiExplanationData? _structured;
+  AiExplanationData? get structured => _structured;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -42,19 +50,40 @@ class AIExplanationModel extends ChangeNotifier {
     super.dispose();
   }
 
+  /// Interprets explanation [text] (cached or freshly fetched) for
+  /// display. Returns false only when markdown mode is on but the
+  /// text is structured JSON — showing it raw would dump JSON on the
+  /// user, so the caller treats it as a cache miss and refetches.
+  bool _applyContent(String text) {
+    final parsed = AiExplanationData.tryParse(text);
+    if (settings.aiExplainStructured) {
+      // Null when the text is a legacy markdown entry or a malformed
+      // response: the view then falls back to markdown rendering.
+      _structured = parsed;
+      _explanation = text;
+      return true;
+    }
+    if (parsed != null) {
+      return false;
+    }
+    _structured = null;
+    _explanation = text;
+    return true;
+  }
+
   Future<void> getExplanation(String word) async {
     // Cancel any in-flight stream from a previous word.
     _streamController?.cancel();
     _isLoading = true;
     _explanation = null;
+    _structured = null;
     notifyListeners();
 
     final cached = await _aiExplanationDao.getAiExplanation(word);
 
     if (!_mounted) return;
 
-    if (cached != null) {
-      _explanation = cached.explanation;
+    if (cached != null && _applyContent(cached.explanation)) {
       _isLoading = false;
       notifyListeners();
       return;
@@ -67,6 +96,7 @@ class AIExplanationModel extends ChangeNotifier {
     _streamController?.cancel();
     _isLoading = true;
     _explanation = null;
+    _structured = null;
     notifyListeners();
 
     await _fetchFromAI(word, forceRefresh: true);
@@ -76,7 +106,11 @@ class AIExplanationModel extends ChangeNotifier {
     final targetLanguage = settings.language! == "system"
         ? ui.PlatformDispatcher.instance.locale.languageCode
         : settings.language!;
-    final template = (_aiPrompts ?? AIPrompts()).explainPrompt;
+    final structuredMode = settings.aiExplainStructured;
+    final prompts = _aiPrompts ?? AIPrompts();
+    final template = structuredMode
+        ? prompts.explainStructuredPrompt
+        : prompts.explainPrompt;
     final prompt = template
         .replaceAll(r"$word", word)
         .replaceAll(r"$targetLanguage", targetLanguage);
@@ -94,9 +128,13 @@ class AIExplanationModel extends ChangeNotifier {
         // Ignore chunks from a cancelled (superseded) stream.
         if (controller.isCancelled) return;
         buffer.write(chunk);
-        _explanation = buffer.toString();
-        _isLoading = false;
-        notifyListeners();
+        // Structured responses are partial JSON while streaming and
+        // cannot be shown; they are published whole on completion.
+        if (!structuredMode) {
+          _explanation = buffer.toString();
+          _isLoading = false;
+          notifyListeners();
+        }
       }
       final fullExplanation = buffer.toString();
       if (fullExplanation.isEmpty) {
@@ -104,6 +142,12 @@ class AIExplanationModel extends ChangeNotifier {
         // not leave a silently blank explanation.
         _explanation = "Error: The AI provider returned an empty response.";
         return;
+      }
+      if (!_applyContent(fullExplanation)) {
+        // The markdown prompt was used but the model answered with
+        // JSON anyway: show it as text rather than refetching.
+        _structured = null;
+        _explanation = fullExplanation;
       }
 
       final existing = await _aiExplanationDao.getAiExplanation(word);
@@ -135,6 +179,10 @@ class AIExplanationModel extends ChangeNotifier {
 
   Future<void> updateExplanation(String word, String newExplanation) async {
     _explanation = newExplanation;
+    // A manual edit may or may not still be valid structured data.
+    _structured = settings.aiExplainStructured
+        ? AiExplanationData.tryParse(newExplanation)
+        : null;
     await _aiExplanationDao.updateAiExplanation(
       AiExplanation(word: word, explanation: newExplanation),
     );

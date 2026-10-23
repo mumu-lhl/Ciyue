@@ -1,5 +1,6 @@
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/word_display/ai_explanation_view.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
@@ -50,7 +51,9 @@ class _AIExplainViewState extends ConsumerState<AIExplainView> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: SelectionArea(child: GptMarkdown(model.explanation!)),
+            child: model.structured != null
+                ? AiExplanationView(data: model.structured!)
+                : SelectionArea(child: GptMarkdown(model.explanation!)),
           ),
         ),
       ),

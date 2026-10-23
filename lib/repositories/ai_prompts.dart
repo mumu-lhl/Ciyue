@@ -36,6 +36,17 @@ Give 1-2 example sentences for the most common meanings, with translations.
 List common synonyms and antonyms if any.
 
 The output is entirely and exclusively in \$targetLanguage. Start directly with the first section header, no intro or outro text.""";
+  static const String defaultExplainStructuredPrompt = """Explain the word "\$word" for a language learner. Respond with ONLY a JSON object — no markdown fences, no intro or outro text — using exactly this structure:
+
+{"phonetic": "...", "partOfSpeech": "...", "meanings": ["...", "..."], "examples": [{"sentence": "...", "translation": "..."}], "synonyms": ["..."], "antonyms": ["..."]}
+
+- phonetic: the IPA transcription of the word.
+- partOfSpeech: the part(s) of speech, e.g. "noun" or "verb / noun".
+- meanings: every common meaning, one concise definition each, most frequent first.
+- examples: 1-2 example sentences for the most common meanings, each with a translation.
+- synonyms / antonyms: the common ones only; use an empty array when there are none.
+
+Write the definitions, the part of speech and the translations entirely in \$targetLanguage. Example sentences stay in the language of the word itself.""";
   static const String defaultTranslatePrompt =
       "Translate the following text from \$sourceLanguage to \$targetLanguage. Provide only the single most natural and accurate translation, no alternatives or explanations. Output the translation entirely and exclusively in \$targetLanguage: \$text";
   static const String defaultWritingCheckPrompt = """Please evaluate the text from a grammatical and orthographical standpoint, offering suggestions to enhance its composition for a more idiomatic and authentic expression in the given language.
@@ -87,6 +98,12 @@ Stay in character throughout the conversation. Gently correct the user's languag
     defaultText: defaultExplainPrompt,
     variables: [r"$word", r"$targetLanguage"],
   );
+  static const explainStructuredDefinition = AiPromptDefinition(
+    id: "explainStructured",
+    prefsKey: "customExplainStructuredPrompt",
+    defaultText: defaultExplainStructuredPrompt,
+    variables: [r"$word", r"$targetLanguage"],
+  );
   static const translateDefinition = AiPromptDefinition(
     id: "translate",
     prefsKey: "customTranslatePrompt",
@@ -121,6 +138,7 @@ Stay in character throughout the conversation. Gently correct the user's languag
   /// All customizable prompts, in management-page display order.
   static const allDefinitions = <AiPromptDefinition>[
     explainDefinition,
+    explainStructuredDefinition,
     translateDefinition,
     writingCheckDefinition,
     quizDefinition,
@@ -175,6 +193,7 @@ Stay in character throughout the conversation. Gently correct the user's languag
   }
 
   String get explainPrompt => promptFor(explainDefinition);
+  String get explainStructuredPrompt => promptFor(explainStructuredDefinition);
   String get translatePrompt => promptFor(translateDefinition);
   String get writingCheckPrompt => promptFor(writingCheckDefinition);
   String get quizPrompt => promptFor(quizDefinition);
@@ -185,6 +204,12 @@ Stay in character throughout the conversation. Gently correct the user's languag
       setPrompt(explainDefinition, prompt);
 
   Future<void> resetExplainPrompt() => resetPrompt(explainDefinition);
+
+  Future<void> setExplainStructuredPrompt(String prompt) =>
+      setPrompt(explainStructuredDefinition, prompt);
+
+  Future<void> resetExplainStructuredPrompt() =>
+      resetPrompt(explainStructuredDefinition);
 
   Future<void> setTranslatePrompt(String prompt) =>
       setPrompt(translateDefinition, prompt);
