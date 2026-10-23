@@ -384,18 +384,10 @@ class Mdict implements LoadedDictionary {
   /// The self-built index cache for one dictionary reader, in the cache
   /// directory (it is rebuildable data, so the standard cache semantics
   /// apply: the system may clear it, and a clear simply triggers a
-  /// rescan). [supportDir] reads the application support directory, where
-  /// the cache briefly lived in one interim build; caches found there are
-  /// migrated back instead of rebuilt.
-  Future<File> _readerCacheFile(
-    int id,
-    String type, {
-    bool supportDir = false,
-  }) async {
+  /// rescan).
+  Future<File> _readerCacheFile(int id, String type) async {
     final cacheFileName = "dict_reader_${id.toString()}_$type.cache";
-    final cacheDir = supportDir
-        ? await getApplicationSupportDirectory()
-        : await getApplicationCacheDirectory();
+    final cacheDir = await getApplicationCacheDirectory();
     return File(join(cacheDir.path, cacheFileName));
   }
 
@@ -417,15 +409,10 @@ class Mdict implements LoadedDictionary {
   }
 
   Future<bool> hitCache(int id, String type, DictReader reader) async {
-    var cacheFile = await _readerCacheFile(id, type);
-    var fromSupportDir = false;
+    final cacheFile = await _readerCacheFile(id, type);
+
     if (!await cacheFile.exists()) {
-      final supportFile = await _readerCacheFile(id, type, supportDir: true);
-      if (!await supportFile.exists()) {
-        return false;
-      }
-      cacheFile = supportFile;
-      fromSupportDir = true;
+      return false;
     }
 
     try {
@@ -438,15 +425,6 @@ class Mdict implements LoadedDictionary {
       final cachePath = cacheFile.path;
       final cache = await Isolate.run(() => File(cachePath).readAsString());
       await reader.importCacheFromString(cache);
-      if (fromSupportDir) {
-        // Migrate the cache back to the cache directory; best effort —
-        // the imported data is already in memory either way.
-        try {
-          final target = await _readerCacheFile(id, type);
-          await cacheFile.copy(target.path);
-          await cacheFile.delete();
-        } catch (_) {}
-      }
       return true;
     } catch (e, stackTrace) {
       talker.error("Failed to import cache for $id ($type): $e", e, stackTrace);
