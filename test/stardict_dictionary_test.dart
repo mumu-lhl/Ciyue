@@ -117,4 +117,49 @@ void main() {
   test("wrapContentWithResources leaves StarDict HTML untouched", () {
     expect(dict.wrapContentWithResources("<p>x</p>"), "<p>x</p>");
   });
+
+  test("structured fields are cached for entries read by lookup", () async {
+    await dict.readExactEntries(["apple", "banana"]);
+
+    final apple = dict.structuredFieldsFor("apple");
+    expect(apple, isNotNull);
+    expect(apple!.map((field) => field.type), ["m", "t"]);
+    final banana = dict.structuredFieldsFor("banana");
+    expect(banana!.single.type, "x");
+    expect(dict.structuredFieldsFor("missing"), isNull);
+  });
+
+  test("binary-only entries do not count as found", () async {
+    // A second dictionary whose only entry carries a binary field ('W'):
+    // it has nothing displayable and must not produce a blank section.
+    final dictBytes = BytesBuilder()
+      ..addByte(0x57) // 'W'
+      ..add((ByteData(4)..setUint32(0, 3, Endian.big)).buffer.asUint8List())
+      ..add([1, 2, 3]);
+    final data = dictBytes.takeBytes();
+    final idx = BytesBuilder()
+      ..add(utf8.encode("soundonly"))
+      ..addByte(0)
+      ..add((ByteData(4)..setUint32(0, 0, Endian.big)).buffer.asUint8List())
+      ..add(
+        (ByteData(
+          4,
+        )..setUint32(0, data.length, Endian.big)).buffer.asUint8List(),
+      );
+    final base = "${dir.path}/binary";
+    await File("$base.dict").writeAsBytes(data);
+    await File("$base.idx").writeAsBytes(idx.takeBytes());
+    await File("$base.ifo").writeAsString(
+      "StarDict's dict ifo file\n"
+      "version=2.4.2\n"
+      "bookname=Binary Fixture\n"
+      "wordcount=1\n",
+    );
+
+    final binaryDict = Stardict(path: base)..id = 7;
+    await binaryDict.init();
+    expect(await binaryDict.readExactEntries(["soundonly"]), isEmpty);
+    expect(binaryDict.structuredFieldsFor("soundonly"), isNull);
+    await binaryDict.close();
+  });
 }

@@ -86,5 +86,12 @@ void main() {
       expect(html, contains("unclosed"));
       expect(html, contains('class="sd-text"'));
     });
+
+    test("converts fragments without an xdxf root element", () {
+      final html = xdxfToHtml("<k>frag</k><def>fragmented article</def>");
+      expect(html, contains("fragmented article"));
+      expect(html, contains('class="sd-k"'));
+      expect(html, isNot(contains("&lt;k&gt;")));
+    });
   });
 }
