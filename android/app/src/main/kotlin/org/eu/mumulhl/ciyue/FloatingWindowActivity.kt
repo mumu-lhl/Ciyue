@@ -2,8 +2,6 @@ package org.eu.mumulhl.ciyue
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
@@ -40,16 +38,6 @@ class FloatingWindowActivity : FlutterActivity() {
     // this task is hidden and restored.
     override fun getBackgroundMode(): BackgroundMode = BackgroundMode.transparent
 
-    private val mainHandler = Handler(Looper.getMainLooper())
-    private var dismissed = false
-    private var idleExpired = false
-    private val finishAfterIdle = Runnable {
-        if (!isFinishing && !isDestroyed) {
-            idleExpired = true
-            finishAndRemoveTask()
-        }
-    }
-
     private fun applySecureFlag() {
         if (secureFlag) {
             window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
@@ -83,10 +71,6 @@ class FloatingWindowActivity : FlutterActivity() {
     }
 
     override fun onStart() {
-        mainHandler.removeCallbacks(finishAfterIdle)
-        dismissed = false
-        idleExpired = false
-        FloatingWindowEngine.cancelIdleShutdown()
         super.onStart()
         keepFlutterViewVisible()
     }
@@ -101,20 +85,11 @@ class FloatingWindowActivity : FlutterActivity() {
         // itself is already hidden; keep the Flutter view and surface alive.
         keepFlutterViewVisible()
 
-        when {
-            isFinishing -> FloatingWindowEngine.scheduleIdleShutdown()
-            dismissed -> {
-                // Keep this Activity attached to the cached engine while the
-                // window is hidden. A subsequent lookup can bring the same
-                // task forward without racing an old Activity's onDestroy.
-                mainHandler.removeCallbacks(finishAfterIdle)
-                mainHandler.postDelayed(
-                    finishAfterIdle,
-                    FloatingWindowEngine.IDLE_SHUTDOWN_DELAY_MS,
-                )
-            }
-            else -> FloatingWindowEngine.cancelIdleShutdown()
-        }
+        // Keep this Activity attached to the cached engine while the
+        // window is hidden. The engine now lives for the lifetime of the
+        // process (FloatingWindowEngine releases it on memory pressure),
+        // so a subsequent lookup brings the same task forward warm
+        // instead of re-running the full Dart startup.
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -127,7 +102,6 @@ class FloatingWindowActivity : FlutterActivity() {
     }
 
     private fun dismiss() {
-        dismissed = true
         if (!moveTaskToBack(true)) {
             finish()
         }
@@ -142,16 +116,11 @@ class FloatingWindowActivity : FlutterActivity() {
     }
 
     override fun onDestroy() {
-        mainHandler.removeCallbacks(finishAfterIdle)
         if (activityReference?.get() === this) {
             activityReference = null
         }
+        // The cached engine is not destroyed with the Activity: it is
+        // shared by later invocations and released on memory pressure.
         super.onDestroy()
-
-        if (idleExpired) {
-            FloatingWindowEngine.destroyNow()
-        } else {
-            FloatingWindowEngine.scheduleIdleShutdown()
-        }
     }
 }

@@ -1,8 +1,8 @@
 package org.eu.mumulhl.ciyue
 
+import android.content.ComponentCallbacks2
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
+import android.content.res.Configuration
 import com.baseflow.permissionhandler.PermissionHandlerPlugin
 import com.eyedeadevelopment.fluttertts.FlutterTtsPlugin
 import com.github.dart_lang.jni.JniPlugin
@@ -25,15 +25,12 @@ object FloatingWindowEngine {
     const val EXTRA_TEXT_TO_SHOW = "extra_text_to_show"
     const val ENGINE_ID = "org.eu.mumulhl.ciyue/floating_window_engine"
 
-    const val IDLE_SHUTDOWN_DELAY_MS = 30_000L
-
-    private val mainHandler = Handler(Looper.getMainLooper())
-    private val idleShutdown = Runnable { destroyNow() }
     private var engine: FlutterEngine? = null
     private var configurator: EngineConfigurator? = null
+    private var trimMemoryReleaseRegistered = false
 
     fun prepare(context: Context, text: String): FlutterEngine {
-        cancelIdleShutdown()
+        registerTrimMemoryRelease(context)
 
         val cache = FlutterEngineCache.getInstance()
         val cachedEngine = cache.get(ENGINE_ID)
@@ -70,13 +67,33 @@ object FloatingWindowEngine {
         }
     }
 
-    fun cancelIdleShutdown() {
-        mainHandler.removeCallbacks(idleShutdown)
-    }
+    // The engine is intentionally kept alive for the lifetime of the
+    // process: destroying it after a short idle timeout forced every
+    // process-text invocation to re-run the full Dart startup, including
+    // loading every dictionary index in the current group. Memory
+    // pressure is the release signal instead — when the system asks the
+    // app to trim, the engine goes away and the next invocation pays
+    // the cold start only then.
+    private fun registerTrimMemoryRelease(context: Context) {
+        if (trimMemoryReleaseRegistered) {
+            return
+        }
+        trimMemoryReleaseRegistered = true
+        context.applicationContext.registerComponentCallbacks(
+            object : ComponentCallbacks2 {
+                override fun onTrimMemory(level: Int) {
+                    if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL) {
+                        destroyNow()
+                    }
+                }
 
-    fun scheduleIdleShutdown() {
-        mainHandler.removeCallbacks(idleShutdown)
-        mainHandler.postDelayed(idleShutdown, IDLE_SHUTDOWN_DELAY_MS)
+                override fun onConfigurationChanged(newConfig: Configuration) {}
+
+                override fun onLowMemory() {
+                    destroyNow()
+                }
+            },
+        )
     }
 
     private fun createConfigurator(context: Context): EngineConfigurator {
@@ -116,8 +133,6 @@ object FloatingWindowEngine {
     }
 
     fun destroyNow() {
-        cancelIdleShutdown()
-
         val currentEngine = engine ?: FlutterEngineCache.getInstance().get(ENGINE_ID)
         if (currentEngine != null &&
             FlutterEngineCache.getInstance().get(ENGINE_ID) === currentEngine
