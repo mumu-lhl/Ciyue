@@ -1,4 +1,5 @@
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/models/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
@@ -26,11 +27,15 @@ class FakeAudioModelForButton extends AudioModel {
   }
 
   @override
-  Future<void> playWord(String word, {List<dynamic>? mddList}) async {
+  Future<PronunciationResult> playWord(
+    String word, {
+    List<dynamic>? mddList,
+  }) async {
     playedWord = word;
     fakePlaying = true;
     fakePlayingWord = word;
     notifyListeners();
+    return PronunciationResult.tts;
   }
 
   @override
