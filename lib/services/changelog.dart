@@ -23,18 +23,30 @@ class ChangelogService {
     return false;
   }
 
-  static Future<String> getChangelogContent(Locale locale) async {
-    String changelogPath = "changelogs/CHANGELOG.${locale.languageCode}.md";
-    if (locale.countryCode != null && locale.countryCode!.isNotEmpty) {
-      changelogPath =
-          "changelogs/CHANGELOG.${locale.languageCode}_${locale.countryCode}.md";
-    }
+  /// Changelog files to try for [locale], most specific first: the full
+  /// locale (`CHANGELOG.zh_CN.md`), then the language alone
+  /// (`CHANGELOG.zh.md`), then the English default (`CHANGELOG.md`).
+  /// The language-only step matters: regional locales like zh_CN/zh_TW
+  /// have no file of their own but must still get the Chinese changelog
+  /// instead of falling straight through to English.
+  static List<String> changelogCandidatePaths(Locale locale) {
+    return [
+      if (locale.countryCode != null && locale.countryCode!.isNotEmpty)
+        "changelogs/CHANGELOG.${locale.languageCode}_${locale.countryCode}.md",
+      "changelogs/CHANGELOG.${locale.languageCode}.md",
+      "changelogs/CHANGELOG.md",
+    ];
+  }
 
-    try {
-      return await rootBundle.loadString(changelogPath);
-    } catch (e) {
-      return await rootBundle.loadString("changelogs/CHANGELOG.md");
+  static Future<String> getChangelogContent(Locale locale) async {
+    for (final path in changelogCandidatePaths(locale)) {
+      try {
+        return await rootBundle.loadString(path);
+      } catch (_) {
+        // Try the next, less specific candidate.
+      }
     }
+    return "";
   }
 
   static Future<void> markChangelogShown() async {

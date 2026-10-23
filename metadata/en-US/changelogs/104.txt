@@ -1,0 +1,8 @@
+* Multi-source translation: compare free services, key-based services and your AI providers side by side
+* AI chat: multiple conversations, image questions and image generation, custom prompt management
+* Mistake book for wrong quiz answers with offline re-quiz, new question types, read-aloud
+* StarDict dictionary support (.ifo/.idx/.dict), entries rendered natively in the app theme
+* Pronunciation: pack/TTS modes, TTS speech rate and pitch with preview
+* Update channels: Stable, Beta and Nightly
+* Linux: fixed WebView flicker, black screens and crashes
+* Faster lookup, startup and history

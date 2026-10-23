@@ -1,4 +1,33 @@
 ---
+## [2.0.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.23.2..v2.0.0-beta.1) - 2026-10-17
+
+### Features
+
+- **Multi-source translation** - translate with many sources side by side: free online services, key-based services, and any of your AI providers, each with its own result card; enable, disable, and reorder sources freely
+- **AI chat, upgraded** - multiple conversations, streaming replies, questions with attached images, image generation, a dedicated page for managing custom prompts, and clear errors when the AI provider is not configured yet; adds the Agnes AI provider
+- **A real review loop for learning** - wrong quiz answers are collected in a mistake book and can be re-quizzed offline; quizzes gain choice, spelling, and cloze question types; scenario practice, and read-aloud in quizzes and chat
+- **StarDict dictionaries** - add StarDict dictionaries (.ifo/.idx/.dict/.dz) just like MDict ones; entries render natively in the app theme, and HTML entries still open in the WebView
+- **Pronunciation, redone** - choose packs first, packs only, or TTS only; TTS speech rate and pitch with a preview; see how many entries each pronunciation pack contains; packs keyed by .mp3/.wav audio now play as well
+- **Update channels** - switch between Stable, Beta, and Nightly in settings
+- **Desktop word pages** - back and forward navigation buttons
+- **Refreshed settings** - settings and dictionary management pages rebuilt with a cleaner card layout
+
+### Bug Fixes
+
+- **(linux)** fixed WebView flickering, black screens, rendering corruption on hardware GPUs, and WebProcess crashes; the built-in WebKit runtime was upgraded
+- **(dictionary)** fixed group counts not refreshing, ghost rows left after deleting a dictionary, and missing error feedback when toggling dictionaries
+- **(translation)** fixed repeated translation taps charging paid sources twice, and stale results after switching languages
+- **(word page)** fixed word pages stacking endlessly when searching from a word page, and tab history falling out of sync
+- **(settings)** fixed a batch of stale-state and data bugs across settings, word pages, and the wordbook; fixed hunspell lookup races
+- **(f-droid)** restored F-Droid builds
+
+### Performance
+
+- **Lookup** - dictionaries are queried in parallel and search suggestions are debounced, so results arrive faster without flicker
+- **Startup and history** - faster startup, and history is now indexed and updated incrementally
+- **Word pages** - far fewer WebView relayouts, so scrolling and resizing are smoother
+
+---
 ## [1.23.2](https://github.com/mumu-lhl/Ciyue/compare/v1.23.1..1.23.2) - 2026-09-19
 
 ### Bug Fixes
