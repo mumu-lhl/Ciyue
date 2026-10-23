@@ -48,4 +48,73 @@ void main() {
       expect(french, english);
     });
   });
+
+  group("parseChangelogSections", () {
+    const sample = """
+---
+## [2.0.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.23.2..v2.0.0-beta.1) - 2026-10-17
+
+### Features
+
+- **Multi-source translation** - many sources at once
+
+---
+## [1.23.2](https://github.com/mumu-lhl/Ciyue/compare/v1.23.1..1.23.2) - 2026-09-19
+
+### Bug Fixes
+
+- **(android)** stabilize floating window - ([48dd2f4](https://github.com/mumu-lhl/Ciyue/commit/48dd2f43f2ffc1de0318808b367bc1868b1b2319)) - Mumulhl
+""";
+
+    test("splits versions with dates, in file order", () {
+      final sections = ChangelogService.parseChangelogSections(sample);
+      expect(sections, hasLength(2));
+      expect(sections[0].version, "2.0.0-beta.1");
+      expect(sections[0].date, "2026-10-17");
+      expect(sections[1].version, "1.23.2");
+      expect(sections[1].date, "2026-09-19");
+    });
+
+    test("bodies drop separators, headings and commit tails", () {
+      final sections = ChangelogService.parseChangelogSections(sample);
+      expect(sections[0].body, contains("Multi-source translation"));
+      expect(sections[0].body, isNot(contains("---")));
+      expect(sections[1].body, contains("stabilize floating window"));
+      expect(sections[1].body, isNot(contains("48dd2f4")));
+      expect(sections[1].body, isNot(contains("Mumulhl")));
+      expect(sections[1].body, isNot(contains("## [")));
+    });
+
+    test("returns empty when no version heading matches", () {
+      expect(
+        ChangelogService.parseChangelogSections("just some text"),
+        isEmpty,
+      );
+    });
+
+    test("the bundled changelogs parse, newest is 2.0.0-beta.1", () async {
+      for (final locale in [const Locale("en"), const Locale("zh")]) {
+        final content = await ChangelogService.getChangelogContent(locale);
+        final sections = ChangelogService.parseChangelogSections(content);
+        expect(sections.length, greaterThanOrEqualTo(4));
+        expect(sections.first.version, "2.0.0-beta.1");
+        expect(sections.first.date, "2026-10-17");
+        for (final section in sections) {
+          expect(section.body, isNot(contains("/commit/")));
+        }
+      }
+    });
+  });
+
+  group("cleanChangelogBody", () {
+    test("strips generated tails and keeps readable text", () {
+      const body =
+          "- **(lookup)** handle redirects - ([c16c068](https://github.com/mumu-lhl/Ciyue/commit/c16c068199d703e4)) - Mumulhl\n"
+          "- hand-written entry without a tail";
+      final cleaned = ChangelogService.cleanChangelogBody(body);
+      expect(cleaned, contains("handle redirects"));
+      expect(cleaned, isNot(contains("c16c068")));
+      expect(cleaned, contains("hand-written entry without a tail"));
+    });
+  });
 }

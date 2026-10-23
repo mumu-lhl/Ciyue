@@ -2,6 +2,20 @@ import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart" show rootBundle;
 import "package:ciyue/core/app_globals.dart";
 
+/// One version's slice of a changelog file, with the machine-generated
+/// clutter (commit links, author names) already stripped from [body].
+class ChangelogSection {
+  const ChangelogSection({
+    required this.version,
+    this.date,
+    required this.body,
+  });
+
+  final String version;
+  final String? date;
+  final String body;
+}
+
 class ChangelogService {
   static Future<bool> shouldShowChangelog(Locale locale) async {
     final String? lastShownCode = prefs.getString("versionCode");
@@ -51,5 +65,60 @@ class ChangelogService {
 
   static Future<void> markChangelogShown() async {
     await prefs.setString("versionCode", packageInfo.buildNumber);
+  }
+
+  static final _headingPattern = RegExp(
+    r"^## \[([^\]]+)\]\([^)]*\)(?:\s*-\s*(\d{4}-\d{2}-\d{2}))?\s*$",
+    multiLine: true,
+  );
+
+  /// Splits a changelog file into one [ChangelogSection] per version
+  /// heading (`## [1.2.3](compare-url) - 2026-01-01`), newest first as
+  /// written in the file. Bodies are passed through [cleanChangelogBody].
+  /// Returns an empty list when no version heading matches, so callers
+  /// can fall back to showing the raw file.
+  static List<ChangelogSection> parseChangelogSections(String content) {
+    final matches = _headingPattern.allMatches(content).toList();
+    if (matches.isEmpty) {
+      return const [];
+    }
+    final sections = <ChangelogSection>[];
+    for (var i = 0; i < matches.length; i++) {
+      final match = matches[i];
+      final start = match.end;
+      final end = i + 1 < matches.length
+          ? matches[i + 1].start
+          : content.length;
+      var body = content.substring(start, end).trim();
+      // Drop the horizontal rule that separates this section from the
+      // next heading.
+      if (body.endsWith("---")) {
+        body = body.substring(0, body.length - 3).trim();
+      }
+      sections.add(
+        ChangelogSection(
+          version: match.group(1)!,
+          date: match.group(2),
+          body: cleanChangelogBody(body),
+        ),
+      );
+    }
+    return sections;
+  }
+
+  static final _commitTailPattern = RegExp(
+    r"\s+-\s+\(\[[^\]]*\]\([^)]*\)\)\s+-\s+.*$",
+  );
+
+  /// Strips the generated tail each pre-2.0 entry carries —
+  /// `- ([48dd2f4](commit-url)) - AuthorName` — leaving the readable
+  /// text. Hand-written entries have no such tail and pass through
+  /// unchanged. Applied at display time only; the files keep their
+  /// original form for the changelog generator.
+  static String cleanChangelogBody(String body) {
+    return body
+        .split("\n")
+        .map((line) => line.replaceFirst(_commitTailPattern, "").trimRight())
+        .join("\n");
   }
 }

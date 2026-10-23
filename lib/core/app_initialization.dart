@@ -247,8 +247,10 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
             await ChangelogService.getChangelogContent(locale);
         showDialog(
           context: navigatorKey.currentContext!,
-          builder: (context) =>
-              ChangelogDialog(changelogContent: changelogContent),
+          builder: (context) => ChangelogDialog(
+            changelogContent: changelogContent,
+            latestOnly: true,
+          ),
         );
         await ChangelogService.markChangelogShown();
       }
