@@ -381,20 +381,21 @@ class Mdict implements LoadedDictionary {
     await dictionaryListDao.updateFont(id, path);
   }
 
-  /// The self-built index cache for one dictionary reader. It lives in the
-  /// application support directory, not the cache directory: an OS cache
-  /// cleaner wiping it would force a full key-block rescan of every
-  /// dictionary on the next start. [legacy] reads the pre-move location so
-  /// existing caches can be migrated instead of rebuilt.
+  /// The self-built index cache for one dictionary reader, in the cache
+  /// directory (it is rebuildable data, so the standard cache semantics
+  /// apply: the system may clear it, and a clear simply triggers a
+  /// rescan). [supportDir] reads the application support directory, where
+  /// the cache briefly lived in one interim build; caches found there are
+  /// migrated back instead of rebuilt.
   Future<File> _readerCacheFile(
     int id,
     String type, {
-    bool legacy = false,
+    bool supportDir = false,
   }) async {
     final cacheFileName = "dict_reader_${id.toString()}_$type.cache";
-    final cacheDir = legacy
-        ? await getApplicationCacheDirectory()
-        : await getApplicationSupportDirectory();
+    final cacheDir = supportDir
+        ? await getApplicationSupportDirectory()
+        : await getApplicationCacheDirectory();
     return File(join(cacheDir.path, cacheFileName));
   }
 
@@ -417,14 +418,14 @@ class Mdict implements LoadedDictionary {
 
   Future<bool> hitCache(int id, String type, DictReader reader) async {
     var cacheFile = await _readerCacheFile(id, type);
-    var isLegacy = false;
+    var fromSupportDir = false;
     if (!await cacheFile.exists()) {
-      final legacyFile = await _readerCacheFile(id, type, legacy: true);
-      if (!await legacyFile.exists()) {
+      final supportFile = await _readerCacheFile(id, type, supportDir: true);
+      if (!await supportFile.exists()) {
         return false;
       }
-      cacheFile = legacyFile;
-      isLegacy = true;
+      cacheFile = supportFile;
+      fromSupportDir = true;
     }
 
     try {
@@ -437,9 +438,9 @@ class Mdict implements LoadedDictionary {
       final cachePath = cacheFile.path;
       final cache = await Isolate.run(() => File(cachePath).readAsString());
       await reader.importCacheFromString(cache);
-      if (isLegacy) {
-        // Migrate the cache to the support directory; best effort — the
-        // imported data is already in memory either way.
+      if (fromSupportDir) {
+        // Migrate the cache back to the cache directory; best effort —
+        // the imported data is already in memory either way.
         try {
           final target = await _readerCacheFile(id, type);
           await cacheFile.copy(target.path);
