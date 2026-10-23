@@ -258,6 +258,16 @@ class LocalResourcesPathHandler extends CustomPathHandler {
         final file = File("${dirname(dict.path)}/$path");
         data = await file.readAsBytes();
       } else {
+        // An external .css/.js next to the dictionary overrides the copy
+        // packed inside the .mdd (see readExternalResourceOverride).
+        final override = await readExternalResourceOverride(dict.path, path);
+        if (override != null) {
+          return WebResourceResponse(
+            data: override,
+            contentType: lookupMimeType(path),
+          );
+        }
+
         List<MddResourceData> results;
         results = await dict.readResource(path);
 

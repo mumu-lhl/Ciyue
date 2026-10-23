@@ -183,6 +183,51 @@ class DictManager {
   }
 }
 
+/// The plain file name of an external resource that may override the copy
+/// packed inside a dictionary's .mdd, or null when [resourcePath] is not
+/// overridable. Only `.css` / `.js` can be overridden (GoldenDict behavior:
+/// an external file wins over the packaged one), and only as a flat file
+/// name — resource paths arrive from URLs, so anything containing a path
+/// separator or a `..` segment never reaches the file system through here.
+/// A single leading slash or backslash is stripped first: dictionary HTML
+/// links and MDict keys sometimes carry one (`\daijirin2.css`).
+String? externalOverrideFileName(String resourcePath) {
+  var name = resourcePath;
+  while (name.startsWith("/") || name.startsWith("\\")) {
+    name = name.substring(1);
+  }
+  if (name.isEmpty || name.contains("/") || name.contains("\\")) {
+    return null;
+  }
+  if (name == "." || name.contains("..")) {
+    return null;
+  }
+  final lower = name.toLowerCase();
+  if (!lower.endsWith(".css") && !lower.endsWith(".js")) {
+    return null;
+  }
+  return name;
+}
+
+/// Bytes of the external override for [resourcePath] sitting next to the
+/// dictionary at [dictPath], or null when there is none (not an overridable
+/// resource, or no such file). Shared by the Android asset loader and the
+/// desktop resource server so their precedence cannot drift apart.
+Future<Uint8List?> readExternalResourceOverride(
+  String dictPath,
+  String resourcePath,
+) async {
+  final name = externalOverrideFileName(resourcePath);
+  if (name == null) {
+    return null;
+  }
+  final file = File("${dirname(dictPath)}/$name");
+  if (!await file.exists()) {
+    return null;
+  }
+  return file.readAsBytes();
+}
+
 class Mdict implements LoadedDictionary {
   @override
   late int id;
@@ -549,6 +594,12 @@ class Mdict implements LoadedDictionary {
         final file = File("${dirname(path)}/$filename");
         data = await file.readAsBytes();
       } else {
+        // An external .css/.js next to the dictionary overrides the copy
+        // packed inside the .mdd (see readExternalResourceOverride).
+        final override = await readExternalResourceOverride(path, filename);
+        if (override != null) {
+          return override;
+        }
         try {
           final results = await readResource(filename);
           for (final result in results) {

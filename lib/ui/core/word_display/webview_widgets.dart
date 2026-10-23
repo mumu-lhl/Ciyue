@@ -97,7 +97,30 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
   Color? background,
   bool enableDarkReader = false,
   String darkReaderSource = "",
+  bool isDarkTheme = false,
 }) {
+  // Tell the page which theme the app is in: the WebView's own night mode
+  // follows the OS, not the app, so dictionary stylesheets cannot react to
+  // the in-app theme through prefers-color-scheme. They can key off this
+  // class instead: `html.ciyue-dark { ... }`.
+  final themeScript =
+      """
+(function() {
+  var dark = ${isDarkTheme ? "true" : "false"};
+  function apply() {
+    var root = document.documentElement;
+    if (!root) return false;
+    root.classList.toggle("ciyue-dark", dark);
+    return true;
+  }
+  if (!apply()) {
+    var observer = new MutationObserver(function() {
+      if (apply()) observer.disconnect();
+    });
+    observer.observe(document, { childList: true, subtree: true });
+  }
+})();
+""";
   final encodedCss = jsonEncode(customCss);
   final color = background;
   final backgroundColor = color == null
@@ -140,6 +163,10 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
   return UnmodifiableListView([
     UserScript(
       source: dictionaryEntryLinkScript,
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
+    UserScript(
+      source: themeScript,
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
     if (darkReaderScript != null)
@@ -293,6 +320,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
       initialUserScripts: dictionaryUserScripts(
         customCss: settings.dictionaryCustomCss,
         background: settings.dictionaryBackgroundColor,
+        isDarkTheme: !isLightTheme,
       ),
       initialData: InAppWebViewInitialData(
         data: widget.content,
@@ -643,6 +671,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
               background: dictionaryBackgroundColor,
               enableDarkReader: darkReaderReady,
               darkReaderSource: darkReaderSource,
+              isDarkTheme: !isLightTheme,
             ),
             initialSettings: webviewSettings,
             initialData: load.initialData,
@@ -767,6 +796,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   background: background,
                   enableDarkReader: darkReaderReady,
                   darkReaderSource: darkReaderSource,
+                  isDarkTheme: !isLightTheme,
                 ),
                 webViewEnvironment: snapshot.data?.environment,
                 initialSettings: webviewSettings,
