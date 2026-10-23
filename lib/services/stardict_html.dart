@@ -95,6 +95,22 @@ void _writePangoNodes(List<XmlNode> nodes, StringBuffer buffer) {
   }
 }
 
+/// Parses XDXF content and returns its root element, or null when the
+/// content is not parseable XML at all. Some dictionaries store only a
+/// fragment (several top-level elements without an `<xdxf>` root), so a
+/// failed parse is retried with the content wrapped in a synthetic root.
+XmlElement? parseXdxfRoot(String xdxf) {
+  try {
+    return XmlDocument.parse(xdxf).rootElement;
+  } on XmlException {
+    try {
+      return XmlDocument.parse("<xdxf>$xdxf</xdxf>").rootElement;
+    } on XmlException {
+      return null;
+    }
+  }
+}
+
 /// Converts an XDXF article to HTML.
 ///
 /// The mapping keeps the article's structure visible without a stylesheet:
@@ -103,14 +119,12 @@ void _writePangoNodes(List<XmlNode> nodes, StringBuffer buffer) {
 /// target, and `<kref>` cross-references become `entry://` links the word
 /// display already intercepts for navigation.
 String xdxfToHtml(String xdxf) {
-  final XmlDocument document;
-  try {
-    document = XmlDocument.parse(xdxf);
-  } on XmlException {
+  final root = parseXdxfRoot(xdxf);
+  if (root == null) {
     return '<div class="sd-text">${_plainTextToHtml(xdxf)}</div>';
   }
   final buffer = StringBuffer();
-  _writeXdxfNodes(document.rootElement.children, buffer);
+  _writeXdxfNodes(root.children, buffer);
   return buffer.toString();
 }
 

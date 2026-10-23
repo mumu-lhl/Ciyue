@@ -3,9 +3,12 @@ import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/ui/core/search_bar.dart";
+import "package:ciyue/ui/core/word_display/stardict_native_view.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/ui/core/word_display/webview_widgets.dart";
 import "package:ciyue/utils.dart";
@@ -89,6 +92,38 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
 
   @override
   Widget build(BuildContext context) {
+    // StarDict sections render with native widgets when every matched
+    // entry is on hand in structured form and none of them uses HTML
+    // fields; a section with HTML entries keeps the WebView below.
+    final dict = ref.watch(dictManagerProvider).dicts[widget.dictId];
+    if (dict is Stardict) {
+      final lookup = ref.watch(dictionaryLookupProvider(widget.word)).value;
+      final entries =
+          lookup?.entriesFor(widget.dictId) ?? const <DictionaryEntryData>[];
+      if (entries.isNotEmpty) {
+        final nativeEntries = <StardictNativeEntry>[];
+        var renderable = true;
+        for (final entry in entries) {
+          final fields = dict.structuredFieldsFor(entry.headword);
+          if (fields == null || fields.any((field) => field.type == "h")) {
+            renderable = false;
+            break;
+          }
+          nativeEntries.add(
+            StardictNativeEntry(headword: entry.headword, fields: fields),
+          );
+        }
+        if (renderable) {
+          return StardictEntryListView(
+            entries: nativeEntries,
+            resourceDirectory: dict.dictionaryDirectory,
+            dictId: widget.dictId,
+            isExpansion: widget.isExpansion,
+          );
+        }
+      }
+    }
+
     final contentAsync = ref.watch(
       wordContentProvider((word: widget.word, dictId: widget.dictId)),
     );

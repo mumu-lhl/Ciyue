@@ -197,6 +197,7 @@ class Stardict implements LoadedDictionary {
       }
     }
 
+    _structuredFieldsCache.clear();
     if (_readerInitialized) {
       await reader.close();
     }
@@ -236,17 +237,57 @@ class Stardict implements LoadedDictionary {
     return entries;
   }
 
+  /// Structured fields of recently read entries, keyed by headword. The
+  /// word display uses them to render StarDict entries with native
+  /// widgets instead of a WebView; [readExactEntries] fills the cache as
+  /// a side effect of the normal lookup, so the fields on hand always
+  /// match the entries the lookup reported. Bounded to the most recent
+  /// [_structuredCacheLimit] headwords.
+  final Map<String, List<StarDictField>> _structuredFieldsCache = {};
+
+  static const int _structuredCacheLimit = 64;
+
+  /// The structured fields of an entry read through [readExactEntries],
+  /// or null when the entry has not been read (or was evicted).
+  List<StarDictField>? structuredFieldsFor(String headword) =>
+      _structuredFieldsCache[headword];
+
+  /// The directory holding this dictionary's files; entry resources
+  /// (images) live under its `res/` subdirectory.
+  String get dictionaryDirectory => dirname(path);
+
+  void _cacheStructuredFields(String headword, List<StarDictField> fields) {
+    _structuredFieldsCache[headword] = fields;
+    while (_structuredFieldsCache.length > _structuredCacheLimit) {
+      _structuredFieldsCache.remove(_structuredFieldsCache.keys.first);
+    }
+  }
+
   Future<DictionaryEntryData?> _readEntry(String word) async {
     await waitForLoading();
     final results = await reader.lookup(word);
     if (results.isEmpty) {
       return null;
     }
-    final content = results
+    // An entry counts as found only when it has something displayable: a
+    // field that carries text. Entries holding only binary data (e.g. a
+    // pronunciation blob) would otherwise render as a blank section.
+    final displayable = results
+        .where((entry) => entry.fields.any((field) => field.text != null))
+        .toList();
+    if (displayable.isEmpty) {
+      return null;
+    }
+    // Every index entry under one headword belongs to the same displayed
+    // entry (the HTML joins them), so cache their fields combined.
+    _cacheStructuredFields(displayable.first.headword, [
+      for (final entry in displayable) ...entry.fields,
+    ]);
+    final content = displayable
         .map((entry) => stardictEntryToHtml(entry.fields))
         .join();
     return DictionaryEntryData(
-      headword: results.first.headword,
+      headword: displayable.first.headword,
       content: content,
     );
   }
