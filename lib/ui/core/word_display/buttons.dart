@@ -1,7 +1,9 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/models/audio.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/backup.dart";
+import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/tags_list.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
@@ -123,7 +125,14 @@ Future<void> playWordPronunciation(BuildContext context, String word) async {
   if (audioModel.isWordPlaying(word)) {
     await audioModel.stopAudio();
   } else {
-    await audioModel.playWord(word);
+    final result = await audioModel.playWord(word);
+    if (result == PronunciationResult.unavailable && context.mounted) {
+      await ToastService.show(
+        AppLocalizations.of(context)!.pronunciationUnavailable,
+        context,
+        type: ToastType.info,
+      );
+    }
   }
 }
 

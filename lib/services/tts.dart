@@ -1,27 +1,49 @@
+import "dart:io";
+
+import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:flutter_tts/flutter_tts.dart";
 
-/// Small wrapper around flutter_tts for reading text aloud in learning
-/// features (chat messages, quiz words). Strips markdown formatting so the
-/// spoken text sounds natural.
+/// Applies the user's TTS settings (engine, language, speech rate, pitch)
+/// to a flutter_tts instance. Used at startup for the shared instance and
+/// by [TtsHelper] so learning features speak with the same voice settings
+/// as word pronunciation instead of their own hardcoded ones.
+Future<void> applyTtsSettings(FlutterTts tts) async {
+  if (Platform.isAndroid && settings.ttsEngine != null) {
+    await tts.setEngine(settings.ttsEngine!);
+  }
+  if (settings.ttsLanguage != null) {
+    await tts.setLanguage(settings.ttsLanguage!);
+  }
+  await tts.setSpeechRate(settings.ttsSpeechRate);
+  await tts.setPitch(settings.ttsPitch);
+}
+
+/// Small wrapper around the shared flutter_tts instance for reading text
+/// aloud in learning features (chat messages, quiz words). Strips markdown
+/// formatting so the spoken text sounds natural.
 class TtsHelper {
   TtsHelper._();
 
-  static final FlutterTts _tts = FlutterTts();
-  static bool _initialized = false;
   static String? _speaking;
 
-  static Future<void> _ensureInitialized() async {
-    if (_initialized) return;
-    await _tts.setLanguage("en-US");
-    await _tts.setSpeechRate(0.9);
-    await _tts.setVolume(1.0);
-    _tts.setCompletionHandler(() {
+  /// Prepares the shared TTS instance for a learning-feature utterance:
+  /// applies the current settings and (re)registers this helper's
+  /// completion handlers — the word-pronunciation path registers its own
+  /// handlers on the same instance, so each speaker asserts its handlers
+  /// right before speaking.
+  static Future<void> _prepare() async {
+    await applyTtsSettings(flutterTts);
+    await flutterTts.setVolume(1.0);
+    flutterTts.setCompletionHandler(() {
       _speaking = null;
     });
-    _tts.setCancelHandler(() {
+    flutterTts.setCancelHandler(() {
       _speaking = null;
     });
-    _initialized = true;
+    flutterTts.setErrorHandler((dynamic _) {
+      _speaking = null;
+    });
   }
 
   /// Remove markdown syntax that would sound bad when spoken.
@@ -71,15 +93,15 @@ class TtsHelper {
   /// surface as an unhandled async error from a button tap.
   static Future<void> toggleSpeak(String text) async {
     try {
-      await _ensureInitialized();
       final clean = stripMarkdown(text);
       if (clean.isEmpty) return;
       if (_speaking == clean) {
         await stop();
         return;
       }
+      await _prepare();
       _speaking = clean;
-      await _tts.speak(clean);
+      await flutterTts.speak(clean);
     } catch (_) {
       _speaking = null;
     }
@@ -88,7 +110,7 @@ class TtsHelper {
   static Future<void> stop() async {
     _speaking = null;
     try {
-      await _tts.stop();
+      await flutterTts.stop();
     } catch (_) {}
   }
 

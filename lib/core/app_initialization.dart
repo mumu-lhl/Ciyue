@@ -273,6 +273,8 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
       if (settings.ttsLanguage != null) {
         await flutterTts.setLanguage(settings.ttsLanguage!);
       }
+      await flutterTts.setSpeechRate(settings.ttsSpeechRate);
+      await flutterTts.setPitch(settings.ttsPitch);
     } catch (e) {
       talker.error("Failed to set TTS engine or language: $e");
     }
@@ -405,6 +407,9 @@ const preferencesAllowList = <String>{
   "autoUpdate",
   "ttsEngine",
   "ttsLanguage",
+  "ttsSpeechRate",
+  "ttsPitch",
+  "pronunciationMode",
   "audioDirectory",
   "advance",
   "enableHunspellMorphology",

@@ -3,6 +3,7 @@ import "dart:async";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/services/audio.dart";
+import "package:ciyue/services/toast.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/ui/pages/main/main.dart";
 import "package:ciyue/repositories/hunspell.dart";
@@ -138,8 +139,36 @@ class PlatformMethod {
         case "inputAudioDirectory":
           await prefs.setString("audioDirectory", call.arguments as String);
 
-          final paths = await findMddAudioFilesOnAndroid(null);
-          await selectAudioMdd(navigatorKey.currentContext!, paths);
+          final context = navigatorKey.currentContext;
+          try {
+            final paths = await findMddAudioFilesOnAndroid(null);
+            if (paths.isEmpty) {
+              // Nothing was copied in: close the native loading dialog
+              // (selectAudioMdd would have closed it) and say why.
+              if (context != null && context.mounted) {
+                final message = AppLocalizations.of(context)!.noMddAudioFound;
+                closeLoadingDialog(context);
+                if (context.mounted) {
+                  await ToastService.show(
+                    message,
+                    context,
+                    type: ToastType.info,
+                  );
+                }
+              }
+            } else {
+              final selectContext = navigatorKey.currentContext;
+              if (selectContext != null && selectContext.mounted) {
+                await selectAudioMdd(selectContext, paths);
+              }
+            }
+          } catch (e) {
+            talker.error("Failed to import audio directory: $e");
+            final catchContext = navigatorKey.currentContext;
+            if (catchContext != null && catchContext.mounted) {
+              closeLoadingDialog(catchContext);
+            }
+          }
 
           break;
 

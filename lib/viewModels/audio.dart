@@ -5,10 +5,22 @@ import "dart:typed_data";
 import "package:audioplayers/audioplayers.dart";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/models/audio.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/mdd_reader_pool.dart";
 import "package:material_ui/material_ui.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
+import "package:path_provider/path_provider.dart";
+
+/// Resource keys tried for a word's pronunciation, in order: the
+/// long-standing .spx convention first, then the common audio formats,
+/// so packs whose entries are keyed as .mp3/.wav also match.
+List<String> pronunciationKeyCandidates(String word) => [
+  "$word.spx",
+  "$word.mp3",
+  "$word.wav",
+];
 
 class AudioModel extends ChangeNotifier {
   static AudioModel? _instance;
@@ -19,6 +31,10 @@ class AudioModel extends ChangeNotifier {
   }
 
   List<MddAudioListData> mddAudioList = [];
+
+  /// Number of indexed resources per pronunciation pack, for display in
+  /// the audio settings (lets users see a pack was indexed correctly).
+  Map<int, int> mddAudioCounts = {};
   int mddAudioListState = 0;
 
   bool _isPlaying = false;
@@ -46,6 +62,10 @@ class AudioModel extends ChangeNotifier {
 
   Future<void> init() async {
     mddAudioList = await mddAudioListDao.allOrdered();
+    mddAudioCounts = {
+      for (final pack in mddAudioList)
+        pack.id: await mddAudioResourceDao.countByMddAudioID(pack.id),
+    };
     mddAudioListState++;
 
     _setupTtsHandlers();
@@ -76,39 +96,45 @@ class AudioModel extends ChangeNotifier {
     }
   }
 
-  Future<void> playWord(String word, {List<MddAudioListData>? mddList}) async {
+  Future<PronunciationResult> playWord(
+    String word, {
+    List<MddAudioListData>? mddList,
+  }) async {
     await stopAudio();
 
+    final mode = settings.pronunciationMode;
     final targetList = mddList ?? mddAudioList;
-    if (targetList.isNotEmpty) {
+    if (mode != PronunciationMode.ttsOnly && targetList.isNotEmpty) {
       for (final mddAudio in targetList) {
-        final audios = await mddAudioResourceDao.getByKeyAndMddAudioID(
-          "$word.spx",
-          mddAudio.id,
-        );
-        for (final audio in audios ?? <MddAudioResourceData>[]) {
-          if (setExtension(audio.key, "") != word) {
-            continue;
+        for (final key in pronunciationKeyCandidates(word)) {
+          final audios = await mddAudioResourceDao.getByKeyAndMddAudioID(
+            key,
+            mddAudio.id,
+          );
+          for (final audio in audios ?? <MddAudioResourceData>[]) {
+            if (setExtension(audio.key, "") != word) {
+              continue;
+            }
+
+            final reader = await mddReaderFor(mddAudio.path);
+            final info = await reader.locate(audio.key);
+            if (info == null) {
+              continue;
+            }
+
+            final Uint8List data = await reader.readOneMdd(info) as Uint8List;
+            final mimeType = lookupMimeType(audio.key) ?? "audio/spx";
+
+            await playAudioBytes(data, mimeType, label: word);
+            return PronunciationResult.pack;
           }
-
-          final reader = await mddReaderFor(mddAudio.path);
-          final info = await reader.locate(audio.key);
-          if (info == null) {
-            continue;
-          }
-
-          final Uint8List data = await reader.readOneMdd(info) as Uint8List;
-          final mimeType = lookupMimeType(audio.key) ?? "audio/spx";
-
-          await playAudioBytes(data, mimeType, label: word);
-          return;
         }
       }
     }
 
-    if (Platform.isLinux) {
+    if (mode == PronunciationMode.packOnly || Platform.isLinux) {
       _onPlaybackComplete();
-      return;
+      return PronunciationResult.unavailable;
     }
 
     _isPlaying = true;
@@ -122,9 +148,11 @@ class AudioModel extends ChangeNotifier {
     try {
       _setupTtsHandlers();
       await flutterTts.speak(word);
+      return PronunciationResult.tts;
     } catch (e) {
       talker.error("Failed to speak via TTS", e);
       _onPlaybackComplete();
+      return PronunciationResult.unavailable;
     }
   }
 
@@ -226,11 +254,21 @@ class AudioModel extends ChangeNotifier {
     await closeMddReader(mddAudio.path);
 
     if (Platform.isAndroid) {
-      File(mddAudio.path).delete();
+      // Only files inside the app's own storage are app-owned copies
+      // (imported by the common flavor) and are deleted with the entry.
+      // Full-flavor packs point at the user's own files in the folder
+      // they picked; removing the entry must not delete those.
+      final supportDir = (await getApplicationSupportDirectory()).path;
+      if (isWithin(supportDir, mddAudio.path)) {
+        try {
+          await File(mddAudio.path).delete();
+        } catch (_) {}
+      }
     }
 
     mddAudioListDao.remove(id);
     mddAudioList.removeWhere((element) => element.id == id);
+    mddAudioCounts.remove(id);
 
     mddAudioResourceDao.remove(id);
 

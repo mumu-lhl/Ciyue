@@ -4,7 +4,9 @@ import "dart:typed_data";
 import "package:audioplayers/audioplayers.dart";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/models/audio.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/mdd_reader_pool.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:mime/mime.dart";
@@ -47,21 +49,31 @@ Future<void> playSoundOfWord(
     return;
   }
 
-  if (mddAudioList.isNotEmpty) {
+  if (settings.pronunciationMode != PronunciationMode.ttsOnly &&
+      mddAudioList.isNotEmpty) {
     final player = AudioPlayer();
 
     // Query all audio packages concurrently; results stay in list order so
-    // the first playable match (by package priority) still wins.
+    // the first playable match (by package priority) still wins. Each
+    // package tries the candidate keys (.spx, then .mp3/.wav) in order.
     final lookupResults = await Future.wait(
-      mddAudioList.map(
-        (mddAudio) =>
-            mddAudioResourceDao.getByKeyAndMddAudioID("$word.spx", mddAudio.id),
-      ),
+      mddAudioList.map((mddAudio) async {
+        for (final key in pronunciationKeyCandidates(word)) {
+          final results = await mddAudioResourceDao.getByKeyAndMddAudioID(
+            key,
+            mddAudio.id,
+          );
+          if (results != null && results.isNotEmpty) {
+            return results;
+          }
+        }
+        return null;
+      }),
     );
     for (var i = 0; i < mddAudioList.length; i++) {
       final mddAudio = mddAudioList[i];
       final audios = lookupResults[i];
-      for (final audio in audios!) {
+      for (final audio in audios ?? <MddAudioResourceData>[]) {
         if (setExtension(audio.key, "") != word) {
           continue;
         }
@@ -87,7 +99,8 @@ Future<void> playSoundOfWord(
     }
   }
 
-  if (Platform.isLinux) {
+  if (settings.pronunciationMode == PronunciationMode.packOnly ||
+      Platform.isLinux) {
     return;
   }
 

@@ -2,6 +2,7 @@ import "dart:convert";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/ai/ai.dart";
+import "package:ciyue/models/audio.dart";
 import "package:ciyue/models/hunspell.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -81,6 +82,9 @@ class Settings extends ChangeNotifier {
 
   late String? ttsEngine;
   late String? ttsLanguage;
+  late double ttsSpeechRate;
+  late double ttsPitch;
+  late PronunciationMode pronunciationMode;
 
   late String translationProvider;
   late String? deeplxUrl;
@@ -194,6 +198,14 @@ class Settings extends ChangeNotifier {
 
     ttsEngine = prefs.getString("ttsEngine");
     ttsLanguage = prefs.getString("ttsLanguage");
+    // 0.5 speech rate and 1.0 pitch are the platform-normal values, so
+    // applying the defaults does not change existing users' speech.
+    ttsSpeechRate = prefs.getDouble("ttsSpeechRate") ?? 0.5;
+    ttsPitch = prefs.getDouble("ttsPitch") ?? 1.0;
+    pronunciationMode = PronunciationMode.values.firstWhere(
+      (mode) => mode.name == prefs.getString("pronunciationMode"),
+      orElse: () => PronunciationMode.packFirst,
+    );
 
     var aiProviderConfigsString = prefs.getString("aiProviderConfigs");
     if (aiProviderConfigsString != null) {
@@ -373,6 +385,24 @@ class Settings extends ChangeNotifier {
   Future<void> setTTSLanguage(String lang) async {
     ttsLanguage = lang;
     await prefs.setString("ttsLanguage", lang);
+    notifyListeners();
+  }
+
+  Future<void> setTTSSpeechRate(double rate) async {
+    ttsSpeechRate = rate;
+    await prefs.setDouble("ttsSpeechRate", rate);
+    notifyListeners();
+  }
+
+  Future<void> setTTSPitch(double pitch) async {
+    ttsPitch = pitch;
+    await prefs.setDouble("ttsPitch", pitch);
+    notifyListeners();
+  }
+
+  Future<void> setPronunciationMode(PronunciationMode mode) async {
+    pronunciationMode = mode;
+    await prefs.setString("pronunciationMode", mode.name);
     notifyListeners();
   }
 
