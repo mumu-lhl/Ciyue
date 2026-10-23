@@ -16,6 +16,7 @@ void main() {
         cacheOptions: const SharedPreferencesWithCacheOptions(
           allowList: {
             "customExplainPrompt",
+            "customExplainStructuredPrompt",
             "customTranslatePrompt",
             "customWritingCheckPrompt",
             "customQuizPrompt",
@@ -81,6 +82,26 @@ void main() {
       expect(prompts.customizedCount, 0);
       expect(prompts.scenarioPrompt, AIPrompts.defaultScenarioPrompt);
       expect(prefs.getString("customScenarioPrompt"), isNull);
+    });
+
+    test("structured explain prompt defaults to JSON instructions", () async {
+      final prompts = AIPrompts();
+      expect(
+        prompts.explainStructuredPrompt,
+        AIPrompts.defaultExplainStructuredPrompt,
+      );
+      expect(prompts.explainStructuredPrompt, contains("JSON"));
+      expect(prompts.explainStructuredPrompt, contains("meanings"));
+
+      await prompts.setExplainStructuredPrompt("structured v2");
+      expect(prompts.explainStructuredPrompt, "structured v2");
+      expect(prefs.getString("customExplainStructuredPrompt"), "structured v2");
+
+      await prompts.resetExplainStructuredPrompt();
+      expect(
+        prompts.explainStructuredPrompt,
+        AIPrompts.defaultExplainStructuredPrompt,
+      );
     });
 
     test("every definition declares its substituted variables", () {
