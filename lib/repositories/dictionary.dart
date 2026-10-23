@@ -1038,14 +1038,19 @@ Future<void> selectStardict(
 }
 
 Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
+  var added = 0;
+  var duplicates = 0;
+  var failed = 0;
   for (final path in paths) {
     if (await mddAudioListDao.existMddAudio(path)) {
+      duplicates++;
       continue;
     }
 
     final reader = DictReader(path);
     try {
       await reader.initDict();
+      added++;
 
       int? mddAudioListId;
       if (context.mounted) {
@@ -1093,6 +1098,10 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
       if (number > 0) {
         await mddAudioResourceDao.add(resources);
       }
+    } catch (_) {
+      // An unreadable file must not abort the remaining files or leave
+      // the caller without feedback; it is reported after the loop.
+      failed++;
     } finally {
       await reader.close();
     }
@@ -1100,6 +1109,24 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
 
   if (paths.isNotEmpty && context.mounted) {
     context.pop();
+  }
+
+  final toastContext = navigatorKey.currentContext;
+  if (toastContext != null && toastContext.mounted) {
+    final localizations = AppLocalizations.of(toastContext)!;
+    if (failed > 0) {
+      await ToastService.show(
+        localizations.audioPackUnreadable,
+        toastContext,
+        type: ToastType.error,
+      );
+    } else if (added == 0 && duplicates > 0) {
+      await ToastService.show(
+        localizations.audioPackAlreadyAdded,
+        toastContext,
+        type: ToastType.info,
+      );
+    }
   }
 }
 

@@ -872,6 +872,16 @@ class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
         ))
         .get());
   }
+
+  Future<int> countByMddAudioID(int mddAudioId) async {
+    final count = mddAudioResource.key.count();
+    final row =
+        await (selectOnly(mddAudioResource)
+              ..addColumns([count])
+              ..where(mddAudioResource.mddAudioListId.isValue(mddAudioId)))
+            .getSingle();
+    return row.read(count) ?? 0;
+  }
 }
 
 @DriftAccessor(tables: [AiExplanations])
