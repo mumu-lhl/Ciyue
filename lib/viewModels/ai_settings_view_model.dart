@@ -116,6 +116,14 @@ class AISettingsViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  bool get explainStructured => settings.aiExplainStructured;
+
+  void setExplainStructured(bool value) {
+    settings.aiExplainStructured = value;
+    prefs.setBool("aiExplainStructured", value);
+    notifyListeners();
+  }
+
   void setAiAPIUrl(String apiUrl) {
     if (apiUrlController.text != apiUrl) apiUrlController.text = apiUrl;
     settings.setAiAPIUrl(apiUrl);

@@ -11,6 +11,7 @@ import "prompt_editor_page.dart";
 String promptTitle(AppLocalizations locale, AiPromptDefinition definition) {
   return switch (definition.id) {
     "explain" => locale.aiExplainWordPrompt,
+    "explainStructured" => locale.aiExplainStructuredPrompt,
     "translate" => locale.aiTranslatePrompt,
     "writingCheck" => locale.writingCheckPromptTitle,
     "quiz" => locale.quizPromptTitle,
@@ -24,6 +25,7 @@ String promptTitle(AppLocalizations locale, AiPromptDefinition definition) {
 String promptHelper(AppLocalizations locale, AiPromptDefinition definition) {
   return switch (definition.id) {
     "explain" => locale.customExplainPromptHelper,
+    "explainStructured" => locale.customExplainStructuredPromptHelper,
     "translate" => locale.customTranslatePromptHelper,
     "writingCheck" => locale.writingCheckPromptHelper,
     "quiz" => locale.quizPromptHelper,
@@ -42,6 +44,7 @@ class AiPromptsPage extends ConsumerWidget {
 
   static const _wordGroup = [
     AIPrompts.explainDefinition,
+    AIPrompts.explainStructuredDefinition,
     AIPrompts.translateDefinition,
     AIPrompts.writingCheckDefinition,
   ];

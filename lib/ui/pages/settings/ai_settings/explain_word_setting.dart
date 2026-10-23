@@ -9,15 +9,52 @@ class ExplainWordSetting extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final localizations = AppLocalizations.of(context)!;
     final explainWord = ref.watch(
       aiSettingsViewModelProvider.select((vm) => vm.explainWord),
     );
+    final explainStructured = ref.watch(
+      aiSettingsViewModelProvider.select((vm) => vm.explainStructured),
+    );
     final viewModel = ref.read(aiSettingsViewModelProvider);
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TitleText(AppLocalizations.of(context)!.aiExplainWord),
-        const Spacer(),
-        Switch(value: explainWord, onChanged: viewModel.setExplainWord),
+        Row(
+          children: [
+            TitleText(localizations.aiExplainWord),
+            const Spacer(),
+            Switch(value: explainWord, onChanged: viewModel.setExplainWord),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    localizations.aiStructuredExplanation,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    localizations.aiStructuredExplanationDescription,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: explainStructured,
+              onChanged: explainWord ? viewModel.setExplainStructured : null,
+            ),
+          ],
+        ),
       ],
     );
   }

@@ -77,6 +77,10 @@ class Settings extends ChangeNotifier {
 
   late String aiProvider;
   late bool aiExplainWord;
+
+  /// Whether AI word explanations are requested as structured data
+  /// (JSON) and rendered natively, instead of markdown text.
+  late bool aiExplainStructured;
   Map<String, Map<String, dynamic>> aiProviderConfigs = {};
   Map<String, List<Map<String, String>>> aiProviderFetchedModels = {};
 
@@ -181,6 +185,7 @@ class Settings extends ChangeNotifier {
 
     aiProvider = prefs.getString("aiProvider") ?? "openai";
     aiExplainWord = prefs.getBool("aiExplainWord") ?? false;
+    aiExplainStructured = prefs.getBool("aiExplainStructured") ?? true;
     translationProvider = prefs.getString("translationProvider") ?? "ai";
     deeplxUrl = prefs.getString("deeplxUrl");
     isRichOutput = prefs.getBool("isRichOutput") ?? false;
