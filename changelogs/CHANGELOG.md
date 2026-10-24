@@ -1,5 +1,5 @@
 ---
-## [2.0.0-beta.1](https://github.com/mumu-lhl/Ciyue/compare/v1.23.2..v2.0.0-beta.1) - 2026-10-17
+## [2.0.0](https://github.com/mumu-lhl/Ciyue/compare/v1.23.2..v2.0.0) - 2026-10-24
 
 ### Features
 

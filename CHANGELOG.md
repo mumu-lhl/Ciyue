@@ -3,7 +3,224 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [1.23.2](https://github.com/mumu-lhl/Ciyue/compare/v1.23.1..1.23.2) - 2026-09-19
+## [2.0.0](https://github.com/mumu-lhl/Ciyue/compare/v1.23.2..2.0.0) - 2026-10-24
+
+### Bug Fixes
+
+- **(android)** hide gesture navigation bar - ([a3f5c76](https://github.com/mumu-lhl/Ciyue/commit/a3f5c76f3d002afc4c84dcc4e7d100b701f04ace)) - Mumulhl
+- **(android)** extend content behind navigation bar - ([abe6f08](https://github.com/mumu-lhl/Ciyue/commit/abe6f086bb4ec9c9899140670e1b34715eae96a8)) - Mumulhl
+- **(android)** restore flutter default-flavor so flavorless builds (F-Droid) work - ([2f1037f](https://github.com/mumu-lhl/Ciyue/commit/2f1037f75ffb5467420e62c8b1187d435984021d)) - Mumulhl
+- **(appimage)** keep a single root desktop entry - ([42a81f4](https://github.com/mumu-lhl/Ciyue/commit/42a81f42460cf5be5572b1ab4f166e758c063945)) - Mumulhl
+- **(build)** remove integration_test to fix Android release build failure - ([3ebf2dc](https://github.com/mumu-lhl/Ciyue/commit/3ebf2dcf649b7bed47946e83b350e356d3cb432f)) - Mumulhl
+- **(changelog)** language fallback, 2.0 notes, real F-Droid changelog - ([dd68699](https://github.com/mumu-lhl/Ciyue/commit/dd686996c6b74df410d8e24bdca48dab5be92101)) - Mumulhl
+- **(chat)** keep word context as system turn for prefix-cache stability - ([8fd6f19](https://github.com/mumu-lhl/Ciyue/commit/8fd6f1901261a44ba61885d411d7907a37ab41c9)) - Mumulhl
+- **(ci)** install libinput for Linux bundle step - ([5cbb47a](https://github.com/mumu-lhl/Ciyue/commit/5cbb47ad4e700369986086152e7de4d67f9c0d9a)) - Mumulhl
+- **(ci)** install enchant, libtasn1 and hyphen for Linux bundle step - ([c76c7f0](https://github.com/mumu-lhl/Ciyue/commit/c76c7f0bd3f845f0b286ec388c938af58ebf8e37)) - Mumulhl
+- **(ci)** locate macOS app bundle dynamically instead of assuming Products/Release - ([db30092](https://github.com/mumu-lhl/Ciyue/commit/db300929c0cdf9c36a6aa1457eeb78b8be148035)) - Muse
+- **(cloud_sync)** resolve conflict deadlocks, surface granular errors, and add one-tap sync - ([b597fea](https://github.com/mumu-lhl/Ciyue/commit/b597fea530f494a865a2dea044537767d9619190)) - Mumulhl
+- **(desktop)** fix stats calendar material error, remove audio back button and optimize desktop ui - ([bcad8ca](https://github.com/mumu-lhl/Ciyue/commit/bcad8cadf009b687dbe5ba8919a1f7182c691fda)) - Mumulhl
+- **(docs)** approve esbuild builds for pnpm 12 - ([1830e7e](https://github.com/mumu-lhl/Ciyue/commit/1830e7ea298d43ae2af3a6b2a8f31ab55b1729c2)) - Mumulhl
+- **(learn)** harden chat/quiz against crashes and AI format drift (1/3) - ([384c991](https://github.com/mumu-lhl/Ciyue/commit/384c99159560403c5e4cd01bfeb2e0ab6ae22b65)) - Mumulhl
+- **(learn)** harden chat/quiz against crashes and AI format drift (2/3) - ([4b1eda5](https://github.com/mumu-lhl/Ciyue/commit/4b1eda513eed3b078076a212d543159fa7a0fbd6)) - Mumulhl
+- **(learn)** harden chat/quiz against crashes and AI format drift (3/3) - ([1230e92](https://github.com/mumu-lhl/Ciyue/commit/1230e92206b5056775c77f3ebe854f04e1cd602c)) - Mumulhl
+- **(linux)** resolve WebView black screen, flickering, and WPE WebProcess crash - ([b81d507](https://github.com/mumu-lhl/Ciyue/commit/b81d507cd2a9c32584e82362be8ae78941e29cf5)) - Mumulhl
+- **(linux)** resolve WPE display flicker, black screen, and WebProcess lifecycle crash - ([2076d68](https://github.com/mumu-lhl/Ciyue/commit/2076d68d144845308b5fe0377d2f7a57a26352bf)) - Mumulhl
+- **(linux)** make is_disposing_ public for WPE FDO C callbacks - ([06b84d6](https://github.com/mumu-lhl/Ciyue/commit/06b84d6a4959a4a1600dcde09a6baf4acb1cf114)) - Mumulhl
+- **(linux)** retain WebView across word lookups - ([fbac8b5](https://github.com/mumu-lhl/Ciyue/commit/fbac8b5f46df542f6d727e2b7eed07aaab17c442)) - Mumulhl
+- **(linux)** harden webview callback lifetimes - ([76e25ca](https://github.com/mumu-lhl/Ciyue/commit/76e25ca10920aea821de4de67fee5b2d42857edf)) - Mumulhl
+- **(linux)** handle WPE frames and pointer cancels - ([b585690](https://github.com/mumu-lhl/Ciyue/commit/b58569040f7d4c81634d4631fb92e9782c4200f3)) - Mumulhl
+- **(linux)** WebView rendering corruption and scroll jitter - ([9c15b65](https://github.com/mumu-lhl/Ciyue/commit/9c15b65c1f70d0ecb64b456b2c7014c61e4a0377)) - Mumulhl
+- **(linux)** debounce resize and add SHM fallback env var - ([3a68ea7](https://github.com/mumu-lhl/Ciyue/commit/3a68ea70e3f80ebef80cf35778f9ad95678063e8)) - Mumulhl
+- **(linux)** debounce WPE resize (fixed ifdef placement) - ([b1deecc](https://github.com/mumu-lhl/Ciyue/commit/b1deecc3818b8873f119b668f4148a0d21f153b1)) - Mumulhl
+- **(linux)** derive pixel stride from buffer size - ([744f193](https://github.com/mumu-lhl/Ciyue/commit/744f19339a261ccd92f8e4572ec0c1ce7e4f08e4)) - Mumulhl
+- **(linux)** don't drop pointer UP/CANCEL events - ([9ad7b07](https://github.com/mumu-lhl/Ciyue/commit/9ad7b07635d95a1373adbcaab8d08cfefa3b457e)) - Mumulhl
+- **(linux)** defer WPE resize during active drag - ([8b46d5a](https://github.com/mumu-lhl/Ciyue/commit/8b46d5a91814668331b051096d04dfbc71db4715)) - Mumulhl
+- **(linux)** clear all button state on pointer release - ([aa65c0f](https://github.com/mumu-lhl/Ciyue/commit/aa65c0fa0fcb0f48f40a95b4903a8433e77e82af)) - Mumulhl
+- **(linux)** cancel pending drag on WebView dispose - ([63dfe7d](https://github.com/mumu-lhl/Ciyue/commit/63dfe7daa9775e6b3c8a34e6d71682613aee8743)) - Mumulhl
+- **(linux)** reset button state on page navigation - ([ebc95ab](https://github.com/mumu-lhl/Ciyue/commit/ebc95ab08dd1095fc06c2a7044694e540d076fa8)) - Mumulhl
+- **(linux)** reset button state on page navigation - ([b7dd667](https://github.com/mumu-lhl/Ciyue/commit/b7dd667f08ccf4effd473fe38b1d32aa03ea1d6a)) - Mumulhl
+- **(linux)** reset modifiers on page navigation - ([f6f0cca](https://github.com/mumu-lhl/Ciyue/commit/f6f0cca340a19d78ea104fe4fbe99d5ed5d4fcb3)) - Mumulhl
+- **(linux)** revert defer-resize-during-drag (caused WPE/Flutter size mismatch) - ([8999c57](https://github.com/mumu-lhl/Ciyue/commit/8999c5721e0e0e62861e93d91cd8155a0bc5d325)) - Muse
+- **(linux)** resolve text selection misalignment and sticky selection in WebView - ([70c29f9](https://github.com/mumu-lhl/Ciyue/commit/70c29f9b23490a73b04856413fbf8ca1498ca54a)) - Mumulhl
+- **(linux)** fix WebView buffer synchronization and selection stickiness - ([5fcd21f](https://github.com/mumu-lhl/Ciyue/commit/5fcd21f48be2da80b3b31ddd07f27eabc8caeeed)) - Mumulhl
+- **(linux)** add GPU sync before releasing EGL buffers (fix hardware rendering corruption) - ([4335db4](https://github.com/mumu-lhl/Ciyue/commit/4335db46504819c2ac66aee76cf03a8eeb028b97)) - Mumulhl
+- **(linux)** add GPU sync before releasing EGL buffers - ([2b59299](https://github.com/mumu-lhl/Ciyue/commit/2b59299b396ca42356c77f727ac57991de7657c1)) - Mumulhl
+- **(linux)** add GPU sync before releasing EGL buffers (fix hardware rendering corruption) - ([465a7fc](https://github.com/mumu-lhl/Ciyue/commit/465a7fcff30872e9994992a4d3e45be998292e9b)) - Mumulhl
+- **(macos)** add 'common' Xcode scheme so default-flavor builds work - ([5ec9d6f](https://github.com/mumu-lhl/Ciyue/commit/5ec9d6f39c32220f09d925ab0283550e4d3ea649)) - Mumulhl
+- **(macos)** add -common build configurations for the default flavor - ([1b85a25](https://github.com/mumu-lhl/Ciyue/commit/1b85a2518fe723c5ecfc6ac382946574f6acdb96)) - Mumulhl
+- **(mobile)** isolate search controllers and clear mobile tabs on exit to home - ([2babd24](https://github.com/mumu-lhl/Ciyue/commit/2babd24849f310f657fe227d00959f6651319cb2)) - Mumulhl
+- **(search)** prevent cleared text refill on rebuild and auto-select on open - ([5644599](https://github.com/mumu-lhl/Ciyue/commit/56445991ff97ed0cc5e4036e7128172f3a554406)) - Mumulhl
+- **(settings)** wrap mobile settings page in SafeArea - ([99acf7b](https://github.com/mumu-lhl/Ciyue/commit/99acf7be37d8cee619c9146026d0da2c11aae764)) - Mumulhl
+- **(settings)** learning settings layout/limits and flashcards page consistency - ([70d1864](https://github.com/mumu-lhl/Ciyue/commit/70d18646596840eaec5055cdc6b26933482af9b8)) - Mumulhl
+- **(startup)** eliminate home screen dictionary flicker and improve initial load experience - ([6a133b4](https://github.com/mumu-lhl/Ciyue/commit/6a133b4305b059bacd4d91411885810f97805f3b)) - Mumulhl
+- **(stats)** group wordbook/open-record counts by local day - ([6dee0a9](https://github.com/mumu-lhl/Ciyue/commit/6dee0a9cd54550104c854206f1dc7ab4c90e71e4)) - Mumulhl
+- **(translate)** use translation placeholder instead of prompt label when output is empty - ([60f3e9c](https://github.com/mumu-lhl/Ciyue/commit/60f3e9c575b26fdadb4d0d3e4918f2160189ace5)) - Mumulhl
+- **(translate)** fix review findings in multi-source translation - ([71371e2](https://github.com/mumu-lhl/Ciyue/commit/71371e29b35e5a759801eeb55adaccd03df67fff)) - Mumulhl
+- **(translate)** second review round — run control, staleness, CJK joins - ([2a6c98a](https://github.com/mumu-lhl/Ciyue/commit/2a6c98aa138e9130d08234c95908fffa5f4a2aa0)) - Mumulhl
+- **(webview)** retain desktop view across word changes - ([f553421](https://github.com/mumu-lhl/Ciyue/commit/f5534212216dd7938c968cf577a9d8497f248e60)) - Mumulhl
+- **(word-display)** dictionary pages follow the app theme; external .css/.js override .mdd copies (#756) - ([21dbd04](https://github.com/mumu-lhl/Ciyue/commit/21dbd04a8c9c4eb1113dc36f470f3b7b13db4ae2)) - Mumulhl
+- prevent IME popup when returning from settings sub-pages - ([7d9babc](https://github.com/mumu-lhl/Ciyue/commit/7d9babcfaec9398636aaab9696785c3b5187abac)) - Mumulhl
+- support gdlookup entry links (fixes #738) - ([7199a14](https://github.com/mumu-lhl/Ciyue/commit/7199a1428c52fb9d5792cc27ab954ba3b2c279ac)) - Mumulhl
+- allow cloud sync preferences - ([3afc6df](https://github.com/mumu-lhl/Ciyue/commit/3afc6df215c2fde230e2c94eaf97ef98dafdbcb3)) - Mumulhl
+- refresh custom dictionary background color - ([861e7b6](https://github.com/mumu-lhl/Ciyue/commit/861e7b6d7a4683a733202add77e3bd00c8d7c22c)) - Mumulhl
+- improve Windows dark-mode dictionary readability - ([b578b3d](https://github.com/mumu-lhl/Ciyue/commit/b578b3dc9cd32ae9780ec0c3a60732711d904d32)) - Mumulhl
+- migrate tray manager to native API - ([b955735](https://github.com/mumu-lhl/Ciyue/commit/b9557358bef718dd9d9fdede21f25cee70c0a8b1)) - Mumulhl
+- resolve dictionary management bugs and upgrade Linux WPE runtime to 2.54.1 - ([2636799](https://github.com/mumu-lhl/Ciyue/commit/26367991eb7d6cabf7214eec9605f88f226b2000)) - Mumulhl
+- refresh dictionary group enabled-count after toggle - ([6db7edf](https://github.com/mumu-lhl/Ciyue/commit/6db7edf107834dd1960991b1638a36af26e90716)) - Muse
+- batch of UI state and data bugs (Riverpod, WebView, sync, DB) - ([b083e02](https://github.com/mumu-lhl/Ciyue/commit/b083e02fba916d955fe17727bbf9b3e2e970959c)) - Muse
+- medium/low bugs and dictionary page GroupDialog refresh - ([3b27441](https://github.com/mumu-lhl/Ciyue/commit/3b27441640a39442d97d0abdcb2a77335eb505d6)) - Muse
+- dictionary page toggle error feedback and ghost row on delete - ([979bca0](https://github.com/mumu-lhl/Ciyue/commit/979bca019142c6a3186243edea0ed928d3bf5df9)) - Muse
+- settings reactive, hunspell races, tag dangling - ([6617644](https://github.com/mumu-lhl/Ciyue/commit/661764403d4ce69ebf33be0c1623ff9d71bd0f28)) - Muse
+- avoid deep word page stack when searching from word page - ([e9155e8](https://github.com/mumu-lhl/Ciyue/commit/e9155e8776be00bf8633d6889f44eb2c87286958)) - Muse
+- sync tab history on search-bar and context-menu navigation - ([d4bd7de](https://github.com/mumu-lhl/Ciyue/commit/d4bd7de9f1967a71a611f697e8bcd07ba9b1239d)) - Muse
+- remove unnecessary flutter/foundation import in settings.dart - ([6ca9ae6](https://github.com/mumu-lhl/Ciyue/commit/6ca9ae648d920beb33fbabc7687285eed545d1a4)) - Muse
+- repair CI test regressions from settings refactor and desktop nav buttons - ([cd40e9a](https://github.com/mumu-lhl/Ciyue/commit/cd40e9a11e636a6d36fbe03b8cd2dcea9bf6a10b)) - Mumulhl
+- refresh manage-dictionaries state when background dictionary load finishes - ([1bab85e](https://github.com/mumu-lhl/Ciyue/commit/1bab85efa2cb72c0e0081bab3a990543f2eb656d)) - Muse
+
+### Documentation
+
+- **(metadata)** keep F-Droid en-US changelog within the 500-char limit - ([70539c4](https://github.com/mumu-lhl/Ciyue/commit/70539c47cc38b377e1cc8620311135dea7bad304)) - Mumulhl
+- add Obtainium badge, update F-Droid badge URL and expand features list - ([5c86638](https://github.com/mumu-lhl/Ciyue/commit/5c86638799ea23e00d9e68bafbc0fbab665745bf)) - Mumulhl
+- overhaul GitHub Pages site and use pnpm 12 - ([2355be8](https://github.com/mumu-lhl/Ciyue/commit/2355be84377ce29b8fe11a096f89ac6569bd0e77)) - Mumulhl
+- translation sources guide with disclaimer (EN/ZH) - ([34ff3bd](https://github.com/mumu-lhl/Ciyue/commit/34ff3bdecf522bcadf0137acc8613fe66282ee36)) - Mumulhl
+- remove meta references to the disclaimer from FAQ entries - ([ad19bfd](https://github.com/mumu-lhl/Ciyue/commit/ad19bfdb0575514a2faf2255a60ffa5ec42f9479)) - Mumulhl
+- reframe translation-sources page as Translation feature page - ([45eeb62](https://github.com/mumu-lhl/Ciyue/commit/45eeb626e080181aa782503acfb324d3da9091a8)) - Mumulhl
+- remove old translation-sources page (renamed to translation) - ([e6c0fab](https://github.com/mumu-lhl/Ciyue/commit/e6c0fab1076803583ec337ed2ad40664edf7381c)) - Mumulhl
+- remove old zh translation-sources page (renamed to translation) - ([e67f7ee](https://github.com/mumu-lhl/Ciyue/commit/e67f7ee47f906f79bc7ec4479e55f5ccbe964d40)) - Mumulhl
+- refresh feature lists, drop emoji prefixes - ([5c25d83](https://github.com/mumu-lhl/Ciyue/commit/5c25d832fe8104d7ce01f8ff9a48a2c7fa64cd8b)) - Mumulhl
+- mention StarDict dictionary support - ([d3ae432](https://github.com/mumu-lhl/Ciyue/commit/d3ae432e6a7253cfb6753f0707acdd7cb56b2185)) - Muse
+- add Ciyue favicon to the docs site - ([f149180](https://github.com/mumu-lhl/Ciyue/commit/f149180672757dbbc771d2dd855c9371cdf52afd)) - Muse
+- add post-beta.1 user-facing changes to the in-app changelog - ([a6246f4](https://github.com/mumu-lhl/Ciyue/commit/a6246f4d745854d3198f93b8e9f232c0f42578c2)) - Mumulhl
+- refresh phone screenshots with new mobile captures - ([d9cd8c0](https://github.com/mumu-lhl/Ciyue/commit/d9cd8c09749698b036d8566a60ce7c6ed2771706)) - Muse
+
+### Features
+
+- **(ai)** support fetching models via API and update model catalogs - ([77ff934](https://github.com/mumu-lhl/Ciyue/commit/77ff9349282e6268772cd0d925d042e0f271abf9)) - Mumulhl
+- **(ai)** stream AI responses token-by-token - ([c42cfa6](https://github.com/mumu-lhl/Ciyue/commit/c42cfa6ffd1ae9e950d89e956619a5f3b2398d6f)) - Mumulhl
+- **(ai)** improve prompts, add chat history and stream cancellation - ([7d2baf7](https://github.com/mumu-lhl/Ciyue/commit/7d2baf701c7455d4c740a3f7c7a267718e800a7d)) - Mumulhl
+- **(ai)** add Agnes AI provider - ([aabfda9](https://github.com/mumu-lhl/Ciyue/commit/aabfda995860008d631032d2fb01f3ec368b00e6)) - Mumulhl
+- **(ai)** structured word explanations rendered natively (default on) - ([8f58419](https://github.com/mumu-lhl/Ciyue/commit/8f58419a9dc716063aec2705a36f3ff63fa4723e)) - Mumulhl
+- **(ai)** structured word explanations rendered natively (default on) - ([14eb1d1](https://github.com/mumu-lhl/Ciyue/commit/14eb1d178b3081c29e785945976b48d269a2765c)) - Mumulhl
+- **(ai)** structured word explanations rendered natively (default on) - ([25cbb96](https://github.com/mumu-lhl/Ciyue/commit/25cbb96a665a572709546771eb792bf37122ab99)) - Mumulhl
+- **(ai-settings)** dedicated prompt management page - ([51d6652](https://github.com/mumu-lhl/Ciyue/commit/51d66520d655639699eab9232e193e5a134103e6)) - Mumulhl
+- **(ai-settings)** dedicated prompt management page - ([9c34e1c](https://github.com/mumu-lhl/Ciyue/commit/9c34e1c7f228dc245fe2038f0876ec1932b4b26f)) - Mumulhl
+- **(android)** add home screen search widget - ([2753f61](https://github.com/mumu-lhl/Ciyue/commit/2753f61a216b337a8d49b0e0507145c242c134d6)) - Mumulhl
+- **(audio)** add visual feedback while playing audio pronunciation (#198) - ([d2e79f4](https://github.com/mumu-lhl/Ciyue/commit/d2e79f4965071584867222b91865e8eb5bfd2dbc)) - Mumulhl
+- **(audio)** pronunciation modes, real TTS controls, labeled pack management - ([308f969](https://github.com/mumu-lhl/Ciyue/commit/308f9690a29d00659d308653e33ee1530a3c2912)) - Mumulhl
+- **(audio)** pronunciation modes, real TTS controls, labeled pack management - ([a11064c](https://github.com/mumu-lhl/Ciyue/commit/a11064c70ff2b96f4cbf870b718f41e63828b98b)) - Mumulhl
+- **(audio)** settings page rebuild and tests - ([258ece9](https://github.com/mumu-lhl/Ciyue/commit/258ece91350d3cb34327fad7da2e1afff3aeba38)) - Mumulhl
+- **(changelog)** structured dialog — latest version popup, grouped history - ([548a531](https://github.com/mumu-lhl/Ciyue/commit/548a5311b53aafae22dda5221f743ba2c8212658)) - Mumulhl
+- **(chat)** rebuild chat UI and wire up entry points - ([0ace1b3](https://github.com/mumu-lhl/Ciyue/commit/0ace1b3589954eefb948bb62feb56c3a654bd187)) - Mumulhl
+- **(chat)** multiple sessions; loud errors when AI is unconfigured - ([65533f3](https://github.com/mumu-lhl/Ciyue/commit/65533f3924d3255408b12e21ae6b4b2a02106ee6)) - Mumulhl
+- **(chat)** multiple sessions; loud errors when AI is unconfigured - ([3cb371e](https://github.com/mumu-lhl/Ciyue/commit/3cb371e0deb6e246fd777969a546043096e2fbce)) - Mumulhl
+- **(chat)** image input (vision) and image generation - ([7a1c3d4](https://github.com/mumu-lhl/Ciyue/commit/7a1c3d433e5db971c32d6af32e979287424cf239)) - Mumulhl
+- **(chat)** image input (vision) and image generation - ([dd0307e](https://github.com/mumu-lhl/Ciyue/commit/dd0307e7373299cf8d3cacdd17c2d7bff11e57b5)) - Mumulhl
+- **(chat)** image input (vision) and image generation - ([865b397](https://github.com/mumu-lhl/Ciyue/commit/865b397c14496e77f3aede4293c10bb7ae9b0451)) - Mumulhl
+- **(desktop)** add master-detail split view and integrate toolbar actions - ([81b216a](https://github.com/mumu-lhl/Ciyue/commit/81b216a8af6f6997201bd91c89a63aefe2398b1f)) - Mumulhl
+- **(desktop)** add keyboard shortcuts for search, list navigation, and pronunciation - ([0235102](https://github.com/mumu-lhl/Ciyue/commit/0235102503b3fa9dc4a308509d674b2f255eaa78)) - Mumulhl
+- **(desktop)** optimize translation, wordbook split view, and settings layout - ([616bf22](https://github.com/mumu-lhl/Ciyue/commit/616bf22f0b91830efb0499ee5856278780c8510a)) - Mumulhl
+- **(desktop)** implement nav-detail split view for settings screen - ([e4a2a44](https://github.com/mumu-lhl/Ciyue/commit/e4a2a440ff777807152eaade4589d92e1662aae7)) - Mumulhl
+- **(desktop)** add GoldenDict-style tabbed word browsing and middle-click open - ([246a9f8](https://github.com/mumu-lhl/Ciyue/commit/246a9f8020c86c879c0523722a4caa5ea10c1435)) - Mumulhl
+- **(desktop)** support drag-and-drop reordering for word tabs - ([1cd4353](https://github.com/mumu-lhl/Ciyue/commit/1cd43537a9c8198d9cd073e8a906db025f2713ef)) - Mumulhl
+- **(dict)** default to source dictionary on entry jump and lookup (#727) - ([cb56876](https://github.com/mumu-lhl/Ciyue/commit/cb56876c50c12bb18e74ef93ec7f0a09c238c7f0)) - Mumulhl
+- **(dict)** switch the index cache to binary .cidx, StarDict single-entry lookup (Ciyue #755) - ([87bb12f](https://github.com/mumu-lhl/Ciyue/commit/87bb12f84188825bbfbd839e1ab348543757e780)) - Mumulhl
+- **(i18n)** localize flashcards pages - ([1ff7913](https://github.com/mumu-lhl/Ciyue/commit/1ff79132ea17bdb98bad6880e7d8379d25a0b965)) - Mumulhl
+- **(i18n)** add flashcard translations for all 15 locales - ([24b847e](https://github.com/mumu-lhl/Ciyue/commit/24b847e47fcd35b58c33216ccb55d6ba407ec27c)) - Mumulhl
+- **(l10n)** add missing Chinese translations for zh, zh_HK, and zh_TW - ([20eda47](https://github.com/mumu-lhl/Ciyue/commit/20eda47d76a554f8b036599cf0e072af1dab35c2)) - Mumulhl
+- **(learn)** turn chat into a language learning tool - ([3859ef6](https://github.com/mumu-lhl/Ciyue/commit/3859ef60a6dd0ea70fe7c53aee8275c98096d35e)) - Mumulhl
+- **(learn)** make language learning features customizable - ([4138f42](https://github.com/mumu-lhl/Ciyue/commit/4138f429f9af1dc88ce02a761ed014de11723a9e)) - Mumulhl
+- **(learn)** mistake review, more question types, TTS, chat persistence - ([07e174c](https://github.com/mumu-lhl/Ciyue/commit/07e174cb5aacfd88430dab6202d4784f52e7e591)) - Muse
+- **(learn)** mistake review reuses stored questions, works offline - ([3f82516](https://github.com/mumu-lhl/Ciyue/commit/3f8251620080d31b0e82ba714a77e21a82166301)) - Muse
+- **(mobile)** add Chrome-style bottom bar and tab browsing for small screens - ([abd532d](https://github.com/mumu-lhl/Ciyue/commit/abd532d34326abfd5687fa8748df2d3cd2ceeca0)) - Mumulhl
+- **(stardict)** pin dict_reader with StarDictReader, add LoadedDictionary surface and field-to-HTML conversion - ([ea7ffad](https://github.com/mumu-lhl/Ciyue/commit/ea7ffad20ecb33c8b34237f99b88b6ad9ffa5b2c)) - Mumulhl
+- **(stardict)** Stardict dictionary class and format dispatch in the manager and add pipelines - ([63d5384](https://github.com/mumu-lhl/Ciyue/commit/63d53844f2fea83ece324fcd79bd5ee479a33836)) - Mumulhl
+- **(stardict)** format-aware word display and dictionary management UI, plus tests - ([86f298e](https://github.com/mumu-lhl/Ciyue/commit/86f298e2eff89a58e93d3a1cca242b5519660229)) - Mumulhl
+- **(stardict)** native entry rendering with WebView fallback for HTML entries - ([462aff3](https://github.com/mumu-lhl/Ciyue/commit/462aff3fa12c29b854ac2ff23e24c02441278fb3)) - Mumulhl
+- **(wordbook)** swipe through words in wordbook - ([6a588f1](https://github.com/mumu-lhl/Ciyue/commit/6a588f141397dbd139af2787a077832ac31800b8)) - Mumulhl
+- improve search and dictionary group switching UX - ([35e936e](https://github.com/mumu-lhl/Ciyue/commit/35e936ece0a214c6a31529a654caa40acdcdcbf3)) - Mumulhl
+- sync selected dictionaries over WebDAV - ([34cbfb9](https://github.com/mumu-lhl/Ciyue/commit/34cbfb9ea0ca074d82d6d6b2c1d17c5072c7fbd1)) - Mumulhl
+- sync selected dictionaries over WebDAV - ([164efb9](https://github.com/mumu-lhl/Ciyue/commit/164efb93b241845250197158dd425247f1f24807)) - Mumulhl
+- add Google Drive and OneDrive cloud sync - ([11ec964](https://github.com/mumu-lhl/Ciyue/commit/11ec964330548824303f086481843476742ebd12)) - Mumulhl
+- support SFTP and S3 cloud sync - ([dc305fb](https://github.com/mumu-lhl/Ciyue/commit/dc305fb33d43a6cc297e137246b0b6b4de6fa101)) - Mumulhl
+- customize dictionary background and CSS (fixes #737) - ([3c2cd60](https://github.com/mumu-lhl/Ciyue/commit/3c2cd6097ccd4cf9732899816e87dfbad2431718)) - Mumulhl
+- add optional Dark Reader support - ([2cb7ab2](https://github.com/mumu-lhl/Ciyue/commit/2cb7ab2df3d75f197a8d3cfb81eed18399e723f4)) - Mumulhl
+- enable Dark Reader on Linux - ([60c75b7](https://github.com/mumu-lhl/Ciyue/commit/60c75b75de5029bdf7640ac169c54460d3cdb84e)) - Mumulhl
+- add back/forward buttons to desktop word page AppBar - ([10407bb](https://github.com/mumu-lhl/Ciyue/commit/10407bb70e1e9c1108c01389875d430c4ccb1862)) - Muse
+- update channel selector (Stable / Beta-Alpha / Nightly) - ([35e4e42](https://github.com/mumu-lhl/Ciyue/commit/35e4e42f1f0bd90907e09e878bd25136626de458)) - Muse
+- multi-source translation with 13 sources (1/2: sources, UI, view models) - ([d7eba7b](https://github.com/mumu-lhl/Ciyue/commit/d7eba7be0ece98d74e94cffd4dcbf26a3a43af1a)) - Mumulhl
+- multi-source translation with 13 sources (2/2: settings, l10n, prefs, tests) - ([bbf74e0](https://github.com/mumu-lhl/Ciyue/commit/bbf74e0024ce307f432a84d52dda3e877360eaa3)) - Mumulhl
+- AI providers as individual translation sources - ([ce246da](https://github.com/mumu-lhl/Ciyue/commit/ce246dae3c70b62fd4819ba83af74f8ce351c7d0)) - Mumulhl
+- free translation sources first; drop mobile group switcher - ([ea08474](https://github.com/mumu-lhl/Ciyue/commit/ea0847421b384f2144cc61f5903bae6d48996cd9)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** clean up redundant steps and unused inputs in workflows - ([a7850e4](https://github.com/mumu-lhl/Ciyue/commit/a7850e49f5d61544726b359dbcc773ca83c83b0c)) - Mumulhl
+- **(ci)** install pnpm via npm instead of corepack - ([5ff5e5d](https://github.com/mumu-lhl/Ciyue/commit/5ff5e5d9f3055d18f4d568cb61fc260725f840e3)) - Muse
+- **(deps)** update - ([58eb70e](https://github.com/mumu-lhl/Ciyue/commit/58eb70e1abf4c1c79ecda79309b9de01cb0784e0)) - Mumulhl
+- **(deps)** pubspec.lock for the dict_reader a6416b5 pin (#755) - ([5fc1814](https://github.com/mumu-lhl/Ciyue/commit/5fc18147577352c67260c22a73e74984079232e2)) - Mumulhl
+- **(dict)** lockfile for the dict_reader .cidx pin (Ciyue #755) - ([9792fb6](https://github.com/mumu-lhl/Ciyue/commit/9792fb61ce789b75fbe89cf3e33878c8b07a9bf0)) - Mumulhl
+- **(docs)** drop packageManager field - ([79df022](https://github.com/mumu-lhl/Ciyue/commit/79df022431cfb7a48f7a1cddb05a25efecb33019)) - Mumulhl
+- update flutter version to 3.47.5 - ([c0e4aa4](https://github.com/mumu-lhl/Ciyue/commit/c0e4aa44aed013fcab3d803ec4e55bfe852c6b8c)) - Mumulhl
+- update flutter version to 3.47.7 - ([9025f32](https://github.com/mumu-lhl/Ciyue/commit/9025f329f3a4f5865c0a6f4e6ceef201c48f3c98)) - Mumulhl
+- update flutter version to 3.47.8 - ([5d1fef6](https://github.com/mumu-lhl/Ciyue/commit/5d1fef6304dc2e70aa605b874b7268dbeec980ba)) - Mumulhl
+
+### Performance
+
+- **(dictionaries)** index cache lives in the support directory now (#755) - ([8f3c15b](https://github.com/mumu-lhl/Ciyue/commit/8f3c15ba015e7ff56b064e0e392eeb2f99d1d78a)) - Mumulhl
+- **(floating-window)** keep the engine warm for the process lifetime (#755) - ([f7f8b00](https://github.com/mumu-lhl/Ciyue/commit/f7f8b005135e9cc644058454338b86d5b9886a14)) - Mumulhl
+- **(history)** add schema v20 migration step for history word index - ([7d6f642](https://github.com/mumu-lhl/Ciyue/commit/7d6f642591649b9ca2616592aae2c674aa008fa1)) - Mumulhl
+- **(history)** upsert with word index and in-memory list update - ([5ac99ed](https://github.com/mumu-lhl/Ciyue/commit/5ac99ed269c0d6a021317e872099dd8de2ffb699)) - Mumulhl
+- **(history)** regenerate app.g.dart with idx_history_word (schema v20) - ([7bb2e42](https://github.com/mumu-lhl/Ciyue/commit/7bb2e420b1b6177d70809ce833ad6f49c3a7139a)) - Mumulhl
+- **(search)** reduce suggestion debounce from 250ms to 100ms - ([ad554ba](https://github.com/mumu-lhl/Ciyue/commit/ad554baa52d020536714186eb67eeb6b7fdf4a63)) - Mumulhl
+- **(search)** reduce suggestion debounce from 250ms to 100ms - ([481160b](https://github.com/mumu-lhl/Ciyue/commit/481160b7a49c9fe673401beda8c8ecca3aefd463)) - Mumulhl
+- debounce search suggestions and parallelize dictionary lookup - ([4c63e59](https://github.com/mumu-lhl/Ciyue/commit/4c63e59515ae48179d5db08ad7b041f3a524383b)) - Mumulhl
+- fix WebView height update storms and narrow provider subscriptions - ([b93601d](https://github.com/mumu-lhl/Ciyue/commit/b93601d96ea0f63f5cd73a13948f37b5f344a90a)) - Mumulhl
+- second batch of optimizations (lookup, startup, history import, schema v21 indexes) - ([05860db](https://github.com/mumu-lhl/Ciyue/commit/05860dbf96a56b4281fe934252dbc05d18c748f3)) - Mumulhl
+- third batch of performance optimizations (18 items, schema v21→v22) - ([5bae2f2](https://github.com/mumu-lhl/Ciyue/commit/5bae2f27413d71a6e279a04a71af5c7317b3379e)) - Muse
+
+### Refactoring
+
+- **(ai)** migrate LLM providers to Genkit Dart 1.0 - ([967da59](https://github.com/mumu-lhl/Ciyue/commit/967da59fa4101545ad53a2abf62cbdfe147729b1)) - Mumulhl
+- **(dictionaries)** drop the interim support-dir cache fallback (#755) - ([1a8a65d](https://github.com/mumu-lhl/Ciyue/commit/1a8a65d85b9be9362999708dd8797acad1275bce)) - Mumulhl
+- **(linux)** remove dead SetTextureOffset code - ([75548ee](https://github.com/mumu-lhl/Ciyue/commit/75548eeb7c6c1287d174c72e871f1efdfc1d2a8e)) - Mumulhl
+- **(state)** completely unify state management to riverpod and remove provider - ([f8173b7](https://github.com/mumu-lhl/Ciyue/commit/f8173b7a1046960c20c9b1a9d4054e6eb8d86f4e)) - Mumulhl
+- remove duplicate home group switcher - ([9e9473f](https://github.com/mumu-lhl/Ciyue/commit/9e9473f41c60fd45bf191f41ac942b3d5ed3f247)) - Mumulhl
+- migrate Home and Search to Riverpod (Phase 1) - ([874b398](https://github.com/mumu-lhl/Ciyue/commit/874b39822af7f10c4b73eae3b874572c63c5e170)) - Mumulhl
+- migrate Wordbook, Dictionaries, and Audio to Riverpod (Phase 2) - ([57948d8](https://github.com/mumu-lhl/Ciyue/commit/57948d84ff0db76c5b01e955082b7ebc821cd518)) - Mumulhl
+
+### Revert
+
+- **(dictionaries)** index cache back in the cache directory (#755) - ([6a3ecbb](https://github.com/mumu-lhl/Ciyue/commit/6a3ecbbe26efb20e89ac742ef5bb7f7c7378efb9)) - Mumulhl
+
+### Style
+
+- **(dict)** modernize manage dictionaries page UI and action sheet - ([6c933d2](https://github.com/mumu-lhl/Ciyue/commit/6c933d289501065282542152202fe96ec982deab)) - Mumulhl
+- **(settings)** beautify settings subpages with shared M3 card components (1/2) - ([683c74b](https://github.com/mumu-lhl/Ciyue/commit/683c74b4bf6a484898a631f18ef573852f9ca9ee)) - Mumulhl
+- **(settings)** beautify settings subpages with shared M3 card components (2/2) - ([a6068a7](https://github.com/mumu-lhl/Ciyue/commit/a6068a787aeb81e89cd50c29d9cfbafbb1423ca0)) - Mumulhl
+- **(ui)** modernize Material 3 themes, layouts, and components - ([6bc427c](https://github.com/mumu-lhl/Ciyue/commit/6bc427c6a553236405dcfa251d743e906d90c559)) - Mumulhl
+
+### Tests
+
+- **(stardict)** native view, structured-fields cache, binary-only and fragment cases - ([0eb2d0c](https://github.com/mumu-lhl/Ciyue/commit/0eb2d0cdd7779cd5b024da581a46fec714d0a429)) - Mumulhl
+- **(word-display)** update user-script expectations for the #756 theme marker - ([7976c6b](https://github.com/mumu-lhl/Ciyue/commit/7976c6b4cb34dc994bb815889aa9b8fdfe3edcba)) - Mumulhl
+- prune redundant and tautological test suites - ([51c56b0](https://github.com/mumu-lhl/Ciyue/commit/51c56b0e6016e77abe4a97119961e583475eb005)) - Mumulhl
+- add schema v20 fixture for history word index migration - ([0f34ca0](https://github.com/mumu-lhl/Ciyue/commit/0f34ca0fe3f54f6bf22b335f8babc51e28ab5e53)) - Mumulhl
+- refresh mocks after history model change - ([0412eab](https://github.com/mumu-lhl/Ciyue/commit/0412eabff1f869049b32a9255be591eaddda845f)) - Mumulhl
+- register schema v20 in migration test helper - ([1c75a6b](https://github.com/mumu-lhl/Ciyue/commit/1c75a6be6282ab72be2281ea7901904190956465)) - Mumulhl
+
+### I18n
+
+- complete all missing translations for 15 locales - ([f920687](https://github.com/mumu-lhl/Ciyue/commit/f92068786c043f357132b6ee704aef7f1ad262a5)) - Mumulhl
+- complete all missing translations for 15 locales - ([eaca768](https://github.com/mumu-lhl/Ciyue/commit/eaca7681b15c55212e780bbd1780fb9555f792c0)) - Mumulhl
+- complete all missing translations for 15 locales - ([ab9e2a7](https://github.com/mumu-lhl/Ciyue/commit/ab9e2a78ccffdcd668df5562bfe3e5b4ed599467)) - Mumulhl
+- complete all missing translations for 15 locales (remaining files) - ([481447d](https://github.com/mumu-lhl/Ciyue/commit/481447de7f6ef6e4da00286524bd38929935d629)) - Muse
+
+### Tools
+
+- rewrite find_missing_translations for humans and agents - ([970d928](https://github.com/mumu-lhl/Ciyue/commit/970d928d6748d7f3795dccabc6c889dbd531587c)) - Muse
+
+---
+## [1.23.2](https://github.com/mumu-lhl/Ciyue/compare/v1.23.1..v1.23.2) - 2026-09-19
 
 ### Bug Fixes
 
