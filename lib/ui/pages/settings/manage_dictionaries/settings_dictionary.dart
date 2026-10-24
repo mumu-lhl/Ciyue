@@ -1,6 +1,8 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:file_selector/file_selector.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:go_router/go_router.dart";
@@ -24,15 +26,15 @@ class SettingsDictionaryPage extends StatelessWidget {
   }
 }
 
-class _Body extends StatefulWidget {
+class _Body extends ConsumerStatefulWidget {
   final int dictId;
   const _Body({required this.dictId});
 
   @override
-  State<_Body> createState() => _BodyState();
+  ConsumerState<_Body> createState() => _BodyState();
 }
 
-class _BodyState extends State<_Body> {
+class _BodyState extends ConsumerState<_Body> {
   void customFont(String? path) async {
     final dict = dictManager.dicts[widget.dictId];
     if (dict is Mdict) {
@@ -47,9 +49,16 @@ class _BodyState extends State<_Body> {
 
   @override
   Widget build(BuildContext context) {
+    // Rebuild when dictionary loading finishes, so this page — reachable
+    // from the manage-dictionaries page while dictionaries are still
+    // loading — does not keep showing the pre-load state.
+    ref.watch(dictManagerModelProvider.select((model) => model.state));
     Widget? fontPathSubtitle;
     Widget? removeButton;
-    final firstDict = dictManager.dicts.values.first;
+    // dicts is empty until the background group load finishes; .first
+    // would throw in that window.
+    final loadedDicts = dictManager.dicts.values;
+    final firstDict = loadedDicts.isEmpty ? null : loadedDicts.first;
     if (firstDict is Mdict && firstDict.fontName != null) {
       fontPathSubtitle = Text(firstDict.fontName!);
       removeButton = IconButton(

@@ -49,12 +49,20 @@ Future<void> initGroup() async {
   final context = navigatorKey.currentContext;
   if (context != null && context.mounted) {
     try {
-      ProviderScope.containerOf(
-        context,
-        listen: false,
-      ).read(homeModelProvider).update();
+      final container = ProviderScope.containerOf(context, listen: false);
+      container.read(homeModelProvider).update();
+      // The manage-dictionaries page is not part of the home tree, and on
+      // large screens it is built immediately as the default settings
+      // detail — possibly while this load is still running. Without this,
+      // its checkboxes keep the pre-load state (unchecked) even after the
+      // dictionaries are loaded and lookups work.
+      container.read(dictManagerModelProvider).update();
     } catch (error, stackTrace) {
-      talker.error("Failed to update home model", error, stackTrace);
+      talker.error(
+        "Failed to update models after loading dictionaries",
+        error,
+        stackTrace,
+      );
     }
   }
 }
