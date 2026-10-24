@@ -7,9 +7,11 @@ import "package:flutter_inappwebview/flutter_inappwebview.dart";
 
 void main() {
   test("dictionary link normalization runs at document start", () {
-    final script = dictionaryUserScripts().single;
-    expect(script.source, dictionaryEntryLinkScript);
-    expect(script.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
+    final scripts = dictionaryUserScripts();
+    final linkScript = scripts.singleWhere(
+      (script) => script.source == dictionaryEntryLinkScript,
+    );
+    expect(linkScript.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
   });
 
   test("Dark Reader activates on Windows and Linux dark mode", () {
@@ -52,8 +54,12 @@ void main() {
       darkReaderSource: "window.DarkReader = {};",
     );
 
-    expect(scripts, hasLength(1));
-    expect(scripts.single.source, isNot(contains("DarkReader.enable")));
+    // Link normalization + app theme marker; Dark Reader stays off.
+    expect(scripts, hasLength(2));
+    expect(
+      scripts.every((script) => !script.source.contains("DarkReader.enable")),
+      isTrue,
+    );
   });
 
   test("Dark Reader initialization is injected at document end", () {
