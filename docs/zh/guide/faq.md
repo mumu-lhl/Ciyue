@@ -2,7 +2,7 @@
 
 ## 词典去哪里下载？
 
-词悦不自带词典。从 Wiki 的[推荐词典](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries)下载 `.mdx` / `.mdd` 文件，然后在 **设置 → 管理词典** 中添加。
+词悦不自带词典。从 Wiki 的[推荐词典](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries)下载 `.mdx` / `.mdd` 文件，或者 StarDict 词典（`.ifo` / `.idx` / `.dict`），然后在 **设置 → 管理词典** 中添加。
 
 ## 为什么词悦需要 INTERNET 权限？
 
@@ -29,6 +29,7 @@ F-Droid 按自己的节奏构建和发布应用，所以版本会比 GitHub 晚�
 ## 词典显示乱码或内容缺失怎么办？
 
 - 确认同名的 `.mdd` 资源文件（如果词典有的话）和 `.mdx` 放在同一目录。
+- StarDict 词典要把 `.ifo`、`.idx`、`.dict` 放在同一目录下，且主文件名相同。
 - 有些词典需要调自定义 CSS：**管理词典 → 词典 → 自定义 CSS**。
 - 如果某本词典导致查词崩溃，请到 [GitHub](https://github.com/mumu-lhl/Ciyue/issues) 提 issue 并注明词典名称。
 

@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "词悦"
-  text: "强大的 mdict 词典"
+  text: "强大的 MDX 与 StarDict 词典"
   tagline: Android · Windows · Linux · macOS —— 快速、隐私、可扩展
   image:
     src: https://raw.githubusercontent.com/mumu-lhl/Ciyue/main/assets/icon.png
@@ -19,8 +19,8 @@ hero:
 
 features:
   - icon: 📄
-    title: MDX / MDD 词典
-    details: 加载成千上万的免费 MDX/MDD 词典，一次搜索所有词典。
+    title: MDX / MDD 与 StarDict 词典
+    details: 加载成千上万的免费 MDX/MDD 与 StarDict 词典，一次搜索所有词典。
   - icon: 🔍
     title: 多词典查词
     details: 在所有词典中同时查词，以标签页并排展示结果。

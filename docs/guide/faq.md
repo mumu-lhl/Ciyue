@@ -2,7 +2,7 @@
 
 ## Where do I get dictionaries?
 
-Ciyue does not ship with dictionaries. Download `.mdx` / `.mdd` files from the [recommended dictionaries](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries) list on the Wiki, then add them in **Settings → Manage dictionaries**.
+Ciyue does not ship with dictionaries. Download `.mdx` / `.mdd` files, or StarDict dictionaries (`.ifo` / `.idx` / `.dict`), from the [recommended dictionaries](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries) list on the Wiki, then add them in **Settings → Manage dictionaries**.
 
 ## Why does Ciyue need the INTERNET permission?
 
@@ -29,6 +29,7 @@ Go to **Settings → Backup** to export your data (wordbook, history, tags, flas
 ## A dictionary shows garbled or missing content. What can I do?
 
 - Make sure the matching `.mdd` resource file (if the dictionary has one) is placed next to the `.mdx` file with the same base name.
+- For a StarDict dictionary, keep its `.ifo`, `.idx`, and `.dict` files together under the same base name.
 - Some dictionaries need a custom CSS tweak: **Manage dictionaries → dictionary → Custom CSS**.
 - If a dictionary crashes the lookup, please [open an issue](https://github.com/mumu-lhl/Ciyue/issues) with the dictionary name.
 

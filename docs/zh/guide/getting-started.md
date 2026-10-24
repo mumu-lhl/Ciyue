@@ -46,7 +46,7 @@
 
 ## 下载词典
 
-词悦不自带词典。从 Wiki 的[推荐词典](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries)下载 `.mdx` / `.mdd` 文件，然后在 **设置 → 管理词典** 中添加。
+词悦不自带词典。从 Wiki 的[推荐词典](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries)下载 `.mdx` / `.mdd` 文件，或者 StarDict 词典（`.ifo` / `.idx` / `.dict`），然后在 **设置 → 管理词典** 中添加。
 
 ## 云同步
 

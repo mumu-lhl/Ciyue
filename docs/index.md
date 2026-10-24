@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "Ciyue"
-  text: "A powerful mdict dictionary"
+  text: "A powerful MDX and StarDict dictionary"
   tagline: Android · Windows · Linux · macOS — fast, private, and extensible
   image:
     src: https://raw.githubusercontent.com/mumu-lhl/Ciyue/main/assets/icon.png
@@ -19,8 +19,8 @@ hero:
 
 features:
   - icon: 📄
-    title: MDX / MDD dictionaries
-    details: Load thousands of freely available MDX/MDD dictionaries, search across all of them at once.
+    title: MDX / MDD and StarDict dictionaries
+    details: Load thousands of freely available MDX/MDD and StarDict dictionaries, search across all of them at once.
   - icon: 🔍
     title: Multi-dictionary lookup
     details: Look up a word in every dictionary simultaneously with tabbed, side-by-side results.
