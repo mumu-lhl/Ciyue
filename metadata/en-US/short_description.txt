@@ -1,1 +1,1 @@
-A simple mdict dictionary
+A dictionary supporting MDX and StarDict

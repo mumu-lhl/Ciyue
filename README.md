@@ -7,18 +7,20 @@
 
 English | [中文](./README_CN.md)
 
-A mdict dictionary with Android/Windows/Linux/macOS support.
+A dictionary for Android, Windows, Linux, and macOS, supporting MDX/MDD and StarDict dictionaries.
 
 ## Features
 
-* 📄 Support MDX/MDD
-* 🔍 Support multiple dictionaries search and display
-* 🎨 Support Material You
-* 🌐 AI Translate (Support OpenAI, Gemini, Deepseek...)
-* 🔈 Support reading aloud
-* 🔖 Bookmarking words to the word book
-* 🃏 Flashcards with FSRS spaced repetition
-* ✍️ AI writing check
+* Support MDX/MDD and StarDict dictionaries
+* Search across multiple dictionaries at once
+* Multi-source translation, including free services and AI providers (OpenAI, Gemini, DeepSeek, and more)
+* AI chat with custom prompts
+* Word book and mistake book with review quizzes
+* Flashcards with FSRS spaced repetition
+* AI writing check
+* Read aloud with pronunciation packs and text-to-speech
+* Floating window for looking up words anywhere
+* Material You design
 
 ## Screenshots
 

@@ -2,9 +2,9 @@
 
 特點:
 
-* 📄 支持 MDX/MDD
-* 🔍 支持多字典搜尋和顯示
-* 🎨 支持 Material You
-* 🌐 AI 翻譯 (支援 OpenAI, Gemini, Deepseek...)
-* 🔈 支持朗讀
-* 🔖 收藏單詞到單詞本
+* 支持 MDX/MDD
+* 支持多字典搜尋和顯示
+* 支持 Material You
+* AI 翻譯 (支援 OpenAI, Gemini, Deepseek...)
+* 支持朗讀
+* 收藏單詞到單詞本
