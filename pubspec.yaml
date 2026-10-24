@@ -90,7 +90,7 @@ dependencies:
   flutter_riverpod: ^3.4.3
   riverpod: ^3.4.3
   material_ui: ^1.6.0
-  simple_secure_storage: ^0.4.2
+  simple_secure_storage: ^0.4.3
   dartssh2: ^4.1.0
   s3_client: ^1.0.0
   http: ^1.6.0
