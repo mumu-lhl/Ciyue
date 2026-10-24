@@ -381,12 +381,12 @@ class Mdict implements LoadedDictionary {
     await dictionaryListDao.updateFont(id, path);
   }
 
-  /// The self-built index cache for one dictionary reader, in the cache
-  /// directory (it is rebuildable data, so the standard cache semantics
-  /// apply: the system may clear it, and a clear simply triggers a
-  /// rescan).
+  /// The self-built index (`.cidx`) for one dictionary reader, in the
+  /// cache directory (it is rebuildable data, so the standard cache
+  /// semantics apply: the system may clear it, and a clear simply
+  /// triggers a rescan).
   Future<File> _readerCacheFile(int id, String type) async {
-    final cacheFileName = "dict_reader_${id.toString()}_$type.cache";
+    final cacheFileName = "dict_reader_${id.toString()}_$type.cidx";
     final cacheDir = await getApplicationCacheDirectory();
     return File(join(cacheDir.path, cacheFileName));
   }
@@ -400,8 +400,18 @@ class Mdict implements LoadedDictionary {
       }
 
       try {
-        final cacheData = await reader.exportCacheAsString();
-        await cacheFile.writeAsString(cacheData, flush: true);
+        final cacheData = await reader.exportCidx();
+        await cacheFile.writeAsBytes(cacheData, flush: true);
+        // The old JSON cache is gone for good: drop its file (tens of MB
+        // per dictionary) instead of leaving it orphaned.
+        try {
+          final legacy = File(
+            "${cacheFile.path.substring(0, cacheFile.path.length - 5)}.cache",
+          );
+          if (await legacy.exists()) {
+            await legacy.delete();
+          }
+        } catch (_) {}
       } catch (e, stackTrace) {
         talker.error("Failed to save cache for $id ($type): $e", e, stackTrace);
       }
@@ -416,15 +426,13 @@ class Mdict implements LoadedDictionary {
     }
 
     try {
-      // 1.12: Read the cache file off the UI isolate to avoid blocking
-      // the UI thread on large (tens of MB) file IO. Note: dict_reader's
-      // importCacheFromString only accepts a String, so the content must
-      // still come back to this isolate for parsing.
+      // Read the index file off the UI isolate to avoid blocking the UI
+      // thread on large file IO.
       // Capture the path as a String: File objects hold native resources
       // and cannot be sent across isolates.
       final cachePath = cacheFile.path;
-      final cache = await Isolate.run(() => File(cachePath).readAsString());
-      await reader.importCacheFromString(cache);
+      final cache = await Isolate.run(() => File(cachePath).readAsBytes());
+      await reader.importCidx(cache);
       return true;
     } catch (e, stackTrace) {
       talker.error("Failed to import cache for $id ($type): $e", e, stackTrace);
@@ -491,7 +499,7 @@ class Mdict implements LoadedDictionary {
           );
           await resourceReader.initDict();
         } else {
-          // importCache opens the file in current dict_reader versions. Keep
+          // importCidx opens the file in current dict_reader versions. Keep
           // this no-op initialization for compatibility with older versions.
           await resourceReader.initDict(
             readKeys: false,

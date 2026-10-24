@@ -207,7 +207,7 @@ class Stardict implements LoadedDictionary {
   Future<String?> resolveExactKey(String word) async {
     await waitForLoading();
     final index = reader.resolveIndex(word);
-    return index == null ? null : reader.words[index];
+    return index == null ? null : reader.wordAt(index);
   }
 
   @override
