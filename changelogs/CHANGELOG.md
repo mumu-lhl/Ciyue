@@ -11,6 +11,7 @@
 - **Update channels** - switch between Stable, Beta, and Nightly in settings
 - **Desktop word pages** - back and forward navigation buttons
 - **Refreshed settings** - settings and dictionary management pages rebuilt with a cleaner card layout
+- **Structured word explanations** - AI word explanations now follow a fixed structure and render natively in the app theme, falling back to plain text when a model does not follow the structure
 
 ### Bug Fixes
 
@@ -20,12 +21,15 @@
 - **(word page)** fixed word pages stacking endlessly when searching from a word page, and tab history falling out of sync
 - **(settings)** fixed a batch of stale-state and data bugs across settings, word pages, and the wordbook; fixed hunspell lookup races
 - **(f-droid)** restored F-Droid builds
+- **(word page)** fixed dictionary entries ignoring the app's dark theme inside the WebView; external .css/.js files placed next to a dictionary now override the copies inside it
+- **(floating window)** the floating window no longer disappears after 30 idle seconds; the lookup engine stays alive and is only released under memory pressure
 
 ### Performance
 
 - **Lookup** - dictionaries are queried in parallel and search suggestions are debounced, so results arrive faster without flicker
 - **Startup and history** - faster startup, and history is now indexed and updated incrementally
 - **Word pages** - far fewer WebView relayouts, so scrolling and resizing are smoother
+- **Dictionary import** - dictionary indexes are now stored as a compact binary file instead of JSON, so opening a cached dictionary is several times faster on large dictionaries; StarDict lookups no longer load the whole word list into memory
 
 ---
 ## [1.23.2](https://github.com/mumu-lhl/Ciyue/compare/v1.23.1..1.23.2) - 2026-09-19
