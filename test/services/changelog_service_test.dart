@@ -1,3 +1,5 @@
+import "dart:io" show File;
+
 import "package:ciyue/services/changelog.dart";
 import "package:flutter/material.dart";
 import "package:flutter_test/flutter_test.dart";
@@ -92,18 +94,42 @@ void main() {
       );
     });
 
-    test("the bundled changelogs parse, newest is 2.0.0-beta.1", () async {
-      for (final locale in [const Locale("en"), const Locale("zh")]) {
-        final content = await ChangelogService.getChangelogContent(locale);
-        final sections = ChangelogService.parseChangelogSections(content);
-        expect(sections.length, greaterThanOrEqualTo(4));
-        expect(sections.first.version, "2.0.0-beta.1");
-        expect(sections.first.date, "2026-10-17");
-        for (final section in sections) {
-          expect(section.body, isNot(contains("/commit/")));
+    test(
+      "the bundled changelogs parse, newest matches the package version",
+      () async {
+        // The expected version comes from pubspec.yaml, not a hardcoded
+        // string: a release bump updates the changelog heading, but must
+        // never require touching this test. (flutter test runs from the
+        // package root, so pubspec.yaml is readable here.) The test still
+        // fails if a version bump forgets the changelog heading — that is
+        // the failure worth catching.
+        final pubspec = File("pubspec.yaml").readAsStringSync();
+        final packageVersion = RegExp(
+          r"^version:\s*([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.]+)?)",
+          multiLine: true,
+        ).firstMatch(pubspec)?.group(1);
+        expect(
+          packageVersion,
+          isNotNull,
+          reason: "pubspec.yaml must declare a version",
+        );
+
+        for (final locale in [const Locale("en"), const Locale("zh")]) {
+          final content = await ChangelogService.getChangelogContent(locale);
+          final sections = ChangelogService.parseChangelogSections(content);
+          expect(sections.length, greaterThanOrEqualTo(4));
+          expect(sections.first.version, packageVersion);
+          expect(
+            sections.first.date,
+            matches(RegExp(r"^\d{4}-\d{2}-\d{2}$")),
+            reason: "newest section must carry a release date",
+          );
+          for (final section in sections) {
+            expect(section.body, isNot(contains("/commit/")));
+          }
         }
-      }
-    });
+      },
+    );
   });
 
   group("cleanChangelogBody", () {
