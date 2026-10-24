@@ -7,6 +7,10 @@ export default defineConfig({
   base: '/Ciyue/',
   lastUpdated: true,
 
+  // Without an explicit icon link, browsers fall back to the site-root
+  // /favicon.ico, which serves the blog's icon instead of Ciyue's.
+  head: [['link', { rel: 'icon', href: '/Ciyue/favicon.ico' }]],
+
   locales: {
     root: {
       label: 'English',
