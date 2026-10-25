@@ -5,6 +5,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/audio.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
 import "package:ciyue/utils.dart";
 import "package:flutter/foundation.dart";
@@ -272,6 +273,12 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
     } else if (url.scheme == "sound") {
       final filename = _soundFileName(url);
 
+      // Resolved before the first await: showing the message afterwards would
+      // touch the context across an async gap.
+      final unsupportedMessage = AppLocalizations.of(context)
+          ?.pronunciationUnsupportedFormat;
+      final messenger = ScaffoldMessenger.maybeOf(context);
+
       // Pronunciation audio lives in MDD resources; other dictionary
       // formats have none to play here.
       final dict = dictManager.dicts[dictId];
@@ -298,12 +305,17 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
             continue;
           }
 
-          await playSound(
+          final played = await playSound(
             data,
             lookupMimeType(filename) ?? "application/octet-stream",
             label: basenameWithoutExtension(filename),
           );
           talker.info("Playing sound (1): $filename");
+          if (!played && unsupportedMessage != null) {
+            messenger?.showSnackBar(
+              SnackBar(content: Text(unsupportedMessage)),
+            );
+          }
           return NavigationActionPolicy.CANCEL;
         }
       }

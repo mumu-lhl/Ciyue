@@ -851,5 +851,7 @@
   "vocabularyExtractCount": "每次提取的词汇量",
   "vocabularyPromptHelper": "用于从聊天中提取词汇的提示词。变量：$count、$difficulty、$text",
   "vocabularyPromptTitle": "词汇提取提示词",
-  "wordQuiz": "单词测验"
+  "wordQuiz": "单词测验",
+  "pronunciationUnsupportedFormat": "该词典的发音音频使用了此设备不支持的格式",
+  "@pronunciationUnsupportedFormat": {}
 }

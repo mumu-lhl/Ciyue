@@ -318,6 +318,8 @@
   "@pronunciationPackOnly": {},
   "pronunciationTtsOnly": "TTS only",
   "@pronunciationTtsOnly": {},
+  "pronunciationUnsupportedFormat": "This dictionary's pronunciation audio uses a format this device cannot play.",
+  "@pronunciationUnsupportedFormat": {},
   "pronunciationPacks": "Pronunciation Packs",
   "@pronunciationPacks": {},
   "pronunciationPacksDescription": "Add .mdd pronunciation packs to hear recorded voices when you look up a word. Drag packs to change their priority. When no pack matches, the word is read aloud with TTS instead.",
