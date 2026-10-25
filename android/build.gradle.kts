@@ -18,7 +18,7 @@ subprojects {
     project.evaluationDependsOn(":app")
 
     plugins.withId("com.android.library") {
-        if (name == "jni") {
+        if (name == "jni" || name == "cnativeapi") {
             extensions.configure<LibraryExtension>("android") {
                 defaultConfig {
                     externalNativeBuild {
