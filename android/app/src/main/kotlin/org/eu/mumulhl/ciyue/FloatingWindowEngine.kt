@@ -82,7 +82,20 @@ object FloatingWindowEngine {
         context.applicationContext.registerComponentCallbacks(
             object : ComponentCallbacks2 {
                 override fun onTrimMemory(level: Int) {
-                    if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL) {
+                    // These levels are numerically higher than
+                    // TRIM_MEMORY_RUNNING_CRITICAL but do not describe memory
+                    // pressure: TRIM_MEMORY_UI_HIDDEN (20) is sent every time
+                    // our activities stop, and TRIM_MEMORY_BACKGROUND (40) every
+                    // time the process moves to the cached list. Treating them
+                    // as pressure destroyed the warm engine whenever the
+                    // floating window was dismissed and left the next
+                    // invocation with a black window.
+                    val memoryPressure =
+                        level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW ||
+                            level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL ||
+                            level == ComponentCallbacks2.TRIM_MEMORY_MODERATE ||
+                            level == ComponentCallbacks2.TRIM_MEMORY_COMPLETE
+                    if (memoryPressure) {
                         destroyNow()
                     }
                 }
@@ -133,14 +146,33 @@ object FloatingWindowEngine {
     }
 
     fun destroyNow() {
-        val currentEngine = engine ?: FlutterEngineCache.getInstance().get(ENGINE_ID)
+        val attachedActivity = FloatingWindowActivity.current()
+        if (attachedActivity != null) {
+            // FlutterActivity binds its FlutterView to the engine exactly once,
+            // in onCreate. Destroying the engine while that Activity is alive
+            // would leave the window attached to a dead engine and black until
+            // the Activity is recreated. Close the window instead and release
+            // the engine once it has detached.
+            attachedActivity.closeForEngineReset()
+            return
+        }
+
+        release(null)
+    }
+
+    fun release(engineToRelease: FlutterEngine?) {
+        val currentEngine = engineToRelease
+            ?: engine
+            ?: FlutterEngineCache.getInstance().get(ENGINE_ID)
+        if (engine === currentEngine) {
+            engine = null
+        }
         if (currentEngine != null &&
             FlutterEngineCache.getInstance().get(ENGINE_ID) === currentEngine
         ) {
             FlutterEngineCache.getInstance().remove(ENGINE_ID)
         }
 
-        engine = null
         configurator?.dispose()
         configurator = null
         currentEngine?.destroy()
