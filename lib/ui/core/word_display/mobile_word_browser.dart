@@ -27,6 +27,28 @@ class _MobileWordBrowserState extends ConsumerState<MobileWordBrowser> {
   @override
   void initState() {
     super.initState();
+    _openInitialWord();
+  }
+
+  @override
+  void didUpdateWidget(covariant MobileWordBrowser oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // go_router keys the page by the matched route pattern ("/word/:word"),
+    // not by the concrete location, so navigating from one word to another
+    // reuses this State instead of rebuilding it. Without the update below,
+    // the browser keeps showing the previous word — which is exactly what a
+    // second process-text lookup hits now that the floating window reuses a
+    // warm engine (the old code restarted the whole Dart app instead).
+    if (oldWidget.initialWord == widget.initialWord &&
+        oldWidget.initialDictId == widget.initialDictId) {
+      return;
+    }
+
+    _openInitialWord();
+  }
+
+  void _openInitialWord() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final homeModel = ref.read(homeModelProvider);
