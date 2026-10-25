@@ -74,7 +74,7 @@ The project uses `justfile` to manage common development tasks.
 ### Translations
 *   **Source:** Add new source messages to `lib/l10n/app_en.arb`; keep user-visible strings out of widget code and access them through `AppLocalizations`.
 *   **Generation:** After changing an ARB file, run `flutter gen-l10n` to regenerate `lib/src/generated/i18n/app_localizations*.dart`. Never edit generated Dart files manually.
-*   **Translation:** Non-English locale files (`app_*.arb`) are managed through [Weblate](https://hosted.weblate.org/engage/ciyue/); do not hand-edit their translations locally.
+*   **Translation:** Non-English locale files (`app_*.arb`) are managed through [Weblate](https://hosted.weblate.org/engage/ciyue/); contributors may also edit them directly in a pull request for languages they know.
 
 ### Contribution Guidelines
 *   **Commits:** Use clear, descriptive commit messages.

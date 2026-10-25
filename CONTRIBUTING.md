@@ -46,7 +46,7 @@ We welcome contributions to help translate Ciyue into more languages!
 
 [Translate Ciyue on Weblate](https://hosted.weblate.org/engage/ciyue/)
 
-Weblate makes it easy to collaborate on translations online. Please do not edit `.arb` files directly.
+Weblate makes it easy to collaborate on translations online. If you are submitting a pull request, you may also edit `.arb` files directly for languages you know.
 
 ## Reporting Issues
 
