@@ -266,6 +266,8 @@
   "@backup": {},
   "about": "关于",
   "@about": {},
+  "documentation": "使用文档",
+  "@documentation": {},
   "advance": "高级",
   "@advance": {},
   "advanceSwitchDescription": "启用以显示更多设置选项",
