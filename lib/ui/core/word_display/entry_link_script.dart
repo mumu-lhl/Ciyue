@@ -1,11 +1,19 @@
-/// Chromium can truncate unescaped Unicode in custom-scheme navigation before
-/// shouldOverrideUrlLoading receives it. Encode only non-ASCII characters so
-/// existing percent escapes, case, and URL delimiters remain unchanged.
+/// Dictionary links are **not** URIs: dictionary ids, entry ids and tag names
+/// may contain `:`, `@`, `#` or upper-case ASCII, all of which a URI parser
+/// mangles (`entry://tag:x` throws, `entry://@id` drops the `@`, `entry://W`
+/// lower-cases the host). Before a link is followed, the word is therefore
+/// decoded once and re-encoded byte by byte, so the navigation URL survives
+/// parsing and the Dart side decodes it back to the original string.
+///
+/// `bword://` (Babylon word links, used by クラウン独和) is mapped onto
+/// `entry://`, and `#anchors` are dropped: Ciyue looks up words, not positions
+/// inside an entry.
 const dictionaryEntryLinkScript = r"""
 function _extractWordFromHref(href) {
   if (!href) return null;
-  if (/^entry:\/\//i.test(href)) {
-    return href.slice('entry://'.length);
+  var prefix = /^(?:entry|bword):\/\//i.exec(href);
+  if (prefix) {
+    return href.slice(prefix[0].length);
   }
   if (/^gdlookup:\/\/localhost\//i.test(href)) {
     return href.slice('gdlookup://localhost/'.length);
@@ -19,6 +27,33 @@ function _decodeWord(raw) {
   } catch (e) {
     return raw;
   }
+}
+
+// Anchors point at a position inside an entry; Ciyue has no scrolling target.
+function _wordText(raw) {
+  var word = raw || '';
+  var hash = word.indexOf('#');
+  if (hash >= 0) word = word.slice(0, hash);
+  return _decodeWord(word);
+}
+
+// Percent-encode every byte, ASCII letters included: that is what keeps
+// `entry://Haus` from being lower-cased when the URI parser normalises the
+// host, and what stops `:` or `@` from being read as port / userinfo.
+function _encodedWord(raw) {
+  var word = _wordText(raw);
+  var bytes;
+  try {
+    bytes = new TextEncoder().encode(word);
+  } catch (e) {
+    return '';
+  }
+  var out = '';
+  for (var i = 0; i < bytes.length; i++) {
+    var hex = bytes[i].toString(16).toUpperCase();
+    out += '%' + (hex.length < 2 ? '0' + hex : hex);
+  }
+  return out;
 }
 
 function _openWordInNewTab(word) {
@@ -47,23 +82,22 @@ document.addEventListener('click', function (event) {
   const anchor = target instanceof Element ? target.closest('a[href]') : null;
   if (!anchor) return;
   const href = anchor.getAttribute('href');
-  if (!href) return;
+  const rawWord = _extractWordFromHref(href);
+  if (rawWord === null) return;
 
   if (event.ctrlKey || event.metaKey) {
-    const rawWord = _extractWordFromHref(href);
-    if (rawWord !== null) {
-      event.preventDefault();
-      event.stopPropagation();
-      _openWordInNewTab(_decodeWord(rawWord));
-      return;
-    }
+    event.preventDefault();
+    event.stopPropagation();
+    _openWordInNewTab(_wordText(rawWord));
+    return;
   }
 
-  if (!/^(?:entry:\/\/|gdlookup:\/\/localhost\/)/i.test(href)) return;
-  const encoded = href.replace(/[^\x00-\x7F]+/gu, function (text) {
-    return encodeURI(text);
-  });
-  if (encoded !== href) anchor.setAttribute('href', encoded);
+  // Rewrite the href in place and let the navigation proceed: the Dart side
+  // then receives a URI-safe `entry://` URL and decodes it back.
+  const encoded = _encodedWord(rawWord);
+  if (encoded) {
+    anchor.setAttribute('href', 'entry://' + encoded);
+  }
 }, true);
 
 document.addEventListener('auxclick', function (event) {
@@ -76,7 +110,7 @@ document.addEventListener('auxclick', function (event) {
   if (rawWord !== null) {
     event.preventDefault();
     event.stopPropagation();
-    _openWordInNewTab(_decodeWord(rawWord));
+    _openWordInNewTab(_wordText(rawWord));
   }
 }, true);
 
