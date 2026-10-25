@@ -13,6 +13,8 @@ class FloatingWindowActivity : FlutterActivity() {
         private var activityReference: WeakReference<FloatingWindowActivity>? = null
         private var secureFlag = false
 
+        fun current(): FloatingWindowActivity? = activityReference?.get()
+
         fun setSecureFlag(secure: Boolean) {
             secureFlag = secure
             activityReference?.get()?.let { activity ->
@@ -26,6 +28,8 @@ class FloatingWindowActivity : FlutterActivity() {
             }
         }
     }
+
+    private var releaseEngineOnDestroy = false
 
     // Tell FlutterActivity that the engine is cached and owned by the engine
     // holder. This prevents the Activity from treating it as a new engine on
@@ -107,6 +111,18 @@ class FloatingWindowActivity : FlutterActivity() {
         }
     }
 
+    // Called when the engine has to go away while this Activity still renders
+    // it. The Activity cannot be rebound to another engine, so it is closed and
+    // the engine is released from onDestroy, once the Flutter view is detached.
+    fun closeForEngineReset() {
+        releaseEngineOnDestroy = true
+        runOnUiThread {
+            if (!isFinishing) {
+                finish()
+            }
+        }
+    }
+
     @Suppress("DEPRECATION")
     override fun onBackPressed() {
         // Give Flutter's Navigator the first chance to pop a dictionary
@@ -116,11 +132,17 @@ class FloatingWindowActivity : FlutterActivity() {
     }
 
     override fun onDestroy() {
+        val engine = getFlutterEngine()
         if (activityReference?.get() === this) {
             activityReference = null
         }
         // The cached engine is not destroyed with the Activity: it is
         // shared by later invocations and released on memory pressure.
         super.onDestroy()
+
+        if (releaseEngineOnDestroy) {
+            releaseEngineOnDestroy = false
+            FloatingWindowEngine.release(engine)
+        }
     }
 }
