@@ -10,6 +10,9 @@ import "package:url_launcher/url_launcher.dart";
 
 class AboutViewModel extends ChangeNotifier {
   // URIs and other constants
+  // Landing page of the docs site: the app has no in-app help, and the guide
+  // is short enough to read end to end.
+  static const docsUri = "https://mumulhl.eu.org/Ciyue/guide/";
   static const feedbackUri = "https://github.com/mumu-lhl/Ciyue/issues";
   static const githubUri = "https://github.com/mumu-lhl/Ciyue";
   static const discordUri = "https://discord.gg/BazBZuvKZG";

@@ -402,6 +402,8 @@
   "@other": {},
   "about": "About",
   "@about": {},
+  "documentation": "Documentation",
+  "@documentation": {},
   "backup": "Backup",
   "@backup": {},
   "cloudSync": "Cloud sync",

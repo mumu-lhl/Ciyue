@@ -5,6 +5,7 @@ import "package:material_ui/material_ui.dart";
 import "about_tile.dart";
 import "changelog_tile.dart";
 import "discord_tile.dart";
+import "documentation_tile.dart";
 import "feedback_tile.dart";
 import "github_tile.dart";
 import "privacy_policy_tile.dart";
@@ -27,6 +28,7 @@ class AboutSettingsPage extends StatelessWidget {
             children: const [
               SettingsGroupCard(
                 children: [
+                  DocumentationTile(),
                   FeedbackTile(),
                   GithubTile(),
                   DiscordTile(),
