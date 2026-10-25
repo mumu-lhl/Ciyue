@@ -1,3 +1,4 @@
+import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
@@ -18,6 +19,37 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 DateTime? _lastOpenWordTime;
 String? _lastOpenWordName;
 bool? _lastOpenWordIsNewTab;
+
+final _bwordHrefPattern = RegExp(
+  r'''(href\s*=\s*)(["'])bword://([^"']*)\2''',
+  caseSensitive: false,
+);
+
+/// Dictionaries converted from Babylon write their cross references as
+/// `bword://word`, which the WebView cannot load and nothing else accepts
+/// until the page script rewrites it. Rewriting the href before the page loads
+/// makes those links work even when the script does not run, or when a click
+/// never reaches it.
+///
+/// The word goes into the path as `gdlookup://localhost/<encoded>`, not into
+/// the host as `entry://<word>`: the URL parser folds hosts to lower case, so
+/// `entry://Abend` arrives as `abend` and lands on the wrong entry, and
+/// `entry://A.D.` is read as a host with a port and resolves to nothing.
+/// Percent-encoding the whole word keeps `/`, `?`, `#` and `:` out of the path.
+String normalizeEntryLinks(String html) {
+  if (!html.toLowerCase().contains("bword:")) return html;
+  return html.replaceAllMapped(_bwordHrefPattern, (match) {
+    final word = match[3] ?? "";
+    final hash = word.indexOf("#");
+    final target = hash >= 0 ? word.substring(0, hash) : word;
+    if (target.isEmpty) return match[0] ?? "";
+    final encoded = <String>[];
+    for (final byte in utf8.encode(target)) {
+      encoded.add("%${byte.toRadixString(16).padLeft(2, "0").toUpperCase()}");
+    }
+    return '${match[1]}"gdlookup://localhost/${encoded.join()}"';
+  });
+}
 
 void handleOpenWordNavigation(
   BuildContext context,
@@ -82,26 +114,49 @@ void handleOpenWordNavigation(
 }
 
 bool _isEntryUrl(WebUri url) {
+  // `bword://` is the Babylon spelling of the same thing; dictionaries
+  // converted from `.bgl` use it for their cross references (クラウン独和).
+  // The page script normally rewrites it to `entry://`, but a click that never
+  // reaches that script would otherwise fall through to the WebView, which has
+  // no handler for the scheme and silently ignores the tap.
   return url.scheme == "entry" ||
+      url.scheme == "bword" ||
       url.scheme == "ciyue-open-new-tab" ||
       (url.scheme == "gdlookup" && url.host == "localhost");
 }
 
-String _wordFromEntryUrl(WebUri url) {
+final _entrySchemePrefix = RegExp(r"^(?:entry|bword)://", caseSensitive: false);
+
+@visibleForTesting
+String wordFromEntryUrl(WebUri url) {
   if (url.scheme == "ciyue-open-new-tab") {
     final raw = url.host.isNotEmpty ? url.host : url.path;
     return Uri.decodeComponent(raw.replaceFirst(RegExp(r"^/"), ""));
   }
   final encodedWord = url.scheme == "gdlookup"
       ? url.path.replaceFirst(RegExp(r"^/"), "")
-      : url.toString().replaceFirst("entry://", "");
+      : url.toString().replaceFirst(_entrySchemePrefix, "");
   return Uri.decodeComponent(encodedWord);
 }
 
 NavigationActionPolicy navigationPolicyForUrl(WebUri url) {
-  return _isEntryUrl(url) || url.scheme == "sound"
-      ? NavigationActionPolicy.CANCEL
-      : NavigationActionPolicy.ALLOW;
+  if (_isEntryUrl(url) || url.scheme == "sound") {
+    return NavigationActionPolicy.CANCEL;
+  }
+  if (!const {
+    "http",
+    "https",
+    "file",
+    "about",
+    "blob",
+    "data",
+    "javascript",
+    "mailto",
+    "tel",
+  }.contains(url.scheme)) {
+    talker.info("Unhandled link scheme: ${url.scheme} (${url.toString()})");
+  }
+  return NavigationActionPolicy.ALLOW;
 }
 
 Future<CustomSchemeResponse?> Function(
@@ -155,7 +210,8 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
 
     if (_isEntryUrl(url)) {
       final isNewTab = url.scheme == "ciyue-open-new-tab";
-      final word = _wordFromEntryUrl(url);
+      final word = wordFromEntryUrl(url);
+      talker.info("Entry link: ${url.scheme} -> $word");
       if (!isNewTab &&
           (await dictManager.dicts[dictId]!.resolveExactKey(word)) == null) {
         talker.info("Word not found: ${url.toString()}");

@@ -92,11 +92,18 @@ document.addEventListener('click', function (event) {
     return;
   }
 
+  // Already canonical: the word sits in the path, so let the navigation
+  // proceed untouched.
+  if (/^gdlookup:\/\/localhost\//i.test(href)) return;
+
   // Rewrite the href in place and let the navigation proceed: the Dart side
-  // then receives a URI-safe `entry://` URL and decodes it back.
+  // then receives a URI-safe URL and decodes it back. The word goes into the
+  // path, not the host: a host is folded to lower case by the URL parser, so
+  // `entry://Abend` arrives as `abend` and every link to a capitalised
+  // headword lands on the wrong entry (or nowhere).
   const encoded = _encodedWord(rawWord);
   if (encoded) {
-    anchor.setAttribute('href', 'entry://' + encoded);
+    anchor.setAttribute('href', 'gdlookup://localhost/' + encoded);
   }
 }, true);
 
@@ -126,6 +133,43 @@ document.addEventListener('mousedown', function (event) {
     }
   }
 }, true);
+
+// Rewrite `bword://` hrefs as the entry is parsed, instead of only when a
+// click reaches the handlers above. A click can fail to reach them (an
+// overlay element on top of the link, a tap that the WebView reads as a drag,
+// a synthetic click from the dictionary's own script); the href would then
+// stay `bword://`, a scheme the WebView has no handler for, and the tap would
+// silently do nothing. Normalising up front also makes middle-click and link
+// previews work.
+(function () {
+  function normalize(anchor) {
+    var href = anchor.getAttribute && anchor.getAttribute('href');
+    var prefix = href && /^bword:\/\//i.exec(href);
+    if (!prefix) return;
+    var encoded = _encodedWord(href.slice(prefix[0].length));
+    if (encoded) anchor.setAttribute('href', 'gdlookup://localhost/' + encoded);
+  }
+
+  function scan(root) {
+    if (!root || root.nodeType !== 1) return;
+    if (root.tagName && root.tagName.toLowerCase() === 'a') normalize(root);
+    if (!root.querySelectorAll) return;
+    var anchors = root.querySelectorAll('a[href]');
+    for (var i = 0; i < anchors.length; i++) normalize(anchors[i]);
+  }
+
+  var observer = new MutationObserver(function (records) {
+    for (var i = 0; i < records.length; i++) {
+      var added = records[i].addedNodes;
+      for (var j = 0; j < added.length; j++) scan(added[j]);
+    }
+  });
+  observer.observe(document, { childList: true, subtree: true });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    scan(document.documentElement);
+  });
+})();
 
 (function () {
   function injectNoDrag() {
