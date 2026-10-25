@@ -30,7 +30,7 @@ typedef DesktopWebViewLoad = ({
 DesktopWebViewLoad desktopWebViewLoad(String content, String baseUrl) {
   return (
     deferredData: InAppWebViewInitialData(
-      data: normalizeEntryLinks(content),
+      data: normalizeDictionaryUrls(content),
       baseUrl: WebUri(baseUrl),
     ),
     initialData: null,
@@ -328,7 +328,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         isDarkTheme: !isLightTheme,
       ),
       initialData: InAppWebViewInitialData(
-        data: normalizeEntryLinks(widget.content),
+        data: normalizeDictionaryUrls(widget.content),
         baseUrl: WebUri("http://ciyue.internal/"),
       ),
       initialSettings: webviewSettings,
@@ -811,7 +811,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   body: _getPostData(),
                 ),
                 initialData: InAppWebViewInitialData(
-                  data: normalizeEntryLinks(content),
+                  data: normalizeDictionaryUrls(content),
                   baseUrl: WebUri(url),
                 ),
                 onLoadResourceWithCustomScheme:

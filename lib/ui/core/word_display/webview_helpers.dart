@@ -25,30 +25,57 @@ final _bwordHrefPattern = RegExp(
   caseSensitive: false,
 );
 
-/// Dictionaries converted from Babylon write their cross references as
-/// `bword://word`, which the WebView cannot load and nothing else accepts
-/// until the page script rewrites it. Rewriting the href before the page loads
-/// makes those links work even when the script does not run, or when a click
-/// never reaches it.
+final _soundUrlPattern = RegExp(
+  r'''((?:href|src)\s*=\s*)(["'])sound://([^"']*)\2''',
+  caseSensitive: false,
+);
+
+String _percentEncodeAll(String value) {
+  final encoded = <String>[];
+  for (final byte in utf8.encode(value)) {
+    encoded.add("%${byte.toRadixString(16).padLeft(2, "0").toUpperCase()}");
+  }
+  return encoded.join();
+}
+
+/// Rewrites the two dictionary link shapes whose payload the URL parser
+/// mangles, before the page is loaded:
 ///
-/// The word goes into the path as `gdlookup://localhost/<encoded>`, not into
-/// the host as `entry://<word>`: the URL parser folds hosts to lower case, so
-/// `entry://Abend` arrives as `abend` and lands on the wrong entry, and
-/// `entry://A.D.` is read as a host with a port and resolves to nothing.
-/// Percent-encoding the whole word keeps `/`, `?`, `#` and `:` out of the path.
-String normalizeEntryLinks(String html) {
-  if (!html.toLowerCase().contains("bword:")) return html;
-  return html.replaceAllMapped(_bwordHrefPattern, (match) {
-    final word = match[3] ?? "";
-    final hash = word.indexOf("#");
-    final target = hash >= 0 ? word.substring(0, hash) : word;
-    if (target.isEmpty) return match[0] ?? "";
-    final encoded = <String>[];
-    for (final byte in utf8.encode(target)) {
-      encoded.add("%${byte.toRadixString(16).padLeft(2, "0").toUpperCase()}");
-    }
-    return '${match[1]}"gdlookup://localhost/${encoded.join()}"';
-  });
+/// * Babylon cross references, `bword://Word` → `gdlookup://localhost/<word>`
+/// * audio references, `sound://FILE.spx` → `sound://localhost/<file>`
+///
+/// Both move the payload out of the **host** and into the path, because hosts
+/// are folded to lower case on the way through the URL parser: `entry://Abend`
+/// arrives as `abend`, and `sound://ID4107451.spx` arrives as
+/// `id4107451_287466265.spx`, which matches neither a headword nor an `.mdd`
+/// resource. Names that happen to be all lower case or all digits survive the
+/// folding, which is why only some dictionaries were affected — and why the
+/// same file plays in one dictionary and stays silent in the next.
+String normalizeDictionaryUrls(String html) {
+  var result = html;
+
+  if (result.toLowerCase().contains("bword:")) {
+    result = result.replaceAllMapped(_bwordHrefPattern, (match) {
+      final word = match[3] ?? "";
+      final hash = word.indexOf("#");
+      final target = hash >= 0 ? word.substring(0, hash) : word;
+      if (target.isEmpty) return match[0] ?? "";
+      return '${match[1]}"gdlookup://localhost/${_percentEncodeAll(target)}"';
+    });
+  }
+
+  if (result.toLowerCase().contains("sound://")) {
+    result = result.replaceAllMapped(_soundUrlPattern, (match) {
+      final file = (match[3] ?? "").split("#").first;
+      if (file.isEmpty) return match[0] ?? "";
+      // Already normalised: a second pass would encode the `localhost/` prefix
+      // into the file name.
+      if (file.toLowerCase().startsWith("localhost/")) return match[0] ?? "";
+      return '${match[1]}"sound://localhost/${_percentEncodeAll(file)}"';
+    });
+  }
+
+  return result;
 }
 
 void handleOpenWordNavigation(
@@ -139,6 +166,22 @@ String wordFromEntryUrl(WebUri url) {
   return Uri.decodeComponent(encodedWord);
 }
 
+/// The file name of a `sound://` link. New pages carry it percent-encoded in
+/// the path (`sound://localhost/<file>`); entries that still reach us in the
+/// old `sound://<file>` shape keep the historical parsing.
+String _soundFileName(WebUri url) {
+  if (url.host == "localhost") {
+    final path = url.path.replaceFirst(RegExp(r"^/"), "");
+    if (path.isEmpty) return "";
+    try {
+      return Uri.decodeComponent(path);
+    } catch (_) {
+      return path;
+    }
+  }
+  return Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
+}
+
 NavigationActionPolicy navigationPolicyForUrl(WebUri url) {
   if (_isEntryUrl(url) || url.scheme == "sound") {
     return NavigationActionPolicy.CANCEL;
@@ -171,8 +214,7 @@ onLoadResourceWithCustomSchemeWarpper(int dictId) {
       // Pronunciation audio lives in MDD resources; other dictionary
       // formats have none to serve here.
       if (dict is! Mdict) return null;
-      final filename = Uri.decodeFull(url.toString())
-          .replaceFirst("sound://", "");
+      final filename = _soundFileName(url);
       final results = await dict.readResource(filename);
       for (final result in results) {
         final info = result.offsetInfo;
@@ -228,8 +270,7 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
       }
       return NavigationActionPolicy.CANCEL;
     } else if (url.scheme == "sound") {
-      final filename = Uri.decodeFull(url.toString())
-          .replaceFirst("sound://", "");
+      final filename = _soundFileName(url);
 
       // Pronunciation audio lives in MDD resources; other dictionary
       // formats have none to play here.
