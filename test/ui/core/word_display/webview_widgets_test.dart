@@ -54,8 +54,9 @@ void main() {
       darkReaderSource: "window.DarkReader = {};",
     );
 
-    // Link normalization + app theme marker; Dark Reader stays off.
-    expect(scripts, hasLength(2));
+    // Resource normalisation + link normalisation + app theme marker; Dark
+    // Reader stays off.
+    expect(scripts, hasLength(3));
     expect(
       scripts.every((script) => !script.source.contains("DarkReader.enable")),
       isTrue,
