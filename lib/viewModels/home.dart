@@ -4,6 +4,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/viewModels/history_view_model.dart";
 import "package:ciyue/viewModels/word_tab.dart";
 import "package:ciyue/viewModels/wordbook.dart";
+import "package:dict_reader/dict_reader.dart" show normalizeKey;
 import "package:material_ui/material_ui.dart";
 
 class HistoryModel extends HistoryViewModel<HistoryData> {
@@ -13,14 +14,29 @@ class HistoryModel extends HistoryViewModel<HistoryData> {
     if (!settings.enableHistory) {
       return;
     }
-    final id = await historyDao.addHistory(word);
-    // Update the in-memory list directly instead of reloading the whole
-    // table: the new entry goes first (matching `ORDER BY id DESC`).
-    setHistory([
-      HistoryData(id: id, word: word),
-      for (final entry in history)
-        if (entry.word != word) entry,
-    ]);
+    // The DAO stores the NFC spelling, so the in-memory list has to use the
+    // same one: inserting the raw input would fail to replace the stored row
+    // (the strings differ) and the list would briefly show two entries for one
+    // word.
+    final stored = normalizeKey(word);
+    final id = await historyDao.addHistory(stored);
+    setHistory(mergedHistory(HistoryData(id: id, word: stored), history));
+  }
+
+  /// Puts [entry] first and drops any existing row showing the same word.
+  ///
+  /// Update the in-memory list directly instead of reloading the whole table:
+  /// the new entry goes first, matching `ORDER BY id DESC`. Kept separate from
+  /// [addHistory] so the de-duplication can be tested without a database.
+  static List<HistoryData> mergedHistory(
+    HistoryData entry,
+    List<HistoryData> existing,
+  ) {
+    return [
+      entry,
+      for (final row in existing)
+        if (row.word != entry.word) row,
+    ];
   }
 
   void clearHistory() async {
