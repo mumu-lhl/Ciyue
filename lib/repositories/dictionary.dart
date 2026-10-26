@@ -9,6 +9,7 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/services/lookup_keys.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
@@ -647,13 +648,14 @@ class Mdict implements LoadedDictionary {
   Future<String?> resolveExactKey(String word) async {
     await waitForLoading();
 
-    if (reader.exist(word)) {
-      return word;
-    }
-
-    final lowerCaseWord = word.toLowerCase();
-    if (reader.exist(lowerCaseWord)) {
-      return lowerCaseWord;
+    // Exact spelling first, then the case/kana variants of it. Only the query
+    // was lower-cased before, which reached a lower-case headword from an
+    // upper-case query but never the other way round: `nahida` could not find
+    // `Nahida`.
+    for (final candidate in lookupVariants(word)) {
+      if (reader.exist(candidate)) {
+        return candidate;
+      }
     }
 
     return null;
