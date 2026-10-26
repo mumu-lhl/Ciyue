@@ -38,10 +38,11 @@ dependencies:
   desktop_updater: ^3.2.1
   drift: ^2.35.2
   drift_flutter: ^0.3.1
+  # TODO: point back at mumu-lhl/dict_reader once the NFC index PR is merged.
   dict_reader:
     git:
-      url: https://github.com/mumu-lhl/dict_reader.git
-      ref: 09a620a46a3c2c0a906609613612feb292a01000
+      url: https://github.com/yx-wh/dict_reader.git
+      ref: 707aa378543944860a35fa9877bbf2fc4bf79f86
   hunspell_ffi:
     path: packages/hunspell_ffi
   shared_preferences: ^2.5.6

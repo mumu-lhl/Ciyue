@@ -191,4 +191,36 @@ void main() {
       );
     });
   });
+
+  group("Unicode NFC normalisation", () {
+    const nfcWord = "ingl\u00E9s";
+    const nfdWord = "ingle\u0301s";
+
+    test("history keeps one row for the NFC and NFD spellings", () async {
+      final historyDao = HistoryDao(database);
+
+      await historyDao.addHistory(nfdWord);
+      await historyDao.addHistory(nfcWord);
+      await historyDao.addHistory(nfdWord);
+
+      final rows = await historyDao.getAllHistory();
+      expect(rows, hasLength(1));
+      expect(rows.single.word, nfcWord);
+    });
+
+    test("wordbook stores and finds the NFC spelling only", () async {
+      await wordbookDao.addWord(nfdWord);
+
+      final rows = await wordbookDao.getAllWords();
+      expect(rows, hasLength(1));
+      expect(rows.single.word, nfcWord);
+
+      expect(await wordbookDao.wordExist(nfcWord), isTrue);
+      expect(await wordbookDao.wordExist(nfdWord), isTrue);
+      expect(await wordbookDao.wordsExist([nfdWord]), {nfcWord});
+
+      await wordbookDao.removeWord(nfdWord);
+      expect(await wordbookDao.wordExist(nfcWord), isFalse);
+    });
+  });
 }
