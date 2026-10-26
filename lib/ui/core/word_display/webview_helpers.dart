@@ -255,12 +255,12 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
       final isNewTab = url.scheme == "ciyue-open-new-tab";
       final word = wordFromEntryUrl(url);
       talker.info("Entry link: ${url.scheme} -> $word");
-      if (!isNewTab &&
-          (await dictManager.dicts[dictId]!.resolveExactKey(word)) == null) {
-        talker.info("Word not found: ${url.toString()}");
-        return NavigationActionPolicy.CANCEL;
-      }
 
+      // No lookup check against this one dictionary: the destination page
+      // searches the whole group, so a link this file cannot answer may still
+      // be answered by a sibling. Navigating anyway also turns a dead link
+      // into the usual "not found" page -- with a search bar and this word in
+      // it -- instead of a tap that silently does nothing.
       if (context.mounted) {
         handleOpenWordNavigation(
           context,
