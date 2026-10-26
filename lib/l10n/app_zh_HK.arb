@@ -806,6 +806,7 @@
   "finish": "完成",
   "freeSource": "免費，無需金鑰",
   "groupNameAlreadyExists": "分組名稱已存在",
+  "groupAddFailed": "新增分組失敗",
   "learningSettings": "學習設置",
   "manageScenarios": "管理情景",
   "mistakesCount": "{count} 個錯題",

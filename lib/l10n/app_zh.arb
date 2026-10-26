@@ -800,6 +800,7 @@
   "finish": "完成",
   "freeSource": "免费，无需密钥",
   "groupNameAlreadyExists": "分组名称已存在",
+  "groupAddFailed": "添加分组失败",
   "learningSettings": "学习设置",
   "manageScenarios": "管理情景",
   "mistakesCount": "{count} 道错题",

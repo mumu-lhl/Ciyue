@@ -796,6 +796,8 @@
   "@switchTab": {},
   "groupNameAlreadyExists": "Group name already exists",
   "@groupNameAlreadyExists": {},
+  "groupAddFailed": "Could not add the group",
+  "@groupAddFailed": {},
   "flashcards": "Flashcards",
   "@flashcards": {},
   "flashcardsTodaysReview": "Today's review",
