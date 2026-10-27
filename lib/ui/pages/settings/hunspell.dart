@@ -49,7 +49,16 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 12,
+              // The window is edge-to-edge, so the list would otherwise run
+              // under the system navigation bar and hide the last row's lower
+              // half. The inset belongs in the scroll extent, so the last item
+              // can still be scrolled fully into view.
+              bottom: 12 + MediaQuery.viewPaddingOf(context).bottom,
+            ),
             children: [
               SettingsGroupCard(
                 children: [

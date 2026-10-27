@@ -1257,6 +1257,11 @@ class ManageDictionariesBody extends ConsumerWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: ReorderableListView(
+                          // See the Hunspell page: edge-to-edge window, so the
+                          // navigation bar would cover the last dictionary.
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.viewPaddingOf(context).bottom,
+                          ),
                           buildDefaultDragHandles: false,
                           onReorderItem: (oldIndex, newIndex) {
                             final dict = dicts.removeAt(oldIndex);
