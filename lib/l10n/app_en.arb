@@ -68,12 +68,15 @@
   "@import": {},
   "customFont": "Custom Font",
   "@customFont": {},
-  "dictionaryUnsupportedCompression": "{count, plural, =1{This dictionary uses LZO compression, which Ciyue cannot read. Convert it to zlib or no compression, then import it again — an AI assistant can do the conversion for you.} other{{count} dictionaries use LZO compression, which Ciyue cannot read. Convert them to zlib or no compression, then import them again — an AI assistant can do the conversion for you.}}",
+  "dictionaryUnsupportedCompression": "{count, plural, =1{“{name}” uses LZO compression, which Ciyue cannot read. Convert it to zlib or no compression, then import it again — an AI assistant can do the conversion for you.} other{{count} dictionaries use LZO compression, which Ciyue cannot read. Convert them to zlib or no compression, then import them again — an AI assistant can do the conversion for you.}}",
   "@dictionaryUnsupportedCompression": {
-    "description": "Shown after importing MDX files whose blocks are LZO-compressed. LZO decoding is not implemented, so the user has to convert the file.",
+    "description": "Shown when an MDX whose blocks are LZO-compressed fails to load. LZO decoding is not implemented, so the user has to convert the file. `name` is only used when a single dictionary is affected.",
     "placeholders": {
       "count": {
         "type": "int"
+      },
+      "name": {
+        "type": "String"
       }
     }
   },

@@ -382,7 +382,7 @@
   "@exitApp": {},
   "spellingSuggestions": "拼写建议",
   "@spellingSuggestions": {},
-  "dictionaryUnsupportedCompression": "{count, plural, other{有 {count} 个词典用了 LZO 压缩，词悦读不了。请先转成 zlib 或无压缩格式再导入；不知道怎么转的话，交给 AI 帮你转就行。}}",
+  "dictionaryUnsupportedCompression": "{count, plural, =1{“{name}” 用了 LZO 压缩，词悦读不了。请先转成 zlib 或无压缩格式再导入；不知道怎么转的话，交给 AI 帮你转就行。} other{有 {count} 个词典用了 LZO 压缩，词悦读不了。请先转成 zlib 或无压缩格式再导入；不知道怎么转的话，交给 AI 帮你转就行。}}",
   "dictionaryCustomCss": "自定义词典 CSS",
   "@dictionaryCustomCss": {},
   "dictionaryCustomCssDescription": "在打开词典条目时应用自定义 CSS",

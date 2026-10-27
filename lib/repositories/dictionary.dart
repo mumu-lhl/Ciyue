@@ -105,7 +105,8 @@ class DictManager {
       final context = navigatorKey.currentContext;
       if (context == null || !context.mounted) return;
       await ToastService.show(
-        AppLocalizations.of(context)!.dictionaryUnsupportedCompression(1),
+        AppLocalizations.of(context)!
+            .dictionaryUnsupportedCompression(1, basename(path)),
         context,
         type: ToastType.error,
       );
@@ -1042,7 +1043,10 @@ Future<void> selectMdx(
         e,
         StackTrace.current,
       );
-      failures.add(classifyDictionaryImportFailure(e));
+      failures.add(
+        classifyDictionaryImportFailure(e),
+        name: basename(pathNoExtension),
+      );
     } finally {
       await dict.close();
     }
@@ -1104,7 +1108,10 @@ Future<void> selectStardict(
         e,
         StackTrace.current,
       );
-      failures.add(classifyDictionaryImportFailure(e));
+      failures.add(
+        classifyDictionaryImportFailure(e),
+        name: basename(pathNoExtension),
+      );
     } finally {
       await dict.close();
     }
@@ -1129,9 +1136,14 @@ class _ImportFailures {
   var unsupportedCompression = 0;
   var unknown = 0;
 
-  void add(DictionaryImportFailure failure) {
+  /// The first file that could not be decoded. Named when it is the only one;
+  /// with several, a name would be noise and the count says enough.
+  String? firstUnsupportedName;
+
+  void add(DictionaryImportFailure failure, {String? name}) {
     if (failure == DictionaryImportFailure.unsupportedCompression) {
       unsupportedCompression++;
+      firstUnsupportedName ??= name;
     } else {
       unknown++;
     }
@@ -1145,7 +1157,10 @@ class _ImportFailures {
 
     if (unsupportedCompression > 0) {
       await ToastService.show(
-        l10n.dictionaryUnsupportedCompression(unsupportedCompression),
+        l10n.dictionaryUnsupportedCompression(
+          unsupportedCompression,
+          firstUnsupportedName ?? "",
+        ),
         context,
         type: ToastType.error,
       );
