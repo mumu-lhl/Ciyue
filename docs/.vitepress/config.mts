@@ -33,6 +33,7 @@ export default defineConfig({
               { text: 'Cloud Sync', link: '/guide/cloud-sync' },
               { text: 'Word-Form Lookup', link: '/guide/word-forms' },
               { text: 'Appearance', link: '/guide/appearance' },
+              { text: 'Pronunciation', link: '/guide/pronunciation' },
               { text: 'FAQ', link: '/guide/faq' },
             ]
           }
@@ -65,6 +66,7 @@ export default defineConfig({
               { text: '云同步', link: '/zh/guide/cloud-sync' },
               { text: '词形还原', link: '/zh/guide/word-forms' },
               { text: '词典外观', link: '/zh/guide/appearance' },
+              { text: '发音与发音包', link: '/zh/guide/pronunciation' },
               { text: '常见问题', link: '/zh/guide/faq' },
             ]
           }

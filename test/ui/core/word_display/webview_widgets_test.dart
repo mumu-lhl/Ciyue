@@ -54,8 +54,9 @@ void main() {
       darkReaderSource: "window.DarkReader = {};",
     );
 
-    // Link normalization + app theme marker; Dark Reader stays off.
-    expect(scripts, hasLength(2));
+    // Resource normalisation + link normalisation + app theme marker; Dark
+    // Reader stays off.
+    expect(scripts, hasLength(3));
     expect(
       scripts.every((script) => !script.source.contains("DarkReader.enable")),
       isTrue,
@@ -155,13 +156,52 @@ void main() {
       navigationPolicyForUrl(WebUri("http://127.0.0.1:42433/")),
       NavigationActionPolicy.ALLOW,
     );
-    expect(
-      navigationPolicyForUrl(WebUri("entry://word")),
-      NavigationActionPolicy.CANCEL,
-    );
-    expect(
-      navigationPolicyForUrl(WebUri("sound://word.mp3")),
-      NavigationActionPolicy.CANCEL,
-    );
+    for (final handled in [
+      "entry://word",
+      "gdlookup://localhost/word",
+      "bword://word",
+      "sound://word.mp3",
+    ]) {
+      expect(
+        navigationPolicyForUrl(WebUri(handled)),
+        NavigationActionPolicy.CANCEL,
+        reason: handled,
+      );
+    }
+  });
+
+  group("linked words survive the URL container", () {
+    test("the encoded path decodes back to the original word", () {
+      expect(
+        wordFromEntryUrl(WebUri("gdlookup://localhost/%41%62%65%6E%64")),
+        "Abend",
+      );
+      expect(
+        wordFromEntryUrl(WebUri("gdlookup://localhost/%41%2E%44%2E")),
+        "A.D.",
+      );
+      expect(
+        wordFromEntryUrl(WebUri("gdlookup://localhost/%40smk8-000001-0001")),
+        "@smk8-000001-0001",
+      );
+      expect(
+        wordFromEntryUrl(
+          WebUri("gdlookup://localhost/%74%61%67%3A%73%75%6D%65%72%75"),
+        ),
+        "tag:sumeru",
+      );
+      expect(wordFromEntryUrl(WebUri("gdlookup://localhost/a%2Fb")), "a/b");
+    });
+
+    test("legacy entry and bword links still resolve", () {
+      // Lower case only: a host is folded, which is the reason words moved into
+      // the path in the first place.
+      expect(wordFromEntryUrl(WebUri("entry://abend")), "abend");
+      expect(wordFromEntryUrl(WebUri("bword://abend")), "abend");
+    });
+
+    test("new-tab links keep their word", () {
+      expect(wordFromEntryUrl(WebUri("ciyue-open-new-tab://haus")), "haus");
+    });
   });
 }

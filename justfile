@@ -24,3 +24,7 @@ build-deb:
 
 generate-changelog version:
     git cliff --tag {{version}} --ignore-tags ".*-.*" -o
+
+test-links:
+    uv run --with playwright playwright install chromium
+    uv run --with playwright python test/browser/dictionary_entry_links_test.py

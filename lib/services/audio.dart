@@ -22,22 +22,35 @@ Future<List<String>> findMddAudioFilesOnAndroid(String? directory) async {
   return mddFiles;
 }
 
-Future<void> playSound(
+/// Plays raw audio bytes and reports whether the platform accepted them.
+///
+/// A `false` return means the device has no decoder for this stream, which is
+/// how pack audio in an unsupported format (Ogg Speex, for instance) behaves:
+/// the bytes are there, the tap lands, and nothing is ever heard.
+Future<bool> playSound(
   Uint8List audio,
   String mimeType, {
   String? label,
 }) async {
   if (AudioModel.instance != null) {
-    await AudioModel.instance!.playAudioBytes(audio, mimeType, label: label);
-    return;
+    return AudioModel.instance!.playAudioBytes(audio, mimeType, label: label);
   }
 
   final player = AudioPlayer();
-  await player.setSourceBytes(audio, mimeType: mimeType);
-  await player.resume();
-  player.onPlayerComplete.listen((event) {
-    player.release();
-  });
+  try {
+    await player.setSourceBytes(audio, mimeType: mimeType);
+    await player.resume();
+    player.onPlayerComplete.listen((event) {
+      player.release();
+    });
+    return true;
+  } catch (e) {
+    talker.error("Failed to play audio bytes ($mimeType)", e);
+    try {
+      await player.release();
+    } catch (_) {}
+    return false;
+  }
 }
 
 Future<void> playSoundOfWord(

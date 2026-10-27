@@ -156,7 +156,7 @@ class AudioModel extends ChangeNotifier {
     }
   }
 
-  Future<void> playAudioBytes(
+  Future<bool> playAudioBytes(
     Uint8List audio,
     String mimeType, {
     String? label,
@@ -186,9 +186,11 @@ class AudioModel extends ChangeNotifier {
 
       await player.setSourceBytes(audio, mimeType: mimeType);
       await player.resume();
+      return true;
     } catch (e) {
       talker.error("Failed to play audio bytes", e);
       _onPlaybackComplete();
+      return false;
     }
   }
 

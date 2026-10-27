@@ -11,6 +11,7 @@ import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
+import "package:ciyue/ui/core/word_display/resource_url_script.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/gestures.dart";
@@ -29,7 +30,7 @@ typedef DesktopWebViewLoad = ({
 DesktopWebViewLoad desktopWebViewLoad(String content, String baseUrl) {
   return (
     deferredData: InAppWebViewInitialData(
-      data: content,
+      data: normalizeDictionaryUrls(content),
       baseUrl: WebUri(baseUrl),
     ),
     initialData: null,
@@ -163,6 +164,10 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
   return UnmodifiableListView([
     UserScript(
       source: dictionaryEntryLinkScript,
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
+    UserScript(
+      source: resourceUrlScript,
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
     UserScript(
@@ -323,7 +328,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         isDarkTheme: !isLightTheme,
       ),
       initialData: InAppWebViewInitialData(
-        data: widget.content,
+        data: normalizeDictionaryUrls(widget.content),
         baseUrl: WebUri("http://ciyue.internal/"),
       ),
       initialSettings: webviewSettings,
@@ -806,7 +811,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   body: _getPostData(),
                 ),
                 initialData: InAppWebViewInitialData(
-                  data: content,
+                  data: normalizeDictionaryUrls(content),
                   baseUrl: WebUri(url),
                 ),
                 onLoadResourceWithCustomScheme:

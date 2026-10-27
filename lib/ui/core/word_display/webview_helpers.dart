@@ -1,9 +1,11 @@
+import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/audio.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
 import "package:ciyue/utils.dart";
 import "package:flutter/foundation.dart";
@@ -18,6 +20,64 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 DateTime? _lastOpenWordTime;
 String? _lastOpenWordName;
 bool? _lastOpenWordIsNewTab;
+
+final _bwordHrefPattern = RegExp(
+  r'''(href\s*=\s*)(["'])bword://([^"']*)\2''',
+  caseSensitive: false,
+);
+
+final _soundUrlPattern = RegExp(
+  r'''((?:href|src)\s*=\s*)(["'])sound://([^"']*)\2''',
+  caseSensitive: false,
+);
+
+String _percentEncodeAll(String value) {
+  final encoded = <String>[];
+  for (final byte in utf8.encode(value)) {
+    encoded.add("%${byte.toRadixString(16).padLeft(2, "0").toUpperCase()}");
+  }
+  return encoded.join();
+}
+
+/// Rewrites the two dictionary link shapes whose payload the URL parser
+/// mangles, before the page is loaded:
+///
+/// * Babylon cross references, `bword://Word` → `gdlookup://localhost/<word>`
+/// * audio references, `sound://FILE.spx` → `sound://localhost/<file>`
+///
+/// Both move the payload out of the **host** and into the path, because hosts
+/// are folded to lower case on the way through the URL parser: `entry://Abend`
+/// arrives as `abend`, and `sound://ID4107451.spx` arrives as
+/// `id4107451_287466265.spx`, which matches neither a headword nor an `.mdd`
+/// resource. Names that happen to be all lower case or all digits survive the
+/// folding, which is why only some dictionaries were affected — and why the
+/// same file plays in one dictionary and stays silent in the next.
+String normalizeDictionaryUrls(String html) {
+  var result = html;
+
+  if (result.toLowerCase().contains("bword:")) {
+    result = result.replaceAllMapped(_bwordHrefPattern, (match) {
+      final word = match[3] ?? "";
+      final hash = word.indexOf("#");
+      final target = hash >= 0 ? word.substring(0, hash) : word;
+      if (target.isEmpty) return match[0] ?? "";
+      return '${match[1]}"gdlookup://localhost/${_percentEncodeAll(target)}"';
+    });
+  }
+
+  if (result.toLowerCase().contains("sound://")) {
+    result = result.replaceAllMapped(_soundUrlPattern, (match) {
+      final file = (match[3] ?? "").split("#").first;
+      if (file.isEmpty) return match[0] ?? "";
+      // Already normalised: a second pass would encode the `localhost/` prefix
+      // into the file name.
+      if (file.toLowerCase().startsWith("localhost/")) return match[0] ?? "";
+      return '${match[1]}"sound://localhost/${_percentEncodeAll(file)}"';
+    });
+  }
+
+  return result;
+}
 
 void handleOpenWordNavigation(
   BuildContext context,
@@ -82,26 +142,65 @@ void handleOpenWordNavigation(
 }
 
 bool _isEntryUrl(WebUri url) {
+  // `bword://` is the Babylon spelling of the same thing; dictionaries
+  // converted from `.bgl` use it for their cross references (クラウン独和).
+  // The page script normally rewrites it to `entry://`, but a click that never
+  // reaches that script would otherwise fall through to the WebView, which has
+  // no handler for the scheme and silently ignores the tap.
   return url.scheme == "entry" ||
+      url.scheme == "bword" ||
       url.scheme == "ciyue-open-new-tab" ||
       (url.scheme == "gdlookup" && url.host == "localhost");
 }
 
-String _wordFromEntryUrl(WebUri url) {
+final _entrySchemePrefix = RegExp(r"^(?:entry|bword)://", caseSensitive: false);
+
+@visibleForTesting
+String wordFromEntryUrl(WebUri url) {
   if (url.scheme == "ciyue-open-new-tab") {
     final raw = url.host.isNotEmpty ? url.host : url.path;
     return Uri.decodeComponent(raw.replaceFirst(RegExp(r"^/"), ""));
   }
   final encodedWord = url.scheme == "gdlookup"
       ? url.path.replaceFirst(RegExp(r"^/"), "")
-      : url.toString().replaceFirst("entry://", "");
+      : url.toString().replaceFirst(_entrySchemePrefix, "");
   return Uri.decodeComponent(encodedWord);
 }
 
+/// The file name of a `sound://` link. New pages carry it percent-encoded in
+/// the path (`sound://localhost/<file>`); entries that still reach us in the
+/// old `sound://<file>` shape keep the historical parsing.
+String _soundFileName(WebUri url) {
+  if (url.host == "localhost") {
+    final path = url.path.replaceFirst(RegExp(r"^/"), "");
+    if (path.isEmpty) return "";
+    try {
+      return Uri.decodeComponent(path);
+    } catch (_) {
+      return path;
+    }
+  }
+  return Uri.decodeFull(url.toString()).replaceFirst("sound://", "");
+}
+
 NavigationActionPolicy navigationPolicyForUrl(WebUri url) {
-  return _isEntryUrl(url) || url.scheme == "sound"
-      ? NavigationActionPolicy.CANCEL
-      : NavigationActionPolicy.ALLOW;
+  if (_isEntryUrl(url) || url.scheme == "sound") {
+    return NavigationActionPolicy.CANCEL;
+  }
+  if (!const {
+    "http",
+    "https",
+    "file",
+    "about",
+    "blob",
+    "data",
+    "javascript",
+    "mailto",
+    "tel",
+  }.contains(url.scheme)) {
+    talker.info("Unhandled link scheme: ${url.scheme} (${url.toString()})");
+  }
+  return NavigationActionPolicy.ALLOW;
 }
 
 Future<CustomSchemeResponse?> Function(
@@ -116,8 +215,7 @@ onLoadResourceWithCustomSchemeWarpper(int dictId) {
       // Pronunciation audio lives in MDD resources; other dictionary
       // formats have none to serve here.
       if (dict is! Mdict) return null;
-      final filename = Uri.decodeFull(url.toString())
-          .replaceFirst("sound://", "");
+      final filename = _soundFileName(url);
       final results = await dict.readResource(filename);
       for (final result in results) {
         final info = result.offsetInfo;
@@ -155,13 +253,14 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
 
     if (_isEntryUrl(url)) {
       final isNewTab = url.scheme == "ciyue-open-new-tab";
-      final word = _wordFromEntryUrl(url);
-      if (!isNewTab &&
-          (await dictManager.dicts[dictId]!.resolveExactKey(word)) == null) {
-        talker.info("Word not found: ${url.toString()}");
-        return NavigationActionPolicy.CANCEL;
-      }
+      final word = wordFromEntryUrl(url);
+      talker.info("Entry link: ${url.scheme} -> $word");
 
+      // No lookup check against this one dictionary: the destination page
+      // searches the whole group, so a link this file cannot answer may still
+      // be answered by a sibling. Navigating anyway also turns a dead link
+      // into the usual "not found" page -- with a search bar and this word in
+      // it -- instead of a tap that silently does nothing.
       if (context.mounted) {
         handleOpenWordNavigation(
           context,
@@ -172,8 +271,13 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
       }
       return NavigationActionPolicy.CANCEL;
     } else if (url.scheme == "sound") {
-      final filename = Uri.decodeFull(url.toString())
-          .replaceFirst("sound://", "");
+      final filename = _soundFileName(url);
+
+      // Resolved before the first await: showing the message afterwards would
+      // touch the context across an async gap.
+      final unsupportedMessage = AppLocalizations.of(context)
+          ?.pronunciationUnsupportedFormat;
+      final messenger = ScaffoldMessenger.maybeOf(context);
 
       // Pronunciation audio lives in MDD resources; other dictionary
       // formats have none to play here.
@@ -201,12 +305,17 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
             continue;
           }
 
-          await playSound(
+          final played = await playSound(
             data,
             lookupMimeType(filename) ?? "application/octet-stream",
             label: basenameWithoutExtension(filename),
           );
           talker.info("Playing sound (1): $filename");
+          if (!played && unsupportedMessage != null) {
+            messenger?.showSnackBar(
+              SnackBar(content: Text(unsupportedMessage)),
+            );
+          }
           return NavigationActionPolicy.CANCEL;
         }
       }

@@ -9,4 +9,5 @@ Welcome to the Ciyue documentation. Start here to install the app, add dictionar
 - [Cloud Sync](./cloud-sync) — keep your wordbook, tags, flashcards, and history in sync across devices via WebDAV, SFTP, or S3.
 - [Word-Form Lookup](./word-forms) — resolve inflected forms back to their lemma with Hunspell, and choose between fallback and supplement modes.
 - [Appearance](./appearance) — make dictionary pages follow the app theme, fix entries that are unreadable in dark mode, and inject custom CSS.
+- [Pronunciation](./pronunciation) — which audio formats play, and how to convert a pack the device cannot decode.
 - [FAQ](./faq) — answers to common questions.
