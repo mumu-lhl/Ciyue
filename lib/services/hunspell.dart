@@ -4,6 +4,7 @@ import "dart:isolate";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/hunspell.dart";
+import "package:dict_reader/dict_reader.dart" show normalizeKey;
 import "package:hunspell_ffi/hunspell_ffi.dart";
 
 abstract interface class MorphologyProvider {
@@ -109,7 +110,11 @@ void _hunspellWorker(SendPort sendPort) {
   }
 
   List<String> doStems(String word) {
-    final trimmed = word.trim();
+    // Hunspell compares bytes against the `.dic`, and those files are written
+    // in composed form (NFC) — see docs/guide/word-forms.md. A query that
+    // arrived decomposed would silently find nothing, so normalise once here,
+    // for every caller, rather than asking each of them to remember.
+    final trimmed = normalizeKey(word).trim();
     if (trimmed.isEmpty) return const <String>[];
 
     final tokens = trimmed.split(RegExp(r"\s+"));
@@ -120,9 +125,13 @@ void _hunspellWorker(SendPort sendPort) {
   }
 
   List<String> doSuggestions(String word) {
+    // Same reason as `doStems`: a decomposed spelling is a misspelling as far
+    // as the byte-level word list is concerned, and the candidates it gets back
+    // would have nothing to do with the word that was typed.
+    final normalized = normalizeKey(word);
     final results = <String>{};
     for (final item in dictionaries) {
-      results.addAll(item.dictionary.suggest(word));
+      results.addAll(item.dictionary.suggest(normalized));
     }
     return results.toList(growable: false);
   }

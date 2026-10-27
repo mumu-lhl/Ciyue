@@ -62,6 +62,27 @@ entries**, so irregular forms cannot be resolved at all. Maintained sets:
   builds on Gary's original version and adds mixed-script (kana + kanji) to kanji
   resolution (e.g. まん延 → 蔓延), more verb conjugations, and half-width kana.
 
+## Encoding: `.dic` files use composed forms
+
+Ciyue normalises every query to **NFC** before handing it to Hunspell — the form
+keyboards, web pages and the maintained sets above already use. A `.dic` you
+built yourself carries no such guarantee, and Hunspell compares bytes without
+ever normalising: a file written in decomposed form (`e` + U+0301 instead of
+`é`) matches nothing at all.
+
+The symptom is narrow and easy to misread: dictionary entries still appear, but
+a word never resolves to its lemma — as if word-form lookup were switched off.
+Convert the file once:
+
+```bash
+python3 -c "import sys,unicodedata; p=sys.argv[1]; t=open(p,encoding='utf-8').read(); open(p,'w',encoding='utf-8').write(unicodedata.normalize('NFC',t))" de_DE.dic
+```
+
+The `.aff` side cannot fix this for you: `MAP` and `REP` only feed `suggest()`,
+and `ICONV` — the one directive that rewrites input — only works if the file's
+author wrote it. That is why the normalisation sits in the query path instead of
+depending on the dictionary.
+
 ## Common problems
 
 **Nothing changes after enabling it.** Check three things in order: the toggle,
