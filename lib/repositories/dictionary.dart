@@ -7,6 +7,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
+import "package:ciyue/repositories/dictionary_import_failure.dart";
 import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/services/lookup_keys.dart";
@@ -989,6 +990,7 @@ Future<void> selectMdx(
   List<String> paths, {
   bool closeLoadingWhenEmpty = false,
 }) async {
+  final failures = _ImportFailures();
   if (paths.isEmpty) {
     if (closeLoadingWhenEmpty && context.mounted) {
       context.pop();
@@ -1015,18 +1017,14 @@ Future<void> selectMdx(
       await dict.add();
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
-      if (context.mounted) {
-        ToastService.show(
-          AppLocalizations.of(context)!.notSupport,
-          context,
-          type: ToastType.error,
-        );
-        talker.error(
-          "Failed to add dictionary: $pathNoExtension, error: $e",
-          e,
-          StackTrace.current,
-        );
-      }
+      // Always log the original object: the toast only carries the category,
+      // which is not enough to tell a corrupt file from a missing companion.
+      talker.error(
+        "Failed to add dictionary: $pathNoExtension, error: $e",
+        e,
+        StackTrace.current,
+      );
+      failures.add(classifyDictionaryImportFailure(e));
     } finally {
       await dict.close();
     }
@@ -1042,6 +1040,10 @@ Future<void> selectMdx(
     ).read(manageDictionariesModelProvider).update();
     context.pop();
   }
+
+  if (context.mounted) {
+    await failures.report(context);
+  }
 }
 
 /// The StarDict counterpart of [selectMdx]: same registration rules — the
@@ -1052,6 +1054,7 @@ Future<void> selectStardict(
   List<String> paths, {
   bool closeLoadingWhenEmpty = false,
 }) async {
+  final failures = _ImportFailures();
   if (paths.isEmpty) {
     if (closeLoadingWhenEmpty && context.mounted) {
       context.pop();
@@ -1078,18 +1081,12 @@ Future<void> selectStardict(
       await dict.add();
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
-      if (context.mounted) {
-        ToastService.show(
-          AppLocalizations.of(context)!.notSupport,
-          context,
-          type: ToastType.error,
-        );
-        talker.error(
-          "Failed to add dictionary: $pathNoExtension, error: $e",
-          e,
-          StackTrace.current,
-        );
-      }
+      talker.error(
+        "Failed to add dictionary: $pathNoExtension, error: $e",
+        e,
+        StackTrace.current,
+      );
+      failures.add(classifyDictionaryImportFailure(e));
     } finally {
       await dict.close();
     }
@@ -1101,6 +1098,45 @@ Future<void> selectStardict(
       listen: false,
     ).read(manageDictionariesModelProvider).update();
     context.pop();
+  }
+
+  if (context.mounted) {
+    await failures.report(context);
+  }
+}
+
+/// Counts a batch's import failures so the user gets one toast per category
+/// instead of one per file.
+class _ImportFailures {
+  var unsupportedCompression = 0;
+  var unknown = 0;
+
+  void add(DictionaryImportFailure failure) {
+    if (failure == DictionaryImportFailure.unsupportedCompression) {
+      unsupportedCompression++;
+    } else {
+      unknown++;
+    }
+  }
+
+  /// At most two toasts, the actionable one first. Awaited, because a second
+  /// toast shown immediately would replace the first before it is read.
+  Future<void> report(BuildContext context) async {
+    if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    if (unsupportedCompression > 0) {
+      await ToastService.show(
+        l10n.dictionaryUnsupportedCompression(unsupportedCompression),
+        context,
+        type: ToastType.error,
+      );
+      if (!context.mounted) return;
+    }
+
+    if (unknown > 0) {
+      await ToastService.show(l10n.notSupport, context, type: ToastType.error);
+    }
   }
 }
 
