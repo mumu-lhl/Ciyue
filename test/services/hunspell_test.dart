@@ -101,6 +101,35 @@ void main() {
     );
   });
 
+  test("normalises a decomposed query before asking Hunspell", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+
+    await manager.reload([
+      HunspellSourceInfo(
+        id: 3,
+        name: "nfc",
+        affPath: File("packages/hunspell_ffi/test/fixtures/nfc.aff")
+            .absolute
+            .path,
+        dicPath: File("packages/hunspell_ffi/test/fixtures/nfc.dic")
+            .absolute
+            .path,
+        language: null,
+        enabled: true,
+        order: 0,
+      ),
+    ]);
+
+    // The `.dic` stores the composed spelling. Hunspell compares bytes and
+    // never normalises, so without the normalisation a decomposed query finds
+    // nothing at all.
+    // `ingle\u0301sito` is "inglésito" decomposed: `e` + U+0301, not the
+    // precomposed U+00E9 the `.dic` holds.
+    expect(await manager.stems("ingle\u0301sito"), equals(["ingl\u00E9s"]));
+    expect(await manager.stems("ingl\u00E9sito"), equals(["ingl\u00E9s"]));
+  });
+
   test("skips disabled sources", () async {
     final manager = HunspellManager();
     addTearDown(manager.close);

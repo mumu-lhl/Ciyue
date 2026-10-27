@@ -3,6 +3,7 @@ import "dart:convert";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/tables.dart";
+import "package:dict_reader/dict_reader.dart" show normalizeKey;
 import "package:drift/drift.dart";
 
 part "daos.g.dart";
@@ -262,10 +263,13 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
   HistoryDao(super.attachedDatabase);
 
   Future<int> addHistory(String word) {
+    // Store the NFC spelling so that the same visible word typed on a device
+    // producing NFD input does not create a second history row.
+    final key = normalizeKey(word);
     // Delete + insert in one transaction: fewer journal syncs and atomic.
     return transaction(() async {
-      await removeHistory(word);
-      return into(history).insert(HistoryCompanion(word: Value(word)));
+      await removeHistory(key);
+      return into(history).insert(HistoryCompanion(word: Value(key)));
     });
   }
 
@@ -280,8 +284,9 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
     final seen = <String>{};
     final newestFirst = <String>[];
     for (var i = words.length - 1; i >= 0; i--) {
-      if (seen.add(words[i])) {
-        newestFirst.add(words[i]);
+      final word = normalizeKey(words[i]);
+      if (seen.add(word)) {
+        newestFirst.add(word);
       }
     }
     // Insert oldest first so ids ascend with recency (matches ORDER BY id
@@ -313,7 +318,9 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
   }
 
   Future<int> removeHistory(String word) {
-    return (delete(history)..where((t) => t.word.isValue(word))).go();
+    return (delete(
+      history,
+    )..where((t) => t.word.isValue(normalizeKey(word)))).go();
   }
 
   Future<void> removeHistories(Iterable<int> ids) {
@@ -519,6 +526,13 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   Future<void> addAllWords(List<WordbookData> data) async {
     if (data.isEmpty) return;
 
+    // Normalise before the dedup pass: a backup written on a device with a
+    // different input method may carry the decomposed spelling of a word that
+    // is already in the wordbook.
+    data = [
+      for (final entry in data) entry.copyWith(word: normalizeKey(entry.word)),
+    ];
+
     // Query only the words being inserted (not the full table) for dedup,
     // chunked to stay under SQLite's variable limit.
     final wordsToCheck = data.map((e) => e.word).toSet().toList();
@@ -572,7 +586,7 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
     return into(wordbook).insert(
       WordbookCompanion(
         tag: Value(tag),
-        word: Value(word),
+        word: Value(normalizeKey(word)),
         createdAt: Value(DateTime.now()),
       ),
     );
@@ -663,35 +677,37 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<int> removeWord(String word, {int? tag}) {
+    final key = normalizeKey(word);
     if (tag == null) {
       return (delete(
         wordbook,
-      )..where((t) => t.word.isValue(word) & t.tag.isNull())).go();
+      )..where((t) => t.word.isValue(key) & t.tag.isNull())).go();
     } else {
       return (delete(
         wordbook,
-      )..where((t) => t.word.isValue(word) & t.tag.isValue(tag))).go();
+      )..where((t) => t.word.isValue(key) & t.tag.isValue(tag))).go();
     }
   }
 
   Future<int> removeWordWithAllTags(String word) {
-    return (delete(wordbook)..where((t) => t.word.isValue(word))).go();
+    return (delete(
+      wordbook,
+    )..where((t) => t.word.isValue(normalizeKey(word)))).go();
   }
 
   Future<void> removeWords(List<WordbookData> words) async {
     await batch((batch) {
       for (final wordData in words) {
+        final key = normalizeKey(wordData.word);
         if (wordData.tag == null) {
           batch.deleteWhere(
             wordbook,
-            (row) => row.word.isValue(wordData.word) & row.tag.isNull(),
+            (row) => row.word.isValue(key) & row.tag.isNull(),
           );
         } else {
           batch.deleteWhere(
             wordbook,
-            (row) =>
-                row.word.isValue(wordData.word) &
-                row.tag.isValue(wordData.tag!),
+            (row) => row.word.isValue(key) & row.tag.isValue(wordData.tag!),
           );
         }
       }
@@ -699,15 +715,16 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<int>> tagsOfWord(String word) {
-    return (select(wordbook)
-          ..where((t) => t.word.isValue(word) & t.tag.isNotNull()))
+    return (select(
+          wordbook,
+        )..where((t) => t.word.isValue(normalizeKey(word)) & t.tag.isNotNull()))
         .map((row) => row.tag!)
         .get();
   }
 
   Future<bool> wordExist(String word) async {
     return (await (select(wordbook)
-              ..where((u) => u.word.isValue(word))
+              ..where((u) => u.word.isValue(normalizeKey(word)))
               ..limit(1))
             .get())
         .isNotEmpty;
@@ -716,7 +733,9 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   Future<Set<String>> wordsExist(Iterable<String> words) async {
     final result = <String>{};
     // Chunk the IN list to stay under SQLite's variable limit.
-    for (final chunk in _chunks(words.toList(), 500)) {
+    for (final chunk in _chunks([
+      for (final word in words) normalizeKey(word),
+    ], 500)) {
       final rows = await (select(
         wordbook,
       )..where((u) => u.word.isIn(chunk))).get();

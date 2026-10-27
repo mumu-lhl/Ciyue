@@ -52,6 +52,23 @@ Hunspell `.aff`/`.dic`，那种语言就能用。
 - 日文：<https://github.com/yx-wh/hunspell_ja_JP> —— 由于日文通常无需拼写检查，需要单独为日文设计Hunspell词典文件。这个版本在Gary原始版本的基础上增加了混书形式到汉字的还原（例如「まん延」→「蔓延」）、补充了一些动词的活用、补充了半角假名。
 
 
+## 编码：`.dic` 用组合形式（NFC）
+
+Ciyue 在把查询交给 Hunspell 之前，会统一归一化到 **NFC**——键盘输入、网页内容
+和上面列出的几套词表本来就是这种形式。你自建的 `.dic` 没有这个保证，而
+Hunspell 只按字节比较、从不归一化：用分离形式（`e` + U+0301 而不是 `é`）写出来
+的词表一条也匹配不上。
+
+症状很隐蔽：词典词条照常显示，但词形永远还原不出来，看上去和「功能没开」一样。
+转换一次即可：
+
+```bash
+python3 -c "import sys,unicodedata; p=sys.argv[1]; t=open(p,encoding='utf-8').read(); open(p,'w',encoding='utf-8').write(unicodedata.normalize('NFC',t))" de_DE.dic
+```
+
+`.aff` 那边帮不上忙：`MAP` 和 `REP` 只作用于 `suggest()`，而唯一能改写输入的
+`ICONV` 依赖词表作者主动写。所以归一化放在查询路径上，而不是交给词典。
+
 ## 常见问题
 
 **打开后毫无变化。** 按顺序检查三件事：开关、是否导入了 `.aff`/`.dic`、当前查找
