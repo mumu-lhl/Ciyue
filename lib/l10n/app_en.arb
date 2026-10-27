@@ -643,6 +643,15 @@
   },
   "noHunspellDictionaries": "No Hunspell dictionaries imported",
   "@noHunspellDictionaries": {},
+  "hunspellSourcesFailedCount": "{count, plural, =1{1 word list failed to load} other{{count} word lists failed to load}}",
+  "@hunspellSourcesFailedCount": {
+    "description": "Summary shown above the word list when some Hunspell dictionaries could not be loaded.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "twoPassLookup": "Two-pass lookup",
   "@twoPassLookup": {},
   "twoPassLookupDescription": "Query Hunspell again with the first-round stems to find deeper stems (e.g. for Japanese or German).",

@@ -25,12 +25,16 @@ class HunspellSettingsPage extends ConsumerStatefulWidget {
 
 class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
   late Future<List<HunspellSourceData>> _sources;
+
+  /// Why a word list could not be loaded, keyed by its id.
+  var _errors = const <int, String>{};
   bool _isImporting = false;
 
   @override
   void initState() {
     super.initState();
     _sources = hunspellSourceDao.all();
+    _errors = Map.of(hunspellManager.errors);
     PlatformMethod.onHunspellDirectoryImported = _onHunspellDirectoryImported;
   }
 
@@ -122,8 +126,20 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                       }
 
                       final sources = snapshot.data!;
+                      final failed = sources
+                          .where((source) => _errors.containsKey(source.id))
+                          .length;
                       return Column(
                         children: [
+                          if (failed > 0)
+                            ListTile(
+                              iconColor: Theme.of(context).colorScheme.error,
+                              textColor: Theme.of(context).colorScheme.error,
+                              leading: const Icon(Icons.error_outline),
+                              title: Text(
+                                l10n.hunspellSourcesFailedCount(failed),
+                              ),
+                            ),
                           for (int i = 0; i < sources.length; i++) ...[
                             if (i > 0)
                               Divider(
@@ -137,6 +153,7 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                             _HunspellSourceTile(
                               source: sources[i],
                               l10n: l10n,
+                              errorText: _errors[sources[i].id],
                               onShowSettings: () =>
                                   _showSourceSettings(sources[i]),
                               onSetEnabled: (value) =>
@@ -269,11 +286,13 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
   }
 
   void _refreshSources() {
-    if (mounted) {
-      setState(() {
-        _sources = hunspellSourceDao.all();
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _sources = hunspellSourceDao.all();
+      // Read this only after the reload that preceded the call: the manager
+      // holds the failures of the last reload, not of the current one.
+      _errors = Map.of(hunspellManager.errors);
+    });
   }
 
   void _invalidateLookup() {
@@ -290,6 +309,7 @@ class _HunspellSourceTile extends StatelessWidget {
     required this.onShowSettings,
     required this.onSetEnabled,
     required this.onRemove,
+    this.errorText,
   });
 
   final HunspellSourceData source;
@@ -298,16 +318,51 @@ class _HunspellSourceTile extends StatelessWidget {
   final ValueChanged<bool> onSetEnabled;
   final VoidCallback onRemove;
 
+  /// Set when this word list failed to load; the text is the loader's reason.
+  final String? errorText;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final description = source.twoPassLookup
+        ? "${source.language ?? source.affPath} • ${l10n.twoPassLookup}"
+        : (source.language ?? source.affPath);
+
     return ListTile(
       leading: const Icon(Icons.book),
       title: Text(source.name),
-      subtitle: Text(
-        source.twoPassLookup
-            ? "${source.language ?? source.affPath} • ${l10n.twoPassLookup}"
-            : (source.language ?? source.affPath),
+      isThreeLine: errorText != null,
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(description),
+          if (errorText != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 14,
+                    color: theme.colorScheme.error,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      errorText!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
       onTap: onShowSettings,
       trailing: Row(

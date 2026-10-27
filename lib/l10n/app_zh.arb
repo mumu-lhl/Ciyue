@@ -652,6 +652,7 @@
     }
   },
   "noHunspellDictionaries": "未导入 Hunspell 词典",
+  "hunspellSourcesFailedCount": "{count, plural, other{{count} 个词表加载失败}}",
   "@noHunspellDictionaries": {},
   "twoPassLookup": "两轮迭代查找 (Two-pass)",
   "@twoPassLookup": {},
