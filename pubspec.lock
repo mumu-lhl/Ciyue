@@ -421,9 +421,9 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "707aa378543944860a35fa9877bbf2fc4bf79f86"
-      resolved-ref: "707aa378543944860a35fa9877bbf2fc4bf79f86"
-      url: "https://github.com/yx-wh/dict_reader.git"
+      ref: f5dee6413c4c5a4a88477e4dc0668c7e60c2a1ae
+      resolved-ref: f5dee6413c4c5a4a88477e4dc0668c7e60c2a1ae
+      url: "https://github.com/mumu-lhl/dict_reader.git"
     source: git
     version: "1.6.1"
   dio:
