@@ -91,6 +91,24 @@ class DictManager {
         e,
         stackTrace,
       );
+
+      // Adding a dictionary only reads its header, so one the reader cannot
+      // decode — an LZO-compressed MDX — is added first and fails here, in the
+      // background. Without this the entry just sits there with no headwords
+      // and no reason, which is the one case where the user can do something:
+      // convert the file and import it again. The rest stay in the log.
+      if (classifyDictionaryImportFailure(e) !=
+          DictionaryImportFailure.unsupportedCompression) {
+        return;
+      }
+
+      final context = navigatorKey.currentContext;
+      if (context == null || !context.mounted) return;
+      await ToastService.show(
+        AppLocalizations.of(context)!.dictionaryUnsupportedCompression(1),
+        context,
+        type: ToastType.error,
+      );
     }
   }
 
