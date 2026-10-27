@@ -1,6 +1,7 @@
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/models/hunspell.dart";
 import "package:ciyue/services/hunspell.dart";
+import "package:ciyue/services/lookup_keys.dart";
 
 class DictionaryLookupResult {
   final Map<int, List<DictionaryEntryData>> entriesByDictionary;
@@ -83,12 +84,11 @@ class DictionaryLookup {
           HunspellLookupMode.supplement => true,
         };
 
-        final candidates = <String>[];
-        if (exactKey != null) {
-          candidates.add(exactKey);
-        } else {
-          candidates.add(word);
-        }
+        // Every spelling the dictionary might actually store: the exact one
+        // first, then its case and kana variants. Reading all of them is what
+        // keeps `abend` and `Abend` as two entries instead of silently
+        // dropping whichever one the first lookup happened to return.
+        final candidates = <String>[...lookupVariants(word)];
         if (shouldResolveStems && shouldUseStems) {
           candidates.addAll(stems);
         }

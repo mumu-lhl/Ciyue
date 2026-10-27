@@ -153,6 +153,84 @@ void main() {
       expect(morphology.suggestionCalls, 0);
     },
   );
+
+  test("a lower case query reaches a capitalised headword", () async {
+    // Reporting case: the dictionary stores "Nahida", the user types "nahida".
+    final dictionary = FakeDictionarySource(
+      id: 1,
+      entries: {"Nahida": "nahida content"},
+    );
+    final lookup = makeLookup(
+      dictionary: dictionary,
+      morphology: FakeMorphology(stemsResult: const []),
+      enabled: false,
+    );
+
+    final result = await lookup.lookup("nahida");
+
+    expect(result.entriesFor(1).map((entry) => entry.headword), ["Nahida"]);
+  });
+
+  test("both spellings are kept when the dictionary has two", () async {
+    // German minimal pairs: Weg/weg and Essen/essen are different words, so
+    // neither spelling may be dropped.
+    final dictionary = FakeDictionarySource(
+      id: 1,
+      entries: {"abend": "lower", "Abend": "capitalised"},
+    );
+    final lookup = makeLookup(
+      dictionary: dictionary,
+      morphology: FakeMorphology(stemsResult: const []),
+      enabled: false,
+    );
+
+    expect(
+      (await lookup.lookup("abend")).entriesFor(1).map((e) => e.headword),
+      ["abend", "Abend"],
+    );
+    expect(
+      (await lookup.lookup("Abend")).entriesFor(1).map((e) => e.headword),
+      ["Abend", "abend"],
+    );
+  });
+
+  test("kana variants reach a katakana headword", () async {
+    final dictionary = FakeDictionarySource(
+      id: 1,
+      entries: {"パソコン": "pc content"},
+    );
+    final lookup = makeLookup(
+      dictionary: dictionary,
+      morphology: FakeMorphology(stemsResult: const []),
+      enabled: false,
+    );
+
+    final result = await lookup.lookup("ぱそこん");
+
+    expect(result.entriesFor(1).map((entry) => entry.headword), ["パソコン"]);
+  });
+
+  test("morphology results stay behind the spelling variants", () async {
+    final morphology = FakeMorphology(stemsResult: ["Abend", "abends"]);
+    final dictionary = FakeDictionarySource(
+      id: 1,
+      entries: {"abend": "lower", "Abend": "capitalised", "abends": "stem"},
+    );
+    final lookup = makeLookup(
+      dictionary: dictionary,
+      morphology: morphology,
+      enabled: true,
+      mode: HunspellLookupMode.supplement,
+    );
+
+    final result = await lookup.lookup("abend");
+
+    expect(result.entriesFor(1).map((entry) => entry.headword), [
+      "abend",
+      "Abend",
+      "abends",
+    ]);
+  });
 }
 
 DictionaryLookup makeLookup({

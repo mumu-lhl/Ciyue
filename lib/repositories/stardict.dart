@@ -5,6 +5,7 @@ import "dart:typed_data";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
+import "package:ciyue/services/lookup_keys.dart";
 import "package:ciyue/services/stardict_html.dart";
 import "package:ciyue/utils.dart";
 import "package:dict_reader/dict_reader.dart";
@@ -206,8 +207,14 @@ class Stardict implements LoadedDictionary {
   @override
   Future<String?> resolveExactKey(String word) async {
     await waitForLoading();
-    final index = reader.resolveIndex(word);
-    return index == null ? null : reader.wordAt(index);
+    // Try the exact spelling first, then the case/kana variants of it: a
+    // lower-case query never reached a capitalised headword before, because
+    // `resolveIndex` only lower-cases the query itself.
+    for (final candidate in lookupVariants(word)) {
+      final index = reader.resolveIndex(candidate);
+      if (index != null) return reader.wordAt(index);
+    }
+    return null;
   }
 
   @override
