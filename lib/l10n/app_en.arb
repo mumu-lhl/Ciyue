@@ -20,6 +20,10 @@
   "@search": {},
   "spellingSuggestions": "Spelling suggestions",
   "@spellingSuggestions": {},
+  "phraseSuggestions": "Phrasal verbs",
+  "@phraseSuggestions": {
+    "description": "Header above the headwords a phrase may be hiding, e.g. picked the phone up -> pick up, rufe dich an -> anrufen."
+  },
   "wordParts": "Split into words",
   "@wordParts": {
     "description": "Header above the suggestions that read a long word as several shorter headwords, e.g. Anime + Cover."

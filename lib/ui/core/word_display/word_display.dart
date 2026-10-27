@@ -58,11 +58,16 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   /// always did for a word nobody can help with.
   Widget _buildMissingWordSuggestions(BuildContext context) {
     final splits = ref.watch(wordSplitsProvider(widget.word)).asData?.value;
+    final phrases = ref
+        .watch(phraseSuggestionsProvider(widget.word))
+        .asData
+        ?.value;
     final spelling = ref
         .watch(missingWordSpellingSuggestionsProvider(widget.word))
         .asData
         ?.value;
     if ((splits == null || splits.isEmpty) &&
+        (phrases == null || phrases.isEmpty) &&
         (spelling == null || spelling.isEmpty)) {
       return const SizedBox.shrink();
     }
@@ -71,6 +76,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
       suggestions: MissingWordSuggestions(
         spellingSuggestions: spelling ?? const [],
         splits: splits ?? const [],
+        phrases: phrases ?? const [],
       ),
       // The same path a dictionary link takes: it records the word in history
       // and opens it in the current tab, on both layouts.

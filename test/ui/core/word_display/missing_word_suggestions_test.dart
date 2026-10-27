@@ -23,12 +23,15 @@ void main() {
             splits: [
               WordSplit(["Anime", "Cover"]),
             ],
+            phrases: ["pick up"],
           ),
           onSelected: (_) {},
         ),
       ),
     );
 
+    expect(find.text("Phrasal verbs"), findsOneWidget);
+    expect(find.text("pick up"), findsOneWidget);
     expect(find.text("Spelling suggestions"), findsOneWidget);
     expect(find.text("abschieben"), findsOneWidget);
     expect(find.text("Split into words"), findsOneWidget);
@@ -36,12 +39,13 @@ void main() {
     expect(find.text("Cover"), findsOneWidget);
     expect(find.text("+"), findsOneWidget);
 
-    // The splits arrive first, so they must sit above: a group that appears
-    // later can then only extend the page downwards.
-    expect(
-      tester.getTopLeft(find.text("Split into words")).dy,
-      lessThan(tester.getTopLeft(find.text("Spelling suggestions")).dy),
-    );
+    // The phrases and splits arrive first, so they must sit above: a group
+    // that appears later can then only extend the page downwards.
+    final phrasesTop = tester.getTopLeft(find.text("Phrasal verbs")).dy;
+    final splitsTop = tester.getTopLeft(find.text("Split into words")).dy;
+    final spellingTop = tester.getTopLeft(find.text("Spelling suggestions")).dy;
+    expect(phrasesTop, lessThan(splitsTop));
+    expect(splitsTop, lessThan(spellingTop));
   });
 
   testWidgets("draws nothing when there is nothing to suggest", (tester) async {

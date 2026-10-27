@@ -116,15 +116,22 @@ class MissingWordSuggestions {
   /// Readings of the query as several known headwords.
   final List<WordSplit> splits;
 
+  /// Headwords a phrase may be hiding: `picked the phone up` -> `pick up`,
+  /// `rufe dich an` -> `anrufen`.
+  final List<String> phrases;
+
   const MissingWordSuggestions({
     required this.spellingSuggestions,
     required this.splits,
+    this.phrases = const [],
   });
 
   static const empty = MissingWordSuggestions(
     spellingSuggestions: [],
     splits: [],
+    phrases: [],
   );
 
-  bool get isEmpty => spellingSuggestions.isEmpty && splits.isEmpty;
+  bool get isEmpty =>
+      spellingSuggestions.isEmpty && splits.isEmpty && phrases.isEmpty;
 }

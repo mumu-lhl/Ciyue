@@ -382,6 +382,8 @@
   "@exitApp": {},
   "spellingSuggestions": "拼写建议",
   "@spellingSuggestions": {},
+  "phraseSuggestions": "动词短语",
+  "@phraseSuggestions": {},
   "wordParts": "拆开来看",
   "@wordParts": {},
   "dictionaryCustomCss": "自定义词典 CSS",

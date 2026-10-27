@@ -185,6 +185,15 @@ final wordSplitsProvider = FutureProvider.autoDispose
       return dictionaryLookup.wordSplitsFor(word);
     });
 
+/// Phrasal verbs a phrase may be hiding, for the "not found" page.
+///
+/// Also fast — one `stems()` call per word — so it is drawn with the splits
+/// rather than after them.
+final phraseSuggestionsProvider = FutureProvider.autoDispose
+    .family<List<String>, String>((ref, word) async {
+      return dictionaryLookup.phraseSuggestionsFor(word);
+    });
+
 /// Hunspell's spelling corrections for a word no dictionary matched.
 ///
 /// Deliberately separate from [wordSplitsProvider]: `suggest` takes hundreds of

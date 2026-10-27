@@ -376,6 +376,102 @@ void main() {
       // One part is what already failed; there is nothing to offer.
       expect(await lookup.wordSplitsFor("Cover"), isEmpty);
     });
+
+    test("reads an English phrasal verb out of a phrase", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"pick up": "pick up content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          stemsByWord: const {
+            "picked": ["pick"],
+          },
+        ),
+        enabled: true,
+      );
+
+      expect(await lookup.phraseSuggestionsFor("picked the phone up"), [
+        "pick up",
+      ]);
+    });
+
+    test("reads a German separable verb out of a phrase", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"anrufen": "anrufen content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          stemsByWord: const {
+            "rufe": ["rufen"],
+          },
+        ),
+        enabled: true,
+      );
+
+      expect(await lookup.phraseSuggestionsFor("rufe dich an"), ["anrufen"]);
+    });
+
+    test("leaves two-word phrases to the normal lookup", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"pick up": "pick up content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          stemsByWord: const {
+            "picked": ["pick"],
+          },
+        ),
+        enabled: true,
+      );
+
+      expect(await lookup.phraseSuggestionsFor("picked up"), isEmpty);
+    });
+
+    test("splitting ignores a phrase", () async {
+      // Every word is a headword, so an unguarded split would answer
+      // `picked + the + phone + up`.
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {
+          "picked": "picked",
+          "the": "the",
+          "phone": "phone",
+          "up": "up",
+        },
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      expect(await lookup.wordSplitsFor("picked the phone up"), isEmpty);
+    });
+
+    test("a phrase needs no morphology to match what was typed", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"picked up": "picked up content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      expect(await lookup.phraseSuggestionsFor("picked the phone up"), [
+        "picked up",
+      ]);
+    });
   });
 }
 
@@ -397,18 +493,22 @@ DictionaryLookup makeLookup({
 class FakeMorphology implements MorphologyProvider {
   final List<String> stemsResult;
   final List<String> suggestionsResult;
+
+  /// Per-token answers, for tests that stem a whole phrase.
+  final Map<String, List<String>> stemsByWord;
   int stemCalls = 0;
   int suggestionCalls = 0;
 
   FakeMorphology({
     required this.stemsResult,
     this.suggestionsResult = const [],
+    this.stemsByWord = const {},
   });
 
   @override
   Future<List<String>> stems(String word) async {
     stemCalls++;
-    return stemsResult;
+    return stemsByWord[word] ?? stemsResult;
   }
 
   @override

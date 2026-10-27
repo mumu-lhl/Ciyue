@@ -25,11 +25,24 @@ class MissingWordSuggestionsView extends StatelessWidget {
     if (suggestions.isEmpty) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context)!;
-    // Splits first, spelling suggestions below. They arrive in that order (the
-    // split costs milliseconds, Hunspell hundreds), so a group appended last
-    // cannot push the group the user is already reading off the screen.
+    // Phrases and splits first, spelling suggestions below. They arrive in that
+    // order (a few milliseconds against Hunspell's hundreds), so a group
+    // appended last cannot push the group the user is already reading off the
+    // screen.
     return Column(
       children: [
+        if (suggestions.phrases.isNotEmpty) ...[
+          _Heading(text: l10n.phraseSuggestions),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final phrase in suggestions.phrases)
+                _Chip(word: phrase, onSelected: onSelected),
+            ],
+          ),
+        ],
         if (suggestions.splits.isNotEmpty) ...[
           _Heading(text: l10n.wordParts),
           for (final split in suggestions.splits)
