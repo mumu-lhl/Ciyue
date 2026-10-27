@@ -1,0 +1,55 @@
+name: Browser
+
+# Regression for the dictionary link rewriter (#725, #738).
+#
+# The test extracts the script out of
+# lib/ui/core/word_display/entry_link_script.dart and runs it in a desktop
+# Chromium, so no Flutter SDK and no app build are needed here.
+#
+# `paths` keeps this off unrelated pull requests. If it is ever made a required
+# check, drop the filters: a required check that never runs leaves the pull
+# request waiting forever.
+
+on:
+  push:
+    paths:
+      - "lib/ui/core/word_display/entry_link_script.dart"
+      - "test/browser/**"
+      - "justfile"
+      - ".github/workflows/browser-tests.yml"
+  pull_request:
+    paths:
+      - "lib/ui/core/word_display/entry_link_script.dart"
+      - "test/browser/**"
+      - "justfile"
+      - ".github/workflows/browser-tests.yml"
+
+jobs:
+  links:
+    name: Links
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      # No floating major tag is published; the action requires an exact one.
+      - uses: astral-sh/setup-uv@v10.3.2
+        with:
+          enable-cache: true
+
+      # Chromium is around 150 MB. The key carries a hash of this file, so a
+      # change to the install command starts from a clean cache.
+      - name: Cache Chromium
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('.github/workflows/browser-tests.yml') }}
+
+      # No `--with-deps`: the runner image already carries Chromium's shared
+      # libraries, and the apt-get inside that flag took longer than the whole
+      # test did on the first run.
+      - name: Install Chromium
+        run: uv run --with playwright playwright install chromium
+
+      - name: Run the link tests
+        run: uv run --with playwright python test/browser/dictionary_entry_links_test.py
