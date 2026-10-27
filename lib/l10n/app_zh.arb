@@ -382,6 +382,8 @@
   "@exitApp": {},
   "spellingSuggestions": "拼写建议",
   "@spellingSuggestions": {},
+  "wordParts": "拆开来看",
+  "@wordParts": {},
   "dictionaryCustomCss": "自定义词典 CSS",
   "@dictionaryCustomCss": {},
   "dictionaryCustomCssDescription": "在打开词典条目时应用自定义 CSS",

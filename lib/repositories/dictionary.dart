@@ -646,19 +646,28 @@ class Mdict implements LoadedDictionary {
 
   @override
   Future<String?> resolveExactKey(String word) async {
+    final resolved = await resolveKeys([word]);
+    return resolved[word];
+  }
+
+  @override
+  Future<Map<String, String>> resolveKeys(Iterable<String> words) async {
     await waitForLoading();
 
     // Exact spelling first, then the case/kana variants of it. Only the query
     // was lower-cased before, which reached a lower-case headword from an
     // upper-case query but never the other way round: `nahida` could not find
     // `Nahida`.
-    for (final candidate in lookupVariants(word)) {
-      if (reader.exist(candidate)) {
-        return candidate;
+    final resolved = <String, String>{};
+    for (final word in words) {
+      for (final candidate in lookupVariants(word)) {
+        if (reader.exist(candidate)) {
+          resolved[word] = candidate;
+          break;
+        }
       }
     }
-
-    return null;
+    return resolved;
   }
 
   Future<DictionaryEntryData?> readExactEntry(String word) {

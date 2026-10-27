@@ -3,6 +3,7 @@ import "dart:convert";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/daos.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/open_records.dart";
@@ -173,6 +174,25 @@ final validDictIdsProvider = FutureProvider.autoDispose
       if (word.isEmpty) return [];
       final lookup = await ref.watch(dictionaryLookupProvider(word).future);
       return lookup.validDictionaryIds;
+    });
+
+/// Readings of a word as several headwords, for the "not found" page.
+///
+/// Milliseconds of index probing, so the page draws these first. Dropped when
+/// the page goes away, so revisiting the same word does not probe again.
+final wordSplitsProvider = FutureProvider.autoDispose
+    .family<List<WordSplit>, String>((ref, word) async {
+      return dictionaryLookup.wordSplitsFor(word);
+    });
+
+/// Hunspell's spelling corrections for a word no dictionary matched.
+///
+/// Deliberately separate from [wordSplitsProvider]: `suggest` takes hundreds of
+/// milliseconds, and waiting for it would hold back the splits that are ready
+/// almost immediately.
+final missingWordSpellingSuggestionsProvider = FutureProvider.autoDispose
+    .family<List<String>, String>((ref, word) async {
+      return dictionaryLookup.spellingSuggestionsFor(word);
     });
 
 /// Notifier for managing the heights of multiple WebViews.

@@ -20,6 +20,10 @@
   "@search": {},
   "spellingSuggestions": "Spelling suggestions",
   "@spellingSuggestions": {},
+  "wordParts": "Split into words",
+  "@wordParts": {
+    "description": "Header above the suggestions that read a long word as several shorter headwords, e.g. Anime + Cover."
+  },
   "theme": "Theme",
   "@theme": {},
   "dynamicColor": "Material Dynamic Color",
