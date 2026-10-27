@@ -19,7 +19,7 @@ import "package:material_ui/material_ui.dart";
 import "package:path/path.dart";
 import "package:url_launcher/url_launcher.dart";
 
-Future<void> addGroup(String value, BuildContext context, WidgetRef ref) async {
+Future<void> addGroup(String value, BuildContext context) async {
   final trimmed = value.trim();
   if (trimmed.isEmpty) return;
 
@@ -41,23 +41,41 @@ Future<void> addGroup(String value, BuildContext context, WidgetRef ref) async {
 
   try {
     await dictGroupDao.addGroup(trimmed, []);
-    if (context.mounted) {
-      final model = ref.read(dictManagerModelProvider);
-      await model.updateGroupList();
-      if (context.mounted) {
-        context.pop();
-      }
-    }
   } catch (e, stackTrace) {
-    talker.error("Failed to add group: $e", e, stackTrace);
+    talker.error("Failed to add group \"$trimmed\": $e", e, stackTrace);
     if (context.mounted) {
+      // Only a UNIQUE violation means the name is taken. Anything else is a
+      // storage failure and used to be reported as "name already exists",
+      // which sent the user looking for a group that was never there.
       ToastService.show(
-        AppLocalizations.of(context)!.groupNameAlreadyExists,
+        e.toString().contains("UNIQUE constraint failed")
+            ? AppLocalizations.of(context)!.groupNameAlreadyExists
+            : AppLocalizations.of(context)!.groupAddFailed,
         context,
         type: ToastType.error,
       );
     }
+    return;
   }
+
+  // The row is stored from here on. Refreshing the list and closing the dialog
+  // must not be able to turn a successful insert into an error message, and
+  // the provider container is read from the dialog's own context: `ref` here
+  // belonged to the group dialog, which is already popped by the time the
+  // user confirms the name.
+  if (!context.mounted) return;
+  try {
+    final container = ProviderScope.containerOf(context, listen: false);
+    await container.read(dictManagerModelProvider).updateGroupList();
+  } catch (e, stackTrace) {
+    talker.error(
+      "Added group \"$trimmed\" but failed to refresh the group list: $e",
+      e,
+      stackTrace,
+    );
+  }
+
+  if (context.mounted) context.pop();
 }
 
 Future<void> importDictionariesFromFiles(BuildContext context) async {
@@ -953,9 +971,15 @@ class GroupDialog extends ConsumerWidget {
           icon: const Icon(Icons.add_rounded, size: 18),
           label: Text(l10n.add),
           onPressed: () {
+            // This dialog is popped right below, so its own context must not
+            // be used to push the next one: keep the navigator instead.
+            final navigatorContext = Navigator.of(
+              context,
+              rootNavigator: true,
+            ).context;
             context.pop();
             showDialog(
-              context: context,
+              context: navigatorContext,
               builder: (context) {
                 final controller = TextEditingController();
                 return AlertDialog(
@@ -964,7 +988,7 @@ class GroupDialog extends ConsumerWidget {
                     controller: controller,
                     autofocus: true,
                     onSubmitted: (String groupName) async {
-                      await addGroup(groupName, context, ref);
+                      await addGroup(groupName, context);
                     },
                   ),
                   actions: [
@@ -974,7 +998,7 @@ class GroupDialog extends ConsumerWidget {
                     ),
                     FilledButton(
                       onPressed: () async {
-                        await addGroup(controller.text, context, ref);
+                        await addGroup(controller.text, context);
                       },
                       child: Text(l10n.confirm),
                     ),
