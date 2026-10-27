@@ -180,6 +180,80 @@ void main() {
 
     expect(entry?.content, "@@@LINK=a");
   });
+
+  // The cycle guard keys on the headword `resolveExactKey` returns, not on the
+  // text after `@@@LINK=`. That is what makes the two spellings of one entry a
+  // single node; keying on the link text instead would recurse until the test
+  // times out, which is why these carry a timeout rather than hanging CI.
+  test("stops a record that links to itself", () async {
+    final directory = await Directory.systemTemp.createTemp("ciyue_mdict_");
+    final mdxFile = await _writeMdx(directory, [("Haus", "@@@LINK=Haus")]);
+    final path = mdxFile.path.substring(0, mdxFile.path.length - 4);
+    await dictionaryListDao.add(path, "Test dictionary");
+    final dictionary = Mdict(path: path);
+
+    addTearDown(() async {
+      await dictionary.close();
+      await dictionaryListDao.remove(path);
+      await directory.delete(recursive: true);
+    });
+
+    await dictionary.init();
+
+    final entry = await dictionary.readExactEntry("Haus");
+
+    expect(entry?.content, "@@@LINK=Haus");
+  }, timeout: const Timeout(Duration(seconds: 15)));
+
+  test(
+    "stops two records that link to each other in different cases",
+    () async {
+      final directory = await Directory.systemTemp.createTemp("ciyue_mdict_");
+      final mdxFile = await _writeMdx(directory, [
+        ("Farbe", "@@@LINK=farbe"),
+        ("farbe", "@@@LINK=Farbe"),
+      ]);
+      final path = mdxFile.path.substring(0, mdxFile.path.length - 4);
+      await dictionaryListDao.add(path, "Test dictionary");
+      final dictionary = Mdict(path: path);
+
+      addTearDown(() async {
+        await dictionary.close();
+        await dictionaryListDao.remove(path);
+        await directory.delete(recursive: true);
+      });
+
+      await dictionary.init();
+
+      final entry = await dictionary.readExactEntry("Farbe");
+
+      expect(entry?.content, "@@@LINK=Farbe");
+    },
+    timeout: const Timeout(Duration(seconds: 15)),
+  );
+
+  test("stops a record that links to itself under another case", () async {
+    // Only `Haus` exists; `haus` reaches it through the case variants. Should
+    // the variants ever stop resolving, this still passes: the assertion is
+    // "no recursion, raw text kept", and variant resolution has its own tests.
+    final directory = await Directory.systemTemp.createTemp("ciyue_mdict_");
+    final mdxFile = await _writeMdx(directory, [("Haus", "@@@LINK=haus")]);
+    final path = mdxFile.path.substring(0, mdxFile.path.length - 4);
+    await dictionaryListDao.add(path, "Test dictionary");
+    final dictionary = Mdict(path: path);
+
+    addTearDown(() async {
+      await dictionary.close();
+      await dictionaryListDao.remove(path);
+      await directory.delete(recursive: true);
+    });
+
+    await dictionary.init();
+
+    final entry = await dictionary.readExactEntry("Haus");
+
+    expect(entry?.content, "@@@LINK=haus");
+  }, timeout: const Timeout(Duration(seconds: 15)));
 }
 
 Future<File> _writeMdx(
