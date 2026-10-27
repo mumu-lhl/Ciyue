@@ -44,6 +44,17 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
     super.dispose();
   }
 
+  /// The loader runs in an isolate and reports the reason it knows how to
+  /// spell; everything it recognises is translated here, where the locale is.
+  /// Anything else is passed through as it came — a Hunspell message is already
+  /// in English and there is no translation to reach for.
+  String? _errorTextFor(int id, AppLocalizations l10n) {
+    final error = _errors[id];
+    if (error == null) return null;
+    if (error == hunspellFilesMissingMarker) return l10n.hunspellFilesMissing;
+    return error;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -153,7 +164,7 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                             _HunspellSourceTile(
                               source: sources[i],
                               l10n: l10n,
-                              errorText: _errors[sources[i].id],
+                              errorText: _errorTextFor(sources[i].id, l10n),
                               onShowSettings: () =>
                                   _showSourceSettings(sources[i]),
                               onSetEnabled: (value) =>

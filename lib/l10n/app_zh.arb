@@ -972,5 +972,6 @@
   "promptsGroupWord": "单词与翻译",
   "@promptsGroupWord": {},
   "promptsGroupLearning": "学习",
-  "@promptsGroupLearning": {}
+  "@promptsGroupLearning": {},
+  "hunspellFilesMissing": "找不到 Hunspell 文件（.aff 或 .dic 不见了）"
 }

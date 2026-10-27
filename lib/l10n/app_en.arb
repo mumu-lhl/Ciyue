@@ -1110,5 +1110,9 @@
   "scenarioTitle": "Title",
   "@scenarioTitle": {},
   "scenarioDescription": "Description / Role instructions",
-  "@scenarioDescription": {}
+  "@scenarioDescription": {},
+  "hunspellFilesMissing": "Hunspell files are missing",
+  "@hunspellFilesMissing": {
+    "description": "Shown under a word list whose .aff or .dic file no longer exists."
+  }
 }
