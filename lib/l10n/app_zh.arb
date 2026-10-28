@@ -386,6 +386,7 @@
   "@phraseSuggestions": {},
   "wordParts": "拆开来看",
   "@wordParts": {},
+  "dictionaryUnsupportedCompression": "{count, plural, =1{“{name}” 用了 LZO 压缩，词悦读不了。请先转成 zlib 或无压缩格式再导入；不知道怎么转的话，交给 AI 帮你转就行。} other{有 {count} 个词典用了 LZO 压缩，词悦读不了。请先转成 zlib 或无压缩格式再导入；不知道怎么转的话，交给 AI 帮你转就行。}}",
   "dictionaryCustomCss": "自定义词典 CSS",
   "@dictionaryCustomCss": {},
   "dictionaryCustomCssDescription": "在打开词典条目时应用自定义 CSS",
@@ -510,6 +511,8 @@
   "@cloudSyncNow": {},
   "cloudSyncDisconnect": "断开连接",
   "@cloudSyncDisconnect": {},
+  "cloudSyncRebindAndSync": "重新绑定云空间并同步",
+  "@cloudSyncRebindAndSync": {},
   "cloudSyncSavedProfile": "已连接至 {provider}",
   "@cloudSyncSavedProfile": {
     "placeholders": {
@@ -655,6 +658,7 @@
     }
   },
   "noHunspellDictionaries": "未导入 Hunspell 词典",
+  "hunspellSourcesFailedCount": "{count, plural, other{{count} 个词表加载失败}}",
   "@noHunspellDictionaries": {},
   "twoPassLookup": "两轮迭代查找 (Two-pass)",
   "@twoPassLookup": {},
@@ -974,5 +978,6 @@
   "promptsGroupWord": "单词与翻译",
   "@promptsGroupWord": {},
   "promptsGroupLearning": "学习",
-  "@promptsGroupLearning": {}
+  "@promptsGroupLearning": {},
+  "hunspellFilesMissing": "找不到 Hunspell 文件（.aff 或 .dic 不见了）"
 }

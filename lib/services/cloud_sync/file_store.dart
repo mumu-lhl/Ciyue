@@ -70,10 +70,9 @@ class WebDavCloudFileStore implements CloudFileStore {
        _dio = dio ?? Dio(),
        _ownsDio = dio == null {
     if (username != null || password != null) {
-      if (this.baseUri.scheme != "https" &&
-          !_isLoopbackHost(this.baseUri.host)) {
-        throw ArgumentError("WebDAV credentials require HTTPS.");
-      }
+      // Plain HTTP is allowed: users may run a WebDAV server on their own
+      // machine or LAN. Credentials sent to a non-local server over HTTP
+      // travel in cleartext; prefer HTTPS whenever the server is not local.
       if (username == null || password == null) {
         throw ArgumentError(
           "WebDAV username and password must be supplied together.",
@@ -375,11 +374,6 @@ class WebDavCloudFileStore implements CloudFileStore {
 
   static List<String> _nonEmptySegments(Iterable<String> segments) =>
       segments.where((segment) => segment.isNotEmpty).toList(growable: false);
-
-  static bool _isLoopbackHost(String host) =>
-      host == "localhost" ||
-      host == "::1" ||
-      InternetAddress.tryParse(host)?.isLoopback == true;
 
   static bool _startsWithSegments(List<String> path, List<String> prefix) {
     if (path.length < prefix.length) return false;

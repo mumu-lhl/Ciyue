@@ -92,11 +92,31 @@ void main() {
     );
   });
 
-  test("requires HTTPS when credentials would leave the device", () {
+  test("accepts credentials over plain HTTP (e.g. a local server)", () {
+    final dio = Dio();
+    WebDavCloudFileStore(
+      baseUri: Uri.parse("http://192.168.1.10:8080/dav/"),
+      username: "user",
+      password: "secret",
+      dio: dio,
+    );
+    expect(
+      dio.options.headers[HttpHeaders.authorizationHeader] as String?,
+      startsWith("Basic "),
+    );
+  });
+
+  test("still requires a username and password together", () {
     expect(
       () => WebDavCloudFileStore(
-        baseUri: Uri.parse("http://webdav.example.com/dav/"),
+        baseUri: Uri.parse("http://192.168.1.10:8080/dav/"),
         username: "user",
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => WebDavCloudFileStore(
+        baseUri: Uri.parse("http://192.168.1.10:8080/dav/"),
         password: "secret",
       ),
       throwsArgumentError,

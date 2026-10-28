@@ -7,10 +7,12 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
+import "package:ciyue/repositories/dictionary_import_failure.dart";
 import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/services/lookup_keys.dart";
 import "package:ciyue/services/toast.dart";
+import "package:ciyue/services/zip_archive_reader.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:dict_reader/dict_reader.dart";
@@ -89,6 +91,25 @@ class DictManager {
         "Failed to initialize dictionary $id ($path): $e",
         e,
         stackTrace,
+      );
+
+      // Adding a dictionary only reads its header, so one the reader cannot
+      // decode — an LZO-compressed MDX — is added first and fails here, in the
+      // background. Without this the entry just sits there with no headwords
+      // and no reason, which is the one case where the user can do something:
+      // convert the file and import it again. The rest stay in the log.
+      if (classifyDictionaryImportFailure(e) !=
+          DictionaryImportFailure.unsupportedCompression) {
+        return;
+      }
+
+      final context = navigatorKey.currentContext;
+      if (context == null || !context.mounted) return;
+      await ToastService.show(
+        AppLocalizations.of(context)!
+            .dictionaryUnsupportedCompression(1, basename(path)),
+        context,
+        type: ToastType.error,
       );
     }
   }
@@ -275,6 +296,54 @@ class Mdict implements LoadedDictionary {
   final Map<String, ({String foundKey, int readerIndex})> _resourceKeyCache =
       {};
 
+  /// Zip archives holding this dictionary's companion resources (e.g.
+  /// pronunciation audio), mirroring the `.mdd` / `.N.mdd` scheme:
+  /// `<path>.zip`, `<path>.1.zip`, and so on. Readers are opened lazily
+  /// and cached; a missing archive ends the sequence, as with `.mdd`
+  /// parts.
+  final Map<String, ZipArchiveReader> _zipReaders = {};
+
+  Iterable<String> get _zipArchivePaths sync* {
+    yield "$path.zip";
+    for (var i = 1; ; i++) {
+      yield "$path.$i.zip";
+    }
+  }
+
+  ZipArchiveReader? _zipReaderFor(String archivePath) {
+    final cached = _zipReaders[archivePath];
+    if (cached != null) return cached;
+    final file = File(archivePath);
+    if (!file.existsSync()) return null;
+    final reader = ZipArchiveReader(file);
+    _zipReaders[archivePath] = reader;
+    return reader;
+  }
+
+  /// Reads one companion resource from a `<path>.zip` / `<path>.N.zip`
+  /// audio pack, or null when no pack contains [filename]. Callers consult
+  /// the `.mdd` readers and loose directory files first; this is the last
+  /// fallback.
+  Future<Uint8List?> readZipResource(String filename) async {
+    for (final archivePath in _zipArchivePaths) {
+      final reader = _zipReaderFor(archivePath);
+      if (reader == null) break;
+      final data = await reader.readEntry(filename);
+      if (data != null) return data;
+    }
+    return null;
+  }
+
+  /// Whether any zip audio pack contains [filename], without inflating it.
+  Future<bool> containsZipResource(String filename) async {
+    for (final archivePath in _zipArchivePaths) {
+      final reader = _zipReaderFor(archivePath);
+      if (reader == null) break;
+      if (await reader.containsEntry(filename)) return true;
+    }
+    return false;
+  }
+
   Completer<void>? _loadingCompleter;
   Future<void>? _metadataInitialization;
   Future<void>? _initialization;
@@ -368,6 +437,10 @@ class Mdict implements LoadedDictionary {
     readers.addAll(
       readerResources.map((readerResource) => readerResource.close()),
     );
+    for (final reader in _zipReaders.values) {
+      reader.close();
+    }
+    _zipReaders.clear();
     await Future.wait(readers);
   }
 
@@ -550,6 +623,14 @@ class Mdict implements LoadedDictionary {
         hasJs = results.isNotEmpty;
       }
     }
+
+    // Check zip audio packs.
+    if (!hasCss) {
+      hasCss = await containsZipResource(cssName);
+    }
+    if (!hasJs) {
+      hasJs = await containsZipResource(jsName);
+    }
   }
 
   @override
@@ -605,9 +686,8 @@ class Mdict implements LoadedDictionary {
       Uint8List? data;
 
       if (readerResources.isEmpty) {
-        // Find resource under directory if no mdd
-        final file = File("${dirname(path)}/$filename");
-        data = await file.readAsBytes();
+        // Find resource under directory if no mdd, else in a zip pack.
+        data = await _readLooseResourceFile(filename);
       } else {
         // An external .css/.js next to the dictionary overrides the copy
         // packed inside the .mdd (see readExternalResourceOverride).
@@ -633,14 +713,23 @@ class Mdict implements LoadedDictionary {
             }
           }
         } catch (e) {
-          // Find resource under directory if resource is not in mdd
-          final file = File("${dirname(path)}/$filename");
-          data = await file.readAsBytes();
+          // A failed mdd lookup falls through to the loose file / zip.
         }
+        data ??= await _readLooseResourceFile(filename);
       }
       return data;
     } catch (e) {
       return null;
+    }
+  }
+
+  /// A companion file kept loose next to the dictionary, or packed in a
+  /// zip audio pack. Returns null when it exists in neither place.
+  Future<Uint8List?> _readLooseResourceFile(String filename) async {
+    try {
+      return await File("${dirname(path)}/$filename").readAsBytes();
+    } catch (_) {
+      return readZipResource(filename);
     }
   }
 
@@ -998,6 +1087,7 @@ Future<void> selectMdx(
   List<String> paths, {
   bool closeLoadingWhenEmpty = false,
 }) async {
+  final failures = _ImportFailures();
   if (paths.isEmpty) {
     if (closeLoadingWhenEmpty && context.mounted) {
       context.pop();
@@ -1024,18 +1114,17 @@ Future<void> selectMdx(
       await dict.add();
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
-      if (context.mounted) {
-        ToastService.show(
-          AppLocalizations.of(context)!.notSupport,
-          context,
-          type: ToastType.error,
-        );
-        talker.error(
-          "Failed to add dictionary: $pathNoExtension, error: $e",
-          e,
-          StackTrace.current,
-        );
-      }
+      // Always log the original object: the toast only carries the category,
+      // which is not enough to tell a corrupt file from a missing companion.
+      talker.error(
+        "Failed to add dictionary: $pathNoExtension, error: $e",
+        e,
+        StackTrace.current,
+      );
+      failures.add(
+        classifyDictionaryImportFailure(e),
+        name: basename(pathNoExtension),
+      );
     } finally {
       await dict.close();
     }
@@ -1051,6 +1140,10 @@ Future<void> selectMdx(
     ).read(manageDictionariesModelProvider).update();
     context.pop();
   }
+
+  if (context.mounted) {
+    await failures.report(context);
+  }
 }
 
 /// The StarDict counterpart of [selectMdx]: same registration rules — the
@@ -1061,6 +1154,7 @@ Future<void> selectStardict(
   List<String> paths, {
   bool closeLoadingWhenEmpty = false,
 }) async {
+  final failures = _ImportFailures();
   if (paths.isEmpty) {
     if (closeLoadingWhenEmpty && context.mounted) {
       context.pop();
@@ -1087,18 +1181,15 @@ Future<void> selectStardict(
       await dict.add();
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
-      if (context.mounted) {
-        ToastService.show(
-          AppLocalizations.of(context)!.notSupport,
-          context,
-          type: ToastType.error,
-        );
-        talker.error(
-          "Failed to add dictionary: $pathNoExtension, error: $e",
-          e,
-          StackTrace.current,
-        );
-      }
+      talker.error(
+        "Failed to add dictionary: $pathNoExtension, error: $e",
+        e,
+        StackTrace.current,
+      );
+      failures.add(
+        classifyDictionaryImportFailure(e),
+        name: basename(pathNoExtension),
+      );
     } finally {
       await dict.close();
     }
@@ -1110,6 +1201,53 @@ Future<void> selectStardict(
       listen: false,
     ).read(manageDictionariesModelProvider).update();
     context.pop();
+  }
+
+  if (context.mounted) {
+    await failures.report(context);
+  }
+}
+
+/// Counts a batch's import failures so the user gets one toast per category
+/// instead of one per file.
+class _ImportFailures {
+  var unsupportedCompression = 0;
+  var unknown = 0;
+
+  /// The first file that could not be decoded. Named when it is the only one;
+  /// with several, a name would be noise and the count says enough.
+  String? firstUnsupportedName;
+
+  void add(DictionaryImportFailure failure, {String? name}) {
+    if (failure == DictionaryImportFailure.unsupportedCompression) {
+      unsupportedCompression++;
+      firstUnsupportedName ??= name;
+    } else {
+      unknown++;
+    }
+  }
+
+  /// At most two toasts, the actionable one first. Awaited, because a second
+  /// toast shown immediately would replace the first before it is read.
+  Future<void> report(BuildContext context) async {
+    if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    if (unsupportedCompression > 0) {
+      await ToastService.show(
+        l10n.dictionaryUnsupportedCompression(
+          unsupportedCompression,
+          firstUnsupportedName ?? "",
+        ),
+        context,
+        type: ToastType.error,
+      );
+      if (!context.mounted) return;
+    }
+
+    if (unknown > 0) {
+      await ToastService.show(l10n.notSupport, context, type: ToastType.error);
+    }
   }
 }
 

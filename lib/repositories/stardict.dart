@@ -6,6 +6,7 @@ import "dart:typed_data";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/services/lookup_keys.dart";
+import "package:ciyue/services/zip_archive_reader.dart";
 import "package:ciyue/services/stardict_html.dart";
 import "package:ciyue/utils.dart";
 import "package:dict_reader/dict_reader.dart";
@@ -199,6 +200,10 @@ class Stardict implements LoadedDictionary {
     }
 
     _structuredFieldsCache.clear();
+    for (final reader in _zipReaders.values) {
+      reader?.close();
+    }
+    _zipReaders.clear();
     if (_readerInitialized) {
       await reader.close();
     }
@@ -275,6 +280,60 @@ class Stardict implements LoadedDictionary {
   /// The directory holding this dictionary's files; entry resources
   /// (images) live under its `res/` subdirectory.
   String get dictionaryDirectory => dirname(path);
+
+  /// Zip archives holding this dictionary's resources, in lookup order,
+  /// mirroring GoldenDict-ng: `res.zip`, `<name>.res.zip`, then
+  /// `res/res.zip`.
+  List<String> get _resourceArchivePaths {
+    final directory = dictionaryDirectory;
+    final base = basename(path);
+    return [
+      join(directory, "res.zip"),
+      join(directory, "$base.res.zip"),
+      join(directory, "res", "res.zip"),
+    ];
+  }
+
+  final Map<String, ZipArchiveReader?> _zipReaders = {};
+
+  ZipArchiveReader? _zipReaderFor(String archivePath) {
+    if (_zipReaders.containsKey(archivePath)) return _zipReaders[archivePath];
+    final file = File(archivePath);
+    final reader = file.existsSync() ? ZipArchiveReader(file) : null;
+    _zipReaders[archivePath] = reader;
+    return reader;
+  }
+
+  /// Reads one resource file for an entry, from the `res/` directory first
+  /// and then from a `res.zip` archive (see [_resourceArchivePaths]).
+  /// [filename] is the path as referenced by the entry (`res/<file>` from
+  /// WebView HTML, or the bare file name from native rendering); both
+  /// spellings resolve. Returns null when the resource exists in neither
+  /// place.
+  Future<Uint8List?> readResourceFile(String filename) async {
+    final fromDirectory = await _readLocalFile(filename);
+    if (fromDirectory != null) return fromDirectory;
+    if (!filename.startsWith("res/") && !filename.startsWith("res\\")) {
+      final fromResDirectory = await _readLocalFile("res/$filename");
+      if (fromResDirectory != null) return fromResDirectory;
+    }
+    var entryName = filename;
+    if (entryName.startsWith("res/")) {
+      entryName = entryName.substring("res/".length);
+    } else if (entryName.startsWith("res\\")) {
+      entryName = entryName.substring("res\\".length);
+    }
+    if (entryName.isEmpty) return null;
+    for (final archivePath in _resourceArchivePaths) {
+      final reader = _zipReaderFor(archivePath);
+      if (reader == null) continue;
+      final data =
+          await reader.readEntry(entryName) ??
+          await reader.readEntry("res/$entryName");
+      if (data != null) return data;
+    }
+    return null;
+  }
 
   void _cacheStructuredFields(String headword, List<StarDictField> fields) {
     _structuredFieldsCache[headword] = fields;
@@ -376,7 +435,7 @@ class Stardict implements LoadedDictionary {
           }
         } else if (request.method == "GET" && request.uri.path != "/") {
           final filename = Uri.decodeComponent(request.uri.path.substring(1));
-          final data = await _readLocalFile(filename);
+          final data = await readResourceFile(filename);
           if (data == null) {
             request.response
               ..statusCode = HttpStatus.notFound

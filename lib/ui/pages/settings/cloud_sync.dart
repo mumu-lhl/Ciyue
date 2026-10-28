@@ -388,7 +388,9 @@ class _CloudSyncSettingsPageState extends ConsumerState<CloudSyncSettingsPage> {
     });
     try {
       await _session.rebindSpace(newSpaceId);
-      final outcome = await _session.syncConfigured();
+      final outcome = await _session.syncConfigured(
+        onApplied: _refreshModelsAfterSync,
+      );
       final configuration = await _session.loadConfiguration();
       if (!mounted) return;
       setState(() {
@@ -830,7 +832,7 @@ class _CloudSyncSettingsPageState extends ConsumerState<CloudSyncSettingsPage> {
                       ? null
                       : () => _rebindSpaceAndSync(_mismatchedCloudSpaceId!),
                   icon: const Icon(Icons.sync_problem),
-                  label: const Text("Rebind to cloud space and sync"),
+                  label: Text(l10n.cloudSyncRebindAndSync),
                 ),
               ],
               if (_preview case final preview?) ...[

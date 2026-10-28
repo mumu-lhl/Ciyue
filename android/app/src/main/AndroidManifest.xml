@@ -4,6 +4,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Cloud sync supports user-configured local WebDAV servers over plain
+         HTTP; Android blocks cleartext traffic by default. -->
     <application
         android:name="${applicationName}"
         android:enableOnBackInvokedCallback="true"
@@ -11,6 +13,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/launcher_icon"
         android:label="@string/app_name"
+        android:usesCleartextTraffic="true"
         tools:targetApi="33">
         <activity
             android:name=".MainActivity"
