@@ -1,4 +1,29 @@
 ---
+## [2.0.1](https://github.com/mumu-lhl/Ciyue/compare/v2.0.0..v2.0.1) - 2026-10-29
+
+### Features
+
+- **Not-found suggestions** - when a lookup misses, the page now suggests spellings, readings of the word as several headwords, and phrasal verbs a phrase may be hiding
+- **Dictionary resources from zip archives** - StarDict images can live in a `res.zip` archive next to the dictionary, and audio packs can be shipped as `.zip` files alongside `.mdd` files, with no need to unzip anything by hand
+- **Lookup variants** - lookups now try the spellings a dictionary might actually store, including case and kana variants, so a word is found however it is capitalized or written
+- **WebDAV over plain HTTP** - cloud sync now accepts WebDAV servers over plain HTTP, so local and LAN servers work
+- **Documentation and translations** - the About page now links to the documentation site, with new guides for word-form lookup, appearance, and pronunciation; the Chinese translation is now complete
+
+### Bug Fixes
+
+- **(android)** fixed the window staying black after returning to the foreground on Mali devices; Impeller is disabled until the upstream engine fix lands
+- **(floating window)** fixed the black screen on a second process-text lookup and the previous word showing instead of the new one
+- **(word page)** fixed dictionary links, resource paths, and audio playback: links open the right word, files placed next to a dictionary resolve, pronunciations that cannot be played explain why, and dead links land on the "not found" page
+- **(lookup)** words that look identical but are stored differently, such as accented characters, now match consistently across history, the wordbook, and Hunspell, instead of creating duplicate rows for the same visible word
+- **(dictionary)** importing a dictionary now says why it failed, including LZO-compressed files, which need to be converted first; StarDict dictionaries with compressed indexes now import; the Hunspell page shows which word lists failed to load and why
+- **(dictionary)** adding a dictionary group no longer falsely reports failure
+- **(settings)** the last row of settings pages is no longer hidden under the system navigation bar
+- **(cloud sync)** the wordbook now refreshes after rebinding and syncing, and the rebind button label is translated
+- **(windows)** caption buttons are visible in light mode, and word pages update in place instead of keeping stale content
+- **(f-droid)** fixed the reproducible build so F-Droid can ship the update
+
+---
+
 ## [2.0.0](https://github.com/mumu-lhl/Ciyue/compare/v1.23.2..v2.0.0) - 2026-10-24
 
 ### Features

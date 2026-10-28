@@ -1,0 +1,7 @@
+* Suggestions when a lookup misses: spellings, word splits, phrasal verbs
+* StarDict images from res.zip, audio packs as .zip files
+* Lookup tries case and kana variants of a word
+* WebDAV cloud sync over plain HTTP for local servers
+* Fixed the black screen on Mali devices after returning to the foreground
+* Import failures now say why; Hunspell failures are listed per word list
+* Settings pages: last row no longer hidden under the navigation bar
