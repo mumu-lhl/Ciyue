@@ -16,11 +16,36 @@ import "package:path_provider/path_provider.dart";
 /// Resource keys tried for a word's pronunciation, in order: the
 /// long-standing .spx convention first, then the common audio formats,
 /// so packs whose entries are keyed as .mp3/.wav also match.
+///
+/// MDict stores resource keys with a leading backslash (`\apple.mp3`), while
+/// some packs written by other tools omit it, so both spellings are tried.
 List<String> pronunciationKeyCandidates(String word) => [
+  "\\$word.spx",
+  "\\$word.mp3",
+  "\\$word.wav",
   "$word.spx",
   "$word.mp3",
   "$word.wav",
 ];
+
+/// The headword an mdd resource key stands for: `\Apple.mp3` -> `apple`.
+/// Resource keys carry a leading separator and their own capitalisation, so
+/// neither can be compared to a query directly.
+///
+/// Unicode normalisation is deliberately not applied here. A pack built on
+/// macOS may store `café.mp3` in NFD (the `e` plus a combining accent) while
+/// the query arrives in NFC, and those never compare equal. Storing a
+/// normalised key is not an option either: [locate] needs the original bytes
+/// to find the record. Matching both forms means asking for NFD keys as well,
+/// which needs a direct `unorm_dart` dependency and a wider candidate list;
+/// no pack in circulation has needed it yet, so it stays out until one does.
+String resourceKeyStem(String key) {
+  var stem = key;
+  while (stem.startsWith("\\") || stem.startsWith("/")) {
+    stem = stem.substring(1);
+  }
+  return setExtension(stem, "").toLowerCase();
+}
 
 class AudioModel extends ChangeNotifier {
   static AudioModel? _instance;
@@ -112,7 +137,7 @@ class AudioModel extends ChangeNotifier {
             mddAudio.id,
           );
           for (final audio in audios ?? <MddAudioResourceData>[]) {
-            if (setExtension(audio.key, "") != word) {
+            if (resourceKeyStem(audio.key) != word.toLowerCase()) {
               continue;
             }
 

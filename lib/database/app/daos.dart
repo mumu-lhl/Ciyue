@@ -886,8 +886,12 @@ class MddAudioResourceDao extends DatabaseAccessor<AppDatabase>
     String key,
     int mddAudioId,
   ) async {
+    // Resource keys keep the capitalisation the pack was built with
+    // (`\ID4105989.spx`), so a case-sensitive match misses them.
     return (await (select(mddAudioResource)..where(
-          (t) => t.key.isValue(key) & t.mddAudioListId.isValue(mddAudioId),
+          (t) =>
+              t.key.lower().equals(key.toLowerCase()) &
+              t.mddAudioListId.isValue(mddAudioId),
         ))
         .get());
   }

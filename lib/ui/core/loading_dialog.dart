@@ -40,7 +40,12 @@ class _LoadingDialogContent extends StatefulWidget {
 
 class LoadingDialogContentState extends State<_LoadingDialogContent> {
   static String? currentText;
-  static late Function updateText;
+
+  /// Set while the dialog's state is alive; null when it is not on screen.
+  /// Callers update progress from loops that outlive the dialog, so this must
+  /// be nullable: a `late` field threw LateInitializationError whenever the
+  /// dialog had never been built (or was already gone).
+  static void Function(String text)? updateText;
 
   @override
   Widget build(BuildContext context) {
@@ -75,9 +80,18 @@ class LoadingDialogContentState extends State<_LoadingDialogContent> {
 
     currentText = widget.text;
     updateText = (String text) {
+      if (!mounted) return;
       setState(() {
         currentText = text;
       });
     };
+  }
+
+  @override
+  void dispose() {
+    // The dialog can be closed while a long import is still running; drop the
+    // reference so later calls do not touch a disposed State.
+    updateText = null;
+    super.dispose();
   }
 }

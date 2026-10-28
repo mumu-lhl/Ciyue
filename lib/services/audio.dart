@@ -87,7 +87,7 @@ Future<void> playSoundOfWord(
       final mddAudio = mddAudioList[i];
       final audios = lookupResults[i];
       for (final audio in audios ?? <MddAudioResourceData>[]) {
-        if (setExtension(audio.key, "") != word) {
+        if (resourceKeyStem(audio.key) != word.toLowerCase()) {
           continue;
         }
 
