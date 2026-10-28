@@ -1,7 +1,9 @@
+import "package:dict_reader/dict_reader.dart";
+
 /// Why a dictionary file could not be added.
 ///
 /// The reader reports nearly everything as a format problem, which tells the
-/// user nothing about what to do next. This separates the cases that do have a
+/// user nothing about what to do next. This separates the case that does have a
 /// next step from the ones that do not.
 enum DictionaryImportFailure {
   /// The MDX blocks are LZO-compressed. Nothing is wrong with the file that
@@ -12,17 +14,19 @@ enum DictionaryImportFailure {
   unknown,
 }
 
-/// Classifies [error] by what the reader said.
+/// Classifies [error] by what the reader threw.
 ///
-/// The check reads the message rather than the type on purpose: the dependency
-/// is pinned to a commit where the reader throws a bare String, and a typed
-/// exception only arrives with the next reader release. Both forms keep the
-/// same wording, so this recognises either, and can become a type check once
-/// the pin moves — the test in `test/repositories/dictionary_import_failure_test.dart`
-/// covers both shapes already.
+/// [UnsupportedCompressionException] is the only failure with an action behind
+/// it — convert the file and import it again — so it is the only one worth
+/// putting on screen. Everything else stays [unknown]: a corrupt file and a
+/// missing companion look the same from here, and neither suggests anything the
+/// user could do.
+///
+/// The check is on the type, not the message: the wording of a reader error is
+/// an implementation detail, and matching it silently turned this into a
+/// dependency on that wording.
 DictionaryImportFailure classifyDictionaryImportFailure(Object error) {
-  final message = error is String ? error : error.toString();
-  if (message.contains("Compression method not supported")) {
+  if (error is UnsupportedCompressionException) {
     return DictionaryImportFailure.unsupportedCompression;
   }
   return DictionaryImportFailure.unknown;
