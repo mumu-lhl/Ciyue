@@ -15,6 +15,7 @@ import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/zip_archive_reader.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
+import "package:ciyue/viewModels/audio.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:drift/drift.dart";
 import "package:file_selector/file_selector.dart";
@@ -1258,6 +1259,25 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
   for (final path in paths) {
     if (await mddAudioListDao.existMddAudio(path)) {
       duplicates++;
+      continue;
+    }
+
+    // A zip pack indexes itself out of the archive's central directory, so
+    // only the list row is needed. Writing resource rows would duplicate that
+    // index on every import and buy nothing at playback time.
+    if (isZipAudioPack(path)) {
+      try {
+        if (context.mounted) {
+          await ProviderScope.containerOf(context, listen: false)
+              .read(audioModelProvider)
+              .addMddAudio(path, setExtension(basename(path), ""));
+        }
+        added++;
+        talker.info("Added zip audio pack $path");
+      } catch (e, stackTrace) {
+        talker.error("Failed to add zip audio pack $path: $e", e, stackTrace);
+        failed++;
+      }
       continue;
     }
 

@@ -141,7 +141,7 @@ class PlatformMethod {
 
           final context = navigatorKey.currentContext;
           try {
-            final paths = await findMddAudioFilesOnAndroid(null);
+            final paths = await findAudioPackFilesOnAndroid(null);
             if (paths.isEmpty) {
               // Nothing was copied in: close the native loading dialog
               // (selectAudioMdd would have closed it) and say why.
