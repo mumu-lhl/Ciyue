@@ -211,15 +211,28 @@ class Stardict implements LoadedDictionary {
 
   @override
   Future<String?> resolveExactKey(String word) async {
+    final resolved = await resolveKeys([word]);
+    return resolved[word];
+  }
+
+  @override
+  Future<Map<String, String>> resolveKeys(Iterable<String> words) async {
     await waitForLoading();
+
     // Try the exact spelling first, then the case/kana variants of it: a
     // lower-case query never reached a capitalised headword before, because
     // `resolveIndex` only lower-cases the query itself.
-    for (final candidate in lookupVariants(word)) {
-      final index = reader.resolveIndex(candidate);
-      if (index != null) return reader.wordAt(index);
+    final resolved = <String, String>{};
+    for (final word in words) {
+      for (final candidate in lookupVariants(word)) {
+        final index = reader.resolveIndex(candidate);
+        if (index != null) {
+          resolved[word] = reader.wordAt(index);
+          break;
+        }
+      }
     }
-    return null;
+    return resolved;
   }
 
   @override

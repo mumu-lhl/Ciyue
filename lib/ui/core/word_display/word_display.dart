@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/floating_window.dart";
@@ -10,8 +11,10 @@ import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/expansion_display.dart";
+import "package:ciyue/ui/core/word_display/missing_word_suggestions.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
+import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/utils.dart" as app_utils;
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -43,6 +46,43 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
 
   Widget? _buildSearchBar(Settings settings) {
     return buildTitle(widget.word, settings, controller: _searchController);
+  }
+
+  /// Readings of a long word as several headwords, plus Hunspell's spelling
+  /// corrections once they arrive.
+  ///
+  /// The two are watched separately on purpose: the splits are ready in
+  /// milliseconds, while `suggest` takes hundreds, so the page shows the splits
+  /// immediately and fills in spelling suggestions later. Nothing at all is
+  /// drawn until one of them has something, which keeps the page looking as it
+  /// always did for a word nobody can help with.
+  Widget _buildMissingWordSuggestions(BuildContext context) {
+    final splits = ref.watch(wordSplitsProvider(widget.word)).asData?.value;
+    final phrases = ref
+        .watch(phraseSuggestionsProvider(widget.word))
+        .asData
+        ?.value;
+    final spelling = ref
+        .watch(missingWordSpellingSuggestionsProvider(widget.word))
+        .asData
+        ?.value;
+    if ((splits == null || splits.isEmpty) &&
+        (phrases == null || phrases.isEmpty) &&
+        (spelling == null || spelling.isEmpty)) {
+      return const SizedBox.shrink();
+    }
+
+    return MissingWordSuggestionsView(
+      suggestions: MissingWordSuggestions(
+        spellingSuggestions: spelling ?? const [],
+        splits: splits ?? const [],
+        phrases: phrases ?? const [],
+      ),
+      // The same path a dictionary link takes: it records the word in history
+      // and opens it in the current tab, on both layouts.
+      onSelected: (word) =>
+          handleOpenWordNavigation(context, word, newTab: false),
+    );
   }
 
   void _goBack(BuildContext context) {
@@ -92,7 +132,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                       ? BottomAppBar(child: searchBar)
                       : null),
               body: Center(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -107,6 +147,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
+                      _buildMissingWordSuggestions(context),
                     ],
                   ),
                 ),
@@ -371,7 +412,8 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         IconButton(
           tooltip: locale.aiChat,
           icon: const Icon(Icons.chat_bubble_outline),
-          onPressed: () => context.push("/chat?word=${Uri.encodeComponent(widget.word)}"),
+          onPressed: () =>
+              context.push("/chat?word=${Uri.encodeComponent(widget.word)}"),
         ),
         IconButton(
           tooltip: locale.copy,

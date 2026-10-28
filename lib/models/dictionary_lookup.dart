@@ -3,6 +3,16 @@ abstract interface class DictionarySource {
 
   Future<String?> resolveExactKey(String word);
 
+  /// Resolves many candidates at once, answering with the spelling the
+  /// dictionary actually holds for each of [words] it knows.
+  ///
+  /// Word splitting asks "is this slice a headword?" hundreds of times for a
+  /// single query, and every spelling variant multiplies that. Answering them
+  /// in one call keeps it to one `await` per dictionary instead of one per
+  /// probe; implementations loop over the index in memory, where each check is
+  /// a binary search.
+  Future<Map<String, String>> resolveKeys(Iterable<String> words);
+
   Future<List<String>> search(String query);
 
   Future<List<DictionaryEntryData>> readExactEntries(Iterable<String> words);
@@ -83,4 +93,45 @@ class DictionaryEntryData {
   final String content;
 
   const DictionaryEntryData({required this.headword, required this.content});
+}
+
+/// One way to read a long word as several headwords, in reading order.
+///
+/// The parts carry the spelling the dictionary uses, so a query typed as
+/// `animecover` shows `Anime` and `Cover`.
+class WordSplit {
+  final List<String> parts;
+
+  const WordSplit(this.parts);
+
+  /// `Anime + Cover`, for display and for test assertions.
+  String get display => parts.join(" + ");
+}
+
+/// What the "not found" page can offer instead of a dead end.
+class MissingWordSuggestions {
+  /// Words the morphology engine believes the query was meant to be.
+  final List<String> spellingSuggestions;
+
+  /// Readings of the query as several known headwords.
+  final List<WordSplit> splits;
+
+  /// Headwords a phrase may be hiding: `picked the phone up` -> `pick up`,
+  /// `rufe dich an` -> `anrufen`.
+  final List<String> phrases;
+
+  const MissingWordSuggestions({
+    required this.spellingSuggestions,
+    required this.splits,
+    this.phrases = const [],
+  });
+
+  static const empty = MissingWordSuggestions(
+    spellingSuggestions: [],
+    splits: [],
+    phrases: [],
+  );
+
+  bool get isEmpty =>
+      spellingSuggestions.isEmpty && splits.isEmpty && phrases.isEmpty;
 }

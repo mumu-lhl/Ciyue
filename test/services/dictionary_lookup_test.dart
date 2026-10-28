@@ -2,6 +2,7 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/models/hunspell.dart";
 import "package:ciyue/services/dictionary_lookup.dart";
 import "package:ciyue/services/hunspell.dart";
+import "package:ciyue/services/lookup_keys.dart";
 import "package:test/test.dart";
 
 void main() {
@@ -231,6 +232,247 @@ void main() {
       "abends",
     ]);
   });
+
+  group("suggestions for an unmatched word", () {
+    test("splits a compound using the whole group", () async {
+      // The parts live in different dictionaries, which is normal for a group
+      // that pairs a monolingual dictionary with a bilingual one.
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"Anime": "Anime content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        others: [
+          FakeDictionarySource(id: 2, entries: {"Cover": "Cover content"}),
+        ],
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      final splits = await lookup.wordSplitsFor("Animecover");
+
+      expect(splits.first.display, "Anime + Cover");
+    });
+
+    test("splitting never waits for Hunspell", () async {
+      // The page draws the splits first precisely because `suggest` is two
+      // orders of magnitude slower, so this path must not touch morphology.
+      final morphology = FakeMorphology(
+        stemsResult: const [],
+        suggestionsResult: const ["abschieben"],
+      );
+      final lookup = makeLookup(
+        dictionary: FakeDictionarySource(
+          id: 1,
+          entries: {"Anime": "Anime content", "Cover": "Cover"},
+        ),
+        morphology: morphology,
+        enabled: true,
+      );
+
+      final splits = await lookup.wordSplitsFor("Animecover");
+
+      expect(splits, isNotEmpty);
+      expect(morphology.suggestionCalls, 0);
+    });
+
+    test("keeps only the spelling suggestions a dictionary can open", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"abschieben": "abschieben content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          suggestionsResult: const ["abschieben", "abschiessen"],
+        ),
+        enabled: true,
+      );
+
+      final suggestions = await lookup.spellingSuggestionsFor("abgeschoben");
+
+      // `abschiessen` exists in no dictionary: suggesting it would only lead
+      // to another "not found" page.
+      expect(suggestions, ["abschieben"]);
+    });
+
+    test("shows the spelling the dictionary files the word under", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"Diktionär": "Diktionär content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          suggestionsResult: const ["diktionär"],
+        ),
+        enabled: true,
+      );
+
+      final suggestions = await lookup.spellingSuggestionsFor("Diktioonar");
+
+      expect(suggestions, ["Diktionär"]);
+    });
+
+    test("a broken dictionary does not stop the others", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"Anime": "Anime content", "Cover": "Cover content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        others: [FakeDictionarySource(id: 2, entries: const {}, throws: true)],
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          suggestionsResult: const ["abschieben"],
+        ),
+        enabled: true,
+      );
+
+      expect(
+        (await lookup.wordSplitsFor("Animecover")).first.display,
+        "Anime + Cover",
+      );
+      // No dictionary holds `abschieben`, and the broken one cannot say.
+      expect(await lookup.spellingSuggestionsFor("Animecover"), isEmpty);
+    });
+
+    test("still splits when morphology is switched off", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"倾奇": "倾奇 content", "者": "者 content"},
+      );
+      final morphology = FakeMorphology(
+        stemsResult: const [],
+        suggestionsResult: const ["倾奇者"],
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: morphology,
+        enabled: false,
+      );
+
+      expect((await lookup.wordSplitsFor("倾奇者")).first.display, "倾奇 + 者");
+      expect(await lookup.spellingSuggestionsFor("倾奇者"), isEmpty);
+      expect(morphology.suggestionCalls, 0);
+    });
+
+    test("returns nothing for input worth no suggestions", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"Cover": "Cover content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      expect(await lookup.wordSplitsFor(""), isEmpty);
+      expect(await lookup.spellingSuggestionsFor(""), isEmpty);
+      // One part is what already failed; there is nothing to offer.
+      expect(await lookup.wordSplitsFor("Cover"), isEmpty);
+    });
+
+    test("reads an English phrasal verb out of a phrase", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"pick up": "pick up content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          stemsByWord: const {
+            "picked": ["pick"],
+          },
+        ),
+        enabled: true,
+      );
+
+      expect(await lookup.phraseSuggestionsFor("picked the phone up"), [
+        "pick up",
+      ]);
+    });
+
+    test("reads a German separable verb out of a phrase", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"anrufen": "anrufen content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          stemsByWord: const {
+            "rufe": ["rufen"],
+          },
+        ),
+        enabled: true,
+      );
+
+      expect(await lookup.phraseSuggestionsFor("rufe dich an"), ["anrufen"]);
+    });
+
+    test("leaves two-word phrases to the normal lookup", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"pick up": "pick up content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          stemsByWord: const {
+            "picked": ["pick"],
+          },
+        ),
+        enabled: true,
+      );
+
+      expect(await lookup.phraseSuggestionsFor("picked up"), isEmpty);
+    });
+
+    test("splitting ignores a phrase", () async {
+      // Every word is a headword, so an unguarded split would answer
+      // `picked + the + phone + up`.
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {
+          "picked": "picked",
+          "the": "the",
+          "phone": "phone",
+          "up": "up",
+        },
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      expect(await lookup.wordSplitsFor("picked the phone up"), isEmpty);
+    });
+
+    test("a phrase needs no morphology to match what was typed", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"picked up": "picked up content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      expect(await lookup.phraseSuggestionsFor("picked the phone up"), [
+        "picked up",
+      ]);
+    });
+  });
 }
 
 DictionaryLookup makeLookup({
@@ -238,9 +480,10 @@ DictionaryLookup makeLookup({
   required FakeMorphology morphology,
   required bool enabled,
   HunspellLookupMode mode = HunspellLookupMode.fallback,
+  List<FakeDictionarySource> others = const [],
 }) {
   return DictionaryLookup(
-    dictionaries: () => [dictionary],
+    dictionaries: () => [dictionary, ...others],
     morphology: morphology,
     morphologyEnabled: () => enabled,
     lookupMode: () => mode,
@@ -250,18 +493,22 @@ DictionaryLookup makeLookup({
 class FakeMorphology implements MorphologyProvider {
   final List<String> stemsResult;
   final List<String> suggestionsResult;
+
+  /// Per-token answers, for tests that stem a whole phrase.
+  final Map<String, List<String>> stemsByWord;
   int stemCalls = 0;
   int suggestionCalls = 0;
 
   FakeMorphology({
     required this.stemsResult,
     this.suggestionsResult = const [],
+    this.stemsByWord = const {},
   });
 
   @override
   Future<List<String>> stems(String word) async {
     stemCalls++;
-    return stemsResult;
+    return stemsByWord[word] ?? stemsResult;
   }
 
   @override
@@ -276,15 +523,35 @@ class FakeDictionarySource implements DictionarySource {
   final int id;
   final Map<String, String> entries;
 
-  FakeDictionarySource({required this.id, required this.entries});
+  /// Simulates a dictionary that fails to load or read.
+  final bool throws;
+
+  FakeDictionarySource({
+    required this.id,
+    required this.entries,
+    this.throws = false,
+  });
 
   @override
   Future<String?> resolveExactKey(String word) async {
-    if (entries.containsKey(word)) {
-      return word;
+    if (throws) throw StateError("dictionary is broken");
+    // Same order as the real implementations: the spelling as typed first,
+    // then the case/kana variants of it.
+    for (final candidate in lookupVariants(word)) {
+      if (entries.containsKey(candidate)) return candidate;
     }
-    final lowerCaseWord = word.toLowerCase();
-    return entries.containsKey(lowerCaseWord) ? lowerCaseWord : null;
+    return null;
+  }
+
+  @override
+  Future<Map<String, String>> resolveKeys(Iterable<String> words) async {
+    if (throws) throw StateError("dictionary is broken");
+    final resolved = <String, String>{};
+    for (final word in words) {
+      final key = await resolveExactKey(word);
+      if (key != null) resolved[word] = key;
+    }
+    return resolved;
   }
 
   @override
