@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_initialization.dart";
@@ -17,6 +18,7 @@ import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
+import "package:window_manager/window_manager.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -93,7 +95,34 @@ class Ciyue extends StatefulWidget {
   State<Ciyue> createState() => _CiyueState();
 }
 
-class _CiyueState extends State<Ciyue> {
+class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
+  /// Brightness last propagated to the native title bar, if any.
+  Brightness? _appliedWindowBrightness;
+
+  /// Keep the native title bar's caption buttons visible on Windows. The
+  /// template code in windows/runner only follows the OS theme, and nothing
+  /// ever told the window manager which brightness the app uses, so a light
+  /// app theme could leave the glyphs painted against the wrong background.
+  /// The window_manager plugin derives the caption theme from the OS theme
+  /// and this brightness together, which keeps the glyphs visible in all
+  /// four system x app combinations.
+  Future<void> _syncWindowBrightness() async {
+    if (!Platform.isWindows) return;
+    final brightness = switch (settings.themeMode) {
+      ThemeMode.light => Brightness.light,
+      ThemeMode.dark => Brightness.dark,
+      ThemeMode.system =>
+        WidgetsBinding.instance.platformDispatcher.platformBrightness,
+    };
+    if (brightness == _appliedWindowBrightness) return;
+    _appliedWindowBrightness = brightness;
+    try {
+      await windowManager.setBrightness(brightness);
+    } catch (error) {
+      talker.warning("Failed to sync window brightness: $error");
+    }
+  }
+
   ColorScheme _applyPureBlackDarkScheme(ColorScheme colorScheme) {
     if (colorScheme.brightness != Brightness.dark) {
       return colorScheme;
@@ -114,6 +143,9 @@ class _CiyueState extends State<Ciyue> {
 
   @override
   Widget build(BuildContext context) {
+    // Theme changes rebuild through refresh(); the OS-brightness half of
+    // ThemeMode.system arrives via didChangePlatformBrightness.
+    unawaited(_syncWindowBrightness());
     Locale? locale;
     if (settings.language != "system") {
       final splittedLanguage = settings.language!.split("_");
@@ -334,11 +366,18 @@ class _CiyueState extends State<Ciyue> {
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addObserver(this);
     refreshAll = refresh;
   }
 
   @override
+  void didChangePlatformBrightness() {
+    unawaited(_syncWindowBrightness());
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     disposeTrayMenu();
     super.dispose();
   }
