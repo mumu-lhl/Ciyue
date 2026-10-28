@@ -35,6 +35,9 @@ migrate_working_dir/
 /build/
 lib/build/
 
+# flutter widget preview unpacks a throwaway project here on every run
+.widget_preview/
+
 # Symbolication related
 app.*.symbols
 
