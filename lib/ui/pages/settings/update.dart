@@ -17,7 +17,13 @@ class UpdateSettingsPage extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 12,
+              // See the Hunspell page: keep the last row clear of the navigation bar.
+              bottom: 12 + MediaQuery.viewPaddingOf(context).bottom,
+            ),
             children: const [
               SettingsGroupCard(
                 children: [

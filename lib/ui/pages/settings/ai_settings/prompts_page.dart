@@ -75,7 +75,13 @@ class AiPromptsPage extends ConsumerWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500.0),
           child: ListView(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              // See the Hunspell page: keep the last row clear of the navigation bar.
+              bottom: 16 + MediaQuery.viewPaddingOf(context).bottom,
+            ),
             children: [
               TitleText(locale.promptsGroupWord),
               const SizedBox(height: 6),
