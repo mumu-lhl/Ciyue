@@ -119,6 +119,7 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
             resourceDirectory: dict.dictionaryDirectory,
             dictId: widget.dictId,
             isExpansion: widget.isExpansion,
+            resourceResolver: dict.readResourceFile,
           );
         }
       }

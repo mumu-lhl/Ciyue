@@ -1,4 +1,5 @@
 import "dart:io";
+import "dart:typed_data";
 
 import "package:ciyue/services/stardict_html.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
@@ -30,12 +31,18 @@ class StardictEntryListView extends StatelessWidget {
   final int dictId;
   final bool isExpansion;
 
+  /// Resolves a resource file name (as referenced by an entry) to its
+  /// bytes, consulting the `res/` directory and any `res.zip` archive.
+  /// When null, images are read from `res/` files only, as before.
+  final Future<Uint8List?> Function(String file)? resourceResolver;
+
   const StardictEntryListView({
     super.key,
     required this.entries,
     required this.resourceDirectory,
     required this.dictId,
     required this.isExpansion,
+    this.resourceResolver,
   });
 
   @override
@@ -50,6 +57,7 @@ class StardictEntryListView extends StatelessWidget {
             entry: entries[i],
             resourceDirectory: resourceDirectory,
             dictId: dictId,
+            resourceResolver: resourceResolver,
           ),
         ],
       ],
@@ -71,11 +79,13 @@ class _EntryBlock extends StatelessWidget {
   final StardictNativeEntry entry;
   final String resourceDirectory;
   final int dictId;
+  final Future<Uint8List?> Function(String file)? resourceResolver;
 
   const _EntryBlock({
     required this.entry,
     required this.resourceDirectory,
     required this.dictId,
+    this.resourceResolver,
   });
 
   @override
@@ -84,6 +94,7 @@ class _EntryBlock extends StatelessWidget {
       context: context,
       resourceDirectory: resourceDirectory,
       dictId: dictId,
+      resourceResolver: resourceResolver,
     );
     final blocks = <Widget>[];
     for (final field in entry.fields) {
@@ -120,11 +131,13 @@ class _Renderer {
   final BuildContext context;
   final String resourceDirectory;
   final int dictId;
+  final Future<Uint8List?> Function(String file)? resourceResolver;
 
   _Renderer({
     required this.context,
     required this.resourceDirectory,
     required this.dictId,
+    this.resourceResolver,
   });
 
   ThemeData get _theme => Theme.of(context);
@@ -319,6 +332,27 @@ class _Renderer {
       caseSensitive: false,
     ).hasMatch(file)) {
       return null;
+    }
+    final resolver = resourceResolver;
+    if (resolver != null) {
+      return WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 260, maxWidth: 320),
+          child: FutureBuilder<Uint8List?>(
+            future: resolver(file),
+            builder: (context, snapshot) {
+              final data = snapshot.data;
+              if (data == null) return const SizedBox.shrink();
+              return Image.memory(
+                data,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              );
+            },
+          ),
+        ),
+      );
     }
     final candidate = p.normalize(p.join(resourceDirectory, "res", file));
     final resRoot = p.normalize(p.join(resourceDirectory, "res"));
