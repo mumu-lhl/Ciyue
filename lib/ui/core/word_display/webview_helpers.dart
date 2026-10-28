@@ -4,6 +4,7 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
@@ -237,6 +238,14 @@ onLoadResourceWithCustomSchemeWarpper(int dictId) {
           continue;
         }
       }
+      final zipped = await dict.readZipResource(filename);
+      if (zipped != null) {
+        talker.info("Playing sound (2): $filename");
+        return CustomSchemeResponse(
+          contentType: lookupMimeType(filename) ?? "application/octet-stream",
+          data: zipped,
+        );
+      }
     }
     return null;
   };
@@ -318,6 +327,22 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
           }
           return NavigationActionPolicy.CANCEL;
         }
+
+        final zipped = await dict.readZipResource(filename);
+        if (zipped != null) {
+          final played = await playSound(
+            zipped,
+            lookupMimeType(filename) ?? "application/octet-stream",
+            label: basenameWithoutExtension(filename),
+          );
+          talker.info("Playing sound (1): $filename");
+          if (!played && unsupportedMessage != null) {
+            messenger?.showSnackBar(
+              SnackBar(content: Text(unsupportedMessage)),
+            );
+          }
+          return NavigationActionPolicy.CANCEL;
+        }
       }
     }
 
@@ -363,9 +388,18 @@ class LocalResourcesPathHandler extends CustomPathHandler {
 
       if (dict is! Mdict || dict.readerResources.isEmpty) {
         // Find resource under directory if no mdd (StarDict dictionaries
-        // keep their resources, e.g. res/ images, as plain files).
-        final file = File("${dirname(dict.path)}/$path");
-        data = await file.readAsBytes();
+        // keep their resources, e.g. res/ images, as plain files), else in
+        // a zip archive.
+        if (dict is Stardict) {
+          data = await dict.readResourceFile(path);
+        } else {
+          try {
+            final file = File("${dirname(dict.path)}/$path");
+            data = await file.readAsBytes();
+          } catch (_) {
+            if (dict is Mdict) data = await dict.readZipResource(path);
+          }
+        }
       } else {
         // An external .css/.js next to the dictionary overrides the copy
         // packed inside the .mdd (see readExternalResourceOverride).
@@ -381,9 +415,14 @@ class LocalResourcesPathHandler extends CustomPathHandler {
         results = await dict.readResource(path);
 
         if (results.isEmpty) {
-          // Find resource under directory if resource is not in mdd
-          final file = File("${dirname(dict.path)}/$path");
-          data = await file.readAsBytes();
+          // Find resource under directory if resource is not in mdd, else
+          // in a zip audio pack.
+          try {
+            final file = File("${dirname(dict.path)}/$path");
+            data = await file.readAsBytes();
+          } catch (_) {
+            data = await dict.readZipResource(path);
+          }
           return WebResourceResponse(
             data: data,
             contentType: lookupMimeType(path),

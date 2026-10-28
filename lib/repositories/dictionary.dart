@@ -11,6 +11,7 @@ import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/services/lookup_keys.dart";
 import "package:ciyue/services/toast.dart";
+import "package:ciyue/services/zip_archive_reader.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:dict_reader/dict_reader.dart";
@@ -275,6 +276,54 @@ class Mdict implements LoadedDictionary {
   final Map<String, ({String foundKey, int readerIndex})> _resourceKeyCache =
       {};
 
+  /// Zip archives holding this dictionary's companion resources (e.g.
+  /// pronunciation audio), mirroring the `.mdd` / `.N.mdd` scheme:
+  /// `<path>.zip`, `<path>.1.zip`, and so on. Readers are opened lazily
+  /// and cached; a missing archive ends the sequence, as with `.mdd`
+  /// parts.
+  final Map<String, ZipArchiveReader> _zipReaders = {};
+
+  Iterable<String> get _zipArchivePaths sync* {
+    yield "$path.zip";
+    for (var i = 1; ; i++) {
+      yield "$path.$i.zip";
+    }
+  }
+
+  ZipArchiveReader? _zipReaderFor(String archivePath) {
+    final cached = _zipReaders[archivePath];
+    if (cached != null) return cached;
+    final file = File(archivePath);
+    if (!file.existsSync()) return null;
+    final reader = ZipArchiveReader(file);
+    _zipReaders[archivePath] = reader;
+    return reader;
+  }
+
+  /// Reads one companion resource from a `<path>.zip` / `<path>.N.zip`
+  /// audio pack, or null when no pack contains [filename]. Callers consult
+  /// the `.mdd` readers and loose directory files first; this is the last
+  /// fallback.
+  Future<Uint8List?> readZipResource(String filename) async {
+    for (final archivePath in _zipArchivePaths) {
+      final reader = _zipReaderFor(archivePath);
+      if (reader == null) break;
+      final data = await reader.readEntry(filename);
+      if (data != null) return data;
+    }
+    return null;
+  }
+
+  /// Whether any zip audio pack contains [filename], without inflating it.
+  Future<bool> containsZipResource(String filename) async {
+    for (final archivePath in _zipArchivePaths) {
+      final reader = _zipReaderFor(archivePath);
+      if (reader == null) break;
+      if (await reader.containsEntry(filename)) return true;
+    }
+    return false;
+  }
+
   Completer<void>? _loadingCompleter;
   Future<void>? _metadataInitialization;
   Future<void>? _initialization;
@@ -368,6 +417,10 @@ class Mdict implements LoadedDictionary {
     readers.addAll(
       readerResources.map((readerResource) => readerResource.close()),
     );
+    for (final reader in _zipReaders.values) {
+      reader.close();
+    }
+    _zipReaders.clear();
     await Future.wait(readers);
   }
 
@@ -550,6 +603,14 @@ class Mdict implements LoadedDictionary {
         hasJs = results.isNotEmpty;
       }
     }
+
+    // Check zip audio packs.
+    if (!hasCss) {
+      hasCss = await containsZipResource(cssName);
+    }
+    if (!hasJs) {
+      hasJs = await containsZipResource(jsName);
+    }
   }
 
   @override
@@ -605,9 +666,8 @@ class Mdict implements LoadedDictionary {
       Uint8List? data;
 
       if (readerResources.isEmpty) {
-        // Find resource under directory if no mdd
-        final file = File("${dirname(path)}/$filename");
-        data = await file.readAsBytes();
+        // Find resource under directory if no mdd, else in a zip pack.
+        data = await _readLooseResourceFile(filename);
       } else {
         // An external .css/.js next to the dictionary overrides the copy
         // packed inside the .mdd (see readExternalResourceOverride).
@@ -633,14 +693,23 @@ class Mdict implements LoadedDictionary {
             }
           }
         } catch (e) {
-          // Find resource under directory if resource is not in mdd
-          final file = File("${dirname(path)}/$filename");
-          data = await file.readAsBytes();
+          // A failed mdd lookup falls through to the loose file / zip.
         }
+        data ??= await _readLooseResourceFile(filename);
       }
       return data;
     } catch (e) {
       return null;
+    }
+  }
+
+  /// A companion file kept loose next to the dictionary, or packed in a
+  /// zip audio pack. Returns null when it exists in neither place.
+  Future<Uint8List?> _readLooseResourceFile(String filename) async {
+    try {
+      return await File("${dirname(path)}/$filename").readAsBytes();
+    } catch (_) {
+      return readZipResource(filename);
     }
   }
 
