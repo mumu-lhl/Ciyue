@@ -81,6 +81,12 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <!-- Impeller is disabled: flutter/flutter#195424 — EGL_BAD_ACCESS on
+             Mali GPUs leaves the window black after returning to the
+             foreground. Re-enable once the engine fix lands. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
