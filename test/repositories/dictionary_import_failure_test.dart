@@ -1,27 +1,26 @@
 import "dart:io";
 
 import "package:ciyue/repositories/dictionary_import_failure.dart";
+import "package:dict_reader/dict_reader.dart";
 import "package:flutter_test/flutter_test.dart";
 
 void main() {
   group("classifyDictionaryImportFailure", () {
-    test("recognises the LZO message while the reader throws a string", () {
-      // The pinned reader throws a bare String, not an exception.
+    test("recognises the reader's compression exception", () {
       expect(
-        classifyDictionaryImportFailure("Compression method not supported"),
+        classifyDictionaryImportFailure(UnsupportedCompressionException(1)),
         DictionaryImportFailure.unsupportedCompression,
       );
     });
 
-    test("recognises the typed form the reader will throw later", () {
-      // Its toString keeps the wording, which is what the classifier reads.
-      final error = FormatException(
-        "Compression method not supported (method 1)",
-      );
-
+    test("does not match on the message", () {
+      // Until dict_reader#12 the reader threw a bare String, and the classifier
+      // matched its text. That made the classification depend on wording, so a
+      // string carrying the old message must now stay unknown — this fails if
+      // message matching is ever reintroduced.
       expect(
-        classifyDictionaryImportFailure(error),
-        DictionaryImportFailure.unsupportedCompression,
+        classifyDictionaryImportFailure("Compression method not supported"),
+        DictionaryImportFailure.unknown,
       );
     });
 
