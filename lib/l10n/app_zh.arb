@@ -506,6 +506,8 @@
   "@cloudSyncNow": {},
   "cloudSyncDisconnect": "断开连接",
   "@cloudSyncDisconnect": {},
+  "cloudSyncRebindAndSync": "重新绑定云空间并同步",
+  "@cloudSyncRebindAndSync": {},
   "cloudSyncSavedProfile": "已连接至 {provider}",
   "@cloudSyncSavedProfile": {
     "placeholders": {

@@ -482,6 +482,8 @@
   "@cloudSyncNow": {},
   "cloudSyncDisconnect": "Disconnect",
   "@cloudSyncDisconnect": {},
+  "cloudSyncRebindAndSync": "Rebind to cloud space and sync",
+  "@cloudSyncRebindAndSync": {},
   "cloudSyncSavedProfile": "Connected to {provider}",
   "@cloudSyncSavedProfile": {
     "placeholders": {
