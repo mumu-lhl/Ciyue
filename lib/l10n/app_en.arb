@@ -76,6 +76,10 @@
   "@import": {},
   "customFont": "Custom Font",
   "@customFont": {},
+  "dictionaryEnabledAfterLoading": "The dictionary will be enabled once the current group finishes loading.",
+  "@dictionaryEnabledAfterLoading": {
+    "description": "Shown when a dictionary is enabled while the group it belongs to is still loading its dictionaries."
+  },
   "dictionaryUnsupportedCompression": "{count, plural, =1{“{name}” uses LZO compression, which Ciyue cannot read. Convert it to zlib or no compression, then import it again — an AI assistant can do the conversion for you.} other{{count} dictionaries use LZO compression, which Ciyue cannot read. Convert them to zlib or no compression, then import them again — an AI assistant can do the conversion for you.}}",
   "@dictionaryUnsupportedCompression": {
     "description": "Shown when an MDX whose blocks are LZO-compressed fails to load. LZO decoding is not implemented, so the user has to convert the file. `name` is only used when a single dictionary is affected.",

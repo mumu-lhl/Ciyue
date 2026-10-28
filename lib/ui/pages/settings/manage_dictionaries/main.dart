@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
@@ -738,6 +739,20 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                         if (value == true) {
                           final oldDictionariesNumber =
                               dictManager.dicts.length;
+
+                          if (dictManager.isLoading) {
+                            // The switch that loads this group is still
+                            // running, and enabling now only sticks once it
+                            // has finished. Say so instead of leaving the
+                            // checkbox looking ignored for a while.
+                            unawaited(
+                              ToastService.show(
+                                l10n.dictionaryEnabledAfterLoading,
+                                context,
+                                type: ToastType.info,
+                              ),
+                            );
+                          }
 
                           await model.add(dictionary.id, dictionary.path);
 

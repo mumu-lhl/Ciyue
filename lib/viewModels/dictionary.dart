@@ -23,6 +23,11 @@ class DictManagerModel extends ChangeNotifier {
   }
 
   Future<void> add(int id, String path) async {
+    // A group that is still loading ends by assigning its stored list to
+    // dictManager.dictIds, which would forget this dictionary. Wait it out so
+    // the enable sticks.
+    await dictManager.waitForGroupSwitch();
+
     await dictManager.add(id, path);
     _lastKnownIsEmpty = dictManager.isEmpty;
 
@@ -30,6 +35,10 @@ class DictManagerModel extends ChangeNotifier {
   }
 
   Future<void> close(int id) async {
+    // Same reason as add(): a running switch would reload the dictionary from
+    // the group's stored list before this removal is written back.
+    await dictManager.waitForGroupSwitch();
+
     await dictManager.close(id);
     _lastKnownIsEmpty = dictManager.isEmpty;
 
@@ -47,6 +56,9 @@ class DictManagerModel extends ChangeNotifier {
 
     try {
       await dictManager.setCurrentGroup(id);
+      // Remember the selection so initGroup() restores this group on the next
+      // launch instead of falling back to the one stored at first run.
+      await prefs.setInt("currentDictionaryGroupId", id);
     } finally {
       pendingGroupId = null;
       isSwitchingGroup = false;
@@ -57,6 +69,12 @@ class DictManagerModel extends ChangeNotifier {
   }
 
   Future<void> updateDictIds() async {
+    // Deriving the group's list from dictManager.dicts is only meaningful
+    // once the group has finished loading; before that the map is either
+    // still being cleared or only partly filled, and the resulting list would
+    // be written back to the database.
+    await dictManager.waitForGroupSwitch();
+
     final allDicts = await dictionaryListDao.all();
     final activeDictIds = allDicts
         .where((d) => dictManager.contain(d.id))

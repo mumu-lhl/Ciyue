@@ -387,6 +387,8 @@
   "@phraseSuggestions": {},
   "wordParts": "拆开来看",
   "@wordParts": {},
+  "dictionaryEnabledAfterLoading": "当前分组还在加载，这部词典会在加载完成后启用。",
+  "@dictionaryEnabledAfterLoading": {},
   "dictionaryUnsupportedCompression": "{count, plural, =1{“{name}” 用了 LZO 压缩，词悦读不了。请先转成 zlib 或无压缩格式再导入；不知道怎么转的话，交给 AI 帮你转就行。} other{有 {count} 个词典用了 LZO 压缩，词悦读不了。请先转成 zlib 或无压缩格式再导入；不知道怎么转的话，交给 AI 帮你转就行。}}",
   "dictionaryCustomCss": "自定义词典 CSS",
   "@dictionaryCustomCss": {},
