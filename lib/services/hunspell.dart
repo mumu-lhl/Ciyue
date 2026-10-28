@@ -7,6 +7,12 @@ import "package:ciyue/models/hunspell.dart";
 import "package:dict_reader/dict_reader.dart" show normalizeKey;
 import "package:hunspell_ffi/hunspell_ffi.dart";
 
+/// What [HunspellManager.errors] holds for a source whose files have gone.
+///
+/// The loader runs in an isolate with no `BuildContext`, so it cannot translate
+/// this itself; it reports the marker and the UI turns it into a string.
+const hunspellFilesMissingMarker = "hunspell:files-missing";
+
 abstract interface class MorphologyProvider {
   Future<List<String>> stems(String word);
 
@@ -82,7 +88,7 @@ void _hunspellWorker(SendPort sendPort) {
 
       if (!await File(source.affPath).exists() ||
           !await File(source.dicPath).exists()) {
-        newErrors[source.id] = "Hunspell files are missing";
+        newErrors[source.id] = hunspellFilesMissingMarker;
         continue;
       }
 

@@ -7,6 +7,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
+import "package:ciyue/repositories/dictionary_import_failure.dart";
 import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/services/lookup_keys.dart";
@@ -90,6 +91,25 @@ class DictManager {
         "Failed to initialize dictionary $id ($path): $e",
         e,
         stackTrace,
+      );
+
+      // Adding a dictionary only reads its header, so one the reader cannot
+      // decode — an LZO-compressed MDX — is added first and fails here, in the
+      // background. Without this the entry just sits there with no headwords
+      // and no reason, which is the one case where the user can do something:
+      // convert the file and import it again. The rest stay in the log.
+      if (classifyDictionaryImportFailure(e) !=
+          DictionaryImportFailure.unsupportedCompression) {
+        return;
+      }
+
+      final context = navigatorKey.currentContext;
+      if (context == null || !context.mounted) return;
+      await ToastService.show(
+        AppLocalizations.of(context)!
+            .dictionaryUnsupportedCompression(1, basename(path)),
+        context,
+        type: ToastType.error,
       );
     }
   }
@@ -1058,6 +1078,7 @@ Future<void> selectMdx(
   List<String> paths, {
   bool closeLoadingWhenEmpty = false,
 }) async {
+  final failures = _ImportFailures();
   if (paths.isEmpty) {
     if (closeLoadingWhenEmpty && context.mounted) {
       context.pop();
@@ -1084,18 +1105,17 @@ Future<void> selectMdx(
       await dict.add();
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
-      if (context.mounted) {
-        ToastService.show(
-          AppLocalizations.of(context)!.notSupport,
-          context,
-          type: ToastType.error,
-        );
-        talker.error(
-          "Failed to add dictionary: $pathNoExtension, error: $e",
-          e,
-          StackTrace.current,
-        );
-      }
+      // Always log the original object: the toast only carries the category,
+      // which is not enough to tell a corrupt file from a missing companion.
+      talker.error(
+        "Failed to add dictionary: $pathNoExtension, error: $e",
+        e,
+        StackTrace.current,
+      );
+      failures.add(
+        classifyDictionaryImportFailure(e),
+        name: basename(pathNoExtension),
+      );
     } finally {
       await dict.close();
     }
@@ -1111,6 +1131,10 @@ Future<void> selectMdx(
     ).read(manageDictionariesModelProvider).update();
     context.pop();
   }
+
+  if (context.mounted) {
+    await failures.report(context);
+  }
 }
 
 /// The StarDict counterpart of [selectMdx]: same registration rules — the
@@ -1121,6 +1145,7 @@ Future<void> selectStardict(
   List<String> paths, {
   bool closeLoadingWhenEmpty = false,
 }) async {
+  final failures = _ImportFailures();
   if (paths.isEmpty) {
     if (closeLoadingWhenEmpty && context.mounted) {
       context.pop();
@@ -1147,18 +1172,15 @@ Future<void> selectStardict(
       await dict.add();
       talker.info("Added dictionary: $pathNoExtension");
     } catch (e) {
-      if (context.mounted) {
-        ToastService.show(
-          AppLocalizations.of(context)!.notSupport,
-          context,
-          type: ToastType.error,
-        );
-        talker.error(
-          "Failed to add dictionary: $pathNoExtension, error: $e",
-          e,
-          StackTrace.current,
-        );
-      }
+      talker.error(
+        "Failed to add dictionary: $pathNoExtension, error: $e",
+        e,
+        StackTrace.current,
+      );
+      failures.add(
+        classifyDictionaryImportFailure(e),
+        name: basename(pathNoExtension),
+      );
     } finally {
       await dict.close();
     }
@@ -1170,6 +1192,53 @@ Future<void> selectStardict(
       listen: false,
     ).read(manageDictionariesModelProvider).update();
     context.pop();
+  }
+
+  if (context.mounted) {
+    await failures.report(context);
+  }
+}
+
+/// Counts a batch's import failures so the user gets one toast per category
+/// instead of one per file.
+class _ImportFailures {
+  var unsupportedCompression = 0;
+  var unknown = 0;
+
+  /// The first file that could not be decoded. Named when it is the only one;
+  /// with several, a name would be noise and the count says enough.
+  String? firstUnsupportedName;
+
+  void add(DictionaryImportFailure failure, {String? name}) {
+    if (failure == DictionaryImportFailure.unsupportedCompression) {
+      unsupportedCompression++;
+      firstUnsupportedName ??= name;
+    } else {
+      unknown++;
+    }
+  }
+
+  /// At most two toasts, the actionable one first. Awaited, because a second
+  /// toast shown immediately would replace the first before it is read.
+  Future<void> report(BuildContext context) async {
+    if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    if (unsupportedCompression > 0) {
+      await ToastService.show(
+        l10n.dictionaryUnsupportedCompression(
+          unsupportedCompression,
+          firstUnsupportedName ?? "",
+        ),
+        context,
+        type: ToastType.error,
+      );
+      if (!context.mounted) return;
+    }
+
+    if (unknown > 0) {
+      await ToastService.show(l10n.notSupport, context, type: ToastType.error);
+    }
   }
 }
 

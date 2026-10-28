@@ -68,6 +68,18 @@
   "@import": {},
   "customFont": "Custom Font",
   "@customFont": {},
+  "dictionaryUnsupportedCompression": "{count, plural, =1{“{name}” uses LZO compression, which Ciyue cannot read. Convert it to zlib or no compression, then import it again — an AI assistant can do the conversion for you.} other{{count} dictionaries use LZO compression, which Ciyue cannot read. Convert them to zlib or no compression, then import them again — an AI assistant can do the conversion for you.}}",
+  "@dictionaryUnsupportedCompression": {
+    "description": "Shown when an MDX whose blocks are LZO-compressed fails to load. LZO decoding is not implemented, so the user has to convert the file. `name` is only used when a single dictionary is affected.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dictionaryCustomCss": "Custom Dictionary CSS",
   "@dictionaryCustomCss": {},
   "dictionaryCustomCssDescription": "Apply custom CSS when dictionary entries are opened",
@@ -636,6 +648,15 @@
   },
   "noHunspellDictionaries": "No Hunspell dictionaries imported",
   "@noHunspellDictionaries": {},
+  "hunspellSourcesFailedCount": "{count, plural, =1{1 word list failed to load} other{{count} word lists failed to load}}",
+  "@hunspellSourcesFailedCount": {
+    "description": "Summary shown above the word list when some Hunspell dictionaries could not be loaded.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "twoPassLookup": "Two-pass lookup",
   "@twoPassLookup": {},
   "twoPassLookupDescription": "Query Hunspell again with the first-round stems to find deeper stems (e.g. for Japanese or German).",
@@ -1091,5 +1112,9 @@
   "scenarioTitle": "Title",
   "@scenarioTitle": {},
   "scenarioDescription": "Description / Role instructions",
-  "@scenarioDescription": {}
+  "@scenarioDescription": {},
+  "hunspellFilesMissing": "Hunspell files are missing",
+  "@hunspellFilesMissing": {
+    "description": "Shown under a word list whose .aff or .dic file no longer exists."
+  }
 }
