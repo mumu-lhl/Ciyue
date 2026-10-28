@@ -11,6 +11,9 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/launcher_icon"
         android:label="@string/app_name"
+        <!-- Cloud sync supports user-configured local WebDAV servers over
+             plain HTTP; Android blocks cleartext traffic by default. -->
+        android:usesCleartextTraffic="true"
         tools:targetApi="33">
         <activity
             android:name=".MainActivity"
