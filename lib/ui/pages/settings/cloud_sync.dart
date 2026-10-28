@@ -496,7 +496,13 @@ class _CloudSyncSettingsPageState extends ConsumerState<CloudSyncSettingsPage> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              // See the Hunspell page: keep the last row clear of the navigation bar.
+              bottom: 16 + MediaQuery.viewPaddingOf(context).bottom,
+            ),
             children: [
               Text(
                 l10n.cloudSyncDescription,

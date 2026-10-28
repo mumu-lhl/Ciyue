@@ -9,15 +9,21 @@ class LogsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return TalkerScreen(
-      appBarTitle: AppLocalizations.of(context)!.logs,
-      talker: talker,
-      // talker_flutter still imports package:flutter/material.dart, so its
-      // ThemeData is a different type from material_ui's ThemeData.
-      theme: TalkerScreenTheme(
-        backgroundColor: theme.colorScheme.surface,
-        textColor: theme.colorScheme.onSurface,
-        cardColor: theme.colorScheme.surfaceContainerLow,
+    // The page is a third-party screen, so its list cannot be padded from
+    // here; insetting the whole thing keeps the last log row clear of the
+    // system navigation bar instead.
+    return SafeArea(
+      bottom: true,
+      child: TalkerScreen(
+        appBarTitle: AppLocalizations.of(context)!.logs,
+        talker: talker,
+        // talker_flutter still imports package:flutter/material.dart, so its
+        // ThemeData is a different type from material_ui's ThemeData.
+        theme: TalkerScreenTheme(
+          backgroundColor: theme.colorScheme.surface,
+          textColor: theme.colorScheme.onSurface,
+          cardColor: theme.colorScheme.surfaceContainerLow,
+        ),
       ),
     );
   }
