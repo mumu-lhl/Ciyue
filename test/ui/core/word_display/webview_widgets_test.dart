@@ -1,3 +1,5 @@
+import "dart:convert";
+
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
 import "package:ciyue/ui/core/word_display/webview_widgets.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
@@ -149,6 +151,19 @@ void main() {
     expect(load.initialData, isNull);
     expect(load.deferredData.data, content);
     expect(load.deferredData.baseUrl.toString(), url);
+  });
+
+  test("Windows content reload POSTs the same body as the initial load", () {
+    const content = "<html><body>café &amp; naïve</body></html>";
+    const url = "http://127.0.0.1:42433/";
+
+    final request = windowsContentPostRequest(content, url);
+
+    expect(request.url.toString(), url);
+    expect(request.method, "POST");
+    expect(request.body, windowsContentPostBody(content));
+    final decoded = json.decode(utf8.decode(request.body!)) as Map;
+    expect(decoded, {"content": content});
   });
 
   test("regular WebView navigation is allowed", () {

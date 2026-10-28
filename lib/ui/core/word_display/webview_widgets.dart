@@ -37,6 +37,27 @@ DesktopWebViewLoad desktopWebViewLoad(String content, String baseUrl) {
   );
 }
 
+/// The POST body the Windows WebView uses to load dictionary content: the
+/// whole HTML JSON-encoded under the `content` key, as served by the
+/// dictionary's loopback server.
+Uint8List windowsContentPostBody(String content) {
+  return Uint8List.fromList(utf8.encode(json.encode({"content": content})));
+}
+
+/// Builds the POST request the Windows WebView uses to load dictionary
+/// content. Windows cannot reload through [InAppWebViewController.loadData]:
+/// the WebView2 backend implements it as `NavigateToString`, which has no
+/// base URL, so relative `res/` resource links would not resolve. The
+/// initial load therefore POSTs the content to the dictionary's loopback
+/// server, and content updates must use the same request.
+URLRequest windowsContentPostRequest(String content, String baseUrl) {
+  return URLRequest(
+    url: WebUri(baseUrl),
+    method: "POST",
+    body: windowsContentPostBody(content),
+  );
+}
+
 /// Enable Dark Reader only on supported platforms in dark mode, and only when
 /// the user has not chosen a custom dictionary background.
 bool shouldUseDarkReaderForDictionary({
@@ -557,9 +578,8 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   @override
   void didUpdateWidget(WebviewWindows oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!Platform.isWindows &&
-        (widget.content != oldWidget.content ||
-            widget.dictId != oldWidget.dictId)) {
+    if (widget.content != oldWidget.content ||
+        widget.dictId != oldWidget.dictId) {
       final controller = _desktopController;
       if (controller != null) {
         unawaited(_scheduleDesktopContentLoad(controller));
@@ -584,10 +604,16 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
 
           final dict = ref.read(dictManagerProvider).dicts[requestedDictId];
           if (dict == null || dict.port == 0) return;
-          final desktopLoad = desktopWebViewLoad(
-            requestedContent,
-            "http://127.0.0.1:${dict.port}/",
-          );
+          final baseUrl = "http://127.0.0.1:${dict.port}/";
+          if (Platform.isWindows) {
+            // Same POST request the initial Windows load uses; loadData
+            // would drop the base URL on WebView2.
+            await controller.loadUrl(
+              urlRequest: windowsContentPostRequest(requestedContent, baseUrl),
+            );
+            return;
+          }
+          final desktopLoad = desktopWebViewLoad(requestedContent, baseUrl);
           await controller.loadData(
             data: desktopLoad.deferredData.data,
             mimeType: desktopLoad.deferredData.mimeType,
@@ -613,9 +639,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   Uint8List _getPostData() {
     if (_postDataContent != widget.content) {
       _postDataContent = widget.content;
-      _postData = Uint8List.fromList(
-        utf8.encode(json.encode({"content": widget.content})),
-      );
+      _postData = windowsContentPostBody(widget.content);
     }
     return _postData!;
   }
@@ -821,6 +845,10 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   context,
                 ),
                 onWebViewCreated: (controller) async {
+                  // The initial load is covered by initialUrlRequest; keep
+                  // the controller so didUpdateWidget can reload content
+                  // through the same POST request.
+                  _desktopController = controller;
                   controller.addJavaScriptHandler(
                     handlerName: "openInNewTab",
                     callback: (args) {
