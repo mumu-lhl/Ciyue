@@ -132,9 +132,30 @@ class DictManager {
 
   bool contain(int id) => dicts.keys.contains(id);
 
+  /// The group switch currently running, if any.
+  ///
+  /// [setCurrentGroup] ends by assigning the group's stored list to
+  /// [dictIds]. Enabling or disabling a dictionary while it runs would be
+  /// undone by that assignment, so callers that change the enabled set wait
+  /// here first.
+  Future<void>? _groupSwitch;
+
+  /// Completes when no group switch is running.
+  Future<void> waitForGroupSwitch() => _groupSwitch ?? Future<void>.value();
+
   Future<void> setCurrentGroup(int id) async {
     if (id == groupId) return;
 
+    final switching = _loadGroup(id);
+    _groupSwitch = switching;
+    try {
+      await switching;
+    } finally {
+      _groupSwitch = null;
+    }
+  }
+
+  Future<void> _loadGroup(int id) async {
     _isLoading = true;
 
     try {
