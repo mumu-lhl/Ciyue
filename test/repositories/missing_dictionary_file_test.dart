@@ -57,6 +57,20 @@ void main() {
       );
     });
 
+    test("accepts a plain index with a dictzip body", () async {
+      // What pyglossary writes: the index stays plain while the body is
+      // dictzip-compressed. Which of the two is compressed is independent, so
+      // a mixed pair must not be read as a missing file.
+      await touch(".ifo");
+      await touch(".idx");
+      await touch(".dict.dz");
+
+      expect(
+        await missingDictionaryFile(basePath, DictionaryType.stardict),
+        isNull,
+      );
+    });
+
     test("names the piece an incomplete StarDict dictionary lacks", () async {
       await touch(".ifo");
       await touch(".dict");
