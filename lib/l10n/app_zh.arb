@@ -302,6 +302,7 @@
   "@back": {},
   "dictionaryFileNotFound": "词典文件未找到。正在从数据库中删除。",
   "@dictionaryFileNotFound": {},
+  "dictionaryFileMissing": "找不到 {file}，词典文件不完整。正在从数据库中删除。",
   "confirmDeleteWords": "您确定要删除所选的 {count} 个单词吗？",
   "@confirmDeleteWords": {
     "placeholders": {

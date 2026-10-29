@@ -5,6 +5,7 @@ import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/dictionary_files.dart";
 import "package:ciyue/repositories/hunspell.dart";
 import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/services/platform.dart";
@@ -239,11 +240,14 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
     BuildContext context,
     WidgetRef ref,
   ) async {
-    final mdxFile = File("${dictionary.path}.mdx");
-    if (!await mdxFile.exists()) {
+    final missing = await missingDictionaryFile(
+      dictionary.path,
+      dictionary.type,
+    );
+    if (missing != null) {
       if (context.mounted) {
         ToastService.show(
-          AppLocalizations.of(context)!.dictionaryFileNotFound,
+          AppLocalizations.of(context)!.dictionaryFileMissing(missing),
           context,
           type: ToastType.error,
         );

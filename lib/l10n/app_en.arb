@@ -707,6 +707,15 @@
   "@back": {},
   "dictionaryFileNotFound": "Dictionary file not found. Removing from database.",
   "@dictionaryFileNotFound": {},
+  "dictionaryFileMissing": "Cannot find {file}, so the dictionary is incomplete. Removing it from the database.",
+  "@dictionaryFileMissing": {
+    "description": "Shown when a dictionary cannot be opened because one of its files is gone. `file` is the missing file's name.",
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
   "confirmDeleteWords": "Are you sure you want to delete the selected {count} words?",
   "@confirmDeleteWords": {
     "placeholders": {
