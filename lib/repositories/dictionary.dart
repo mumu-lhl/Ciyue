@@ -1289,8 +1289,12 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
 
       int? mddAudioListId;
       if (context.mounted) {
-        final title =
-            reader.header["Title"] ?? setExtension(basename(path), "");
+        // An mdd usually stores an empty Title, and `??` would leave the card
+        // nameless because "" is not null.
+        final headerTitle = reader.header["Title"] ?? "";
+        final title = headerTitle.isEmpty
+            ? setExtension(basename(path), "")
+            : headerTitle;
         mddAudioListId = await ProviderScope.containerOf(
           context,
           listen: false,
@@ -1300,6 +1304,7 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
       final resources = <MddAudioResourceCompanion>[];
       var number = 0;
       var loadingCount = 0;
+      var indexed = 0;
 
       await for (final info in reader.readWithOffset()) {
         if (number == Mdict.maxBatchSize) {
@@ -1309,10 +1314,12 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
         }
 
         if (loadingCount == Mdict.maxLoadingCount) {
-          LoadingDialogContentState.updateText(
-            AppLocalizations.of(navigatorKey.currentContext!)!
-                .addingResource(info.keyText),
-          );
+          final loadingContext = navigatorKey.currentContext;
+          if (loadingContext != null && loadingContext.mounted) {
+            LoadingDialogContentState.updateText?.call(
+              AppLocalizations.of(loadingContext)!.addingResource(info.keyText),
+            );
+          }
           loadingCount = 0;
         }
 
@@ -1328,14 +1335,19 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
 
         number++;
         loadingCount++;
+        indexed++;
       }
 
       if (number > 0) {
         await mddAudioResourceDao.add(resources);
       }
-    } catch (_) {
+      talker.info("Indexed audio pack $path: $indexed entries");
+    } catch (e, stackTrace) {
       // An unreadable file must not abort the remaining files or leave
-      // the caller without feedback; it is reported after the loop.
+      // the caller without feedback; it is reported after the loop. The
+      // reason only reaches the log: a pack can be added and still end up
+      // with zero entries, and without this there is nothing to go on.
+      talker.error("Failed to index audio pack $path: $e", e, stackTrace);
       failed++;
     } finally {
       await reader.close();
@@ -1344,6 +1356,18 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
 
   if (paths.isNotEmpty && context.mounted) {
     context.pop();
+  }
+
+  // The counts are computed when the list row is inserted, which happens
+  // before a single resource has been indexed. Refresh them now, otherwise a
+  // pack that was indexed correctly still reads "0 pronunciations" until the
+  // next launch recomputes them.
+  final modelContext = navigatorKey.currentContext;
+  if (modelContext != null && modelContext.mounted) {
+    await ProviderScope.containerOf(
+      modelContext,
+      listen: false,
+    ).read(audioModelProvider).init();
   }
 
   final toastContext = navigatorKey.currentContext;
