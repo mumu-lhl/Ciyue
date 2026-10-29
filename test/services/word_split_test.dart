@@ -22,6 +22,46 @@ void main() {
       expect(splits.first.display, "Wohnzimmer + Schrank");
     });
 
+    test("splits an ordinary German compound past 32 characters", () {
+      // 36 characters, nothing exotic, and a word a reader really does stop
+      // to look up — yet it was refused while the ceiling was lower.
+      final splits = findSplits(
+        "Kraftfahrzeughaftpflichtversicherung",
+        resolve: resolverOf(["Kraftfahrzeug", "haftpflicht", "versicherung"]),
+      );
+
+      expect(splits.first.parts, [
+        "Kraftfahrzeug",
+        "haftpflicht",
+        "versicherung",
+      ]);
+    });
+
+    test("splits six parts of the longest German compound asked about", () {
+      // The bound-setting case: 63 characters, six parts, with `s`, `s`, `n`
+      // and `s` swallowed between them.
+      final splits = findSplits(
+        "Rindfleischetikettierungsüberwachungsaufgabenübertragungsgesetz",
+        resolve: resolverOf([
+          "Rindfleisch",
+          "etikettierung",
+          "überwachung",
+          "aufgabe",
+          "übertragung",
+          "gesetz",
+        ]),
+      );
+
+      expect(splits.first.parts, [
+        "Rindfleisch",
+        "etikettierung",
+        "überwachung",
+        "aufgabe",
+        "übertragung",
+        "gesetz",
+      ]);
+    });
+
     test("splits a run of Chinese characters both ways", () {
       final splits = findSplits(
         "倾奇者",
@@ -68,8 +108,16 @@ void main() {
       expect(splits.single.display, "我 + 爱 + 你");
     });
 
-    test("gives up beyond four parts", () {
-      final parts = ["aa", "bb", "cc", "dd", "ee"];
+    test("splits into six parts", () {
+      final parts = ["aa", "bb", "cc", "dd", "ee", "ff"];
+      expect(
+        findSplits(parts.join(), resolve: resolverOf(parts)).single.display,
+        "aa + bb + cc + dd + ee + ff",
+      );
+    });
+
+    test("gives up beyond six parts", () {
+      final parts = ["aa", "bb", "cc", "dd", "ee", "ff", "gg"];
       expect(findSplits(parts.join(), resolve: resolverOf(parts)), isEmpty);
     });
 
