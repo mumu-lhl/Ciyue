@@ -67,17 +67,39 @@ void main() {
       expect(candidates, contains("pick up"));
     });
 
-    test("ignores two-word input", () {
-      // `picked up` already resolves through the normal lookup's stems.
+    test("ignores a single word", () {
+      // One token can never be a split phrasal verb; the lower bound is now
+      // two words so only a single word is still rejected.
       expect(
-        phraseCandidates(
-          phraseTokens("picked up"),
-          stemsOf: stemsFrom({
-            "picked": ["pick"],
-          }),
-        ),
+        phraseCandidates(phraseTokens("Haft"), stemsOf: (_) => const []),
         isEmpty,
       );
+    });
+
+    test("handles a two-word German separable verb", () {
+      // `siehst fern` stems to `sehen fern`, but the dictionary form is
+      // `fernsehen`. Two-word phrases are now in scope to cover this.
+      final candidates = phraseCandidates(
+        phraseTokens("siehst fern"),
+        stemsOf: stemsFrom({
+          "siehst": ["sehen"],
+        }),
+      );
+
+      expect(candidates, contains("fernsehen"));
+    });
+
+    test("handles a two-word English phrasal verb", () {
+      // `picked up` now reaches this pass too; it should still resolve to
+      // `pick up` from its stem.
+      final candidates = phraseCandidates(
+        phraseTokens("picked up"),
+        stemsOf: stemsFrom({
+          "picked": ["pick"],
+        }),
+      );
+
+      expect(candidates, contains("pick up"));
     });
 
     test("ignores a paragraph", () {

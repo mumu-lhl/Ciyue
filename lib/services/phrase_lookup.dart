@@ -13,25 +13,57 @@
 /// No particle list is needed: the dictionary is the filter. `in the end`
 /// produces `in end`, no dictionary has it, and the candidate disappears.
 ///
-/// Two-word phrases are deliberately out of scope — `picked up` already resolves
-/// through the morphology pass of the normal lookup, so only longer input
-/// reaches this.
 library;
 
 /// Upper bound on the words worth considering.
 ///
 /// A selected paragraph is not a phrasal verb, and every word costs one
 /// `stems()` call plus two probes.
-const maxPhraseWords = 12;
+///
+/// German sets the bar here rather than English: a separable verb can be torn
+/// apart by a whole clause, and this bound has to cover the stretch between
+/// its halves, since a longer input never reaches the pairing at all.
+///
+/// From the close of Part II of the *Communist Manifesto*, where **aufheben**
+/// turns up as **hebt ... auf** with 18 words between its two parts:
+///
+/// > „so hebt es mit diesen Produktions-Verhältnissen die Existenz-Bedingungen
+/// des Klassengegensatzes der Klassen überhaupt, und damit seine eigene
+/// Herrschaft als Klasse auf.“
+///
+/// With `hebt` and `auf` themselves that is 21 tokens, well past the 12 this
+/// once allowed, hence 24.
+const maxPhraseWords = 24;
 
 /// Longest candidate worth probing, in characters.
-const _maxCandidateLength = 40;
+///
+/// Unrelated to how far apart the halves stood in the sentence: whatever lay
+/// between them is dropped, and a candidate is always just the two of them
+/// joined, `heben auf` or `aufheben`. This bound only keeps an absurd
+/// concatenation from being probed as though it were a word.
+///
+/// Room has to be left for compounds. German stacks them freely, and
+/// `Grundstücksverkehrsgenehmigungszuständigkeit` runs to 44 characters on
+/// its own — past the 40 this once allowed — before a separable particle is
+/// even joined to it. Set far higher than any headword needs, though: turning
+/// one away costs a real entry while admitting it costs one probe, and what
+/// this is really guarding against is a pasted run of characters, whose length
+/// nothing else bounds.
+const _maxCandidateLength = 200;
 
 /// Shortest phrase this handles.
 ///
-/// Two words already resolve in the normal lookup: `picked up` becomes `pick up`
-/// through the stems it already asks Hunspell for.
-const _minPhraseWords = 3;
+/// The far end from [maxPhraseWords]: here the halves are adjacent, and what
+/// is being set is simply how few words still count as a phrase.
+///
+/// English needs no help, reaching `pick up` from `picked up` through the
+/// stems the normal lookup already asks Hunspell for. German does: `siehst
+/// fern` stems to `sehen fern`, while the dictionary stores `fernsehen`, so
+/// a two-word pair has to be let in.
+///
+/// Lowering this to two is what admits that case, and it is also what made
+/// `picked up` start reaching this pass for English.
+const _minPhraseWords = 2;
 
 /// The words of [phrase], with surrounding punctuation removed.
 ///

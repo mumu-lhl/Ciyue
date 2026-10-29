@@ -52,6 +52,9 @@ app.*.map.json
 # Aider
 .aider*
 
+# CodeBuddy
+.codebuddy/
+
 # Generated files
 lib/src/generated/i18n/*
 
