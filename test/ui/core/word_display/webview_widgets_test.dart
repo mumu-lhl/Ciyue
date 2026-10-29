@@ -185,6 +185,23 @@ void main() {
     }
   });
 
+  test("a sound reference keeps its folder inside one path segment", () {
+    // OJAD's recordings sit under `female/` and `male/` inside res.zip, so the
+    // file name itself carries a separator. It has to survive as a single path
+    // segment: a raw `/` would read as a path boundary, and the host the old
+    // shape put it in would have folded the name to lower case before the file
+    // was ever looked up.
+    final html = normalizeDictionaryUrls(
+      '<a href="sound://female/2830_1_1_female.spx"></a>',
+    );
+
+    final encoded = RegExp(r'sound://localhost/([^"]+)"')
+        .firstMatch(html)!
+        .group(1)!;
+    expect(encoded, isNot(contains("/")));
+    expect(Uri.decodeComponent(encoded), "female/2830_1_1_female.spx");
+  });
+
   group("linked words survive the URL container", () {
     test("the encoded path decodes back to the original word", () {
       expect(
