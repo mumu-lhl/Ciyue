@@ -13,13 +13,22 @@ import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 
-Future<List<String>> findMddAudioFilesOnAndroid(String? directory) async {
+/// Extensions recognised as pronunciation packs.
+///
+/// `.mdd` is the MDict resource container. `.zip` and `.zips` are plain
+/// archives — the latter being GoldenDict's pronunciation pack extension —
+/// read through the archive's own index instead of a database table.
+const audioPackExtensions = ["mdd", "zip", "zips"];
+
+Future<List<String>> findAudioPackFilesOnAndroid(String? directory) async {
   final documentsDir = Directory(
     directory ?? join((await getApplicationSupportDirectory()).path, "audios"),
   );
-  final mddFiles = <String>[];
-  await findAllFileByExtension(documentsDir, mddFiles, "mdd");
-  return mddFiles;
+  final files = <String>[];
+  for (final extension in audioPackExtensions) {
+    await findAllFileByExtension(documentsDir, files, extension);
+  }
+  return files;
 }
 
 /// Plays raw audio bytes and reports whether the platform accepted them.
@@ -110,6 +119,22 @@ Future<void> playSoundOfWord(
         return;
       }
     }
+  }
+
+  // Zip packs are answered straight from the archive. They come after the
+  // `.mdd` packs above so the user's package order still decides who wins.
+  for (final mddAudio in mddAudioList) {
+    if (!isZipAudioPack(mddAudio.path)) continue;
+    final hit = await readZipAudioEntry(mddAudio.path, word);
+    if (hit == null) continue;
+
+    final player = AudioPlayer();
+    await player.setSourceBytes(hit.data, mimeType: lookupMimeType(hit.key));
+    await player.resume();
+    player.onPlayerComplete.listen((event) {
+      player.release();
+    });
+    return;
   }
 
   if (settings.pronunciationMode == PronunciationMode.packOnly ||

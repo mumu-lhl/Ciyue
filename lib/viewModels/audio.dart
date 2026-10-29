@@ -8,6 +8,7 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/audio.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/mdd_reader_pool.dart";
+import "package:ciyue/services/zip_archive_reader.dart";
 import "package:material_ui/material_ui.dart";
 import "package:mime/mime.dart";
 import "package:path/path.dart";
@@ -45,6 +46,51 @@ String resourceKeyStem(String key) {
     stem = stem.substring(1);
   }
   return setExtension(stem, "").toLowerCase();
+}
+
+/// Whether [path] is a zip-based pronunciation pack.
+///
+/// `.zips` is the extension GoldenDict gives its pronunciation archives; the
+/// file itself is a plain zip, so both spellings are read the same way.
+bool isZipAudioPack(String path) {
+  final lower = path.toLowerCase();
+  return lower.endsWith(".zip") || lower.endsWith(".zips");
+}
+
+final Map<String, ZipArchiveReader> _zipAudioReaders = {};
+
+/// The reader for a zip pronunciation pack, or null when the file is gone.
+///
+/// Unlike `.mdd`, an archive needs no index table: the reader parses the
+/// central directory on first lookup and keeps a name map in memory, which is
+/// why these packs write nothing to the database at import time.
+ZipArchiveReader? zipAudioReaderFor(String path) {
+  final cached = _zipAudioReaders[path];
+  if (cached != null) return cached;
+  final file = File(path);
+  if (!file.existsSync()) return null;
+  final reader = ZipArchiveReader(file);
+  _zipAudioReaders[path] = reader;
+  return reader;
+}
+
+/// One audio entry found in a zip pack.
+typedef ZipAudioHit = ({Uint8List data, String key});
+
+/// Reads the first candidate spelling of [word] that [path] contains.
+Future<ZipAudioHit?> readZipAudioEntry(String path, String word) async {
+  final reader = zipAudioReaderFor(path);
+  if (reader == null) return null;
+  for (final key in pronunciationKeyCandidates(word)) {
+    final data = await reader.readEntry(key);
+    if (data != null) return (data: data, key: key);
+  }
+  return null;
+}
+
+/// Drops the cached reader for [path], if any.
+void closeZipAudioReader(String path) {
+  _zipAudioReaders.remove(path)?.close();
 }
 
 class AudioModel extends ChangeNotifier {
@@ -88,8 +134,12 @@ class AudioModel extends ChangeNotifier {
   Future<void> init() async {
     mddAudioList = await mddAudioListDao.allOrdered();
     mddAudioCounts = {
+      // Zip packs keep no resource rows: their entries live in the archive's
+      // own index, and the settings card shows nothing rather than a
+      // misleading "0 pronunciations".
       for (final pack in mddAudioList)
-        pack.id: await mddAudioResourceDao.countByMddAudioID(pack.id),
+        if (!isZipAudioPack(pack.path))
+          pack.id: await mddAudioResourceDao.countByMddAudioID(pack.id),
     };
     mddAudioListState++;
 
@@ -131,6 +181,21 @@ class AudioModel extends ChangeNotifier {
     final targetList = mddList ?? mddAudioList;
     if (mode != PronunciationMode.ttsOnly && targetList.isNotEmpty) {
       for (final mddAudio in targetList) {
+        if (isZipAudioPack(mddAudio.path)) {
+          // Zip packs are read straight out of the archive; there is no
+          // resource table to consult.
+          final hit = await readZipAudioEntry(mddAudio.path, word);
+          if (hit != null) {
+            await playAudioBytes(
+              hit.data,
+              lookupMimeType(hit.key) ?? "audio/mpeg",
+              label: word,
+            );
+            return PronunciationResult.pack;
+          }
+          continue;
+        }
+
         for (final key in pronunciationKeyCandidates(word)) {
           final audios = await mddAudioResourceDao.getByKeyAndMddAudioID(
             key,
@@ -278,6 +343,7 @@ class AudioModel extends ChangeNotifier {
 
   Future<void> removeMddAudio(int id) async {
     final mddAudio = mddAudioList.firstWhere((element) => element.id == id);
+    closeZipAudioReader(mddAudio.path);
     await closeMddReader(mddAudio.path);
 
     if (Platform.isAndroid) {

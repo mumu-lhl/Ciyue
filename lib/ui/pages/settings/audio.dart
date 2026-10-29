@@ -149,7 +149,7 @@ class AudioList extends ConsumerWidget {
                       if (path != null) {
                         await prefs.setString("audioDirectory", path);
 
-                        final paths = await findMddAudioFilesOnAndroid(path);
+                        final paths = await findAudioPackFilesOnAndroid(path);
                         if (paths.isEmpty) {
                           if (context.mounted) {
                             await ToastService.show(
@@ -237,7 +237,10 @@ class AudioItems extends ConsumerWidget {
           child: ListTile(
             leading: ReorderableDragStartListener(
               index: index,
-              child: IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
+              child: IconButton(
+                icon: const Icon(Icons.drag_handle_rounded),
+                onPressed: () {},
+              ),
             ),
             title: Text(mddAudio.title),
             subtitle: count == null

@@ -1,6 +1,6 @@
 # Pronunciation and pronunciation packs
 
-Ciyue can read a word out in two ways: **pronunciation packs** (recordings stored in `.mdd` files) and **TTS** (the system speech synthesiser).
+Ciyue can read a word out in two ways: **pronunciation packs** (recordings stored in `.mdd` or `.zip` / `.zips` files) and **TTS** (the system speech synthesiser).
 
 ## Three modes
 
@@ -11,6 +11,17 @@ Ciyue can read a word out in two ways: **pronunciation packs** (recordings store
 | TTS only | Ignore the packs and always read the word aloud |
 
 Packs are added in Settings → Audio → Pronunciation Packs. You can add several and drag them to change their priority.
+
+## Pack formats
+
+A pack can be an `.mdd` file or a plain zip — with the `.zip` or `.zips` extension (the latter is GoldenDict's extension for pronunciation archives; the file itself is a plain zip).
+
+| Format | To change one file inside |
+|---|---|
+| `.mdd` | MDict's private format: unpack and repack with MdxBuilder or mdict-utils |
+| `.zip` / `.zips` | Plain zip: replace files with whatever archiver you already have |
+
+When you need to swap one recording, the zip form is far less work — extract, replace, re-zip, no dedicated tools. Both forms can be mixed, and drag-to-reorder priority treats them the same.
 
 ## Which formats play
 
