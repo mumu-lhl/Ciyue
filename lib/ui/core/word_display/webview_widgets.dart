@@ -213,9 +213,11 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
 ///
 /// The anchor target only exists once the document is in the DOM, and images
 /// or fonts that arrive afterwards can move it, so a miss earns one retry.
-/// Beyond that the request is dropped: polling a page that has no such element
-/// would only burn frames.
-Future<void> _scrollToAnchor(
+/// Beyond that the miss is reported back: polling a page that has no such
+/// element would only burn frames.
+///
+/// Returns whether the element was found (and scrolled).
+Future<bool> _scrollToAnchor(
   InAppWebViewController controller,
   String anchor, {
   int attempt = 0,
@@ -230,24 +232,34 @@ Future<void> _scrollToAnchor(
   } catch (e) {
     talker.warning("Failed to scroll to anchor $anchor: $e");
   }
-  if (found || attempt >= 1) return;
+  if (found || attempt >= 1) return found;
   await Future<void>.delayed(const Duration(milliseconds: 150));
-  await _scrollToAnchor(controller, anchor, attempt: attempt + 1);
+  return _scrollToAnchor(controller, anchor, attempt: attempt + 1);
 }
 
-/// Applies [anchor] and consumes the pending request, so a rebuild does not
-/// scroll the entry a second time.
+/// Applies [anchor] to the entry rendered by [dictId] and consumes the pending
+/// request, so a rebuild does not scroll the entry a second time.
+///
+/// The request is only consumed when the anchor was actually found. A group can
+/// answer one headword from several dictionaries, and the sibling entries are
+/// built at the same time; dropping the request on a miss would let a
+/// dictionary that has the headword but not the anchor take it away from the
+/// entry that does have it.
 Future<void> _applyPendingAnchor(
   InAppWebViewController controller,
   WidgetRef ref,
+  int dictId,
   String word,
   String? anchor,
 ) async {
   if (anchor == null || anchor.isEmpty) return;
-  await _scrollToAnchor(controller, anchor);
+  final found = await _scrollToAnchor(controller, anchor);
+  if (!found) return;
   try {
     final pending = ref.read(pendingAnchorProvider);
-    if (pending?.word == word && pending?.anchor == anchor) {
+    if (pending?.word == word &&
+        pending?.dictId == dictId &&
+        pending?.anchor == anchor) {
       ref.read(pendingAnchorProvider.notifier).clear();
     }
   } catch (_) {
@@ -305,7 +317,13 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
       final controller = _webViewController;
       if (controller != null) {
         unawaited(
-          _applyPendingAnchor(controller, ref, widget.word, widget.anchor),
+          _applyPendingAnchor(
+            controller,
+            ref,
+            widget.dictId,
+            widget.word,
+            widget.anchor,
+          ),
         );
       }
     }
@@ -437,7 +455,13 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         context,
       ),
       onLoadStop: (controller, url) async {
-        await _applyPendingAnchor(controller, ref, widget.word, widget.anchor);
+        await _applyPendingAnchor(
+          controller,
+          ref,
+          widget.dictId,
+          widget.word,
+          widget.anchor,
+        );
       },
       onWebViewCreated: (controller) async {
         _webViewController = controller;
@@ -667,7 +691,13 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
       final controller = _desktopController;
       if (controller != null) {
         unawaited(
-          _applyPendingAnchor(controller, ref, widget.word, widget.anchor),
+          _applyPendingAnchor(
+            controller,
+            ref,
+            widget.dictId,
+            widget.word,
+            widget.anchor,
+          ),
         );
       }
     }
@@ -800,6 +830,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
               await _applyPendingAnchor(
                 controller,
                 ref,
+                widget.dictId,
                 widget.word,
                 widget.anchor,
               );
@@ -942,6 +973,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   await _applyPendingAnchor(
                     controller,
                     ref,
+                    widget.dictId,
                     widget.word,
                     widget.anchor,
                   );

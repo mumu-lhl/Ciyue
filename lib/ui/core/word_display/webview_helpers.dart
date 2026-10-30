@@ -126,16 +126,15 @@ void handleOpenWordNavigation(
 
   final navContext = navigatorKey.currentContext ?? context;
 
-  // The anchor is a one-shot scroll request for whichever entry renders this
-  // word next; it deliberately stays out of the tab history.
-  if (anchor != null && anchor.isNotEmpty) {
-    try {
-      ProviderScope.containerOf(
-        navContext,
-        listen: false,
-      ).read(pendingAnchorProvider.notifier).request(word, anchor);
-    } catch (_) {}
-  }
+  // The anchor is a one-shot scroll request for the entry of the dictionary the
+  // link came from; it deliberately stays out of the tab history. A link
+  // without an anchor still reports in, which drops a request the page being
+  // left behind never used.
+  try {
+    ProviderScope.containerOf(navContext, listen: false)
+        .read(pendingAnchorProvider.notifier)
+        .request(word: word, dictId: dictId, anchor: anchor);
+  } catch (_) {}
 
   if (isLargeScreen(context)) {
     try {

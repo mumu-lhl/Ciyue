@@ -41,6 +41,9 @@ offers no way to reach a headword that contains one.
   anything up.
 - The anchor target is matched against both `id` and `name` attributes, so
   anchors written for either style work.
+- An anchor belongs to the entry of the dictionary that contains the link. A
+  sibling dictionary in the same group that happens to have the same headword
+  does not get scrolled instead.
 
 ## Audio and video
 

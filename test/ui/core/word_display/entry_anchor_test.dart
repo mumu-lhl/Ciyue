@@ -1,4 +1,5 @@
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 
 void main() {
@@ -56,6 +57,45 @@ void main() {
 
     test("handles empty input", () {
       expect(parseEntryLink(""), const EntryLinkTarget(word: ""));
+    });
+  });
+
+  group("pendingAnchorProvider", () {
+    test("records the anchor together with its dictionary", () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container
+          .read(pendingAnchorProvider.notifier)
+          .request(word: "tag", dictId: 7, anchor: "sumeru");
+
+      expect(container.read(pendingAnchorProvider), (
+        word: "tag",
+        anchor: "sumeru",
+        dictId: 7,
+      ));
+    });
+
+    test("a navigation without an anchor drops the previous request", () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final notifier = container.read(pendingAnchorProvider.notifier);
+
+      notifier.request(word: "tag", dictId: 7, anchor: "sumeru");
+      notifier.request(word: "other", dictId: 7, anchor: null);
+
+      expect(container.read(pendingAnchorProvider), isNull);
+    });
+
+    test("an anchor with no dictionary is not kept", () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container
+          .read(pendingAnchorProvider.notifier)
+          .request(word: "tag", dictId: null, anchor: "sumeru");
+
+      expect(container.read(pendingAnchorProvider), isNull);
     });
   });
 }

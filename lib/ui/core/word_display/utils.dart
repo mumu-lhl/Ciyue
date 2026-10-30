@@ -95,11 +95,15 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
 
   @override
   Widget build(BuildContext context) {
-    // Anchor requests are keyed by headword: only the entry that actually
-    // rendered this word may consume one.
+    // Anchor requests are keyed by headword *and* dictionary: the anchor id
+    // belongs to the entry the link was defined in, so a sibling dictionary
+    // that happens to answer the same headword must not touch it.
     final pendingAnchor = ref.watch(
       pendingAnchorProvider.select(
-        (pending) => pending != null && pending.word == widget.word
+        (pending) =>
+            pending != null &&
+                pending.word == widget.word &&
+                pending.dictId == widget.dictId
             ? pending.anchor
             : null,
       ),

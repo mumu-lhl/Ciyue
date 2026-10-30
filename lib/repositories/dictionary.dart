@@ -1128,6 +1128,13 @@ Future<void> selectMdx(
     final pathNoExtension = setExtension(path, "");
 
     if (await dictionaryListDao.dictionaryExist(pathNoExtension)) {
+      // A dictionary is identified by its extension-less path, so an MDX file
+      // and a StarDict file that share a stem cannot both be registered. Say so
+      // instead of dropping the second one without a trace.
+      talker.warning(
+        "Skipping $path: $pathNoExtension is already registered by "
+        "another dictionary",
+      );
       continue;
     }
 
@@ -1195,6 +1202,13 @@ Future<void> selectStardict(
     final pathNoExtension = setExtension(path, "");
 
     if (await dictionaryListDao.dictionaryExist(pathNoExtension)) {
+      // A dictionary is identified by its extension-less path, so an MDX file
+      // and a StarDict file that share a stem cannot both be registered. Say so
+      // instead of dropping the second one without a trace.
+      talker.warning(
+        "Skipping $path: $pathNoExtension is already registered by "
+        "another dictionary",
+      );
       continue;
     }
 
