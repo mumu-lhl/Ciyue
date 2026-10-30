@@ -45,12 +45,21 @@ Future<void> initGroup() async {
   }
   await dictManager.setCurrentGroup(groupId);
   dictManager.groups = await dictGroupDao.getAllGroups();
+  talker.info(
+    "Loaded dictionary group $groupId "
+    "(${dictManager.dictIds.length} dictionaries)",
+  );
 
   final context = navigatorKey.currentContext;
   if (context != null && context.mounted) {
     try {
       final container = ProviderScope.containerOf(context, listen: false);
       container.read(homeModelProvider).update();
+      // A lookup can start before the group finishes loading — an Android
+      // intent navigates as soon as its route exists — and that early result
+      // is then cached for the page. Drop the cached lookups so the words on
+      // screen are resolved again against the final dictionary set.
+      container.invalidate(dictionaryLookupProvider);
       // The manage-dictionaries page is not part of the home tree, and on
       // large screens it is built immediately as the default settings
       // detail — possibly while this load is still running. Without this,
