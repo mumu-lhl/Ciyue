@@ -4,19 +4,32 @@
 The fixtures cover in-entry anchors, cross-entry anchors and the ``##`` escape
 for headwords that contain a literal ``#``:
 
-* ``tag``        an entry with a long filler block *before* the ``sumeru``
-                 anchor, so a scroll is observable, plus one link per
-                 supported spelling.
-* ``tag#sumeru`` the headword that the escaped link has to reach.
-* ``other``      a second entry whose links jump into ``tag``.
+* ``anchor-demo``        an entry with a long filler block *before* the
+                         ``sumeru`` anchor, so a scroll is observable, plus one
+                         link per supported spelling.
+* ``anchor-demo#sumeru`` the headword that the escaped link has to reach.
+* ``anchor-demo-other``  a second entry whose links jump into ``anchor-demo``;
+                         its own ``local`` anchor also sits below a filler
+                         block, so an in-place scroll is visible too.
 
-Two builds are written:
+Every headword is prefixed with ``anchor-demo``: the test dictionaries are
+imported into a real group, and a headword such as ``tag`` would also be
+answered by any other dictionary in that group, adding a tab per dictionary
+and making the observed scroll ambiguous.
 
-* ``anchor-test.mdx`` — packed with ``mdict-utils`` (``pip install
+Two builds are written into the same directory:
+
+* ``anchor-test-mdx.mdx`` — packed with ``mdict-utils`` (``pip install
   mdict-utils``), which produces a regular MDict file.
-* ``anchor-test.ifo`` / ``.idx`` / ``.dict`` — written here so the field type
-  stays ``h`` (HTML). The language display only uses a WebView, and therefore
-  only resolves anchors, for HTML entries.
+* ``anchor-test-stardict.ifo`` / ``.idx`` / ``.dict`` — written here so the
+  field type stays ``h`` (HTML). The language display only uses a WebView, and
+  therefore only resolves anchors, for HTML entries.
+
+The two builds use different stems on purpose: a dictionary is identified by its
+path without the extension, so ``anchor-test.mdx`` and ``anchor-test.ifo``
+sitting side by side would collide — only the MDX file would be registered.
+Distinct stems let both be imported at once, and the distinct titles keep the
+tabs apart. The same rule is documented for users in the FAQ.
 
 Run from the repository root:
 
@@ -31,6 +44,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = REPO_ROOT / "test" / "fixtures" / "anchor-dictionary"
+MDX_STEM = "anchor-test-mdx"
+STARDICT_STEM = "anchor-test-stardict"
 
 FILLER_BEFORE = 60
 FILLER_AFTER = 5
@@ -45,35 +60,47 @@ def _filler(label: str, count: int) -> str:
     )
 
 
+def _links(*pairs: tuple[str, str]) -> str:
+    """Renders ``(href, label)`` pairs as one navigation block."""
+    return '<nav class="links">' + "".join(
+        f'<a href="{href}">{label}</a>' for href, label in pairs
+    ) + "</nav>"
+
+
 ENTRIES: dict[str, str] = {
-    "tag": (
+    "anchor-demo": (
         _filler("before", FILLER_BEFORE)
         + '<a id="sumeru"></a>'
         + '<p class="marker">SUMMERU-MARKER</p>'
         + _filler("after", FILLER_AFTER)
         + '<a name="named"></a>'
         + '<p class="marker">NAMED-MARKER</p>'
-        + '<nav class="links">'
-        + '<a href="entry://tag#sumeru">cross entry anchor</a>'
-        + '<a href="entry://#sumeru">same page anchor</a>'
-        + '<a href="entry://tag##sumeru">literal hash entry</a>'
-        + '<a href="entry://#named">same page named anchor</a>'
-        + "</nav>"
+        + _links(
+            ("entry://anchor-demo#sumeru", "cross entry anchor"),
+            ("entry://#sumeru", "same page anchor"),
+            ("entry://anchor-demo##sumeru", "literal hash entry"),
+            ("entry://#named", "same page named anchor"),
+        )
     ),
-    "tag#sumeru": '<p class="marker">LITERAL-HASH-ENTRY</p>',
-    "other": (
+    "anchor-demo#sumeru": '<p class="marker">LITERAL-HASH-ENTRY</p>',
+    "anchor-demo-other": (
         '<p class="marker">OTHER-ENTRY</p>'
-        + '<nav class="links">'
-        + '<a href="entry://tag#sumeru">jump into tag anchor</a>'
-        + '<a href="entry://tag##sumeru">jump to literal hash</a>'
-        + '<a href="entry://#local">same page local anchor</a>'
-        + "</nav>"
+        + _links(
+            ("entry://anchor-demo#sumeru", "jump into anchor"),
+            ("entry://anchor-demo##sumeru", "jump to literal hash"),
+            ("entry://#local", "same page local anchor"),
+        )
+        # The in-place anchor has to start below the fold: with the marker right
+        # under the link there would be nothing to scroll and a broken
+        # scrollIntoView would look exactly like a working one.
+        + _filler("local", FILLER_BEFORE)
         + '<a id="local"></a>'
         + '<p class="marker">LOCAL-MARKER</p>'
+        + _filler("after-local", FILLER_AFTER)
     ),
 }
 
-TITLE = "Anchor Test Dictionary"
+TITLE = "Anchor Test"
 DESCRIPTION = "Fixture for entry-anchor tests."
 
 
@@ -88,7 +115,7 @@ def write_mdx(out: Path) -> None:
                 handle.write(f"{word}\n{body}\n</>\n")
 
         title = tmp / "title.txt"
-        title.write_text(TITLE, encoding="utf-8")
+        title.write_text(f"{TITLE} (MDX)", encoding="utf-8")
         description = tmp / "description.txt"
         description.write_text(DESCRIPTION, encoding="utf-8")
 
@@ -125,7 +152,7 @@ def write_stardict(base: Path) -> None:
     base.with_suffix(".ifo").write_text(
         "StarDict's dict ifo file\n"
         "version=2.4.2\n"
-        f"bookname={TITLE}\n"
+        f"bookname={TITLE} (StarDict)\n"
         f"wordcount={len(ENTRIES)}\n"
         f"idxfilesize={len(idx_bytes)}\n"
         "sametypesequence=h\n"
@@ -136,8 +163,8 @@ def write_stardict(base: Path) -> None:
 
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    write_mdx(OUT_DIR / "anchor-test.mdx")
-    write_stardict(OUT_DIR / "anchor-test")
+    write_mdx(OUT_DIR / f"{MDX_STEM}.mdx")
+    write_stardict(OUT_DIR / STARDICT_STEM)
     print(f"wrote fixtures to {OUT_DIR}")
 
 

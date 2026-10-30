@@ -1,7 +1,7 @@
 StarDict's dict ifo file
 version=2.4.2
-bookname=Anchor Test Dictionary
+bookname=Anchor Test (StarDict)
 wordcount=3
-idxfilesize=45
+idxfilesize=73
 sametypesequence=h
 description=Fixture for entry-anchor tests.

@@ -33,6 +33,10 @@ F-Droid 按自己的节奏构建和发布应用，所以版本会比 GitHub 晚�
 - 有些词典需要调自定义 CSS：**管理词典 → 词典 → 自定义 CSS**。
 - 如果某本词典导致查词崩溃，请到 [GitHub](https://github.com/mumu-lhl/Ciyue/issues) 提 issue 并注明词典名称。
 
+## 同一目录里的 MDX 和 StarDict 词典只出现一个？
+
+词悦用「去掉扩展名的路径」来标识一本词典，所以 `foo.mdx` 与 `foo.ifo` / `foo.idx` / `foo.dict` 会被当成同一本：MDX 会被注册，StarDict 那份会被跳过。想让两本同时出现，请把主文件名区分开，例如 `foo-mdx.mdx` 与 `foo-stardict.ifo`。
+
 ## 怎么在 Android 的 KOReader 里用词悦？
 
 在 `koreader` 目录下创建 `dictionaries.lua` 文件，内容如下：
