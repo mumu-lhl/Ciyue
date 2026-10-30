@@ -5,6 +5,7 @@ Welcome to the Ciyue documentation. Start here to install the app, add dictionar
 ## Contents
 
 - [Getting Started](./getting-started) — install Ciyue on your device, download dictionaries, and set up the basics.
+- [Dictionary Formats](./dictionary-formats) — what is inside an `.mdx`/`.mdd` or a StarDict dictionary, how `res.zip` works, and how to convert between them.
 - [Translation](./translation) — translate with 20+ free, official-API, and AI sources in parallel and compare the results.
 - [Cloud Sync](./cloud-sync) — keep your wordbook, tags, flashcards, and history in sync across devices via WebDAV, SFTP, or S3.
 - [Word-Form Lookup](./word-forms) — resolve inflected forms back to their lemma with Hunspell, and choose between fallback and supplement modes.

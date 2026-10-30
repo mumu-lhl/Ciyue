@@ -46,7 +46,7 @@ Download the DMG (`ciyue-macos.dmg`) from the [latest release](https://github.co
 
 ## Download dictionaries
 
-Ciyue does not ship with dictionaries. See the [recommended dictionaries](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries) on the Wiki, then add your `.mdx` / `.mdd` files, or StarDict dictionaries (`.ifo` / `.idx` / `.dict`), in **Settings → Manage dictionaries**.
+Ciyue does not ship with dictionaries. See the [recommended dictionaries](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries) on the Wiki, then add your `.mdx` / `.mdd` files, or StarDict dictionaries (`.ifo` / `.idx` / `.dict`), in **Settings → Manage dictionaries**. [Dictionary formats](./dictionary-formats) explains what each of those files is for, and how to convert between the two families.
 
 ## Cloud sync
 
