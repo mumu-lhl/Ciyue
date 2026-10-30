@@ -1,5 +1,6 @@
 import "dart:convert";
 
+import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
 import "package:ciyue/ui/core/word_display/webview_widgets.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
@@ -205,35 +206,93 @@ void main() {
   group("linked words survive the URL container", () {
     test("the encoded path decodes back to the original word", () {
       expect(
-        wordFromEntryUrl(WebUri("gdlookup://localhost/%41%62%65%6E%64")),
+        wordFromEntryUrl(WebUri("gdlookup://localhost/%41%62%65%6E%64")).word,
         "Abend",
       );
       expect(
-        wordFromEntryUrl(WebUri("gdlookup://localhost/%41%2E%44%2E")),
+        wordFromEntryUrl(WebUri("gdlookup://localhost/%41%2E%44%2E")).word,
         "A.D.",
       );
       expect(
-        wordFromEntryUrl(WebUri("gdlookup://localhost/%40smk8-000001-0001")),
+        wordFromEntryUrl(WebUri("gdlookup://localhost/%40smk8-000001-0001"))
+            .word,
         "@smk8-000001-0001",
       );
       expect(
         wordFromEntryUrl(
           WebUri("gdlookup://localhost/%74%61%67%3A%73%75%6D%65%72%75"),
-        ),
+        ).word,
         "tag:sumeru",
       );
-      expect(wordFromEntryUrl(WebUri("gdlookup://localhost/a%2Fb")), "a/b");
+      expect(
+        wordFromEntryUrl(WebUri("gdlookup://localhost/a%2Fb")).word,
+        "a/b",
+      );
     });
 
     test("legacy entry and bword links still resolve", () {
       // Lower case only: a host is folded, which is the reason words moved into
       // the path in the first place.
-      expect(wordFromEntryUrl(WebUri("entry://abend")), "abend");
-      expect(wordFromEntryUrl(WebUri("bword://abend")), "abend");
+      expect(wordFromEntryUrl(WebUri("entry://abend")).word, "abend");
+      expect(wordFromEntryUrl(WebUri("bword://abend")).word, "abend");
     });
 
     test("new-tab links keep their word", () {
-      expect(wordFromEntryUrl(WebUri("ciyue-open-new-tab://haus")), "haus");
+      expect(
+        wordFromEntryUrl(WebUri("ciyue-open-new-tab://haus")).word,
+        "haus",
+      );
+    });
+  });
+
+  group("anchors", () {
+    test("a gdanchor query item is read next to the headword", () {
+      final target = wordFromEntryUrl(
+        WebUri("gdlookup://localhost/%74%61%67?gdanchor=%73%75%6D%65%72%75"),
+      );
+      expect(target.word, "tag");
+      expect(target.anchor, "sumeru");
+    });
+
+    test("a legacy entry link splits at a single hash", () {
+      final target = wordFromEntryUrl(WebUri("entry://tag#sumeru"));
+      expect(target.word, "tag");
+      expect(target.anchor, "sumeru");
+    });
+
+    test("a doubled hash stays a literal hash in the headword", () {
+      final target = wordFromEntryUrl(WebUri("entry://tag##sumeru"));
+      expect(target.word, "tag#sumeru");
+      expect(target.anchor, isNull);
+    });
+
+    test("a link without an anchor carries none", () {
+      expect(
+        wordFromEntryUrl(WebUri("gdlookup://localhost/tag")).anchor,
+        isNull,
+      );
+    });
+  });
+
+  group("entryLinkHref", () {
+    test("puts the word in the path and the anchor in the query", () {
+      final href = entryLinkHref(
+        const EntryLinkTarget(word: "tag", anchor: "sumeru"),
+      );
+      final uri = WebUri(href);
+      expect(uri.scheme, "gdlookup");
+      expect(Uri.decodeComponent(uri.path.substring(1)), "tag");
+      expect(uri.queryParameters["gdanchor"], "sumeru");
+    });
+
+    test("keeps a literal hash escaped in the headword", () {
+      final href = entryLinkHref(const EntryLinkTarget(word: "tag#sumeru"));
+      expect(href, isNot(contains("#")));
+      expect(Uri.decodeComponent(WebUri(href).path.substring(1)), "tag#sumeru");
+    });
+
+    test("returns nothing when there is no word", () {
+      expect(entryLinkHref(const EntryLinkTarget(word: "", anchor: "foo")), "");
     });
   });
 }
