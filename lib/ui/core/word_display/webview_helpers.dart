@@ -213,10 +213,21 @@ onLoadResourceWithCustomSchemeWarpper(int dictId) {
     final url = request.url;
     if (url.scheme == "sound") {
       final dict = dictManager.dicts[dictId];
-      // Pronunciation audio lives in MDD resources; other dictionary
-      // formats have none to serve here.
-      if (dict is! Mdict) return null;
       final filename = _soundFileName(url);
+
+      // A StarDict dictionary keeps entry audio in `res/` or a resource
+      // archive rather than in an MDD, so the same click has to be served
+      // from there.
+      if (dict is Stardict) {
+        final data = await dict.readResourceFile(filename);
+        if (data == null) return null;
+        talker.info("Playing sound (2): $filename");
+        return CustomSchemeResponse(
+          contentType: lookupMimeType(filename) ?? "application/octet-stream",
+          data: data,
+        );
+      }
+      if (dict is! Mdict) return null;
       final results = await dict.readResource(filename);
       for (final result in results) {
         final info = result.offsetInfo;
@@ -288,9 +299,29 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
           ?.pronunciationUnsupportedFormat;
       final messenger = ScaffoldMessenger.maybeOf(context);
 
-      // Pronunciation audio lives in MDD resources; other dictionary
-      // formats have none to play here.
       final dict = dictManager.dicts[dictId];
+
+      // A StarDict dictionary keeps entry audio in `res/` or a resource
+      // archive rather than in an MDD. A miss stays in the log; a hit the
+      // device cannot decode says so, exactly as MDD audio does.
+      if (dict is Stardict) {
+        final data = await dict.readResourceFile(filename);
+        if (data == null) {
+          talker.info("Sound resource not found: $filename");
+          return NavigationActionPolicy.CANCEL;
+        }
+        final played = await playSound(
+          data,
+          lookupMimeType(filename) ?? "application/octet-stream",
+          label: basenameWithoutExtension(filename),
+        );
+        talker.info("Playing sound (1): $filename");
+        if (!played && unsupportedMessage != null) {
+          messenger?.showSnackBar(SnackBar(content: Text(unsupportedMessage)));
+        }
+        return NavigationActionPolicy.CANCEL;
+      }
+
       if (dict is Mdict) {
         final results = await dict.readResource(filename);
 

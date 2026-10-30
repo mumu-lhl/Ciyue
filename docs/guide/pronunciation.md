@@ -53,11 +53,11 @@ Two cases:
 The resource was found and handed to the decoder, which cannot handle it. Convert it, as described below.
 
 **Nothing happens at all, not even a message.**
-The `sound://` link does not point at an existing resource — the name in the entry does not match anything in the `.mdd`, or the dictionary ships no audio. Confirm whether the tap reached playback with `adb logcat | grep -E "Playing sound|Failed to play audio bytes"`.
+The `sound://` link does not point at an existing resource — the name in the entry does not match anything in the `.mdd` (for a StarDict dictionary, in its `res/` folder or resource archive), or the dictionary ships no audio. Confirm whether the tap reached playback with `adb logcat | grep -E "Playing sound|Failed to play audio bytes"`.
 
 ## Converting audio the device cannot play
 
-The key rule: **if you are not going to edit the `.mdx`, do not rename anything inside the `.mdd`**. Entries reference the files as `sound://ID1234.spx`, so changing an extension breaks the link and turns "silent" into "nothing happens at all".
+The key rule: **if you are not going to edit the `.mdx`, do not rename anything inside the `.mdd`** (for a StarDict dictionary, anything in `res/` or its resource archive). Entries reference the files as `sound://ID1234.spx`, so changing an extension breaks the link and turns "silent" into "nothing happens at all".
 
 Ogg Speex and Ogg Vorbis share the same container, so the contents of a `.spx` file can be replaced with Vorbis while the file keeps its `.spx` name. Container, extension and the MIME type Ciyue passes (`audio/ogg`) all stay consistent, and Android decodes it normally.
 
@@ -114,4 +114,4 @@ Replace the original `.mdd` (or place it anywhere), then remove the old pack in 
 - **Renamed extensions, untouched `.mdx`**: the `sound://…spx` links inside the `.mdx` do not follow. Keep the extension (the Vorbis trick above) or rebuild the `.mdx` too.
 - **Converting only some files**: a dictionary may mix `.spx` and `.mp3`. Check first with `find . -type f | sed 's/.*\.//' | sort | uniq -c`.
 - **Path separators**: resource paths inside an MDD can be `\img\a.spx` or `/img/a.spx`. Keep them exactly as they were when repacking.
-- **Packs are not the same as entry audio**: recordings inside a dictionary's own `.mdd` play through `sound://` links with no setup. Adding a pack is for the separate "read any looked-up word aloud" feature.
+- **Packs are not the same as entry audio**: recordings that ship inside a dictionary play through its `sound://` links with no setup — from the `.mdd` for an MDX dictionary, from `res/` or the resource archives (`res.zip`, `<name>.res.zip`, `res/res.zip`) for a StarDict one. Adding a pack is for the separate "read any looked-up word aloud" feature.
