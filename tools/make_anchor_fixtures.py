@@ -68,19 +68,26 @@ def _links(*pairs: tuple[str, str]) -> str:
 
 
 ENTRIES: dict[str, str] = {
+    # The links sit between the two anchors, and every block between them is
+    # taller than a desktop viewport: each click must move the page by a
+    # screenful or more. When the targets were only a few hundred pixels apart,
+    # clicking them scrolled nothing (the target was already on screen) and a
+    # broken anchor looked exactly like a working one.
     "anchor-demo": (
         _filler("before", FILLER_BEFORE)
         + '<a id="sumeru"></a>'
         + '<p class="marker">SUMMERU-MARKER</p>'
-        + _filler("after", FILLER_AFTER)
-        + '<a name="named"></a>'
-        + '<p class="marker">NAMED-MARKER</p>'
+        + _filler("middle", FILLER_BEFORE)
         + _links(
             ("entry://anchor-demo#sumeru", "cross entry anchor"),
             ("entry://#sumeru", "same page anchor"),
             ("entry://anchor-demo##sumeru", "literal hash entry"),
             ("entry://#named", "same page named anchor"),
         )
+        + _filler("after", FILLER_BEFORE)
+        + '<a name="named"></a>'
+        + '<p class="marker">NAMED-MARKER</p>'
+        + _filler("tail", FILLER_AFTER)
     ),
     "anchor-demo#sumeru": '<p class="marker">LITERAL-HASH-ENTRY</p>',
     "anchor-demo-other": (
@@ -96,7 +103,7 @@ ENTRIES: dict[str, str] = {
         + _filler("local", FILLER_BEFORE)
         + '<a id="local"></a>'
         + '<p class="marker">LOCAL-MARKER</p>'
-        + _filler("after-local", FILLER_AFTER)
+        + _filler("local-tail", FILLER_AFTER)
     ),
 }
 

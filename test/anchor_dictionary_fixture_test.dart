@@ -35,9 +35,13 @@ void main() {
         expect(demoHtml, contains('href="entry://anchor-demo#sumeru"'));
         expect(demoHtml, contains('href="entry://#sumeru"'));
         expect(demoHtml, contains('href="entry://anchor-demo##sumeru"'));
-        // Enough filler sits before the anchor to push it off screen, which is
-        // what makes a scroll observable in the first place.
+        // Every jump has to move the page by at least a screenful: filler sits
+        // on both sides of the links, so scrolling up to ``sumeru`` and down to
+        // ``named`` are both visible from the link bar.
         expect(demoHtml, contains("before filler line 059"));
+        expect(demoHtml, contains("middle filler line 059"));
+        expect(demoHtml, contains("NAMED-MARKER"));
+        expect(demoHtml, contains("after filler line 059"));
 
         final literal = await reader.lookup("anchor-demo#sumeru");
         expect(literal, isNotEmpty);
@@ -76,6 +80,8 @@ void main() {
         expect(demoHtml, contains('href="entry://anchor-demo#sumeru"'));
         expect(demoHtml, contains('href="entry://anchor-demo##sumeru"'));
         expect(demoHtml, contains("before filler line 059"));
+        expect(demoHtml, contains("middle filler line 059"));
+        expect(demoHtml, contains("NAMED-MARKER"));
 
         final otherHtml = await valueOf("anchor-demo-other");
         expect(otherHtml, contains("OTHER-ENTRY"));
