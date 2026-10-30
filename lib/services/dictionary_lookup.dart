@@ -1,3 +1,4 @@
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/models/hunspell.dart";
 import "package:ciyue/services/hunspell.dart";
@@ -83,7 +84,13 @@ class DictionaryLookup {
         (currentMode == HunspellLookupMode.supplement ||
             exactKeys.any((key) => key == null));
     if (shouldResolveStems) {
-      stems = await morphology.stems(word);
+      try {
+        stems = await morphology.stems(word);
+      } catch (e) {
+        // Morphology is an optional aid. A worker that failed to load must not
+        // turn the exact lookup into an error page.
+        talker.warning("Hunspell stems failed for \"$word\": $e");
+      }
     }
 
     final entriesList = await Future.wait(

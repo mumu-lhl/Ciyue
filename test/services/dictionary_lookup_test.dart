@@ -473,6 +473,23 @@ void main() {
       ]);
     });
   });
+
+  test("a failing morphology does not take the lookup down", () async {
+    final lookup = makeLookup(
+      dictionary: FakeDictionarySource(
+        id: 1,
+        entries: {"rims": "rims content"},
+      ),
+      morphology: FakeMorphology(stemsResult: const [], stemsThrow: true),
+      enabled: true,
+      mode: HunspellLookupMode.supplement,
+    );
+
+    final result = await lookup.lookup("rims");
+
+    // The exact entry still comes back; only the stem candidates are missing.
+    expect(result.entriesFor(1).map((entry) => entry.headword), ["rims"]);
+  });
 }
 
 DictionaryLookup makeLookup({
@@ -498,16 +515,19 @@ class FakeMorphology implements MorphologyProvider {
   final Map<String, List<String>> stemsByWord;
   int stemCalls = 0;
   int suggestionCalls = 0;
+  bool stemsThrow;
 
   FakeMorphology({
     required this.stemsResult,
     this.suggestionsResult = const [],
     this.stemsByWord = const {},
+    this.stemsThrow = false,
   });
 
   @override
   Future<List<String>> stems(String word) async {
     stemCalls++;
+    if (stemsThrow) throw StateError("hunspell worker is gone");
     return stemsByWord[word] ?? stemsResult;
   }
 
