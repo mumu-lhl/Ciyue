@@ -35,3 +35,11 @@ The addressing mode depends on the provider; if connection tests fail, check the
 Ciyue stores versioned sync records and merges changes from each device. Concurrent edits and deletions are preserved as conflicts rather than silently overwriting one another. A preview does not create directories, upload data, or modify the remote store. Confirming the preview begins the sync.
 
 Dictionary files are not included by default. Select each dictionary explicitly in the preview. Downloads are checked before being added to the local dictionary library and are not automatically enabled.
+
+## Which files travel with a dictionary
+
+An MDX dictionary travels with its `.mdd` resources, any adjacent `.css` and `.js`, and the custom font configured for it.
+
+A StarDict dictionary travels with its `.ifo`, its index and body (`.idx` or `.idx.gz`, `.dict` or `.dict.dz`), an optional synonym index (`.syn`, `.syn.gz`, or `.syn.dz`), and a resource archive in any of the places Ciyue reads: `res.zip`, `<name>.res.zip`, or `res/res.zip`.
+
+A `res/` folder travels as well, but only while it stays small — up to 100 files and 20 MB. Beyond that the folder is left out and the rest of the dictionary still syncs. Resources are uploaded one file at a time, so a folder holding thousands of them would make the transfer slow and push the dictionary past the file limit Ciyue accepts for a package. If your dictionary keeps many images or audio files loose in `res/`, pack them into `res.zip` instead: Ciyue reads the archive directly, so one file replaces thousands of individual ones.

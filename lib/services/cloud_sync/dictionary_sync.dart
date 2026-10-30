@@ -2,6 +2,7 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/services/cloud_sync/coordinator.dart";
 import "package:ciyue/services/cloud_sync/file_store.dart";
 import "package:crypto/crypto.dart";
@@ -53,9 +54,16 @@ class DictionarySyncPreview {
 
 /// Previews and transfers user-selected dictionary packages.
 ///
-/// A package includes its MDX file, adjacent MDD resources, CSS/JS sidecars,
-/// and the custom font configured for that dictionary. Previewing only reads
-/// local files and remote metadata; it does not create or upload cloud files.
+/// A package is everything one dictionary needs to open again, in either
+/// format: an MDX file with its adjacent MDD resources and CSS/JS sidecars, or
+/// a StarDict one with its `.ifo`, its `.idx` and `.dict` in whichever
+/// spelling they take, its `.syn`, and a resource archive in any of the three
+/// places the reader looks (`res.zip`, `<name>.res.zip`, `res/res.zip`). A
+/// `res/` folder travels as well, but only while it stays small (see
+/// [maxResourceDirectoryFiles]) — a pack with thousands of loose resources
+/// belongs in an archive. The custom font configured for the dictionary
+/// travels with both. Previewing only reads local files and remote metadata;
+/// it does not create or upload cloud files.
 class DictionarySyncService {
   final AppDatabase database;
 
@@ -85,9 +93,7 @@ class DictionarySyncService {
         DictionarySyncItem(
           packageId: packageId,
           title: package.title,
-          fileName: package.files
-              .singleWhere((file) => file.role == "mdx")
-              .remoteName,
+          fileName: package.entryFile.remoteName,
           fileCount: package.files.length,
           totalSizeBytes: package.totalSizeBytes,
           availableLocally: local != null,
@@ -127,6 +133,14 @@ class DictionarySyncService {
   Future<_DictionaryPackage?> _readLocalPackage(
     DictionaryListData dictionary,
   ) async {
+    return DictionaryType.isStardict(dictionary.type)
+        ? _readLocalStardictPackage(dictionary)
+        : _readLocalMdxPackage(dictionary);
+  }
+
+  Future<_DictionaryPackage?> _readLocalMdxPackage(
+    DictionaryListData dictionary,
+  ) async {
     final basePath = dictionary.path;
     final mdxFile = File("$basePath.mdx");
     if (!await mdxFile.exists()) return null;
@@ -153,6 +167,105 @@ class DictionarySyncService {
       }
     }
 
+    return _finishPackage(dictionary, files, baseName);
+  }
+
+  /// A StarDict dictionary is several files sharing one base name, and the
+  /// index and the body each come in a plain and a compressed spelling.
+  Future<_DictionaryPackage?> _readLocalStardictPackage(
+    DictionaryListData dictionary,
+  ) async {
+    final basePath = dictionary.path;
+    final ifo = await _firstExisting(basePath, const [".ifo"]);
+    final idx = await _firstExisting(basePath, const [".idx", ".idx.gz"]);
+    final body = await _firstExisting(basePath, const [".dict", ".dict.dz"]);
+    // Without all three nothing a restore wrote could be opened, so this is
+    // not a package worth offering rather than a broken one to upload.
+    if (ifo == null || idx == null || body == null) return null;
+
+    final files = <_DictionaryPackageFile>[
+      await _captureFile(ifo, role: "ifo"),
+      await _captureFile(idx, role: "idx"),
+      await _captureFile(body, role: "dict"),
+    ];
+    // The synonym index has three spellings in the wild: plain, gzipped, and
+    // dictzipped. PyGlossary emits the last one when asked to compress it, and
+    // the reader only opens the first two — a `.syn.dz` is inert today, but it
+    // is still the pack's own file and is not dropped here.
+    final syn = await _firstExisting(basePath, const [
+      ".syn",
+      ".syn.gz",
+      ".syn.dz",
+    ]);
+    if (syn != null) {
+      files.add(await _captureFile(syn, role: "syn"));
+    }
+    // Entry resources live in a `res/` folder or in an archive. The reader
+    // looks for `res.zip`, then `<name>.res.zip`, then `res/res.zip`, all of
+    // them beside the dictionary, so every archive that exists is captured —
+    // whichever spelling the pack happened to use keeps working after a
+    // restore.
+    final directory = p.dirname(basePath);
+    final base = p.basename(basePath);
+    for (final (remoteName, archivePath) in [
+      ("res.zip", p.join(directory, "res.zip")),
+      ("$base.res.zip", p.join(directory, "$base.res.zip")),
+      ("res/res.zip", p.join(directory, "res", "res.zip")),
+    ]) {
+      final archive = File(archivePath);
+      if (await archive.exists()) {
+        files.add(
+          await _captureFile(archive, role: "res", remoteName: remoteName),
+        );
+      }
+    }
+
+    // Files under `res/` travel only while the folder stays small; see
+    // [maxResourceDirectoryFiles]. The `res/res.zip` copy is already in the
+    // package as an archive, so the one inside the folder is skipped.
+    for (final file in await _resourceDirectoryFiles(directory)) {
+      final remoteName = p
+          .split(p.relative(file.path, from: directory))
+          .join("/");
+      if (remoteName == "res/res.zip") continue;
+      files.add(
+        await _captureFile(file, role: "resdir", remoteName: remoteName),
+      );
+    }
+
+    return _finishPackage(dictionary, files, p.basename(basePath));
+  }
+
+  /// Files under `res/`, or nothing when the folder is too large to carry.
+  ///
+  /// All or nothing on purpose: half a resource folder is worse than none,
+  /// because the entry HTML would then reference images that were left behind.
+  Future<List<File>> _resourceDirectoryFiles(String directory) async {
+    final resDirectory = Directory(p.join(directory, "res"));
+    if (!await resDirectory.exists()) return const [];
+    final files = <File>[];
+    var bytes = 0;
+    await for (final entity in resDirectory.list(
+      recursive: true,
+      followLinks: false,
+    )) {
+      if (entity is! File) continue;
+      files.add(entity);
+      bytes += await entity.length();
+      if (files.length > maxResourceDirectoryFiles ||
+          bytes > _maxResourceDirectoryBytes) {
+        return const [];
+      }
+    }
+    files.sort((a, b) => a.path.compareTo(b.path));
+    return files;
+  }
+
+  Future<_DictionaryPackage> _finishPackage(
+    DictionaryListData dictionary,
+    List<_DictionaryPackageFile> files,
+    String baseName,
+  ) async {
     final fontPath = dictionary.fontPath;
     if (fontPath != null) {
       final font = File(fontPath);
@@ -175,15 +288,16 @@ class DictionarySyncService {
   Future<_DictionaryPackageFile> _captureFile(
     File file, {
     required String role,
+    String? remoteName,
   }) async {
     final name = p.basename(file.path);
-    final remoteName = role == "font" ? "font/$name" : name;
-    if (!_validRemoteName(role, remoteName)) {
+    final resolvedName = remoteName ?? (role == "font" ? "font/$name" : name);
+    if (!_validRemoteName(role, resolvedName)) {
       throw FormatException("Unsupported dictionary file name: '$name'.");
     }
     return _DictionaryPackageFile(
       role: role,
-      remoteName: remoteName,
+      remoteName: resolvedName,
       source: file,
       sizeBytes: await file.length(),
       sha256: (await sha256.bind(file.openRead()).first).toString(),
@@ -425,15 +539,20 @@ class DictionarySyncService {
     Directory directory,
     _DictionaryPackage package,
   ) async {
-    final mdx = package.files.singleWhere((file) => file.role == "mdx");
-    final mdxName = mdx.remoteName;
-    final baseName = p.withoutExtension(p.basename(mdxName));
+    final entry = package.entryFile;
+    final isMdx = entry.role == "mdx";
+    final baseName = isMdx
+        ? p.withoutExtension(p.basename(entry.remoteName))
+        : _stardictStem(p.basename(entry.remoteName));
     final basePath = p.join(directory.path, baseName);
     if (await database.dictionaryListDao.dictionaryExist(basePath)) return;
 
     final dictionaryId = await database.dictionaryListDao.add(
       basePath,
       package.title,
+      // A restored StarDict row has to say so, or the settings and the lookup
+      // read it as an MDX dictionary and look for files it does not have.
+      type: isMdx ? 1 : DictionaryType.stardict,
     );
     final font = package.files.where((file) => file.role == "font").firstOrNull;
     if (font != null) {
@@ -458,6 +577,11 @@ class _DictionaryPackage {
 
   int get totalSizeBytes =>
       files.fold(0, (total, file) => total + file.sizeBytes);
+
+  /// The file that identifies the dictionary to a reader: the MDX, or the
+  /// StarDict `.ifo`. [_validateFileSet] admits exactly one of the two.
+  _DictionaryPackageFile get entryFile =>
+      files.firstWhere((file) => file.role == "mdx" || file.role == "ifo");
 
   Map<String, Object?> toJson() => {
     "app": "ciyue",
@@ -520,34 +644,7 @@ class _DictionaryPackage {
       );
     }
 
-    if (files.isEmpty ||
-        files.where((file) => file.role == "mdx").length != 1 ||
-        files.where((file) => file.role == "font").length > 1 ||
-        files.where((file) => file.role == "css").length > 1 ||
-        files.where((file) => file.role == "js").length > 1 ||
-        files.length > 1000) {
-      throw const FormatException("Invalid dictionary package file set.");
-    }
-    final mdxName = files.singleWhere((file) => file.role == "mdx").remoteName;
-    final mdxStem = p.withoutExtension(mdxName);
-    for (final file in files) {
-      final validAssociation = switch (file.role) {
-        "mdx" => true,
-        "mdd" =>
-          file.remoteName == "$mdxStem.mdd" ||
-              RegExp("^${RegExp.escape(mdxStem)}\\.[1-9][0-9]*\\.mdd\$")
-                  .hasMatch(file.remoteName),
-        "css" => file.remoteName == "$mdxStem.css",
-        "js" => file.remoteName == "$mdxStem.js",
-        "font" => true,
-        _ => false,
-      };
-      if (!validAssociation) {
-        throw const FormatException(
-          "Dictionary resource does not match its MDX file.",
-        );
-      }
-    }
+    _validateFileSet(files);
     files.sort((a, b) => a.remoteName.compareTo(b.remoteName));
     if (!_isPackageId(expectedPackageId) ||
         _packageId(files) != expectedPackageId) {
@@ -602,10 +699,32 @@ CloudFileEntry? _findDirectory(List<CloudFileEntry> entries, String name) =>
 bool _isPackageId(String value) => RegExp(r"^[a-f0-9]{64}$").hasMatch(value);
 
 bool _validRemoteName(String role, String name) {
-  const fileRoles = {"mdx", "mdd", "css", "js"};
+  if (role == "resdir") {
+    // Files under `res/` keep their path, which may have subdirectories, so
+    // this is the one role whose name may contain `/` — as long as it cannot
+    // climb out of the folder.
+    if (!name.startsWith("res/")) return false;
+    return _validRelativePath(name.substring("res/".length));
+  }
+  const fileRoles = {
+    "mdx",
+    "mdd",
+    "css",
+    "js",
+    "ifo",
+    "idx",
+    "dict",
+    "syn",
+    "res",
+  };
   if (role == "font") {
     if (!name.startsWith("font/")) return false;
     name = name.substring("font/".length);
+  } else if (role == "res") {
+    // A resource archive sits either beside the dictionary or inside its
+    // `res/` folder; the second is the only shape that names a directory, and
+    // it is a single fixed path rather than an arbitrary subpath.
+    if (name == "res/res.zip") return true;
   } else if (!fileRoles.contains(role)) {
     return false;
   }
@@ -624,7 +743,160 @@ bool _validRemoteName(String role, String name) {
     "mdd" => name.endsWith(".mdd"),
     "css" => name.endsWith(".css"),
     "js" => name.endsWith(".js"),
+    "ifo" => name.endsWith(".ifo"),
+    "idx" => name.endsWith(".idx") || name.endsWith(".idx.gz"),
+    "dict" => name.endsWith(".dict") || name.endsWith(".dict.dz"),
+    "syn" =>
+      name.endsWith(".syn") ||
+          name.endsWith(".syn.gz") ||
+          name.endsWith(".syn.dz"),
+    "res" => name == "res.zip" || name.endsWith(".res.zip"),
     "font" => true,
     _ => false,
   };
+}
+
+/// The role names that only a StarDict package carries.
+const _stardictRoles = {"ifo", "idx", "dict", "syn", "res", "resdir"};
+
+/// Most files carried from a dictionary's `res/` folder.
+///
+/// Resources in a folder are ordinary files, so each one costs its own cloud
+/// request. Keeping the folder only while it is small lets a stray stylesheet
+/// travel with the package, while a pack holding thousands of audio files is
+/// left to its archive instead of pushing the package past its file-count
+/// limit.
+const maxResourceDirectoryFiles = 100;
+
+/// Most bytes carried from a dictionary's `res/` folder.
+const _maxResourceDirectoryBytes = 20 * 1024 * 1024;
+
+/// The base name the files of one StarDict dictionary share: `sample.dict.dz`
+/// and `sample.idx.gz` both answer `sample`. [p.withoutExtension] cannot do
+/// this, as it only strips the last suffix.
+String _stardictStem(String name) {
+  for (final suffix in const [
+    ".ifo",
+    ".idx.gz",
+    ".idx",
+    ".dict.dz",
+    ".dict",
+    ".syn.gz",
+    ".syn.dz",
+    ".syn",
+  ]) {
+    if (name.endsWith(suffix)) {
+      return name.substring(0, name.length - suffix.length);
+    }
+  }
+  return name;
+}
+
+/// Whether [name] is one of the three places the reader looks for a resource
+/// archive belonging to the dictionary whose base name is [stem].
+bool _isResourceArchive(String name, String stem) =>
+    name == "res.zip" || name == "res/res.zip" || name == "$stem.res.zip";
+
+/// Whether [path], a `/`-separated relative path, stays inside the folder it
+/// is joined to: no empty, `.` or `..` segment, no absolute root, and no
+/// separator or drive letter other than `/`.
+bool _validRelativePath(String path) {
+  if (path.isEmpty ||
+      path.startsWith("/") ||
+      path.contains("\\") ||
+      path.contains(":") ||
+      path.contains("\u0000") ||
+      path.toLowerCase().contains("%2f")) {
+    return false;
+  }
+  for (final segment in path.split("/")) {
+    if (segment.isEmpty || segment == "." || segment == "..") return false;
+  }
+  return true;
+}
+
+Future<File?> _firstExisting(String basePath, List<String> extensions) async {
+  for (final extension in extensions) {
+    final file = File("$basePath$extension");
+    if (await file.exists()) return file;
+  }
+  return null;
+}
+
+/// Whether [files] describes one coherent dictionary: exactly one format, the
+/// pieces that format needs, and nothing belonging to a different base name.
+void _validateFileSet(List<_DictionaryPackageFile> files) {
+  int count(String role) => files.where((file) => file.role == role).length;
+
+  final hasMdx = count("mdx") > 0;
+  final hasStardict = files.any((file) => _stardictRoles.contains(file.role));
+  // A package is exactly one format. Both or neither is a manifest no version
+  // of this app wrote.
+  if (hasMdx == hasStardict || files.length > 1000 || count("font") > 1) {
+    throw const FormatException("Invalid dictionary package file set.");
+  }
+
+  if (hasMdx) {
+    if (count("mdx") != 1 || count("css") > 1 || count("js") > 1) {
+      throw const FormatException("Invalid dictionary package file set.");
+    }
+    final mdxStem = p.withoutExtension(
+      files.singleWhere((file) => file.role == "mdx").remoteName,
+    );
+    for (final file in files) {
+      final validAssociation = switch (file.role) {
+        "mdx" => true,
+        "mdd" =>
+          file.remoteName == "$mdxStem.mdd" ||
+              RegExp("^${RegExp.escape(mdxStem)}\\.[1-9][0-9]*\\.mdd\$")
+                  .hasMatch(file.remoteName),
+        "css" => file.remoteName == "$mdxStem.css",
+        "js" => file.remoteName == "$mdxStem.js",
+        "font" => true,
+        _ => false,
+      };
+      if (!validAssociation) {
+        throw const FormatException(
+          "Dictionary resource does not match its MDX file.",
+        );
+      }
+    }
+    return;
+  }
+
+  // StarDict: the three files it must have, plus the optional extras. Up to
+  // three resource archives, one per place the reader looks.
+  if (count("ifo") != 1 ||
+      count("idx") != 1 ||
+      count("dict") != 1 ||
+      count("syn") > 1 ||
+      count("res") > 3 ||
+      count("resdir") > maxResourceDirectoryFiles) {
+    throw const FormatException("Invalid dictionary package file set.");
+  }
+  final stem = _stardictStem(
+    files.singleWhere((file) => file.role == "ifo").remoteName,
+  );
+  if (stem.isEmpty) {
+    throw const FormatException("Invalid dictionary package file set.");
+  }
+  for (final file in files) {
+    final validAssociation = switch (file.role) {
+      "ifo" ||
+      "idx" ||
+      "dict" ||
+      "syn" => _stardictStem(file.remoteName) == stem,
+      "res" => _isResourceArchive(file.remoteName, stem),
+      // The path shape is already pinned by [_validRemoteName]; a resource
+      // file need not share the dictionary's base name.
+      "resdir" => true,
+      "font" => true,
+      _ => false,
+    };
+    if (!validAssociation) {
+      throw const FormatException(
+        "Dictionary resource does not match its .ifo file.",
+      );
+    }
+  }
 }
