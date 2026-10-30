@@ -238,7 +238,11 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
     // (initialData is only used at creation time).
     if (widget.content != oldWidget.content && _webViewController != null) {
       _webViewController!.loadData(
-        data: widget.content,
+        // A reload has to be normalised like the initial load. Without this,
+        // `sound://` and `bword://` links lose their rewriting every time the
+        // word changes, and an entry shown on the second lookup stops playing
+        // its audio while the same entry played fine right after startup.
+        data: normalizeDictionaryUrls(widget.content),
         mimeType: "text/html",
         encoding: "utf-8",
         baseUrl: WebUri("http://ciyue.internal/"),

@@ -11,6 +11,7 @@ import "package:ciyue/repositories/dictionary_import_failure.dart";
 import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/services/lookup_keys.dart";
+import "package:ciyue/services/media_tags.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/zip_archive_reader.dart";
 import "package:ciyue/utils.dart";
@@ -918,7 +919,9 @@ class Mdict implements LoadedDictionary {
     if (hasJs) {
       header += '<script src="$encodedName.js"></script>\n';
     }
-    return header + content;
+    // An MDict file can carry converter-produced `<audio>` markup too, so the
+    // repair is not limited to StarDict.
+    return header + rewriteMediaTags(content);
   }
 
   @override
