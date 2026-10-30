@@ -142,6 +142,15 @@ class DictionaryEntryLinksTest(unittest.TestCase):
         # Babylon spelling of the same thing (クラウン独和).
         self.assertEqual(self.lookup_word("bword://Abend"), "Abend")
 
+    def test_bword_links_carry_the_same_anchor(self):
+        # Both schemes go through the same `#` parser in the page script.
+        self.assertEqual(
+            self.lookup_target("bword://tag#sumeru"), ("tag", "sumeru")
+        )
+        self.assertEqual(
+            self.lookup_target("bword://tag##sumeru"), ("tag#sumeru", None)
+        )
+
     # --- the payload is a reversible, injective encoding ----------------------
 
     def test_escaped_links_are_decoded_once(self):

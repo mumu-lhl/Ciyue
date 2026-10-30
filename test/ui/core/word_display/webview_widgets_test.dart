@@ -186,6 +186,21 @@ void main() {
     }
   });
 
+  test("a bword anchor is rewritten into the query item", () {
+    final html = normalizeDictionaryUrls(
+      '<a href="bword://tag#sumeru">jump</a>',
+    );
+
+    final href = RegExp(r'href="([^"]+)"').firstMatch(html)!.group(1)!;
+    final uri = WebUri(href);
+    expect(uri.scheme, "gdlookup");
+    expect(Uri.decodeComponent(uri.path.substring(1)), "tag");
+    expect(uri.queryParameters["gdanchor"], "sumeru");
+    // A `#` would be read as a same-document position and never reach the
+    // navigation handler.
+    expect(href, isNot(contains("#")));
+  });
+
   test("a sound reference keeps its folder inside one path segment", () {
     // OJAD's recordings sit under `female/` and `male/` inside res.zip, so the
     // file name itself carries a separator. It has to survive as a single path
@@ -235,6 +250,19 @@ void main() {
       // the path in the first place.
       expect(wordFromEntryUrl(WebUri("entry://abend")).word, "abend");
       expect(wordFromEntryUrl(WebUri("bword://abend")).word, "abend");
+    });
+
+    test("a babylon link carries the same headword and anchor", () {
+      // `bword://` is the Babylon spelling of `entry://`, so the `#` rules are
+      // the same for both; only the pre-rewriting differs (see
+      // normalizeDictionaryUrls).
+      final target = wordFromEntryUrl(WebUri("bword://tag#sumeru"));
+      expect(target.word, "tag");
+      expect(target.anchor, "sumeru");
+
+      final literal = wordFromEntryUrl(WebUri("bword://tag##sumeru"));
+      expect(literal.word, "tag#sumeru");
+      expect(literal.anchor, isNull);
     });
 
     test("new-tab links keep their word", () {
