@@ -35,16 +35,32 @@ const _linkers = ["en", "er", "es", "e", "n", "s"];
 
 /// Longest input worth splitting.
 ///
-/// Real compounds stay well under this (`Rindfleischetikettierungsüberwachungs-
-/// aufgabenübertragungsgesetz` is 63 characters and nobody looks it up), and
-/// the candidate set grows with the square of the length.
-const maxSplitLength = 32;
+/// Leaving this lower left ordinary German compounds unhandled. At `32` it
+/// rejected `Kraftfahrzeughaftpflichtversicherung` — 36 characters — and
+/// `Bundesausbildungsförderungsgesetz` — 33 — and those are words a reader
+/// does stop to look up. They sit just over what was then the ceiling, not
+/// miles beyond it.
+///
+/// The headroom costs little. The candidate set grows with the square of the
+/// length, a few thousand probes here against a few hundred at the old bound,
+/// and each probe is one binary search in an index already in memory, spent
+/// only by whoever actually reaches for a word this long.
+const maxSplitLength = 64;
 
 /// Shortest input worth splitting: two parts need at least two characters.
 const _minWordLength = 3;
 
 /// Most parts a split may have.
-const _maxParts = 4;
+///
+/// Raised together with [maxSplitLength]: admitting a long word helps only if
+/// it may also be read as the pieces it is made of. Both are taken from the
+/// same word, `Rindfleischetikettierungsüberwachungsaufgabenübertragungsgesetz`
+/// — 63 characters and six parts, once its `s`, `s`, `n` and `s` are swallowed.
+///
+/// Little is risked by the extra parts. [_maxSplits] is what bounds the work,
+/// and [_compareParts] ranks a shorter reading above a longer one, so six
+/// parts only surface where no shorter reading exists at all.
+const _maxParts = 6;
 
 /// How many splits are kept per position, and returned overall.
 const _maxSplits = 3;
