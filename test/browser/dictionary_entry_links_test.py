@@ -66,19 +66,35 @@ class DictionaryEntryLinksTest(unittest.TestCase):
             self.page.locator("a").click()
         return self.page.locator("a").get_attribute("href")
 
-    def word_of(self, url):
-        """The word the WebView will look up, whatever the container looks like."""
+    def target_of(self, url):
+        """The (word, anchor) the WebView will look up, whatever the container."""
         self.assertTrue(url.startswith(PREFIX), f"unexpected target: {url}")
-        payload = url[len(PREFIX):]
+        rest = url[len(PREFIX):]
         # What #725 was about: unescaped Unicode in the URL is truncated before
         # shouldOverrideUrlLoading ever runs, so nothing may be left raw.
-        self.assertTrue(payload.isascii(), f"target still carries raw bytes: {url}")
+        self.assertTrue(rest.isascii(), f"target still carries raw bytes: {url}")
         for char in ":@#":
-            self.assertNotIn(char, payload, f"{char!r} left unescaped in {url}")
-        return unquote(payload)
+            self.assertNotIn(char, rest, f"{char!r} left unescaped in {url}")
+        # The anchor rides as a query item, never as a fragment: a `#` in the
+        # URL is a same-document position and would never reach the handler.
+        payload, _, query = rest.partition("?")
+        word = unquote(payload)
+        anchor = None
+        for pair in query.split("&"):
+            name, sep, value = pair.partition("=")
+            if sep and name == "gdanchor":
+                anchor = unquote(value)
+        return word, anchor
+
+    def word_of(self, url):
+        """The word alone, for the tests that only care about the headword."""
+        return self.target_of(url)[0]
 
     def lookup_word(self, href, markup="link", keyboard=False):
         return self.word_of(self.click(href, markup, keyboard))
+
+    def lookup_target(self, href, markup="link", keyboard=False):
+        return self.target_of(self.click(href, markup, keyboard))
 
     # --- #725: the displayed text is not the lookup key -----------------------
 
@@ -136,9 +152,61 @@ class DictionaryEntryLinksTest(unittest.TestCase):
         # that really contains "%41" becomes indistinguishable from "A".
         self.assertEqual(self.lookup_word("entry://%2541"), "%41")
 
-    def test_anchor_is_dropped_unless_escaped(self):
-        self.assertEqual(self.lookup_word("entry://怀刷#section"), "怀刷")
-        self.assertEqual(self.lookup_word("entry://A%23B"), "A#B")
+    def test_a_lone_hash_splits_the_headword_from_the_anchor(self):
+        word, anchor = self.lookup_target("entry://怀刷#section")
+        self.assertEqual(word, "怀刷")
+        self.assertEqual(anchor, "section")
+
+    def test_a_doubled_hash_escapes_a_literal_hash(self):
+        # `##` is the only way to name a headword that contains a `#`.
+        word, anchor = self.lookup_target("entry://tag##sumeru")
+        self.assertEqual(word, "tag#sumeru")
+        self.assertIsNone(anchor)
+
+    def test_escaping_and_splitting_combine(self):
+        word, anchor = self.lookup_target("entry://tag##sumeru#x")
+        self.assertEqual(word, "tag#sumeru")
+        self.assertEqual(anchor, "x")
+        word, anchor = self.lookup_target("entry://tag###sumeru")
+        self.assertEqual(word, "tag#")
+        self.assertEqual(anchor, "sumeru")
+
+    def test_percent_encoded_hash_is_a_literal_hash(self):
+        # %23 is a literal `#` in the headword, not a separator.
+        word, anchor = self.lookup_target("entry://A%23B")
+        self.assertEqual(word, "A#B")
+        self.assertIsNone(anchor)
+
+    # --- in-place scrolling ---------------------------------------------------
+
+    def _load_scroll_page(self, target_attr):
+        """The link sits at the top, the anchor 2000px below it."""
+        self.page.evaluate('''attr => {
+          document.body.innerHTML =
+            '<a href="entry://#sumeru">jump</a>' +
+            '<div style="height:2000px"></div>' +
+            '<a ' + attr + '="sumeru">target</a>';
+        }''', target_attr)
+
+    def test_anchor_only_link_scrolls_instead_of_navigating(self):
+        self._load_scroll_page("id")
+        self.page.locator('a[href="entry://#sumeru"]').click()
+        # There is no headword to look up, so nothing may reach the handler.
+        self.assertFalse(self.targets, "an anchor-only link must not navigate")
+        self.assertGreater(self.page.evaluate("window.scrollY"), 0)
+
+    def test_anchor_only_link_matches_a_name_attribute(self):
+        self._load_scroll_page("name")
+        self.page.locator('a[href="entry://#sumeru"]').click()
+        self.assertFalse(self.targets, "an anchor-only link must not navigate")
+        self.assertGreater(self.page.evaluate("window.scrollY"), 0)
+
+    def test_a_missing_anchor_leaves_the_page_alone(self):
+        self.page.evaluate('''() => {
+          document.body.innerHTML = '<a href="entry://#absent">jump</a>';
+        }''')
+        self.page.locator('a[href="entry://#absent"]').click()
+        self.assertEqual(self.page.evaluate("window.scrollY"), 0)
 
     def test_canonical_gdlookup_is_left_alone(self):
         href = PREFIX + quote("怀刷")
