@@ -158,8 +158,21 @@ final wordContentProvider = FutureProvider.autoDispose
       final timer = Timer(const Duration(minutes: 5), link.close);
       ref.onDispose(timer.cancel);
 
-      final dict = dictManager.dicts[params.dictId];
-      if (dict == null) return "";
+      var dict = dictManager.dicts[params.dictId];
+      if (dict == null) {
+        // A group switch clears the dictionaries before reloading them, and
+        // this provider can run while that is in flight. Wait for the switch
+        // instead of caching an empty entry for the whole keep-alive window —
+        // that is what left the first tab blank after switching back.
+        await dictManager.waitForGroupSwitch();
+        var waited = 0;
+        while (dictManager.isLoading && waited < 200) {
+          await Future.delayed(const Duration(milliseconds: 50));
+          waited++;
+        }
+        dict = dictManager.dicts[params.dictId];
+        if (dict == null) return "";
+      }
 
       final lookup = await ref.watch(
         dictionaryLookupProvider(params.word).future,
