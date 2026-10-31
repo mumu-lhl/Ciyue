@@ -1,63 +1,66 @@
 import "package:ciyue/services/lookup_keys.dart";
-import "package:test/test.dart";
+import "package:flutter_test/flutter_test.dart";
 
 void main() {
-  group("caseVariants", () {
-    test("keeps the exact spelling first and folds to upper case last", () {
-      expect(caseVariants("Abend"), ["Abend", "abend", "ABEND"]);
+  group("widthVariants", () {
+    test("ASCII full-width <-> half-width, both directions", () {
+      expect(widthVariants("NHK"), containsAll(["NHK", "ＮＨＫ"]));
+      expect(widthVariants("ＮＨＫ"), containsAll(["ＮＨＫ", "NHK"]));
+      expect(widthVariants("RPG"), containsAll(["RPG", "ＲＰＧ"]));
     });
 
-    test("reaches a capitalised headword from a lower case query", () {
-      // The reported case: the dictionary has "Nahida".
-      expect(caseVariants("nahida"), ["nahida", "Nahida", "NAHIDA"]);
+    test("digits fold both ways", () {
+      expect(widthVariants("007"), containsAll(["007", "００７"]));
     });
 
-    test("title-cases every word and hyphen part", () {
-      expect(caseVariants("der große bär"), contains("Der Große Bär"));
-      expect(caseVariants("four-wheel drive"), contains("Four-Wheel Drive"));
+    test("corner brackets ｢｣ <-> 「」", () {
+      expect(widthVariants("｢名前｣"), containsAll(["｢名前｣", "「名前」"]));
+      expect(widthVariants("「名前」"), containsAll(["「名前」", "｢名前｣"]));
     });
 
-    test("leaves caseless scripts and digits alone", () {
-      expect(caseVariants("漢字"), ["漢字"]);
-      expect(caseVariants("1984"), ["1984"]);
-      expect(caseVariants(""), isEmpty);
-    });
-  });
-
-  group("kanaVariants", () {
-    test("converts hiragana to katakana and back", () {
-      expect(kanaVariants("ぱそこん"), ["ぱそこん", "パソコン"]);
-      expect(kanaVariants("パソコン"), ["パソコン", "ぱそこん"]);
+    test("CJK marks ｡､･ <-> 。、・", () {
+      expect(widthVariants("｡"), containsAll(["｡", "。"]));
+      expect(widthVariants("､"), containsAll(["､", "、"]));
+      expect(widthVariants("･"), containsAll(["･", "・"]));
     });
 
-    test("keeps the long vowel mark", () {
-      // フーゾク is ふうぞく in hiragana spelling; expanding the ー needs the
-      // vowel of the preceding kana and is left to the suggestions.
-      expect(kanaVariants("フーゾク"), ["フーゾク", "ふーぞく"]);
+    test("half-width/ideographic space  \u0020 <-> \u3000", () {
+      // Each rune maps independently, so the letters go full-width too.
+      expect(widthVariants("a b"), containsAll(["a b", "ａ\u3000ｂ"]));
+      expect(widthVariants("ａ\u3000ｂ"), containsAll(["ａ\u3000ｂ", "a b"]));
     });
 
-    test("converts the iteration marks too", () {
-      expect(kanaVariants("ゝ"), ["ゝ", "ヽ"]);
-      expect(kanaVariants("ヽ"), ["ヽ", "ゝ"]);
+    test("leaves half-width katakana (non-bijection) alone", () {
+      // ﾊﾞ must not collapse to a single full-width codepoint here.
+      expect(widthVariants("ﾊﾞ"), ["ﾊﾞ"]);
     });
 
-    test("leaves katakana without a hiragana form alone", () {
-      // ヷヸヹヺ have no hiragana counterpart; ・ and ー are shared.
-      expect(kanaVariants("ヷ"), ["ヷ"]);
-      expect(kanaVariants("・"), ["・"]);
-      expect(kanaVariants("漢字"), ["漢字"]);
+    test("ordinary full-width kana is unchanged", () {
+      expect(widthVariants("カタカナ"), ["カタカナ"]);
     });
   });
 
-  group("lookupVariants", () {
-    test("puts case variants before kana variants", () {
-      expect(lookupVariants("Nahida"), ["Nahida", "nahida", "NAHIDA"]);
-      expect(lookupVariants("パソコン"), ["パソコン", "ぱそこん"]);
+  group("lookupVariants crosses case with width", () {
+    test("typed full-width lowercase reaches half-width upper", () {
+      // ｎｈｋ -> {ｎｈｋ, ＮＨＫ, nhk, NHK, Nhk}.
+      final variants = lookupVariants("ｎｈｋ");
+      expect(variants, containsAll(["ｎｈｋ", "ＮＨＫ", "nhk", "NHK", "Nhk"]));
+      // Original as typed stays first.
+      expect(variants.first, "ｎｈｋ");
     });
 
-    test("has nothing to add for a single-spelling word", () {
-      expect(lookupVariants("漢字"), ["漢字"]);
-      expect(lookupVariants(""), isEmpty);
+    test("typed half-width upper reaches full-width lower", () {
+      // NHK -> {NHK, nhk, Nhk, ＮＨＫ, ｎｈｋ}.
+      final variants = lookupVariants("NHK");
+      expect(variants, containsAll(["NHK", "nhk", "Nhk", "ＮＨＫ", "ｎｈｋ"]));
+      expect(variants.first, "NHK");
+    });
+
+    test("no width change keeps the plain case variants", () {
+      expect(
+        lookupVariants("Nahida"),
+        containsAll(["Nahida", "nahida", "NAHIDA"]),
+      );
     });
   });
 }
