@@ -457,6 +457,93 @@ void main() {
       expect(await lookup.wordSplitsFor("picked the phone up"), isEmpty);
     });
 
+    test("reads a katakana long vowel as hiragana", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"ふうぞく": "ふうぞく content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      expect(await lookup.longVowelSuggestionsFor("フーゾク"), ["ふうぞく"]);
+    });
+
+    test("keeps the long-vowel readings a dictionary has", () async {
+      // A long o is おう or おお, and only the dictionary knows which of them
+      // the word uses: 大阪 is おおさか even though オーサカ suggests otherwise.
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"おおさか": "おおさか content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      expect(await lookup.longVowelSuggestionsFor("オーサカ"), ["おおさか"]);
+    });
+
+    test(
+      "offers every reading the dictionaries can open, best first",
+      () async {
+        final dictionary = FakeDictionarySource(
+          id: 1,
+          entries: {"とうきょう": "とうきょう content", "とおきょう": "とおきょう content"},
+        );
+        final lookup = makeLookup(
+          dictionary: dictionary,
+          morphology: FakeMorphology(stemsResult: const []),
+          enabled: false,
+        );
+
+        expect(await lookup.longVowelSuggestionsFor("トーキョー"), [
+          "とうきょう",
+          "とおきょう",
+        ]);
+      },
+    );
+
+    test("shows the spelling the dictionary files the word under", () async {
+      // `resolveKeys` also tries the other kana script, so an expansion that
+      // lands on a katakana headword comes back in katakana.
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"フウゾク": "フウゾク content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      expect(await lookup.longVowelSuggestionsFor("フーゾク"), ["フウゾク"]);
+    });
+
+    test("long vowels need neither morphology nor a mark", () async {
+      final morphology = FakeMorphology(
+        stemsResult: const [],
+        suggestionsResult: const ["ふうぞく"],
+      );
+      final lookup = makeLookup(
+        dictionary: FakeDictionarySource(
+          id: 1,
+          entries: {"ふうぞく": "ふうぞく content"},
+        ),
+        morphology: morphology,
+        enabled: true,
+      );
+
+      // Nothing to read without a mark, and nothing that costs a Hunspell call.
+      expect(await lookup.longVowelSuggestionsFor("ふうぞく"), isEmpty);
+      expect(await lookup.longVowelSuggestionsFor("フーゾク"), ["ふうぞく"]);
+      expect(morphology.stemCalls, 0);
+      expect(morphology.suggestionCalls, 0);
+    });
+
     test("a phrase needs no morphology to match what was typed", () async {
       final dictionary = FakeDictionarySource(
         id: 1,

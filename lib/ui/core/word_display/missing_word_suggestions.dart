@@ -4,10 +4,12 @@ import "package:material_ui/material_ui.dart";
 
 /// What the "not found" page offers instead of a dead end.
 ///
-/// Two groups, each with a quiet heading: the words the morphology engine
-/// believes the query was meant to be, and readings of the query as several
-/// headwords (`Anime + Cover`, `倾奇 + 者`). Every entry is a chip that
-/// opens the word, so a compound can be read one part at a time.
+/// Four groups, each with a quiet heading: the headwords a phrase may be
+/// hiding, readings of the query as several headwords (`Anime + Cover`,
+/// `倾奇 + 者`), the hiragana spelling of a katakana word's long vowels
+/// (`フーゾク` -> `ふうぞく`), and the words the morphology engine believes the
+/// query was meant to be. Every entry is a chip that opens the word, so a
+/// compound can be read one part at a time.
 class MissingWordSuggestionsView extends StatelessWidget {
   final MissingWordSuggestions suggestions;
 
@@ -25,10 +27,10 @@ class MissingWordSuggestionsView extends StatelessWidget {
     if (suggestions.isEmpty) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context)!;
-    // Phrases and splits first, spelling suggestions below. They arrive in that
-    // order (a few milliseconds against Hunspell's hundreds), so a group
-    // appended last cannot push the group the user is already reading off the
-    // screen.
+    // Everything the dictionaries can answer on their own comes first, with
+    // spelling suggestions below. The groups above arrive in a few milliseconds
+    // against Hunspell's hundreds, so the group that fills in last cannot push
+    // the ones the user is already reading off the screen.
     return Column(
       children: [
         if (suggestions.phrases.isNotEmpty) ...[
@@ -61,6 +63,18 @@ class MissingWordSuggestionsView extends StatelessWidget {
                 ],
               ),
             ),
+        ],
+        if (suggestions.longVowelReadings.isNotEmpty) ...[
+          _Heading(text: l10n.longVowelReadings),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final word in suggestions.longVowelReadings)
+                _Chip(word: word, onSelected: onSelected),
+            ],
+          ),
         ],
         if (suggestions.spellingSuggestions.isNotEmpty) ...[
           _Heading(text: l10n.spellingSuggestions),
