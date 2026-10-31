@@ -153,6 +153,32 @@ void main() {
     expect(await service.search("苹果"), hasLength(1));
   });
 
+  test("rebuildDictionary rebuilds from scratch", () async {
+    await service.ensureBuilt(dictionary);
+    expect(buildCalls, 1);
+    await service.rebuildDictionary(dictionary);
+    expect(buildCalls, 2);
+    expect(service.stateFor(1).status, FullTextIndexStatus.ready);
+    expect(await service.search("苹果"), hasLength(1));
+  });
+
+  test("rebuildDictionary cancels an in-flight build first", () async {
+    pauseForCancel = true;
+    service.ensureBuilt(dictionary);
+    var waited = 0;
+    while (service.stateFor(1).status != FullTextIndexStatus.building &&
+        waited < 200) {
+      await Future.delayed(const Duration(milliseconds: 5));
+      waited++;
+    }
+    expect(service.stateFor(1).status, FullTextIndexStatus.building);
+    pauseForCancel = false;
+    await service.rebuildDictionary(dictionary);
+    expect(buildCalls, 2);
+    expect(service.stateFor(1).status, FullTextIndexStatus.ready);
+    expect(await service.search("苹果"), hasLength(1));
+  });
+
   test("dropDictionary removes the index", () async {
     await service.ensureBuilt(dictionary);
     await service.dropDictionary(1);

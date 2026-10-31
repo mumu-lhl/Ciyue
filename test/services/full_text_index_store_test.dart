@@ -98,6 +98,18 @@ void main() {
     expect(await store.allMeta(), isEmpty);
   });
 
+  test("indexSizeBytes reports the built index and 0 after drop", () async {
+    expect(await store.indexSizeBytes(8), 0);
+    expect(await store.ensureDictionary(8, "fp"), isTrue);
+    await store.insertBatch(8, const [
+      FullTextIndexRow(rowid: 1, headword: "apple", body: "a fruit"),
+    ], 1);
+    await store.markComplete(8, 1);
+    expect(await store.indexSizeBytes(8), greaterThan(0));
+    await store.dropDictionary(8);
+    expect(await store.indexSizeBytes(8), 0);
+  });
+
   test("pruneExcept drops orphaned dictionaries", () async {
     await store.ensureDictionary(6, "fp");
     await store.ensureDictionary(7, "fp");

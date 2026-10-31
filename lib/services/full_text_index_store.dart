@@ -340,6 +340,48 @@ class FullTextIndexStore {
     ]);
   }
 
+  /// On-disk size of one dictionary's index in bytes: the FTS5 virtual
+  /// table's shadow tables plus the external content table. Uses `dbstat`
+  /// when the SQLite build provides it; otherwise falls back to the stored
+  /// text length, which understates the real size but stays meaningful.
+  /// Returns 0 when the dictionary has no index.
+  Future<int> indexSizeBytes(int dictionaryId) async {
+    await _ensureMeta();
+    final fts = _ftsTable(dictionaryId);
+    final content = _contentTable(dictionaryId);
+    try {
+      final row = await _db
+          .customSelect(
+            "SELECT COALESCE(SUM(pgsize), 0) AS size FROM dbstat "
+            "WHERE name IN (?, ?, ?, ?, ?, ?)",
+            variables: [
+              Variable.withString(fts),
+              Variable.withString("${fts}_data"),
+              Variable.withString("${fts}_idx"),
+              Variable.withString("${fts}_content"),
+              Variable.withString("${fts}_docsize"),
+              Variable.withString(content),
+            ],
+          )
+          .getSingleOrNull();
+      if (row != null) return row.read<int>("size");
+    } catch (_) {
+      // dbstat unavailable in this SQLite build; fall through.
+    }
+    try {
+      final row = await _db
+          .customSelect(
+            "SELECT COALESCE(SUM(LENGTH(headword) + LENGTH(body)), 0) "
+            "AS size FROM $content",
+          )
+          .getSingleOrNull();
+      if (row != null) return row.read<int>("size");
+    } catch (_) {
+      // No content table: no index.
+    }
+    return 0;
+  }
+
   /// Drops indexes whose dictionary is no longer in [knownIds].
   Future<void> pruneExcept(Set<int> knownIds) async {
     for (final entry in await allMeta()) {

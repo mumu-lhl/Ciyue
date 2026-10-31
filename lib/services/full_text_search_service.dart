@@ -301,6 +301,27 @@ class FullTextSearchService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// On-disk size of one dictionary's index in bytes, 0 when it has none.
+  /// Never throws: the settings UI reads it on page open.
+  Future<int> indexSizeBytes(int dictionaryId) async {
+    try {
+      final store = await _storeInstance();
+      return await store.indexSizeBytes(dictionaryId);
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Deletes a dictionary's index and builds it again from scratch. A
+  /// build already in flight is cancelled first and awaited, so its late
+  /// batches cannot land in the fresh tables.
+  Future<void> rebuildDictionary(LoadedDictionary dictionary) async {
+    cancelBuild(dictionary.id);
+    await _builds[dictionary.id];
+    await dropDictionary(dictionary.id);
+    await ensureBuilt(dictionary);
+  }
+
   @override
   void dispose() {
     for (final token in _cancelTokens.values) {
