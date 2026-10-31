@@ -28,6 +28,10 @@
   "@wordParts": {
     "description": "Header above the suggestions that read a long word as several shorter headwords, e.g. Anime + Cover."
   },
+  "longVowelReadings": "Long vowels spelled out",
+  "@longVowelReadings": {
+    "description": "Header above the hiragana readings of a katakana word whose long vowels are written with ー, e.g. フーゾク -> ふうぞく, トーキョー -> とうきょう."
+  },
   "theme": "Theme",
   "@theme": {},
   "dynamicColor": "Material Dynamic Color",

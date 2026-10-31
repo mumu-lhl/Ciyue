@@ -120,18 +120,27 @@ class MissingWordSuggestions {
   /// `rufe dich an` -> `anrufen`.
   final List<String> phrases;
 
+  /// Hiragana readings of a katakana word's long vowels: `フーゾク` ->
+  /// `ふうぞく`, `トーキョー` -> `とうきょう`.
+  final List<String> longVowelReadings;
+
   const MissingWordSuggestions({
     required this.spellingSuggestions,
     required this.splits,
     this.phrases = const [],
+    this.longVowelReadings = const [],
   });
 
   static const empty = MissingWordSuggestions(
     spellingSuggestions: [],
     splits: [],
     phrases: [],
+    longVowelReadings: [],
   );
 
   bool get isEmpty =>
-      spellingSuggestions.isEmpty && splits.isEmpty && phrases.isEmpty;
+      spellingSuggestions.isEmpty &&
+      splits.isEmpty &&
+      phrases.isEmpty &&
+      longVowelReadings.isEmpty;
 }

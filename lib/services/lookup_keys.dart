@@ -16,9 +16,9 @@
 ///   normalisation step (see the `ICONV` table of `hunspell_ja_JP`), not in
 ///   this list.
 /// - **Long vowel expansion** (`ふーぞく` -> `ふうぞく`): not a bijection, the
-///   vowel depends on the preceding kana and both `こう`/こお exist. It belongs
-///   in the "not found" suggestions, where the user picks, rather than in the
-///   candidates that are read directly.
+///   vowel depends on the preceding kana and both `こう`/こお exist. It lives in
+///   `long_vowel_lookup.dart` instead, among the "not found" suggestions, where
+///   the user picks a reading rather than the lookup reading one for them.
 /// - **`ß` -> `ss`, Greek final sigma, diacritics**: those are one-to-many
 ///   folds (Unicode full case folding), and enumerate badly — a query-side
 ///   fold would have to guess where in the word the fold happened. They belong
@@ -83,6 +83,13 @@ List<String> lookupVariants(String word) {
   }
   return variants;
 }
+
+/// [word] written in hiragana, leaving everything that is not katakana alone.
+///
+/// `フーゾク` gives `ふーぞく`; the long vowel mark is shared between the two
+/// scripts and stays, because writing it out is a choice the suggestions offer
+/// (see `long_vowel_lookup.dart`) rather than a script conversion.
+String toHiragana(String word) => _convertKana(word, toKatakana: false);
 
 /// Capitals after whitespace or `-`, leaving everything else untouched.
 String _capitaliseWords(String value) {

@@ -8,6 +8,7 @@ import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
+import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/utils.dart";
 import "package:flutter/foundation.dart";
 import "package:material_ui/material_ui.dart";
@@ -20,6 +21,7 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 
 DateTime? _lastOpenWordTime;
 String? _lastOpenWordName;
+String? _lastOpenWordAnchor;
 bool? _lastOpenWordIsNewTab;
 
 final _bwordHrefPattern = RegExp(
@@ -40,6 +42,24 @@ String _percentEncodeAll(String value) {
   return encoded.join();
 }
 
+/// The canonical `gdlookup://` href for a parsed link, or an empty string when
+/// there is no headword to look up.
+///
+/// The anchor rides as a `?gdanchor=` query item, never as a fragment: a `#`
+/// in a URL is a same-document position, so a fragment would be swallowed
+/// before the navigation handler ever sees it.
+String entryLinkHref(EntryLinkTarget target) {
+  if (target.word.isEmpty) return "";
+  final href = StringBuffer(
+    "gdlookup://localhost/${_percentEncodeAll(target.word)}",
+  );
+  final anchor = target.anchor;
+  if (anchor != null && anchor.isNotEmpty) {
+    href.write("?gdanchor=${_percentEncodeAll(anchor)}");
+  }
+  return href.toString();
+}
+
 /// Rewrites the two dictionary link shapes whose payload the URL parser
 /// mangles, before the page is loaded:
 ///
@@ -53,16 +73,17 @@ String _percentEncodeAll(String value) {
 /// resource. Names that happen to be all lower case or all digits survive the
 /// folding, which is why only some dictionaries were affected — and why the
 /// same file plays in one dictionary and stays silent in the next.
+///
+/// A lone `#` in a Babylon link separates the headword from an anchor and `##`
+/// escapes a literal `#`; see [parseEntryLink].
 String normalizeDictionaryUrls(String html) {
   var result = html;
 
   if (result.toLowerCase().contains("bword:")) {
     result = result.replaceAllMapped(_bwordHrefPattern, (match) {
-      final word = match[3] ?? "";
-      final hash = word.indexOf("#");
-      final target = hash >= 0 ? word.substring(0, hash) : word;
-      if (target.isEmpty) return match[0] ?? "";
-      return '${match[1]}"gdlookup://localhost/${_percentEncodeAll(target)}"';
+      final href = entryLinkHref(parseEntryLink(match[3] ?? ""));
+      if (href.isEmpty) return match[0] ?? "";
+      return '${match[1]}"$href"';
     });
   }
 
@@ -85,22 +106,35 @@ void handleOpenWordNavigation(
   String rawWord, {
   required bool newTab,
   int? dictId,
+  String? anchor,
 }) {
   final word = rawWord.trim();
   if (word.isEmpty) return;
 
   final now = DateTime.now();
   if (_lastOpenWordName == word &&
+      _lastOpenWordAnchor == anchor &&
       _lastOpenWordIsNewTab == newTab &&
       _lastOpenWordTime != null &&
       now.difference(_lastOpenWordTime!) < const Duration(milliseconds: 300)) {
     return;
   }
   _lastOpenWordName = word;
+  _lastOpenWordAnchor = anchor;
   _lastOpenWordIsNewTab = newTab;
   _lastOpenWordTime = now;
 
   final navContext = navigatorKey.currentContext ?? context;
+
+  // The anchor is a one-shot scroll request for the entry of the dictionary the
+  // link came from; it deliberately stays out of the tab history. A link
+  // without an anchor still reports in, which drops a request the page being
+  // left behind never used.
+  try {
+    ProviderScope.containerOf(navContext, listen: false)
+        .read(pendingAnchorProvider.notifier)
+        .request(word: word, dictId: dictId, anchor: anchor);
+  } catch (_) {}
 
   if (isLargeScreen(context)) {
     try {
@@ -156,17 +190,51 @@ bool _isEntryUrl(WebUri url) {
 
 final _entrySchemePrefix = RegExp(r"^(?:entry|bword)://", caseSensitive: false);
 
+/// The target a dictionary link points at: the headword plus its anchor.
+///
+/// Anchors normally arrive in the `?gdanchor=` query item (see
+/// [entryLinkHref]); an `entry://` / `bword://` link the page script never
+/// rewrote still carries its anchor after a `#`, so both spellings are read.
 @visibleForTesting
-String wordFromEntryUrl(WebUri url) {
+EntryLinkTarget wordFromEntryUrl(WebUri url) {
   if (url.scheme == "ciyue-open-new-tab") {
     final raw = url.host.isNotEmpty ? url.host : url.path;
-    return Uri.decodeComponent(raw.replaceFirst(RegExp(r"^/"), ""));
+    return EntryLinkTarget(
+      word: Uri.decodeComponent(raw.replaceFirst(RegExp(r"^/"), "")),
+    );
   }
-  final encodedWord = url.scheme == "gdlookup"
-      ? url.path.replaceFirst(RegExp(r"^/"), "")
-      : url.toString().replaceFirst(_entrySchemePrefix, "");
-  return Uri.decodeComponent(encodedWord);
+
+  if (url.scheme == "gdlookup") {
+    final encodedWord = url.path.replaceFirst(RegExp(r"^/"), "");
+    final anchor = url.queryParameters["gdanchor"];
+    return EntryLinkTarget(
+      word: Uri.decodeComponent(encodedWord),
+      anchor: (anchor == null || anchor.isEmpty) ? null : anchor,
+    );
+  }
+
+  // The page script rewrites entry links before navigation, so this branch only
+  // runs when a click bypassed it. `toString()` re-encodes a `#` that already
+  // sat inside the fragment, so the payload is decoded back before the `##`
+  // rules are applied; otherwise `tag##sumeru` would arrive as `tag#%23sumeru`.
+  final payload = url.toString().replaceFirst(_entrySchemePrefix, "");
+  String decoded;
+  try {
+    decoded = Uri.decodeComponent(payload);
+  } catch (_) {
+    decoded = payload;
+  }
+  return parseEntryLink(decoded);
 }
+
+/// The script that scrolls the entry on screen to [anchor].
+///
+/// `scrollIntoView` is used instead of assigning `location.hash`, which would
+/// push a history entry into the WebView's own back stack.
+String scrollToAnchorScript(String anchor) =>
+    "(function(){var a=${jsonEncode(anchor)};if(!a)return false;"
+    "var el=document.getElementById(a)||document.getElementsByName(a)[0];"
+    "if(!el)return false;el.scrollIntoView({block:'start'});return true;})()";
 
 /// The file name of a `sound://` link. New pages carry it percent-encoded in
 /// the path (`sound://localhost/<file>`); entries that still reach us in the
@@ -273,8 +341,23 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
 
     if (_isEntryUrl(url)) {
       final isNewTab = url.scheme == "ciyue-open-new-tab";
-      final word = wordFromEntryUrl(url);
-      talker.info("Entry link: ${url.scheme} -> $word");
+      final target = wordFromEntryUrl(url);
+      final anchor = target.anchor;
+      talker.info(
+        "Entry link: ${url.scheme} -> ${target.word}"
+        "${anchor == null ? "" : " #$anchor"}",
+      );
+
+      // A link that only names an anchor scrolls the entry already on screen:
+      // there is no word to look up and no page to load.
+      if (target.word.isEmpty) {
+        if (anchor != null) {
+          await controller.evaluateJavascript(
+            source: scrollToAnchorScript(anchor),
+          );
+        }
+        return NavigationActionPolicy.CANCEL;
+      }
 
       // No lookup check against this one dictionary: the destination page
       // searches the whole group, so a link this file cannot answer may still
@@ -284,9 +367,10 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
       if (context.mounted) {
         handleOpenWordNavigation(
           context,
-          word,
+          target.word,
           newTab: isNewTab,
           dictId: dictId,
+          anchor: anchor,
         );
       }
       return NavigationActionPolicy.CANCEL;

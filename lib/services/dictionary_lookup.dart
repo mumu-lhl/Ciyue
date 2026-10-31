@@ -1,7 +1,9 @@
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/models/hunspell.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/lookup_keys.dart";
+import "package:ciyue/services/long_vowel_lookup.dart";
 import "package:ciyue/services/phrase_lookup.dart";
 import "package:ciyue/services/word_split.dart";
 
@@ -13,6 +15,13 @@ const _maxSpellingSuggestions = 8;
 
 /// How many phrasal-verb readings of a phrase the "not found" page shows.
 const _maxPhraseSuggestions = 3;
+
+/// How many long-vowel readings of a word the "not found" page shows.
+///
+/// A word with two ambiguous marks — `トーキョー` — offers four readings, and
+/// those are all worth seeing because they may be four different entries. A
+/// word with more marks than that is not a word anyone typed.
+const _maxLongVowelSuggestions = 4;
 
 class DictionaryLookupResult {
   final Map<int, List<DictionaryEntryData>> entriesByDictionary;
@@ -83,7 +92,13 @@ class DictionaryLookup {
         (currentMode == HunspellLookupMode.supplement ||
             exactKeys.any((key) => key == null));
     if (shouldResolveStems) {
-      stems = await morphology.stems(word);
+      try {
+        stems = await morphology.stems(word);
+      } catch (e) {
+        // Morphology is an optional aid. A worker that failed to load must not
+        // turn the exact lookup into an error page.
+        talker.warning("Hunspell stems failed for \"$word\": $e");
+      }
     }
 
     final entriesList = await Future.wait(
@@ -289,6 +304,41 @@ class DictionaryLookup {
       if (phrases.length == _maxPhraseSuggestions) break;
     }
     return phrases;
+  }
+
+  /// Hiragana readings of a katakana word whose long vowels are marked with
+  /// `ー`, for the "not found" page.
+  ///
+  /// `フーゾク` is filed as ふうぞく and `トーキョー` as とうきょう. Which vowel
+  /// the mark stands for cannot be decided from the mark, and a long `e` or `o`
+  /// has two spellings each (えい/ええ, おう/おお), so every reading is offered
+  /// to the dictionaries and only those that exist come back. See
+  /// [longVowelReadings] for the generation.
+  ///
+  /// Cheap like [wordSplitsFor]: a handful of index probes behind one batch per
+  /// dictionary, no morphology, so the page draws it with the splits rather
+  /// than after the spelling suggestions.
+  Future<List<String>> longVowelSuggestionsFor(String word) async {
+    final query = word.trim();
+    if (query.isEmpty) return const [];
+
+    final readings = longVowelReadings(query);
+    if (readings.isEmpty) return const [];
+
+    final activeDictionaries = dictionaries();
+    if (activeDictionaries.isEmpty) return const [];
+
+    final resolved = await _resolveAcross(activeDictionaries, readings);
+    final suggestions = <String>[];
+    for (final reading in readings) {
+      // The dictionary's own spelling: a reading that only matched by script
+      // ends up shown the way the entry is filed.
+      final spelling = resolved[reading];
+      if (spelling == null || suggestions.contains(spelling)) continue;
+      suggestions.add(spelling);
+      if (suggestions.length == _maxLongVowelSuggestions) break;
+    }
+    return suggestions;
   }
 
   /// Hunspell's spelling suggestions for [word], minus everything no dictionary

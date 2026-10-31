@@ -273,6 +273,16 @@ class HunspellManager implements MorphologyProvider {
   int _loadedSourceCount = 0;
   final Map<int, String> errors = {};
 
+  /// The first reload, while it is still in flight.
+  ///
+  /// A query that arrives before the worker has loaded anything would run
+  /// against an empty dictionary list and silently return no stems — which is
+  /// indistinguishable from "morphology is off" for that word. Queries wait
+  /// for this first reload instead; later reloads keep the previous
+  /// dictionaries serving and are not awaited.
+  Future<void>? _pendingInitialReload;
+  bool _hasLoadedOnce = false;
+
   int get loadedSourceCount => _loadedSourceCount;
 
   Future<SendPort> _ensureWorker() async {
@@ -345,22 +355,55 @@ class HunspellManager implements MorphologyProvider {
   }
 
   Future<void> reload(Iterable<HunspellSourceInfo> sources) async {
+    final list = sources.toList(growable: false);
+    final reload = _reload(list);
+    if (!_hasLoadedOnce) {
+      // Swallow the error here only for the waiters: the caller below still
+      // sees it on `reload`.
+      _pendingInitialReload = reload.then((_) {}, onError: (_) {});
+    }
+    try {
+      await reload;
+    } finally {
+      _hasLoadedOnce = true;
+      _pendingInitialReload = null;
+    }
+  }
+
+  Future<void> _reload(List<HunspellSourceInfo> sources) async {
     final result = await _request<_ReloadResult>(
-      (reply) => _ReloadRequest(sources.toList(growable: false), reply),
+      (reply) => _ReloadRequest(sources, reply),
     );
     _loadedSourceCount = result.loadedCount;
     errors
       ..clear()
       ..addAll(result.errors);
+
+    if (sources.isNotEmpty) {
+      final message =
+          "Hunspell loaded ${result.loadedCount}/${sources.length} sources";
+      if (result.loadedCount == 0) {
+        talker.warning("$message (no morphology available): ${result.errors}");
+      } else {
+        talker.info(message);
+      }
+    }
+  }
+
+  Future<void> _waitForInitialReload() async {
+    final pending = _pendingInitialReload;
+    if (pending != null) await pending;
   }
 
   @override
-  Future<List<String>> stems(String word) {
+  Future<List<String>> stems(String word) async {
+    await _waitForInitialReload();
     return _request<List<String>>((reply) => _StemsRequest(word, reply));
   }
 
   @override
-  Future<List<String>> suggestions(String word) {
+  Future<List<String>> suggestions(String word) async {
+    await _waitForInitialReload();
     return _request<List<String>>((reply) => _SuggestionsRequest(word, reply));
   }
 
@@ -369,6 +412,10 @@ class HunspellManager implements MorphologyProvider {
     _workerPort = null;
     _spawnFuture = null;
     _loadedSourceCount = 0;
+    // The next worker starts empty again, so the first reload after this one
+    // has to be awaited by queries once more.
+    _hasLoadedOnce = false;
+    _pendingInitialReload = null;
     errors.clear();
     if (worker != null) {
       final replyPort = ReceivePort();

@@ -6,8 +6,12 @@
 /// parsing and the Dart side decodes it back to the original string.
 ///
 /// `bword://` (Babylon word links, used by クラウン独和) is mapped onto
-/// `entry://`, and `#anchors` are dropped: Ciyue looks up words, not positions
-/// inside an entry.
+/// `entry://`, and the anchor of a link is carried as a `?gdanchor=` query
+/// item rather than a fragment: a `#` in the URL is read by the WebView as a
+/// same-document position, so it would never reach the navigation handler.
+/// A lone `#` separates the headword from its anchor and `##` escapes one
+/// literal `#` (see `parseEntryLink` in `entry_anchor.dart`, which this script
+/// mirrors).
 const dictionaryEntryLinkScript = r"""
 function _extractWordFromHref(href) {
   if (!href) return null;
@@ -16,7 +20,9 @@ function _extractWordFromHref(href) {
     return href.slice(prefix[0].length);
   }
   if (/^gdlookup:\/\/localhost\//i.test(href)) {
-    return href.slice('gdlookup://localhost/'.length);
+    var rest = href.slice('gdlookup://localhost/'.length);
+    var query = rest.indexOf('?');
+    return query >= 0 ? rest.slice(0, query) : rest;
   }
   return null;
 }
@@ -29,19 +35,42 @@ function _decodeWord(raw) {
   }
 }
 
-// Anchors point at a position inside an entry; Ciyue has no scrolling target.
-function _wordText(raw) {
-  var word = raw || '';
-  var hash = word.indexOf('#');
-  if (hash >= 0) word = word.slice(0, hash);
-  return _decodeWord(word);
+// Mirrors `parseEntryLink` in entry_anchor.dart: scanning left to right, `##`
+// escapes one literal `#` and a lone `#` separates the headword from the
+// anchor. Keep the two implementations in step.
+function _parseLink(raw) {
+  var text = raw || '';
+  var word = '';
+  var i = 0;
+  while (i < text.length) {
+    var ch = text.charAt(i);
+    if (ch !== '#') {
+      word += ch;
+      i++;
+      continue;
+    }
+    if (i + 1 < text.length && text.charAt(i + 1) === '#') {
+      word += '#';
+      i += 2;
+      continue;
+    }
+    return { word: word, anchor: text.slice(i + 1) };
+  }
+  return { word: word, anchor: '' };
+}
+
+function _linkTarget(raw) {
+  var parsed = _parseLink(raw);
+  return {
+    word: _decodeWord(parsed.word),
+    anchor: parsed.anchor ? _decodeWord(parsed.anchor) : ''
+  };
 }
 
 // Percent-encode every byte, ASCII letters included: that is what keeps
 // `entry://Haus` from being lower-cased when the URI parser normalises the
 // host, and what stops `:` or `@` from being read as port / userinfo.
-function _encodedWord(raw) {
-  var word = _wordText(raw);
+function _encodedWord(word) {
   var bytes;
   try {
     bytes = new TextEncoder().encode(word);
@@ -56,7 +85,31 @@ function _encodedWord(raw) {
   return out;
 }
 
+// The canonical href for a parsed link. An empty word with an anchor means
+// "scroll the entry on screen", which never becomes a navigation.
+function _targetHref(link) {
+  var encoded = _encodedWord(link.word);
+  if (!encoded) return '';
+  var href = 'gdlookup://localhost/' + encoded;
+  if (link.anchor) href += '?gdanchor=' + _encodedWord(link.anchor);
+  return href;
+}
+
+function _scrollToAnchor(anchor) {
+  if (!anchor) return false;
+  var el = document.getElementById(anchor);
+  if (!el) {
+    var named = document.getElementsByName(anchor);
+    el = named && named.length ? named[0] : null;
+  }
+  if (!el) return false;
+  el.scrollIntoView({ block: 'start' });
+  return true;
+}
+
 function _openWordInNewTab(word) {
+  // This handler carries a word only, so a new tab opens the entry without
+  // scrolling it; an anchor applies to in-place navigation only.
   if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
     window.flutter_inappwebview.callHandler('openInNewTab', word);
   } else {
@@ -85,10 +138,22 @@ document.addEventListener('click', function (event) {
   const rawWord = _extractWordFromHref(href);
   if (rawWord === null) return;
 
+  const link = _linkTarget(rawWord);
+
+  // A link naming only an anchor scrolls the entry already on screen: there is
+  // no word to look up and therefore no page to load.
+  if (!link.word && link.anchor) {
+    if (_scrollToAnchor(link.anchor)) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    return;
+  }
+
   if (event.ctrlKey || event.metaKey) {
     event.preventDefault();
     event.stopPropagation();
-    _openWordInNewTab(_wordText(rawWord));
+    _openWordInNewTab(link.word);
     return;
   }
 
@@ -101,9 +166,9 @@ document.addEventListener('click', function (event) {
   // path, not the host: a host is folded to lower case by the URL parser, so
   // `entry://Abend` arrives as `abend` and every link to a capitalised
   // headword lands on the wrong entry (or nowhere).
-  const encoded = _encodedWord(rawWord);
-  if (encoded) {
-    anchor.setAttribute('href', 'gdlookup://localhost/' + encoded);
+  const newHref = _targetHref(link);
+  if (newHref) {
+    anchor.setAttribute('href', newHref);
   }
 }, true);
 
@@ -117,7 +182,7 @@ document.addEventListener('auxclick', function (event) {
   if (rawWord !== null) {
     event.preventDefault();
     event.stopPropagation();
-    _openWordInNewTab(_wordText(rawWord));
+    _openWordInNewTab(_linkTarget(rawWord).word);
   }
 }, true);
 
@@ -146,8 +211,12 @@ document.addEventListener('mousedown', function (event) {
     var href = anchor.getAttribute && anchor.getAttribute('href');
     var prefix = href && /^bword:\/\//i.exec(href);
     if (!prefix) return;
-    var encoded = _encodedWord(href.slice(prefix[0].length));
-    if (encoded) anchor.setAttribute('href', 'gdlookup://localhost/' + encoded);
+    var link = _linkTarget(href.slice(prefix[0].length));
+    // An anchor-only link stays as it is: the click handler scrolls the page
+    // in place and there is no word to put in the path.
+    if (!link.word) return;
+    var target = _targetHref(link);
+    if (target) anchor.setAttribute('href', target);
   }
 
   function scan(root) {
