@@ -1,3 +1,5 @@
+import "dart:typed_data";
+
 abstract interface class DictionarySource {
   int get id;
 
@@ -84,6 +86,10 @@ abstract interface class LoadedDictionary implements DictionarySource {
   /// Prepares entry HTML for display, e.g. by prepending the dictionary's
   /// stylesheet/script tags when the format has them.
   String wrapContentWithResources(String content);
+
+  /// Reads a binary resource (image, sound, stylesheet, script) by path,
+  /// or returns null if not found.
+  Future<Uint8List?> readResourceFile(String filename);
 
   /// Removes the dictionary from storage, including its cached data and,
   /// where the platform keeps app-owned copies, its files.

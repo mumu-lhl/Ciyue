@@ -4,14 +4,11 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
-import "package:ciyue/repositories/stardict.dart";
-import "package:ciyue/repositories/zim.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/utils.dart";
-import "package:flutter/foundation.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:go_router/go_router.dart";
@@ -282,59 +279,16 @@ onLoadResourceWithCustomSchemeWarpper(int dictId) {
     final url = request.url;
     if (url.scheme == "sound") {
       final dict = dictManager.dicts[dictId];
+      if (dict == null) return null;
       final filename = _soundFileName(url);
 
-      // A StarDict dictionary keeps entry audio in `res/` or a resource
-      // archive rather than in an MDD, so the same click has to be served
-      // from there.
-      if (dict is Stardict) {
-        final data = await dict.readResourceFile(filename);
-        if (data == null) return null;
-        talker.info("Playing sound (2): $filename");
-        return CustomSchemeResponse(
-          contentType: lookupMimeType(filename) ?? "application/octet-stream",
-          data: data,
-        );
-      }
-      if (dict is Zim) {
-        final data = await dict.readResourceFile(filename);
-        if (data == null) return null;
-        talker.info("Playing sound (2): $filename");
-        return CustomSchemeResponse(
-          contentType: lookupMimeType(filename) ?? "application/octet-stream",
-          data: data,
-        );
-      }
-      if (dict is! Mdict) return null;
-      final results = await dict.readResource(filename);
-      for (final result in results) {
-        final info = result.offsetInfo;
-        try {
-          final Uint8List data;
-          if (result.part == null) {
-            data = await dict.readerResources[0].readOneMdd(info) as Uint8List;
-          } else {
-            data = await dict.readerResources[result.part!].readOneMdd(
-              info,
-            ) as Uint8List;
-          }
-          talker.info("Playing sound (2): $filename");
-          return CustomSchemeResponse(
-            contentType: lookupMimeType(filename) ?? "application/octet-stream",
-            data: data,
-          );
-        } catch (e) {
-          continue;
-        }
-      }
-      final zipped = await dict.readZipResource(filename);
-      if (zipped != null) {
-        talker.info("Playing sound (2): $filename");
-        return CustomSchemeResponse(
-          contentType: lookupMimeType(filename) ?? "application/octet-stream",
-          data: zipped,
-        );
-      }
+      final data = await dict.readResourceFile(filename);
+      if (data == null) return null;
+      talker.info("Playing sound (2): $filename");
+      return CustomSchemeResponse(
+        contentType: lookupMimeType(filename) ?? "application/octet-stream",
+        data: data,
+      );
     }
     return null;
   };
@@ -394,11 +348,7 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
       final messenger = ScaffoldMessenger.maybeOf(context);
 
       final dict = dictManager.dicts[dictId];
-
-      // A StarDict dictionary keeps entry audio in `res/` or a resource
-      // archive rather than in an MDD. A miss stays in the log; a hit the
-      // device cannot decode says so, exactly as MDD audio does.
-      if (dict is Stardict) {
+      if (dict != null) {
         final data = await dict.readResourceFile(filename);
         if (data == null) {
           talker.info("Sound resource not found: $filename");
@@ -414,78 +364,6 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
           messenger?.showSnackBar(SnackBar(content: Text(unsupportedMessage)));
         }
         return NavigationActionPolicy.CANCEL;
-      }
-
-      if (dict is Zim) {
-        final data = await dict.readResourceFile(filename);
-        if (data == null) {
-          talker.info("Sound resource not found: $filename");
-          return NavigationActionPolicy.CANCEL;
-        }
-        final played = await playSound(
-          data,
-          lookupMimeType(filename) ?? "application/octet-stream",
-          label: basenameWithoutExtension(filename),
-        );
-        talker.info("Playing sound (1): $filename");
-        if (!played && unsupportedMessage != null) {
-          messenger?.showSnackBar(SnackBar(content: Text(unsupportedMessage)));
-        }
-        return NavigationActionPolicy.CANCEL;
-      }
-
-      if (dict is Mdict) {
-        final results = await dict.readResource(filename);
-
-        for (final result in results) {
-          final info = result.offsetInfo;
-          final Uint8List data;
-          try {
-            if (result.part == null) {
-              data =
-                  await dict.readerResources[0].readOneMdd(info) as Uint8List;
-            } else {
-              data = await dict.readerResources[result.part!].readOneMdd(
-                info,
-              ) as Uint8List;
-            }
-          } catch (e) {
-            talker.error(
-              "Failed to read sound resource (${result.part == null ? 0 : result.part!}): $filename",
-              e,
-            );
-            continue;
-          }
-
-          final played = await playSound(
-            data,
-            lookupMimeType(filename) ?? "application/octet-stream",
-            label: basenameWithoutExtension(filename),
-          );
-          talker.info("Playing sound (1): $filename");
-          if (!played && unsupportedMessage != null) {
-            messenger?.showSnackBar(
-              SnackBar(content: Text(unsupportedMessage)),
-            );
-          }
-          return NavigationActionPolicy.CANCEL;
-        }
-
-        final zipped = await dict.readZipResource(filename);
-        if (zipped != null) {
-          final played = await playSound(
-            zipped,
-            lookupMimeType(filename) ?? "application/octet-stream",
-            label: basenameWithoutExtension(filename),
-          );
-          talker.info("Playing sound (1): $filename");
-          if (!played && unsupportedMessage != null) {
-            messenger?.showSnackBar(
-              SnackBar(content: Text(unsupportedMessage)),
-            );
-          }
-          return NavigationActionPolicy.CANCEL;
-        }
       }
     }
 
@@ -527,75 +405,7 @@ class LocalResourcesPathHandler extends CustomPathHandler {
     }
 
     try {
-      Uint8List? data;
-
-      if (dict is! Mdict || dict.readerResources.isEmpty) {
-        // Find resource under directory if no mdd (StarDict dictionaries
-        // keep their resources, e.g. res/ images, as plain files), else in
-        // a zip archive.
-        if (dict is Stardict) {
-          data = await dict.readResourceFile(path);
-        } else if (dict is Zim) {
-          data = await dict.readResourceFile(path);
-        } else {
-          try {
-            final file = File("${dirname(dict.path)}/$path");
-            data = await file.readAsBytes();
-          } catch (_) {
-            if (dict is Mdict) data = await dict.readZipResource(path);
-          }
-        }
-      } else {
-        // An external .css/.js next to the dictionary overrides the copy
-        // packed inside the .mdd (see readExternalResourceOverride).
-        final override = await readExternalResourceOverride(dict.path, path);
-        if (override != null) {
-          return WebResourceResponse(
-            data: override,
-            contentType: lookupMimeType(path),
-          );
-        }
-
-        List<MddResourceData> results;
-        results = await dict.readResource(path);
-
-        if (results.isEmpty) {
-          // Find resource under directory if resource is not in mdd, else
-          // in a zip audio pack.
-          try {
-            final file = File("${dirname(dict.path)}/$path");
-            data = await file.readAsBytes();
-          } catch (_) {
-            data = await dict.readZipResource(path);
-          }
-          return WebResourceResponse(
-            data: data,
-            contentType: lookupMimeType(path),
-          );
-        }
-
-        for (var i = 0; i < results.length;) {
-          final result = results[i];
-          final info = result.offsetInfo;
-          try {
-            if (result.part == null) {
-              data =
-                  await dict.readerResources[0].readOneMdd(info) as Uint8List;
-            } else {
-              data = await dict.readerResources[result.part!].readOneMdd(
-                info,
-              ) as Uint8List;
-            }
-            break;
-          } on FileSystemException catch (_) {
-            await Future.delayed(const Duration(milliseconds: 50));
-            continue;
-          } catch (e) {
-            i++;
-            continue;
-          }
-        }
-      }
+      final data = await dict.readResourceFile(path);
       return WebResourceResponse(data: data, contentType: lookupMimeType(path));
     } catch (e) {
       return WebResourceResponse(data: null);

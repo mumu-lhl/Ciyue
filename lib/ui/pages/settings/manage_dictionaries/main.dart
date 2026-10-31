@@ -4,12 +4,9 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
-import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/dictionary_files.dart";
 import "package:ciyue/repositories/hunspell.dart";
-import "package:ciyue/repositories/stardict.dart";
-import "package:ciyue/repositories/zim.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -448,14 +445,10 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                                           .dicts[dictionary.id]!
                                           .title;
                                     } else {
-                                      final LoadedDictionary dict =
-                                          DictionaryType.isZim(dictionary.type)
-                                          ? Zim(path: dictionary.path)
-                                          : DictionaryType.isStardict(
-                                              dictionary.type,
-                                            )
-                                          ? Stardict(path: dictionary.path)
-                                          : Mdict(path: dictionary.path);
+                                      final dict = createLoadedDictionary(
+                                        path: dictionary.path,
+                                        type: dictionary.type,
+                                      );
                                       try {
                                         await dict.initOnlyMetadata(
                                           dictionary.id,
@@ -583,12 +576,10 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                         dictionary.id,
                       );
 
-                      final LoadedDictionary tmpDict =
-                          DictionaryType.isZim(dictionary.type)
-                          ? Zim(path: dictionary.path)
-                          : DictionaryType.isStardict(dictionary.type)
-                          ? Stardict(path: dictionary.path)
-                          : Mdict(path: dictionary.path);
+                      final tmpDict = createLoadedDictionary(
+                        path: dictionary.path,
+                        type: dictionary.type,
+                      );
                       await tmpDict.removeDictionary(
                         dictionaryId: dictionary.id,
                       );

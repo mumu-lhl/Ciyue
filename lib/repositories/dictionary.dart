@@ -45,6 +45,16 @@ class MddResourceData {
   int get compressedSize => offsetInfo.compressedSize;
 }
 
+/// Instantiates the appropriate [LoadedDictionary] for [path] and [type].
+LoadedDictionary createLoadedDictionary({
+  required String path,
+  required int type,
+}) {
+  if (DictionaryType.isZim(type)) return Zim(path: path);
+  if (DictionaryType.isStardict(type)) return Stardict(path: path);
+  return Mdict(path: path);
+}
+
 class DictManager {
   final Map<int, LoadedDictionary> dicts = {};
   List<DictGroupData> groups = [];
@@ -63,11 +73,7 @@ class DictManager {
   /// [LoadedDictionary.waitForLoading] call instead.
   Future<void> add(int id, String path) async {
     final type = await dictionaryListDao.getType(id);
-    final LoadedDictionary dict = DictionaryType.isZim(type)
-        ? Zim(path: path)
-        : DictionaryType.isStardict(type)
-        ? Stardict(path: path)
-        : Mdict(path: path);
+    final dict = createLoadedDictionary(path: path, type: type);
     try {
       await dict.initMetadata();
     } catch (e, stackTrace) {
@@ -747,6 +753,13 @@ class Mdict implements LoadedDictionary {
     } catch (e) {
       return null;
     }
+  }
+
+  @override
+  Future<Uint8List?> readResourceFile(String filename) async {
+    final data = await _readResourceDesktop(filename);
+    if (data == null) return null;
+    return data is Uint8List ? data : Uint8List.fromList(data);
   }
 
   /// A companion file kept loose next to the dictionary, or packed in a
