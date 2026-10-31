@@ -101,9 +101,7 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final dictManager = ref.watch(dictManagerProvider);
-    // A group switch reloads the dictionaries; rebuild the entry views so a
-    // reused platform WebView cannot come back blank.
-    final groupId = dictManager.groupId;
+
     _syncPanelState(settings.aiExplainWord, widget.validDictIds);
 
     final panels = <ExpansionPanel>[];
@@ -133,10 +131,7 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
           // Lazy-load the WebView only when expanded; collapsed panels
           // keep a placeholder instead of instantiating N WebViews upfront.
           body: expanded
-              ? KeyedSubtree(
-                  key: ValueKey("dict_${dictId}_$groupId"),
-                  child: buildWebView(widget.word, dictId, true),
-                )
+              ? buildWebView(widget.word, dictId, true)
               : const SizedBox.shrink(),
           isExpanded: expanded,
           canTapOnHeader: true,

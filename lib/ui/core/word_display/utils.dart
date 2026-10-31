@@ -154,6 +154,14 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
       wordContentProvider((word: widget.word, dictId: widget.dictId)),
     );
 
+    // A group switch invalidates the lookup and briefly puts this provider
+    // back into loading. Keep the previous entry on screen until the new
+    // content arrives; swapping it for a spinner makes the page flash.
+    final retainedContent = contentAsync.value;
+    if (contentAsync.isLoading && retainedContent != null) {
+      return _buildContent(retainedContent, pendingAnchor);
+    }
+
     // Keep the Linux platform view mounted while the next word is looked up.
     // Recreating WPEBackend-FDO views can crash the WebProcess and leave a
     // blank texture; WebviewWindows reloads this retained view when content
