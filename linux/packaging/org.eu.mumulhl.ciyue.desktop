@@ -6,4 +6,4 @@ Icon=ciyue
 Categories=Education;Languages;
 Comment=A simple mdict dictionary
 Terminal=false
-StartupWMClass=ciyue
+StartupWMClass=org.eu.mumulhl.ciyue
