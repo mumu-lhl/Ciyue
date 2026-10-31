@@ -345,7 +345,16 @@ class Stardict implements LoadedDictionary {
 
   Future<DictionaryEntryData?> _readEntry(String word) async {
     await waitForLoading();
-    final results = await reader.lookup(word);
+    // Resolve the spelling the dictionary actually holds first. `reader.lookup`
+    // only normalises NFC and lower-cases, so a full-width query (`ＮＨＫ`)
+    // would miss a half-width headword (`NHK`); [resolveExactKey] runs the
+    // width/case variants and is what bridges the two. It returns the stored
+    // headword (also for synonyms), which is the key to read.
+    final headword = await resolveExactKey(word);
+    if (headword == null) {
+      return null;
+    }
+    final results = await reader.lookup(headword);
     if (results.isEmpty) {
       return null;
     }
