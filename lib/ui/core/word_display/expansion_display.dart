@@ -10,6 +10,7 @@ import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
+import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
 import "package:ciyue/utils.dart" as app_utils;
 import "package:flutter/foundation.dart";
 import "package:material_ui/material_ui.dart";
@@ -172,6 +173,8 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
                     )
                   : Text(widget.word, overflow: TextOverflow.ellipsis)),
         actions: [
+          if (settings.showSidebarIcon)
+            GroupSelectorButton(compact: !isDesktopScreen),
           if (settings.searchBarInAppBar && widget.pagerInfo != null)
             Center(
               child: Padding(

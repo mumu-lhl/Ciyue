@@ -15,6 +15,7 @@ import "package:ciyue/ui/core/word_display/missing_word_suggestions.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
+import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
 import "package:ciyue/utils.dart" as app_utils;
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -368,6 +369,10 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   )
                 : Text(widget.word, overflow: TextOverflow.ellipsis)),
       actions: [
+        // Same switch as the home screen: the sidebar-icon setting decides
+        // whether the dictionary-group switcher is offered on word pages too.
+        if (settings.showSidebarIcon)
+          GroupSelectorButton(compact: !isDesktopScreen),
         // Desktop back/forward (mobile has these in the bottom bar).
         if (isDesktopScreen && homeModel != null) ...[
           IconButton(
