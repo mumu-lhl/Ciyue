@@ -165,7 +165,10 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
         ),
         IconButton(
           icon: const Icon(Icons.volume_up),
-          onPressed: () => flutterTts.speak(word),
+          onPressed: () {
+            if (ttsDisabledByCommandLine) return;
+            flutterTts.speak(word);
+          },
         ),
       ],
     ),

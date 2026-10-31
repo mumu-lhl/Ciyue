@@ -138,7 +138,8 @@ Future<void> playSoundOfWord(
   }
 
   if (settings.pronunciationMode == PronunciationMode.packOnly ||
-      Platform.isLinux) {
+      Platform.isLinux ||
+      ttsDisabledByCommandLine) {
     return;
   }
 

@@ -11,4 +11,5 @@ Welcome to the Ciyue documentation. Start here to install the app, add dictionar
 - [Word-Form Lookup](./word-forms) — resolve inflected forms back to their lemma with Hunspell, and choose between fallback and supplement modes.
 - [Appearance](./appearance) — make dictionary pages follow the app theme, fix entries that are unreadable in dark mode, and inject custom CSS.
 - [Pronunciation](./pronunciation) — which audio formats play, and how to convert a pack the device cannot decode.
+- [Command Line & ciyue://](./command-line) — look words up from a terminal or a link, and reuse the running window.
 - [FAQ](./faq) — answers to common questions.

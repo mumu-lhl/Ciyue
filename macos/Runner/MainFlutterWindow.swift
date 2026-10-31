@@ -29,6 +29,15 @@ class MainFlutterWindow: NSWindow {
       }
     }
 
+    // Bridge command line arguments and ciyue:// URLs to Dart. The native
+    // side caches them until Dart asks for them, so early launches are not
+    // lost.
+    let commandLineChannel = FlutterMethodChannel(
+      name: "org.eu.mumulhl.ciyue/command_line",
+      binaryMessenger: flutterViewController.engine.binaryMessenger
+    )
+    (NSApp.delegate as? AppDelegate)?.attachCommandLineChannel(commandLineChannel)
+
     RegisterGeneratedPlugins(registry: flutterViewController)
 
     super.awakeFromNib()
