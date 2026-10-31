@@ -18,6 +18,24 @@
   "@close": {},
   "search": "搜索",
   "@search": {},
+  "fullTextSearch": "全文搜索",
+  "@fullTextSearch": {},
+  "searchInDefinitions": "在释义中搜索：{query}",
+  "@searchInDefinitions": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "fullTextSearchHint": "搜索释义中的内容",
+  "@fullTextSearchHint": {},
+  "buildFullTextIndex": "建立索引",
+  "@buildFullTextIndex": {},
+  "buildingFullTextIndex": "正在建立索引…",
+  "@buildingFullTextIndex": {},
+  "fullTextIndexFailed": "建立索引失败",
+  "@fullTextIndexFailed": {},
   "theme": "主题",
   "@theme": {},
   "dynamicColor": "Material 动态配色",

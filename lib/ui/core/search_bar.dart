@@ -186,76 +186,84 @@ class _WordSearchBarWithSuggestionsState
               _openWord(ctrl, word);
             }
           },
-          suggestionsBuilder:
-              (BuildContext context, SearchController controller) async {
-                List<Widget> keepPrevious() =>
-                    _lastSuggestions ?? const <Widget>[];
+          suggestionsBuilder: (BuildContext context, SearchController controller) async {
+            List<Widget> keepPrevious() => _lastSuggestions ?? const <Widget>[];
 
-                final searchWord = controller.text.trim();
-                final gen = ++_suggestionGen;
+            final searchWord = controller.text.trim();
+            final gen = ++_suggestionGen;
 
-                // Debounce: only the last keystroke of a burst runs the
-                // query. Superseded calls return the previous suggestions.
-                await Future.delayed(_suggestionDebounce);
-                if (!mounted) return keepPrevious();
-                if (gen != _suggestionGen ||
-                    controller.text.trim() != searchWord) {
-                  return keepPrevious();
-                }
+            // Debounce: only the last keystroke of a burst runs the
+            // query. Superseded calls return the previous suggestions.
+            await Future.delayed(_suggestionDebounce);
+            if (!mounted) return keepPrevious();
+            if (gen != _suggestionGen || controller.text.trim() != searchWord) {
+              return keepPrevious();
+            }
 
-                while (ref.read(dictManagerModelProvider).isSwitchingGroup) {
-                  await Future.delayed(const Duration(milliseconds: 40));
-                  if (!mounted) return keepPrevious();
-                }
+            while (ref.read(dictManagerModelProvider).isSwitchingGroup) {
+              await Future.delayed(const Duration(milliseconds: 40));
+              if (!mounted) return keepPrevious();
+            }
 
-                if (searchWord.isEmpty) {
-                  _lastSuggestions = [const SizedBox.shrink()];
-                  return _lastSuggestions!;
-                }
+            if (searchWord.isEmpty) {
+              _lastSuggestions = [const SizedBox.shrink()];
+              return _lastSuggestions!;
+            }
 
-                final suggestions = await dictionaryLookup.searchSuggestions(
-                  searchWord,
-                );
-                if (!context.mounted || gen != _suggestionGen) {
-                  // A newer keystroke arrived while querying: drop the stale
-                  // result instead of overwriting fresh suggestions.
-                  return keepPrevious();
-                }
-                final l10n = AppLocalizations.of(context)!;
+            final suggestions = await dictionaryLookup.searchSuggestions(
+              searchWord,
+            );
+            if (!context.mounted || gen != _suggestionGen) {
+              // A newer keystroke arrived while querying: drop the stale
+              // result instead of overwriting fresh suggestions.
+              return keepPrevious();
+            }
+            final l10n = AppLocalizations.of(context)!;
 
-                ListTile buildSuggestionTile(String word) {
-                  return ListTile(
-                    title: Text(word),
-                    trailing: const Icon(Icons.arrow_forward),
-                    onTap: () {
-                      if (!context.mounted) return;
-                      _openWord(controller, word);
-                    },
-                  );
-                }
+            ListTile buildSuggestionTile(String word) {
+              return ListTile(
+                title: Text(word),
+                trailing: const Icon(Icons.arrow_forward),
+                onTap: () {
+                  if (!context.mounted) return;
+                  _openWord(controller, word);
+                },
+              );
+            }
 
-                _lastSuggestions = [
-                  if (settings.aiExplainWord) buildSuggestionTile(searchWord),
-                  ...suggestions.dictionarySuggestions.map(buildSuggestionTile),
-                  if (suggestions.spellingSuggestions.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        start: 16,
-                        top: 10,
-                        bottom: 5,
-                      ),
-                      child: Text(
-                        l10n.spellingSuggestions,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.secondary
-                              .withValues(alpha: 0.7),
-                        ),
-                      ),
+            _lastSuggestions = [
+              if (settings.aiExplainWord) buildSuggestionTile(searchWord),
+              ...suggestions.dictionarySuggestions.map(buildSuggestionTile),
+              if (suggestions.spellingSuggestions.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    start: 16,
+                    top: 10,
+                    bottom: 5,
+                  ),
+                  child: Text(
+                    l10n.spellingSuggestions,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.secondary
+                          .withValues(alpha: 0.7),
                     ),
-                  ...suggestions.spellingSuggestions.map(buildSuggestionTile),
-                ];
-                return _lastSuggestions!;
-              },
+                  ),
+                ),
+              ...suggestions.spellingSuggestions.map(buildSuggestionTile),
+              ListTile(
+                leading: const Icon(Icons.find_in_page),
+                title: Text(l10n.searchInDefinitions(searchWord)),
+                onTap: () {
+                  if (!context.mounted) return;
+                  controller.closeView(searchWord);
+                  context.push(
+                    "/full-text-search?query=${Uri.encodeQueryComponent(searchWord)}",
+                  );
+                },
+              ),
+            ];
+            return _lastSuggestions!;
+          },
         ),
       ),
     );

@@ -10,6 +10,7 @@ import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/dictionary_lookup.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
+import "package:ciyue/services/full_text_search_service.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/dictionary.dart";
@@ -113,6 +114,20 @@ final dictionaryDarkReaderProvider =
 
 /// Provider for the dictionary manager.
 final dictManagerProvider = Provider((ref) => dictManager);
+
+/// Full-text search over dictionary definitions: lazy per-dictionary FTS5
+/// indexes plus the merged search across the active group.
+final fullTextSearchServiceProvider =
+    ChangeNotifierProvider<FullTextSearchService>((ref) {
+      return FullTextSearchService(
+        dictionaries: () =>
+            [for (final id in dictManager.dictIds) dictManager.dicts[id]]
+                .whereType<DictionarySource>()
+                .toList(growable: false),
+        knownIds: () async =>
+            (await dictionaryListDao.all()).map((d) => d.id).toSet(),
+      );
+    });
 
 /// Resolves a word once so the preview and its dictionary tabs use the same
 /// set of exact and morphology matches.

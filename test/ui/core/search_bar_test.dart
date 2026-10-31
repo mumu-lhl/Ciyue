@@ -132,6 +132,58 @@ void main() {
       expect(controller.text, "apple");
     },
   );
+
+  testWidgets("suggestions offer full-text search and navigate to its page", (
+    tester,
+  ) async {
+    settings.enableHunspellMorphology = false;
+    final controller = SearchController();
+    addTearDown(controller.dispose);
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: "/",
+          builder: (context, state) => Scaffold(
+            body: WordSearchBarWithSuggestions(
+              word: "",
+              controller: controller,
+              isHome: true,
+            ),
+          ),
+        ),
+        GoRoute(
+          path: "/full-text-search",
+          builder: (context, state) =>
+              Scaffold(body: Text("fts:${state.uri.queryParameters["query"]}")),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          dictManagerModelProvider.overrideWith((ref) => DictManagerModel()),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.tap(find.byType(SearchBar));
+    await tester.pumpAndSettle();
+    controller.text = "apple";
+    await tester.pump(const Duration(milliseconds: 150));
+    await tester.pumpAndSettle();
+
+    final tile = find.text("Search in definitions: apple");
+    expect(tile, findsOneWidget);
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(find.text("fts:apple"), findsOneWidget);
+  });
 }
 
 class _TestHistoryModel extends HistoryModel {

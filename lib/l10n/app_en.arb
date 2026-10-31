@@ -18,6 +18,24 @@
   "@close": {},
   "search": "Search",
   "@search": {},
+  "fullTextSearch": "Full-text search",
+  "@fullTextSearch": {},
+  "searchInDefinitions": "Search in definitions: {query}",
+  "@searchInDefinitions": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "fullTextSearchHint": "Search words inside definitions",
+  "@fullTextSearchHint": {},
+  "buildFullTextIndex": "Build index",
+  "@buildFullTextIndex": {},
+  "buildingFullTextIndex": "Building index…",
+  "@buildingFullTextIndex": {},
+  "fullTextIndexFailed": "Failed to build the index",
+  "@fullTextIndexFailed": {},
   "spellingSuggestions": "Spelling suggestions",
   "@spellingSuggestions": {},
   "phraseSuggestions": "Phrasal verbs",

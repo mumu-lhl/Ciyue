@@ -34,6 +34,7 @@ import "package:ciyue/core/providers.dart";
 import "package:ciyue/ui/pages/settings/storage_management.dart";
 import "package:ciyue/ui/pages/flashcards/settings.dart";
 import "package:ciyue/ui/pages/flashcards/study_page.dart";
+import "package:ciyue/ui/pages/full_text_search_page.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:talker_flutter/talker_flutter.dart";
 
@@ -80,6 +81,13 @@ final router = GoRouter(
         }
 
         return WordDisplay(word: word, initialDictId: initialDictId);
+      },
+    ),
+    GoRoute(
+      path: "/full-text-search",
+      builder: (context, state) {
+        final query = state.uri.queryParameters["query"] ?? "";
+        return FullTextSearchPage(initialQuery: query);
       },
     ),
     GoRoute(

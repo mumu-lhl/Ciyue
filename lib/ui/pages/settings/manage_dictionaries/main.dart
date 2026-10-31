@@ -584,6 +584,19 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                         dictionaryId: dictionary.id,
                       );
 
+                      try {
+                        await ref
+                            .read(fullTextSearchServiceProvider)
+                            .dropDictionary(dictionary.id);
+                      } catch (e, stackTrace) {
+                        talker.error(
+                          "Failed to drop full-text index for dictionary "
+                          "${dictionary.id}: $e",
+                          e,
+                          stackTrace,
+                        );
+                      }
+
                       if (sheetContext.mounted) {
                         ref.read(manageDictionariesModelProvider).update();
                         sheetContext.pop();
