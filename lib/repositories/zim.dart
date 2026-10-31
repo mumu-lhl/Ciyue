@@ -164,6 +164,10 @@ class Zim extends BaseLoadedDictionary {
     final resolved = <String, String>{};
     for (final word in words) {
       for (final candidate in lookupVariants(word)) {
+        // resolveIndex returns an ENTRY index (into the archive's path
+        // pointers), while wordAt indexes the ARTICLE list — the two only
+        // coincide when no non-article entry sorts before the article, so
+        // never feed one to the other. The fetched entry carries its title.
         final index = reader.resolveIndex(candidate);
         if (index != null) {
           final entry = await reader.getEntry(index);
@@ -171,9 +175,9 @@ class Zim extends BaseLoadedDictionary {
             final target = await reader.lookup(candidate);
             resolved[word] = target.isNotEmpty
                 ? target.first.title
-                : reader.wordAt(index);
+                : entry.title;
           } else {
-            resolved[word] = reader.wordAt(index);
+            resolved[word] = entry.title;
           }
           break;
         }

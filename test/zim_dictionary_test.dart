@@ -35,6 +35,39 @@ Future<String> writeTestZimFixture(Directory dir) async {
   return filePath.replaceAll(RegExp(r"\.zim$"), "");
 }
 
+/// A fixture where non-article entries share the ordering with articles:
+/// new-namespace (C) articles with media in the same namespace, plus a
+/// layout entry in the '-' namespace sorting before them. Entry indices and
+/// article indices diverge here, which is what regressed resolveKeys.
+Future<String> writeMixedNamespaceZimFixture(Directory dir) async {
+  final builder = ZimFixtureBuilder();
+  builder.addMetadata("Title", "Mixed Namespaces");
+  builder.addArticle("Apple", "Apple", "<p>apple</p>", namespace: "C");
+  builder.addResource(
+    "Apple.jpg",
+    [0x01, 0x02, 0x03],
+    "image/jpeg",
+    namespace: "C",
+  );
+  builder.addArticle("Banana", "Banana", "<p>banana</p>", namespace: "C");
+  builder.addResource(
+    "style.css",
+    [0x62, 0x6f, 0x64, 0x79, 0x7b, 0x7d],
+    "text/css",
+    namespace: "-",
+  );
+  builder.addRedirect(
+    "fruit",
+    "fruit",
+    "Apple",
+    namespace: "C",
+    targetNamespace: "C",
+  );
+
+  final filePath = await builder.write(dir, "mixed");
+  return filePath.replaceAll(RegExp(r"\.zim$"), "");
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -67,6 +100,29 @@ void main() {
       expect(await dict.resolveExactKey("apple"), "Apple");
       expect(await dict.resolveExactKey("fruit"), "Apple");
       expect(await dict.resolveExactKey("Nonexistent"), isNull);
+    },
+  );
+
+  test(
+    "resolveExactKey stays correct when non-article entries share ordering",
+    () async {
+      final mixedDir = await Directory.systemTemp.createTemp("zim_mixed_test");
+      try {
+        final base = await writeMixedNamespaceZimFixture(mixedDir);
+        final mixed = Zim(path: base)..id = 101;
+        await mixed.init();
+        try {
+          expect(await mixed.resolveExactKey("Apple"), "Apple");
+          expect(await mixed.resolveExactKey("Banana"), "Banana");
+          expect(await mixed.resolveExactKey("apple"), "Apple");
+          expect(await mixed.resolveExactKey("fruit"), "Apple");
+          expect(await mixed.resolveExactKey("Nonexistent"), isNull);
+        } finally {
+          await mixed.close();
+        }
+      } finally {
+        await mixedDir.delete(recursive: true);
+      }
     },
   );
 
