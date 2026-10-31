@@ -466,14 +466,22 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     List<int> validDictIds = const [],
   }) {
     final settings = ref.watch(settingsProvider);
+    // Switching the dictionary group reloads every dictionary, and the
+    // platform WebView views cannot be reused across that switch — the first
+    // one would come back blank. Include the group id in the keys so all
+    // entries are rebuilt instead of reusing their old views.
+    final groupId = ref.watch(dictManagerProvider).groupId;
     final children = <Widget>[
       if (settings.aiExplainWord)
         KeepAliveWidget(
-          key: const ValueKey("ai_tab"),
+          key: ValueKey("ai_tab_$groupId"),
           child: AIExplainView(word: widget.word),
         ),
       for (final id in validDictIds)
-        KeepAliveWidget(key: ValueKey("dict_$id"), child: _buildWebView(id)),
+        KeepAliveWidget(
+          key: ValueKey("dict_${id}_$groupId"),
+          child: _buildWebView(id),
+        ),
     ];
     return TabBarView(
       physics: widget.pagerInfo != null
