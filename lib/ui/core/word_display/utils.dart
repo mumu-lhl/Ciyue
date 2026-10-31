@@ -158,7 +158,9 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
     // back into loading. Keep the previous entry on screen until the new
     // content arrives; swapping it for a spinner makes the page flash.
     final retainedContent = contentAsync.value;
-    if (contentAsync.isLoading && retainedContent != null) {
+    if (contentAsync.isLoading &&
+        retainedContent != null &&
+        retainedContent.isNotEmpty) {
       return _buildContent(retainedContent, pendingAnchor);
     }
 
@@ -168,7 +170,8 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
     // changes.
     if (Platform.isLinux &&
         contentAsync.isLoading &&
-        _lastLinuxContent != null) {
+        _lastLinuxContent != null &&
+        _lastLinuxContent!.isNotEmpty) {
       return WebviewWindows(content: _lastLinuxContent!, dictId: widget.dictId);
     }
 
