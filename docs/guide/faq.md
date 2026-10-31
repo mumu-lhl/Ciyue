@@ -33,6 +33,10 @@ Go to **Settings → Backup** to export your data (wordbook, history, tags, flas
 - Some dictionaries need a custom CSS tweak: **Manage dictionaries → dictionary → Custom CSS**.
 - If a dictionary crashes the lookup, please [open an issue](https://github.com/mumu-lhl/Ciyue/issues) with the dictionary name.
 
+## Only one of my MDX and StarDict dictionaries shows up. Why?
+
+Ciyue identifies a dictionary by its path without the extension, so `foo.mdx` and `foo.ifo` / `foo.idx` / `foo.dict` count as the same dictionary: the MDX file is registered and the StarDict one is skipped. Give them different base names — for example `foo-mdx.mdx` and `foo-stardict.ifo` — to keep both.
+
 ## How do I use Ciyue with KOReader on Android?
 
 Create a file named `dictionaries.lua` inside the `koreader` directory with:

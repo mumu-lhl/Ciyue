@@ -8,6 +8,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/ui/core/search_bar.dart";
+import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/stardict_native_view.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/ui/core/word_display/webview_widgets.dart";
@@ -70,13 +71,14 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
     if (widget.dictId != oldWidget.dictId) _lastLinuxContent = null;
   }
 
-  Widget _buildContent(String content) {
+  Widget _buildContent(String content, String? anchor) {
     if (Platform.isAndroid) {
       return WebviewAndroid(
         word: widget.word,
         content: content,
         dictId: widget.dictId,
         isExpansion: widget.isExpansion,
+        anchor: anchor,
       );
     } else if (isDesktop()) {
       return WebviewWindows(
@@ -84,6 +86,7 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
         content: content,
         dictId: widget.dictId,
         isExpansion: widget.isExpansion,
+        anchor: anchor,
       );
     } else {
       return FakeWebViewByAI(html: content);
@@ -92,6 +95,20 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
 
   @override
   Widget build(BuildContext context) {
+    // Anchor requests are keyed by headword *and* dictionary: the anchor id
+    // belongs to the entry the link was defined in, so a sibling dictionary
+    // that happens to answer the same headword must not touch it.
+    final pendingAnchor = ref.watch(
+      pendingAnchorProvider.select(
+        (pending) =>
+            pending != null &&
+                pending.word == widget.word &&
+                pending.dictId == widget.dictId
+            ? pending.anchor
+            : null,
+      ),
+    );
+
     // StarDict sections render with native widgets when every matched
     // entry is on hand in structured form and none of them uses HTML
     // fields; a section with HTML entries keeps the WebView below.
@@ -114,6 +131,14 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
           );
         }
         if (renderable) {
+          // The native renderer has no DOM and no element ids, so it cannot
+          // honour an anchor. Drop the request instead of leaving it to be
+          // applied to whatever entry is rendered next.
+          if (pendingAnchor != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) ref.read(pendingAnchorProvider.notifier).clear();
+            });
+          }
           return StardictEntryListView(
             entries: nativeEntries,
             resourceDirectory: dict.dictionaryDirectory,
@@ -142,7 +167,7 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
     return contentAsync.when(
       data: (content) {
         if (Platform.isLinux) _lastLinuxContent = content;
-        return _buildContent(content);
+        return _buildContent(content, pendingAnchor);
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Center(child: Text("Error: $err")),
