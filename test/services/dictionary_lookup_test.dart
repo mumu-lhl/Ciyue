@@ -507,21 +507,24 @@ void main() {
       },
     );
 
-    test("shows the spelling the dictionary files the word under", () async {
-      // `resolveKeys` also tries the other kana script, so an expansion that
-      // lands on a katakana headword comes back in katakana.
-      final dictionary = FakeDictionarySource(
-        id: 1,
-        entries: {"フウゾク": "フウゾク content"},
-      );
-      final lookup = makeLookup(
-        dictionary: dictionary,
-        morphology: FakeMorphology(stemsResult: const []),
-        enabled: false,
-      );
+    test(
+      "shows the katakana spelling the dictionary files the word under",
+      () async {
+        // `resolveKeys` also tries the other kana script, so an expansion that
+        // lands on a katakana headword comes back in katakana.
+        final dictionary = FakeDictionarySource(
+          id: 1,
+          entries: {"フウゾク": "フウゾク content"},
+        );
+        final lookup = makeLookup(
+          dictionary: dictionary,
+          morphology: FakeMorphology(stemsResult: const []),
+          enabled: false,
+        );
 
-      expect(await lookup.longVowelSuggestionsFor("フーゾク"), ["フウゾク"]);
-    });
+        expect(await lookup.longVowelSuggestionsFor("フーゾク"), ["フウゾク"]);
+      },
+    );
 
     test("long vowels need neither morphology nor a mark", () async {
       final morphology = FakeMorphology(
