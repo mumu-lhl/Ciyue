@@ -10,11 +10,14 @@
 ///
 /// Deliberately **not** handled here:
 ///
-/// - **Half-width katakana** (`ﾊﾟｿｺﾝ`): an encoding of the same text rather than
-///   another spelling of a word, and Japanese dictionaries almost never use it
-///   as a headword. If it is ever needed, it belongs in a query-time
-///   normalisation step (see the `ICONV` table of `hunspell_ja_JP`), not in
-///   this list.
+/// - **Width folding (the 1:1 subset)**: full-width ASCII (`ＮＨＫ`), the
+///   full-width/ideographic space (`　` <-> ` `), corner brackets (`｢｣` <->
+///   `「」`) and the half-width CJK marks (`｡､･` <-> `。、・`) are now
+///   enumerated in [widthVariants] — each is a bijection, so
+///   safe to list like the kana swap. Half-width katakana *proper* (`ﾊﾟｿｺﾝ`) is
+///   not a clean 1:1 (a voiced mark is a second codepoint: `ﾊﾞ` is two chars),
+///   so it still belongs in a query-time normalisation step (see the `ICONV`
+///   table of `hunspell_ja_JP`), not here.
 /// - **Long vowel expansion** (`ふーぞく` -> `ふうぞく`): not a bijection, the
 ///   vowel depends on the preceding kana and both `こう`/こお exist. It lives in
 ///   `long_vowel_lookup.dart` instead, among the "not found" suggestions, where
@@ -66,7 +69,80 @@ List<String> kanaVariants(String word) {
   return variants;
 }
 
-/// Every spelling worth reading for [word]: case variants first, then kana.
+/// [word] with its full-width and half-width spellings swapped, on top of the
+/// word as typed.
+///
+/// Only the **1:1** width pairs are enumerated here — a bijection, like the
+/// kana script swap above, so it is safe to list every spelling:
+///
+/// - ASCII full-width `FF01..FF5E` <-> ASCII `0021..007E` (letters, digits,
+///   punctuation);
+/// - the half-width/ideographic space `0020` <-> `3000`;
+/// - half-width corner brackets `｢｣` (`FF62/FF63`) <-> `「」` (`300C/300D`);
+/// - half-width CJK marks `｡､･` (`FF61/FF64/FF65`) <-> `。、・`
+///   (`3002/3001/30FB`).
+///
+/// Half-width katakana with a voiced/semi-voiced mark (`ﾊﾞ`) is a *2-codepoint
+/// to 1-codepoint* fold — not a bijection — so it stays out of this list and is
+/// left to the `ICONV` table of `hunspell_ja_JP` instead.
+List<String> widthVariants(String word) {
+  final mapped = _mapWidth(word);
+  if (mapped == word) return [word];
+  return [word, mapped];
+}
+
+/// Swaps each rune of [value] between its full-width and half-width form for
+/// the 1:1 ranges handled by [widthVariants], leaving everything else
+/// untouched.
+String _mapWidth(String value) {
+  return String.fromCharCodes(
+    value.runes.map((rune) {
+      // ASCII full-width -> ASCII, and ASCII -> ASCII full-width.
+      if (rune >= 0xFF01 && rune <= 0xFF5E) return rune - 0xFEE0;
+      if (rune >= 0x21 && rune <= 0x7E) return rune + 0xFEE0;
+      // Space and half-width CJK marks / corner brackets <-> their
+      // full-width forms. The space (U+0020 <-> U+3000) is a 1:1 fold too,
+      // but it sits outside the ASCII range and must not take the `+0xFEE0`
+      // offset (that would land on the non-character U+FF00).
+      switch (rune) {
+        case 0x20:
+          return 0x3000; // ' ' -> '　'
+        case 0x3000:
+          return 0x20; // '　' -> ' '
+        case 0xFF61:
+          return 0x3002; // ｡ -> 。
+        case 0xFF62:
+          return 0x300C; // ｢ -> 「
+        case 0xFF63:
+          return 0x300D; // ｣ -> 」
+        case 0xFF64:
+          return 0x3001; // ､ -> 、
+        case 0xFF65:
+          return 0x30FB; // ･ -> ・
+        case 0x3002:
+          return 0xFF61; // 。 -> ｡
+        case 0x300C:
+          return 0xFF62; // 「 -> ｢
+        case 0x300D:
+          return 0xFF63; // 」 -> ｣
+        case 0x3001:
+          return 0xFF64; // 、 -> ､
+        case 0x30FB:
+          return 0xFF65; // ・ -> ･
+      }
+      return rune;
+    }),
+  );
+}
+
+/// Every spelling worth reading for [word]: the case and full/half-width
+/// spellings are crossed (every case of every width), then the kana script
+/// spellings are added on top.
+///
+/// Crossing the two keeps the original as typed first — [widthVariants] always
+/// leads with [word], and [caseVariants] re-adds it unchanged — while still
+/// reaching the cross cells (e.g. typed `ｎｈｋ` also tries `NHK`, typed `NHK`
+/// also tries `ｎｈｋ`).
 List<String> lookupVariants(String word) {
   final variants = <String>[];
   void add(String value) {
@@ -75,8 +151,10 @@ List<String> lookupVariants(String word) {
     }
   }
 
-  for (final variant in caseVariants(word)) {
-    add(variant);
+  for (final width in widthVariants(word)) {
+    for (final cased in caseVariants(width)) {
+      add(cased);
+    }
   }
   for (final variant in kanaVariants(word)) {
     add(variant);

@@ -151,13 +151,23 @@ class DictionaryLookup {
     final activeDictionaries = dictionaries();
     // Skip dictionaries that fail instead of failing the whole suggestion
     // list: a single broken dictionary must not break global search.
+    //
+    // Search takes the query as typed: a full-width query (`ＮＨ`) must still
+    // suggest a half-width headword (`NHK`), so every width spelling is tried.
+    // `search` already folds case, so the case variants are not needed here.
+    // A query with no width change asks each dictionary once.
+    final queryVariants = widthVariants(query);
     final prefixResults = await Future.wait(
       activeDictionaries.map((dict) async {
-        try {
-          return await dict.search(query);
-        } catch (_) {
-          return const <String>[];
+        final matches = <String>{};
+        for (final variant in queryVariants) {
+          try {
+            matches.addAll(await dict.search(variant));
+          } catch (_) {
+            // A broken dictionary contributes nothing instead of failing.
+          }
         }
+        return matches.toList(growable: false);
       }),
     );
     // `seen` backs O(1) dedup; `results` preserves display order.
