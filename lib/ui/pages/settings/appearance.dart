@@ -5,6 +5,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/settings_group.dart";
 import "package:material_ui/material_ui.dart";
 
+import "appearance/content_scale_slider.dart";
 import "appearance/dictionary_background_color.dart";
 import "appearance/dictionary_dark_reader_switch.dart";
 import "appearance/dictionary_custom_css.dart";
@@ -46,6 +47,7 @@ class AppearanceSettingsPage extends StatelessWidget {
                   if (Platform.isWindows || Platform.isLinux)
                     const DictionaryDarkReaderSwitch(),
                   const DictionaryCustomCss(),
+                  const ContentScaleSlider(),
                 ],
               ),
               const SizedBox(height: 16),

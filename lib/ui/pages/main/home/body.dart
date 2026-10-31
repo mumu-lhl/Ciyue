@@ -1,17 +1,17 @@
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
-import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/gestures.dart";
-import "package:flutter/services.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
 import "actions.dart";
 import "history.dart";
 import "search.dart";
+import "shortcuts.dart";
 
 /// Keeps the desktop WordDisplay state alive as the selected word changes.
 class DesktopWordDisplayPane extends StatelessWidget {
@@ -33,46 +33,24 @@ class HomeBody extends ConsumerWidget {
     ref.watch(homeModelProvider.select((value) => value.state));
     ref.watch(dictManagerModelProvider.select((value) => value.isEmpty));
 
-    if (isLargeScreen(context)) {
-      return const _DesktopHomeSplitView();
-    }
+    final content = isLargeScreen(context)
+        ? const _DesktopHomeSplitView()
+        : const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ActionButtons(),
+              HistoryLabel(),
+              HistoryList(),
+              BottomSearchBar(),
+            ],
+          );
 
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ActionButtons(),
-        HistoryLabel(),
-        HistoryList(),
-        BottomSearchBar(),
-      ],
-    );
+    return SearchEscapeCloser(child: content);
   }
 }
 
 class _DesktopHomeSplitView extends ConsumerWidget {
   const _DesktopHomeSplitView();
-
-  void _selectAdjacentHistory(
-    BuildContext context,
-    HomeModel homeModel,
-    HistoryModel historyModel,
-    int delta,
-  ) {
-    final history = historyModel.history;
-    if (history.isEmpty) return;
-
-    final currentWord = homeModel.selectedWord ?? history.first.word;
-    final currentIndex = history.indexWhere((item) => item.word == currentWord);
-
-    int newIndex;
-    if (currentIndex == -1) {
-      newIndex = delta > 0 ? 0 : history.length - 1;
-    } else {
-      newIndex = (currentIndex + delta).clamp(0, history.length - 1);
-    }
-
-    homeModel.selectedWord = history[newIndex].word;
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,7 +58,9 @@ class _DesktopHomeSplitView extends ConsumerWidget {
     // inside it) on every history write or tab mutation is expensive.
     // Imperative calls below use ref.read so they don't subscribe.
     final homeModel = ref.read(homeModelProvider);
-    final historyModel = ref.read(historyModelProvider);
+    // The split view's own search box is the page's default; the entry pane
+    // keeps its showBackButton false so it does not override this.
+    pageSearchFocusNode = homeModel.searchBarFocusNode;
     final selectedWord = ref.watch(
       homeModelProvider.select((model) => model.selectedWord),
     );
@@ -95,7 +75,6 @@ class _DesktopHomeSplitView extends ConsumerWidget {
         (model) => model.history.isEmpty ? null : model.history.first.word,
       ),
     );
-    final activeWord = selectedWord ?? firstHistoryWord;
 
     if (tabsEmpty && !historyEmpty && selectedWord == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -108,47 +87,7 @@ class _DesktopHomeSplitView extends ConsumerWidget {
     }
 
     return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyF, control: true): () {
-          homeModel.focusSearchBar();
-          if (homeModel.searchController.isAttached) {
-            homeModel.searchController.openView();
-          }
-        },
-        const SingleActivator(LogicalKeyboardKey.keyT, control: true): () {
-          homeModel.newTab();
-        },
-        const SingleActivator(LogicalKeyboardKey.keyW, control: true): () {
-          if (homeModel.tabs.isNotEmpty && homeModel.activeTabIndex >= 0) {
-            homeModel.closeTab(homeModel.activeTabIndex);
-          }
-        },
-        const SingleActivator(LogicalKeyboardKey.tab, control: true): () {
-          homeModel.nextTab();
-        },
-        const SingleActivator(
-          LogicalKeyboardKey.tab,
-          control: true,
-          shift: true,
-        ): () {
-          homeModel.previousTab();
-        },
-        const SingleActivator(LogicalKeyboardKey.arrowDown): () {
-          if (!homeModel.searchBarFocusNode.hasFocus) {
-            _selectAdjacentHistory(context, homeModel, historyModel, 1);
-          }
-        },
-        const SingleActivator(LogicalKeyboardKey.arrowUp): () {
-          if (!homeModel.searchBarFocusNode.hasFocus) {
-            _selectAdjacentHistory(context, homeModel, historyModel, -1);
-          }
-        },
-        const SingleActivator(LogicalKeyboardKey.keyR, control: true): () {
-          if (activeWord != null && activeWord.isNotEmpty) {
-            playWordPronunciation(context, activeWord);
-          }
-        },
-      },
+      bindings: homeShortcutBindings(ref, context),
       child: Focus(
         autofocus: true,
         child: Row(

@@ -381,6 +381,7 @@ class HomeModel extends ChangeNotifier {
     }
   }
 
+  /// Moves the focus into the search bar.
   void focusSearchBar() {
     searchBarFocusNode.requestFocus();
     notifyListeners();

@@ -34,7 +34,10 @@ final homeModelProvider = ChangeNotifierProvider<HomeModel>(
 
 /// DictManagerModel provider.
 final dictManagerModelProvider = ChangeNotifierProvider<DictManagerModel>(
-  (ref) => DictManagerModel(),
+  (ref) => DictManagerModel(
+    onDictionariesChanged: () =>
+        ref.read(dictSetVersionProvider.notifier).bump(),
+  ),
 );
 
 /// HistoryModel provider.
@@ -137,6 +140,10 @@ final fullTextSearchServiceProvider =
 /// hang this future (and its polling timer) forever, even after dispose.
 final dictionaryLookupProvider = FutureProvider.autoDispose
     .family<DictionaryLookupResult, String>((ref, word) async {
+      // The group may have switched, which changes the dictionaries the word
+      // is looked up in. The cached result of the old group is worthless.
+      ref.watch(dictSetVersionProvider);
+
       var waited = 0;
       while (dictManager.isLoading && waited < 200) {
         await Future.delayed(const Duration(milliseconds: 50));
@@ -300,6 +307,23 @@ final webviewHeightsProvider =
     NotifierProvider<WebViewHeightsNotifier, Map<String, double>>(
       WebViewHeightsNotifier.new,
     );
+
+/// Counts how often the set of dictionaries to look up in changed.
+///
+/// A lookup is cached per word, so the group switching has to be announced:
+/// without it the words on screen keep the dictionaries of the group they
+/// were looked up in.
+class DictSetVersionNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
+/// Provider for the version of the set of dictionaries.
+final dictSetVersionProvider = NotifierProvider<DictSetVersionNotifier, int>(
+  DictSetVersionNotifier.new,
+);
 
 /// WritingCheckViewModel provider.
 final writingCheckViewModelProvider =

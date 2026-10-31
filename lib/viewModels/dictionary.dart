@@ -3,6 +3,12 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:material_ui/material_ui.dart";
 
 class DictManagerModel extends ChangeNotifier {
+  /// Called when the set of dictionaries to look up in changed, so that the
+  /// words on screen can be looked up again with the new group.
+  final VoidCallback? onDictionariesChanged;
+
+  DictManagerModel({this.onDictionariesChanged});
+
   int get groupId => dictManager.groupId;
   bool get isEmpty => dictManager.isEmpty;
   bool get isLoading => dictManager.isLoading;
@@ -59,6 +65,9 @@ class DictManagerModel extends ChangeNotifier {
       // Remember the selection so initGroup() restores this group on the next
       // launch instead of falling back to the one stored at first run.
       await prefs.setInt("currentDictionaryGroupId", id);
+      // The group decides which dictionaries a word is looked up in, so the
+      // words on screen have to be looked up again.
+      onDictionariesChanged?.call();
     } finally {
       pendingGroupId = null;
       isSwitchingGroup = false;
@@ -66,6 +75,20 @@ class DictManagerModel extends ChangeNotifier {
       state += 1;
       notifyListeners();
     }
+  }
+
+  /// Switches to the group at [position] (1-based) in the group list.
+  ///
+  /// The position follows the order the groups are shown in, which is the
+  /// order they were created in, so the first one is the default group.
+  /// Returns false when there is no such group.
+  Future<bool> switchToGroupAt(int position) async {
+    final groups = dictManager.groups;
+    if (position < 1 || position > groups.length) return false;
+    final target = groups[position - 1];
+    if (target.id == groupId) return true;
+    await setCurrentGroup(target.id);
+    return true;
   }
 
   Future<void> updateDictIds() async {
