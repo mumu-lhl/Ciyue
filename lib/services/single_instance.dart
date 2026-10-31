@@ -3,6 +3,7 @@ import "dart:convert";
 import "dart:io";
 import "dart:math";
 
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/services/command_line.dart";
 import "package:path_provider/path_provider.dart";
 
@@ -183,9 +184,11 @@ class SingleInstance {
     }
     final handler = _handler;
     if (handler == null) {
+      talker.info("Queueing command line options until the UI is ready");
       _pending.add(options);
       return;
     }
+    talker.info("Handling command line options from another instance");
     try {
       await handler(options);
     } catch (error, stackTrace) {
@@ -217,8 +220,13 @@ class SingleInstance {
           .first
           .timeout(_handshakeTimeout);
       final decoded = jsonDecode(response);
-      return decoded is Map && decoded["ok"] == true;
-    } catch (_) {
+      final ok = decoded is Map && decoded["ok"] == true;
+      talker.info("Forwarded command line options: ok=$ok");
+      return ok;
+    } catch (error) {
+      // No live owner for the lock file (stale file, or the owner exited
+      // between the read and the connect); the caller takes over.
+      talker.info("No running instance accepted the command: $error");
       return false;
     } finally {
       socket?.destroy();

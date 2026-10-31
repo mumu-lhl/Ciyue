@@ -32,7 +32,13 @@ Future<void> enableFileLogging() async {
   final file = File("${directory.path}/ciyue.log");
   final sink = file.openWrite(mode: FileMode.append);
   _logSubscription = talker.stream.listen((data) {
-    sink.writeln(data.toString());
+    // `TalkerData.toString()` is the default object string; use the formatted
+    // message and strip the ANSI colours meant for the console.
+    final line = data.generateTextMessage().replaceAll(
+      RegExp(r"\x1B\[[0-9;]*m"),
+      "",
+    );
+    sink.writeln(line);
   });
   talker.info("Logging to file: ${file.path}");
 }
@@ -81,6 +87,8 @@ Future<void> applyCommandLineOptions(
   ProviderContainer container,
   CommandLineOptions options,
 ) async {
+  talker.info("Applying command line options: $options");
+
   if (options.noTts) {
     ttsDisabledByCommandLine = true;
   }
