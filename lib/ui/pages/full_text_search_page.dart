@@ -281,29 +281,38 @@ class _FullTextSearchPageState extends ConsumerState<FullTextSearchPage> {
               onSubmitted: (_) => _runSearch(),
             ),
           ),
-          ...pending.map(statusRow),
-          if (_searching)
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(),
+          // One scrollable list for everything below the field: with many
+          // dictionaries pending, fixed status rows above an Expanded
+          // list would overflow the column.
+          Expanded(
+            child: ListView(
+              children: [
+                ...pending.map(statusRow),
+                if (_searching)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                if (showHint)
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      l10n.fullTextSearchHint,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.secondary
+                            .withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+                if (showNoResult)
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(l10n.noResult),
+                  ),
+                ...sections,
+              ],
             ),
-          if (showHint)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                l10n.fullTextSearchHint,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.secondary
-                      .withValues(alpha: 0.7),
-                ),
-              ),
-            ),
-          if (showNoResult)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(l10n.noResult),
-            ),
-          Expanded(child: ListView(children: sections)),
+          ),
         ],
       ),
     );

@@ -173,6 +173,22 @@ void main() {
     ]);
   });
 
+  test("oversized bodies are cut on a rune boundary", () async {
+    final body = "${"a" * 99999}😀${"b" * 20}";
+    await writeMdxFixture(dir, [("apple", body)]);
+    final rows = await collectBuild(
+      FullTextBuildRequest(
+        dictionaryId: 1,
+        type: 1,
+        basePath: "${dir.path}/fixture",
+      ),
+    );
+    expect(rows, hasLength(1));
+    // 99999 a's + the emoji: exactly the cap, with no lone surrogate.
+    expect(rows.single.body.runes.length, 100000);
+    expect(rows.single.body.endsWith("😀"), isTrue);
+  });
+
   test("builds a StarDict index through the isolate", () async {
     final base = await writeStardictFixture(dir, const [
       ("apple", "A round fruit"),

@@ -75,8 +75,16 @@ class FullTextSearchService extends ChangeNotifier {
       _states[dictionaryId] ??
       const FullTextIndexState(status: FullTextIndexStatus.notBuilt);
 
-  Future<FullTextIndexStore> _storeInstance() {
-    return _storeFuture ??= _openStore();
+  Future<FullTextIndexStore> _storeInstance() async {
+    final pending = _storeFuture ??= _openStore();
+    try {
+      return await pending;
+    } catch (_) {
+      // Don't cache a failed open: the next call retries instead of
+      // rethrowing the same failure forever.
+      if (identical(_storeFuture, pending)) _storeFuture = null;
+      rethrow;
+    }
   }
 
   Future<FullTextIndexStore> _openStore() async {
@@ -89,7 +97,6 @@ class FullTextSearchService extends ChangeNotifier {
 
   Future<void> _reconcileOnce() async {
     if (_reconciled) return;
-    _reconciled = true;
     try {
       final store = await _storeInstance();
       await store.pruneExcept(await _knownDictionaryIds());
@@ -104,10 +111,11 @@ class FullTextSearchService extends ChangeNotifier {
           total: entry.total,
         );
       }
+      _reconciled = true;
       notifyListeners();
     } catch (_) {
       // A corrupt cache store must not break startup; the next build
-      // recreates what it needs.
+      // recreates what it needs, and reconcile retries next time.
     }
   }
 
@@ -149,9 +157,25 @@ class FullTextSearchService extends ChangeNotifier {
 
   Future<void> _ensureBuilt(LoadedDictionary dictionary) async {
     await _reconcileOnce();
-    final store = await _storeInstance();
-    final fingerprint = await fingerprintFor(dictionary.type, dictionary.path);
-    final rebuild = await store.ensureDictionary(dictionary.id, fingerprint);
+    final FullTextIndexStore store;
+    final bool rebuild;
+    try {
+      store = await _storeInstance();
+      final fingerprint = await fingerprintFor(
+        dictionary.type,
+        dictionary.path,
+      );
+      rebuild = await store.ensureDictionary(dictionary.id, fingerprint);
+    } catch (_) {
+      // No usable store to record the failure in; keep it in memory so
+      // the page can offer a retry instead of surfacing an unhandled
+      // error from the unawaited build call.
+      _states[dictionary.id] = const FullTextIndexState(
+        status: FullTextIndexStatus.failed,
+      );
+      notifyListeners();
+      return;
+    }
     if (!rebuild) {
       final meta = await store.meta(dictionary.id);
       _states[dictionary.id] = FullTextIndexState(
@@ -219,7 +243,11 @@ class FullTextSearchService extends ChangeNotifier {
         );
       }
     } catch (_) {
-      await store.markFailed(dictionary.id);
+      // markFailed itself may fail when the store is broken; the
+      // in-memory state is what the page reads, so never let this throw.
+      try {
+        await store.markFailed(dictionary.id);
+      } catch (_) {}
       _states[dictionary.id] = const FullTextIndexState(
         status: FullTextIndexStatus.failed,
       );
@@ -239,7 +267,13 @@ class FullTextSearchService extends ChangeNotifier {
     final expression = buildFtsMatchExpression(query);
     if (expression.isEmpty) return const [];
     await _reconcileOnce();
-    final store = await _storeInstance();
+    final FullTextIndexStore store;
+    try {
+      store = await _storeInstance();
+    } catch (_) {
+      // An unreadable cache store means no results, not a crash.
+      return const [];
+    }
     final hits = <FullTextHit>[];
     for (final dictionary in dictionaries()) {
       if (stateFor(dictionary.id).status != FullTextIndexStatus.ready) {

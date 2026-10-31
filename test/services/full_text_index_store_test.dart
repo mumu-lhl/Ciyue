@@ -63,6 +63,19 @@ void main() {
     expect(await store.searchOne(3, '"a"'), isEmpty);
   });
 
+  test("markComplete keeps the stored indexed count", () async {
+    expect(await store.ensureDictionary(7, "fp"), isTrue);
+    await store.insertBatch(7, const [
+      FullTextIndexRow(rowid: 1, headword: "a", body: "b"),
+    ], 1);
+    // 4 dictionary entries, one indexed (the rest had empty bodies).
+    await store.markComplete(7, 4);
+    final meta = (await store.meta(7))!;
+    expect(meta.indexed, 1);
+    expect(meta.total, 4);
+    expect(meta.state, FullTextIndexDbState.ready);
+  });
+
   test("cancelled build resumes from stored progress", () async {
     expect(await store.ensureDictionary(4, "fp"), isTrue);
     await store.insertBatch(4, const [

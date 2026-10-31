@@ -82,7 +82,9 @@ class _Emitter {
     seen++;
     if (seen <= _startOrdinal) return;
     if (body.length > _maxBodyChars) {
-      body = body.substring(0, _maxBodyChars);
+      // Cut on a rune boundary: splitting a surrogate pair would store a
+      // lone surrogate, which the SQLite binding cannot encode.
+      body = String.fromCharCodes(body.runes.take(_maxBodyChars));
     }
     _batch.add([seen, headword, body]);
     if (_batch.length >= _batchSize) {

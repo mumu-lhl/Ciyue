@@ -227,12 +227,15 @@ class FullTextIndexStore {
     );
   }
 
+  /// Marks the index ready. [total] is the dictionary's entry count; the
+  /// stored `indexed` count is left untouched because entries with empty
+  /// bodies are skipped during the build, so it is usually smaller.
   Future<void> markComplete(int dictionaryId, int total) async {
     await _ensureMeta();
     await _db.customStatement(
-      "UPDATE fts_meta SET total = ?, indexed = ?, state = 'ready', "
+      "UPDATE fts_meta SET total = ?, state = 'ready', "
       "updated_at = ? WHERE dictionary_id = ?",
-      [total, total, DateTime.now().millisecondsSinceEpoch, dictionaryId],
+      [total, DateTime.now().millisecondsSinceEpoch, dictionaryId],
     );
   }
 

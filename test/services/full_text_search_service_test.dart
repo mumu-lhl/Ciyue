@@ -101,6 +101,33 @@ void main() {
     expect(buildCalls, 2);
   });
 
+  test("a failing store open reports failed and retries", () async {
+    var directoryCalls = 0;
+    final flaky = FullTextSearchService(
+      dictionaries: () => [dictionary],
+      knownIds: () async => {1},
+      databaseDirectory: () async {
+        directoryCalls++;
+        if (directoryCalls <= 2) {
+          throw const FileSystemException("no dir");
+        }
+        return dir.path;
+      },
+      runner: fakeRunner,
+    );
+    addTearDown(flaky.dispose);
+
+    // First attempt: reconcile and the store open both fail. No throw,
+    // failed state for the retry button.
+    await flaky.ensureBuilt(dictionary);
+    expect(flaky.stateFor(1).status, FullTextIndexStatus.failed);
+
+    // Second attempt retries the open and builds normally.
+    await flaky.ensureBuilt(dictionary);
+    expect(flaky.stateFor(1).status, FullTextIndexStatus.ready);
+    expect(await flaky.search("apple"), hasLength(1));
+  });
+
   test("cancel keeps the partial index and the next build resumes", () async {
     pauseForCancel = true;
     final building = service.ensureBuilt(dictionary);
