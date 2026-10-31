@@ -111,6 +111,19 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    // Switching the group reloads every dictionary. Drop the cached lookup
+    // and entry HTML so every tab is queried again; otherwise the first tab
+    // keeps the empty result cached while the switch was in flight.
+    ref.listen(dictManagerModelProvider.select((model) => model.groupId), (
+      previous,
+      next,
+    ) {
+      if (previous != null && previous != next) {
+        ref.invalidate(dictionaryLookupProvider);
+        ref.invalidate(validDictIdsProvider);
+        ref.invalidate(wordContentProvider);
+      }
+    });
     final validDictIdsAsync = ref.watch(validDictIdsProvider(widget.word));
     if (validDictIdsAsync.hasValue) {
       _lastValidDictIds = validDictIdsAsync.requireValue;
@@ -218,7 +231,12 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               }
             }
 
+            // Rebuild the tab controller when the group changes: its
+            // length changes too, and a reused controller can leave the
+            // first page blank after switching back.
+            final groupId = ref.watch(dictManagerProvider).groupId;
             return DefaultTabController(
+              key: ValueKey("tab_group_$groupId"),
               initialIndex: initialTabIndex,
               length: dictsLength,
               child: Builder(
