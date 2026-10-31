@@ -48,11 +48,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     return buildTitle(widget.word, settings, controller: _searchController);
   }
 
-  /// Readings of a long word as several headwords, plus Hunspell's spelling
-  /// corrections once they arrive.
+  /// Readings of a long word as several headwords, phrasal verbs, long vowels
+  /// and, once they arrive, Hunspell's spelling corrections.
   ///
-  /// The two are watched separately on purpose: the splits are ready in
-  /// milliseconds, while `suggest` takes hundreds, so the page shows the splits
+  /// The providers are watched separately on purpose: the first three are ready
+  /// in milliseconds, while `suggest` takes hundreds, so the page shows them
   /// immediately and fills in spelling suggestions later. Nothing at all is
   /// drawn until one of them has something, which keeps the page looking as it
   /// always did for a word nobody can help with.
@@ -62,12 +62,17 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         .watch(phraseSuggestionsProvider(widget.word))
         .asData
         ?.value;
+    final longVowels = ref
+        .watch(longVowelSuggestionsProvider(widget.word))
+        .asData
+        ?.value;
     final spelling = ref
         .watch(missingWordSpellingSuggestionsProvider(widget.word))
         .asData
         ?.value;
     if ((splits == null || splits.isEmpty) &&
         (phrases == null || phrases.isEmpty) &&
+        (longVowels == null || longVowels.isEmpty) &&
         (spelling == null || spelling.isEmpty)) {
       return const SizedBox.shrink();
     }
@@ -77,6 +82,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         spellingSuggestions: spelling ?? const [],
         splits: splits ?? const [],
         phrases: phrases ?? const [],
+        longVowelReadings: longVowels ?? const [],
       ),
       // The same path a dictionary link takes: it records the word in history
       // and opens it in the current tab, on both layouts.

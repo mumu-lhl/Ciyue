@@ -194,6 +194,16 @@ final phraseSuggestionsProvider = FutureProvider.autoDispose
       return dictionaryLookup.phraseSuggestionsFor(word);
     });
 
+/// Hiragana readings of a katakana word's long vowels, for the "not found"
+/// page.
+///
+/// Also fast — a handful of index probes — so it is drawn with the splits
+/// rather than after the spelling suggestions.
+final longVowelSuggestionsProvider = FutureProvider.autoDispose
+    .family<List<String>, String>((ref, word) async {
+      return dictionaryLookup.longVowelSuggestionsFor(word);
+    });
+
 /// Hunspell's spelling corrections for a word no dictionary matched.
 ///
 /// Deliberately separate from [wordSplitsProvider]: `suggest` takes hundreds of

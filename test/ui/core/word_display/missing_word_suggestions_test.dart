@@ -14,7 +14,7 @@ Widget wrap(Widget child) {
 }
 
 void main() {
-  testWidgets("shows both groups with their headings", (tester) async {
+  testWidgets("shows every group with its heading", (tester) async {
     await tester.pumpWidget(
       wrap(
         MissingWordSuggestionsView(
@@ -24,6 +24,7 @@ void main() {
               WordSplit(["Anime", "Cover"]),
             ],
             phrases: ["pick up"],
+            longVowelReadings: ["ふうぞく"],
           ),
           onSelected: (_) {},
         ),
@@ -38,14 +39,21 @@ void main() {
     expect(find.text("Anime"), findsOneWidget);
     expect(find.text("Cover"), findsOneWidget);
     expect(find.text("+"), findsOneWidget);
+    expect(find.text("Long vowels spelled out"), findsOneWidget);
+    expect(find.text("ふうぞく"), findsOneWidget);
 
-    // The phrases and splits arrive first, so they must sit above: a group
-    // that appears later can then only extend the page downwards.
+    // The groups the dictionaries answer on their own arrive first, so they
+    // must sit above: a group that appears later can then only extend the page
+    // downwards.
     final phrasesTop = tester.getTopLeft(find.text("Phrasal verbs")).dy;
     final splitsTop = tester.getTopLeft(find.text("Split into words")).dy;
+    final longVowelTop = tester
+        .getTopLeft(find.text("Long vowels spelled out"))
+        .dy;
     final spellingTop = tester.getTopLeft(find.text("Spelling suggestions")).dy;
     expect(phrasesTop, lessThan(splitsTop));
-    expect(splitsTop, lessThan(spellingTop));
+    expect(splitsTop, lessThan(longVowelTop));
+    expect(longVowelTop, lessThan(spellingTop));
   });
 
   testWidgets("draws nothing when there is nothing to suggest", (tester) async {
@@ -103,5 +111,30 @@ void main() {
     expect(find.text("Spelling suggestions"), findsNothing);
     expect(find.text("Split into words"), findsOneWidget);
     expect(find.text("倾奇"), findsOneWidget);
+  });
+
+  testWidgets("a long-vowel reading opens the word it stands for", (
+    tester,
+  ) async {
+    final tapped = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        MissingWordSuggestionsView(
+          suggestions: const MissingWordSuggestions(
+            spellingSuggestions: [],
+            splits: [],
+            longVowelReadings: ["ふうぞく"],
+          ),
+          onSelected: tapped.add,
+        ),
+      ),
+    );
+
+    expect(find.text("Long vowels spelled out"), findsOneWidget);
+    expect(find.text("Spelling suggestions"), findsNothing);
+
+    await tester.tap(find.text("ふうぞく"));
+
+    expect(tapped, ["ふうぞく"]);
   });
 }
