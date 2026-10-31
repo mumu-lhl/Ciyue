@@ -35,6 +35,9 @@ export default defineConfig({
               { text: 'Word-Form Lookup', link: '/guide/word-forms' },
               { text: 'Appearance', link: '/guide/appearance' },
               { text: 'Pronunciation', link: '/guide/pronunciation' },
+              { text: 'Keyboard Shortcuts', link: '/guide/keyboard-shortcuts' },
+              { text: 'Dictionary Links', link: '/guide/dictionary-links' },
+              { text: 'Link Schemes (Deep Dive)', link: '/guide/dictionary-link-schemes' },
               { text: 'FAQ', link: '/guide/faq' },
             ]
           }
@@ -69,6 +72,9 @@ export default defineConfig({
               { text: '词形还原', link: '/zh/guide/word-forms' },
               { text: '词典外观', link: '/zh/guide/appearance' },
               { text: '发音与发音包', link: '/zh/guide/pronunciation' },
+              { text: '键盘快捷键', link: '/zh/guide/keyboard-shortcuts' },
+              { text: '词条内链接', link: '/zh/guide/dictionary-links' },
+              { text: '链接 Scheme 原理', link: '/zh/guide/dictionary-link-schemes' },
               { text: '常见问题', link: '/zh/guide/faq' },
             ]
           }

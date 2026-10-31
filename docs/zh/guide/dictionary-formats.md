@@ -49,12 +49,9 @@ MDict 自己用老版 IE 的 WebBrowser 控件渲染词条（IE7/8 一代，Java
 MDict——成了新词典的事实参考实现。[`pangloss`](https://lib.rs/crates/pangloss)
 的文档里就写得很直接：
 
-> Every non-trivial format targets a concrete reader, f.e. goldendict-ng in the
-> case of Mdict. While other readers may be able to import the format, they
-> usually don't support the same range of features.
-
-中文意思是：每个有实际分量的格式都对应一个具体的阅读器——Mdict 对应的就是
-goldendict-ng；其他阅读器也许能导入这种格式，但通常支持不到相同的功能范围。
+> 每个有实际分量的格式都对应一个具体的阅读器——Mdict 对应的就是
+> goldendict-ng；其他阅读器也许能导入这种格式，但通常支持不到相同
+> 的功能范围。
 
 | 格式 | 目标阅读器 |
 | --- | --- |
@@ -62,6 +59,12 @@ goldendict-ng；其他阅读器也许能导入这种格式，但通常支持不�
 | StarDict | KOReader |
 | MDict | GoldenDict-ng |
 | DSL（只读） | GoldenDict-ng |
+
+这种「照着 GoldenDict-ng 写、而不是照着 MDict 写」的痕迹随处可见。例如不少第三方
+打包的 `.mdx` 里直接带着 `bword://word` 链接——`bword://` 本是 Babylon `.bgl`
+格式的跳转写法，原版 MDict 根本不认；它之所以能跳，是因为 GoldenDict-ng 把
+`bword://` 和 `entry://` 当作同一个 scheme 处理。换言之，连 MDict 自家格式的文件，
+作者都在按 GoldenDict-ng 的行为来写链接了。
 
 某本词典在某个软件里「排版坏了」，先确认它是照着哪个阅读器做的：作者通常按最新的引擎
 写，而不是按最老的那个。

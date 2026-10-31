@@ -71,6 +71,13 @@ says so plainly:
 | MDict | GoldenDict-ng |
 | DSL (read only) | GoldenDict-ng |
 
+Traces of this "written for GoldenDict-ng, not MDict" habit show up everywhere.
+For example, many third-party-packaged `.mdx` files carry `bword://word` links
+directly — `bword://` is Babylon's `.bgl` cross-reference scheme, which the
+original MDict does not understand at all; it only works because GoldenDict-ng
+treats `bword://` and `entry://` as the same scheme. In other words, even files
+in MDict's own format are authored against GoldenDict-ng's behaviour.
+
 When a dictionary "looks broken" in one app, first check which reader it was
 built for: entries are usually written against the newest engine, not the
 oldest.
