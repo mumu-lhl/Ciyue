@@ -6,6 +6,7 @@ import "dart:typed_data";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/services/lookup_keys.dart";
+import "package:ciyue/services/media_tags.dart";
 import "package:ciyue/services/zip_archive_reader.dart";
 import "package:ciyue/services/stardict_html.dart";
 import "package:ciyue/utils.dart";
@@ -382,8 +383,10 @@ class Stardict implements LoadedDictionary {
   @override
   String wrapContentWithResources(String content) {
     // StarDict dictionaries have no companion stylesheet/script files to
-    // prepend; entry HTML is self-contained.
-    return content;
+    // prepend; entry HTML is self-contained. Converters such as pyglossary
+    // rewrite MDict's `sound://` links into inert `<audio>` elements, so the
+    // audio markup is repaired here before it reaches the WebView.
+    return rewriteMediaTags(content);
   }
 
   @override
