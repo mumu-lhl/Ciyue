@@ -133,9 +133,26 @@ class DictionarySyncService {
   Future<_DictionaryPackage?> _readLocalPackage(
     DictionaryListData dictionary,
   ) async {
+    if (DictionaryType.isZim(dictionary.type)) {
+      return _readLocalZimPackage(dictionary);
+    }
     return DictionaryType.isStardict(dictionary.type)
         ? _readLocalStardictPackage(dictionary)
         : _readLocalMdxPackage(dictionary);
+  }
+
+  Future<_DictionaryPackage?> _readLocalZimPackage(
+    DictionaryListData dictionary,
+  ) async {
+    final basePath = dictionary.path;
+    final zimFile = File("$basePath.zim");
+    if (!await zimFile.exists()) return null;
+
+    final files = <_DictionaryPackageFile>[
+      await _captureFile(zimFile, role: "zim"),
+    ];
+
+    return _finishPackage(dictionary, files, p.basename(basePath));
   }
 
   Future<_DictionaryPackage?> _readLocalMdxPackage(
@@ -540,8 +557,9 @@ class DictionarySyncService {
     _DictionaryPackage package,
   ) async {
     final entry = package.entryFile;
+    final isZim = entry.role == "zim";
     final isMdx = entry.role == "mdx";
-    final baseName = isMdx
+    final baseName = (isZim || isMdx)
         ? p.withoutExtension(p.basename(entry.remoteName))
         : _stardictStem(p.basename(entry.remoteName));
     final basePath = p.join(directory.path, baseName);
@@ -550,9 +568,9 @@ class DictionarySyncService {
     final dictionaryId = await database.dictionaryListDao.add(
       basePath,
       package.title,
-      // A restored StarDict row has to say so, or the settings and the lookup
+      // A restored StarDict or ZIM row has to say so, or the settings and the lookup
       // read it as an MDX dictionary and look for files it does not have.
-      type: isMdx ? 1 : DictionaryType.stardict,
+      type: isZim ? DictionaryType.zim : (isMdx ? 1 : DictionaryType.stardict),
     );
     final font = package.files.where((file) => file.role == "font").firstOrNull;
     if (font != null) {
@@ -578,10 +596,11 @@ class _DictionaryPackage {
   int get totalSizeBytes =>
       files.fold(0, (total, file) => total + file.sizeBytes);
 
-  /// The file that identifies the dictionary to a reader: the MDX, or the
-  /// StarDict `.ifo`. [_validateFileSet] admits exactly one of the two.
-  _DictionaryPackageFile get entryFile =>
-      files.firstWhere((file) => file.role == "mdx" || file.role == "ifo");
+  /// The file that identifies the dictionary to a reader: the MDX, the
+  /// StarDict `.ifo`, or the ZIM `.zim`. [_validateFileSet] admits exactly one of the three.
+  _DictionaryPackageFile get entryFile => files.firstWhere(
+    (file) => file.role == "mdx" || file.role == "ifo" || file.role == "zim",
+  );
 
   Map<String, Object?> toJson() => {
     "app": "ciyue",
@@ -716,6 +735,7 @@ bool _validRemoteName(String role, String name) {
     "dict",
     "syn",
     "res",
+    "zim",
   };
   if (role == "font") {
     if (!name.startsWith("font/")) return false;
@@ -751,6 +771,7 @@ bool _validRemoteName(String role, String name) {
           name.endsWith(".syn.gz") ||
           name.endsWith(".syn.dz"),
     "res" => name == "res.zip" || name.endsWith(".res.zip"),
+    "zim" => name.endsWith(".zim"),
     "font" => true,
     _ => false,
   };
@@ -830,10 +851,19 @@ void _validateFileSet(List<_DictionaryPackageFile> files) {
 
   final hasMdx = count("mdx") > 0;
   final hasStardict = files.any((file) => _stardictRoles.contains(file.role));
-  // A package is exactly one format. Both or neither is a manifest no version
-  // of this app wrote.
-  if (hasMdx == hasStardict || files.length > 1000 || count("font") > 1) {
+  final hasZim = count("zim") > 0;
+  final formatCount =
+      (hasMdx ? 1 : 0) + (hasStardict ? 1 : 0) + (hasZim ? 1 : 0);
+  // A package is exactly one format.
+  if (formatCount != 1 || files.length > 1000 || count("font") > 1) {
     throw const FormatException("Invalid dictionary package file set.");
+  }
+
+  if (hasZim) {
+    if (count("zim") != 1) {
+      throw const FormatException("Invalid dictionary package file set.");
+    }
+    return;
   }
 
   if (hasMdx) {

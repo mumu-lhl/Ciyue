@@ -1,8 +1,7 @@
 # 词典格式
 
-词悦读取两类词典：**MDict**（`.mdx` / `.mdd`）与 **StarDict**（`.ifo` / `.idx` /
-`.dict`）。它们装的是同一类东西——词头、HTML 或纯文本释义，以及释义里引用的图片和
-音频——但内部结构完全不同，这个差别决定了词典怎么转换、怎么打补丁、出问题时从哪查。
+词悦读取三类词典：**MDict**（`.mdx` / `.mdd`）、**StarDict**（`.ifo` / `.idx` /
+`.dict`）与 **ZIM**（`.zim`）。它们装的是词头、HTML 或纯文本释义，以及释义引用的图片和音频。
 
 本文说明两种格式的内部结构、词悦实际能读什么，以及如何在两者之间转换。
 
@@ -179,6 +178,20 @@ mdict -k book.mdx | head   # 看前几个词头
 mdict -q word book.mdx     # 查一条词条
 mdict -x book.mdx -d out/  # 解包词条与 .mdd 资源
 ```
+
+## ZIM
+
+**ZIM** 格式（`.zim`，openZIM）是一种开放、高压缩率的离线档案格式，最初用于离线分发维基百科（Wikipedia）、维基词典（Wiktionary）、古腾堡计划等知识库。
+
+| 文件 | 内容 |
+| --- | --- |
+| `name.zim` | 单文件完整包，内置词条文章、多媒体资源、CSS、JS 与元数据 |
+
+ZIM 是一站式的单文件词典。词悦支持自动索引词头和重定向、通过嵌入式 HTTP 服务及请求拦截提供完整的离线图片与样式、并将索引自动缓存为 `.cidx` 实现秒开。
+
+::: info
+ZIM 词典档案主要由 [Kiwix](https://www.kiwix.org/) 与 [openZIM](https://openzim.org/) 维护发布，涵盖全球数百种语言的维基百科、维基词典、Stack Exchange 等优质资源。
+:::
 
 ## 常见坑
 

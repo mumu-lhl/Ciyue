@@ -5,6 +5,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/stardict.dart";
+import "package:ciyue/repositories/zim.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
@@ -295,6 +296,15 @@ onLoadResourceWithCustomSchemeWarpper(int dictId) {
           data: data,
         );
       }
+      if (dict is Zim) {
+        final data = await dict.readResourceFile(filename);
+        if (data == null) return null;
+        talker.info("Playing sound (2): $filename");
+        return CustomSchemeResponse(
+          contentType: lookupMimeType(filename) ?? "application/octet-stream",
+          data: data,
+        );
+      }
       if (dict is! Mdict) return null;
       final results = await dict.readResource(filename);
       for (final result in results) {
@@ -389,6 +399,24 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
       // archive rather than in an MDD. A miss stays in the log; a hit the
       // device cannot decode says so, exactly as MDD audio does.
       if (dict is Stardict) {
+        final data = await dict.readResourceFile(filename);
+        if (data == null) {
+          talker.info("Sound resource not found: $filename");
+          return NavigationActionPolicy.CANCEL;
+        }
+        final played = await playSound(
+          data,
+          lookupMimeType(filename) ?? "application/octet-stream",
+          label: basenameWithoutExtension(filename),
+        );
+        talker.info("Playing sound (1): $filename");
+        if (!played && unsupportedMessage != null) {
+          messenger?.showSnackBar(SnackBar(content: Text(unsupportedMessage)));
+        }
+        return NavigationActionPolicy.CANCEL;
+      }
+
+      if (dict is Zim) {
         final data = await dict.readResourceFile(filename);
         if (data == null) {
           talker.info("Sound resource not found: $filename");
@@ -506,6 +534,8 @@ class LocalResourcesPathHandler extends CustomPathHandler {
         // keep their resources, e.g. res/ images, as plain files), else in
         // a zip archive.
         if (dict is Stardict) {
+          data = await dict.readResourceFile(path);
+        } else if (dict is Zim) {
           data = await dict.readResourceFile(path);
         } else {
           try {

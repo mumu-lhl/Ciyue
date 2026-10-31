@@ -2,6 +2,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/stardict.dart";
+import "package:ciyue/repositories/zim.dart";
 import "package:material_ui/material_ui.dart";
 
 class DictionaryPropertiesViewModel extends ChangeNotifier {
@@ -31,7 +32,9 @@ class DictionaryPropertiesViewModel extends ChangeNotifier {
 
   Future<void> fetchProperties(String path, int id) async {
     final type = await dictionaryListDao.getType(id);
-    final LoadedDictionary dict = DictionaryType.isStardict(type)
+    final LoadedDictionary dict = DictionaryType.isZim(type)
+        ? Zim(path: path)
+        : DictionaryType.isStardict(type)
         ? Stardict(path: path)
         : Mdict(path: path);
     try {

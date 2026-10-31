@@ -46,6 +46,19 @@ void main() {
       );
     });
 
+    test("accepts a ZIM dictionary whose file is there", () async {
+      await touch(".zim");
+
+      expect(await missingDictionaryFile(basePath, DictionaryType.zim), isNull);
+    });
+
+    test("names the missing ZIM file", () async {
+      expect(
+        await missingDictionaryFile(basePath, DictionaryType.zim),
+        "sample.zim",
+      );
+    });
+
     test("accepts the gzip-compressed index and body", () async {
       await touch(".ifo");
       await touch(".idx.gz");

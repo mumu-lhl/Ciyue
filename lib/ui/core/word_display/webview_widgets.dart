@@ -8,6 +8,7 @@ import "package:ciyue/core/providers.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/stardict.dart";
+import "package:ciyue/repositories/zim.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
@@ -611,7 +612,9 @@ class WebviewDisplayDescription extends ConsumerWidget {
       return "";
     }
     final type = await dictionaryListDao.getType(dictId);
-    final LoadedDictionary dict = DictionaryType.isStardict(type)
+    final LoadedDictionary dict = DictionaryType.isZim(type)
+        ? Zim(path: path)
+        : DictionaryType.isStardict(type)
         ? Stardict(path: path)
         : Mdict(path: path);
     await dict.initOnlyMetadata(dictId);

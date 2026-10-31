@@ -15,7 +15,11 @@ import "package:path/path.dart";
 /// Returns the bare file name, which is what the message shows; null means the
 /// dictionary can be opened.
 Future<String?> missingDictionaryFile(String path, int type) async {
-  final required = DictionaryType.isStardict(type)
+  final required = DictionaryType.isZim(type)
+      ? const [
+          [".zim"],
+        ]
+      : DictionaryType.isStardict(type)
       ? const [
           [".ifo"],
           [".idx", ".idx.gz"],

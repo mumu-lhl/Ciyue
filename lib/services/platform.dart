@@ -102,7 +102,9 @@ class PlatformMethod {
 
           final mdxFiles = await findMdxFilesOnAndroid(null);
           final ifoFiles = await findStardictFilesOnAndroid(null);
-          final mdxHandled = mdxFiles.isNotEmpty || ifoFiles.isEmpty;
+          final zimFiles = await findZimFilesOnAndroid(null);
+          final mdxHandled =
+              mdxFiles.isNotEmpty || (ifoFiles.isEmpty && zimFiles.isEmpty);
           if (mdxHandled) {
             await selectMdx(
               navigatorKey.currentContext!,
@@ -115,6 +117,14 @@ class PlatformMethod {
             await selectStardict(
               navigatorKey.currentContext!,
               ifoFiles,
+              closeLoadingWhenEmpty: true,
+            );
+          }
+          if (zimFiles.isNotEmpty) {
+            showLoadingDialog(navigatorKey.currentContext!);
+            await selectZim(
+              navigatorKey.currentContext!,
+              zimFiles,
               closeLoadingWhenEmpty: true,
             );
           }
@@ -260,7 +270,9 @@ class PlatformMethod {
       showLoadingDialog(navigatorKey.currentContext!);
       final paths = await findMdxFilesOnAndroid(directory);
       final ifoPaths = await findStardictFilesOnAndroid(directory);
-      final mdxHandled = paths.isNotEmpty || ifoPaths.isEmpty;
+      final zimPaths = await findZimFilesOnAndroid(directory);
+      final mdxHandled =
+          paths.isNotEmpty || (ifoPaths.isEmpty && zimPaths.isEmpty);
       if (mdxHandled) {
         selectMdx(
           navigatorKey.currentContext!,
@@ -275,6 +287,16 @@ class PlatformMethod {
         await selectStardict(
           navigatorKey.currentContext!,
           ifoPaths,
+          closeLoadingWhenEmpty: true,
+        );
+      }
+      if (zimPaths.isNotEmpty) {
+        if (mdxHandled || ifoPaths.isNotEmpty) {
+          showLoadingDialog(navigatorKey.currentContext!);
+        }
+        await selectZim(
+          navigatorKey.currentContext!,
+          zimPaths,
           closeLoadingWhenEmpty: true,
         );
       }

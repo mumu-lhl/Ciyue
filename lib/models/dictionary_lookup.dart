@@ -25,8 +25,10 @@ abstract interface class DictionarySource {
 /// formats load through different readers.
 abstract final class DictionaryType {
   static const int stardict = 2;
+  static const int zim = 3;
 
   static bool isStardict(int type) => type == stardict;
+  static bool isZim(int type) => type == zim;
 }
 
 /// A dictionary loaded by the dictionary manager, regardless of its file

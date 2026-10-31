@@ -42,7 +42,7 @@ dependencies:
   dict_reader:
     git:
       url: https://github.com/mumu-lhl/dict_reader.git
-      ref: bb17471384ee9a4607bbb1e9ac52107ba1ac87e2
+      ref: 4c16de8c4948fc05fd5b6cdcf0d3bf90fd1a0d27
   hunspell_ffi:
     path: packages/hunspell_ffi
   shared_preferences: ^2.5.6

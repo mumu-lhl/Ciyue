@@ -1,10 +1,8 @@
 # Dictionary formats
 
-Ciyue reads two dictionary families: **MDict** (`.mdx` / `.mdd`) and **StarDict**
-(`.ifo` / `.idx` / `.dict`). Both hold the same kind of data — headwords, HTML or
-plain-text definitions, and the pictures and audio those definitions reference —
-but they are built very differently, and that difference decides how you convert,
-patch or debug one.
+Ciyue reads three dictionary families: **MDict** (`.mdx` / `.mdd`), **StarDict**
+(`.ifo` / `.idx` / `.dict`), and **ZIM** (`.zim`). They hold headwords, HTML or
+plain-text definitions, and the pictures and audio those definitions reference.
 
 This page describes what is inside each format, what Ciyue reads, and how to move
 a dictionary from one format to the other.
@@ -206,6 +204,20 @@ mdict -k book.mdx | head   # first headwords
 mdict -q word book.mdx     # one entry
 mdict -x book.mdx -d out/  # unpack entries and .mdd resources
 ```
+
+## ZIM
+
+The **ZIM** format (`.zim`, openZIM) is an open, highly compressed archive format originally designed to distribute Wikipedia, Wiktionary, Project Gutenberg, and other wiki or educational content offline.
+
+| File | Contents |
+| --- | --- |
+| `name.zim` | Self-contained single-file archive containing articles, media, CSS, JS, and metadata |
+
+A ZIM dictionary is a single self-contained file. Ciyue indexes article headwords and redirects, serves embedded media (images, stylesheets, fonts, audio, video), and caches the index into `.cidx` for instant startup.
+
+::: info
+ZIM archives are published by [Kiwix](https://www.kiwix.org/) and [openZIM](https://openzim.org/). You can download offline copies of Wikipedia, Wiktionary, Wikibooks, Stack Exchange, and more in hundreds of languages.
+:::
 
 ## Common pitfalls
 
