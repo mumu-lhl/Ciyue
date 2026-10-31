@@ -7,8 +7,12 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/core/ciyue_error.dart";
 import "package:ciyue/core/localization_delegates.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/command_line.dart";
+import "package:ciyue/services/command_line_actions.dart";
 import "package:ciyue/services/floating_window.dart";
+import "package:ciyue/services/macos_command_line.dart";
 import "package:ciyue/services/platform.dart";
+import "package:ciyue/services/single_instance.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:drift/drift.dart" as drift;
@@ -20,8 +24,62 @@ import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
 import "package:window_manager/window_manager.dart";
 
-void main() async {
+void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  var allArgs = args;
+  if (Platform.isMacOS) {
+    // macOS does not pass the platform entrypoint arguments to Dart, so the
+    // native runner forwards them (and ciyue:// links) over a channel.
+    allArgs = [...args, ...await consumeMacOSCommandLine()];
+  }
+
+  final parser = CommandLineParser();
+  final CommandLineOptions options;
+  try {
+    options = parser.parse(allArgs);
+  } on CommandLineException catch (error) {
+    await _exitWithMessage(
+      "${error.message}\n\n${buildCommandLineUsage(parser)}",
+      stderr,
+      64,
+    );
+    return;
+  }
+
+  if (options.showHelp) {
+    await _exitWithMessage(buildCommandLineUsage(parser), stdout, 0);
+    return;
+  }
+
+  if (options.showVersion) {
+    await _exitWithMessage(await buildVersionText(), stdout, 0);
+    return;
+  }
+
+  // Enable file logging before init so startup messages are captured too.
+  if (options.logToFile) {
+    try {
+      await enableFileLogging();
+    } catch (error, stackTrace) {
+      talker.error("Failed to enable file logging", error, stackTrace);
+    }
+  }
+
+  if (options.noTts) {
+    ttsDisabledByCommandLine = true;
+  }
+
+  // Desktop only: hand the options to the instance that is already running
+  // instead of opening a second window. Android keeps its single entrypoint
+  // behaviour untouched.
+  SingleInstance? singleInstance;
+  if (isDesktop()) {
+    singleInstance = SingleInstance();
+    if (!await singleInstance.ensurePrimary(options)) {
+      exit(0);
+    }
+  }
 
   // Show a splash immediately so the first frame isn't blocked on disk I/O
   // (prefs migration) and heavy init.
@@ -41,12 +99,69 @@ void main() async {
     await initApp();
 
     runApp(const ProviderScope(child: Ciyue()));
+
+    if (options.hasUiActions) {
+      unawaited(_applyOptionsWhenReady(options));
+    }
+
+    singleInstance?.setHandler(_applyOptionsWhenReady);
+
+    initMacOSCommandLineHandler((macArgs) {
+      try {
+        final forwarded = parser.parse(macArgs);
+        if (forwarded.hasUiActions) {
+          unawaited(_applyOptionsWhenReady(forwarded));
+        }
+      } on CommandLineException catch (error) {
+        talker.error("Invalid macOS command line: ${error.message}");
+      }
+    });
   } catch (e) {
     runApp(
       ProviderScope(
         child: MaterialApp(home: CiyueError(error: e)),
       ),
     );
+  }
+}
+
+/// Writes [message] and exits, tolerating launches without a console.
+Future<void> _exitWithMessage(String message, IOSink sink, int code) async {
+  try {
+    sink.writeln(message);
+    await sink.flush();
+  } catch (_) {
+    // A desktop GUI launch may not have a console attached.
+  }
+  exit(code);
+}
+
+/// Waits for the navigator to mount, then applies [options] to the running UI.
+///
+/// The router's navigator may not exist yet when a command is forwarded right
+/// after startup, so retry briefly instead of dropping it.
+Future<void> _applyOptionsWhenReady(
+  CommandLineOptions options, {
+  int attempt = 0,
+}) async {
+  final context = navigatorKey.currentContext;
+  if (context == null) {
+    if (attempt >= 50) {
+      talker.error(
+        "Navigator did not become ready; dropping command line options.",
+      );
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    await _applyOptionsWhenReady(options, attempt: attempt + 1);
+    return;
+  }
+
+  try {
+    final container = ProviderScope.containerOf(context, listen: false);
+    await applyCommandLineOptions(container, options);
+  } catch (error, stackTrace) {
+    talker.error("Failed to apply command line options", error, stackTrace);
   }
 }
 

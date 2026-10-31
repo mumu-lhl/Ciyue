@@ -32,5 +32,16 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>org.eu.mumulhl.ciyue</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ciyue</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

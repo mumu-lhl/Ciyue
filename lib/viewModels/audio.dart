@@ -222,7 +222,9 @@ class AudioModel extends ChangeNotifier {
       }
     }
 
-    if (mode == PronunciationMode.packOnly || Platform.isLinux) {
+    if (mode == PronunciationMode.packOnly ||
+        Platform.isLinux ||
+        ttsDisabledByCommandLine) {
       _onPlaybackComplete();
       return PronunciationResult.unavailable;
     }

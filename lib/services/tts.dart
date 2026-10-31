@@ -92,6 +92,7 @@ class TtsHelper {
   /// TTS engine (e.g. Linux desktop) flutter_tts throws, which must not
   /// surface as an unhandled async error from a button tap.
   static Future<void> toggleSpeak(String text) async {
+    if (ttsDisabledByCommandLine) return;
     try {
       final clean = stripMarkdown(text);
       if (clean.isEmpty) return;

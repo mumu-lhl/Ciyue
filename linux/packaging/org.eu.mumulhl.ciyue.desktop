@@ -2,6 +2,7 @@
 Type=Application
 Name=Ciyue
 Exec=ciyue %U
+MimeType=x-scheme-handler/ciyue;
 Icon=ciyue
 Categories=Education;Languages;
 Comment=A simple mdict dictionary

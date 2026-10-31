@@ -14,6 +14,10 @@ late final VoidCallback refreshAll;
 late final FlutterTts flutterTts;
 String searchWordFromProcessText = "";
 
+/// Set by the desktop `--no-tts` option. Only affects the current process,
+/// so the user's saved pronunciation settings are left untouched.
+bool ttsDisabledByCommandLine = false;
+
 // Each FlutterEngine has its own isolate, so this flag identifies the current
 // engine rather than the whole Android process.
 bool runningInFloatingWindow = false;
