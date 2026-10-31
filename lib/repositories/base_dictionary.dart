@@ -80,7 +80,13 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
   }
 
   Future<void> _closeInternal({bool waitForLoading = true}) async {
-    if (waitForLoading) {
+    // Only wait when loading was actually started: for a dictionary that was
+    // never initialized, both futures are null and isLoading is still its
+    // initial true, so waitForLoading() would await a completer nothing ever
+    // completes. The pre-refactor close awaited initialization only when
+    // non-null; keep that behavior.
+    if (waitForLoading &&
+        (initialization != null || metadataInitialization != null)) {
       try {
         await this.waitForLoading();
       } catch (_) {}
