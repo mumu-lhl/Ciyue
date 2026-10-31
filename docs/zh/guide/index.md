@@ -5,6 +5,7 @@
 ## 目录
 
 - [快速上手](./getting-started) —— 在设备上安装词悦、下载词典、完成基础设置。
+- [词典格式](./dictionary-formats) —— `.mdx`/`.mdd` 与 StarDict 内部是什么、`res.zip` 怎么用、两种格式之间如何转换。
 - [翻译](./translation) —— 并行查询 20 多个免费源、官方 API 源与 AI 翻译源，并排对比结果。
 - [云同步](./cloud-sync) —— 通过 WebDAV、SFTP 或 S3 在多设备间同步单词本、标签、抽认卡和历史记录。
 - [词形还原](./word-forms) —— 用 Hunspell 把变形词追溯到原形，并说明「后备」与「补充」两种模式的差别。

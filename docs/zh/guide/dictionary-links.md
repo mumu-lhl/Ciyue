@@ -42,3 +42,9 @@
 
 音频引用沿用 MDict 的写法 `<a href="sound://file.mp3">…</a>`，从词典的 `.mdd`
 或 StarDict 的 `res/` 资源中播放。
+
+## 背景与原理
+
+关于这些规则背后的缘由——GoldenDict-ng、MDict、Babylon 各自如何处理每种
+scheme、`gdlookup://localhost` 为何存在、以及词悦在何处更进一步——见
+[词典链接 Scheme 原理解析](./dictionary-link-schemes)。
