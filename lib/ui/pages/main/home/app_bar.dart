@@ -58,7 +58,18 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
       return AppBar(
         title: searchBar,
-        automaticallyImplyLeading: settings.showSidebarIcon && !isDesktop,
+        // Use the same book icon as the word-page group switchers instead of
+        // the generic drawer lines.
+        leading: settings.showSidebarIcon && !isDesktop
+            ? Builder(
+                builder: (context) => IconButton(
+                  icon: const Icon(Icons.collections_bookmark_outlined),
+                  tooltip: AppLocalizations.of(context)!.dictionaryGroups,
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
+              )
+            : null,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             tooltip: AppLocalizations.of(context)!.aiChat,
