@@ -625,6 +625,9 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         );
       },
       onPageCommitVisible: (controller, url) async {
+        // A reload starts a fresh document, which drops the inline zoom the
+        // scale script set on the old one.
+        _applyContentScale(controller, settings.contentScale);
         // Only the expansion panels need live height reports, and only they
         // register the 'WebViewHeight' handler. Use MutationObserver +
         // ResizeObserver instead of a requestAnimationFrame loop so there is
