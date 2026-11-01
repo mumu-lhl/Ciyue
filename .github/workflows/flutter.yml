@@ -33,6 +33,13 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # Structural checks only: duplicated keys, keys dropped from the
+      # template, a missing or mismatching @@locale, and a generated
+      # supportedLocales list that is out of sync. Untranslated strings are
+      # reported but do not fail the build, since coverage changes constantly.
+      - name: Check ARB files
+        run: dart tools/check_arb_keys.dart
+
       - name: Format
         shell: bash
         run: |
