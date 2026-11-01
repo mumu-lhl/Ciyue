@@ -35,6 +35,8 @@ String keyBridgeScript() {
     ['Tab', true, false, true],
     ['PageUp', true, false, false],
     ['PageDown', true, false, false],
+    ['PageUp', false, false, false],
+    ['PageDown', false, false, false],
     ['ArrowUp', true, false, false],
     ['ArrowDown', true, false, false],
     ['Backquote', true, false, false]
@@ -90,7 +92,16 @@ String keyBridgeScript() {
     if (inInput) return;
     var combo = shortcutFor(e);
     if (!combo) return;
-    e.preventDefault();
+    // The plain PageUp/PageDown keys are the WebView's own scrolling keys.
+    // They are forwarded so that the expansion layout can page the entry,
+    // but the WebView keeps them: in the tab layout it is the one that
+    // scrolls, and taking the keys away would freeze the entry.
+    var keepsWebViewScroll =
+      !e.ctrlKey && !e.altKey && !e.metaKey &&
+      (e.code === 'PageUp' || e.code === 'PageDown');
+    if (!keepsWebViewScroll) {
+      e.preventDefault();
+    }
     post('Shortcut', JSON.stringify(combo));
   }, true);
 })();
