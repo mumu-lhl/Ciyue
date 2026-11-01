@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>词悦扩展设置</title>
+  <style>
+    :root {
+      --primary: #6750A4;
+      --bg: #FEF7FF;
+      --surface: #F3EDF7;
+      --text: #1D1B20;
+      --border: #CAC4D0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #D0BCFF;
+        --bg: #141218;
+        --surface: #211F26;
+        --text: #E6E0E9;
+        --border: #49454F;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .container {
+      width: 100%;
+      max-width: 520px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    h1 {
+      font-size: 1.3rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label { font-weight: 600; font-size: 13px; }
+    .desc { font-size: 12px; color: #79747E; }
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: inherit;
+      outline: none;
+    }
+    input[type="text"]:focus { border-color: var(--primary); }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+    button.primary {
+      background: var(--primary);
+      color: white;
+    }
+    button.secondary {
+      background: rgba(128,128,128,0.15);
+      color: inherit;
+    }
+    button:hover { opacity: 0.9; }
+    .status-msg {
+      font-size: 13px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📖 词悦查词助手 - 设置</h1>
+
+    <div class="form-group">
+      <label for="server-url">词悦服务地址 (Server URL)</label>
+      <div class="desc">词悦桌面端「Web 与 API 服务」监听的完整地址</div>
+      <div class="input-row">
+        <input type="text" id="server-url" value="http://127.0.0.1:47117">
+        <button class="secondary" id="test-btn">测试连接</button>
+      </div>
+      <div class="status-msg" id="test-status"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="checkbox-row">
+        <input type="checkbox" id="enable-selection" checked>
+        <span>启用网页划词浮标</span>
+      </label>
+      <div class="desc" style="padding-left: 24px;">选中文字后在鼠标旁显示「悦」字查词浮标</div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+      <button class="primary" id="save-btn">保存设置</button>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

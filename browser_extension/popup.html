@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>词悦查词</title>
+  <style>
+    :root {
+      --primary: #6750A4;
+      --bg: #FEF7FF;
+      --surface: #F3EDF7;
+      --text: #1D1B20;
+      --border: #CAC4D0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #D0BCFF;
+        --bg: #141218;
+        --surface: #211F26;
+        --text: #E6E0E9;
+        --border: #49454F;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      width: 380px;
+      max-height: 520px;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 14px;
+    }
+    .header {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4CAF50;
+    }
+    .status-dot.offline { background: #F44336; }
+    .search-box {
+      padding: 10px 14px;
+      display: flex;
+      gap: 8px;
+      position: relative;
+    }
+    input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: inherit;
+      outline: none;
+    }
+    input:focus { border-color: var(--primary); }
+    button.search-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 18px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .suggestions {
+      position: absolute;
+      top: 48px;
+      left: 14px;
+      right: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-height: 180px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+    }
+    .suggestion-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+    }
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: rgba(128,128,128,0.15); }
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 14px 14px 14px;
+      max-height: 400px;
+    }
+    .empty, .loading {
+      text-align: center;
+      padding: 30px 10px;
+      color: #79747E;
+    }
+    .dict-header {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    iframe.result-frame {
+      width: 100%;
+      height: 260px;
+      border: none;
+      margin-top: 6px;
+      background: #FFFFFF;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <span>📖 词悦</span>
+      <span class="status-dot" id="status-dot" title="连接状态"></span>
+    </div>
+    <a href="options.html" target="_blank" style="font-size:12px; color:inherit; text-decoration:none;">⚙️ 设置</a>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="query-input" placeholder="输入单词查词..." autocomplete="off" autofocus>
+    <button class="search-btn" id="search-btn">查询</button>
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+
+  <div class="content-area" id="content-area">
+    <div class="empty">请输入单词并回车或点击查询</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

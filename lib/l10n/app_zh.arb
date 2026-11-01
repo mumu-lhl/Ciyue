@@ -1010,5 +1010,18 @@
   "@promptsGroupWord": {},
   "promptsGroupLearning": "学习",
   "@promptsGroupLearning": {},
-  "hunspellFilesMissing": "找不到 Hunspell 文件（.aff 或 .dic 不见了）"
+  "hunspellFilesMissing": "找不到 Hunspell 文件（.aff 或 .dic 不见了）",
+  "webService": "Web 与 API 服务",
+  "enableWebService": "启用 Web 与 API 服务",
+  "webServiceRunning": "运行中",
+  "webServiceStopped": "已停止",
+  "webServicePort": "服务端口",
+  "webServiceAllowLan": "允许局域网访问",
+  "webServiceAllowLanDescription": "允许处于同一局域网的手机、平板或其他设备访问 Web 查词界面",
+  "webServiceOpenInBrowser": "在浏览器中打开",
+  "browserExtension": "浏览器扩展插件",
+  "browserExtensionDescription": "配合 Chrome/Edge/Firefox 扩展，可在网页中实现极速划词翻译及生词本收藏。",
+  "openExtensionFolder": "打开扩展插件目录",
+  "copyServerUrl": "复制服务地址",
+  "urlCopied": "服务地址已复制到剪贴板"
 }

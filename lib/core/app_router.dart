@@ -23,6 +23,7 @@ import "package:ciyue/ui/pages/settings/other.dart";
 import "package:ciyue/ui/pages/settings/privacy_policy.dart";
 import "package:ciyue/ui/pages/settings/terms_of_service.dart";
 import "package:ciyue/ui/pages/settings/update.dart";
+import "package:ciyue/ui/pages/settings/web_service.dart";
 import "package:ciyue/ui/pages/settings/logs.dart";
 import "package:ciyue/ui/pages/settings/wordbook_stats.dart";
 import "package:ciyue/ui/core/ai_explanation_edit_page.dart";
@@ -146,6 +147,10 @@ final router = GoRouter(
     GoRoute(
       path: "/settings/cloud_sync",
       builder: (context, state) => const CloudSyncSettingsPage(),
+    ),
+    GoRoute(
+      path: "/settings/web_service",
+      builder: (context, state) => const WebServiceSettingsPage(),
     ),
     GoRoute(
       path: "/settings/update",

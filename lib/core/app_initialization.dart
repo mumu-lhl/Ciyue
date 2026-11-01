@@ -11,6 +11,7 @@ import "package:ciyue/services/changelog.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/startup.dart";
 import "package:ciyue/services/updater.dart";
+import "package:ciyue/services/web_server_service.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/changelog_dialog.dart";
 import "package:ciyue/utils.dart";
@@ -368,6 +369,10 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
       });
     }
 
+    if (settings.enableWebServer) {
+      unawaited(webServerService.start());
+    }
+
     talker.info("Application initialized successfully.");
   });
 }
@@ -454,6 +459,9 @@ const preferencesAllowList = <String>{
   "autoFocusSearch",
   "launchAtStartup",
   "flashcardDailyNewLimit",
+  "enableWebServer",
+  "webServerPort",
+  "webServerAllowLan",
   ...CloudSyncConfigurationStore.preferenceKeys,
 };
 

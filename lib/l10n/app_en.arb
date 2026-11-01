@@ -1165,5 +1165,31 @@
   "hunspellFilesMissing": "Hunspell files are missing",
   "@hunspellFilesMissing": {
     "description": "Shown under a word list whose .aff or .dic file no longer exists."
-  }
+  },
+  "webService": "Web & API Service",
+  "@webService": {},
+  "enableWebService": "Enable Web & API Service",
+  "@enableWebService": {},
+  "webServiceRunning": "Running",
+  "@webServiceRunning": {},
+  "webServiceStopped": "Stopped",
+  "@webServiceStopped": {},
+  "webServicePort": "Service Port",
+  "@webServicePort": {},
+  "webServiceAllowLan": "Allow LAN Access",
+  "@webServiceAllowLan": {},
+  "webServiceAllowLanDescription": "Allow devices on the same local network to access the web dictionary",
+  "@webServiceAllowLanDescription": {},
+  "webServiceOpenInBrowser": "Open in Browser",
+  "@webServiceOpenInBrowser": {},
+  "browserExtension": "Browser Extension",
+  "@browserExtension": {},
+  "browserExtensionDescription": "Install the browser extension for instant word lookup and wordbook sync while browsing.",
+  "@browserExtensionDescription": {},
+  "openExtensionFolder": "Open Extension Folder",
+  "@openExtensionFolder": {},
+  "copyServerUrl": "Copy Server URL",
+  "@copyServerUrl": {},
+  "urlCopied": "Server URL copied to clipboard",
+  "@urlCopied": {}
 }

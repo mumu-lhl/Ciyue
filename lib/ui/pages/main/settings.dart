@@ -15,6 +15,7 @@ import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/ui/pages/settings/other.dart";
 import "package:ciyue/ui/pages/settings/storage_management.dart";
 import "package:ciyue/ui/pages/settings/update.dart";
+import "package:ciyue/ui/pages/settings/web_service.dart";
 import "package:ciyue/ui/pages/settings/wordbook_stats.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/core/providers.dart";
@@ -78,6 +79,19 @@ class CloudSyncPageListTile extends StatelessWidget {
       leading: const Icon(Icons.cloud_sync),
       title: Text(AppLocalizations.of(context)!.cloudSync),
       onTap: () => context.push("/settings/cloud_sync"),
+    );
+  }
+}
+
+class WebServicePageListTile extends StatelessWidget {
+  const WebServicePageListTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.public),
+      title: Text(AppLocalizations.of(context)!.webService),
+      onTap: () => context.push("/settings/web_service"),
     );
   }
 }
@@ -240,6 +254,7 @@ enum _SettingsSection {
   hunspell,
   backup,
   cloudSync,
+  webService,
   update,
   other,
   logs,
@@ -305,6 +320,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: locale?.cloudSync ?? "Cloud Sync",
       ),
       _SettingsItem(
+        section: _SettingsSection.webService,
+        icon: Icons.public,
+        title: locale?.webService ?? "Web & API",
+      ),
+      _SettingsItem(
         section: _SettingsSection.wordbookStats,
         icon: Icons.bar_chart,
         title: locale?.wordbookStats ?? "Stats",
@@ -362,6 +382,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return const BackupSettingsPage();
       case _SettingsSection.cloudSync:
         return const CloudSyncSettingsPage();
+      case _SettingsSection.webService:
+        return const WebServiceSettingsPage();
       case _SettingsSection.update:
         return const UpdateSettingsPage();
       case _SettingsSection.other:
@@ -470,6 +492,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     const BackupPageListTile(),
                     const CloudSyncPageListTile(),
+                    const WebServicePageListTile(),
                   ],
                 ),
                 buildGroup(

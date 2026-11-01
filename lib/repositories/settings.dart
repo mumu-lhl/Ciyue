@@ -108,9 +108,16 @@ class Settings extends ChangeNotifier {
   late bool launchAtStartup;
   late int flashcardDailyNewLimit;
 
+  late bool enableWebServer;
+  late int webServerPort;
+  late bool webServerAllowLan;
+
   Settings() {
     launchAtStartup = prefs.getBool("launchAtStartup") ?? false;
     flashcardDailyNewLimit = prefs.getInt("flashcardDailyNewLimit") ?? 20;
+    enableWebServer = prefs.getBool("enableWebServer") ?? false;
+    webServerPort = prefs.getInt("webServerPort") ?? 47117;
+    webServerAllowLan = prefs.getBool("webServerAllowLan") ?? false;
     autoExport = prefs.getBool("autoExport") ?? false;
     exportFileName = prefs.getString("exportFileName") ?? "ciyue";
     exportDirectory = prefs.getString("exportDirectory");
@@ -414,6 +421,24 @@ class Settings extends ChangeNotifier {
   Future<void> setAdvance(bool value) async {
     advance = value;
     await prefs.setBool("advance", value);
+    notifyListeners();
+  }
+
+  Future<void> setEnableWebServer(bool value) async {
+    enableWebServer = value;
+    await prefs.setBool("enableWebServer", value);
+    notifyListeners();
+  }
+
+  Future<void> setWebServerPort(int value) async {
+    webServerPort = value;
+    await prefs.setInt("webServerPort", value);
+    notifyListeners();
+  }
+
+  Future<void> setWebServerAllowLan(bool value) async {
+    webServerAllowLan = value;
+    await prefs.setBool("webServerAllowLan", value);
     notifyListeners();
   }
 
