@@ -4,6 +4,7 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/web_server_service.dart";
+import "package:flutter/services.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
@@ -11,6 +12,13 @@ import "package:shared_preferences_platform_interface/shared_preferences_async_p
 
 void main() {
   setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    HttpOverrides.global = null;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel("plugins.flutter.io/path_provider"),
+          (call) async => Directory.systemTemp.path,
+        );
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
     prefs = await SharedPreferencesWithCache.create(
@@ -52,7 +60,7 @@ void main() {
 
     final body = await utf8.decoder.bind(response).join();
     expect(body, contains("词悦"));
-    expect(body, contains("Desktop Web API"));
+    expect(body, contains("Web 查词"));
     client.close();
   });
 
@@ -127,4 +135,53 @@ void main() {
       client.close();
     },
   );
+
+  test("webServerService serves /assets/darkreader.js", () async {
+    settings.webServerPort = 0;
+    await webServerService.start();
+
+    final client = HttpClient();
+    final req = await client.getUrl(
+      Uri.parse("${webServerService.url}/assets/darkreader.js"),
+    );
+    final res = await req.close();
+    expect(res.statusCode, HttpStatus.ok);
+    expect(res.headers.contentType?.mimeType, "application/javascript");
+    client.close();
+  });
+
+  test("webServerService handles /api/groups and /api/ai/status", () async {
+    settings.webServerPort = 0;
+    await webServerService.start();
+
+    final client = HttpClient();
+
+    // Groups
+    final reqGroups = await client.getUrl(
+      Uri.parse("${webServerService.url}/api/groups"),
+    );
+    final resGroups = await reqGroups.close();
+    expect(resGroups.statusCode, HttpStatus.ok);
+    final bodyGroups = await utf8.decoder.bind(resGroups).join();
+    expect(jsonDecode(bodyGroups), isA<List>());
+
+    // AI Status
+    final reqAi = await client.getUrl(
+      Uri.parse("${webServerService.url}/api/ai/status"),
+    );
+    final resAi = await reqAi.close();
+    expect(resAi.statusCode, HttpStatus.ok);
+    final bodyAi = await utf8.decoder.bind(resAi).join();
+    final jsonAi = jsonDecode(bodyAi) as Map<String, dynamic>;
+    expect(jsonAi, contains("configured"));
+
+    // AI Explain without word -> 400
+    final reqExplain = await client.getUrl(
+      Uri.parse("${webServerService.url}/api/ai/explain"),
+    );
+    final resExplain = await reqExplain.close();
+    expect(resExplain.statusCode, HttpStatus.badRequest);
+
+    client.close();
+  });
 }

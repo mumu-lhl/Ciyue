@@ -17,13 +17,16 @@
     if (changes.shortcutKey) settings.shortcutKey = changes.shortcutKey.newValue;
   });
 
-  // Host container for Shadow DOM
   let hostEl = null;
   let shadowRoot = null;
   let triggerIcon = null;
   let popupCard = null;
   let currentSelectionWord = "";
   let currentWord = "";
+
+  function isDarkTheme() {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
 
   function ensureShadowDOM() {
     if (hostEl) return;
@@ -43,11 +46,11 @@
       
       .ciyue-trigger-icon {
         position: absolute;
-        width: 26px;
-        height: 26px;
-        border-radius: 6px;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
         background: #6750A4;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.28);
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -63,13 +66,13 @@
 
       .ciyue-popup {
         position: absolute;
-        width: 420px;
+        width: 440px;
         max-width: calc(100vw - 32px);
-        max-height: 520px;
+        max-height: 560px;
         background: #FFFFFF;
         color: #1D1B20;
         border-radius: 16px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.22);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.24);
         border: 1px solid rgba(0,0,0,0.12);
         display: flex;
         flex-direction: column;
@@ -118,7 +121,7 @@
       .ciyue-header-actions {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
       }
 
       .ciyue-btn {
@@ -137,7 +140,7 @@
       .ciyue-star-btn { font-size: 16px; color: #79747E; }
       .ciyue-star-btn.active { color: #E8B931; }
 
-      .ciyue-tabs {
+      .ciyue-nav-tabs {
         display: flex;
         background: rgba(0,0,0,0.03);
         border-bottom: 1px solid rgba(0,0,0,0.08);
@@ -171,17 +174,75 @@
         flex: 1;
         overflow-y: auto;
         min-height: 180px;
-        max-height: 420px;
+        max-height: 440px;
         position: relative;
+      }
+
+      /* Collapsible Dictionary Card */
+      .ciyue-dict-item {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+      }
+      @media (prefers-color-scheme: dark) {
+        .ciyue-dict-item { border-color: rgba(255,255,255,0.08); }
+      }
+      .ciyue-dict-item-header {
+        padding: 8px 14px;
+        background: rgba(0,0,0,0.02);
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .ciyue-dict-item-header:hover {
+        background: rgba(103, 80, 164, 0.08);
+      }
+      .ciyue-dict-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .ciyue-chevron {
+        font-size: 10px;
+        transition: transform 0.2s;
+        color: #6750A4;
+      }
+      @media (prefers-color-scheme: dark) {
+        .ciyue-chevron { color: #D0BCFF; }
+      }
+      .ciyue-dict-item.collapsed .ciyue-chevron {
+        transform: rotate(-90deg);
+      }
+      .ciyue-dict-item.collapsed .ciyue-frame-wrapper {
+        display: none;
       }
 
       .ciyue-frame {
         width: 100%;
-        min-height: 200px;
-        height: 340px;
+        min-height: 160px;
+        height: 280px;
         border: none;
         display: block;
         background: #FFFFFF;
+      }
+
+      /* AI Box */
+      .ciyue-ai-view {
+        padding: 14px;
+        line-height: 1.6;
+        font-size: 13px;
+        white-space: pre-wrap;
+        display: none;
+      }
+      .ciyue-ai-view h2, .ciyue-ai-view h3 {
+        margin: 8px 0 4px 0;
+        color: #6750A4;
+        font-size: 14px;
+      }
+      @media (prefers-color-scheme: dark) {
+        .ciyue-ai-view h2, .ciyue-ai-view h3 { color: #D0BCFF; }
       }
 
       .ciyue-loading, .ciyue-empty {
@@ -192,7 +253,6 @@
     `;
     shadowRoot.appendChild(style);
 
-    // Trigger icon
     triggerIcon = document.createElement("div");
     triggerIcon.className = "ciyue-trigger-icon";
     triggerIcon.textContent = "悦";
@@ -200,10 +260,7 @@
     triggerIcon.style.display = "none";
     shadowRoot.appendChild(triggerIcon);
 
-    triggerIcon.addEventListener("mousedown", (e) => {
-      e.stopPropagation();
-    });
-
+    triggerIcon.addEventListener("mousedown", (e) => e.stopPropagation());
     triggerIcon.addEventListener("click", (e) => {
       e.stopPropagation();
       const word = currentSelectionWord;
@@ -211,7 +268,6 @@
       showPopup(word, lastMouseX, lastMouseY);
     });
 
-    // Popup card
     popupCard = document.createElement("div");
     popupCard.className = "ciyue-popup";
     popupCard.style.display = "none";
@@ -286,12 +342,11 @@
     ensureShadowDOM();
     currentWord = word;
 
-    // Position popup within viewport bounds
-    const popupWidth = 420;
+    const popupWidth = 440;
     let posX = Math.max(16, Math.min(x, window.innerWidth - popupWidth - 24));
     let posY = y + 15;
-    if (posY + 400 > window.innerHeight + window.scrollY) {
-      posY = Math.max(10, y - 410);
+    if (posY + 420 > window.innerHeight + window.scrollY) {
+      posY = Math.max(10, y - 430);
     }
 
     popupCard.style.left = `${posX}px`;
@@ -319,7 +374,7 @@
       const res = await fetch(`${settings.serverUrl}/api/lookup?word=${encodeURIComponent(word)}`);
       const data = await res.json();
       renderLookupResult(data);
-    } catch (err) {
+    } catch (_) {
       popupCard.innerHTML = `
         <div class="ciyue-header">
           <div class="ciyue-title-area"><span>📖 词悦</span></div>
@@ -327,7 +382,7 @@
         </div>
         <div class="ciyue-empty">
           <p>无法连接到词悦桌面端服务</p>
-          <p style="font-size:12px; margin-top:6px; color:#938F99;">请确保词悦已打开并已在设置中开启「Web 与 API 服务」</p>
+          <p style="font-size:12px; margin-top:6px; color:#938F99;">请确保词悦已打开并已开启「Web 与 API 服务」</p>
         </div>
       `;
       popupCard.querySelector("#close-btn").addEventListener("click", () => {
@@ -337,20 +392,6 @@
   }
 
   function renderLookupResult(data) {
-    if (!data.results || data.results.length === 0) {
-      popupCard.innerHTML = `
-        <div class="ciyue-header">
-          <div class="ciyue-title-area"><span>📖 ${escapeHtml(data.word)}</span></div>
-          <button class="ciyue-btn" id="close-btn">✕</button>
-        </div>
-        <div class="ciyue-empty">未在启用的词典中查到词条</div>
-      `;
-      popupCard.querySelector("#close-btn").addEventListener("click", () => {
-        popupCard.style.display = "none";
-      });
-      return;
-    }
-
     popupCard.innerHTML = `
       <div class="ciyue-header">
         <div class="ciyue-title-area">
@@ -363,8 +404,14 @@
           <button class="ciyue-btn" id="close-btn" title="关闭">✕</button>
         </div>
       </div>
-      <div class="ciyue-tabs" id="tabs-container"></div>
-      <div class="ciyue-content-body" id="body-container"></div>
+      <div class="ciyue-nav-tabs">
+        <div class="ciyue-tab active" id="tab-dicts">📚 本地词典 (${(data.results || []).length})</div>
+        <div class="ciyue-tab" id="tab-ai">🤖 AI 深度释义</div>
+      </div>
+      <div class="ciyue-content-body">
+        <div id="dicts-container"></div>
+        <div class="ciyue-ai-view" id="ai-container"></div>
+      </div>
     `;
 
     popupCard.querySelector("#close-btn").addEventListener("click", () => {
@@ -384,38 +431,70 @@
           starBtn.classList.add("active");
           starBtn.textContent = "★";
         }
-      } catch (e) {
-        console.error("Wordbook toggle failed:", e);
+      } catch (_) {}
+    });
+
+    const tabDicts = popupCard.querySelector("#tab-dicts");
+    const tabAi = popupCard.querySelector("#tab-ai");
+    const dictsContainer = popupCard.querySelector("#dicts-container");
+    const aiContainer = popupCard.querySelector("#ai-container");
+
+    let aiRequested = false;
+    tabDicts.addEventListener("click", () => {
+      tabDicts.classList.add("active");
+      tabAi.classList.remove("active");
+      dictsContainer.style.display = "block";
+      aiContainer.style.display = "none";
+    });
+
+    tabAi.addEventListener("click", () => {
+      tabAi.classList.add("active");
+      tabDicts.classList.remove("active");
+      dictsContainer.style.display = "none";
+      aiContainer.style.display = "block";
+
+      if (!aiRequested) {
+        aiRequested = true;
+        streamAiExplain(data.word, aiContainer);
       }
     });
 
-    const tabsContainer = popupCard.querySelector("#tabs-container");
-    const bodyContainer = popupCard.querySelector("#body-container");
+    if (!data.results || data.results.length === 0) {
+      dictsContainer.innerHTML = `<div class="ciyue-empty">未在当前词典中查到条目</div>`;
+      return;
+    }
 
+    // Render collapsible dictionary list
     data.results.forEach((item, index) => {
-      const tab = document.createElement("div");
-      tab.className = `ciyue-tab ${index === 0 ? "active" : ""}`;
-      tab.textContent = item.dictTitle || `词典 ${index + 1}`;
-      tabsContainer.appendChild(tab);
+      const itemEl = document.createElement("div");
+      itemEl.className = "ciyue-dict-item";
+      itemEl.id = `dict-item-${index}`;
 
-      const frame = document.createElement("iframe");
-      frame.className = "ciyue-frame";
-      frame.id = `ciyue-frame-${index}`;
-      frame.sandbox = "allow-same-origin allow-scripts";
-      frame.style.display = index === 0 ? "block" : "none";
-      bodyContainer.appendChild(frame);
+      itemEl.innerHTML = `
+        <div class="ciyue-dict-item-header">
+          <div class="ciyue-dict-title">
+            <span class="ciyue-chevron">▼</span>
+            <span>${escapeHtml(item.dictTitle || "词典")}</span>
+          </div>
+          <span style="font-size:11px; opacity:0.8;">${escapeHtml(item.headword || "")}</span>
+        </div>
+        <div class="ciyue-frame-wrapper">
+          <iframe class="ciyue-frame" id="frame-${index}" sandbox="allow-same-origin allow-scripts"></iframe>
+        </div>
+      `;
 
-      tab.addEventListener("click", () => {
-        tabsContainer.querySelectorAll(".ciyue-tab").forEach(t => t.classList.remove("active"));
-        tab.classList.add("active");
-        bodyContainer.querySelectorAll(".ciyue-frame").forEach(f => f.style.display = "none");
-        frame.style.display = "block";
+      itemEl.querySelector(".ciyue-dict-item-header").addEventListener("click", () => {
+        itemEl.classList.toggle("collapsed");
       });
 
-      // Write content into iframe
+      dictsContainer.appendChild(itemEl);
+
       setTimeout(() => {
+        const frame = itemEl.querySelector(`#frame-${index}`);
+        if (!frame) return;
         const frameDoc = frame.contentDocument || frame.contentWindow.document;
         const baseHref = `${settings.serverUrl}${item.resourceBase}`;
+
         frameDoc.open();
         frameDoc.write(`
           <!DOCTYPE html>
@@ -424,14 +503,23 @@
             <base href="${baseHref}">
             <meta charset="utf-8">
             <style>
-              body { font-family: sans-serif; padding: 12px; margin: 0; line-height: 1.45; font-size: 14px; color: #1f1f1f; }
+              body { font-family: sans-serif; padding: 12px; margin: 0; line-height: 1.45; font-size: 13px; color: #1f1f1f; }
               a { color: #1a73e8; text-decoration: none; cursor: pointer; }
               a:hover { text-decoration: underline; }
             </style>
+            <script src="${settings.serverUrl}/assets/darkreader.js"><\/script>
           </head>
           <body>
             ${item.content}
             <script>
+              if (window.DarkReader && ${isDarkTheme()}) {
+                window.DarkReader.setFetchMethod(window.fetch);
+                window.DarkReader.enable({
+                  brightness: 100, contrast: 100, sepia: 0,
+                  darkSchemeBackgroundColor: "#1e1e24", darkSchemeTextColor: "#e6e0e9"
+                });
+              }
+
               document.addEventListener('click', (e) => {
                 const a = e.target.closest('a');
                 if (!a) return;
@@ -439,12 +527,10 @@
                 if (!href) return;
                 if (href.startsWith('sound://')) {
                   e.preventDefault();
-                  const soundFile = href.replace('sound://', '');
-                  new Audio('${baseHref}' + soundFile).play();
+                  new Audio('${baseHref}' + href.replace('sound://', '')).play();
                 } else if (href.startsWith('entry://')) {
                   e.preventDefault();
-                  const nextWord = href.replace('entry://', '');
-                  window.parent.postMessage({ type: 'CIYUE_SUB_LOOKUP', word: nextWord }, '*');
+                  window.parent.postMessage({ type: 'CIYUE_SUB_LOOKUP', word: href.replace('entry://', '') }, '*');
                 }
               });
             <\/script>
@@ -452,8 +538,54 @@
           </html>
         `);
         frameDoc.close();
+
+        frame.onload = () => {
+          try {
+            const h = frameDoc.body.scrollHeight;
+            if (h > 100) frame.style.height = Math.min(Math.max(h + 20, 160), 380) + 'px';
+          } catch (_) {}
+        };
       }, 0);
     });
+  }
+
+  async function streamAiExplain(word, targetEl) {
+    targetEl.textContent = "🤖 正在请求 AI 深度解析...";
+
+    try {
+      const res = await fetch(`${settings.serverUrl}/api/ai/explain?word=${encodeURIComponent(word)}&stream=true`);
+      if (!res.ok) {
+        const err = await res.json();
+        targetEl.innerHTML = `<span style="color:#d32f2f;">${escapeHtml(err.error || "AI 提供商未在词悦中配置")}</span>`;
+        return;
+      }
+
+      targetEl.textContent = "";
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n\n");
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const payload = line.substring(6);
+            if (payload === "[DONE]") break;
+            try {
+              const parsed = JSON.parse(payload);
+              if (parsed.chunk) targetEl.textContent += parsed.chunk;
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (e) {
+      targetEl.textContent = "请求失败: " + e.message;
+    }
   }
 
   window.addEventListener("message", (e) => {

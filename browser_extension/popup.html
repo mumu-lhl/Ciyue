@@ -22,8 +22,8 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body {
-      width: 380px;
-      max-height: 520px;
+      width: 400px;
+      max-height: 560px;
       background: var(--bg);
       color: var(--text);
       display: flex;
@@ -37,6 +37,7 @@
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
+      gap: 8px;
     }
     .brand {
       display: flex;
@@ -52,6 +53,17 @@
       background: #4CAF50;
     }
     .status-dot.offline { background: #F44336; }
+    .group-select {
+      background: var(--surface);
+      color: inherit;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      outline: none;
+      cursor: pointer;
+    }
+
     .search-box {
       padding: 10px 14px;
       display: flex;
@@ -77,6 +89,7 @@
       cursor: pointer;
       font-weight: 600;
     }
+
     .suggestions {
       position: absolute;
       top: 48px;
@@ -97,34 +110,83 @@
     }
     .suggestion-item:last-child { border-bottom: none; }
     .suggestion-item:hover { background: rgba(128,128,128,0.15); }
+
+    .nav-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.03);
+    }
+    .tab {
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: #79747E;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
     .content-area {
       flex: 1;
       overflow-y: auto;
       padding: 0 14px 14px 14px;
-      max-height: 400px;
+      max-height: 420px;
     }
+
     .empty, .loading {
       text-align: center;
       padding: 30px 10px;
       color: #79747E;
     }
-    .dict-header {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--primary);
-      padding: 6px 0;
-      border-bottom: 1px solid var(--border);
-      margin-top: 10px;
-      display: flex;
-      justify-content: space-between;
+
+    /* Collapsible card */
+    .dict-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-top: 8px;
+      overflow: hidden;
     }
+    .dict-header {
+      padding: 8px 10px;
+      background: var(--surface);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+    .dict-chevron {
+      font-size: 10px;
+      color: var(--primary);
+      margin-right: 6px;
+      transition: transform 0.2s;
+    }
+    .dict-card.collapsed .dict-chevron {
+      transform: rotate(-90deg);
+    }
+    .dict-card.collapsed iframe {
+      display: none;
+    }
+
     iframe.result-frame {
       width: 100%;
-      height: 260px;
+      height: 240px;
       border: none;
-      margin-top: 6px;
+      display: block;
       background: #FFFFFF;
-      border-radius: 8px;
+    }
+
+    .ai-view {
+      padding: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      font-size: 13px;
+      display: none;
     }
   </style>
 </head>
@@ -134,7 +196,10 @@
       <span>📖 词悦</span>
       <span class="status-dot" id="status-dot" title="连接状态"></span>
     </div>
-    <a href="options.html" target="_blank" style="font-size:12px; color:inherit; text-decoration:none;">⚙️ 设置</a>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <select class="group-select" id="group-select" title="词典分组"></select>
+      <a href="options.html" target="_blank" style="font-size:12px; color:inherit; text-decoration:none;">⚙️</a>
+    </div>
   </div>
 
   <div class="search-box">
@@ -143,9 +208,15 @@
     <div class="suggestions" id="suggestions"></div>
   </div>
 
+  <div class="nav-tabs" id="nav-tabs" style="display:none;">
+    <div class="tab active" id="tab-dicts">📚 词典释义</div>
+    <div class="tab" id="tab-ai">🤖 AI 深度解析</div>
+  </div>
+
   <div class="content-area" id="content-area">
     <div class="empty">请输入单词并回车或点击查询</div>
   </div>
+  <div class="content-area ai-view" id="ai-area"></div>
 
   <script src="popup.js"></script>
 </body>

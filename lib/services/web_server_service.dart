@@ -3,15 +3,18 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
 import "package:mime/mime.dart";
 
 /// Service providing a local HTTP server for Web UI and REST API.
 ///
 /// Enables external browser extensions and local/LAN web browsers to search
-/// dictionaries, query suggestions, view definitions, and sync wordbooks.
+/// dictionaries, query suggestions, view definitions, switch groups,
+/// invoke AI explanations/translations, and sync wordbooks.
 class WebServerService {
   HttpServer? _server;
   bool _isStarting = false;
@@ -105,8 +108,14 @@ class WebServerService {
     try {
       if (path == "/" || path == "/index.html") {
         await _serveWebUi(request);
+      } else if (path == "/assets/darkreader.js") {
+        await _handleDarkReaderAsset(request);
       } else if (path == "/api/status") {
         await _handleStatus(request);
+      } else if (path == "/api/groups") {
+        await _handleGroups(request);
+      } else if (path == "/api/groups/switch") {
+        await _handleGroupSwitch(request);
       } else if (path == "/api/dictionaries") {
         await _handleDictionaries(request);
       } else if (path == "/api/suggest") {
@@ -115,6 +124,12 @@ class WebServerService {
         await _handleLookup(request);
       } else if (path.startsWith("/api/resource/")) {
         await _handleResource(request);
+      } else if (path == "/api/ai/status") {
+        await _handleAiStatus(request);
+      } else if (path == "/api/ai/explain") {
+        await _handleAiExplain(request);
+      } else if (path == "/api/ai/translate") {
+        await _handleAiTranslate(request);
       } else if (path == "/api/wordbook/check") {
         await _handleWordbookCheck(request);
       } else if (path == "/api/wordbook") {
@@ -154,12 +169,61 @@ class WebServerService {
     request.response.close();
   }
 
+  Future<void> _handleDarkReaderAsset(HttpRequest request) async {
+    final file = File("assets/third_party/darkreader/darkreader.js");
+    if (await file.exists()) {
+      request.response.headers.contentType = ContentType(
+        "application",
+        "javascript",
+        charset: "utf-8",
+      );
+      request.response.headers.set(
+        "Cache-Control",
+        "public, max-age=86400, immutable",
+      );
+      await file.openRead().pipe(request.response);
+    } else {
+      request.response.statusCode = HttpStatus.notFound;
+      await request.response.close();
+    }
+  }
+
   Future<void> _handleStatus(HttpRequest request) async {
     _sendJson(request, {
       "status": "ok",
       "app": "Ciyue",
       "port": port,
       "allowLan": settings.webServerAllowLan,
+      "currentGroupId": dictManager.groupId,
+      "dictionariesCount": dictManager.dictIds.length,
+      "aiConfigured": isAiProviderConfigured(settings.aiProvider),
+    });
+  }
+
+  Future<void> _handleGroups(HttpRequest request) async {
+    final groups = await dictGroupDao.getAllGroups();
+    final currentId = dictManager.groupId;
+    final list = [
+      for (final g in groups)
+        {"id": g.id, "name": g.name, "isCurrent": g.id == currentId},
+    ];
+    _sendJson(request, list);
+  }
+
+  Future<void> _handleGroupSwitch(HttpRequest request) async {
+    final idParam = request.uri.queryParameters["id"];
+    final id = int.tryParse(idParam ?? "");
+    if (id == null) {
+      _sendJson(request, {
+        "error": "Missing or invalid id parameter",
+      }, statusCode: 400);
+      return;
+    }
+
+    await dictManager.setCurrentGroup(id);
+    _sendJson(request, {
+      "status": "ok",
+      "currentGroupId": dictManager.groupId,
       "dictionariesCount": dictManager.dictIds.length,
     });
   }
@@ -202,8 +266,20 @@ class WebServerService {
 
   Future<void> _handleLookup(HttpRequest request) async {
     final word = request.uri.queryParameters["word"]?.trim() ?? "";
+    final groupIdParam = request.uri.queryParameters["groupId"];
+    if (groupIdParam != null) {
+      final targetGroupId = int.tryParse(groupIdParam);
+      if (targetGroupId != null && targetGroupId != dictManager.groupId) {
+        await dictManager.setCurrentGroup(targetGroupId);
+      }
+    }
+
     if (word.isEmpty) {
-      _sendJson(request, {"word": "", "results": const []});
+      _sendJson(request, {
+        "word": "",
+        "currentGroupId": dictManager.groupId,
+        "results": const [],
+      });
       return;
     }
 
@@ -220,6 +296,7 @@ class WebServerService {
         results.add({
           "dictId": dict.id,
           "dictTitle": dict.title,
+          "dictType": dict.type,
           "headword": entry.headword,
           "content": content,
           "resourceBase": "/api/resource/${dict.id}/",
@@ -229,13 +306,17 @@ class WebServerService {
 
     final stared = await wordbookDao.wordExist(word);
 
-    _sendJson(request, {"word": word, "stared": stared, "results": results});
+    _sendJson(request, {
+      "word": word,
+      "currentGroupId": dictManager.groupId,
+      "stared": stared,
+      "results": results,
+    });
   }
 
   Future<void> _handleResource(HttpRequest request) async {
     final path = request.uri.path;
-    // Format: /api/resource/{dictId}/{resourcePath...}
-    final prefix = "/api/resource/";
+    const prefix = "/api/resource/";
     if (!path.startsWith(prefix)) {
       request.response.statusCode = HttpStatus.notFound;
       await request.response.close();
@@ -291,6 +372,168 @@ class WebServerService {
     );
     request.response.add(bytes);
     await request.response.close();
+  }
+
+  Future<void> _handleAiStatus(HttpRequest request) async {
+    final provider = settings.aiProvider;
+    final configured = isAiProviderConfigured(provider);
+    final config = settings.getAiProviderConfig(provider);
+    _sendJson(request, {
+      "configured": configured,
+      "provider": provider,
+      "model": config["model"] ?? "",
+    });
+  }
+
+  Future<void> _handleAiExplain(HttpRequest request) async {
+    final word = request.uri.queryParameters["word"]?.trim() ?? "";
+    final stream = request.uri.queryParameters["stream"] == "true";
+    final targetLang =
+        request.uri.queryParameters["lang"] ?? "Simplified Chinese";
+
+    if (word.isEmpty) {
+      _sendJson(request, {"error": "Missing word parameter"}, statusCode: 400);
+      return;
+    }
+
+    final provider = settings.aiProvider;
+    if (!isAiProviderConfigured(provider)) {
+      _sendJson(request, {
+        "configured": false,
+        "error":
+            "AI provider '$provider' is not configured in Ciyue AI settings.",
+      }, statusCode: 400);
+      return;
+    }
+
+    final config = settings.getAiProviderConfig(provider);
+    final ai = AI(
+      provider: provider,
+      model: config["model"] ?? "",
+      apikey: config["apiKey"] ?? "",
+    );
+
+    final promptTemplate =
+        prefs.getString("customExplainPrompt") ??
+        AIPrompts.defaultExplainPrompt;
+    final prompt = promptTemplate
+        .replaceAll(r"$word", word)
+        .replaceAll(r"$targetLanguage", targetLang);
+
+    if (stream) {
+      request.response.headers.set(
+        "Content-Type",
+        "text/event-stream; charset=utf-8",
+      );
+      request.response.headers.set("Cache-Control", "no-cache");
+      request.response.headers.set("Connection", "keep-alive");
+      request.response.bufferOutput = false;
+
+      try {
+        await for (final chunk in ai.requestStream(prompt)) {
+          request.response.write("data: ${jsonEncode({"chunk": chunk})}\n\n");
+          await request.response.flush();
+        }
+        request.response.write("data: [DONE]\n\n");
+      } catch (e) {
+        request.response.write("data: ${jsonEncode({"error": "$e"})}\n\n");
+      } finally {
+        await request.response.close();
+      }
+    } else {
+      try {
+        final explanation = await ai.request(prompt);
+        _sendJson(request, {
+          "configured": true,
+          "word": word,
+          "explanation": explanation,
+        });
+      } catch (e) {
+        _sendJson(request, {"error": "$e"}, statusCode: 500);
+      }
+    }
+  }
+
+  Future<void> _handleAiTranslate(HttpRequest request) async {
+    String text = request.uri.queryParameters["text"]?.trim() ?? "";
+    final stream = request.uri.queryParameters["stream"] == "true";
+    final targetLang =
+        request.uri.queryParameters["targetLang"] ?? "Simplified Chinese";
+
+    if (text.isEmpty && request.method == "POST") {
+      try {
+        final content = await utf8.decoder.bind(request).join();
+        if (content.isNotEmpty) {
+          final data = jsonDecode(content);
+          if (data is Map && data["text"] != null) {
+            text = data["text"].toString().trim();
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (text.isEmpty) {
+      _sendJson(request, {"error": "Missing text parameter"}, statusCode: 400);
+      return;
+    }
+
+    final provider = settings.aiProvider;
+    if (!isAiProviderConfigured(provider)) {
+      _sendJson(request, {
+        "configured": false,
+        "error":
+            "AI provider '$provider' is not configured in Ciyue AI settings.",
+      }, statusCode: 400);
+      return;
+    }
+
+    final config = settings.getAiProviderConfig(provider);
+    final ai = AI(
+      provider: provider,
+      model: config["model"] ?? "",
+      apikey: config["apiKey"] ?? "",
+    );
+
+    final promptTemplate =
+        prefs.getString("customTranslatePrompt") ??
+        AIPrompts.defaultTranslatePrompt;
+    final prompt = promptTemplate
+        .replaceAll(r"$sourceLanguage", "auto detect")
+        .replaceAll(r"$targetLanguage", targetLang)
+        .replaceAll(r"$text", text);
+
+    if (stream) {
+      request.response.headers.set(
+        "Content-Type",
+        "text/event-stream; charset=utf-8",
+      );
+      request.response.headers.set("Cache-Control", "no-cache");
+      request.response.headers.set("Connection", "keep-alive");
+      request.response.bufferOutput = false;
+
+      try {
+        await for (final chunk in ai.requestStream(prompt)) {
+          request.response.write("data: ${jsonEncode({"chunk": chunk})}\n\n");
+          await request.response.flush();
+        }
+        request.response.write("data: [DONE]\n\n");
+      } catch (e) {
+        request.response.write("data: ${jsonEncode({"error": "$e"})}\n\n");
+      } finally {
+        await request.response.close();
+      }
+    } else {
+      try {
+        final translation = await ai.request(prompt);
+        _sendJson(request, {
+          "configured": true,
+          "text": text,
+          "translation": translation,
+        });
+      } catch (e) {
+        _sendJson(request, {"error": "$e"}, statusCode: 500);
+      }
+    }
   }
 
   Future<void> _handleWordbookCheck(HttpRequest request) async {
@@ -368,225 +611,340 @@ const String _webUiHtml = r'''<!DOCTYPE html>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236750A4'><path d='M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z'/></svg>">
   <style>
     :root {
-      --md-sys-color-primary: #6750A4;
-      --md-sys-color-on-primary: #FFFFFF;
-      --md-sys-color-primary-container: #EADDFF;
-      --md-sys-color-on-primary-container: #21005D;
-      --md-sys-color-surface: #FEF7FF;
-      --md-sys-color-on-surface: #1D1B20;
-      --md-sys-color-surface-container: #F3EDF7;
-      --md-sys-color-surface-container-high: #ECE6F0;
-      --md-sys-color-outline: #79747E;
-      --md-sys-color-outline-variant: #CAC4D0;
-      --border-radius-m: 16px;
-      --border-radius-l: 24px;
+      --primary: #6750A4;
+      --on-primary: #FFFFFF;
+      --primary-container: #EADDFF;
+      --on-primary-container: #21005D;
+      --surface: #FEF7FF;
+      --on-surface: #1D1B20;
+      --surface-container: #F3EDF7;
+      --surface-container-high: #ECE6F0;
+      --outline: #79747E;
+      --outline-variant: #CAC4D0;
+      --card-radius: 16px;
+    }
+
+    [data-theme="dark"] {
+      --primary: #D0BCFF;
+      --on-primary: #381E72;
+      --primary-container: #4F378B;
+      --on-primary-container: #EADDFF;
+      --surface: #141218;
+      --on-surface: #E6E0E9;
+      --surface-container: #211F26;
+      --surface-container-high: #2B2930;
+      --outline: #938F99;
+      --outline-variant: #49454F;
     }
 
     @media (prefers-color-scheme: dark) {
-      :root {
-        --md-sys-color-primary: #D0BCFF;
-        --md-sys-color-on-primary: #381E72;
-        --md-sys-color-primary-container: #4F378B;
-        --md-sys-color-on-primary-container: #EADDFF;
-        --md-sys-color-surface: #141218;
-        --md-sys-color-on-surface: #E6E0E9;
-        --md-sys-color-surface-container: #211F26;
-        --md-sys-color-surface-container-high: #2B2930;
-        --md-sys-color-outline: #938F99;
-        --md-sys-color-outline-variant: #49454F;
+      :root:not([data-theme="light"]) {
+        --primary: #D0BCFF;
+        --on-primary: #381E72;
+        --primary-container: #4F378B;
+        --on-primary-container: #EADDFF;
+        --surface: #141218;
+        --on-surface: #E6E0E9;
+        --surface-container: #211F26;
+        --surface-container-high: #2B2930;
+        --outline: #938F99;
+        --outline-variant: #49454F;
       }
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--md-sys-color-surface);
-      color: var(--md-sys-color-on-surface);
+      background-color: var(--surface);
+      color: var(--on-surface);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 24px 16px;
+      transition: background-color 0.2s, color 0.2s;
     }
 
     .container {
       width: 100%;
-      max-width: 860px;
+      max-width: 900px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
     }
 
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 4px;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 4px;
     }
 
-    .logo-badge {
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .header-controls {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--md-sys-color-primary);
     }
 
-    .badge {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 12px;
-      background-color: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
+    .group-selector, .btn-icon-toggle {
+      background-color: var(--surface-container);
+      color: var(--on-surface);
+      border: 1px solid var(--outline-variant);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
     }
 
-    .search-wrapper {
-      position: relative;
-      width: 100%;
+    .btn-icon-toggle:hover, .group-selector:hover {
+      background-color: var(--surface-container-high);
+      border-color: var(--primary);
     }
 
+    .search-wrapper { position: relative; width: 100%; }
     .search-box {
       width: 100%;
       display: flex;
       align-items: center;
-      background-color: var(--md-sys-color-surface-container-high);
-      border: 1px solid var(--md-sys-color-outline-variant);
-      border-radius: var(--border-radius-l);
-      padding: 6px 16px;
+      background-color: var(--surface-container-high);
+      border: 1px solid var(--outline-variant);
+      border-radius: 28px;
+      padding: 6px 18px;
       transition: all 0.2s;
     }
-
     .search-box:focus-within {
-      border-color: var(--md-sys-color-primary);
-      box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-container);
     }
-
-    .search-icon {
-      width: 22px;
-      height: 22px;
-      fill: var(--md-sys-color-outline);
-      margin-right: 12px;
-    }
-
+    .search-icon { width: 22px; height: 22px; fill: var(--outline); margin-right: 10px; }
     input#query-input {
       flex: 1;
       border: none;
       background: transparent;
       outline: none;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       color: inherit;
       padding: 8px 0;
     }
-
     .clear-btn, .search-btn {
       background: none;
       border: none;
       cursor: pointer;
       padding: 8px;
-      display: flex;
-      align-items: center;
-      color: var(--md-sys-color-outline);
+      color: var(--outline);
       border-radius: 50%;
     }
-
-    .clear-btn:hover, .search-btn:hover {
-      background-color: rgba(128, 128, 128, 0.15);
-      color: var(--md-sys-color-primary);
-    }
+    .clear-btn:hover, .search-btn:hover { color: var(--primary); }
 
     .dropdown-suggestions {
       position: absolute;
       top: calc(100% + 6px);
-      left: 0;
-      right: 0;
-      background-color: var(--md-sys-color-surface-container-high);
-      border: 1px solid var(--md-sys-color-outline-variant);
-      border-radius: var(--border-radius-m);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      left: 0; right: 0;
+      background-color: var(--surface-container-high);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--card-radius);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
       z-index: 100;
       overflow: hidden;
       display: none;
     }
-
     .suggestion-item {
       padding: 10px 18px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      font-size: 1rem;
-      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      border-bottom: 1px solid var(--outline-variant);
     }
     .suggestion-item:last-child { border-bottom: none; }
-    .suggestion-item:hover, .suggestion-item.active {
-      background-color: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
+    .suggestion-item:hover {
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
     }
 
+    /* AI Translation Drawer */
+    .ai-translate-drawer {
+      background-color: var(--surface-container);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--card-radius);
+      padding: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ai-translate-drawer textarea {
+      width: 100%;
+      height: 80px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--outline-variant);
+      background: var(--surface);
+      color: inherit;
+      resize: vertical;
+      font-family: inherit;
+      outline: none;
+    }
+    .ai-translate-drawer textarea:focus { border-color: var(--primary); }
+    .ai-translate-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      align-items: center;
+    }
+    .ai-result-box {
+      margin-top: 8px;
+      padding: 12px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--outline-variant);
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    /* Word Header Card */
     .word-header-card {
-      background-color: var(--md-sys-color-surface-container);
-      border-radius: var(--border-radius-m);
-      padding: 16px 20px;
+      background-color: var(--surface-container);
+      border-radius: var(--card-radius);
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid var(--md-sys-color-outline-variant);
+      border: 1px solid var(--outline-variant);
+      flex-wrap: wrap;
+      gap: 10px;
     }
+    .word-title { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+    .word-actions { display: flex; align-items: center; gap: 8px; }
 
-    .word-title-area {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-    }
-
-    .word-title {
-      font-size: 1.8rem;
-      font-weight: bold;
-    }
-
-    .action-btn {
-      display: flex;
+    .btn-action {
+      display: inline-flex;
       align-items: center;
       gap: 6px;
-      background-color: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
       border: none;
       padding: 8px 16px;
       border-radius: 20px;
       font-weight: 600;
+      font-size: 0.9rem;
       cursor: pointer;
-      transition: transform 0.1s, background-color 0.2s;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    .btn-action:active { transform: scale(0.96); }
+    .btn-action.star-active { background-color: #E8B931; color: #211B00; }
+    .btn-action.ai-active { background: linear-gradient(135deg, #6750A4, #9C27B0); color: white; }
+
+    /* AI Explanation Card */
+    .ai-explain-card {
+      background-color: var(--surface-container);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--card-radius);
+      padding: 18px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 2px 12px rgba(103, 80, 164, 0.08);
+    }
+    .ai-explain-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      color: var(--primary);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--outline-variant);
+    }
+    .ai-content {
+      line-height: 1.6;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+    }
+    .ai-content h2, .ai-content h3 { margin: 10px 0 6px 0; color: var(--primary); font-size: 1.1rem; }
+    .ai-content strong { color: var(--primary); }
+
+    /* Dictionaries Toolbar */
+    .dicts-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 6px;
+      font-size: 0.88rem;
+      color: var(--outline);
+    }
+    .toggle-all-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px;
     }
 
-    .action-btn:active { transform: scale(0.96); }
-    .action-btn.active {
-      background-color: #E8B931;
-      color: #211B00;
-    }
-
+    /* Collapsible Dictionary Card */
     .dict-card {
-      background-color: var(--md-sys-color-surface-container);
-      border-radius: var(--border-radius-m);
-      border: 1px solid var(--md-sys-color-outline-variant);
+      background-color: var(--surface-container);
+      border-radius: var(--card-radius);
+      border: 1px solid var(--outline-variant);
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      transition: all 0.2s ease;
     }
 
     .dict-card-header {
       padding: 12px 18px;
-      background-color: var(--md-sys-color-surface-container-high);
+      background-color: var(--surface-container-high);
       font-weight: 600;
       font-size: 0.95rem;
-      color: var(--md-sys-color-primary);
-      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      color: var(--on-surface);
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .dict-card-header:hover {
+      background-color: rgba(103, 80, 164, 0.08);
+    }
+    .dict-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .collapse-icon {
+      transition: transform 0.2s ease;
+      font-size: 0.8rem;
+      color: var(--primary);
+    }
+    .dict-card.collapsed .collapse-icon {
+      transform: rotate(-90deg);
+    }
+    .dict-card.collapsed .dict-card-content {
+      display: none;
+    }
+
+    .dict-badge {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
+      font-weight: 600;
     }
 
     .dict-card-content {
       padding: 0;
       position: relative;
-      min-height: 120px;
     }
 
     iframe.dict-frame {
@@ -597,57 +955,61 @@ const String _webUiHtml = r'''<!DOCTYPE html>
       background-color: #FFFFFF;
     }
 
-    @media (prefers-color-scheme: dark) {
-      iframe.dict-frame {
-        filter: invert(0.9) hue-rotate(180deg);
-      }
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--md-sys-color-outline);
-    }
-
-    .loading-spinner {
-      display: none;
-      text-align: center;
-      padding: 40px;
-    }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--outline); }
+    .loading-spinner { display: none; text-align: center; padding: 30px; }
     .spinner {
       display: inline-block;
-      width: 36px;
-      height: 36px;
-      border: 4px solid var(--md-sys-color-outline-variant);
-      border-top-color: var(--md-sys-color-primary);
+      width: 32px; height: 32px;
+      border: 3px solid var(--outline-variant);
+      border-top-color: var(--primary);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
+  <script src="/assets/darkreader.js"></script>
 </head>
 <body>
   <div class="container">
     <header>
-      <div class="logo-badge">
+      <div class="brand-area">
         <span>📖 词悦</span>
-        <span class="badge" id="conn-badge">Desktop Web API</span>
+      </div>
+      <div class="header-controls">
+        <select class="group-selector" id="group-select" title="词典分组"></select>
+        <button class="btn-icon-toggle" id="toggle-translate-btn">🌐 翻译</button>
+        <button class="btn-icon-toggle" id="theme-btn" title="切换深色/浅色模式">🌓 模式</button>
       </div>
     </header>
 
+    <!-- AI Translate Drawer -->
+    <div class="ai-translate-drawer" id="translate-drawer">
+      <textarea id="translate-input" placeholder="输入需要翻译的文本、句子或段落..."></textarea>
+      <div class="ai-translate-actions">
+        <select class="group-selector" id="translate-lang">
+          <option value="Simplified Chinese">简体中文</option>
+          <option value="English">English</option>
+          <option value="Japanese">日本語</option>
+          <option value="French">Français</option>
+          <option value="German">Deutsch</option>
+        </select>
+        <button class="btn-action" id="do-translate-btn">开始翻译</button>
+      </div>
+      <div class="ai-result-box" id="translate-result" style="display:none;"></div>
+    </div>
+
+    <!-- Search Box -->
     <div class="search-wrapper">
       <div class="search-box">
         <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
         <input type="text" id="query-input" placeholder="输入单词或词组进行查词..." autocomplete="off" autofocus>
-        <button class="clear-btn" id="clear-btn" title="清空" style="display:none;">✕</button>
-        <button class="search-btn" id="search-btn" title="搜索">➔</button>
+        <button class="clear-btn" id="clear-btn" style="display:none;">✕</button>
+        <button class="search-btn" id="search-btn">➔</button>
       </div>
       <div class="dropdown-suggestions" id="suggestions-box"></div>
     </div>
 
-    <div class="loading-spinner" id="spinner">
-      <div class="spinner"></div>
-    </div>
+    <div class="loading-spinner" id="spinner"><div class="spinner"></div></div>
 
     <div id="results-area">
       <div class="empty-state" id="empty-state">
@@ -663,10 +1025,126 @@ const String _webUiHtml = r'''<!DOCTYPE html>
     const suggestionsBox = document.getElementById('suggestions-box');
     const resultsArea = document.getElementById('results-area');
     const spinner = document.getElementById('spinner');
+    const groupSelect = document.getElementById('group-select');
+    const themeBtn = document.getElementById('theme-btn');
+    const toggleTranslateBtn = document.getElementById('toggle-translate-btn');
+    const translateDrawer = document.getElementById('translate-drawer');
+    const translateInput = document.getElementById('translate-input');
+    const doTranslateBtn = document.getElementById('do-translate-btn');
+    const translateResult = document.getElementById('translate-result');
 
     let currentWord = '';
     let suggestDebounce = null;
+    let isAllCollapsed = false;
 
+    // Theme Management
+    let currentTheme = localStorage.getItem('ciyue_theme') || 'auto';
+    applyTheme(currentTheme);
+
+    themeBtn.addEventListener('click', () => {
+      if (currentTheme === 'auto') currentTheme = 'dark';
+      else if (currentTheme === 'dark') currentTheme = 'light';
+      else currentTheme = 'auto';
+      localStorage.setItem('ciyue_theme', currentTheme);
+      applyTheme(currentTheme);
+      updateIframesTheme();
+    });
+
+    function isDarkModeActive() {
+      if (currentTheme === 'dark') return true;
+      if (currentTheme === 'light') return false;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeBtn.textContent = '🌙 深色';
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        themeBtn.textContent = '☀️ 浅色';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        themeBtn.textContent = '🌓 自动';
+      }
+    }
+
+    // Load Groups
+    async function loadGroups() {
+      try {
+        const res = await fetch('/api/groups');
+        const groups = await res.json();
+        groupSelect.innerHTML = groups.map(g =>
+          `<option value="${g.id}" ${g.isCurrent ? 'selected' : ''}>📚 ${escapeHtml(g.name)}</option>`
+        ).join('');
+      } catch (_) {}
+    }
+    loadGroups();
+
+    groupSelect.addEventListener('change', async () => {
+      const groupId = groupSelect.value;
+      try {
+        await fetch(`/api/groups/switch?id=${groupId}`, { method: 'POST' });
+        if (currentWord) doLookup(currentWord);
+      } catch (_) {}
+    });
+
+    // Translation Drawer
+    toggleTranslateBtn.addEventListener('click', () => {
+      const show = translateDrawer.style.display !== 'flex';
+      translateDrawer.style.display = show ? 'flex' : 'none';
+      if (show) translateInput.focus();
+    });
+
+    doTranslateBtn.addEventListener('click', async () => {
+      const text = translateInput.value.trim();
+      if (!text) return;
+      translateResult.style.display = 'block';
+      translateResult.textContent = '正在翻译...';
+
+      try {
+        const lang = document.getElementById('translate-lang').value;
+        const res = await fetch(`/api/ai/translate?stream=true&targetLang=${encodeURIComponent(lang)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          translateResult.textContent = '翻译失败: ' + (err.error || '未配置 AI 提供商');
+          return;
+        }
+
+        translateResult.textContent = '';
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const payload = line.substring(6);
+              if (payload === '[DONE]') break;
+              try {
+                const parsed = JSON.parse(payload);
+                if (parsed.chunk) translateResult.textContent += parsed.chunk;
+              } catch (_) {}
+            }
+          }
+        }
+      } catch (e) {
+        translateResult.textContent = '翻译出错: ' + e.message;
+      }
+    });
+
+    // Search events
     input.addEventListener('input', () => {
       const val = input.value.trim();
       clearBtn.style.display = val ? 'block' : 'none';
@@ -675,7 +1153,7 @@ const String _webUiHtml = r'''<!DOCTYPE html>
         return;
       }
       clearTimeout(suggestDebounce);
-      suggestDebounce = setTimeout(() => fetchSuggestions(val), 200);
+      suggestDebounce = setTimeout(() => fetchSuggestions(val), 180);
     });
 
     input.addEventListener('keydown', (e) => {
@@ -729,9 +1207,7 @@ const String _webUiHtml = r'''<!DOCTYPE html>
             doLookup(word);
           });
         });
-      } catch (e) {
-        console.error('Suggest error:', e);
-      }
+      } catch (_) {}
     }
 
     async function doLookup(word) {
@@ -753,25 +1229,47 @@ const String _webUiHtml = r'''<!DOCTYPE html>
 
     function renderResults(data) {
       if (!data.results || data.results.length === 0) {
-        resultsArea.innerHTML = `<div class="empty-state">未在已启用的词典中找到 “<b>${escapeHtml(data.word)}</b>”</div>`;
+        resultsArea.innerHTML = `<div class="empty-state">未在当前分组词典中找到 “<b>${escapeHtml(data.word)}</b>”</div>`;
         return;
       }
 
       let html = `
         <div class="word-header-card">
-          <div class="word-title-area">
-            <span class="word-title">${escapeHtml(data.word)}</span>
+          <span class="word-title">${escapeHtml(data.word)}</span>
+          <div class="word-actions">
+            <button class="btn-action" id="ai-explain-btn">
+              <span>🤖 AI 深度解析</span>
+            </button>
+            <button class="btn-action ${data.stared ? 'star-active' : ''}" id="star-btn" onclick="toggleWordbook('${escapeHtml(data.word)}')">
+              <span>${data.stared ? '★ 已在生词本' : '☆ 存入生词本'}</span>
+            </button>
           </div>
-          <button class="action-btn ${data.stared ? 'active' : ''}" id="star-btn" onclick="toggleWordbook('${escapeHtml(data.word)}')">
-            <span>${data.stared ? '★ 已在生词本' : '☆ 存入生词本'}</span>
-          </button>
+        </div>
+
+        <div class="ai-explain-card" id="ai-explain-card">
+          <div class="ai-explain-header">
+            <span>🤖 AI 深度解析 - ${escapeHtml(data.word)}</span>
+            <button class="toggle-all-btn" id="close-ai-btn">✕ 关闭</button>
+          </div>
+          <div class="ai-content" id="ai-explain-content">正在请求 AI 解析...</div>
+        </div>
+
+        <div class="dicts-toolbar">
+          <span>共找到 ${data.results.length} 个词典释义</span>
+          <button class="toggle-all-btn" id="toggle-all-btn">折叠全部</button>
         </div>
       `;
 
       data.results.forEach((item, index) => {
         html += `
-          <div class="dict-card">
-            <div class="dict-card-header">${escapeHtml(item.dictTitle || '词典')}</div>
+          <div class="dict-card" id="card-${index}">
+            <div class="dict-card-header" onclick="toggleCard(${index})">
+              <div class="dict-title-group">
+                <span class="collapse-icon">▼</span>
+                <span>${escapeHtml(item.dictTitle || '词典')}</span>
+              </div>
+              <span class="dict-badge">${escapeHtml(item.headword || '')}</span>
+            </div>
             <div class="dict-card-content">
               <iframe class="dict-frame" id="frame-${index}" sandbox="allow-same-origin allow-scripts"></iframe>
             </div>
@@ -780,6 +1278,36 @@ const String _webUiHtml = r'''<!DOCTYPE html>
       });
 
       resultsArea.innerHTML = html;
+
+      // Wire AI explain button
+      const aiBtn = document.getElementById('ai-explain-btn');
+      const aiCard = document.getElementById('ai-explain-card');
+      const aiContent = document.getElementById('ai-explain-content');
+      const closeAiBtn = document.getElementById('close-ai-btn');
+
+      aiBtn.addEventListener('click', () => {
+        aiCard.style.display = 'flex';
+        aiBtn.classList.add('ai-active');
+        fetchAiExplanation(data.word, aiContent);
+      });
+      closeAiBtn.addEventListener('click', () => {
+        aiCard.style.display = 'none';
+        aiBtn.classList.remove('ai-active');
+      });
+
+      // Wire Toggle All button
+      const toggleAllBtn = document.getElementById('toggle-all-btn');
+      toggleAllBtn.addEventListener('click', () => {
+        isAllCollapsed = !isAllCollapsed;
+        toggleAllBtn.textContent = isAllCollapsed ? '展开全部' : '折叠全部';
+        data.results.forEach((_, i) => {
+          const card = document.getElementById(`card-${i}`);
+          if (card) {
+            if (isAllCollapsed) card.classList.add('collapsed');
+            else card.classList.remove('collapsed');
+          }
+        });
+      });
 
       // Fill iframes
       data.results.forEach((item, index) => {
@@ -798,10 +1326,33 @@ const String _webUiHtml = r'''<!DOCTYPE html>
               a { color: #1a73e8; text-decoration: none; cursor: pointer; }
               a:hover { text-decoration: underline; }
             </style>
+            <script src="/assets/darkreader.js"><\/script>
           </head>
           <body>
             ${item.content}
             <script>
+              function syncTheme(isDark) {
+                if (!window.DarkReader) return;
+                if (isDark) {
+                  window.DarkReader.setFetchMethod(window.fetch);
+                  window.DarkReader.enable({
+                    brightness: 100, contrast: 100, sepia: 0,
+                    darkSchemeBackgroundColor: "#1e1e24",
+                    darkSchemeTextColor: "#e6e0e9"
+                  });
+                } else if (window.DarkReader.isEnabled()) {
+                  window.DarkReader.disable();
+                }
+              }
+
+              syncTheme(${isDarkModeActive()});
+
+              window.addEventListener('message', (e) => {
+                if (e.data && e.data.type === 'THEME_SYNC') {
+                  syncTheme(e.data.isDark);
+                }
+              });
+
               document.addEventListener('click', (e) => {
                 const a = e.target.closest('a');
                 if (!a) return;
@@ -810,8 +1361,7 @@ const String _webUiHtml = r'''<!DOCTYPE html>
                 if (href.startsWith('sound://')) {
                   e.preventDefault();
                   const soundFile = href.replace('sound://', '');
-                  const audio = new Audio('${window.location.origin}${item.resourceBase}' + soundFile);
-                  audio.play();
+                  new Audio('${window.location.origin}${item.resourceBase}' + soundFile).play();
                 } else if (href.startsWith('entry://')) {
                   e.preventDefault();
                   const targetWord = href.replace('entry://', '');
@@ -827,14 +1377,66 @@ const String _webUiHtml = r'''<!DOCTYPE html>
         frameDoc.write(docHtml);
         frameDoc.close();
 
-        // Auto-adjust iframe height
         frame.onload = () => {
           try {
             const h = frameDoc.body.scrollHeight;
-            if (h > 100) frame.style.height = Math.min(Math.max(h + 20, 160), 600) + 'px';
+            if (h > 100) frame.style.height = Math.min(Math.max(h + 20, 160), 650) + 'px';
           } catch (_) {}
         };
       });
+    }
+
+    window.toggleCard = function(index) {
+      const card = document.getElementById(`card-${index}`);
+      if (card) card.classList.toggle('collapsed');
+    };
+
+    function updateIframesTheme() {
+      const isDark = isDarkModeActive();
+      document.querySelectorAll('iframe.dict-frame').forEach(f => {
+        try {
+          f.contentWindow.postMessage({ type: 'THEME_SYNC', isDark }, '*');
+        } catch (_) {}
+      });
+    }
+
+    async function fetchAiExplanation(word, targetEl) {
+      targetEl.textContent = '🤖 正在向 AI 请求解析...';
+
+      try {
+        const res = await fetch(`/api/ai/explain?word=${encodeURIComponent(word)}&stream=true`);
+        if (!res.ok) {
+          const err = await res.json();
+          targetEl.innerHTML = `<span style="color:#d32f2f;">${escapeHtml(err.error || 'AI 未配置')}</span>`;
+          return;
+        }
+
+        targetEl.textContent = '';
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const payload = line.substring(6);
+              if (payload === '[DONE]') break;
+              try {
+                const parsed = JSON.parse(payload);
+                if (parsed.chunk) targetEl.textContent += parsed.chunk;
+              } catch (_) {}
+            }
+          }
+        }
+      } catch (e) {
+        targetEl.textContent = '请求失败: ' + e.message;
+      }
     }
 
     window.addEventListener('message', (e) => {
@@ -846,15 +1448,15 @@ const String _webUiHtml = r'''<!DOCTYPE html>
 
     async function toggleWordbook(word) {
       const btn = document.getElementById('star-btn');
-      const isStared = btn.classList.contains('active');
+      const isStared = btn.classList.contains('star-active');
       try {
         if (isStared) {
           await fetch(`/api/wordbook?word=${encodeURIComponent(word)}`, { method: 'DELETE' });
-          btn.classList.remove('active');
+          btn.classList.remove('star-active');
           btn.querySelector('span').textContent = '☆ 存入生词本';
         } else {
           await fetch(`/api/wordbook?word=${encodeURIComponent(word)}`, { method: 'POST' });
-          btn.classList.add('active');
+          btn.classList.add('star-active');
           btn.querySelector('span').textContent = '★ 已在生词本';
         }
       } catch (e) {
