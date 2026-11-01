@@ -134,7 +134,29 @@ void handleOpenWordNavigation(
         .request(word: word, dictId: dictId, anchor: anchor);
   } catch (_) {}
 
+  // Whether the lookup lands on the home page's pane or on the page that is
+  // on screen is a question about the route, not about the window size: a
+  // wide window can still show a pushed entry page, and that page has to
+  // show the word that was looked up.
+  bool isAlreadyInWordRoute = false;
+  try {
+    final currentRoute = GoRouterState.of(context).uri.toString();
+    isAlreadyInWordRoute = currentRoute.startsWith("/word/");
+  } catch (_) {
+    isAlreadyInWordRoute = false;
+  }
+
   if (isLargeScreen(context)) {
+    if (isAlreadyInWordRoute) {
+      // The reader is looking at an entry page of their own, and that is the
+      // page the word has to appear on. Handing it to the home page's pane
+      // instead would leave the reader staring at the old word until they
+      // go back to the home page.
+      final query = dictId != null ? "?dictId=$dictId" : "";
+      if (context.mounted) {
+        context.pushReplacement("/word/${Uri.encodeComponent(word)}$query");
+      }
+    }
     try {
       final container = ProviderScope.containerOf(navContext, listen: false);
       final homeModel = container.read(homeModelProvider);
@@ -158,14 +180,6 @@ void handleOpenWordNavigation(
         homeModel.navigateInCurrentTab(word, dictId: dictId);
       }
     } catch (_) {}
-
-    bool isAlreadyInWordRoute = false;
-    try {
-      final currentRoute = GoRouterState.of(context).uri.toString();
-      isAlreadyInWordRoute = currentRoute.startsWith("/word/");
-    } catch (_) {
-      isAlreadyInWordRoute = false;
-    }
 
     if (!isAlreadyInWordRoute && context.mounted) {
       final query = dictId != null ? "?dictId=$dictId" : "";
