@@ -106,6 +106,10 @@ static void my_application_activate(GApplication* application) {
   my_application_set_window_icon(window);
   gtk_widget_show(GTK_WIDGET(window));
 
+  // The WPE EGL texture export is blank on this VM (VirGL); the pixel buffer
+  // path renders correctly. Remove this once the package's EGL path is fixed.
+  g_setenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL", "1", TRUE);
+
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(project, self->dart_entrypoint_arguments);
 
