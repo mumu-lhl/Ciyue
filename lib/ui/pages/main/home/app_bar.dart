@@ -58,7 +58,18 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
       return AppBar(
         title: searchBar,
-        automaticallyImplyLeading: settings.showSidebarIcon && !isDesktop,
+        // Use the same book icon as the word-page group switchers instead of
+        // the generic drawer lines.
+        leading: settings.showSidebarIcon && !isDesktop
+            ? Builder(
+                builder: (context) => IconButton(
+                  icon: const Icon(Icons.collections_bookmark_outlined),
+                  tooltip: AppLocalizations.of(context)!.dictionaryGroups,
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
+              )
+            : null,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             tooltip: AppLocalizations.of(context)!.aiChat,
@@ -68,7 +79,8 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
           // On mobile the drawer already hosts the dictionary-group
           // list; a second switcher here (icon + group name +
           // dropdown arrow) eats a wide slice of the search row.
-          if (isDesktop) const GroupSelectorButton(),
+          if (isDesktop && settings.showSidebarIcon)
+            const GroupSelectorButton(),
           if (settings.showMoreOptionsButton) const MoreButton(),
         ],
       );
@@ -77,13 +89,23 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
 }
 
 class GroupSelectorButton extends ConsumerWidget {
-  const GroupSelectorButton({super.key});
+  /// When true only the icon is drawn; the current group name stays in the
+  /// tooltip. Used on phone-sized word pages where the AppBar is already full.
+  final bool compact;
+
+  const GroupSelectorButton({super.key, this.compact = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dictManagerModel = ref.watch(dictManagerModelProvider);
     final groupId = dictManagerModel.groupId;
     final isSwitchingGroup = dictManagerModel.isSwitchingGroup;
+
+    // A word page can be opened before the group list finishes loading; hide
+    // the switcher until there is something to switch to.
+    if (dictManager.groups.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     final currentGroup = dictManager.groups.firstWhere(
       (g) => g.id == groupId,
@@ -94,23 +116,27 @@ class GroupSelectorButton extends ConsumerWidget {
         : currentGroup.name;
 
     return PopupMenuButton<int>(
-      tooltip: AppLocalizations.of(context)!.dictionaryGroups,
-      icon: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.collections_bookmark_outlined, size: 20),
-          const SizedBox(width: 4),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 120),
-            child: Text(
-              groupName,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium,
+      tooltip: compact
+          ? "${AppLocalizations.of(context)!.dictionaryGroups}: $groupName"
+          : AppLocalizations.of(context)!.dictionaryGroups,
+      icon: compact
+          ? const Icon(Icons.collections_bookmark_outlined, size: 20)
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.collections_bookmark_outlined, size: 20),
+                const SizedBox(width: 4),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 120),
+                  child: Text(
+                    groupName,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                const Icon(Icons.arrow_drop_down, size: 18),
+              ],
             ),
-          ),
-          const Icon(Icons.arrow_drop_down, size: 18),
-        ],
-      ),
       enabled: !isSwitchingGroup,
       onSelected: (int selectedGroupId) async {
         if (selectedGroupId != groupId) {

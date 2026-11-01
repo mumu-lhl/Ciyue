@@ -143,6 +143,20 @@ final dictionaryLookupProvider = FutureProvider.autoDispose
         waited++;
       }
 
+      // The group switch registers dictionaries with their metadata first and
+      // loads their entries in the background. A lookup that runs before that
+      // finishes matches nothing, and the empty result would be cached for the
+      // whole keep-alive window — that is what left the first tab blank after
+      // switching back. Wait (bounded) for the entries instead.
+      await Future.wait(
+        dictManager.dicts.values.map(
+          (dict) => dict
+              .waitForLoading()
+              .timeout(const Duration(seconds: 10), onTimeout: () {})
+              .catchError((Object _) {}),
+        ),
+      );
+
       return dictionaryLookup.lookup(word);
     });
 
@@ -158,14 +172,33 @@ final wordContentProvider = FutureProvider.autoDispose
       final timer = Timer(const Duration(minutes: 5), link.close);
       ref.onDispose(timer.cancel);
 
-      final dict = dictManager.dicts[params.dictId];
-      if (dict == null) return "";
+      var dict = dictManager.dicts[params.dictId];
+      if (dict == null) {
+        // A group switch clears the dictionaries before reloading them, and
+        // this provider can run while that is in flight. Wait for the switch
+        // instead of caching an empty entry for the whole keep-alive window —
+        // that is what left the first tab blank after switching back.
+        await dictManager.waitForGroupSwitch();
+        var waited = 0;
+        while (dictManager.isLoading && waited < 200) {
+          await Future.delayed(const Duration(milliseconds: 50));
+          waited++;
+        }
+        dict = dictManager.dicts[params.dictId];
+        if (dict == null) return "";
+      }
 
       final lookup = await ref.watch(
         dictionaryLookupProvider(params.word).future,
       );
       final entries = lookup.entriesFor(params.dictId);
-      if (entries.isEmpty) return "";
+      if (entries.isEmpty) {
+        // Never keep an empty entry alive: a group switch can look this up
+        // before the dictionaries finished loading, and the blank content
+        // would otherwise stick for the whole keep-alive window.
+        link.close();
+        return "";
+      }
 
       if (entries.length == 1) {
         return dict.wrapContentWithResources(entries.single.content);

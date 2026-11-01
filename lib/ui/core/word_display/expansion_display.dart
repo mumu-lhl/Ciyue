@@ -10,6 +10,7 @@ import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
+import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
 import "package:ciyue/utils.dart" as app_utils;
 import "package:flutter/foundation.dart";
 import "package:material_ui/material_ui.dart";
@@ -100,6 +101,9 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final dictManager = ref.watch(dictManagerProvider);
+    // A group switch reloads the dictionaries; rebuild the entry views so a
+    // reused platform WebView cannot come back blank.
+    final groupId = dictManager.groupId;
     _syncPanelState(settings.aiExplainWord, widget.validDictIds);
 
     final panels = <ExpansionPanel>[];
@@ -129,7 +133,10 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
           // Lazy-load the WebView only when expanded; collapsed panels
           // keep a placeholder instead of instantiating N WebViews upfront.
           body: expanded
-              ? buildWebView(widget.word, dictId, true)
+              ? KeyedSubtree(
+                  key: ValueKey("dict_${dictId}_$groupId"),
+                  child: buildWebView(widget.word, dictId, true),
+                )
               : const SizedBox.shrink(),
           isExpanded: expanded,
           canTapOnHeader: true,
@@ -172,6 +179,8 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
                     )
                   : Text(widget.word, overflow: TextOverflow.ellipsis)),
         actions: [
+          if (settings.showSidebarIcon)
+            GroupSelectorButton(compact: !isDesktopScreen),
           if (settings.searchBarInAppBar && widget.pagerInfo != null)
             Center(
               child: Padding(
@@ -204,6 +213,12 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
               EditAIExplainIconButton(word: widget.word),
             ],
           ],
+          IconButton(
+            tooltip: locale.aiChat,
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () =>
+                context.push("/chat?word=${Uri.encodeComponent(widget.word)}"),
+          ),
           IconButton(
             tooltip: locale.copy,
             icon: const Icon(Icons.copy),

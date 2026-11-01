@@ -15,6 +15,7 @@ import "package:ciyue/ui/core/word_display/missing_word_suggestions.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
+import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
 import "package:ciyue/utils.dart" as app_utils;
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -110,6 +111,19 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    // Switching the group reloads every dictionary. Drop the cached lookup
+    // and entry HTML so every tab is queried again; otherwise the first tab
+    // keeps the empty result cached while the switch was in flight.
+    ref.listen(dictManagerModelProvider.select((model) => model.groupId), (
+      previous,
+      next,
+    ) {
+      if (previous != null && previous != next) {
+        ref.invalidate(dictionaryLookupProvider);
+        ref.invalidate(validDictIdsProvider);
+        ref.invalidate(wordContentProvider);
+      }
+    });
     final validDictIdsAsync = ref.watch(validDictIdsProvider(widget.word));
     if (validDictIdsAsync.hasValue) {
       _lastValidDictIds = validDictIdsAsync.requireValue;
@@ -217,7 +231,12 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               }
             }
 
+            // Rebuild the tab controller when the group changes: its
+            // length changes too, and a reused controller can leave the
+            // first page blank after switching back.
+            final groupId = ref.watch(dictManagerProvider).groupId;
             return DefaultTabController(
+              key: ValueKey("tab_group_$groupId"),
               initialIndex: initialTabIndex,
               length: dictsLength,
               child: Builder(
@@ -368,6 +387,10 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   )
                 : Text(widget.word, overflow: TextOverflow.ellipsis)),
       actions: [
+        // Same switch as the home screen: the sidebar-icon setting decides
+        // whether the dictionary-group switcher is offered on word pages too.
+        if (settings.showSidebarIcon)
+          GroupSelectorButton(compact: !isDesktopScreen),
         // Desktop back/forward (mobile has these in the bottom bar).
         if (isDesktopScreen && homeModel != null) ...[
           IconButton(
@@ -461,14 +484,22 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     List<int> validDictIds = const [],
   }) {
     final settings = ref.watch(settingsProvider);
+    // Switching the dictionary group reloads every dictionary, and the
+    // platform WebView views cannot be reused across that switch — the first
+    // one would come back blank. Include the group id in the keys so all
+    // entries are rebuilt instead of reusing their old views.
+    final groupId = ref.watch(dictManagerProvider).groupId;
     final children = <Widget>[
       if (settings.aiExplainWord)
         KeepAliveWidget(
-          key: const ValueKey("ai_tab"),
+          key: ValueKey("ai_tab_$groupId"),
           child: AIExplainView(word: widget.word),
         ),
       for (final id in validDictIds)
-        KeepAliveWidget(key: ValueKey("dict_$id"), child: _buildWebView(id)),
+        KeepAliveWidget(
+          key: ValueKey("dict_${id}_$groupId"),
+          child: _buildWebView(id),
+        ),
     ];
     return TabBarView(
       physics: widget.pagerInfo != null
