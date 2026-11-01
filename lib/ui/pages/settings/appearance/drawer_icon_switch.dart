@@ -26,7 +26,7 @@ class _DrawerIconSwitchState extends ConsumerState<DrawerIconSwitch> {
           settings.showSidebarIcon = value;
         });
       },
-      secondary: const Icon(Icons.menu),
+      secondary: const Icon(Icons.collections_bookmark_outlined),
     );
   }
 }
