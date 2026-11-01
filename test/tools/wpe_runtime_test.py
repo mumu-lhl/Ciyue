@@ -97,6 +97,7 @@ class LinuxPackagingDependenciesTest(unittest.TestCase):
         self.assertIn("libgbm.so.1", bundle_linux_dependencies.SYSTEM_LIBRARIES)
         self.assertIn("libdrm.so.2", bundle_linux_dependencies.SYSTEM_LIBRARIES)
         self.assertIn("libc.so.6", bundle_linux_dependencies.SYSTEM_LIBRARIES)
+        self.assertIn("libGLdispatch.so.0", bundle_linux_dependencies.SYSTEM_LIBRARIES)
 
     def test_bundle_excludes_wayland_libraries(self):
         # A bundled libwayland from the build snapshot shadows the host copy in
@@ -110,6 +111,45 @@ class LinuxPackagingDependenciesTest(unittest.TestCase):
             "libwayland-server.so.0",
             "libwayland-egl.so.1",
             "libwayland-cursor.so.0",
+        ):
+            self.assertIn(library, bundle_linux_dependencies.SYSTEM_LIBRARIES)
+
+    def test_bundle_excludes_gstreamer(self):
+        # GStreamer discovers plugins through a libdir baked into the core build,
+        # so a bundled core sees an empty registry on another distribution:
+        # playbin cannot be created and audioplayers_linux throws a bare C string.
+        sys.path.insert(0, str(ROOT / "tools"))
+        import bundle_linux_dependencies
+
+        for library in (
+            "libgstreamer-1.0.so.0",
+            "libgstapp-1.0.so.0",
+            "libgstaudio-1.0.so.0",
+            "libgstplayback.so",
+            "liborc-0.4.so.0",
+            "libpulse.so.0",
+        ):
+            self.assertTrue(bundle_linux_dependencies.is_system_library(library))
+        self.assertFalse(bundle_linux_dependencies.is_system_library("libopus.so.0"))
+
+    def test_bundle_excludes_glib(self):
+        # Host libraries are compiled against the host GLib, so the bundled copy
+        # must not shadow it; libgstaudio from a newer distribution asks for
+        # g_sort_array (GLib 2.82) and a frozen bundled GLib cannot answer.
+        sys.path.insert(0, str(ROOT / "tools"))
+        import bundle_linux_dependencies
+
+        for library in (
+            "libglib-2.0.so.0",
+            "libgobject-2.0.so.0",
+            "libgio-2.0.so.0",
+            "libgmodule-2.0.so.0",
+            "libgthread-2.0.so.0",
+            "libpcre2-8.so.0",
+            "libffi.so.8",
+            "libmount.so.1",
+            "libblkid.so.1",
+            "libselinux.so.1",
         ):
             self.assertIn(library, bundle_linux_dependencies.SYSTEM_LIBRARIES)
 

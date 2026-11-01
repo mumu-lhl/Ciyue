@@ -99,6 +99,15 @@ class LinuxBundleDependenciesTest(unittest.TestCase):
                 ],
                 check=True,
             )
+            # Prefix-matched host libraries must be pruned the same way.
+            stale_gst = bundle_lib / "libgstapp-1.0.so.0"
+            subprocess.run(
+                [
+                    "gcc", "-shared", "-fPIC", str(source),
+                    "-Wl,-soname,libgstapp-1.0.so.0", "-o", str(stale_gst),
+                ],
+                check=True,
+            )
 
             collected = subprocess.run(
                 [
@@ -110,7 +119,9 @@ class LinuxBundleDependenciesTest(unittest.TestCase):
                 check=True,
             )
             self.assertIn("Removed host-provided libwayland-client.so.0", collected.stdout)
+            self.assertIn("Removed host-provided libgstapp-1.0.so.0", collected.stdout)
             self.assertFalse(stale.exists())
+            self.assertFalse(stale_gst.exists())
 
 
 if __name__ == "__main__":
