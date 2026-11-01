@@ -7,6 +7,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/audio.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/linux_tts_driver.dart";
 import "package:ciyue/services/mdd_reader_pool.dart";
 import "package:ciyue/services/online_pronunciation.dart";
 import "package:ciyue/services/zip_archive_reader.dart";
@@ -243,11 +244,13 @@ class AudioModel extends ChangeNotifier {
       }
     }
 
-    if (mode == PronunciationMode.packOnly ||
-        Platform.isLinux ||
-        ttsDisabledByCommandLine) {
+    if (mode == PronunciationMode.packOnly || ttsDisabledByCommandLine) {
       _onPlaybackComplete();
       return PronunciationResult.unavailable;
+    }
+
+    if (Platform.isLinux) {
+      return _playWordViaLinuxTts(word);
     }
 
     _isPlaying = true;
@@ -267,6 +270,64 @@ class AudioModel extends ChangeNotifier {
       _onPlaybackComplete();
       return PronunciationResult.unavailable;
     }
+  }
+
+  /// Linux word pronunciation through the native backends:
+  /// speech-dispatcher (SSIP) first, then an espeak-ng WAV rendered
+  /// by [LinuxTtsDriver.synthesizeWav] and played via
+  /// [playAudioBytes].
+  ///
+  /// Completion is governed by the safety timer only: SSIP END
+  /// events are never awaited (on hardware without audio output no
+  /// END event is ever delivered), and the timer only ever clears
+  /// the playing state — it never stops speech. [stopAudio] is the
+  /// only path that stops the Linux backend.
+  Future<PronunciationResult> _playWordViaLinuxTts(String word) async {
+    _isPlaying = true;
+    _playingWord = word;
+    notifyListeners();
+
+    _safetyTimer?.cancel();
+    final seconds = (word.length ~/ 2).clamp(3, 10);
+    _safetyTimer = Timer(Duration(seconds: seconds), _onPlaybackComplete);
+
+    final options = linuxTtsSpeakOptions();
+    try {
+      final spoken = await linuxTtsDriver.speak(
+        word,
+        language: options.language,
+        rate: options.rate,
+        pitch: options.pitch,
+        voice: options.voice,
+      );
+      if (spoken.success) {
+        return PronunciationResult.tts;
+      }
+    } catch (e) {
+      talker.error("Failed to speak via Linux TTS", e);
+    }
+
+    // SSIP failed (or is absent): fall back to a synthesized WAV,
+    // played like pack/online audio. The WAV bytes existing is the
+    // success signal, matching the pack and online paths, which
+    // likewise ignore playAudioBytes' result.
+    try {
+      final wav = await linuxTtsDriver.synthesizeWav(
+        word,
+        voice: options.voice,
+        rate: options.rate,
+        pitch: options.pitch,
+      );
+      if (wav != null && wav.isNotEmpty) {
+        await playAudioBytes(wav, "audio/wav", label: word);
+        return PronunciationResult.tts;
+      }
+    } catch (e) {
+      talker.error("Failed to synthesize Linux TTS audio", e);
+    }
+
+    _onPlaybackComplete();
+    return PronunciationResult.unavailable;
   }
 
   Future<bool> playAudioBytes(
@@ -326,7 +387,14 @@ class AudioModel extends ChangeNotifier {
       _activePlayer = null;
     }
 
-    if (!Platform.isLinux) {
+    if (Platform.isLinux) {
+      // Stop the Linux backend too, so tapping the speaker button
+      // again stops SSIP speech (not just the audio player, which
+      // is idle during SSIP speech).
+      try {
+        await linuxTtsDriver.stop();
+      } catch (_) {}
+    } else {
       try {
         await flutterTts.stop();
       } catch (_) {}

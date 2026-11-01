@@ -433,6 +433,7 @@ const preferencesAllowList = <String>{
   "autoUpdate",
   "ttsEngine",
   "ttsLanguage",
+  "linuxTtsVoice",
   "ttsSpeechRate",
   "ttsPitch",
   "pronunciationMode",

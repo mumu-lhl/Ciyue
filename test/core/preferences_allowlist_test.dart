@@ -15,6 +15,15 @@ void main() {
 
     expect(Settings.new, returnsNormally);
     expect(preferencesAllowList, contains("dictionaryDarkReaderEnabled"));
+    expect(preferencesAllowList, contains("linuxTtsVoice"));
+    // The Linux voice pref round-trips through the allowlisted
+    // cache: set persists, clearing removes the key.
+    await settings.setLinuxTtsVoice("test-voice");
+    expect(settings.linuxTtsVoice, "test-voice");
+    expect(prefs.getString("linuxTtsVoice"), "test-voice");
+    await settings.setLinuxTtsVoice(null);
+    expect(settings.linuxTtsVoice, isNull);
+    expect(prefs.getString("linuxTtsVoice"), isNull);
     expect(
       preferencesAllowList,
       containsAll(CloudSyncConfigurationStore.preferenceKeys),

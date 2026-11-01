@@ -3,6 +3,8 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/audio.dart";
 import "package:ciyue/services/audio.dart";
+import "package:ciyue/services/linux_tts.dart";
+import "package:ciyue/services/linux_tts_driver.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/tts.dart";
 import "package:ciyue/ui/core/title_text.dart";
@@ -55,13 +57,10 @@ class AudioSettingsPage extends ConsumerWidget {
                 if (!Platform.isLinux) ...[
                   const TTSLanguages(),
                   const TTSSpeechControls(),
-                ] else
-                  Text(
-                    AppLocalizations.of(context)!.ttsUnsupportedOnPlatform,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+                ] else ...[
+                  const LinuxTtsSettings(),
+                  const TTSSpeechControls(),
+                ],
               ],
             ),
           ),
@@ -273,9 +272,6 @@ class AudioItems extends ConsumerWidget {
 
   String _ttsCardNote(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    if (Platform.isLinux) {
-      return localizations.ttsUnsupportedOnPlatform;
-    }
     return switch (settings.pronunciationMode) {
       PronunciationMode.packFirst => localizations.ttsFallbackNote,
       PronunciationMode.packOnly => localizations.ttsPacksOffNote,
@@ -629,6 +625,125 @@ class TTSEngines extends StatelessWidget {
   }
 }
 
+/// Linux TTS settings: backend status, a voice picker populated
+/// from the active backend, and a refresh affordance.
+///
+/// The voice list comes from [LinuxTtsDriver.voices], already
+/// language-filtered by the service for [settings.ttsLanguage]; it
+/// is capped so a long espeak voice list stays usable in a
+/// dropdown. The saved voice is [settings.linuxTtsVoice]; when it
+/// is unset (or no longer offered) the default option is shown and
+/// the backend picks its default voice for the language. Detection
+/// failures leave the no-backend hint in place rather than
+/// erroring: TTS simply falls through to unavailable at speak time.
+class LinuxTtsSettings extends StatefulWidget {
+  const LinuxTtsSettings({super.key});
+
+  @override
+  State<LinuxTtsSettings> createState() => _LinuxTtsSettingsState();
+}
+
+class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
+  /// Voices shown in the picker; capped for dropdown usability.
+  static const _maxVoices = 50;
+
+  LinuxTtsAvailability? _availability;
+  List<LinuxVoice> _voices = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    if (mounted) {
+      setState(() => _loading = true);
+    }
+    LinuxTtsAvailability? availability;
+    List<LinuxVoice> voices = [];
+    try {
+      availability = await linuxTtsDriver.detect(refresh: true);
+      voices = await linuxTtsDriver.voices(language: settings.ttsLanguage);
+    } catch (_) {
+      // Detection/listing failure: keep the no-backend state.
+    }
+    if (!mounted) return;
+    setState(() {
+      _availability = availability;
+      _voices = voices.take(_maxVoices).toList();
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    final helperStyle = Theme.of(context).textTheme.bodySmall
+        ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
+    final availability = _availability;
+    final savedVoice = settings.linuxTtsVoice;
+    final effectiveValue =
+        savedVoice != null && _voices.any((voice) => voice.id == savedVoice)
+        ? savedVoice
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          availability == null || !availability.any
+              ? localizations.linuxTtsNoBackend
+              : localizations.linuxTtsBackends(
+                  [
+                    if (availability.ssip)
+                      localizations.linuxTtsBackendSpeechDispatcher,
+                    if (availability.espeak)
+                      localizations.linuxTtsBackendEspeak,
+                  ].join(", "),
+                ),
+          style: helperStyle,
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String?>(
+          // Rebuild the field when the effective selection changes
+          // (e.g. the saved voice only becomes known once the async
+          // voice list loads): FormField otherwise keeps its first
+          // initialValue forever.
+          key: ValueKey(effectiveValue),
+          initialValue: effectiveValue,
+          decoration: InputDecoration(
+            labelText: localizations.linuxTtsVoice,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          items: [
+            DropdownMenuItem(
+              value: null,
+              child: Text(localizations.linuxTtsVoiceDefault),
+            ),
+            for (final voice in _voices)
+              DropdownMenuItem(value: voice.id, child: Text(voice.displayName)),
+          ],
+          onChanged: (voice) {
+            settings.setLinuxTtsVoice(voice);
+          },
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            icon: const Icon(Icons.refresh),
+            label: Text(localizations.linuxTtsRefreshVoices),
+            onPressed: _loading ? null : _load,
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+}
+
 class TTSLanguages extends StatelessWidget {
   const TTSLanguages({super.key});
 
@@ -702,7 +817,12 @@ class _TTSSpeechControlsState extends State<TTSSpeechControls> {
           onChanged: (value) => setState(() => _rate = value),
           onChangeEnd: (value) async {
             await settings.setTTSSpeechRate(value);
-            await flutterTts.setSpeechRate(value);
+            // Linux speech reads the saved settings on every
+            // utterance, so there is no live instance to update;
+            // flutter_tts is never touched on Linux.
+            if (!Platform.isLinux) {
+              await flutterTts.setSpeechRate(value);
+            }
           },
         ),
         _sliderRow(
@@ -714,7 +834,9 @@ class _TTSSpeechControlsState extends State<TTSSpeechControls> {
           onChanged: (value) => setState(() => _pitch = value),
           onChangeEnd: (value) async {
             await settings.setTTSPitch(value);
-            await flutterTts.setPitch(value);
+            if (!Platform.isLinux) {
+              await flutterTts.setPitch(value);
+            }
           },
         ),
         const SizedBox(height: 8),
@@ -724,6 +846,12 @@ class _TTSSpeechControlsState extends State<TTSSpeechControls> {
             icon: const Icon(Icons.play_arrow),
             label: Text(localizations.ttsPreview),
             onPressed: () async {
+              if (Platform.isLinux) {
+                // Preview through the Linux path (SSIP, then the
+                // espeak WAV fallback) with the current settings.
+                await TtsHelper.toggleSpeak(localizations.ttsPreviewText);
+                return;
+              }
               await applyTtsSettings(flutterTts);
               await flutterTts.speak(localizations.ttsPreviewText);
             },

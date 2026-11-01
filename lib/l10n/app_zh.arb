@@ -948,6 +948,26 @@
   "@ttsPreview": {},
   "ttsPreviewText": "这是语音合成声音的试听。",
   "@ttsPreviewText": {},
+  "linuxTtsVoice": "声音",
+  "@linuxTtsVoice": {},
+  "linuxTtsVoiceDefault": "默认声音",
+  "@linuxTtsVoiceDefault": {},
+  "linuxTtsBackends": "可用后端：{backends}",
+  "@linuxTtsBackends": {
+    "placeholders": {
+      "backends": {
+        "type": "String"
+      }
+    }
+  },
+  "linuxTtsNoBackend": "未找到 TTS 后端。请安装 espeak-ng 或启动 speech-dispatcher（例如：sudo apt install espeak-ng speech-dispatcher）。",
+  "@linuxTtsNoBackend": {},
+  "linuxTtsRefreshVoices": "刷新声音列表",
+  "@linuxTtsRefreshVoices": {},
+  "linuxTtsBackendSpeechDispatcher": "Speech Dispatcher",
+  "@linuxTtsBackendSpeechDispatcher": {},
+  "linuxTtsBackendEspeak": "espeak-ng",
+  "@linuxTtsBackendEspeak": {},
   "removePronunciationPackTitle": "移除“{title}”？",
   "@removePronunciationPackTitle": {},
   "removePronunciationPackBody": "音频包会从列表中移除，文件保留在原处。",

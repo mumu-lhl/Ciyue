@@ -86,6 +86,14 @@ class Settings extends ChangeNotifier {
 
   late String? ttsEngine;
   late String? ttsLanguage;
+
+  /// Linux-only voice id for the native Linux TTS backends
+  /// (speech-dispatcher / espeak-ng). Kept separate from
+  /// [ttsLanguage]: that is a flutter_tts language tag on other
+  /// platforms, while this is a backend voice id (an espeak voice
+  /// name or a speech-dispatcher voice name). Null means "use the
+  /// default voice for [ttsLanguage]".
+  late String? linuxTtsVoice;
   late double ttsSpeechRate;
   late double ttsPitch;
   late PronunciationMode pronunciationMode;
@@ -215,6 +223,7 @@ class Settings extends ChangeNotifier {
 
     ttsEngine = prefs.getString("ttsEngine");
     ttsLanguage = prefs.getString("ttsLanguage");
+    linuxTtsVoice = prefs.getString("linuxTtsVoice");
     // 0.5 speech rate and 1.0 pitch are the platform-normal values, so
     // applying the defaults does not change existing users' speech.
     ttsSpeechRate = prefs.getDouble("ttsSpeechRate") ?? 0.5;
@@ -410,6 +419,16 @@ class Settings extends ChangeNotifier {
   Future<void> setTTSLanguage(String lang) async {
     ttsLanguage = lang;
     await prefs.setString("ttsLanguage", lang);
+    notifyListeners();
+  }
+
+  Future<void> setLinuxTtsVoice(String? voice) async {
+    linuxTtsVoice = voice;
+    if (voice == null) {
+      await prefs.remove("linuxTtsVoice");
+    } else {
+      await prefs.setString("linuxTtsVoice", voice);
+    }
     notifyListeners();
   }
 

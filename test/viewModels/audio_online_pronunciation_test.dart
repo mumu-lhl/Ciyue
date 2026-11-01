@@ -4,6 +4,8 @@ import "package:audioplayers/audioplayers.dart";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/audio.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/linux_tts.dart";
+import "package:ciyue/services/linux_tts_driver.dart";
 import "package:ciyue/services/online_pronunciation.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:flutter/services.dart";
@@ -31,6 +33,40 @@ class _CountingSource implements OnlinePronunciationSource {
     lastLanguage = languageCode;
     return result;
   }
+}
+
+/// A Linux TTS driver that never speaks, so these online-chain
+/// assertions do not depend on which native backends the host
+/// happens to have installed: without it, a host with espeak-ng
+/// would make the fall-through tests return `.tts` via the WAV
+/// fallback instead of `.unavailable`.
+class _NeverSpeaksLinuxTtsDriver implements LinuxTtsDriver {
+  @override
+  Future<LinuxTtsAvailability> detect({bool refresh = false}) async =>
+      const LinuxTtsAvailability(ssip: false, espeak: false);
+
+  @override
+  Future<List<LinuxVoice>> voices({String? language}) async => [];
+
+  @override
+  Future<SsipSpeakResult> speak(
+    String text, {
+    String? language,
+    double? rate,
+    double? pitch,
+    String? voice,
+  }) async => SsipSpeakResult.failure("no backend");
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<Uint8List?> synthesizeWav(
+    String text, {
+    String? voice,
+    double? rate,
+    double? pitch,
+  }) async => null;
 }
 
 void main() {
@@ -82,6 +118,7 @@ void main() {
   late _CountingSource forvo;
 
   setUp(() async {
+    linuxTtsDriverOverride = _NeverSpeaksLinuxTtsDriver();
     tempDir = await Directory.systemTemp.createTemp(
       "audio_online_pronunciation_test_",
     );
@@ -101,6 +138,7 @@ void main() {
 
   tearDown(() async {
     onlinePronunciationCoordinatorOverride = null;
+    linuxTtsDriverOverride = null;
     await tempDir.delete(recursive: true);
   });
 
@@ -130,7 +168,8 @@ void main() {
 
       final result = await model.playWord("apple", mddList: []);
 
-      // Tests run on Linux, where the TTS branch returns unavailable.
+      // The fake Linux TTS driver never speaks, so the chain
+      // falls through to unavailable.
       expect(result, PronunciationResult.unavailable);
       expect(wiktionary.calls, 0);
       expect(forvo.calls, 0);
@@ -190,7 +229,7 @@ void main() {
 
     final result = await model.playWord("apple", mddList: []);
 
-    // On Linux the TTS branch returns unavailable; the point here is
+    // The fake Linux TTS driver never speaks; the point here is
     // that the online sources were never consulted.
     expect(result, PronunciationResult.unavailable);
     expect(wiktionary.calls, 0);

@@ -428,6 +428,26 @@
   "@ttsPreview": {},
   "ttsPreviewText": "This is a preview of the text-to-speech voice.",
   "@ttsPreviewText": {},
+  "linuxTtsVoice": "Voice",
+  "@linuxTtsVoice": {},
+  "linuxTtsVoiceDefault": "Default voice",
+  "@linuxTtsVoiceDefault": {},
+  "linuxTtsBackends": "Available backends: {backends}",
+  "@linuxTtsBackends": {
+    "placeholders": {
+      "backends": {
+        "type": "String"
+      }
+    }
+  },
+  "linuxTtsNoBackend": "No TTS backend was found. Install espeak-ng or start speech-dispatcher (for example: sudo apt install espeak-ng speech-dispatcher).",
+  "@linuxTtsNoBackend": {},
+  "linuxTtsRefreshVoices": "Refresh voices",
+  "@linuxTtsRefreshVoices": {},
+  "linuxTtsBackendSpeechDispatcher": "Speech Dispatcher",
+  "@linuxTtsBackendSpeechDispatcher": {},
+  "linuxTtsBackendEspeak": "espeak-ng",
+  "@linuxTtsBackendEspeak": {},
   "removePronunciationPackTitle": "Remove \"{title}\"?",
   "@removePronunciationPackTitle": {
     "placeholders": {
