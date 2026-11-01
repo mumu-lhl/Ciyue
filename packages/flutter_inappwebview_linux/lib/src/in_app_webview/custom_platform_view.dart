@@ -381,6 +381,12 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
   final _controller = CustomPlatformViewController();
   final _focusNode = FocusNode();
 
+  /// Set while the focus is taken back from the widget that owns it.
+  ///
+  /// The takeover happens on purpose, so the selection the reader made must
+  /// not be thrown away with it.
+  bool _restoringFocus = false;
+
   StreamSubscription? _cursorSubscription;
 
   // Track click timing for double-click detection
@@ -444,7 +450,9 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
       onFocusChange: (focused) {
         if (!focused) {
           _downButtons.clear();
-          if (_controller.value.isInitialized) {
+          // The takeover is not a real focus loss: clearing the selection
+          // here would throw away the word the reader just picked.
+          if (!_restoringFocus && _controller.value.isInitialized) {
             unawaited(_controller._clearSelection());
           }
         }
@@ -500,6 +508,34 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
     _controller._sendKeyEvent(type, keyCode, scanCode, modifiers, characters);
 
     return KeyEventResult.handled;
+  }
+
+  /// Hands the keyboard focus back to the entry after a pointer interaction.
+  ///
+  /// The entry is rendered into a texture, so the keys only reach it through
+  /// this node's `onKeyEvent`. When the pointer is released, Flutter hands
+  /// the focus back to the widget that owns it, and the key events stop
+  /// there: `Ctrl`+`R`, the group switcher and the lookup of a selected word
+  /// all go dead until the reader presses `Esc`.
+  ///
+  /// `requestFocus` alone cannot do it, because a node that still counts as
+  /// focused is never made the primary focus again. The node is detached
+  /// first and picked up again on the next frame, once the focus change has
+  /// been applied.
+  void _takeKeyboardFocusBack() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (identical(FocusManager.instance.primaryFocus, _focusNode)) return;
+      _restoringFocus = true;
+      _focusNode.unfocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _focusNode.requestFocus();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _restoringFocus = false;
+        });
+      });
+    });
   }
 
   Widget _buildInner() {
@@ -607,6 +643,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     button,
                     modifiers: modifiers,
                   );
+                  _takeKeyboardFocusBack();
                 },
                 onPointerCancel: (ev) {
                   _pointerKind = ev.kind;
