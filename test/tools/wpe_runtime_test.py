@@ -98,6 +98,21 @@ class LinuxPackagingDependenciesTest(unittest.TestCase):
         self.assertIn("libdrm.so.2", bundle_linux_dependencies.SYSTEM_LIBRARIES)
         self.assertIn("libc.so.6", bundle_linux_dependencies.SYSTEM_LIBRARIES)
 
+    def test_bundle_excludes_wayland_libraries(self):
+        # A bundled libwayland from the build snapshot shadows the host copy in
+        # the global symbol scope, so a newer host Mesa cannot resolve protocol
+        # interfaces such as wl_fixes_interface and EGL initialization fails.
+        sys.path.insert(0, str(ROOT / "tools"))
+        import bundle_linux_dependencies
+
+        for library in (
+            "libwayland-client.so.0",
+            "libwayland-server.so.0",
+            "libwayland-egl.so.1",
+            "libwayland-cursor.so.0",
+        ):
+            self.assertIn(library, bundle_linux_dependencies.SYSTEM_LIBRARIES)
+
 
 if __name__ == "__main__":
     unittest.main()

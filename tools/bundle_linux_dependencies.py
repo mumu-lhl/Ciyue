@@ -43,7 +43,25 @@ HOST_GRAPHICS_LIBRARIES = {
     "libglapi.so.0",
 }
 
-SYSTEM_LIBRARIES = GLIBC_RUNTIME_LIBRARIES | HOST_GRAPHICS_LIBRARIES
+# Wayland protocol libraries are part of the same host-coupled stack. They export
+# the protocol interface structs as data symbols, and the host's Mesa vendor
+# libraries (libEGL_mesa, libgbm) resolve those symbols against whatever copy was
+# loaded first. A bundled snapshot therefore shadows the host library: Mesa from a
+# newer distribution references interfaces added after the build snapshot (for
+# example wl_fixes_interface, added in Wayland 1.24) and the vendor library dies
+# with "symbol lookup error ... (fatal)" while being loaded. That leaves EGL with
+# no extensions, so libepoxy aborts on eglGetPlatformDisplayEXT before the window
+# can be created.
+WAYLAND_RUNTIME_LIBRARIES = {
+    "libwayland-client.so.0",
+    "libwayland-server.so.0",
+    "libwayland-egl.so.1",
+    "libwayland-cursor.so.0",
+}
+
+SYSTEM_LIBRARIES = (
+    GLIBC_RUNTIME_LIBRARIES | HOST_GRAPHICS_LIBRARIES | WAYLAND_RUNTIME_LIBRARIES
+)
 
 NEEDED_RE = re.compile(r"\(NEEDED\).*Shared library: \[(.+)]")
 SONAME_RE = re.compile(r"\(SONAME\).*Library soname: \[(.+)]")
@@ -127,9 +145,31 @@ def ensure_loader_name(library_dir: Path, name: str, source: Path) -> Path:
     return destination
 
 
+def prune_system_libraries(library_dir: Path) -> None:
+    """Drop host-provided libraries that a previous run or a plugin left behind.
+
+    Skipping a name while resolving DT_NEEDED is not enough: a copy that already
+    sits in lib/ stays in the RPATH and keeps shadowing the host library, which is
+    exactly the failure mode these exclusions exist to prevent.
+    """
+
+    for path in sorted(library_dir.iterdir()):
+        if not (path.is_file() or path.is_symlink()):
+            continue
+        names = {path.name}
+        if path.exists():
+            metadata = elf_metadata(path.resolve())
+            if metadata is not None and metadata.soname:
+                names.add(metadata.soname)
+        if names & SYSTEM_LIBRARIES:
+            print(f"Removed host-provided {path.name} from the bundle")
+            path.unlink()
+
+
 def collect(bundle_dir: Path, search_roots: list[Path]) -> None:
     library_dir = bundle_dir / "lib"
     index = library_index(search_roots)
+    prune_system_libraries(library_dir)
     provided = provided_libraries(library_dir)
     queue = deque(iter_elf_files(bundle_dir))
     inspected: set[Path] = set()

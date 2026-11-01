@@ -4,7 +4,7 @@ Release:        @RELEASE@
 Summary:        A simple mdict dictionary
 License:        MIT
 URL:            https://github.com/mumu-lhl/Ciyue
-Requires:       bubblewrap xdg-dbus-proxy mesa-libgbm libdrm
+Requires:       bubblewrap xdg-dbus-proxy mesa-libgbm libdrm libwayland-client libwayland-server libwayland-egl libwayland-cursor
 
 %description
 A simple mdict dictionary with Android/Windows/Linux support.

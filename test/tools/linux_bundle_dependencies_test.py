@@ -79,6 +79,39 @@ class LinuxBundleDependenciesTest(unittest.TestCase):
             self.assertNotEqual(broken_symlink.returncode, 0)
             self.assertIn("broken library symlink", broken_symlink.stderr)
 
+    def test_collect_prunes_host_provided_library_left_in_bundle(self):
+        # Re-running collection over an existing bundle must not leave a stale
+        # copy of a host-provided library shadowing the system one through RPATH.
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            bundle_lib = root / "bundle/lib"
+            search = root / "search"
+            bundle_lib.mkdir(parents=True)
+            search.mkdir()
+
+            source = root / "wayland.c"
+            source.write_text("int wl_stub(void) { return 0; }\n")
+            stale = bundle_lib / "libwayland-client.so.0"
+            subprocess.run(
+                [
+                    "gcc", "-shared", "-fPIC", str(source),
+                    "-Wl,-soname,libwayland-client.so.0", "-o", str(stale),
+                ],
+                check=True,
+            )
+
+            collected = subprocess.run(
+                [
+                    sys.executable, str(TOOL), "--bundle", str(root / "bundle"),
+                    "--search", str(search),
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            self.assertIn("Removed host-provided libwayland-client.so.0", collected.stdout)
+            self.assertFalse(stale.exists())
+
 
 if __name__ == "__main__":
     unittest.main()
