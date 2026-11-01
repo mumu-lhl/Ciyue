@@ -22,6 +22,80 @@ bool ttsDisabledByCommandLine = false;
 // engine rather than the whole Android process.
 bool runningInFloatingWindow = false;
 
+// The controller of the dictionary tab bar.
+//
+// The shortcut that switches dictionaries lives in the home page, outside
+// the entry, so it needs a way to reach the tab bar's controller. The entry
+// sets it while the tab layout is on screen and clears it when it leaves.
+TabController? dictTabController;
+
+// Pages the entry in the expansion layout.
+//
+// The expansion layout's scroll controller lives in the entry page, while
+// the shortcut that pages it sits in the home page, so the entry hands the
+// action over.
+void Function(String key)? expansionPageHandler;
+
+// The search box the reader last put the cursor in.
+FocusNode? activeSearchFocusNode;
+SearchController? activeSearchController;
+
+// The search box the page on screen owns. The key bridge has no page context
+// of its own, so Esc from an entry has to reach the right box through this.
+FocusNode? pageSearchFocusNode;
+
+// The entry WebViews that can take the focus back, keyed by the state object
+// that owns them: two entries showing the same dictionary must not collide.
+final Map<
+  Object,
+  ({int Function() dictId, bool Function() isCurrent, void Function() focus})
+>
+entryFocusTargets = {};
+
+// The dictionary the reader is looking at.
+int? activeEntryDictId;
+
+// Gives the focus back to the entry the reader is looking at.
+//
+// The TabBarView keeps the neighbouring dictionary pages alive, so simply
+// asking the last created WebView would hand the focus to an off-screen tab.
+// The tab controller records which dictionary is on screen, and this picks its
+// WebView.
+void focusActiveEntry() {
+  final dictId = activeEntryDictId;
+  talker.info(
+    "focusActiveEntry: dict=$dictId targets=${entryFocusTargets.length}",
+  );
+  if (dictId == null) return;
+  final current = entryFocusTargets.values.where(
+    (target) => target.dictId() == dictId && target.isCurrent(),
+  );
+  if (current.isNotEmpty) {
+    talker.info("focusActiveEntry: current=${current.length}");
+    current.last.focus();
+    return;
+  }
+  final matches = entryFocusTargets.values.where(
+    (target) => target.dictId() == dictId,
+  );
+  if (matches.isNotEmpty) {
+    talker.info("focusActiveEntry: off-route=${matches.length}");
+    matches.last.focus();
+  }
+}
+
+/// Gives the focus back to the entry after the current focus change settles.
+///
+/// The unfocus and the WebView focus request can land in the same frame, so
+/// the request is repeated once after the frame. Frames are used rather than a
+/// timer so widget tests do not leave a pending timer behind.
+void focusActiveEntrySoon() {
+  focusActiveEntry();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    focusActiveEntry();
+  });
+}
+
 List<dynamic> ttsEngines = [];
 final List<dynamic> ttsLanguages = [];
 String? windowsWebview2Directory;

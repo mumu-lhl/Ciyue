@@ -36,6 +36,10 @@ class StardictEntryListView extends StatelessWidget {
   /// When null, images are read from `res/` files only, as before.
   final Future<Uint8List?> Function(String file)? resourceResolver;
 
+  /// Zooms the entry. Every size in the native renderer is derived from one
+  /// base size, so scaling that one scales the whole entry.
+  final double scale;
+
   const StardictEntryListView({
     super.key,
     required this.entries,
@@ -43,6 +47,7 @@ class StardictEntryListView extends StatelessWidget {
     required this.dictId,
     required this.isExpansion,
     this.resourceResolver,
+    this.scale = 1.0,
   });
 
   @override
@@ -58,6 +63,7 @@ class StardictEntryListView extends StatelessWidget {
             resourceDirectory: resourceDirectory,
             dictId: dictId,
             resourceResolver: resourceResolver,
+            scale: scale,
           ),
         ],
       ],
@@ -80,12 +86,14 @@ class _EntryBlock extends StatelessWidget {
   final String resourceDirectory;
   final int dictId;
   final Future<Uint8List?> Function(String file)? resourceResolver;
+  final double scale;
 
   const _EntryBlock({
     required this.entry,
     required this.resourceDirectory,
     required this.dictId,
     this.resourceResolver,
+    this.scale = 1.0,
   });
 
   @override
@@ -95,6 +103,7 @@ class _EntryBlock extends StatelessWidget {
       resourceDirectory: resourceDirectory,
       dictId: dictId,
       resourceResolver: resourceResolver,
+      scale: scale,
     );
     final blocks = <Widget>[];
     for (final field in entry.fields) {
@@ -133,15 +142,25 @@ class _Renderer {
   final int dictId;
   final Future<Uint8List?> Function(String file)? resourceResolver;
 
+  /// Zooms the entry. Every size below is derived from one base size, so
+  /// scaling that one scales the whole entry.
+  final double scale;
+
   _Renderer({
     required this.context,
     required this.resourceDirectory,
     required this.dictId,
     this.resourceResolver,
+    this.scale = 1.0,
   });
 
   ThemeData get _theme => Theme.of(context);
-  TextStyle get _body => _theme.textTheme.bodyMedium ?? const TextStyle();
+  TextStyle get _body {
+    final base = _theme.textTheme.bodyMedium ?? const TextStyle();
+    if (scale == 1.0) return base;
+    return base.copyWith(fontSize: (base.fontSize ?? 14) * scale);
+  }
+
   TextStyle get _variant =>
       _body.copyWith(color: _theme.colorScheme.onSurfaceVariant);
 

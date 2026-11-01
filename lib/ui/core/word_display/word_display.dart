@@ -16,6 +16,7 @@ import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
+import "package:ciyue/ui/pages/main/home/shortcuts.dart";
 import "package:ciyue/utils.dart" as app_utils;
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -45,8 +46,37 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   final SearchController _searchController = SearchController();
   List<int>? _lastValidDictIds;
 
+  /// The tab bar's controller while the tab layout is on screen. Kept so
+  /// that [dispose] can tell whether the shared one is still ours.
+  TabController? _tabController;
+  VoidCallback? _tabListener;
+
+  /// The search box in the title bar, so Esc can move the focus into it and
+  /// back to the entry.
+  final FocusNode _searchFocusNode = FocusNode();
+
   Widget? _buildSearchBar(Settings settings) {
-    return buildTitle(widget.word, settings, controller: _searchController);
+    return buildTitle(
+      widget.word,
+      settings,
+      controller: _searchController,
+      focusNode: _searchFocusNode,
+    );
+  }
+
+  /// Records which dictionary the tab bar is showing.
+  ///
+  /// The neighbouring tabs stay alive, so "the last WebView created" is not
+  /// the one on screen; Esc has to hand the focus to the visible one.
+  void _syncActiveEntry(
+    TabController controller,
+    List<int> validDictIds,
+    bool aiExplainWord,
+  ) {
+    final index = controller.index - (aiExplainWord ? 1 : 0);
+    activeEntryDictId = index >= 0 && index < validDictIds.length
+        ? validDictIds[index]
+        : null;
   }
 
   /// Readings of a long word as several headwords, phrasal verbs, long vowels
@@ -104,12 +134,32 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
 
   @override
   void dispose() {
+    if (_tabListener != null) {
+      _tabController?.removeListener(_tabListener!);
+    }
+    // Only clear the shared controller when it is still the one this entry
+    // handed over: a newer entry may have taken over already.
+    if (identical(dictTabController, _tabController)) {
+      dictTabController = null;
+    }
+    // The node is disposed right below, so the global pointer has to let go
+    // of it first: handing the focus to a disposed node is an assertion
+    // failure.
+    if (identical(pageSearchFocusNode, _searchFocusNode)) {
+      pageSearchFocusNode = null;
+    }
+    _searchFocusNode.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // A pushed entry page owns its title search box. The pane inside the home
+    // split view does not, so the home page's box stays the default there.
+    if (widget.showBackButton) {
+      pageSearchFocusNode = _searchFocusNode;
+    }
     final settings = ref.watch(settingsProvider);
     // Switching the group reloads every dictionary. Drop the cached lookup
     // and entry HTML so every tab is queried again; otherwise the first tab
@@ -138,11 +188,242 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         ? AsyncData<List<int>>(_lastValidDictIds!)
         : validDictIdsAsync;
 
-    return withFloatingWindowBackHandler(
-      context,
-      displayedValidDictIdsAsync.when(
-        data: (validDictIds) {
-          if (validDictIds.isEmpty && !settings.aiExplainWord) {
+    return SearchEscapeCloser(
+      focusNode: _searchFocusNode,
+      controller: _searchController,
+      child: withFloatingWindowBackHandler(
+        context,
+        displayedValidDictIdsAsync.when(
+          data: (validDictIds) {
+            if (validDictIds.isEmpty && !settings.aiExplainWord) {
+              final searchBar = _buildSearchBar(settings);
+              return Scaffold(
+                appBar: buildAppBar(context, false, title: searchBar),
+                bottomNavigationBar:
+                    widget.bottomNavigationBar ??
+                    ((!settings.searchBarInAppBar && searchBar != null)
+                        ? BottomAppBar(child: searchBar)
+                        : null),
+                body: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.notFound,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.word,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        _buildMissingWordSuggestions(context),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            final dictsLength = settings.aiExplainWord
+                ? validDictIds.length + 1
+                : validDictIds.length;
+            final showTab = dictsLength > 1;
+
+            final isDesktopScreen = app_utils.isLargeScreen(context);
+
+            // Keep a single dictionary entry in the same tab/expansion layout it
+            // will use if the next word matches more dictionaries.
+            if (!showTab && validDictIds.isEmpty) {
+              // Only the AI explanation is on screen; there is no entry to
+              // hand the focus back to.
+              activeEntryDictId = null;
+              final searchBar = _buildSearchBar(settings);
+              return Scaffold(
+                appBar: buildAppBar(
+                  context,
+                  showTab,
+                  title: searchBar,
+                  showAIButtons: settings.aiExplainWord,
+                ),
+                bottomNavigationBar:
+                    widget.bottomNavigationBar ??
+                    ((!settings.searchBarInAppBar && searchBar != null)
+                        ? BottomAppBar(child: searchBar)
+                        : null),
+                floatingActionButton: isDesktopScreen
+                    ? null
+                    : Button(
+                        word: widget.word,
+                        showAIButtons: settings.aiExplainWord,
+                      ),
+                body: Stack(
+                  children: [
+                    settings.aiExplainWord
+                        ? AIExplainView(word: widget.word)
+                        : _buildWebView(validDictIds[0]),
+                    const Positioned(
+                      left: 16,
+                      right: 16,
+                      bottom: 16,
+                      child: FloatingAudioIndicator(),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (settings.dictionarySwitchStyle == DictionarySwitchStyle.tag) {
+              int initialTabIndex = 0;
+              if (widget.initialDictId != null) {
+                final targetIndex = validDictIds.indexOf(widget.initialDictId!);
+                if (targetIndex != -1) {
+                  initialTabIndex = settings.aiExplainWord
+                      ? targetIndex + 1
+                      : targetIndex;
+                }
+              }
+
+              // Rebuild the tab controller when the group changes: its
+              // length changes too, and a reused controller can leave the
+              // first page blank after switching back.
+              final groupId = ref.watch(dictManagerProvider).groupId;
+              return DefaultTabController(
+                key: ValueKey("tab_group_$groupId"),
+                initialIndex: initialTabIndex,
+                length: dictsLength,
+                child: Builder(
+                  builder: (context) {
+                    final tabController = DefaultTabController.of(context);
+                    // The shortcut that switches dictionaries lives outside the
+                    // entry, so the tab bar hands its controller over.
+                    if (!identical(_tabController, tabController)) {
+                      if (_tabListener != null) {
+                        _tabController?.removeListener(_tabListener!);
+                      }
+                      _tabController = tabController;
+                      _tabListener = () => _syncActiveEntry(
+                        tabController,
+                        validDictIds,
+                        settings.aiExplainWord,
+                      );
+                      tabController.addListener(_tabListener!);
+                    }
+                    dictTabController = tabController;
+                    _syncActiveEntry(
+                      tabController,
+                      validDictIds,
+                      settings.aiExplainWord,
+                    );
+                    final searchBar = _buildSearchBar(settings);
+
+                    return ListenableBuilder(
+                      listenable: tabController,
+                      builder: (context, child) {
+                        final isAIExplainTabSelected =
+                            settings.aiExplainWord && tabController.index == 0;
+
+                        return Scaffold(
+                          appBar: buildAppBar(
+                            context,
+                            showTab,
+                            title: searchBar,
+                            showAIButtons: isAIExplainTabSelected,
+                          ),
+                          bottomNavigationBar: widget.bottomNavigationBar,
+                          floatingActionButton: isDesktopScreen
+                              ? null
+                              : Button(
+                                  word: widget.word,
+                                  showAIButtons: isAIExplainTabSelected,
+                                ),
+                          body: Stack(
+                            children: [
+                              Column(
+                                children: [
+                                  Expanded(
+                                    child: buildTabView(
+                                      context,
+                                      validDictIds: validDictIds,
+                                    ),
+                                  ),
+                                  if (settings.tabBarPosition ==
+                                          TabBarPosition.bottom &&
+                                      showTab)
+                                    buildTabBar(context),
+                                  if (!settings.searchBarInAppBar &&
+                                      searchBar != null)
+                                    searchBar,
+                                ],
+                              ),
+                              Positioned(
+                                left: 16,
+                                right: 16,
+                                bottom:
+                                    (settings.tabBarPosition ==
+                                            TabBarPosition.bottom &&
+                                        showTab)
+                                    ? 64
+                                    : 16,
+                                child: const FloatingAudioIndicator(),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              );
+            }
+
+            // The expansion layout has no tab bar. Drop the controller left
+            // over from the tab layout so the shortcut cannot switch a tab
+            // that is no longer on screen.
+            dictTabController = null;
+            activeEntryDictId = validDictIds.isNotEmpty
+                ? validDictIds.first
+                : null;
+
+            return ExpansionWordDisplay(
+              word: widget.word,
+              validDictIds: validDictIds,
+              searchController: _searchController,
+              pagerInfo: widget.pagerInfo,
+              showBackButton: widget.showBackButton,
+              bottomNavigationBar: widget.bottomNavigationBar,
+            );
+          },
+          loading: () {
+            final searchBar = _buildSearchBar(settings);
+            final firstLoadedDictId = dictManager.dictIds.firstWhere(
+              (id) => dictManager.dicts[id]?.isReady == true,
+              orElse: () => -1,
+            );
+            activeEntryDictId = firstLoadedDictId != -1
+                ? firstLoadedDictId
+                : null;
+
+            return Scaffold(
+              appBar: buildAppBar(context, false, title: searchBar),
+              bottomNavigationBar:
+                  widget.bottomNavigationBar ??
+                  ((!settings.searchBarInAppBar && searchBar != null)
+                      ? BottomAppBar(child: searchBar)
+                      : null),
+              body: firstLoadedDictId != -1
+                  ? _buildWebView(firstLoadedDictId)
+                  : Center(
+                      child: CircularProgressIndicator(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+            );
+          },
+          error: (err, stack) {
             final searchBar = _buildSearchBar(settings);
             return Scaffold(
               appBar: buildAppBar(context, false, title: searchBar),
@@ -151,203 +432,10 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   ((!settings.searchBarInAppBar && searchBar != null)
                       ? BottomAppBar(child: searchBar)
                       : null),
-              body: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.notFound,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        widget.word,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      _buildMissingWordSuggestions(context),
-                    ],
-                  ),
-                ),
-              ),
+              body: Center(child: Text("Error: $err")),
             );
-          }
-
-          final dictsLength = settings.aiExplainWord
-              ? validDictIds.length + 1
-              : validDictIds.length;
-          final showTab = dictsLength > 1;
-
-          final isDesktopScreen = app_utils.isLargeScreen(context);
-
-          // Keep a single dictionary entry in the same tab/expansion layout it
-          // will use if the next word matches more dictionaries.
-          if (!showTab && validDictIds.isEmpty) {
-            final searchBar = _buildSearchBar(settings);
-            return Scaffold(
-              appBar: buildAppBar(
-                context,
-                showTab,
-                title: searchBar,
-                showAIButtons: settings.aiExplainWord,
-              ),
-              bottomNavigationBar:
-                  widget.bottomNavigationBar ??
-                  ((!settings.searchBarInAppBar && searchBar != null)
-                      ? BottomAppBar(child: searchBar)
-                      : null),
-              floatingActionButton: isDesktopScreen
-                  ? null
-                  : Button(
-                      word: widget.word,
-                      showAIButtons: settings.aiExplainWord,
-                    ),
-              body: Stack(
-                children: [
-                  settings.aiExplainWord
-                      ? AIExplainView(word: widget.word)
-                      : _buildWebView(validDictIds[0]),
-                  const Positioned(
-                    left: 16,
-                    right: 16,
-                    bottom: 16,
-                    child: FloatingAudioIndicator(),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          if (settings.dictionarySwitchStyle == DictionarySwitchStyle.tag) {
-            int initialTabIndex = 0;
-            if (widget.initialDictId != null) {
-              final targetIndex = validDictIds.indexOf(widget.initialDictId!);
-              if (targetIndex != -1) {
-                initialTabIndex = settings.aiExplainWord
-                    ? targetIndex + 1
-                    : targetIndex;
-              }
-            }
-
-            // Rebuild the tab controller when the group changes: its
-            // length changes too, and a reused controller can leave the
-            // first page blank after switching back.
-            final groupId = ref.watch(dictManagerProvider).groupId;
-            return DefaultTabController(
-              key: ValueKey("tab_group_$groupId"),
-              initialIndex: initialTabIndex,
-              length: dictsLength,
-              child: Builder(
-                builder: (context) {
-                  final tabController = DefaultTabController.of(context);
-                  final searchBar = _buildSearchBar(settings);
-
-                  return ListenableBuilder(
-                    listenable: tabController,
-                    builder: (context, child) {
-                      final isAIExplainTabSelected =
-                          settings.aiExplainWord && tabController.index == 0;
-
-                      return Scaffold(
-                        appBar: buildAppBar(
-                          context,
-                          showTab,
-                          title: searchBar,
-                          showAIButtons: isAIExplainTabSelected,
-                        ),
-                        bottomNavigationBar: widget.bottomNavigationBar,
-                        floatingActionButton: isDesktopScreen
-                            ? null
-                            : Button(
-                                word: widget.word,
-                                showAIButtons: isAIExplainTabSelected,
-                              ),
-                        body: Stack(
-                          children: [
-                            Column(
-                              children: [
-                                Expanded(
-                                  child: buildTabView(
-                                    context,
-                                    validDictIds: validDictIds,
-                                  ),
-                                ),
-                                if (settings.tabBarPosition ==
-                                        TabBarPosition.bottom &&
-                                    showTab)
-                                  buildTabBar(context),
-                                if (!settings.searchBarInAppBar &&
-                                    searchBar != null)
-                                  searchBar,
-                              ],
-                            ),
-                            Positioned(
-                              left: 16,
-                              right: 16,
-                              bottom:
-                                  (settings.tabBarPosition ==
-                                          TabBarPosition.bottom &&
-                                      showTab)
-                                  ? 64
-                                  : 16,
-                              child: const FloatingAudioIndicator(),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            );
-          }
-
-          return ExpansionWordDisplay(
-            word: widget.word,
-            validDictIds: validDictIds,
-            searchController: _searchController,
-            pagerInfo: widget.pagerInfo,
-            showBackButton: widget.showBackButton,
-            bottomNavigationBar: widget.bottomNavigationBar,
-          );
-        },
-        loading: () {
-          final searchBar = _buildSearchBar(settings);
-          final firstLoadedDictId = dictManager.dictIds.firstWhere(
-            (id) => dictManager.dicts[id]?.isReady == true,
-            orElse: () => -1,
-          );
-
-          return Scaffold(
-            appBar: buildAppBar(context, false, title: searchBar),
-            bottomNavigationBar:
-                widget.bottomNavigationBar ??
-                ((!settings.searchBarInAppBar && searchBar != null)
-                    ? BottomAppBar(child: searchBar)
-                    : null),
-            body: firstLoadedDictId != -1
-                ? _buildWebView(firstLoadedDictId)
-                : Center(
-                    child: CircularProgressIndicator(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-          );
-        },
-        error: (err, stack) {
-          final searchBar = _buildSearchBar(settings);
-          return Scaffold(
-            appBar: buildAppBar(context, false, title: searchBar),
-            bottomNavigationBar:
-                widget.bottomNavigationBar ??
-                ((!settings.searchBarInAppBar && searchBar != null)
-                    ? BottomAppBar(child: searchBar)
-                    : null),
-            body: Center(child: Text("Error: $err")),
-          );
-        },
+          },
+        ),
       ),
     );
   }

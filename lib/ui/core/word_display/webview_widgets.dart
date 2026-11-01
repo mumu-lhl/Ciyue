@@ -9,17 +9,20 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/word_display/content_scale_script.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
+import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
 import "package:ciyue/ui/core/word_display/resource_url_script.dart";
+import "package:ciyue/ui/core/word_display/selection_style_script.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
+import "package:ciyue/ui/pages/main/home/shortcuts.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/gestures.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
-import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
 
 typedef DesktopWebViewLoad = ({
@@ -120,6 +123,7 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
   bool enableDarkReader = false,
   String darkReaderSource = "",
   bool isDarkTheme = false,
+  double contentScale = 1.0,
 }) {
   // Tell the page which theme the app is in: the WebView's own night mode
   // follows the OS, not the app, so dictionary stylesheets cannot react to
@@ -195,6 +199,22 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
       source: themeScript,
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
+    UserScript(
+      source: contentScaleScript(contentScale),
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
+    UserScript(
+      source: keyBridgeScript(),
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
+    UserScript(
+      source: contextWordScript(),
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
+    UserScript(
+      source: selectionStyleScript(),
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
     if (darkReaderScript != null)
       UserScript(
         source: darkReaderScript,
@@ -267,6 +287,68 @@ Future<void> _applyPendingAnchor(
   }
 }
 
+/// Registers the handler the key bridge script calls into.
+///
+/// * `Enter` looks up the text the user selected in the entry. The word is
+///   opened the same way a link inside the entry is, so it keeps the
+///   dictionary it was read from.
+/// * `Zoom` is a zoom key the engine would have turned into a page zoom of
+///   its own; the app zooms the entry instead.
+/// * `Shortcut` is any other key the home page binds; it is replayed through
+///   the same table the Flutter focus tree uses.
+/// * `ContextWord` is the word a right click selected, so the menu can use it
+///   even when the native menu has already cleared the selection.
+void _registerKeyBridgeHandler(
+  InAppWebViewController controller, {
+  required BuildContext context,
+  required int? dictId,
+  required WidgetRef ref,
+  required void Function(String key) onZoomKey,
+  void Function(String word)? onContextWord,
+}) {
+  controller.addJavaScriptHandler(
+    handlerName: "ciyueKey",
+    callback: (args) {
+      final name = args.isNotEmpty ? args[0].toString() : "";
+      final payload = args.length > 1 ? args[1].toString() : "";
+      if (name == "Enter") {
+        handleOpenWordNavigation(
+          context,
+          payload,
+          newTab: false,
+          dictId: dictId,
+        );
+      } else if (name == "Zoom") {
+        onZoomKey(payload);
+      } else if (name == "Shortcut") {
+        _dispatchShortcut(ref, context, payload);
+      } else if (name == "ContextWord") {
+        onContextWord?.call(payload);
+      }
+      return null;
+    },
+  );
+}
+
+/// Replays a shortcut the WebView swallowed through the home page's table.
+void _dispatchShortcut(WidgetRef ref, BuildContext context, String payload) {
+  final activator = bridgeShortcutActivator(payload);
+  if (activator == null) return;
+  shortcutActionFor(homeShortcutBindings(ref, context), activator)?.call();
+}
+
+/// Pushes the entry zoom into a page that is already open.
+///
+/// The scale script only runs when a document starts, so a change made while
+/// an entry is on screen has to be applied to that page directly.
+void _applyContentScale(InAppWebViewController? controller, double scale) {
+  if (controller == null) return;
+  controller.evaluateJavascript(
+    source:
+        "window.ciyueSetZoom && window.ciyueSetZoom(${scale.toStringAsFixed(3)})",
+  );
+}
+
 class WebviewAndroid extends ConsumerStatefulWidget {
   final String word;
   final String content;
@@ -292,6 +374,13 @@ class WebviewAndroid extends ConsumerStatefulWidget {
 class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
   InAppWebViewController? _webViewController;
   String _selectedText = "";
+  String _contextWord = "";
+
+  @override
+  void dispose() {
+    entryFocusTargets.remove(this);
+    super.dispose();
+  }
 
   @override
   void didUpdateWidget(WebviewAndroid oldWidget) {
@@ -342,6 +431,15 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    // The scale script runs when a document starts, so a change made while an
+    // entry is on screen has to be pushed into the page that is already open.
+    ref.listen<double>(settingsProvider.select((s) => s.contentScale), (
+      previous,
+      next,
+    ) {
+      if (previous == next) return;
+      _applyContentScale(_webViewController, next);
+    });
     final dictManager = ref.watch(dictManagerProvider);
     final height =
         ref.watch(
@@ -401,8 +499,20 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
             id: 2,
             title: locale.lookup,
             action: () async {
-              context.push(
-                "/word/${Uri.encodeComponent(_selectedText)}?dictId=${widget.dictId}",
+              // A right click does not raise the long-press selection, and
+              // the menu can be clicked before onCreateContextMenu has read
+              // it; the word the bridge captured is the reliable one.
+              final word = _contextWord.isNotEmpty
+                  ? _contextWord.trim()
+                  : _selectedText.trim();
+              if (word.isEmpty || !context.mounted) return;
+              // The same path Enter uses: in the split view it updates the
+              // entry pane instead of pushing a full-screen word page.
+              handleOpenWordNavigation(
+                context,
+                word,
+                newTab: false,
+                dictId: widget.dictId,
               );
             },
           ),
@@ -421,7 +531,11 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
           ),
         ],
         onCreateContextMenu: (hitTestResult) async {
-          _selectedText = await _webViewController?.getSelectedText() ?? "";
+          final selected = await _webViewController?.getSelectedText() ?? "";
+          // The right click word is captured in JS as well, because the native
+          // menu can clear the selection before this runs. Keep it until the
+          // next right click replaces it.
+          _selectedText = _contextWord.isNotEmpty ? _contextWord : selected;
         },
       );
       _cachedContextMenu = contextMenu;
@@ -433,6 +547,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         customCss: settings.dictionaryCustomCss,
         background: settings.dictionaryBackgroundColor,
         isDarkTheme: !isLightTheme,
+        contentScale: settings.contentScale,
       ),
       initialData: InAppWebViewInitialData(
         data: normalizeDictionaryUrls(widget.content),
@@ -494,8 +609,25 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
             },
           );
         }
+
+        _registerKeyBridgeHandler(
+          controller,
+          context: context,
+          dictId: widget.dictId,
+          onZoomKey: (key) => applyZoomKey(ref.read(settingsProvider), key),
+          onContextWord: (word) => _contextWord = word,
+          ref: ref,
+        );
+        entryFocusTargets[this] = (
+          dictId: () => widget.dictId,
+          isCurrent: () => ModalRoute.of(context)?.isCurrent ?? false,
+          focus: () => unawaited(controller.requestFocus()),
+        );
       },
       onPageCommitVisible: (controller, url) async {
+        // A reload starts a fresh document, which drops the inline zoom the
+        // scale script set on the old one.
+        _applyContentScale(controller, settings.contentScale);
         // Only the expansion panels need live height reports, and only they
         // register the 'WebViewHeight' handler. Use MutationObserver +
         // ResizeObserver instead of a requestAnimationFrame loop so there is
@@ -525,6 +657,14 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
 """,
           );
         }
+
+        // A reload starts a fresh document, which drops the inline zoom the
+        // scale script set on the old one. Apply it again so the zoom
+        // survives looking up another word.
+        controller.evaluateJavascript(
+          source:
+              "window.ciyueSetZoom && window.ciyueSetZoom(${settings.contentScale.toStringAsFixed(3)})",
+        );
 
         final loadedDict = dictManager.dicts[widget.dictId];
         if (loadedDict is Mdict && loadedDict.fontName != null) {
@@ -673,6 +813,12 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   Future<void> _desktopContentLoad = Future<void>.value();
 
   @override
+  void dispose() {
+    entryFocusTargets.remove(this);
+    super.dispose();
+  }
+
+  @override
   void didUpdateWidget(WebviewWindows oldWidget) {
     super.didUpdateWidget(oldWidget);
     final contentChanged =
@@ -768,6 +914,15 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
     final dictId = widget.dictId;
     final dictManager = ref.watch(dictManagerProvider);
     final settings = ref.watch(settingsProvider);
+    // The scale script runs when a document starts, so a change made while an
+    // entry is on screen has to be pushed into the page that is already open.
+    ref.listen<double>(settingsProvider.select((s) => s.contentScale), (
+      previous,
+      next,
+    ) {
+      if (previous == next) return;
+      _applyContentScale(_desktopController, next);
+    });
     final darkReaderSetting = ref.watch(dictionaryDarkReaderProvider);
     final port = dictManager.dicts[dictId]!.port;
     final Widget webview;
@@ -818,6 +973,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
               enableDarkReader: darkReaderReady,
               darkReaderSource: darkReaderSource,
               isDarkTheme: !isLightTheme,
+              contentScale: settings.contentScale,
             ),
             initialSettings: webviewSettings,
             initialData: load.initialData,
@@ -862,6 +1018,19 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   },
                 );
               }
+              _registerKeyBridgeHandler(
+                controller,
+                context: context,
+                dictId: dictId,
+                onZoomKey: (key) =>
+                    applyZoomKey(ref.read(settingsProvider), key),
+                ref: ref,
+              );
+              entryFocusTargets[this] = (
+                dictId: () => widget.dictId,
+                isCurrent: () => ModalRoute.of(context)?.isCurrent ?? false,
+                focus: () => unawaited(controller.requestFocus()),
+              );
               await _scheduleDesktopContentLoad(controller);
             },
             onPageCommitVisible: (controller, url) async {
@@ -903,6 +1072,9 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
 """,
                 );
               }
+              // A reload starts a fresh document, which drops the inline zoom
+              // the scale script set on the old one.
+              _applyContentScale(controller, settings.contentScale);
             },
             onRenderProcessGone: (controller, detail) async {
               talker.warning("InAppWebView render process gone, reloading...");
@@ -952,6 +1124,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   enableDarkReader: darkReaderReady,
                   darkReaderSource: darkReaderSource,
                   isDarkTheme: !isLightTheme,
+                  contentScale: settings.contentScale,
                 ),
                 webViewEnvironment: snapshot.data?.environment,
                 initialSettings: webviewSettings,
@@ -997,6 +1170,24 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                       }
                     },
                   );
+                  _registerKeyBridgeHandler(
+                    controller,
+                    context: context,
+                    dictId: dictId,
+                    onZoomKey: (key) =>
+                        applyZoomKey(ref.read(settingsProvider), key),
+                    ref: ref,
+                  );
+                  entryFocusTargets[this] = (
+                    dictId: () => widget.dictId,
+                    isCurrent: () => ModalRoute.of(context)?.isCurrent ?? false,
+                    focus: () => unawaited(controller.requestFocus()),
+                  );
+                },
+                onPageCommitVisible: (controller, url) async {
+                  // A reload starts a fresh document, which drops the inline
+                  // zoom the scale script set on the old one.
+                  _applyContentScale(controller, settings.contentScale);
                 },
               );
             }

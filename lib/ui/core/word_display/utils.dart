@@ -17,13 +17,35 @@ import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 
+/// Maps `Alt` plus a number to a tab index in the dictionary tab bar.
+///
+/// Returns null when the key means nothing here: a number past the last
+/// dictionary, or the AI tab when the AI explanation is not shown.
+/// [number] is 0 for the AI tab and 1..9 for the dictionaries in the order
+/// they are displayed. [dictionaryCount] counts the dictionaries only, the
+/// AI tab is not one of them.
+int? dictTabIndexForNumber({
+  required int number,
+  required bool aiExplainWord,
+  required int dictionaryCount,
+}) {
+  if (number == 0) return aiExplainWord ? 0 : null;
+  if (number > dictionaryCount) return null;
+  return aiExplainWord ? number : number - 1;
+}
+
 Widget? buildTitle(
   String word,
   Settings settings, {
   required SearchController controller,
+  FocusNode? focusNode,
 }) {
   if (settings.showSearchBarInWordDisplay) {
-    return WordSearchBarWithSuggestions(word: word, controller: controller);
+    return WordSearchBarWithSuggestions(
+      word: word,
+      controller: controller,
+      focusNode: focusNode,
+    );
   } else {
     return null;
   }
@@ -112,6 +134,7 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
     // StarDict sections render with native widgets when every matched
     // entry is on hand in structured form and none of them uses HTML
     // fields; a section with HTML entries keeps the WebView below.
+    final settings = ref.watch(settingsProvider);
     final dict = ref.watch(dictManagerProvider).dicts[widget.dictId];
     if (dict is Stardict) {
       final lookup = ref.watch(dictionaryLookupProvider(widget.word)).value;
@@ -145,6 +168,7 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
             dictId: widget.dictId,
             isExpansion: widget.isExpansion,
             resourceResolver: dict.readResourceFile,
+            scale: settings.contentScale,
           );
         }
       }

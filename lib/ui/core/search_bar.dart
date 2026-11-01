@@ -1,3 +1,4 @@
+import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
@@ -6,6 +7,26 @@ import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
+
+/// Selects the whole text in the field that owns [focusNode].
+///
+/// The search bar renders its own text editing controller, and the
+/// [SearchController] only carries the text along: setting its selection
+/// never reaches the field. The selection therefore has to go through the
+/// field itself.
+void selectAllTextInField(FocusNode focusNode) {
+  final context = focusNode.context;
+  if (context == null) return;
+  final controller = context
+      .findAncestorWidgetOfExactType<EditableText>()
+      ?.controller;
+  if (controller == null) return;
+  if (controller.text.isEmpty) return;
+  controller.selection = TextSelection(
+    baseOffset: 0,
+    extentOffset: controller.text.length,
+  );
+}
 
 class WordSearchBarWithSuggestions extends ConsumerStatefulWidget {
   final String word;
@@ -56,6 +77,7 @@ class _WordSearchBarWithSuggestionsState
   @override
   void initState() {
     super.initState();
+    widget.focusNode?.addListener(_onFocusChanged);
     if (widget.controller != null && !_isViewOpen) {
       widget.controller!.text = widget.word;
     }
@@ -64,10 +86,53 @@ class _WordSearchBarWithSuggestionsState
   @override
   void didUpdateWidget(covariant WordSearchBarWithSuggestions oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      oldWidget.focusNode?.removeListener(_onFocusChanged);
+      widget.focusNode?.addListener(_onFocusChanged);
+    }
     if (widget.controller != null &&
         widget.word != oldWidget.word &&
         !_isViewOpen) {
       widget.controller!.text = widget.word;
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.focusNode?.removeListener(_onFocusChanged);
+    // The globals must not outlive the box they point at: a page that is
+    // gone would leave Esc handing the focus to a node that is already
+    // disposed, and touching such a node is an assertion failure.
+    if (identical(activeSearchFocusNode, widget.focusNode)) {
+      activeSearchFocusNode = null;
+    }
+    final controller = _effectiveController;
+    if (controller != null && identical(activeSearchController, controller)) {
+      activeSearchController = null;
+    }
+    super.dispose();
+  }
+
+  /// Remembers this box as the one Esc hands the focus to and from.
+  void _markActive() {
+    final node = widget.focusNode;
+    if (node != null) activeSearchFocusNode = node;
+    final controller = _effectiveController;
+    if (controller != null) activeSearchController = controller;
+  }
+
+  void _onFocusChanged() {
+    final node = widget.focusNode;
+    if (node == null || !node.hasFocus) return;
+    activeSearchFocusNode = node;
+    final controller = _effectiveController;
+    if (controller != null) activeSearchController = controller;
+    // The entry's own box is where the reader comes to when they want to
+    // look up another word, so it opens as soon as it takes the focus: the
+    // text they type has to land where they can see it. The box of the home
+    // page keeps its own behaviour and only opens when it is tapped.
+    if (!widget.isHome && controller != null && !controller.isOpen) {
+      controller.openView();
     }
   }
 
@@ -88,6 +153,10 @@ class _WordSearchBarWithSuggestionsState
     if (controller.isAttached && controller.isOpen) {
       controller.closeView(normalizedWord);
     }
+    // Drop the field focus as well: on Android the IME turns a physical Esc
+    // into BACK while it is up, so the key would never reach the app, and
+    // leaving the field focused keeps the keyboard on screen after a lookup.
+    FocusManager.instance.primaryFocus?.unfocus();
     if (widget.isHome && settings.autoRemoveSearchWord) {
       controller.text = "";
     }
@@ -110,6 +179,12 @@ class _WordSearchBarWithSuggestionsState
         context.push(target);
       }
     }
+
+    // The lookup is done: hand the focus to the entry, so the next Esc reaches
+    // the app through the WebView instead of dying in the IME.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      focusActiveEntrySoon();
+    });
   }
 
   @override
@@ -119,6 +194,7 @@ class _WordSearchBarWithSuggestionsState
         child: SearchAnchor(
           viewHintText: AppLocalizations.of(context)!.search,
           viewOnOpen: () {
+            _markActive();
             final ctrl = _effectiveController;
             if (ctrl == null) return;
             if (widget.word.isNotEmpty && !widget.isHome) {
@@ -161,12 +237,14 @@ class _WordSearchBarWithSuggestionsState
                 maxWidth: 500,
               ),
               onTap: () {
+                _markActive();
                 if (controller.text.isNotEmpty && !widget.isHome) {
                   _selectAllText(controller);
                 }
                 controller.openView();
               },
               onChanged: (_) {
+                _markActive();
                 if (!_isViewOpen) {
                   controller.openView();
                 }
