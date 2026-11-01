@@ -23,6 +23,8 @@ Ctrl+`  /  Ctrl+1…9      Groups: which dictionaries a lookup uses
 | `Esc` | Move the focus into the search box **and select the text in it**, so typing replaces the word; press it again to return to the entry |
 | `Enter` on a selection | Look up the selected text (see below) |
 
+The wide window has two search boxes: the one in the left column and the one in the title bar of the entry. `Ctrl`+`F` and `Esc` go to the one you used last, so they follow you around the window instead of always landing on the left one.
+
 ### Looking up a selection
 
 Select a word or a phrase in the entry and press `Enter` to look it up. This is EBWin's behaviour, and on the desktop it is the only way to look up a word: the right-click menu of the entry is Chromium's own.
@@ -81,7 +83,7 @@ In the **Expansion** style there are no such tabs, and these keys do nothing at 
 
 | Shortcut | Action |
 |---|---|
-| `Ctrl`+`R` | Read the word aloud |
+| `Ctrl`+`R` | Read the word aloud — or stop it when it is already playing |
 | `Ctrl`+`Shift`+`S` | Stop the playback |
 | `Ctrl`+`↑` / `Ctrl`+`↓` | Pick the previous / next entry in the history |
 

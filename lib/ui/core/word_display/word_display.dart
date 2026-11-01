@@ -142,6 +142,12 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     if (identical(dictTabController, _tabController)) {
       dictTabController = null;
     }
+    // The node is disposed right below, so the global pointer has to let go
+    // of it first: handing the focus to a disposed node is an assertion
+    // failure.
+    if (identical(pageSearchFocusNode, _searchFocusNode)) {
+      pageSearchFocusNode = null;
+    }
     _searchFocusNode.dispose();
     _searchController.dispose();
     super.dispose();

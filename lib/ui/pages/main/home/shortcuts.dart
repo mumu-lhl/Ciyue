@@ -44,7 +44,7 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
 
   return {
     const SingleActivator(LogicalKeyboardKey.keyF, control: true): () {
-      _focusNode(pageSearchFocusNode ?? homeModel.searchBarFocusNode);
+      _focusNode(_nearestSearchNode(ref));
     },
     const SingleActivator(LogicalKeyboardKey.keyT, control: true):
         homeModel.newTab,
@@ -166,9 +166,35 @@ void _toggleSearchFocus(WidgetRef ref) {
     focusActiveEntrySoon();
     return;
   }
-  final target =
-      pageSearchFocusNode ?? ref.read(homeModelProvider).searchBarFocusNode;
+  final target = _nearestSearchNode(ref);
   _focusNodeAndSelectAll(target);
+}
+
+/// The search box the reader means.
+///
+/// The home page has two of them: the one in the left column and the one in
+/// the title bar of the entry. The one the reader used last is the one they
+/// mean, so that is where the focus goes. Only when none of them has been
+/// touched yet does it fall back to the box the page on screen owns.
+FocusNode _nearestSearchNode(WidgetRef ref) {
+  final active = activeSearchFocusNode;
+  if (active != null) return active;
+  final page = pageSearchFocusNode;
+  if (page != null) return page;
+  return ref.read(homeModelProvider).searchBarFocusNode;
+}
+
+/// Whether the reader is typing in a text field.
+///
+/// The search box of the entry has its own field, and the one of the home
+/// page another one, so a shortcut that would steal the focus cannot ask a
+/// fixed node: it has to look at where the focus actually is.
+bool _isTypingInAField() {
+  final primary = FocusManager.instance.primaryFocus;
+  if (primary == null) return false;
+  final context = primary.context;
+  if (context == null) return false;
+  return context.widget is EditableText;
 }
 
 /// Moves the selected word through the history by [delta] entries.
@@ -210,8 +236,10 @@ Map<SingleActivator, VoidCallback> _dictionaryTabShortcuts(
   final shortcuts = <SingleActivator, VoidCallback>{};
   for (var number = 0; number < _digitKeys.length; number++) {
     shortcuts[SingleActivator(_digitKeys[number], alt: true)] = () {
-      // Typing in the search box must not jump to another dictionary.
-      if (homeModel.searchBarFocusNode.hasFocus) return;
+      // Typing in any search box must not jump to another dictionary. The
+      // reader may be in the entry's own box, not in the one of the home
+      // page, so the check follows the focus instead of a fixed node.
+      if (_isTypingInAField()) return;
 
       final tabController = dictTabController;
       if (tabController == null) return;
@@ -415,7 +443,7 @@ class _SearchEscapeCloserState extends ConsumerState<SearchEscapeCloser> {
     }
     final homeModel = ref.read(homeModelProvider);
     final controller = widget.controller ?? homeModel.searchController;
-    final node = widget.focusNode ?? homeModel.searchBarFocusNode;
+    final node = widget.focusNode ?? _nearestSearchNode(ref);
     final activeController = activeSearchController;
     if (activeController != null &&
         activeController.isAttached &&

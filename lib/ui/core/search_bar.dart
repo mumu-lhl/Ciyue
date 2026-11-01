@@ -100,6 +100,16 @@ class _WordSearchBarWithSuggestionsState
   @override
   void dispose() {
     widget.focusNode?.removeListener(_onFocusChanged);
+    // The globals must not outlive the box they point at: a page that is
+    // gone would leave Esc handing the focus to a node that is already
+    // disposed, and touching such a node is an assertion failure.
+    if (identical(activeSearchFocusNode, widget.focusNode)) {
+      activeSearchFocusNode = null;
+    }
+    final controller = _effectiveController;
+    if (controller != null && identical(activeSearchController, controller)) {
+      activeSearchController = null;
+    }
     super.dispose();
   }
 
@@ -117,6 +127,13 @@ class _WordSearchBarWithSuggestionsState
     activeSearchFocusNode = node;
     final controller = _effectiveController;
     if (controller != null) activeSearchController = controller;
+    // The entry's own box is where the reader comes to when they want to
+    // look up another word, so it opens as soon as it takes the focus: the
+    // text they type has to land where they can see it. The box of the home
+    // page keeps its own behaviour and only opens when it is tapped.
+    if (!widget.isHome && controller != null && !controller.isOpen) {
+      controller.openView();
+    }
   }
 
   void _selectAllText(SearchController controller) {
