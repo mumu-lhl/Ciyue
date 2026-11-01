@@ -107,18 +107,66 @@ HOST_GLIB_LIBRARIES = {
     "libselinux.so.1",
 }
 
+# The toolkit belongs to the host desktop too, for the same structural reason as
+# everything above: GTK resolves its input-method modules, module extras and print
+# backends from directories baked in at build time (/usr/lib/gtk-3.0/3.0.0/immodules
+# on Arch, /usr/lib/*-linux-gnu/gtk-3.0/3.0.0/immodules on Debian and Ubuntu), and
+# those modules link the host libgtk-3. A bundled GTK therefore never finds the
+# host's fcitx/ibus immodule — the application starts without any input method —
+# and the modules a desktop injects (xapp, the at-spi bridge) fail with
+# "Failed to load module". Its own dependencies come along, because GTK links them
+# and mixing a newer host GTK with an older bundled pango/cairo has the mirror image
+# of the problem this file keeps running into. Libraries that WPE also links
+# (harfbuzz, freetype, fontconfig, expat, png, atk, epoxy, xkbcommon, systemd,
+# seccomp, z) deliberately stay bundled: WPE is the component whose build baseline
+# the bundle is responsible for.
+HOST_TOOLKIT_LIBRARIES = {
+    "libgtk-3.so.0",
+    "libgdk-3.so.0",
+    "libpango-1.0.so.0",
+    "libpangocairo-1.0.so.0",
+    "libpangoft2-1.0.so.0",
+    "libcairo.so.2",
+    "libcairo-gobject.so.2",
+    "libgdk_pixbuf-2.0.so.0",
+    "libatspi.so.0",
+    "libcloudproviders.so.0",
+    "libdatrie.so.1",
+    "libthai.so.0",
+    "libfribidi.so.0",
+    "libgraphite2.so.3",
+    "libpixman-1.so.0",
+    "libbrotlicommon.so.1",
+    "libbrotlidec.so.1",
+    "libbrotlienc.so.1",
+    "libbz2.so.1.0",
+    "libdbus-1.so.3",
+    # pango 1.58 calls FcConfigSetDefaultSubstitute, which the 2.15.0 snapshot
+    # does not have, so fontconfig has to follow the host toolkit as well.
+    "libfontconfig.so.1",
+}
+
+# The X11 client stack is toolkit-only here (WPE renders through Wayland/EGL), and
+# the host's windowing libraries have to match the host's GTK.
+HOST_TOOLKIT_LIBRARY_PREFIXES = ("libX", "libxcb")
+
 SYSTEM_LIBRARIES = (
     GLIBC_RUNTIME_LIBRARIES
     | HOST_GRAPHICS_LIBRARIES
     | WAYLAND_RUNTIME_LIBRARIES
     | HOST_MEDIA_LIBRARIES
     | HOST_GLIB_LIBRARIES
+    | HOST_TOOLKIT_LIBRARIES
 )
 
 
 def is_system_library(name: str) -> bool:
     """Whether `name` must be provided by the host distribution."""
-    return name in SYSTEM_LIBRARIES or name.startswith(HOST_MEDIA_LIBRARY_PREFIXES)
+    if name in SYSTEM_LIBRARIES:
+        return True
+    return name.startswith(
+        HOST_MEDIA_LIBRARY_PREFIXES + HOST_TOOLKIT_LIBRARY_PREFIXES
+    )
 
 
 NEEDED_RE = re.compile(r"\(NEEDED\).*Shared library: \[(.+)]")

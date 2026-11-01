@@ -132,6 +132,39 @@ class LinuxPackagingDependenciesTest(unittest.TestCase):
             self.assertTrue(bundle_linux_dependencies.is_system_library(library))
         self.assertFalse(bundle_linux_dependencies.is_system_library("libopus.so.0"))
 
+    def test_bundle_excludes_toolkit_but_keeps_wpe_dependencies(self):
+        # GTK resolves immodules and module extras from a libdir baked in at build
+        # time, so a bundled GTK cannot see the host's fcitx/ibus immodule (no
+        # input method at all) and desktop-injected modules fail to load.
+        sys.path.insert(0, str(ROOT / "tools"))
+        import bundle_linux_dependencies
+
+        for library in (
+            "libgtk-3.so.0",
+            "libgdk-3.so.0",
+            "libpango-1.0.so.0",
+            "libpangocairo-1.0.so.0",
+            "libcairo.so.2",
+            "libgdk_pixbuf-2.0.so.0",
+            "libfontconfig.so.1",
+            "libX11.so.6",
+            "libxcb.so.1",
+        ):
+            self.assertTrue(bundle_linux_dependencies.is_system_library(library))
+
+        # WPE links these itself, so the bundle stays responsible for their
+        # baseline and they must not be dropped.
+        for library in (
+            "libharfbuzz.so.0",
+            "libfreetype.so.6",
+            "libjpeg.so.8",
+            "libatk-1.0.so.0",
+            "libepoxy.so.0",
+            "libxkbcommon.so.0",
+            "libWPEWebKit-2.0.so.1",
+        ):
+            self.assertFalse(bundle_linux_dependencies.is_system_library(library))
+
     def test_bundle_excludes_glib(self):
         # Host libraries are compiled against the host GLib, so the bundled copy
         # must not shadow it; libgstaudio from a newer distribution asks for
