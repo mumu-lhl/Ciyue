@@ -261,10 +261,10 @@ packages:
     dependency: transitive
     description:
       name: cnativeapi
-      sha256: "251fb93cd7ec205445fa512ee5ddeb0b82b3273d071cfc0784ddffbbdebbf5d3"
+      sha256: "4bccdb9f1f543b4c2c89f81ecc2515c623e2e49dcbf284bdde6cde61e8bb042c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.2"
+    version: "0.5.6"
   code_assets:
     dependency: transitive
     description:
@@ -912,41 +912,17 @@ packages:
   hotkey_manager:
     dependency: "direct main"
     description:
-      name: hotkey_manager
-      sha256: "06f0655b76c8dd322fb7101dc615afbdbf39c3d3414df9e059c33892104479cd"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.3"
-  hotkey_manager_linux:
-    dependency: "direct overridden"
-    description:
-      path: "packages/hotkey_manager_linux"
-      ref: fix-build-failure
-      resolved-ref: "1b31e3ca4ab017ee72f54a7065b2073a88403d61"
-      url: "https://github.com/gepbird/hotkey_manager.git"
+      path: "packages/hotkey_manager"
+      ref: "5a409ace861bafe89c47700c9f6341eebdfd0043"
+      resolved-ref: "5a409ace861bafe89c47700c9f6341eebdfd0043"
+      url: "https://github.com/leanflutter/hotkey_manager.git"
     source: git
-    version: "0.2.0"
-  hotkey_manager_macos:
-    dependency: transitive
-    description:
-      name: hotkey_manager_macos
-      sha256: "03b5967e64357b9ac05188ea4a5df6fe4ed4205762cb80aaccf8916ee1713c96"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
+    version: "0.2.3"
   hotkey_manager_platform_interface:
     dependency: transitive
     description:
       name: hotkey_manager_platform_interface
       sha256: "98ffca25b8cc9081552902747b2942e3bc37855389a4218c9d50ca316b653b13"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
-  hotkey_manager_windows:
-    dependency: transitive
-    description:
-      name: hotkey_manager_windows
-      sha256: "0d03ced9fe563ed0b68f0a0e1b22c9ffe26eb8053cb960e401f68a4f070e0117"
       url: "https://pub.dev"
     source: hosted
     version: "0.2.0"
@@ -1257,10 +1233,10 @@ packages:
     dependency: transitive
     description:
       name: nativeapi
-      sha256: c4625e81f5ce2f4a9044c0ec1bdb38355119ffcf89e24eb20ae9fc5027a01e59
+      sha256: "5bdd8de1f9239a7e35725b91696e2f1465b45ee21b9cf60ecb1af3167d8efbdd"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.2"
+    version: "0.5.6"
   nativeapi_flutter:
     dependency: transitive
     description:

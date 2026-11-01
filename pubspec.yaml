@@ -86,7 +86,11 @@ dependencies:
   launch_at_startup: ^0.5.1
   tray_manager: ^0.8.0
   window_manager: ^0.5.2
-  hotkey_manager: ^0.2.3
+  hotkey_manager:
+    git:
+      path: packages/hotkey_manager
+      url: https://github.com/leanflutter/hotkey_manager.git
+      ref: 5a409ace861bafe89c47700c9f6341eebdfd0043
   fuzzy: ^0.5.2
   fsrs: ^2.0.1
   flutter_riverpod: ^3.4.3
@@ -101,11 +105,6 @@ dependencies:
 dependency_overrides:
   flutter_inappwebview_linux:
     path: packages/flutter_inappwebview_linux
-  hotkey_manager_linux:
-    git:
-      path: packages/hotkey_manager_linux
-      url: https://github.com/gepbird/hotkey_manager.git
-      ref: fix-build-failure
   # Reuse the app's nlohmann/json CMake target with flutter_inappwebview_linux.
   simple_secure_storage_linux:
     path: packages/simple_secure_storage_linux
