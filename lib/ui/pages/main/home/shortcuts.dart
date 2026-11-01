@@ -43,8 +43,13 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
       homeModel.selectedWord ?? (history.isEmpty ? null : history.first.word);
 
   return {
-    const SingleActivator(LogicalKeyboardKey.keyF, control: true): () =>
-        _focusSearchBar(homeModel),
+    const SingleActivator(LogicalKeyboardKey.keyF, control: true): () {
+      _focusNode(
+        pageSearchFocusNode ??
+            homeSearchFocusNode ??
+            homeModel.searchBarFocusNode,
+      );
+    },
     const SingleActivator(LogicalKeyboardKey.keyT, control: true):
         homeModel.newTab,
     const SingleActivator(LogicalKeyboardKey.keyW, control: true): () {
@@ -110,15 +115,10 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
 /// focus out of the home page, where the shortcuts live. Typing opens it the
 /// normal way.
 ///
-/// Requesting focus again on the already focused node re-applies the focus
-/// chain, which could move the focus out of the box; leave it alone then.
-void _focusSearchBar(HomeModel homeModel) {
-  if (homeModel.searchBarFocusNode.hasFocus) return;
-  homeModel.focusSearchBar();
-}
-
-void _focusNodeAndSelectAll(FocusNode node) {
-  talker.info("focusNodeAndSelectAll: attached=${node.context != null}");
+void _focusNode(FocusNode node, {bool selectAll = false}) {
+  talker.info(
+    "focusNode: attached=${node.context != null} selectAll=$selectAll",
+  );
   // Run after the current key event has been dispatched: the text field's
   // dismiss intent can otherwise unfocus the box right after this returns.
   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -126,12 +126,18 @@ void _focusNodeAndSelectAll(FocusNode node) {
       FocusManager.instance.primaryFocus?.unfocus();
       node.requestFocus();
     }
-    // The focus node only gets a context once the field is focused, so the
-    // selection has to wait for the next frame as well.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      selectAllTextInField(node);
-    });
+    if (selectAll) {
+      // The focus node only gets a context once the field is focused, so the
+      // selection has to wait for the next frame as well.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        selectAllTextInField(node);
+      });
+    }
   });
+}
+
+void _focusNodeAndSelectAll(FocusNode node) {
+  _focusNode(node, selectAll: true);
 }
 
 /// Moves the focus between the search box and the entry.
