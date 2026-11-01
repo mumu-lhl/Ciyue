@@ -25,6 +25,6 @@ void main() {
 
   test("pronunciation modes and results are distinct", () {
     expect(PronunciationMode.values, hasLength(3));
-    expect(PronunciationResult.values, hasLength(3));
+    expect(PronunciationResult.values, hasLength(4));
   });
 }

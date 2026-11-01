@@ -8,6 +8,7 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/audio.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/mdd_reader_pool.dart";
+import "package:ciyue/services/online_pronunciation.dart";
 import "package:ciyue/services/zip_archive_reader.dart";
 import "package:material_ui/material_ui.dart";
 import "package:mime/mime.dart";
@@ -219,6 +220,26 @@ class AudioModel extends ChangeNotifier {
             return PronunciationResult.pack;
           }
         }
+      }
+    }
+
+    // Online sources run before the Linux/TTS gate: online audio is
+    // plain bytes played via audioplayers, only TTS is Linux-gated.
+    // packOnly and ttsOnly never reach here (packOnly is caught by the
+    // gate below; ttsOnly skips the pack block and this check).
+    if (mode == PronunciationMode.packFirst) {
+      try {
+        final onlineBytes = await resolveOnlinePronunciation(word);
+        if (onlineBytes != null && onlineBytes.isNotEmpty) {
+          await playAudioBytes(
+            onlineBytes,
+            onlineAudioMimeType(onlineBytes),
+            label: word,
+          );
+          return PronunciationResult.online;
+        }
+      } catch (e) {
+        talker.error("Failed to resolve online pronunciation", e);
       }
     }
 

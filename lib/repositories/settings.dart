@@ -90,6 +90,11 @@ class Settings extends ChangeNotifier {
   late double ttsPitch;
   late PronunciationMode pronunciationMode;
 
+  late bool wiktionaryPronunciationEnabled;
+  late bool forvoPronunciationEnabled;
+  late String wiktionaryPronunciationLanguage;
+  late String forvoPronunciationLanguage;
+
   late String translationProvider;
   late String? deeplxUrl;
   late bool isRichOutput;
@@ -218,6 +223,14 @@ class Settings extends ChangeNotifier {
       (mode) => mode.name == prefs.getString("pronunciationMode"),
       orElse: () => PronunciationMode.packFirst,
     );
+    wiktionaryPronunciationEnabled =
+        prefs.getBool("wiktionaryPronunciationEnabled") ?? false;
+    forvoPronunciationEnabled =
+        prefs.getBool("forvoPronunciationEnabled") ?? false;
+    wiktionaryPronunciationLanguage =
+        prefs.getString("wiktionaryPronunciationLanguage") ?? "";
+    forvoPronunciationLanguage =
+        prefs.getString("forvoPronunciationLanguage") ?? "";
 
     var aiProviderConfigsString = prefs.getString("aiProviderConfigs");
     if (aiProviderConfigsString != null) {
@@ -415,6 +428,30 @@ class Settings extends ChangeNotifier {
   Future<void> setPronunciationMode(PronunciationMode mode) async {
     pronunciationMode = mode;
     await prefs.setString("pronunciationMode", mode.name);
+    notifyListeners();
+  }
+
+  Future<void> setWiktionaryPronunciationEnabled(bool value) async {
+    wiktionaryPronunciationEnabled = value;
+    await prefs.setBool("wiktionaryPronunciationEnabled", value);
+    notifyListeners();
+  }
+
+  Future<void> setForvoPronunciationEnabled(bool value) async {
+    forvoPronunciationEnabled = value;
+    await prefs.setBool("forvoPronunciationEnabled", value);
+    notifyListeners();
+  }
+
+  Future<void> setWiktionaryPronunciationLanguage(String value) async {
+    wiktionaryPronunciationLanguage = value;
+    await prefs.setString("wiktionaryPronunciationLanguage", value);
+    notifyListeners();
+  }
+
+  Future<void> setForvoPronunciationLanguage(String value) async {
+    forvoPronunciationLanguage = value;
+    await prefs.setString("forvoPronunciationLanguage", value);
     notifyListeners();
   }
 

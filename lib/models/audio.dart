@@ -18,6 +18,10 @@ enum PronunciationResult {
   /// TTS spoke the word.
   tts,
 
+  /// An online pronunciation source (Wiktionary or Forvo) supplied
+  /// the audio bytes, which were played as plain audio.
+  online,
+
   /// Nothing could be played (no pack match, and TTS unavailable or
   /// disabled by the pronunciation mode).
   unavailable,
