@@ -15,6 +15,8 @@ import "package:ciyue/core/providers.dart";
 import "package:file_selector/file_selector.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:simple_secure_storage/simple_secure_storage.dart";
+import "package:url_launcher/url_launcher.dart";
 
 class AudioSettingsPage extends ConsumerWidget {
   const AudioSettingsPage({super.key});
@@ -46,6 +48,8 @@ class AudioSettingsPage extends ConsumerWidget {
                 const PronunciationModeSelector(),
                 const SizedBox(height: 24),
                 const AudioList(),
+                const SizedBox(height: 24),
+                const OnlinePronunciationSettings(),
                 const SizedBox(height: 24),
                 if (Platform.isAndroid) const TTSEngines(),
                 if (!Platform.isLinux) ...[
@@ -314,6 +318,266 @@ class AudioItems extends ConsumerWidget {
     if (confirmed == true) {
       await ref.read(audioModelProvider).removeMddAudio(id);
     }
+  }
+}
+
+class OnlinePronunciationSettings extends StatefulWidget {
+  const OnlinePronunciationSettings({super.key});
+
+  @override
+  State<OnlinePronunciationSettings> createState() =>
+      _OnlinePronunciationSettingsState();
+}
+
+class _OnlinePronunciationSettingsState
+    extends State<OnlinePronunciationSettings> {
+  static const _forvoApiKeyStorageKey = "forvoApiKey";
+  static const _forvoApiKeyPlaceholder = "••••••••";
+  static const _onlinePronunciationLanguages = <String, String>{
+    "en": "English",
+    "de": "German",
+    "fr": "French",
+    "es": "Spanish",
+    "it": "Italian",
+    "pt": "Portuguese",
+    "ru": "Russian",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "zh": "Chinese",
+    "nl": "Dutch",
+    "sv": "Swedish",
+    "da": "Danish",
+    "no": "Norwegian",
+    "fi": "Finnish",
+    "pl": "Polish",
+    "cs": "Czech",
+    "hu": "Hungarian",
+    "tr": "Turkish",
+    "ar": "Arabic",
+    "he": "Hebrew",
+    "hi": "Hindi",
+    "th": "Thai",
+    "vi": "Vietnamese",
+    "id": "Indonesian",
+    "uk": "Ukrainian",
+    "el": "Greek",
+  };
+
+  final _forvoApiKeyController = TextEditingController();
+  final _forvoApiKeyFocusNode = FocusNode();
+
+  bool _hasStoredForvoApiKey = false;
+  bool _forvoApiKeyDirty = false;
+  bool _placeholderClearedOnFocus = false;
+
+  /// Guards programmatic controller writes (placeholder load/restore)
+  /// from the field's onChanged handler: setting controller text
+  /// programmatically fires onChanged, and without this guard merely
+  /// focusing and leaving the field would mark it edited and delete
+  /// the stored key on blur.
+  bool _suppressForvoApiKeyChanged = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _forvoApiKeyFocusNode.addListener(_onForvoApiKeyFocusChanged);
+    _loadForvoApiKey();
+  }
+
+  @override
+  void dispose() {
+    _forvoApiKeyFocusNode.removeListener(_onForvoApiKeyFocusChanged);
+    _forvoApiKeyFocusNode.dispose();
+    _forvoApiKeyController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadForvoApiKey() async {
+    final storedKey = await SimpleSecureStorage.read(_forvoApiKeyStorageKey);
+    if (!mounted) return;
+    if (storedKey != null && storedKey.isNotEmpty) {
+      _hasStoredForvoApiKey = true;
+      // Show obscured placeholder dots, never the stored key itself.
+      // Suppressed: this programmatic write must not mark the field edited.
+      _suppressForvoApiKeyChanged = true;
+      _forvoApiKeyController.text = _forvoApiKeyPlaceholder;
+      _suppressForvoApiKeyChanged = false;
+    }
+    setState(() {});
+  }
+
+  void _onForvoApiKeyFocusChanged() {
+    if (!_forvoApiKeyFocusNode.hasFocus) {
+      if (_placeholderClearedOnFocus) {
+        // Focused but nothing was typed: restore the placeholder
+        // instead of treating the cleared field as a key deletion.
+        _placeholderClearedOnFocus = false;
+        _suppressForvoApiKeyChanged = true;
+        _forvoApiKeyController.text = _forvoApiKeyPlaceholder;
+        _suppressForvoApiKeyChanged = false;
+        return;
+      }
+      _saveForvoApiKey();
+      return;
+    }
+    if (_hasStoredForvoApiKey && !_forvoApiKeyDirty) {
+      // Editing replaces the stored key, so start from an empty field
+      // rather than letting the placeholder dots become part of the key.
+      _placeholderClearedOnFocus = true;
+      _suppressForvoApiKeyChanged = true;
+      _forvoApiKeyController.clear();
+      _suppressForvoApiKeyChanged = false;
+    }
+  }
+
+  Future<void> _saveForvoApiKey() async {
+    if (!_forvoApiKeyDirty) return;
+    final value = _forvoApiKeyController.text.trim();
+    if (value.isEmpty) {
+      await SimpleSecureStorage.delete(_forvoApiKeyStorageKey);
+    } else {
+      await SimpleSecureStorage.write(_forvoApiKeyStorageKey, value);
+    }
+    if (!mounted) return;
+    _hasStoredForvoApiKey = value.isNotEmpty;
+    _forvoApiKeyDirty = false;
+    _placeholderClearedOnFocus = false;
+    if (value.isNotEmpty) {
+      _suppressForvoApiKeyChanged = true;
+      _forvoApiKeyController.text = _forvoApiKeyPlaceholder;
+      _suppressForvoApiKeyChanged = false;
+    }
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    final helperStyle = Theme.of(context).textTheme.bodySmall
+        ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
+    final packsFirst =
+        settings.pronunciationMode == PronunciationMode.packFirst;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TitleText(localizations.onlinePronunciation),
+        const SizedBox(height: 8),
+        Text(localizations.onlinePronunciationDescription, style: helperStyle),
+        const SizedBox(height: 8),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(localizations.onlinePronunciationWiktionary),
+          value: settings.wiktionaryPronunciationEnabled,
+          onChanged: (value) {
+            settings.setWiktionaryPronunciationEnabled(value);
+          },
+        ),
+        _languageDropdown(
+          localizations: localizations,
+          enabled: settings.wiktionaryPronunciationEnabled,
+          value: settings.wiktionaryPronunciationLanguage,
+          onChanged: (language) {
+            settings.setWiktionaryPronunciationLanguage(language);
+          },
+        ),
+        const SizedBox(height: 16),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(localizations.onlinePronunciationForvo),
+          value: settings.forvoPronunciationEnabled,
+          onChanged: (value) {
+            settings.setForvoPronunciationEnabled(value);
+          },
+        ),
+        _languageDropdown(
+          localizations: localizations,
+          enabled: settings.forvoPronunciationEnabled,
+          value: settings.forvoPronunciationLanguage,
+          onChanged: (language) {
+            settings.setForvoPronunciationLanguage(language);
+          },
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _forvoApiKeyController,
+          focusNode: _forvoApiKeyFocusNode,
+          obscureText: true,
+          autocorrect: false,
+          enableSuggestions: false,
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(
+            labelText: localizations.onlinePronunciationForvoApiKey,
+            helperText: localizations.onlinePronunciationForvoApiKeyHint,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onChanged: (_) {
+            // Programmatic controller writes (placeholder load/restore)
+            // must not mark the field edited: without this guard,
+            // merely focusing and leaving the field would delete the
+            // stored key.
+            if (_suppressForvoApiKeyChanged) return;
+            _placeholderClearedOnFocus = false;
+            _forvoApiKeyDirty = true;
+          },
+          onSubmitted: (_) {
+            _saveForvoApiKey();
+            _forvoApiKeyFocusNode.unfocus();
+          },
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () => launchUrl(Uri.parse("https://forvo.com")),
+          child: Text(
+            localizations.onlinePronunciationForvoAttribution,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+        if (!packsFirst) ...[
+          const SizedBox(height: 8),
+          Text(
+            localizations.onlinePronunciationDisabledNote,
+            style: helperStyle,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _languageDropdown({
+    required AppLocalizations localizations,
+    required bool enabled,
+    required String value,
+    required ValueChanged<String> onChanged,
+  }) {
+    final effectiveValue = _onlinePronunciationLanguages.containsKey(value)
+        ? value
+        : "";
+    return DropdownButtonFormField<String>(
+      initialValue: effectiveValue,
+      decoration: InputDecoration(
+        labelText: localizations.onlinePronunciationLanguage,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      items: [
+        DropdownMenuItem(
+          value: "",
+          child: Text(localizations.onlinePronunciationFollowSystemLanguage),
+        ),
+        for (final entry in _onlinePronunciationLanguages.entries)
+          DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+      ],
+      onChanged: enabled
+          ? (language) {
+              if (language != null) {
+                onChanged(language);
+              }
+            }
+          : null,
+    );
   }
 }
 
