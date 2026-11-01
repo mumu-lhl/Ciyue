@@ -9,8 +9,10 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/word_display/content_scale_script.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
+import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
 import "package:ciyue/ui/core/word_display/resource_url_script.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:flutter/foundation.dart";
@@ -120,6 +122,7 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
   bool enableDarkReader = false,
   String darkReaderSource = "",
   bool isDarkTheme = false,
+  double contentScale = 1.0,
 }) {
   // Tell the page which theme the app is in: the WebView's own night mode
   // follows the OS, not the app, so dictionary stylesheets cannot react to
@@ -195,6 +198,14 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
       source: themeScript,
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
+    UserScript(
+      source: contentScaleScript(contentScale),
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
+    UserScript(
+      source: keyBridgeScript(),
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
     if (darkReaderScript != null)
       UserScript(
         source: darkReaderScript,
@@ -265,6 +276,51 @@ Future<void> _applyPendingAnchor(
     // The widget was disposed while the scroll was in flight; dropping the
     // request is harmless, a later entry can ask for its own anchor.
   }
+}
+
+/// Registers the handler the key bridge script calls into.
+///
+/// * `Enter` looks up the text the user selected in the entry. The word is
+///   opened the same way a link inside the entry is, so it keeps the
+///   dictionary it was read from.
+/// * `Zoom` is a zoom key the engine would have turned into a page zoom of
+///   its own; the app zooms the entry instead.
+void _registerKeyBridgeHandler(
+  InAppWebViewController controller, {
+  required BuildContext context,
+  required int? dictId,
+  required void Function(String key) onZoomKey,
+}) {
+  controller.addJavaScriptHandler(
+    handlerName: "ciyueKey",
+    callback: (args) {
+      final name = args.isNotEmpty ? args[0].toString() : "";
+      final payload = args.length > 1 ? args[1].toString() : "";
+      if (name == "Enter") {
+        handleOpenWordNavigation(
+          context,
+          payload,
+          newTab: false,
+          dictId: dictId,
+        );
+      } else if (name == "Zoom") {
+        onZoomKey(payload);
+      }
+      return null;
+    },
+  );
+}
+
+/// Pushes the entry zoom into a page that is already open.
+///
+/// The scale script only runs when a document starts, so a change made while
+/// an entry is on screen has to be applied to that page directly.
+void _applyContentScale(InAppWebViewController? controller, double scale) {
+  if (controller == null) return;
+  controller.evaluateJavascript(
+    source:
+        "window.ciyueSetZoom && window.ciyueSetZoom(${scale.toStringAsFixed(3)})",
+  );
 }
 
 class WebviewAndroid extends ConsumerStatefulWidget {
@@ -342,6 +398,15 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    // The scale script runs when a document starts, so a change made while an
+    // entry is on screen has to be pushed into the page that is already open.
+    ref.listen<double>(settingsProvider.select((s) => s.contentScale), (
+      previous,
+      next,
+    ) {
+      if (previous == next) return;
+      _applyContentScale(_webViewController, next);
+    });
     final dictManager = ref.watch(dictManagerProvider);
     final height =
         ref.watch(
@@ -433,6 +498,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         customCss: settings.dictionaryCustomCss,
         background: settings.dictionaryBackgroundColor,
         isDarkTheme: !isLightTheme,
+        contentScale: settings.contentScale,
       ),
       initialData: InAppWebViewInitialData(
         data: normalizeDictionaryUrls(widget.content),
@@ -494,8 +560,16 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
             },
           );
         }
+
+        _registerKeyBridgeHandler(
+          controller,
+          context: context,
+          dictId: widget.dictId,
+          onZoomKey: (key) => applyZoomKey(ref.read(settingsProvider), key),
+        );
       },
       onPageCommitVisible: (controller, url) async {
+        _applyContentScale(controller, settings.contentScale);
         // Only the expansion panels need live height reports, and only they
         // register the 'WebViewHeight' handler. Use MutationObserver +
         // ResizeObserver instead of a requestAnimationFrame loop so there is
@@ -768,6 +842,15 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
     final dictId = widget.dictId;
     final dictManager = ref.watch(dictManagerProvider);
     final settings = ref.watch(settingsProvider);
+    // The scale script runs when a document starts, so a change made while an
+    // entry is on screen has to be pushed into the page that is already open.
+    ref.listen<double>(settingsProvider.select((s) => s.contentScale), (
+      previous,
+      next,
+    ) {
+      if (previous == next) return;
+      _applyContentScale(_desktopController, next);
+    });
     final darkReaderSetting = ref.watch(dictionaryDarkReaderProvider);
     final port = dictManager.dicts[dictId]!.port;
     final Widget webview;
@@ -818,6 +901,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
               enableDarkReader: darkReaderReady,
               darkReaderSource: darkReaderSource,
               isDarkTheme: !isLightTheme,
+              contentScale: settings.contentScale,
             ),
             initialSettings: webviewSettings,
             initialData: load.initialData,
@@ -862,9 +946,18 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   },
                 );
               }
+
+              _registerKeyBridgeHandler(
+                controller,
+                context: context,
+                dictId: dictId,
+                onZoomKey: (key) =>
+                    applyZoomKey(ref.read(settingsProvider), key),
+              );
               await _scheduleDesktopContentLoad(controller);
             },
             onPageCommitVisible: (controller, url) async {
+              _applyContentScale(controller, settings.contentScale);
               // Report content height for expansion panels so the WebView is
               // sized to its content (like Android). This avoids nested scrolling
               // (WebView internal scroll + Flutter outer scroll fighting).
@@ -952,6 +1045,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   enableDarkReader: darkReaderReady,
                   darkReaderSource: darkReaderSource,
                   isDarkTheme: !isLightTheme,
+                  contentScale: settings.contentScale,
                 ),
                 webViewEnvironment: snapshot.data?.environment,
                 initialSettings: webviewSettings,
@@ -997,6 +1091,16 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                       }
                     },
                   );
+                  _registerKeyBridgeHandler(
+                    controller,
+                    context: context,
+                    dictId: dictId,
+                    onZoomKey: (key) =>
+                        applyZoomKey(ref.read(settingsProvider), key),
+                  );
+                },
+                onPageCommitVisible: (controller, url) async {
+                  _applyContentScale(controller, settings.contentScale);
                 },
               );
             }

@@ -112,6 +112,7 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
     // StarDict sections render with native widgets when every matched
     // entry is on hand in structured form and none of them uses HTML
     // fields; a section with HTML entries keeps the WebView below.
+    final settings = ref.watch(settingsProvider);
     final dict = ref.watch(dictManagerProvider).dicts[widget.dictId];
     if (dict is Stardict) {
       final lookup = ref.watch(dictionaryLookupProvider(widget.word)).value;
@@ -145,6 +146,7 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
             dictId: widget.dictId,
             isExpansion: widget.isExpansion,
             resourceResolver: dict.readResourceFile,
+            scale: settings.contentScale,
           );
         }
       }

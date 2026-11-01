@@ -391,6 +391,7 @@ const preferencesAllowList = <String>{
   "dictionaryCustomCss",
   "dictionaryBackgroundColor",
   "dictionaryDarkReaderEnabled",
+  "contentScale",
   "tagsOrder",
   "secureScreen",
   "searchBarInAppBar",

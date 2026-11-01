@@ -24,6 +24,14 @@ enum UpdateChannel {
   nightly,
 }
 
+/// The range the dictionary entry content can be zoomed to.
+const minContentScale = 0.5;
+const maxContentScale = 2.0;
+
+/// Keeps the content zoom within the supported range.
+double clampContentScale(double value) =>
+    value.clamp(minContentScale, maxContentScale).toDouble();
+
 class Settings extends ChangeNotifier {
   // Deliberately does not call super.dispose(): the app uses a single
   // process-lifetime [settings] singleton, which is also what
@@ -94,6 +102,10 @@ class Settings extends ChangeNotifier {
   late bool forvoPronunciationEnabled;
   late String wiktionaryPronunciationLanguage;
   late String forvoPronunciationLanguage;
+
+  /// Zoom applied to the dictionary entry content only. The rest of the app
+  /// keeps its normal size.
+  late double contentScale;
 
   late String translationProvider;
   late String? deeplxUrl;
@@ -219,6 +231,7 @@ class Settings extends ChangeNotifier {
     // applying the defaults does not change existing users' speech.
     ttsSpeechRate = prefs.getDouble("ttsSpeechRate") ?? 0.5;
     ttsPitch = prefs.getDouble("ttsPitch") ?? 1.0;
+    contentScale = clampContentScale(prefs.getDouble("contentScale") ?? 1.0);
     pronunciationMode = PronunciationMode.values.firstWhere(
       (mode) => mode.name == prefs.getString("pronunciationMode"),
       orElse: () => PronunciationMode.packFirst,
@@ -416,6 +429,21 @@ class Settings extends ChangeNotifier {
   Future<void> setTTSSpeechRate(double rate) async {
     ttsSpeechRate = rate;
     await prefs.setDouble("ttsSpeechRate", rate);
+    notifyListeners();
+  }
+
+  Future<void> setContentScale(double scale) async {
+    contentScale = clampContentScale(scale);
+    await prefs.setDouble("contentScale", contentScale);
+    notifyListeners();
+  }
+
+  /// Sets the content zoom without writing it to the disk.
+  ///
+  /// Used for the live preview while the slider is being dragged; the value
+  /// is stored once the drag is over.
+  void previewContentScale(double scale) {
+    contentScale = clampContentScale(scale);
     notifyListeners();
   }
 
