@@ -84,18 +84,15 @@ void focusActiveEntry() {
   }
 }
 
-/// Gives the focus back to the entry, then again over the next two frames.
+/// Gives the focus back to the entry after the current focus change settles.
 ///
-/// Android hides the IME asynchronously, and a focus request made before that
-/// lands can be dropped again. Frames are used rather than a timer so widget
-/// tests do not leave a pending timer behind.
+/// The unfocus and the WebView focus request can land in the same frame, so
+/// the request is repeated once after the frame. Frames are used rather than a
+/// timer so widget tests do not leave a pending timer behind.
 void focusActiveEntrySoon() {
   focusActiveEntry();
   WidgetsBinding.instance.addPostFrameCallback((_) {
     focusActiveEntry();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      focusActiveEntry();
-    });
   });
 }
 

@@ -44,11 +44,7 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
 
   return {
     const SingleActivator(LogicalKeyboardKey.keyF, control: true): () {
-      _focusNode(
-        pageSearchFocusNode ??
-            homeSearchFocusNode ??
-            homeModel.searchBarFocusNode,
-      );
+      _focusNode(pageSearchFocusNode ?? homeModel.searchBarFocusNode);
     },
     const SingleActivator(LogicalKeyboardKey.keyT, control: true):
         homeModel.newTab,
