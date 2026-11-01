@@ -12,7 +12,6 @@ import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:ciyue/utils.dart";
-import "package:file_selector/file_selector.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:material_ui/material_ui.dart";
@@ -84,8 +83,20 @@ Future<void> importDictionariesFromFiles(BuildContext context) async {
       final isGranted = await requestManageExternalStorage(context);
       if (!isGranted) return;
 
-      final path = await getDirectoryPath();
-      if (path == null) return;
+      // Resolve the picked tree natively instead of file_selector's
+      // getDirectoryPath(), whose path resolution throws for non-"primary"
+      // volumes (SD cards, USB drives: #800) and used to fail silently.
+      final pick = await PlatformMethod.pickDictionaryDirectoryPath();
+      if (pick.cancelled) return;
+      final path = pick.path;
+      if (path == null) {
+        // Resolution failed: fall back to the SAF-copy flow (the
+        // non-full-flavor path). Do not save the pref or run the direct
+        // scan below; the fallback's inputDirectory handler saves the
+        // picked URI itself, as it does for the non-full flavor.
+        PlatformMethod.openDirectory();
+        return;
+      }
 
       await prefs.setString("dictionariesDirectory", path);
 

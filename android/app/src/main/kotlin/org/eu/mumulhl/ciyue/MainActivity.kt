@@ -24,6 +24,7 @@ class MainActivity : FlutterActivity() {
         const val REQUEST_OVERLAY_PERMISSION = 3
         const val OPEN_AUDIO_DOCUMENT_TREE = 4
         const val OPEN_HUNSPELL_DOCUMENT_TREE = 5
+        const val PICK_DICTIONARY_DIRECTORY_PATH = 6
     }
 
     private lateinit var configurator: EngineConfigurator
@@ -52,6 +53,14 @@ class MainActivity : FlutterActivity() {
         startActivityForResult(intent, OPEN_HUNSPELL_DOCUMENT_TREE)
     }
 
+    // Full flavor (#800): same picker as the copy flows above, but the
+    // result is resolved to a filesystem path by the configurator instead
+    // of being copied, so Dart can scan the picked tree directly.
+    private fun pickDictionaryDirectoryPath() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        startActivityForResult(intent, PICK_DICTIONARY_DIRECTORY_PATH)
+    }
+
     private fun createFile() {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
             setType("application/json")
@@ -77,6 +86,16 @@ class MainActivity : FlutterActivity() {
         requestCode: Int, resultCode: Int, data: Intent?
     ) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        // Handled separately from the copy flows below: cancellation must
+        // also complete the pending MethodChannel result (with null), so
+        // this branch runs for every result code, not just RESULT_OK.
+        if (requestCode == PICK_DICTIONARY_DIRECTORY_PATH) {
+            if (::configurator.isInitialized) {
+                configurator.handleDirectoryPathPickResult(resultCode, data)
+            }
+            return
+        }
 
         if (resultCode == RESULT_OK) {
             when (requestCode) {
@@ -128,6 +147,8 @@ class MainActivity : FlutterActivity() {
                 override fun onOpenDirectory() = openDirectory()
                 override fun onOpenAudioDirectory() = openAudioDirectory()
                 override fun onOpenHunspellDirectory() = openHunspellDirectory()
+                override fun onPickDictionaryDirectoryPath() =
+                    pickDictionaryDirectoryPath()
                 override fun onCreateFile() = createFile()
                 override fun onGetDirectory() = getDirectory()
                 override fun onSetSecureFlag(secure: Boolean) = setSecureFlag(secure)

@@ -276,6 +276,8 @@
   },
   "copyingFiles": "正在复制文件...",
   "@copyingFiles": {},
+  "failedToCopyDirectory": "无法复制所选文件夹",
+  "@failedToCopyDirectory": {},
   "addingResource": "正在添加资源: {resource}",
   "@addingResource": {
     "placeholders": {

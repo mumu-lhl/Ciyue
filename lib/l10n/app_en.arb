@@ -488,6 +488,8 @@
   },
   "copyingFiles": "Copying Files...",
   "@copyingFiles": {},
+  "failedToCopyDirectory": "Could not copy the selected folder",
+  "@failedToCopyDirectory": {},
   "addingResource": "Adding Resource: {resource}",
   "@addingResource": {
     "placeholders": {

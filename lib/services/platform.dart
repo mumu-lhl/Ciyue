@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
@@ -37,6 +38,31 @@ class _ProcessTextRequest {
 
     return _ProcessTextRequest(id: id.toInt(), text: text);
   }
+}
+
+/// Outcome of [PlatformMethod.pickDictionaryDirectoryPath] (full flavor,
+/// #800). The three cases must stay distinct: a cancelled pick is silent,
+/// while an unresolvable pick falls back to the SAF-copy flow.
+class DictionaryDirectoryPick {
+  const DictionaryDirectoryPick._({this.path, required this.unresolvable});
+
+  /// The user cancelled the picker.
+  const DictionaryDirectoryPick.cancelled() : this._(unresolvable: false);
+
+  /// The picked tree could not be resolved to a readable filesystem path.
+  const DictionaryDirectoryPick.unresolvable() : this._(unresolvable: true);
+
+  /// The picked tree resolved to a readable filesystem path.
+  const DictionaryDirectoryPick.resolved(String path)
+    : this._(path: path, unresolvable: false);
+
+  /// The resolved filesystem path, or null when cancelled/unresolvable.
+  final String? path;
+
+  /// True when resolution failed (as opposed to the user cancelling).
+  final bool unresolvable;
+
+  bool get cancelled => path == null && !unresolvable;
 }
 
 int? _lastNavigatedProcessTextRequestId;
@@ -196,6 +222,16 @@ class PlatformMethod {
             closeLoadingDialog(context);
           }
           talker.error("Failed to copy directory: ${call.arguments}");
+          // Shared with the non-full flavor: a failed copy used to end in
+          // silence (dialog closed, nothing shown). Surface it, following
+          // the inputAudioDirectory catch block below.
+          if (context != null && context.mounted) {
+            await ToastService.show(
+              AppLocalizations.of(context)!.failedToCopyDirectory,
+              context,
+              type: ToastType.error,
+            );
+          }
           break;
 
         case "getDirectory":
@@ -242,6 +278,46 @@ class PlatformMethod {
     await _platform.invokeMethod("openDirectory");
   }
 
+  /// Asks Android to let the user pick a directory tree and resolve it to
+  /// a filesystem path Dart can scan directly (full flavor, #800).
+  ///
+  /// Native resolution throws no exception for a cancelled pick (null),
+  /// but reports an error when the tree cannot be resolved — e.g. a
+  /// removable volume whose root cannot be derived. Any error, and a
+  /// returned path that no longer exists, become [DictionaryDirectoryPick]
+  /// unresolvable so the caller can fall back to [openDirectory].
+  static Future<DictionaryDirectoryPick> pickDictionaryDirectoryPath() async {
+    try {
+      final path = await _platform.invokeMethod<String?>(
+        "pickDictionaryDirectoryPath",
+      );
+      if (path == null) {
+        return const DictionaryDirectoryPick.cancelled();
+      }
+      if (path.isEmpty || !await Directory(path).exists()) {
+        talker.warning(
+          "Picked dictionary directory is not a readable directory: $path",
+        );
+        return const DictionaryDirectoryPick.unresolvable();
+      }
+      return DictionaryDirectoryPick.resolved(path);
+    } on PlatformException catch (error, stackTrace) {
+      talker.error(
+        "Failed to resolve picked dictionary directory: $error",
+        error,
+        stackTrace,
+      );
+      return const DictionaryDirectoryPick.unresolvable();
+    } catch (error, stackTrace) {
+      talker.error(
+        "Failed to resolve picked dictionary directory: $error",
+        error,
+        stackTrace,
+      );
+      return const DictionaryDirectoryPick.unresolvable();
+    }
+  }
+
   static Future<void> openAudioDirectory() async {
     await _platform.invokeMethod("openAudioDirectory");
   }
@@ -267,6 +343,12 @@ class PlatformMethod {
     if (!isFullFlavor()) {
       await _platform.invokeMethod("updateDictionaries", directory);
     } else {
+      // NOTE (#800): when the last import fell back to the SAF-copy flow,
+      // this pref holds a content:// URI (saved by the inputDirectory
+      // handler), not a filesystem path. Scanning it as a path finds
+      // nothing and reports "No dictionaries found"; the dictionaries
+      // copied in by that import stay registered. Startup never reads
+      // this pref, so the URI is only ever misread by this manual rescan.
       showLoadingDialog(navigatorKey.currentContext!);
       final paths = await findMdxFilesOnAndroid(directory);
       final ifoPaths = await findStardictFilesOnAndroid(directory);
