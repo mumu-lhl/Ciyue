@@ -420,8 +420,6 @@
   "@removePronunciationPackBody": {},
   "removePronunciationPackBodyCopyDeleted": "The pack is removed from the list, and the copy stored in the app is deleted as well.",
   "@removePronunciationPackBodyCopyDeleted": {},
-  "remove": "Remove",
-  "@remove": {},
   "noMddAudioFound": "No pronunciation pack (.mdd, .zip or .zips) was found in the selected folder.",
   "@noMddAudioFound": {},
   "audioPackAlreadyAdded": "This pronunciation pack has already been added.",

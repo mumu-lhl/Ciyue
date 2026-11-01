@@ -16,9 +16,9 @@ class _LanguageSelectorState extends State<LanguageSelector> {
       case "system":
         return locale.system;
       case "bn":
-        return "Bengali";
+        return "বাংলা";
       case "ca":
-        return "Catalan";
+        return "Català";
       case "de":
         return "Deutsch";
       case "es":
@@ -30,13 +30,13 @@ class _LanguageSelectorState extends State<LanguageSelector> {
       case "nb":
         return "Bokmål";
       case "sc":
-        return "Sardinian";
+        return "Sardu";
       case "ta":
-        return "Tamil";
+        return "தமிழ்";
       case "fa":
         return "فارسی";
       case "got":
-        return "Gothic";
+        return "Gutisk";
       case "zh":
         return "简体中文";
       case "zh_HK":

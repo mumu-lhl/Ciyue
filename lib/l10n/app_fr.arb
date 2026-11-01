@@ -1,4 +1,5 @@
 {
+  "@@locale": "fr",
   "addDictionary": "Veuillez ajouter un dictionnaire MDX dans les paramètres en premier",
   "startToSearch": "Lancer une recherche de mots :)",
   "manageDictionaries": "Gérer les dictionnaires",

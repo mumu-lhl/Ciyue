@@ -33,6 +33,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # gen-l10n validates the ICU syntax and the placeholders of every
+      # locale; check_arb_keys.dart then rejects duplicated keys, keys dropped
+      # from the template, a missing or mismatching @@locale, and a generated
+      # supportedLocales list that is out of sync. Untranslated strings are
+      # reported but do not fail the build, since coverage changes constantly.
+      - name: Check translations
+        run: |
+          flutter gen-l10n
+          dart tools/check_arb_keys.dart
+
       - name: Format
         shell: bash
         run: |
