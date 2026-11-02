@@ -1,5 +1,6 @@
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/pages/settings/appearance/trailing_segmented_button.dart";
 import "package:material_ui/material_ui.dart";
 
 class DictionarySwitchStyleSelector extends StatefulWidget {
@@ -19,7 +20,7 @@ class _DictionarySwitchStyleSelectorState
     return ListTile(
       leading: const Icon(Icons.style),
       title: Text(locale.dictionarySwitchStyle),
-      trailing: SegmentedButton<DictionarySwitchStyle>(
+      trailing: TrailingSegmentedButton<DictionarySwitchStyle>(
         segments: [
           ButtonSegment(
             value: DictionarySwitchStyle.expansion,

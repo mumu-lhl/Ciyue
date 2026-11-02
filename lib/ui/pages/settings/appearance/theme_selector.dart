@@ -1,6 +1,7 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/pages/settings/appearance/trailing_segmented_button.dart";
 import "package:material_ui/material_ui.dart";
 
 class ThemeSelector extends StatefulWidget {
@@ -18,7 +19,7 @@ class _ThemeSelectorState extends State<ThemeSelector> {
     return ListTile(
       leading: const Icon(Icons.light_mode),
       title: Text(locale.theme),
-      trailing: SegmentedButton<ThemeMode>(
+      trailing: TrailingSegmentedButton<ThemeMode>(
         segments: [
           ButtonSegment(
             value: ThemeMode.light,

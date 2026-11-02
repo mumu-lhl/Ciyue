@@ -1,5 +1,6 @@
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/pages/settings/appearance/trailing_segmented_button.dart";
 import "package:material_ui/material_ui.dart";
 
 class TabBarPositionSelector extends StatefulWidget {
@@ -17,7 +18,7 @@ class _TabBarPositionSelectorState extends State<TabBarPositionSelector> {
     return ListTile(
       leading: const Icon(Icons.tab),
       title: Text(locale.tabBarPosition),
-      trailing: SegmentedButton<TabBarPosition>(
+      trailing: TrailingSegmentedButton<TabBarPosition>(
         segments: [
           ButtonSegment(value: TabBarPosition.top, label: Text(locale.top)),
           ButtonSegment(
