@@ -749,31 +749,97 @@ class TTSLanguages extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final favorites = _favorites();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TitleText(AppLocalizations.of(context)!.ttsLanguages),
+        TitleText(locale.ttsLanguages),
         const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
-          initialValue: settings.ttsLanguage ?? _defaultLanguage(),
-          decoration: InputDecoration(
-            labelText: AppLocalizations.of(context)!.ttsLanguages,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        for (final language in favorites)
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+            dense: true,
+            selected: language == settings.ttsLanguage,
+            selectedTileColor: colorScheme.surfaceContainerHigh,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            leading: Checkbox(
+              value: true,
+              onChanged: favorites.length > 1
+                  ? (_) => _removeFavorite(language)
+                  : null,
+            ),
+            title: Text(language),
+            trailing: language == settings.ttsLanguage
+                ? Icon(Icons.check, color: colorScheme.primary)
+                : null,
+            onTap: () => _setCurrent(language),
           ),
-          items: [
-            for (final lang in ttsLanguages)
-              DropdownMenuItem(value: lang, child: Text(lang)),
-          ],
-          onChanged: (String? ttsLanguage) async {
-            if (ttsLanguage != null) {
-              settings.setTTSLanguage(ttsLanguage);
-              flutterTts.setLanguage(ttsLanguage);
-            }
-          },
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => _addFavorite(context),
+            icon: const Icon(Icons.add),
+            label: Text(locale.ttsLanguages),
+          ),
         ),
         const SizedBox(height: 24),
       ],
     );
+  }
+
+  /// The favorites list, seeded from the current voice so settings created
+  /// before this feature still show one selectable entry.
+  List<String> _favorites() {
+    if (settings.ttsLanguageFavorites.isNotEmpty) {
+      return settings.ttsLanguageFavorites;
+    }
+    final current = settings.ttsLanguage ?? _defaultLanguage();
+    return current.isEmpty ? [] : [current];
+  }
+
+  Future<void> _setCurrent(String language) async {
+    await settings.setTTSLanguage(language);
+    if (!Platform.isLinux) {
+      await flutterTts.setLanguage(language);
+    }
+  }
+
+  Future<void> _removeFavorite(String language) async {
+    final remaining = _favorites().where((item) => item != language).toList();
+    if (remaining.isEmpty) return;
+    await settings.setTTSLanguageFavorites(remaining);
+  }
+
+  Future<void> _addFavorite(BuildContext context) async {
+    final currentFavorites = _favorites();
+    final available = ttsLanguages
+        .where((item) => !currentFavorites.contains(item))
+        .toList();
+    if (available.isEmpty) return;
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(AppLocalizations.of(context)!.ttsLanguages),
+        children: [
+          for (final language in available)
+            SimpleDialogOption(
+              onPressed: () => Navigator.of(context).pop(language),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(language),
+              ),
+            ),
+        ],
+      ),
+    );
+    if (selected == null) return;
+    await settings.setTTSLanguageFavorites([...currentFavorites, selected]);
   }
 
   String _defaultLanguage() {
