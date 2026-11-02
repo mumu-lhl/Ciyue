@@ -95,6 +95,12 @@ class Settings extends ChangeNotifier {
   late String? ttsEngine;
   late String? ttsLanguage;
 
+  /// TTS voices kept at hand for quick switching from the word page.
+  /// [ttsLanguage] is the voice in use; this list is the pool it can be
+  /// switched to. Settings that predate this field start empty and the UI
+  /// seeds them from [ttsLanguage].
+  List<String> ttsLanguageFavorites = [];
+
   /// Linux-only voice id for the native Linux TTS backends
   /// (speech-dispatcher / espeak-ng). Kept separate from
   /// [ttsLanguage]: that is a flutter_tts language tag on other
@@ -235,6 +241,18 @@ class Settings extends ChangeNotifier {
 
     ttsEngine = prefs.getString("ttsEngine");
     ttsLanguage = prefs.getString("ttsLanguage");
+    final ttsLanguageFavoritesString = prefs.getString("ttsLanguageFavorites");
+    if (ttsLanguageFavoritesString != null) {
+      try {
+        ttsLanguageFavorites = (jsonDecode(ttsLanguageFavoritesString) as List)
+            .whereType<String>()
+            .toList();
+      } catch (_) {
+        ttsLanguageFavorites = [];
+      }
+    } else {
+      ttsLanguageFavorites = [];
+    }
     linuxTtsVoice = prefs.getString("linuxTtsVoice");
     // 0.5 speech rate and 1.0 pitch are the platform-normal values, so
     // applying the defaults does not change existing users' speech.
@@ -432,6 +450,22 @@ class Settings extends ChangeNotifier {
   Future<void> setTTSLanguage(String lang) async {
     ttsLanguage = lang;
     await prefs.setString("ttsLanguage", lang);
+    if (!ttsLanguageFavorites.contains(lang)) {
+      ttsLanguageFavorites = [...ttsLanguageFavorites, lang];
+      await prefs.setString(
+        "ttsLanguageFavorites",
+        jsonEncode(ttsLanguageFavorites),
+      );
+    }
+    notifyListeners();
+  }
+
+  Future<void> setTTSLanguageFavorites(List<String> languages) async {
+    ttsLanguageFavorites = List.of(languages);
+    await prefs.setString(
+      "ttsLanguageFavorites",
+      jsonEncode(ttsLanguageFavorites),
+    );
     notifyListeners();
   }
 

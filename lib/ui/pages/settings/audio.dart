@@ -83,6 +83,7 @@ class PronunciationModeSelector extends StatelessWidget {
         const SizedBox(height: 12),
         DropdownButtonFormField<PronunciationMode>(
           initialValue: settings.pronunciationMode,
+          isExpanded: true,
           decoration: InputDecoration(
             labelText: localizations.pronunciation,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -554,6 +555,7 @@ class _OnlinePronunciationSettingsState
         : "";
     return DropdownButtonFormField<String>(
       initialValue: effectiveValue,
+      isExpanded: true,
       decoration: InputDecoration(
         labelText: localizations.onlinePronunciationLanguage,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -591,6 +593,7 @@ class TTSEngines extends StatelessWidget {
           initialValue:
               settings.ttsEngine ??
               (ttsEngines.isNotEmpty ? ttsEngines.first : null),
+          isExpanded: true,
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)!.ttsEngines,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -713,6 +716,9 @@ class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
           // initialValue forever.
           key: ValueKey(effectiveValue),
           initialValue: effectiveValue,
+          // Voice names from espeak can be long, so let the field fill the
+          // available width and shorten the label instead of overflowing.
+          isExpanded: true,
           decoration: InputDecoration(
             labelText: localizations.linuxTtsVoice,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -723,7 +729,10 @@ class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
               child: Text(localizations.linuxTtsVoiceDefault),
             ),
             for (final voice in _voices)
-              DropdownMenuItem(value: voice.id, child: Text(voice.displayName)),
+              DropdownMenuItem(
+                value: voice.id,
+                child: Text(voice.displayName, overflow: TextOverflow.ellipsis),
+              ),
           ],
           onChanged: (voice) {
             settings.setLinuxTtsVoice(voice);
@@ -744,36 +753,170 @@ class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
   }
 }
 
-class TTSLanguages extends StatelessWidget {
+class TTSLanguages extends ConsumerWidget {
   const TTSLanguages({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the settings so the list follows added and removed favorites
+    // immediately. The parent page also watches them, but this widget is
+    // const, and Flutter skips rebuilding a child whose widget instance did
+    // not change, so the parent rebuild alone never refreshes this list.
+    ref.watch(settingsProvider);
+    final locale = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final favorites = _favorites();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TitleText(AppLocalizations.of(context)!.ttsLanguages),
+        TitleText(locale.ttsLanguages),
         const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
-          initialValue: settings.ttsLanguage ?? _defaultLanguage(),
-          decoration: InputDecoration(
-            labelText: AppLocalizations.of(context)!.ttsLanguages,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          items: [
-            for (final lang in ttsLanguages)
-              DropdownMenuItem(value: lang, child: Text(lang)),
-          ],
-          onChanged: (String? ttsLanguage) async {
-            if (ttsLanguage != null) {
-              settings.setTTSLanguage(ttsLanguage);
-              flutterTts.setLanguage(ttsLanguage);
-            }
+        ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
+          itemCount: favorites.length,
+          itemBuilder: (context, index) {
+            final language = favorites[index];
+            final isCurrent = language == settings.ttsLanguage;
+            // The last voice cannot be removed: there would be nothing left
+            // to switch to.
+            final canRemove = favorites.length > 1;
+            return ListTile(
+              key: ValueKey(language),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+              dense: true,
+              selected: isCurrent,
+              selectedTileColor: colorScheme.surfaceContainerHigh,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              leading: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (canRemove)
+                    ReorderableDragStartListener(
+                      index: index,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Icon(
+                          Icons.drag_handle_rounded,
+                          color: colorScheme.outline,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    iconSize: 18,
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                    tooltip: locale.remove,
+                    onPressed: canRemove
+                        ? () => _removeFavorite(language)
+                        : null,
+                  ),
+                ],
+              ),
+              title: Text(language),
+              trailing: isCurrent
+                  ? Icon(Icons.check, color: colorScheme.primary)
+                  : null,
+              onTap: () => _setCurrent(language),
+            );
           },
+          onReorderItem: (oldIndex, newIndex) {
+            _reorder(oldIndex, newIndex);
+          },
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => _addFavorite(context),
+            icon: const Icon(Icons.add),
+            label: Text(locale.ttsLanguages),
+          ),
         ),
         const SizedBox(height: 24),
       ],
     );
+  }
+
+  /// The favorites list, seeded from the current voice so settings created
+  /// before this feature still show one selectable entry.
+  List<String> _favorites() {
+    if (settings.ttsLanguageFavorites.isNotEmpty) {
+      // A copy: the stored list must not be mutated by accident.
+      return List.of(settings.ttsLanguageFavorites);
+    }
+    final current = settings.ttsLanguage ?? _defaultLanguage();
+    return current.isEmpty ? [] : [current];
+  }
+
+  Future<void> _setCurrent(String language) async {
+    await settings.setTTSLanguage(language);
+    if (!Platform.isLinux) {
+      await flutterTts.setLanguage(language);
+    }
+  }
+
+  Future<void> _removeFavorite(String language) async {
+    final remaining = _favorites().where((item) => item != language).toList();
+    if (remaining.isEmpty) return;
+    await settings.setTTSLanguageFavorites(remaining);
+    // The voice in use may have been the removed one, so switch to another
+    // one instead of leaving the current voice out of the list.
+    if (settings.ttsLanguage == language) {
+      await _setCurrent(remaining.first);
+    }
+  }
+
+  /// Persists a new order for the voices. They are stored as a JSON array,
+  /// so the order they are saved in is the order they are shown in.
+  Future<void> _reorder(int oldIndex, int newIndex) async {
+    final list = _favorites();
+    if (oldIndex < 0 || oldIndex >= list.length) return;
+    if (newIndex < 0 || newIndex >= list.length) return;
+    final reordered = List.of(list);
+    final item = reordered.removeAt(oldIndex);
+    reordered.insert(newIndex, item);
+    await settings.setTTSLanguageFavorites(reordered);
+  }
+
+  Future<void> _addFavorite(BuildContext context) async {
+    final currentFavorites = _favorites();
+    final available = ttsLanguages
+        .where((item) => !currentFavorites.contains(item))
+        .toList();
+    if (available.isEmpty) return;
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(AppLocalizations.of(context)!.ttsLanguages),
+        children: [
+          for (final language in available)
+            SimpleDialogOption(
+              onPressed: () => Navigator.of(context).pop(language),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(language),
+              ),
+            ),
+        ],
+      ),
+    );
+    if (selected == null) return;
+    // Re-read the favorites: the stored list is replaced rather than
+    // mutated, so the snapshot taken before the dialog opened may be stale.
+    final updated = _favorites();
+    if (updated.contains(selected)) return;
+    await settings.setTTSLanguageFavorites([...updated, selected]);
   }
 
   String _defaultLanguage() {

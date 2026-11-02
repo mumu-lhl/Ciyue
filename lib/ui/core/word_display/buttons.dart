@@ -8,6 +8,8 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/tags_list.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
+import "package:ciyue/ui/core/word_display/long_press_detector.dart";
+import "package:ciyue/ui/core/word_display/pronunciation_sheet.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
@@ -149,6 +151,10 @@ class Button extends ConsumerStatefulWidget {
 class _ButtonState extends ConsumerState<Button> {
   Future<bool>? stared;
 
+  /// Set while a long press is being handled, so the tap that follows it does
+  /// not also play the word.
+  bool _longPressHandled = false;
+
   @override
   void initState() {
     super.initState();
@@ -204,25 +210,40 @@ class _ButtonState extends ConsumerState<Button> {
     final audioModel = ref.watch(audioModelProvider);
     final isPlaying = audioModel.isWordPlaying(word);
 
-    return PulsingFab(
-      isPulsing: isPlaying,
-      ringColor: colorScheme.primary,
-      child: FloatingActionButton.small(
-        heroTag: "readLoudly_$word",
-        tooltip: AppLocalizations.of(context)!.readLoudly,
-        foregroundColor: colorScheme.primary,
-        backgroundColor: colorScheme.primaryContainer,
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: isPlaying
-              ? AudioWaveformIcon(
-                  key: const ValueKey("playing"),
-                  color: colorScheme.primary,
-                  size: 20,
-                )
-              : const Icon(Icons.volume_up, key: ValueKey("idle")),
+    return LongPressDetector(
+      onPressStart: () => _longPressHandled = false,
+      onLongPress: () {
+        _longPressHandled = true;
+        showPronunciationSettingsSheet(context, word);
+      },
+      child: PulsingFab(
+        isPulsing: isPlaying,
+        ringColor: colorScheme.primary,
+        child: FloatingActionButton.small(
+          heroTag: "readLoudly_$word",
+          tooltip: AppLocalizations.of(context)!.readLoudly,
+          foregroundColor: colorScheme.primary,
+          backgroundColor: colorScheme.primaryContainer,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: isPlaying
+                ? AudioWaveformIcon(
+                    key: const ValueKey("playing"),
+                    color: colorScheme.primary,
+                    size: 20,
+                  )
+                : const Icon(Icons.volume_up, key: ValueKey("idle")),
+          ),
+          onPressed: () {
+            // A long press has already opened the settings, so the tap that
+            // comes with the release must not also play the word.
+            if (_longPressHandled) {
+              _longPressHandled = false;
+              return;
+            }
+            playWordPronunciation(context, word);
+          },
         ),
-        onPressed: () => playWordPronunciation(context, word),
       ),
     );
   }
@@ -323,28 +344,54 @@ class _WordStarIconButtonState extends State<WordStarIconButton> {
   }
 }
 
-class WordPronounceIconButton extends ConsumerWidget {
+class WordPronounceIconButton extends ConsumerStatefulWidget {
   final String word;
 
   const WordPronounceIconButton({super.key, required this.word});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WordPronounceIconButton> createState() =>
+      _WordPronounceIconButtonState();
+}
+
+class _WordPronounceIconButtonState
+    extends ConsumerState<WordPronounceIconButton> {
+  /// Set while a long press is being handled, so the tap that follows it does
+  /// not also play the word.
+  bool _longPressHandled = false;
+
+  @override
+  Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
     final audioModel = ref.watch(audioModelProvider);
-    final isPlaying = audioModel.isWordPlaying(word);
+    final isPlaying = audioModel.isWordPlaying(widget.word);
     final colorScheme = Theme.of(context).colorScheme;
 
-    return IconButton(
-      tooltip: locale.readLoudly,
-      icon: isPlaying
-          ? AudioWaveformIcon(
-              key: const ValueKey("playing"),
-              color: colorScheme.primary,
-              size: 20,
-            )
-          : const Icon(Icons.volume_up, key: ValueKey("idle")),
-      onPressed: () => playWordPronunciation(context, word),
+    return LongPressDetector(
+      onPressStart: () => _longPressHandled = false,
+      onLongPress: () {
+        _longPressHandled = true;
+        showPronunciationSettingsSheet(context, widget.word);
+      },
+      child: IconButton(
+        tooltip: locale.readLoudly,
+        icon: isPlaying
+            ? AudioWaveformIcon(
+                key: const ValueKey("playing"),
+                color: colorScheme.primary,
+                size: 20,
+              )
+            : const Icon(Icons.volume_up, key: ValueKey("idle")),
+        onPressed: () {
+          // A long press has already opened the settings, so the tap that
+          // comes with the release must not also play the word.
+          if (_longPressHandled) {
+            _longPressHandled = false;
+            return;
+          }
+          playWordPronunciation(context, widget.word);
+        },
+      ),
     );
   }
 }
