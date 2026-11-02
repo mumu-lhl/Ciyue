@@ -8,6 +8,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/tags_list.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
+import "package:ciyue/ui/core/word_display/pronunciation_sheet.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
@@ -204,25 +205,28 @@ class _ButtonState extends ConsumerState<Button> {
     final audioModel = ref.watch(audioModelProvider);
     final isPlaying = audioModel.isWordPlaying(word);
 
-    return PulsingFab(
-      isPulsing: isPlaying,
-      ringColor: colorScheme.primary,
-      child: FloatingActionButton.small(
-        heroTag: "readLoudly_$word",
-        tooltip: AppLocalizations.of(context)!.readLoudly,
-        foregroundColor: colorScheme.primary,
-        backgroundColor: colorScheme.primaryContainer,
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: isPlaying
-              ? AudioWaveformIcon(
-                  key: const ValueKey("playing"),
-                  color: colorScheme.primary,
-                  size: 20,
-                )
-              : const Icon(Icons.volume_up, key: ValueKey("idle")),
+    return GestureDetector(
+      onLongPress: () => showPronunciationSettingsSheet(context, word),
+      child: PulsingFab(
+        isPulsing: isPlaying,
+        ringColor: colorScheme.primary,
+        child: FloatingActionButton.small(
+          heroTag: "readLoudly_$word",
+          tooltip: AppLocalizations.of(context)!.readLoudly,
+          foregroundColor: colorScheme.primary,
+          backgroundColor: colorScheme.primaryContainer,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: isPlaying
+                ? AudioWaveformIcon(
+                    key: const ValueKey("playing"),
+                    color: colorScheme.primary,
+                    size: 20,
+                  )
+                : const Icon(Icons.volume_up, key: ValueKey("idle")),
+          ),
+          onPressed: () => playWordPronunciation(context, word),
         ),
-        onPressed: () => playWordPronunciation(context, word),
       ),
     );
   }
@@ -335,16 +339,19 @@ class WordPronounceIconButton extends ConsumerWidget {
     final isPlaying = audioModel.isWordPlaying(word);
     final colorScheme = Theme.of(context).colorScheme;
 
-    return IconButton(
-      tooltip: locale.readLoudly,
-      icon: isPlaying
-          ? AudioWaveformIcon(
-              key: const ValueKey("playing"),
-              color: colorScheme.primary,
-              size: 20,
-            )
-          : const Icon(Icons.volume_up, key: ValueKey("idle")),
-      onPressed: () => playWordPronunciation(context, word),
+    return GestureDetector(
+      onLongPress: () => showPronunciationSettingsSheet(context, word),
+      child: IconButton(
+        tooltip: locale.readLoudly,
+        icon: isPlaying
+            ? AudioWaveformIcon(
+                key: const ValueKey("playing"),
+                color: colorScheme.primary,
+                size: 20,
+              )
+            : const Icon(Icons.volume_up, key: ValueKey("idle")),
+        onPressed: () => playWordPronunciation(context, word),
+      ),
     );
   }
 }
