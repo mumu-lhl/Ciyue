@@ -194,10 +194,7 @@ class _HomeState extends ConsumerState<Home> {
                   selectedIndex: _currentIndex,
                   destinations: [
                     for (final destination in buildCommonDestinations())
-                      NavigationDestination(
-                        icon: destination.$1,
-                        label: destination.$2,
-                      ),
+                      _destination(context, destination),
                   ],
                 )
               : null,
@@ -213,6 +210,42 @@ class _HomeState extends ConsumerState<Home> {
       (const Icon(Icons.book), AppLocalizations.of(context)!.wordBook),
       (const Icon(Icons.settings), AppLocalizations.of(context)!.settings),
     ];
+  }
+
+  /// The navigation bar does not limit the number of lines of a label, so a
+  /// long translation grows the bar past the bottom of the screen and the
+  /// destinations disappear. A label that does not fit into a destination is
+  /// therefore left out and shown in a tooltip on the icon instead.
+  NavigationDestination _destination(
+    BuildContext context,
+    (Icon, String) item,
+  ) {
+    final (icon, label) = item;
+    if (_labelFits(context, label)) {
+      return NavigationDestination(icon: icon, label: label);
+    }
+    return NavigationDestination(
+      icon: icon,
+      // The label is rendered as a plain text without a line limit, so an
+      // empty one keeps the bar at its normal height. The wording stays
+      // reachable through the tooltip.
+      label: "",
+      tooltip: label,
+    );
+  }
+
+  bool _labelFits(BuildContext context, String label) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: Theme.of(context).textTheme.labelMedium,
+      ),
+      textDirection: Directionality.of(context),
+      maxLines: 1,
+    )..layout();
+    // A destination is a quarter of the screen wide, so this is about what
+    // its label can show without wrapping.
+    return painter.width <= 70;
   }
 
   @override
