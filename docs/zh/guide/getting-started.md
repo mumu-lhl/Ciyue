@@ -44,6 +44,8 @@
 
 从 [latest release](https://github.com/mumu-lhl/Ciyue/releases/latest) 下载 DMG（`ciyue-macos.dmg`）。
 
+需要 macOS 12 (Monterey) 或更高版本。DMG 是通用二进制，Apple Silicon 和 Intel Mac 都能运行。开机自启动需要 macOS 13 (Ventura) 或更高版本；在 macOS 12 上该开关不生效。
+
 ## 下载词典
 
 词悦不自带词典。从 Wiki 的[推荐词典](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries)下载 `.mdx` / `.mdd` 文件，或者 StarDict 词典（`.ifo` / `.idx` / `.dict`），然后在 **设置 → 管理词典** 中添加。[词典格式](./dictionary-formats) 说明了这些文件各自的作用，以及两种格式之间如何转换。
