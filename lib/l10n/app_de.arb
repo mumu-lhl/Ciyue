@@ -679,7 +679,6 @@
   "ttsSpeechRate": "Sprechgeschwindigkeit",
   "ttsPitch": "Tonhöhe",
   "ttsPreview": "Vorschau",
-  "ttsPreviewText": "Dies ist eine Vorschau der Text-to-Speech-Stimme.",
   "removePronunciationPackTitle": "„{title}“ entfernen?",
   "removePronunciationPackBody": "Das Paket wird aus der Liste entfernt. Die Datei bleibt erhalten.",
   "removePronunciationPackBodyCopyDeleted": "Das Paket wird aus der Liste entfernt und die in der App gespeicherte Kopie ebenfalls gelöscht.",

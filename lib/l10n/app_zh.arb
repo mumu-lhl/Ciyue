@@ -952,8 +952,6 @@
   "@ttsPitch": {},
   "ttsPreview": "试听",
   "@ttsPreview": {},
-  "ttsPreviewText": "这是语音合成声音的试听。",
-  "@ttsPreviewText": {},
   "linuxTtsVoice": "声音",
   "@linuxTtsVoice": {},
   "linuxTtsVoiceDefault": "默认声音",

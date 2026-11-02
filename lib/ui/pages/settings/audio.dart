@@ -802,6 +802,19 @@ class _TTSSpeechControlsState extends State<TTSSpeechControls> {
   late double _rate = settings.ttsSpeechRate;
   late double _pitch = settings.ttsPitch;
 
+  /// Editable preview text. The fixed sentence used to follow the UI
+  /// language, so choosing a voice in another language made macOS loop or
+  /// stay silent. A neutral default works with every voice.
+  final TextEditingController _previewController = TextEditingController(
+    text: "1, 2, 3, 4, 5, 10, 100, 1000, 10000",
+  );
+
+  @override
+  void dispose() {
+    _previewController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -840,20 +853,31 @@ class _TTSSpeechControlsState extends State<TTSSpeechControls> {
           },
         ),
         const SizedBox(height: 8),
+        TextField(
+          controller: _previewController,
+          decoration: InputDecoration(
+            labelText: localizations.ttsPreview,
+            border: const OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+        const SizedBox(height: 8),
         Align(
           alignment: Alignment.centerRight,
           child: OutlinedButton.icon(
             icon: const Icon(Icons.play_arrow),
             label: Text(localizations.ttsPreview),
             onPressed: () async {
+              final text = _previewController.text.trim();
+              if (text.isEmpty) return;
               if (Platform.isLinux) {
                 // Preview through the Linux path (SSIP, then the
                 // espeak WAV fallback) with the current settings.
-                await TtsHelper.toggleSpeak(localizations.ttsPreviewText);
+                await TtsHelper.toggleSpeak(text);
                 return;
               }
               await applyTtsSettings(flutterTts);
-              await flutterTts.speak(localizations.ttsPreviewText);
+              await flutterTts.speak(text);
             },
           ),
         ),
