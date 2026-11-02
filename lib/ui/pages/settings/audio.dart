@@ -772,27 +772,68 @@ class TTSLanguages extends ConsumerWidget {
       children: [
         TitleText(locale.ttsLanguages),
         const SizedBox(height: 12),
-        for (final language in favorites)
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-            dense: true,
-            selected: language == settings.ttsLanguage,
-            selectedTileColor: colorScheme.surfaceContainerHigh,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            leading: Checkbox(
-              value: true,
-              onChanged: favorites.length > 1
-                  ? (_) => _removeFavorite(language)
+        ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
+          itemCount: favorites.length,
+          itemBuilder: (context, index) {
+            final language = favorites[index];
+            final isCurrent = language == settings.ttsLanguage;
+            // The last voice cannot be removed: there would be nothing left
+            // to switch to.
+            final canRemove = favorites.length > 1;
+            return ListTile(
+              key: ValueKey(language),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+              dense: true,
+              selected: isCurrent,
+              selectedTileColor: colorScheme.surfaceContainerHigh,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              leading: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (canRemove)
+                    ReorderableDragStartListener(
+                      index: index,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Icon(
+                          Icons.drag_handle_rounded,
+                          color: colorScheme.outline,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    iconSize: 18,
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                    tooltip: locale.remove,
+                    onPressed: canRemove
+                        ? () => _removeFavorite(language)
+                        : null,
+                  ),
+                ],
+              ),
+              title: Text(language),
+              trailing: isCurrent
+                  ? Icon(Icons.check, color: colorScheme.primary)
                   : null,
-            ),
-            title: Text(language),
-            trailing: language == settings.ttsLanguage
-                ? Icon(Icons.check, color: colorScheme.primary)
-                : null,
-            onTap: () => _setCurrent(language),
-          ),
+              onTap: () => _setCurrent(language),
+            );
+          },
+          onReorderItem: (oldIndex, newIndex) {
+            _reorder(oldIndex, newIndex);
+          },
+        ),
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
@@ -828,6 +869,23 @@ class TTSLanguages extends ConsumerWidget {
     final remaining = _favorites().where((item) => item != language).toList();
     if (remaining.isEmpty) return;
     await settings.setTTSLanguageFavorites(remaining);
+    // The voice in use may have been the removed one, so switch to another
+    // one instead of leaving the current voice out of the list.
+    if (settings.ttsLanguage == language) {
+      await _setCurrent(remaining.first);
+    }
+  }
+
+  /// Persists a new order for the voices. They are stored as a JSON array,
+  /// so the order they are saved in is the order they are shown in.
+  Future<void> _reorder(int oldIndex, int newIndex) async {
+    final list = _favorites();
+    if (oldIndex < 0 || oldIndex >= list.length) return;
+    if (newIndex < 0 || newIndex >= list.length) return;
+    final reordered = List.of(list);
+    final item = reordered.removeAt(oldIndex);
+    reordered.insert(newIndex, item);
+    await settings.setTTSLanguageFavorites(reordered);
   }
 
   Future<void> _addFavorite(BuildContext context) async {
