@@ -83,6 +83,7 @@ class PronunciationModeSelector extends StatelessWidget {
         const SizedBox(height: 12),
         DropdownButtonFormField<PronunciationMode>(
           initialValue: settings.pronunciationMode,
+          isExpanded: true,
           decoration: InputDecoration(
             labelText: localizations.pronunciation,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -554,6 +555,7 @@ class _OnlinePronunciationSettingsState
         : "";
     return DropdownButtonFormField<String>(
       initialValue: effectiveValue,
+      isExpanded: true,
       decoration: InputDecoration(
         labelText: localizations.onlinePronunciationLanguage,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -591,6 +593,7 @@ class TTSEngines extends StatelessWidget {
           initialValue:
               settings.ttsEngine ??
               (ttsEngines.isNotEmpty ? ttsEngines.first : null),
+          isExpanded: true,
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)!.ttsEngines,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -713,6 +716,9 @@ class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
           // initialValue forever.
           key: ValueKey(effectiveValue),
           initialValue: effectiveValue,
+          // Voice names from espeak can be long, so let the field fill the
+          // available width and shorten the label instead of overflowing.
+          isExpanded: true,
           decoration: InputDecoration(
             labelText: localizations.linuxTtsVoice,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -723,7 +729,10 @@ class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
               child: Text(localizations.linuxTtsVoiceDefault),
             ),
             for (final voice in _voices)
-              DropdownMenuItem(value: voice.id, child: Text(voice.displayName)),
+              DropdownMenuItem(
+                value: voice.id,
+                child: Text(voice.displayName, overflow: TextOverflow.ellipsis),
+              ),
           ],
           onChanged: (voice) {
             settings.setLinuxTtsVoice(voice);
