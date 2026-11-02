@@ -279,6 +279,32 @@ jobs:
           RELEASE_ASSET_BASE: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}
         run: |
           set -euo pipefail
+
+          # Derive the macOS requirement from the Xcode project so the
+          # release notes cannot drift away from the actual deployment target.
+          deployment_target=$(sed -n 's/.*MACOSX_DEPLOYMENT_TARGET = \([0-9][0-9.]*\);.*/\1/p' macos/Runner.xcodeproj/project.pbxproj | head -n1)
+          if [[ -z "$deployment_target" ]]; then
+            echo "MACOSX_DEPLOYMENT_TARGET not found in project.pbxproj" >&2
+            exit 1
+          fi
+          macos_major="${deployment_target%%.*}"
+          case "$macos_major" in
+            11) macos_codename="Big Sur" ;;
+            12) macos_codename="Monterey" ;;
+            13) macos_codename="Ventura" ;;
+            14) macos_codename="Sonoma" ;;
+            15) macos_codename="Sequoia" ;;
+            26) macos_codename="Tahoe" ;;
+            *) macos_codename="" ;;
+          esac
+          macos_requirement="Requires macOS ${macos_major}${macos_codename:+ ($macos_codename)} or later. The disk image is a universal build."
+          # LaunchAtLogin relies on SMAppService, which only exists on 13+.
+          if (( macos_major < 13 )); then
+            macos_launch_note="Launch at login needs macOS 13 (Ventura) or later; on macOS ${macos_major} the toggle has no effect."
+          else
+            macos_launch_note=""
+          fi
+
           {
             cat <<EOF
           ## Downloads
@@ -313,9 +339,9 @@ jobs:
 
           ### macOS
 
-          Requires macOS 12 (Monterey) or later. The build is universal, so it runs on both Apple Silicon and Intel Macs.
+          ${macos_requirement}
 
-          Launch at login needs macOS 13 (Ventura) or later; on macOS 12 the toggle has no effect.
+          ${macos_launch_note}
 
           The app is ad-hoc signed. If Gatekeeper reports the app as damaged or unverified, remove the quarantine flag with `xattr -cr /Applications/Ciyue.app` (or right-click the app and choose Open) after moving it to Applications.
 
