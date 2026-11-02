@@ -41,9 +41,133 @@ HOST_GRAPHICS_LIBRARIES = {
     "libGLX.so.0",
     "libOpenGL.so.0",
     "libglapi.so.0",
+    # glvnd splits the same dispatcher across these SONAMEs, so the vendor libs
+    # and the dispatcher have to come from one installation.
+    "libGLdispatch.so.0",
 }
 
-SYSTEM_LIBRARIES = GLIBC_RUNTIME_LIBRARIES | HOST_GRAPHICS_LIBRARIES
+# Wayland protocol libraries are part of the same host-coupled stack. They export
+# the protocol interface structs as data symbols, and the host's Mesa vendor
+# libraries (libEGL_mesa, libgbm) resolve those symbols against whatever copy was
+# loaded first. A bundled snapshot therefore shadows the host library: Mesa from a
+# newer distribution references interfaces added after the build snapshot (for
+# example wl_fixes_interface, added in Wayland 1.24) and the vendor library dies
+# with "symbol lookup error ... (fatal)" while being loaded. That leaves EGL with
+# no extensions, so libepoxy aborts on eglGetPlatformDisplayEXT before the window
+# can be created.
+WAYLAND_RUNTIME_LIBRARIES = {
+    "libwayland-client.so.0",
+    "libwayland-server.so.0",
+    "libwayland-egl.so.1",
+    "libwayland-cursor.so.0",
+}
+
+# GStreamer core is useless without its plugin registry, and the registry is not
+# something a bundle can carry: plugins are discovered from a libdir that is baked
+# into the core build (Arch /usr/lib/gstreamer-1.0, Debian/Ubuntu
+# /usr/lib/*-linux-gnu/gstreamer-1.0) and they dlopen the distribution's codec,
+# audio sink and PulseAudio libraries. A bundled core therefore finds no plugins
+# at all on another distribution, gst_element_factory_make("playbin") returns
+# null, and audioplayers_linux answers with an uncaught C++ exception, which ends
+# in "terminate called after throwing an instance of 'char const*'".
+HOST_MEDIA_LIBRARY_PREFIXES = ("libgst",)
+
+# GStreamer builds on orc for its inner loops and hands audio to a sink provided
+# by the host plugin registry, which then pulls the host's PulseAudio/ALSA.
+# Excluding them keeps that half of the stack from being split across the bundle.
+HOST_MEDIA_LIBRARIES = {
+    "liborc-0.4.so.0",
+    "libpulse.so.0",
+    "libasound.so.2",
+}
+
+# GLib sits below everything else in the same stack, so it inherits the same rule
+# from the other direction: every host library we load (GStreamer, GTK modules
+# pulled in by the user's desktop, the GLib-based parts of the graphics stack) was
+# compiled against the host GLib, and GLib's ABI is additive. A newer host GLib
+# therefore satisfies both those libraries and the bundled GTK, while a frozen
+# bundled GLib cannot satisfy the host ones: libgstaudio from a newer distribution
+# references g_sort_array (GLib 2.82) and the process dies with
+# "symbol lookup error ... undefined symbol: g_sort_array" before the window opens.
+# pcre2 comes along because GLib links it directly; keeping the bundle's copy would
+# leave the host GLib talking to a foreign regex engine (and, through the
+# launcher's LD_LIBRARY_PATH, to the host's own bwrap as well).
+HOST_GLIB_LIBRARIES = {
+    "libglib-2.0.so.0",
+    "libgobject-2.0.so.0",
+    "libgio-2.0.so.0",
+    "libgmodule-2.0.so.0",
+    "libgthread-2.0.so.0",
+    # ...and, because an exclusion has to close over the dependency graph it
+    # starts, the libraries GLib and GIO link themselves.
+    "libpcre2-8.so.0",
+    "libffi.so.8",
+    "libmount.so.1",
+    "libblkid.so.1",
+    "libselinux.so.1",
+}
+
+# The toolkit belongs to the host desktop too, for the same structural reason as
+# everything above: GTK resolves its input-method modules, module extras and print
+# backends from directories baked in at build time (/usr/lib/gtk-3.0/3.0.0/immodules
+# on Arch, /usr/lib/*-linux-gnu/gtk-3.0/3.0.0/immodules on Debian and Ubuntu), and
+# those modules link the host libgtk-3. A bundled GTK therefore never finds the
+# host's fcitx/ibus immodule — the application starts without any input method —
+# and the modules a desktop injects (xapp, the at-spi bridge) fail with
+# "Failed to load module". Its own dependencies come along, because GTK links them
+# and mixing a newer host GTK with an older bundled pango/cairo has the mirror image
+# of the problem this file keeps running into. Libraries that WPE also links
+# (harfbuzz, freetype, fontconfig, expat, png, atk, epoxy, xkbcommon, systemd,
+# seccomp, z) deliberately stay bundled: WPE is the component whose build baseline
+# the bundle is responsible for.
+HOST_TOOLKIT_LIBRARIES = {
+    "libgtk-3.so.0",
+    "libgdk-3.so.0",
+    "libpango-1.0.so.0",
+    "libpangocairo-1.0.so.0",
+    "libpangoft2-1.0.so.0",
+    "libcairo.so.2",
+    "libcairo-gobject.so.2",
+    "libgdk_pixbuf-2.0.so.0",
+    "libatspi.so.0",
+    "libcloudproviders.so.0",
+    "libdatrie.so.1",
+    "libthai.so.0",
+    "libfribidi.so.0",
+    "libgraphite2.so.3",
+    "libpixman-1.so.0",
+    "libbrotlicommon.so.1",
+    "libbrotlidec.so.1",
+    "libbrotlienc.so.1",
+    "libbz2.so.1.0",
+    "libdbus-1.so.3",
+    # pango 1.58 calls FcConfigSetDefaultSubstitute, which the 2.15.0 snapshot
+    # does not have, so fontconfig has to follow the host toolkit as well.
+    "libfontconfig.so.1",
+}
+
+# The X11 client stack is toolkit-only here (WPE renders through Wayland/EGL), and
+# the host's windowing libraries have to match the host's GTK.
+HOST_TOOLKIT_LIBRARY_PREFIXES = ("libX", "libxcb")
+
+SYSTEM_LIBRARIES = (
+    GLIBC_RUNTIME_LIBRARIES
+    | HOST_GRAPHICS_LIBRARIES
+    | WAYLAND_RUNTIME_LIBRARIES
+    | HOST_MEDIA_LIBRARIES
+    | HOST_GLIB_LIBRARIES
+    | HOST_TOOLKIT_LIBRARIES
+)
+
+
+def is_system_library(name: str) -> bool:
+    """Whether `name` must be provided by the host distribution."""
+    if name in SYSTEM_LIBRARIES:
+        return True
+    return name.startswith(
+        HOST_MEDIA_LIBRARY_PREFIXES + HOST_TOOLKIT_LIBRARY_PREFIXES
+    )
+
 
 NEEDED_RE = re.compile(r"\(NEEDED\).*Shared library: \[(.+)]")
 SONAME_RE = re.compile(r"\(SONAME\).*Library soname: \[(.+)]")
@@ -127,9 +251,31 @@ def ensure_loader_name(library_dir: Path, name: str, source: Path) -> Path:
     return destination
 
 
+def prune_system_libraries(library_dir: Path) -> None:
+    """Drop host-provided libraries that a previous run or a plugin left behind.
+
+    Skipping a name while resolving DT_NEEDED is not enough: a copy that already
+    sits in lib/ stays in the RPATH and keeps shadowing the host library, which is
+    exactly the failure mode these exclusions exist to prevent.
+    """
+
+    for path in sorted(library_dir.iterdir()):
+        if not (path.is_file() or path.is_symlink()):
+            continue
+        names = {path.name}
+        if path.exists():
+            metadata = elf_metadata(path.resolve())
+            if metadata is not None and metadata.soname:
+                names.add(metadata.soname)
+        if any(is_system_library(name) for name in names):
+            print(f"Removed host-provided {path.name} from the bundle")
+            path.unlink()
+
+
 def collect(bundle_dir: Path, search_roots: list[Path]) -> None:
     library_dir = bundle_dir / "lib"
     index = library_index(search_roots)
+    prune_system_libraries(library_dir)
     provided = provided_libraries(library_dir)
     queue = deque(iter_elf_files(bundle_dir))
     inspected: set[Path] = set()
@@ -144,7 +290,7 @@ def collect(bundle_dir: Path, search_roots: list[Path]) -> None:
             continue
 
         for needed in metadata.needed:
-            if needed in SYSTEM_LIBRARIES:
+            if is_system_library(needed):
                 continue
             if needed in provided:
                 provider = provided[needed]
@@ -175,7 +321,7 @@ def verify(bundle_dir: Path) -> None:
         metadata = elf_metadata(binary)
         assert metadata is not None
         for needed in metadata.needed:
-            if needed not in SYSTEM_LIBRARIES and needed not in provided_names:
+            if not is_system_library(needed) and needed not in provided_names:
                 missing.setdefault(needed, []).append(binary)
 
     if missing:
