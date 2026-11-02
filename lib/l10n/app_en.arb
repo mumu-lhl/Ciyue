@@ -430,8 +430,6 @@
   "@ttsPitch": {},
   "ttsPreview": "Preview",
   "@ttsPreview": {},
-  "ttsPreviewText": "This is a preview of the text-to-speech voice.",
-  "@ttsPreviewText": {},
   "linuxTtsVoice": "Voice",
   "@linuxTtsVoice": {},
   "linuxTtsVoiceDefault": "Default voice",
