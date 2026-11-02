@@ -41,7 +41,15 @@ class _PronunciationSettingsSheet extends ConsumerWidget {
     return FractionallySizedBox(
       heightFactor: 0.8,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        // The sheet is anchored to the bottom of the screen, where the system
+        // navigation bar covers it: `useSafeArea` insets the top and the
+        // sides only. Same reasoning as the settings pages fixed in #771.
+        padding: EdgeInsets.fromLTRB(
+          16,
+          0,
+          16,
+          24 + MediaQuery.viewPaddingOf(context).bottom,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
