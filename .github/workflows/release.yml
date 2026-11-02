@@ -313,7 +313,9 @@ jobs:
 
           ### macOS
 
-          Requires macOS 13 (Ventura) or later. Apple Silicon (arm64).
+          Requires macOS 12 (Monterey) or later. The build is universal, so it runs on both Apple Silicon and Intel Macs.
+
+          Launch at login needs macOS 13 (Ventura) or later; on macOS 12 the toggle has no effect.
 
           The app is ad-hoc signed. If Gatekeeper reports the app as damaged or unverified, remove the quarantine flag with `xattr -cr /Applications/Ciyue.app` (or right-click the app and choose Open) after moving it to Applications.
 

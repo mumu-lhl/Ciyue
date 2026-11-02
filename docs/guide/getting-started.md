@@ -44,6 +44,8 @@ Download the installer (`ciyue-setup.exe`) or portable ZIP from the [latest rele
 
 Download the DMG (`ciyue-macos.dmg`) from the [latest release](https://github.com/mumu-lhl/Ciyue/releases/latest).
 
+Ciyue needs macOS 12 (Monterey) or later. The DMG is a universal build, so it runs on both Apple Silicon and Intel Macs. Launch at login needs macOS 13 (Ventura) or later; on macOS 12 the setting has no effect.
+
 ## Download dictionaries
 
 Ciyue does not ship with dictionaries. See the [recommended dictionaries](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries) on the Wiki, then add your `.mdx` / `.mdd` files, or StarDict dictionaries (`.ifo` / `.idx` / `.dict`), in **Settings → Manage dictionaries**. [Dictionary formats](./dictionary-formats) explains what each of those files is for, and how to convert between the two families.
