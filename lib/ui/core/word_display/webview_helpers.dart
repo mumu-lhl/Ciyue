@@ -354,35 +354,51 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
       return NavigationActionPolicy.CANCEL;
     } else if (url.scheme == "sound") {
       final filename = _soundFileName(url);
-
-      // Resolved before the first await: showing the message afterwards would
-      // touch the context across an async gap.
-      final unsupportedMessage = AppLocalizations.of(context)
-          ?.pronunciationUnsupportedFormat;
-      final messenger = ScaffoldMessenger.maybeOf(context);
-
-      final dict = dictManager.dicts[dictId];
-      if (dict != null) {
-        final data = await dict.readResourceFile(filename);
-        if (data == null) {
-          talker.info("Sound resource not found: $filename");
-          return NavigationActionPolicy.CANCEL;
-        }
-        final played = await playSound(
-          data,
-          lookupMimeType(filename) ?? "application/octet-stream",
-          label: basenameWithoutExtension(filename),
+      if (context.mounted) {
+        await playDictionarySound(
+          context: context,
+          dictId: dictId,
+          filename: filename,
         );
-        talker.info("Playing sound (1): $filename");
-        if (!played && unsupportedMessage != null) {
-          messenger?.showSnackBar(SnackBar(content: Text(unsupportedMessage)));
-        }
-        return NavigationActionPolicy.CANCEL;
       }
+      return NavigationActionPolicy.CANCEL;
     }
 
     return navigationPolicyForUrl(url);
   };
+}
+
+/// Plays a pronunciation resource referenced by a `sound://` link.
+///
+/// Shared by the WebView navigation handler (macOS/Linux, where
+/// `shouldOverrideUrlLoading` sees the navigation) and the JS-bridge handler
+/// (`playSoundResource`, used on Windows where that navigation is never
+/// reported) so a plain click plays audio on every platform.
+Future<void> playDictionarySound({
+  required BuildContext context,
+  required int dictId,
+  required String filename,
+}) async {
+  final unsupportedMessage = AppLocalizations.of(context)
+      ?.pronunciationUnsupportedFormat;
+  final messenger = ScaffoldMessenger.maybeOf(context);
+
+  final dict = dictManager.dicts[dictId];
+  if (dict == null) return;
+  final data = await dict.readResourceFile(filename);
+  if (data == null) {
+    talker.info("Sound resource not found: $filename");
+    return;
+  }
+  final played = await playSound(
+    data,
+    lookupMimeType(filename) ?? "application/octet-stream",
+    label: basenameWithoutExtension(filename),
+  );
+  talker.info("Playing sound (bridge): $filename");
+  if (!played && unsupportedMessage != null) {
+    messenger?.showSnackBar(SnackBar(content: Text(unsupportedMessage)));
+  }
 }
 
 class FakeWebViewByAI extends StatelessWidget {

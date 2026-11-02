@@ -10,6 +10,7 @@ changes (path -> query, extra parameters) without anything being wrong.
 """
 
 from html import escape
+import json
 from pathlib import Path
 import re
 import unittest
@@ -25,13 +26,34 @@ SOURCE = ROOT / "lib/ui/core/word_display/entry_link_script.dart"
 # how `entry://Haus`, `entry://tag:sumeru` and `entry://@smk8-...` used to break.
 PREFIX = "gdlookup://localhost/"
 
+# The script declares the JS-bridge flag itself; the Dart side rewrites its
+# value. The test needs both variants, so it rewrites the same declaration.
+FLAG = "var __CIYUE_BRIDGE__ = false;"
+
+# Records every callHandler call the script makes.
+BRIDGE_STUB = """
+window.__ciyueCalls = [];
+window.flutter_inappwebview = {
+  callHandler: function (name, payload) {
+    window.__ciyueCalls.push([name, payload]);
+  },
+};
+"""
+
+
+def script(use_bridge=False):
+    """The injected script, with the JS-bridge flag set the way the app sets it."""
+    body = re.search(r'r"""\n(.*?)""";', SOURCE.read_text(), re.S).group(1)
+    value = "true" if use_bridge else "false"
+    return body.replace(FLAG, f"var __CIYUE_BRIDGE__ = {value};", 1)
+
 
 class DictionaryEntryLinksTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.playwright = sync_playwright().start()
         cls.browser = cls.playwright.chromium.launch()
-        cls.script = re.search(r'r"""\n(.*?)""";', SOURCE.read_text(), re.S).group(1)
+        cls.script = script()
 
     @classmethod
     def tearDownClass(cls):
@@ -241,6 +263,69 @@ class DictionaryEntryLinksTest(unittest.TestCase):
                 }''', href)
                 self.page.locator("a").click()
                 self.assertEqual(self.page.locator("a").get_attribute("href"), href)
+
+    # --- the Windows JS-bridge path -------------------------------------------
+
+    def open_bridge_page(self):
+        """A page with the JS bridge enabled and a recording callHandler."""
+        page = self.browser.new_page()
+        page.add_init_script(BRIDGE_STUB)
+        page.add_init_script(script(use_bridge=True))
+        page.route("http://ciyue.internal/**", lambda r: r.fulfill(
+            content_type="text/html", body="<!doctype html><html><body></body></html>"
+        ))
+        page.goto("http://ciyue.internal/")
+        return page
+
+    def test_bridge_click_calls_open_entry_instead_of_navigating(self):
+        # The WebView2 plugin never reports a custom-scheme navigation to
+        # shouldOverrideUrlLoading, so on Windows the click has to reach Dart
+        # through the JS bridge.
+        page = self.open_bridge_page()
+        try:
+            page.evaluate("html => document.body.innerHTML = html",
+                          '<a href="entry://怀刷">link</a>')
+            page.locator("a").click()
+
+            calls = page.evaluate("() => window.__ciyueCalls")
+            self.assertEqual(len(calls), 1)
+            name, payload = calls[0]
+            self.assertEqual(name, "openEntry")
+            self.assertEqual(json.loads(payload), {"word": "怀刷", "anchor": ""})
+            # The bridge handles the click; it must not also navigate.
+            self.assertEqual(page.url, "http://ciyue.internal/")
+        finally:
+            page.close()
+
+    def test_bridge_click_carries_the_anchor(self):
+        page = self.open_bridge_page()
+        try:
+            page.evaluate("html => document.body.innerHTML = html",
+                          '<a href="entry://怀刷#section">link</a>')
+            page.locator("a").click()
+
+            calls = page.evaluate("() => window.__ciyueCalls")
+            self.assertEqual(len(calls), 1)
+            name, payload = calls[0]
+            self.assertEqual(name, "openEntry")
+            self.assertEqual(
+                json.loads(payload), {"word": "怀刷", "anchor": "section"}
+            )
+        finally:
+            page.close()
+
+    def test_bridge_click_plays_a_sound_resource(self):
+        page = self.open_bridge_page()
+        try:
+            page.evaluate("html => document.body.innerHTML = html",
+                          '<a href="sound://voice.mp3">spk</a>')
+            page.locator("a").click()
+
+            calls = page.evaluate("() => window.__ciyueCalls")
+            self.assertEqual(calls, [["playSoundResource", "voice.mp3"]])
+            self.assertEqual(page.url, "http://ciyue.internal/")
+        finally:
+            page.close()
 
 
 if __name__ == "__main__":

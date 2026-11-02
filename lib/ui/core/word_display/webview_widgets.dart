@@ -124,6 +124,7 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
   String darkReaderSource = "",
   bool isDarkTheme = false,
   double contentScale = 1.0,
+  bool? useBridge,
 }) {
   // Tell the page which theme the app is in: the WebView's own night mode
   // follows the OS, not the app, so dictionary stylesheets cannot react to
@@ -188,7 +189,9 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
 
   return UnmodifiableListView([
     UserScript(
-      source: dictionaryEntryLinkScript,
+      source: dictionaryEntryLinkScript(
+        useBridge: useBridge ?? Platform.isWindows,
+      ),
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
     UserScript(
@@ -462,7 +465,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
       webviewSettings = InAppWebViewSettings(
         useWideViewPort: false,
         algorithmicDarkeningAllowed: !isLightTheme,
-        resourceCustomSchemes: ["entry", "gdlookup", "sound"],
+        resourceCustomSchemes: ["entry", "gdlookup", "sound", "bword"],
         transparentBackground: true,
         useHybridComposition: true,
         webViewAssetLoader: WebViewAssetLoader(
@@ -954,7 +957,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
       final webviewSettings = InAppWebViewSettings(
         useWideViewPort: false,
         algorithmicDarkeningAllowed: !isLightTheme,
-        resourceCustomSchemes: ["entry", "gdlookup", "sound"],
+        resourceCustomSchemes: ["entry", "gdlookup", "sound", "bword"],
         transparentBackground: true,
       );
 
@@ -1167,6 +1170,65 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                           newTab: true,
                           dictId: dictId,
                         );
+                      }
+                    },
+                  );
+                  controller.addJavaScriptHandler(
+                    handlerName: "openEntry",
+                    callback: (args) {
+                      if (args.isNotEmpty && args[0] is String) {
+                        try {
+                          final map = jsonDecode(
+                            args[0] as String,
+                          ) as Map<String, dynamic>;
+                          final word = (map["word"] as String?) ?? "";
+                          final anchor =
+                              (map["anchor"] as String?)?.isNotEmpty == true
+                              ? map["anchor"] as String
+                              : null;
+                          if (word.isNotEmpty) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (context.mounted) {
+                                handleOpenWordNavigation(
+                                  context,
+                                  word,
+                                  newTab: false,
+                                  dictId: dictId,
+                                  anchor: anchor,
+                                );
+                              }
+                            });
+                          }
+                        } catch (e, st) {
+                          talker.error("openEntry handler failed", e, st);
+                        }
+                      }
+                    },
+                  );
+                  controller.addJavaScriptHandler(
+                    handlerName: "playSoundResource",
+                    callback: (args) {
+                      if (args.isNotEmpty && args[0] is String) {
+                        final filename = args[0] as String;
+                        try {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (context.mounted) {
+                              unawaited(
+                                playDictionarySound(
+                                  context: context,
+                                  dictId: dictId,
+                                  filename: filename,
+                                ),
+                              );
+                            }
+                          });
+                        } catch (e, st) {
+                          talker.error(
+                            "playSoundResource handler failed",
+                            e,
+                            st,
+                          );
+                        }
                       }
                     },
                   );

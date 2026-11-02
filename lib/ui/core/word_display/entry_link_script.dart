@@ -12,7 +12,13 @@
 /// A lone `#` separates the headword from its anchor and `##` escapes one
 /// literal `#` (see `parseEntryLink` in `entry_anchor.dart`, which this script
 /// mirrors).
-const dictionaryEntryLinkScript = r"""
+const String _dictionaryEntryLinkScriptBody = r"""
+// Whether the JS bridge (callHandler) is reachable. `dictionaryEntryLinkScript`
+// rewrites the value of this declaration; the default keeps the script valid
+// when it is injected without the flag, which is what the browser regression
+// test does when it extracts this body verbatim.
+var __CIYUE_BRIDGE__ = false;
+
 function _extractWordFromHref(href) {
   if (!href) return null;
   var prefix = /^(?:entry|bword):\/\//i.exec(href);
@@ -25,6 +31,23 @@ function _extractWordFromHref(href) {
     return query >= 0 ? rest.slice(0, query) : rest;
   }
   return null;
+}
+
+function _extractSoundFromHref(href) {
+  if (!href) return null;
+  var m = /^sound:\/\//i.exec(href);
+  if (!m) return null;
+  var rest = href.slice(m[0].length);
+  if (/^localhost\//i.test(rest)) rest = rest.slice('localhost/'.length);
+  return rest;
+}
+
+function _decodeSoundFile(raw) {
+  try {
+    return decodeURIComponent(raw);
+  } catch (e) {
+    return raw;
+  }
 }
 
 function _decodeWord(raw) {
@@ -117,6 +140,33 @@ function _openWordInNewTab(word) {
   }
 }
 
+// Plain left-click on a dictionary cross-reference, used only on the JS-bridge
+// path (Windows). The single JSON argument matches the proven callHandler
+// pattern (openInNewTab). When the bridge is unavailable the navigation falls
+// back to a gdlookup:// URL that macOS/Linux intercept via
+// shouldOverrideUrlLoading.
+function _openEntry(word, anchor) {
+  if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+    window.flutter_inappwebview.callHandler(
+      'openEntry',
+      JSON.stringify({ word: word, anchor: anchor || '' }),
+    );
+  } else {
+    var target = _targetHref({ word: word, anchor: anchor || '' });
+    if (target) window.location.href = target;
+  }
+}
+
+// A pronunciation link plays its referenced audio resource through the JS
+// bridge. There is no navigation fallback: sound:// playback only happens
+// where the bridge or shouldOverrideUrlLoading is active, and those platforms
+// expose callHandler.
+function _playSoundResource(filename) {
+  if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+    window.flutter_inappwebview.callHandler('playSoundResource', filename);
+  }
+}
+
 document.addEventListener('mousedown', function (event) {
   if (event.button === 1) {
     const target = event.target;
@@ -135,6 +185,23 @@ document.addEventListener('click', function (event) {
   const anchor = target instanceof Element ? target.closest('a[href]') : null;
   if (!anchor) return;
   const href = anchor.getAttribute('href');
+  if (!href) return;
+
+  // A pronunciation link plays its referenced audio resource. On the bridge
+  // path (Windows) it is handled directly via callHandler; elsewhere the
+  // sound:// navigation is left to proceed so shouldOverrideUrlLoading can
+  // intercept it.
+  const rawSound = _extractSoundFromHref(href);
+  if (rawSound !== null) {
+    const filename = _decodeSoundFile(rawSound);
+    if (filename && __CIYUE_BRIDGE__) {
+      event.preventDefault();
+      event.stopPropagation();
+      _playSoundResource(filename);
+    }
+    return;
+  }
+
   const rawWord = _extractWordFromHref(href);
   if (rawWord === null) return;
 
@@ -157,15 +224,20 @@ document.addEventListener('click', function (event) {
     return;
   }
 
-  // Already canonical: the word sits in the path, so let the navigation
-  // proceed untouched.
-  if (/^gdlookup:\/\/localhost\//i.test(href)) return;
+  if (__CIYUE_BRIDGE__) {
+    // Plain left-click on Windows: route through the JS bridge instead of
+    // letting the navigation proceed to gdlookup://. The WebView2 plugin never
+    // reports custom-scheme navigations to shouldOverrideUrlLoading, so a plain
+    // navigation would silently do nothing.
+    event.preventDefault();
+    event.stopPropagation();
+    _openEntry(link.word, link.anchor);
+    return;
+  }
 
-  // Rewrite the href in place and let the navigation proceed: the Dart side
-  // then receives a URI-safe URL and decodes it back. The word goes into the
-  // path, not the host: a host is folded to lower case by the URL parser, so
-  // `entry://Abend` arrives as `abend` and every link to a capitalised
-  // headword lands on the wrong entry (or nowhere).
+  // Non-bridge platforms: let the navigation proceed so the native
+  // shouldOverrideUrlLoading can intercept the custom-scheme URL.
+  if (/^gdlookup:\/\/localhost\//i.test(href)) return;
   const newHref = _targetHref(link);
   if (newHref) {
     anchor.setAttribute('href', newHref);
@@ -257,3 +329,21 @@ document.addEventListener('mousedown', function (event) {
   }
 })();
 """;
+
+/// Dictionary entry-link click handling.
+///
+/// On Windows the WebView2 plugin never reports custom-scheme navigations
+/// (`entry://`, `bword://`, `sound://`) to `shouldOverrideUrlLoading`, so plain
+/// clicks must be routed through the `callHandler` JS bridge. On every other
+/// platform the original navigation-based interception still works and is left
+/// untouched. [useBridge] selects which behaviour the injected script uses;
+/// [dictionaryUserScripts] passes `Platform.isWindows`.
+///
+/// The flag is declared inside the script body so that the body stays valid
+/// JavaScript on its own; only its value is rewritten here.
+String dictionaryEntryLinkScript({bool useBridge = false}) {
+  return _dictionaryEntryLinkScriptBody.replaceFirst(
+    "var __CIYUE_BRIDGE__ = false;",
+    "var __CIYUE_BRIDGE__ = $useBridge;",
+  );
+}
