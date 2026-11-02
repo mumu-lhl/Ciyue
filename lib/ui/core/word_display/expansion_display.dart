@@ -184,7 +184,10 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     return Scaffold(
       appBar: AppBar(
         leading: widget.showBackButton
-            ? BackButton(onPressed: () => _goBack(context))
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => _goBack(context),
+              )
             : null,
         automaticallyImplyLeading: widget.showBackButton,
         title: settings.searchBarInAppBar
