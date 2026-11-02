@@ -12,4 +12,7 @@
 - [词典外观](./appearance) —— 让词典页跟随 App 主题、修复深色模式下看不清的词条、注入自定义 CSS。
 - [发音与发音包](./pronunciation) —— 哪些音频格式能播、点了没声音怎么排查、把不支持的格式批量转换。
 - [命令行与 ciyue://](./command-line) —— 从终端或链接直接查词，重复启动复用已运行窗口。
+- [键盘快捷键](./keyboard-shortcuts) —— 沿用 GoldenDict-ng 与 EBWin 习惯的桌面端快捷键，覆盖查词、标签、分组与缩放。
+- [词条内链接](./dictionary-links) —— 词条可用的 `entry://`、`bword://` 写法，以及词条名含 `#` 时如何转义。
+  - [链接 Scheme 原理](./dictionary-link-schemes) —— GoldenDict-ng、MDict、Babylon 各自如何处理每种 scheme，词悦在何处更进一步。
 - [常见问题](./faq) —— 常见问题的解答。

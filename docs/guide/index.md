@@ -12,4 +12,7 @@ Welcome to the Ciyue documentation. Start here to install the app, add dictionar
 - [Appearance](./appearance) — make dictionary pages follow the app theme, fix entries that are unreadable in dark mode, and inject custom CSS.
 - [Pronunciation](./pronunciation) — which audio formats play, and how to convert a pack the device cannot decode.
 - [Command Line & ciyue://](./command-line) — look words up from a terminal or a link, and reuse the running window.
+- [Keyboard Shortcuts](./keyboard-shortcuts) — desktop keys for lookup, word tabs, dictionary groups, and zoom, in the GoldenDict-ng and EBWin tradition.
+- [Dictionary Links](./dictionary-links) — the `entry://` and `bword://` forms an entry can use, and how to reach a headword that contains `#`.
+  - [Link Schemes (Deep Dive)](./dictionary-link-schemes) — how GoldenDict-ng, MDict and Babylon treat each scheme, and where Ciyue goes further.
 - [FAQ](./faq) — answers to common questions.
