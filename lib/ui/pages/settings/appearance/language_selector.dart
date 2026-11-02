@@ -36,7 +36,8 @@ class _LanguageSelectorState extends State<LanguageSelector> {
       case "fa":
         return "فارسی";
       case "got":
-        return "Gutisk";
+        // Gothic in Gothic, like every other language on the list.
+        return "\u{10332}\u{1033F}\u{10344}\u{1033F}\u{10342}\u{10343}";
       case "zh":
         return "简体中文";
       case "zh_HK":

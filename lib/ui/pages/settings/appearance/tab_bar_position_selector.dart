@@ -1,5 +1,6 @@
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/pages/settings/appearance/trailing_segmented_button.dart";
 import "package:material_ui/material_ui.dart";
 
 class TabBarPositionSelector extends StatefulWidget {
@@ -14,25 +15,28 @@ class _TabBarPositionSelectorState extends State<TabBarPositionSelector> {
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
 
-    return ListTile(
-      leading: const Icon(Icons.tab),
-      title: Text(locale.tabBarPosition),
-      trailing: SegmentedButton<TabBarPosition>(
-        segments: [
-          ButtonSegment(value: TabBarPosition.top, label: Text(locale.top)),
-          ButtonSegment(
-            value: TabBarPosition.bottom,
-            label: Text(locale.bottom),
-          ),
-        ],
-        selected: {settings.tabBarPosition},
-        onSelectionChanged: (selected) async {
-          if (selected.first != settings.tabBarPosition) {
-            await settings.setTabBarPosition(selected.first);
-            setState(() {});
-          }
-        },
-        showSelectedIcon: false,
+    return LayoutBuilder(
+      builder: (context, constraints) => ListTile(
+        leading: const Icon(Icons.tab),
+        title: Text(locale.tabBarPosition),
+        trailing: TrailingSegmentedButton<TabBarPosition>(
+          availableWidth: constraints.maxWidth,
+          segments: [
+            ButtonSegment(value: TabBarPosition.top, label: Text(locale.top)),
+            ButtonSegment(
+              value: TabBarPosition.bottom,
+              label: Text(locale.bottom),
+            ),
+          ],
+          selected: {settings.tabBarPosition},
+          onSelectionChanged: (selected) async {
+            if (selected.first != settings.tabBarPosition) {
+              await settings.setTabBarPosition(selected.first);
+              setState(() {});
+            }
+          },
+          showSelectedIcon: false,
+        ),
       ),
     );
   }

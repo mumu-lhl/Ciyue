@@ -425,7 +425,9 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
         localizationsDelegates: [
           AppLocalizations.delegate,
           ...GlobalMaterialLocalizations.delegates,
-          const SardinianlLocalizationDelegate(),
+          const FallbackMaterialLocalizationsDelegate(),
+          const FallbackWidgetsLocalizationsDelegate(),
+          const FallbackCupertinoLocalizationsDelegate(),
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
