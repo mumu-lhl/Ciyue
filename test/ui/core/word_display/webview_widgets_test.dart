@@ -10,12 +10,23 @@ import "package:flutter_inappwebview/flutter_inappwebview.dart";
 
 void main() {
   test("dictionary link normalization runs at document start", () {
-    final scripts = dictionaryUserScripts();
+    final scripts = dictionaryUserScripts(useBridge: false);
     final linkScript = scripts.singleWhere(
-      (script) => script.source == dictionaryEntryLinkScript,
+      (script) => script.source == dictionaryEntryLinkScript(useBridge: false),
     );
     expect(linkScript.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
   });
+
+  test(
+    "the Windows bridge variant switches the script to the callHandler path",
+    () {
+      final scripts = dictionaryUserScripts(useBridge: true);
+      final linkScript = scripts.singleWhere(
+        (script) => script.source == dictionaryEntryLinkScript(useBridge: true),
+      );
+      expect(linkScript.source, contains("var __CIYUE_BRIDGE__ = true;"));
+    },
+  );
 
   test("Dark Reader activates on Windows and Linux dark mode", () {
     for (final isWindows in [true, false]) {
