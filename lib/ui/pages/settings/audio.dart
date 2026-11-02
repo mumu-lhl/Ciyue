@@ -753,11 +753,16 @@ class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
   }
 }
 
-class TTSLanguages extends StatelessWidget {
+class TTSLanguages extends ConsumerWidget {
   const TTSLanguages({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the settings so the list follows added and removed favorites
+    // immediately. The parent page also watches them, but this widget is
+    // const, and Flutter skips rebuilding a child whose widget instance did
+    // not change, so the parent rebuild alone never refreshes this list.
+    ref.watch(settingsProvider);
     final locale = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final favorites = _favorites();
@@ -805,7 +810,8 @@ class TTSLanguages extends StatelessWidget {
   /// before this feature still show one selectable entry.
   List<String> _favorites() {
     if (settings.ttsLanguageFavorites.isNotEmpty) {
-      return settings.ttsLanguageFavorites;
+      // A copy: the stored list must not be mutated by accident.
+      return List.of(settings.ttsLanguageFavorites);
     }
     final current = settings.ttsLanguage ?? _defaultLanguage();
     return current.isEmpty ? [] : [current];
@@ -848,7 +854,11 @@ class TTSLanguages extends StatelessWidget {
       ),
     );
     if (selected == null) return;
-    await settings.setTTSLanguageFavorites([...currentFavorites, selected]);
+    // Re-read the favorites: the stored list is replaced rather than
+    // mutated, so the snapshot taken before the dialog opened may be stale.
+    final updated = _favorites();
+    if (updated.contains(selected)) return;
+    await settings.setTTSLanguageFavorites([...updated, selected]);
   }
 
   String _defaultLanguage() {
