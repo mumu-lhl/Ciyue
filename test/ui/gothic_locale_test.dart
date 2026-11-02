@@ -16,6 +16,7 @@ void main() {
           const FallbackMaterialLocalizationsDelegate(),
         ],
         supportedLocales: AppLocalizations.supportedLocales,
+        // ignore: deprecated_member_use
         home: MaterialUiCompatibilityBridge(
           child: Scaffold(
             appBar: AppBar(

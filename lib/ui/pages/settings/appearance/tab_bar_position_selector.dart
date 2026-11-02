@@ -15,25 +15,28 @@ class _TabBarPositionSelectorState extends State<TabBarPositionSelector> {
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
 
-    return ListTile(
-      leading: const Icon(Icons.tab),
-      title: Text(locale.tabBarPosition),
-      trailing: TrailingSegmentedButton<TabBarPosition>(
-        segments: [
-          ButtonSegment(value: TabBarPosition.top, label: Text(locale.top)),
-          ButtonSegment(
-            value: TabBarPosition.bottom,
-            label: Text(locale.bottom),
-          ),
-        ],
-        selected: {settings.tabBarPosition},
-        onSelectionChanged: (selected) async {
-          if (selected.first != settings.tabBarPosition) {
-            await settings.setTabBarPosition(selected.first);
-            setState(() {});
-          }
-        },
-        showSelectedIcon: false,
+    return LayoutBuilder(
+      builder: (context, constraints) => ListTile(
+        leading: const Icon(Icons.tab),
+        title: Text(locale.tabBarPosition),
+        trailing: TrailingSegmentedButton<TabBarPosition>(
+          availableWidth: constraints.maxWidth,
+          segments: [
+            ButtonSegment(value: TabBarPosition.top, label: Text(locale.top)),
+            ButtonSegment(
+              value: TabBarPosition.bottom,
+              label: Text(locale.bottom),
+            ),
+          ],
+          selected: {settings.tabBarPosition},
+          onSelectionChanged: (selected) async {
+            if (selected.first != settings.tabBarPosition) {
+              await settings.setTabBarPosition(selected.first);
+              setState(() {});
+            }
+          },
+          showSelectedIcon: false,
+        ),
       ),
     );
   }

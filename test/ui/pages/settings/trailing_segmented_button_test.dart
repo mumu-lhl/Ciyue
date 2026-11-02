@@ -3,20 +3,24 @@ import "package:flutter_test/flutter_test.dart";
 import "package:material_ui/material_ui.dart";
 
 void main() {
-  testWidgets("stacks the icon above a wrapping label", (tester) async {
+  Future<void> pumpButton(
+    WidgetTester tester, {
+    required double availableWidth,
+  }) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: ListTile(
             title: const Text("title"),
             trailing: TrailingSegmentedButton<int>(
+              availableWidth: availableWidth,
               segments: const [
                 ButtonSegment(
                   value: 1,
-                  label: Text("a very long label"),
+                  label: Text("Light"),
                   icon: Icon(Icons.light_mode),
                 ),
-                ButtonSegment(value: 2, label: Text("another one")),
+                ButtonSegment(value: 2, label: Text("Dark")),
               ],
               selected: const {1},
               onSelectionChanged: (_) {},
@@ -25,33 +29,38 @@ void main() {
         ),
       ),
     );
+  }
 
-    // The button must not grow past its cap, or it takes the space the
-    // title needs and squeezes it into one character per line.
-    final button = tester.getSize(find.byType(TrailingSegmentedButton<int>));
-    expect(button.width, lessThanOrEqualTo(200));
+  testWidgets("shows the labels next to their icons when they fit", (
+    tester,
+  ) async {
+    await pumpButton(tester, availableWidth: 600);
 
-    // The label wraps rather than being cut off.
-    final label = tester.widget<Text>(find.text("a very long label"));
-    expect(label.softWrap, isTrue);
-    expect(label.maxLines, isNull);
-    expect(label.overflow, isNull);
+    expect(find.text("Light"), findsOneWidget);
+    expect(find.byIcon(Icons.light_mode), findsOneWidget);
+  });
 
-    // A word that does not fit has to end up on more than one line.
-    expect(
-      tester.getSize(find.text("a very long label")).height,
-      greaterThan(20),
-    );
+  testWidgets("drops the icons when only the labels fit", (tester) async {
+    await pumpButton(tester, availableWidth: 300);
 
-    // The icon sits above the text.
-    final column = tester.widget<Column>(
-      find
-          .descendant(
-            of: find.byType(TrailingSegmentedButton<int>),
-            matching: find.byType(Column),
-          )
-          .first,
-    );
-    expect(column.children.first, isA<Icon>());
+    expect(find.text("Light"), findsOneWidget);
+    expect(find.byIcon(Icons.light_mode), findsNothing);
+  });
+
+  testWidgets("keeps only the icons when nothing else fits", (tester) async {
+    await pumpButton(tester, availableWidth: 150);
+
+    expect(find.text("Light"), findsNothing);
+    expect(find.byIcon(Icons.light_mode), findsOneWidget);
+  });
+
+  testWidgets("keeps the labels on one line", (tester) async {
+    await pumpButton(tester, availableWidth: 600);
+
+    // A label that does not fit is cut off with an ellipsis instead of
+    // breaking into one character per line.
+    final label = tester.widget<Text>(find.text("Light"));
+    expect(label.maxLines, 1);
+    expect(label.overflow, TextOverflow.ellipsis);
   });
 }
