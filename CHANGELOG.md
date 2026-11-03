@@ -3,7 +3,148 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [2.0.1](https://github.com/mumu-lhl/Ciyue/compare/v2.0.0..2.0.1) - 2026-10-28
+## [2.1.0](https://github.com/mumu-lhl/Ciyue/compare/v2.0.1..v2.1.0) - 2026-11-03
+
+### Bug Fixes
+
+- **(android)** resolve SD-card dictionary folders to paths (fallback to SAF copy) (#800) - ([5ddbf9c](https://github.com/mumu-lhl/Ciyue/commit/5ddbf9c126b259646802a427a1631a5b2fb6d270)) - Mumulhl
+- **(audio)** make pronunciation packs usable - ([c37a0b5](https://github.com/mumu-lhl/Ciyue/commit/c37a0b589c57c750632efa590b94627185d153ec)) - YX
+- **(dictionaries)** keep enables made while a group is loading - ([fb6ad4d](https://github.com/mumu-lhl/Ciyue/commit/fb6ad4d9c4a3c6ecfcd95bd60d110bd46a981408)) - YX
+- **(dictionaries)** drop cached lookups once the group has loaded - ([cd64045](https://github.com/mumu-lhl/Ciyue/commit/cd6404523b3fad5f279853d6b8f10e2d23a001a5)) - YX
+- **(dictionaries)** don't hang close() on a never-initialized dictionary - ([f396b01](https://github.com/mumu-lhl/Ciyue/commit/f396b01ca90c4fe98d12863dd034fad7dc906e8b)) - Mumulhl
+- **(hunspell)** wait for the first load before answering queries - ([978aa3e](https://github.com/mumu-lhl/Ciyue/commit/978aa3e4a52bc3b0e8554510fb649cfd7315c681)) - YX
+- **(l10n)** shorten the Gothic labels that overflowed their controls - ([fb34791](https://github.com/mumu-lhl/Ciyue/commit/fb347919bf41f4331082d34f2f04f12f4799e4c4)) - YX
+- **(l10n)** give the languages Flutter does not translate a fallback - ([b4d6954](https://github.com/mumu-lhl/Ciyue/commit/b4d6954be69052cbce2b79be0fcc8da9a068826c)) - YX
+- **(linux)** declare assets/icon.png so the desktop tray icon loads - ([7b3f8ce](https://github.com/mumu-lhl/Ciyue/commit/7b3f8ce3fa2b92a99e9c496e13999d86639e38b6)) - YX
+- **(linux)** publish a taskbar icon and map the app to its desktop file - ([18f98e8](https://github.com/mumu-lhl/Ciyue/commit/18f98e803cb34af36248f689d97e652d7ee24870)) - YX
+- **(linux)** use the software WebView texture on VirGL - ([cb708d1](https://github.com/mumu-lhl/Ciyue/commit/cb708d1574508d3007252cedaadada4aa4ab15c0)) - YX
+- **(linux)** keep the keyboard focus on the entry after a click - ([f73f1b7](https://github.com/mumu-lhl/Ciyue/commit/f73f1b7de680e2753ce266711ed07a651810ba2f)) - YX
+- **(linux)** scale the entry again after a reload on Android - ([a07a17a](https://github.com/mumu-lhl/Ciyue/commit/a07a17a9b73aabc06775061694f7cb80f53e91cc)) - YX
+- **(linux)** stop bundling host-coupled Wayland libraries - ([a7b3968](https://github.com/mumu-lhl/Ciyue/commit/a7b3968056c0f9e570b6e1b1ebf3677abb99d931)) - YX
+- **(linux)** take the GLib and GStreamer stacks from the host - ([7af6f77](https://github.com/mumu-lhl/Ciyue/commit/7af6f77368527e267267546a2fac1c670a958313)) - YX
+- **(linux)** take GTK from the host so desktop input methods work - ([16c3b07](https://github.com/mumu-lhl/Ciyue/commit/16c3b079901697af144cee4e83a64bbe25121c3e)) - YX
+- **(lookup)** fold width in search suggestions - ([a674f45](https://github.com/mumu-lhl/Ciyue/commit/a674f453e6756f244822a491f2c2d94bfa4d1792)) - YX
+- **(settings)** stop deleting StarDict dictionaries that are healthy - ([6c58fbd](https://github.com/mumu-lhl/Ciyue/commit/6c58fbda780b766753cddec5f4071bdccba113f0)) - YX
+- **(settings)** expand the dropdowns so long voice names do not overflow - ([7fd6e42](https://github.com/mumu-lhl/Ciyue/commit/7fd6e4239bfe50674eacf52a77400b0a5749d8e2)) - YX
+- **(settings)** refresh the TTS language list after adding a voice - ([2da25dd](https://github.com/mumu-lhl/Ciyue/commit/2da25dda422dc0dfb216aa691bdf602dd3508a57)) - YX
+- **(settings)** keep the segmented buttons from squeezing the list tile titles - ([8b531aa](https://github.com/mumu-lhl/Ciyue/commit/8b531aa1d9f18b0f59891bc1e27eddc56702398e)) - YX
+- **(settings)** keep a long translation from breaking the navigation bar - ([1a869de](https://github.com/mumu-lhl/Ciyue/commit/1a869deeb6613d7ae5a3e430aad347054cc35498)) - YX
+- **(settings)** name Gothic in Gothic - ([77f8d6c](https://github.com/mumu-lhl/Ciyue/commit/77f8d6cda615b4c53c8167cacfbfc4f34d0b9d2b)) - YX
+- **(settings)** fall back to what fits when the segmented button runs out of room - ([5cdf7f2](https://github.com/mumu-lhl/Ciyue/commit/5cdf7f2ac4bcb59f6616d49ef1484601e1b0820c)) - YX
+- **(shortcuts)** give Ctrl+F the same focus hand-off as Esc - ([891e98c](https://github.com/mumu-lhl/Ciyue/commit/891e98c35e3b3a7e0c34266e5edbda571e3ba447)) - YX
+- **(shortcuts)** land the focus on the search box the reader last used - ([9ab747d](https://github.com/mumu-lhl/Ciyue/commit/9ab747d682359d88c971877dc944219a9ba2318b)) - YX
+- **(shortcuts)** forward the plain PageUp and PageDown keys - ([7405808](https://github.com/mumu-lhl/Ciyue/commit/740580896411a9a0a89164cac35d9f9f19fdb42b)) - YX
+- **(stardict)** restore audio and video from converter media tags - ([cad2563](https://github.com/mumu-lhl/Ciyue/commit/cad2563227b1b00ea3b17b841b5c8fae5a846e14)) - YX
+- **(stardict)** resolve the headword before reading an entry - ([7eb9cfb](https://github.com/mumu-lhl/Ciyue/commit/7eb9cfb79714c88ce69f268f37f74042a2d71f82)) - YX
+- **(windows)** route dictionary entry/sound link clicks through the JS bridge - ([336490b](https://github.com/mumu-lhl/Ciyue/commit/336490b413ed9beefb43d365b5c8fc8e25fb3b66)) - YX
+- **(windows)** prompt to install WebView2 when the runtime is missing - ([66bfe93](https://github.com/mumu-lhl/Ciyue/commit/66bfe934c39a1a7fce5d35711128b1b9a04d0f0a)) - YX
+- **(word)** make the long press reachable on touch screens - ([8ed5389](https://github.com/mumu-lhl/Ciyue/commit/8ed53895801afa0fc91bb5b35de88b19c650aef8)) - YX
+- **(word)** keep the pronunciation sheet clear of the navigation bar - ([9a6580e](https://github.com/mumu-lhl/Ciyue/commit/9a6580e7e163916cd9c30376808f995e1e5340eb)) - YX
+- **(word)** use a plain back button on the word page - ([86d9fa2](https://github.com/mumu-lhl/Ciyue/commit/86d9fa2bd509f42277ad15c25dc5cb41a41c3ffc)) - YX
+- **(word display)** refresh the not found page when the group changes - ([44c74f0](https://github.com/mumu-lhl/Ciyue/commit/44c74f01f4984a6e99a5a2e132f58848218f9c46)) - YX
+- **(word-display)** read a phrasal verb out of a sentence limitation changed to suit German better - ([40f8158](https://github.com/mumu-lhl/Ciyue/commit/40f815812f211fe371abe4fe471577dc98534f55)) - YX
+- **(word-display)** play sound:// links from StarDict dictionaries - ([5242051](https://github.com/mumu-lhl/Ciyue/commit/524205153877c57b50ea7209ce71d41f124fd2a6)) - YX
+- **(word-display)** keep an entry anchor inside the dictionary that owns it - ([5170bb1](https://github.com/mumu-lhl/Ciyue/commit/5170bb1e7967bca3735dc67151abadad6396049b)) - YX
+- **(word-page)** rebuild entry views after a dictionary-group switch - ([8709ec2](https://github.com/mumu-lhl/Ciyue/commit/8709ec2731431d98a1e7961ee55fa74ab289c5d5)) - YX
+- **(word-page)** wait for the group switch before caching empty content - ([df96b96](https://github.com/mumu-lhl/Ciyue/commit/df96b96fc37d7d90c9d638d6dd96646afbf3ac19)) - YX
+- **(word-page)** reset tab controller and cached lookups on group switch - ([33a1d1e](https://github.com/mumu-lhl/Ciyue/commit/33a1d1e46534be977e6e9387fa74b37d6f2e4d27)) - YX
+- **(word-page)** keep the previous entry while the new group loads - ([a645a0d](https://github.com/mumu-lhl/Ciyue/commit/a645a0d2ae40046845c6f5070e8647064fa465ad)) - YX
+- **(word-page)** restore the group-switch fixes and wait for entries - ([205a839](https://github.com/mumu-lhl/Ciyue/commit/205a8397004d0d703d11907c0fd842a9ff099d57)) - YX
+- **(word-page)** use the book icon for every group switcher - ([db464f3](https://github.com/mumu-lhl/Ciyue/commit/db464f3750ed4ddf56e3f9414d9de8fd55867d35)) - YX
+- **(word-page)** add the AI chat button to the expansion app bar - ([e092e22](https://github.com/mumu-lhl/Ciyue/commit/e092e22c21c7fa83e833aa4315625dda347b6136)) - YX
+- **(word-split)** raise the bounds so long German compounds split again - ([74f6cbf](https://github.com/mumu-lhl/Ciyue/commit/74f6cbf05fdc4b4cdb70fcb8a3c0ebc5dc8f0beb)) - YX
+- ZIM resolveKeys titles via entry titles, bump dict_reader to 1198a8f (file lock, redirect reads, XHTML indexing, version gate) - ([8afd233](https://github.com/mumu-lhl/Ciyue/commit/8afd2336dc485eb20b9b6ab0d905f7db312339b5)) - Mumulhl
+- full-text search review fixes (ready-state counts, broken-store recovery, rune-safe truncation, status-row overflow) - ([74f62ff](https://github.com/mumu-lhl/Ciyue/commit/74f62ff5972f10664cf39e4634b3fa153500d2a8)) - Mumulhl
+- send a lookup to the entry page that is on screen - ([ddadb9f](https://github.com/mumu-lhl/Ciyue/commit/ddadb9fe136ea350449e8e41f241c03f6d610d2d)) - YX
+
+### Documentation
+
+- **(desktop)** document command line, ciyue:// links and editor integration - ([434ae79](https://github.com/mumu-lhl/Ciyue/commit/434ae7946d53fb0d91baf6aafd1fde8f13ec710c)) - YX
+- **(en)** follow the revised Chinese keyboard-shortcuts note on Android - ([5f8f74f](https://github.com/mumu-lhl/Ciyue/commit/5f8f74f68125a4d3304613ddc3bb6e9ed7de8483)) - YX
+- **(guide)** publish the keyboard shortcuts page again - ([0081923](https://github.com/mumu-lhl/Ciyue/commit/00819230a5c9897a27ea080e0c2c579f91126463)) - YX
+- **(macos)** state the macOS 12 floor and the launch-at-login caveat - ([0615bb3](https://github.com/mumu-lhl/Ciyue/commit/0615bb38e82402c04dd619534eda1bc1ae6466db)) - YX
+- **(pronunciation)** mention StarDict entry audio - ([a17a99c](https://github.com/mumu-lhl/Ciyue/commit/a17a99cbc0a9db2740e9c7bc64644bfbc7000e66)) - YX
+- **(release)** list the minimum Windows and Linux requirements - ([724359b](https://github.com/mumu-lhl/Ciyue/commit/724359bc9d66f8648e2c0016c0fc9e70346c56ba)) - YX
+- **(zh)** tighten the keyboard-shortcut notes for Android and selection - ([989a932](https://github.com/mumu-lhl/Ciyue/commit/989a9320faf2eff70e1413ac4eb9d91a5486ded4)) - YX
+- add a guide to the MDict and StarDict formats - ([d0dc4bc](https://github.com/mumu-lhl/Ciyue/commit/d0dc4bc4ab6d7c99968bdc6274c760032b9aff90)) - YX
+- add dictionary formats guide and link schemes deep dive - ([75988a1](https://github.com/mumu-lhl/Ciyue/commit/75988a107ca0ed9782d3e4b1c2e04744a39679ee)) - YX
+- sync the Chinese guide with the search box behaviour - ([2ca264e](https://github.com/mumu-lhl/Ciyue/commit/2ca264e58cb12bad3f8a372650cdf7b2f5c800ee)) - YX
+- record the Linux bundle's host-library boundary - ([756b85c](https://github.com/mumu-lhl/Ciyue/commit/756b85cd8e16e35da263f73fe2f3ac6c494206c6)) - YX
+- document long-press pronunciation controls and Kiwix ZIM sources - ([96b43c7](https://github.com/mumu-lhl/Ciyue/commit/96b43c7f96110578a1f20aef56317743ea0ae111)) - YX
+- align English keyboard-shortcuts 'Looking up a selection' with the revised Chinese version - ([800ef51](https://github.com/mumu-lhl/Ciyue/commit/800ef5194710fffd5bdd705fd2903a9759a54df5)) - YX
+
+### Features
+
+- **(android)** give the full-dev build its own name and icon - ([2034622](https://github.com/mumu-lhl/Ciyue/commit/2034622acecd37cbf9e2996c1ab9d0f4c96fd1f2)) - YX
+- **(audio)** accept .zip and .zips pronunciation packs - ([5a1ada7](https://github.com/mumu-lhl/Ciyue/commit/5a1ada71e8c7ce0dd2c5635c068404afd08664e3)) - YX
+- **(cloud-sync)** carry StarDict dictionaries through cloud sync - ([c153c2a](https://github.com/mumu-lhl/Ciyue/commit/c153c2a7c52f6d78c03e7564487f06f41e4bb4dc)) - YX
+- **(desktop)** add command line arguments and ciyue:// URL scheme - ([ea95a72](https://github.com/mumu-lhl/Ciyue/commit/ea95a724425b21e02ae5d95be15a0cf874132647)) - YX
+- **(desktop)** add command line diagnostics and readable file logs - ([ed2689c](https://github.com/mumu-lhl/Ciyue/commit/ed2689c89dcf9f5a00468f68e34a035f0a85c096)) - YX
+- **(dictionaries)** add support for ZIM dictionary format - ([b56b19c](https://github.com/mumu-lhl/Ciyue/commit/b56b19c7b0f057aca669b9f4a6bef702cf051f4c)) - Mumulhl
+- **(l10n)** complete the German translation - ([6b81a18](https://github.com/mumu-lhl/Ciyue/commit/6b81a18fe5389c83817afdc38a90d62e1dbad820)) - YX
+- **(linux)** native TTS backends - SSIP client (speech-dispatcher) and espeak-ng runner with fake-transport tests - ([9d8e7bf](https://github.com/mumu-lhl/Ciyue/commit/9d8e7bf8e702964ba762056d9bed1b45c3830109)) - Mumulhl
+- **(linux)** wire native TTS into word pronunciation, TtsHelper, and audio settings (voice picker + backend status) - ([de3914b](https://github.com/mumu-lhl/Ciyue/commit/de3914bb2e3d7668d56b96c053a20bcb5f08da25)) - Mumulhl
+- **(lookup)** enumerate full-width and half-width spellings on lookup - ([77f8fdc](https://github.com/mumu-lhl/Ciyue/commit/77f8fdc2a8670aa2222b2e40654194444a249643)) - YX
+- **(settings)** rename the sidebar icon setting and use the group icon - ([d59c2b9](https://github.com/mumu-lhl/Ciyue/commit/d59c2b941dcd0a3c7e6fe3d010dd4fd2918d3598)) - YX
+- **(settings)** update the sidebar group icon label in every locale - ([8c13791](https://github.com/mumu-lhl/Ciyue/commit/8c1379167de8963c67ab491a2c92b6ae1422b9d8)) - YX
+- **(settings)** keep several TTS voices and pick the active one - ([928e03d](https://github.com/mumu-lhl/Ciyue/commit/928e03d11bc25cfd59a8ae80ba194f6562e9e4a3)) - YX
+- **(settings)** let the TTS voices be reordered and show the current one clearly - ([f7c7098](https://github.com/mumu-lhl/Ciyue/commit/f7c70984e37c562bfeed2af67acac97eafa8c755)) - YX
+- **(settings)** make the TTS preview text editable - ([7dd7243](https://github.com/mumu-lhl/Ciyue/commit/7dd7243c57dde937e7b936e1e6292739ad9c9140)) - YX
+- **(settings)** let the reader reorder the dictionary groups - ([80a72a2](https://github.com/mumu-lhl/Ciyue/commit/80a72a2026db46f35441681d40b7fa3c1c6bd7c7)) - YX
+- **(shortcuts)** keyboard shortcuts for lookup, tabs, groups and zoom - ([b5fb619](https://github.com/mumu-lhl/Ciyue/commit/b5fb619dd0b61e7bc08aa4e3a3ec68f6c8b41597)) - YX
+- **(web)** add local web query service and browser extension - ([b2da17c](https://github.com/mumu-lhl/Ciyue/commit/b2da17c3e354781baff4e8af96ccf527f6d2f157)) - Mumulhl
+- **(web)** support dictionary groups, folding, dark mode, and AI explain/translate - ([421221e](https://github.com/mumu-lhl/Ciyue/commit/421221eef3ae7c0e6cb97fd5fd24019cab53c823)) - Mumulhl
+- **(word)** open pronunciation settings by long-pressing the speaker - ([3c847b3](https://github.com/mumu-lhl/Ciyue/commit/3c847b3f105e02aaee8f3ed96b90edd24308d37e)) - YX
+- **(word-display)** resolve entry anchors with a ## escape for literal hashes - ([8c650a6](https://github.com/mumu-lhl/Ciyue/commit/8c650a6fe6673892c8cbef251bd3d15393e9121d)) - YX
+- **(word-display)** offer hiragana long-vowel spellings when nothing matches - ([39fd26e](https://github.com/mumu-lhl/Ciyue/commit/39fd26e0bfe1e0a837d2862ebd3f75d61d3c6994)) - YX
+- **(word-page)** show the dictionary-group switcher on word pages - ([328d666](https://github.com/mumu-lhl/Ciyue/commit/328d666948e7e4f205b72b7f77e6e1be490e9aec)) - YX
+- full-text search over definitions (FTS5 indexes built lazily per dictionary, with UI) - ([da80d7e](https://github.com/mumu-lhl/Ciyue/commit/da80d7e9a322187000694358b8a343a67706f599)) - Mumulhl
+- per-dictionary full-text index management in the properties page (status, size, rebuild, delete) - ([e38a516](https://github.com/mumu-lhl/Ciyue/commit/e38a5160061de0ee1c769f8f42dcdc9c7312963b)) - Mumulhl
+- online pronunciation via Wiktionary and Forvo (cached, quota-guarded, pack-first chain) - ([e1fa117](https://github.com/mumu-lhl/Ciyue/commit/e1fa117470b4a0a62525a8b2ee92c711a6c414ab)) - Mumulhl
+- online pronunciation settings UI (Wiktionary/Forvo toggles, languages, Forvo API key field) - ([4fef648](https://github.com/mumu-lhl/Ciyue/commit/4fef6483e18236a973be518cb75c4527e3b19a00)) - Mumulhl
+
+### Miscellaneous Chores
+
+- **(ci)** run gen-l10n before the ARB structure check - ([c01a9c8](https://github.com/mumu-lhl/Ciyue/commit/c01a9c85c57d94ff9d44892eead5595e6eee7252)) - YX
+- **(deps)** update - ([920b575](https://github.com/mumu-lhl/Ciyue/commit/920b57584e9d93e93f99b8918983942c84588a8f)) - Mumulhl
+- **(deps-dev)** bump esbuild - ([e64f031](https://github.com/mumu-lhl/Ciyue/commit/e64f0314605210536e21d42a6c4d31fb95230ae3)) - dependabot[bot]
+- **(i18n)** translate the WebView2 prompt into Chinese - ([32f333e](https://github.com/mumu-lhl/Ciyue/commit/32f333e53c26aa75123e00b158beaa1c4b873d9d)) - YX
+- **(l10n)** drop dead keys and add an ARB structure check - ([7b7da0a](https://github.com/mumu-lhl/Ciyue/commit/7b7da0ad5cb47096f7ba707e0f4cdbef712aa2de)) - YX
+- **(l10n)** call every prompt a "Prompt" in German - ([1559400](https://github.com/mumu-lhl/Ciyue/commit/1559400ce0e0110dbad731b95864b71add90e2cf)) - YX
+- **(linux)** drop the unused runner template - ([13dd368](https://github.com/mumu-lhl/Ciyue/commit/13dd368c7c15c3bb9b8aa27f42c3c6cb28436f08)) - YX
+- **(macos)** update cnativeapi to 0.5.7 for macOS 12 support - ([b1aa92f](https://github.com/mumu-lhl/Ciyue/commit/b1aa92f4c9e0a482db1e0f5a5a972ad12cfa00ec)) - YX
+- **(ui)** show every language name in its own script - ([36cda65](https://github.com/mumu-lhl/Ciyue/commit/36cda658620344fc1b7e24b67a97480173b316c5)) - YX
+- bump dict_reader pin to e6854b1 (serialize StarDict concurrent reads) - ([b7bc1f2](https://github.com/mumu-lhl/Ciyue/commit/b7bc1f25f54207820a099a713df4451e1df87c30)) - Mumulhl
+- use upstream hotkey_manager at 5a409ac (drop deleted-branch fork; nativeapi/cnativeapi 0.5.6) - ([f21a866](https://github.com/mumu-lhl/Ciyue/commit/f21a866dedcc009f544b2fe30e3bcc8f94e815d1)) - Mumulhl
+
+### Refactoring
+
+- **(dictionaries)** extract BaseLoadedDictionary and unify resource loading - ([e4437ae](https://github.com/mumu-lhl/Ciyue/commit/e4437ae01c10fe1ba08ec40692054aa7f255ed5d)) - Mumulhl
+- **(shortcuts)** keep the desktop focus path lean - ([979d213](https://github.com/mumu-lhl/Ciyue/commit/979d213b831ae567e87fdd0f575cde6659bbbc9a)) - YX
+
+### Tests
+
+- **(browser)** cover entry anchors and in-place scrolling - ([5207cfe](https://github.com/mumu-lhl/Ciyue/commit/5207cfefea8459ec2628329b5813d0b66e3e32aa)) - YX
+- **(dictionaries)** add MDict and StarDict entry-anchor fixtures - ([60e3106](https://github.com/mumu-lhl/Ciyue/commit/60e31062dfcc10058139486d44027084a205581c)) - YX
+- **(dictionaries)** give the anchor fixtures distinct stems - ([1c88ac4](https://github.com/mumu-lhl/Ciyue/commit/1c88ac47d9742db5d20924742547be4e9f090b15)) - YX
+- **(dictionaries)** space the anchor targets a screenful apart - ([81cf08c](https://github.com/mumu-lhl/Ciyue/commit/81cf08cd97396c0eca50ee7d0a0a9a5f0023f902)) - YX
+- **(l10n)** check that every locale the app ships has Material localizations - ([9745607](https://github.com/mumu-lhl/Ciyue/commit/9745607aa18c506b7a4019a5a3fb0edeadabcd83)) - YX
+- **(lookup)** cover width folding and case×width crossing - ([25f6401](https://github.com/mumu-lhl/Ciyue/commit/25f6401c0c5aa0dba506b1ee1e53f55b8b647e9e)) - YX
+- **(word-display)** cover anchors on bword links - ([03a50ff](https://github.com/mumu-lhl/Ciyue/commit/03a50ffb036b3f4a1db1d675f9ed9ddacefbab89)) - YX
+- rename the duplicated kana test in dictionary_lookup_test.dart - ([d0986c5](https://github.com/mumu-lhl/Ciyue/commit/d0986c57effa0e1d33d7ab4646c18250aecefa3f)) - Mumulhl
+- cover the content scale script - ([78a5e49](https://github.com/mumu-lhl/Ciyue/commit/78a5e493f98372546d7a68215c57144dea057ef1)) - YX
+
+### Build
+
+- **(macos)** lower deployment target to 12.0 to support macOS 12 - ([0b4d726](https://github.com/mumu-lhl/Ciyue/commit/0b4d7260e18470862802687256fb22d0cbe1fa2e)) - YX
+
+### Ci
+
+- **(check)** install Linux dependencies for native assets - ([b2bce1c](https://github.com/mumu-lhl/Ciyue/commit/b2bce1c82f03ac1a6e70513248732c5c7587e1bb)) - Mumulhl
+- **(release)** derive the macOS requirement from the Xcode project - ([77bf4ac](https://github.com/mumu-lhl/Ciyue/commit/77bf4ac44a1beadded59138c972f9df1dfcd312f)) - YX
+
+---
+## [2.0.1](https://github.com/mumu-lhl/Ciyue/compare/v2.0.0..v2.0.1) - 2026-10-28
 
 ### Bug Fixes
 

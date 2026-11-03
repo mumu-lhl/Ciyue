@@ -1,4 +1,52 @@
 ---
+## [2.1.0](https://github.com/mumu-lhl/Ciyue/compare/v2.0.1..v2.1.0) - 2026-11-03
+
+### Features
+
+- **Full-text search** - find words by searching inside definitions, with a per-dictionary index built in the background and managed from the dictionary properties page
+- **ZIM dictionaries** - Kiwix/ZIM dictionaries can now be added and read, with entry titles resolved correctly
+- **Online pronunciation** - pronunciation audio can now come from Wiktionary and Forvo, off by default; enable them in audio settings, with results cached and Forvo requests quota-guarded
+- **Native text-to-speech on Linux** - Linux now uses native speech through speech-dispatcher or espeak-ng, with a voice picker and backend status in audio settings
+- **Local web service and browser extension** - a local web query service and browser extension let a browser look words up in Ciyue, with dictionary groups, folding, dark mode, and AI explain/translate in the web view
+- **Desktop command line and ciyue:// links** - desktop builds accept command-line arguments and `ciyue://` links, including editor integration, with diagnostics and readable file logs
+- **Keyboard shortcuts and content zoom** - desktop keyboard shortcuts now cover lookup, tabs, dictionary groups, and entry zoom; the search box keeps focus correctly, and entry text scaling survives a reload on Android
+- **Dictionary-group switcher on word pages** - word pages now have a dictionary-group switcher that keeps the previous entry while the new group loads, and the AI chat button is available in the expansion bar
+- **Multiple text-to-speech voices** - several text-to-speech voices can now be kept, reordered, and switched, with the active voice shown clearly and long voice names no longer overflowing
+- **Long-press pronunciation controls** - long-pressing the speaker on a word page now opens pronunciation settings, reachable on touch screens, with the sheet kept clear of the navigation bar
+- **Entry anchors** - links that point to a section inside a dictionary entry now land in the right dictionary and scroll to the right place, with a `##` escape for literal hashes
+- **Full-width and half-width lookup variants** - lookups now try full-width and half-width spellings, fold width in search suggestions, and resolve the StarDict headword before reading an entry
+- **Hiragana long-vowel suggestions** - when nothing matches, Japanese lookups now also suggest long-vowel spellings
+- **StarDict dictionaries in cloud sync** - StarDict dictionaries are now carried through cloud sync like other dictionaries
+- **Pronunciation packs in .zip and .zips** - pronunciation packs can now be added as .zip and .zips files, and packs that previously failed to index now work
+- **Editable text-to-speech preview** - the text-to-speech preview text in Settings can now be edited
+- **Dictionary groups can be reordered** - dictionary groups can now be reordered from the manage-dictionaries page
+- **Language names in their own script** - the language list in Settings now shows every language name written in its own script
+- **Sidebar dictionary-group icon** - the sidebar toggle now uses the dictionary-group icon
+- **Full-dev Android build branding** - the full-dev Android build now has its own app name and purple launcher icon, so it can be told apart from the regular build when both are installed
+- **Documentation and translations** - new guides for dictionary formats, dictionary links, keyboard shortcuts, and the command line; the German translation is now complete
+
+### Bug Fixes
+
+- **(android)** dictionaries can now be added from SD-card folders, with a copy fallback when a folder path cannot be resolved
+- **(dictionary)** StarDict lookups that ran at the same time could return wrong results; concurrent reads are now serialised
+- **(dictionary)** closing a dictionary that never finished loading no longer hangs
+- **(dictionary)** healthy StarDict dictionaries are no longer deleted when a file check runs
+- **(dictionary)** turning dictionaries on or off while a group is still loading now sticks
+- **(lookup)** lookups no longer answer before Hunspell has finished loading, and stale cached results are dropped once a dictionary group has loaded
+- **(lookup)** looking up a sentence finds its phrasal verb more reliably, and long German compound words split correctly again
+- **(stardict)** sound links inside StarDict entries now play, and audio and video embedded by dictionary converters play again
+- **(linux)** the app now shows its icon in the taskbar and tray, and is mapped to its desktop file
+- **(linux)** dictionary entries render correctly on systems using the VirGL software renderer
+- **(linux)** the Linux bundle now takes Wayland, GLib/GStreamer, and GTK from the host system, so desktop input methods work and host-coupled library conflicts go away
+- **(windows)** clicking dictionary entry and sound links now works through the JavaScript bridge
+- **(windows)** on Windows without the WebView2 runtime, Ciyue now prompts to install it at startup instead of failing
+- **(word page)** the "not found" page now refreshes when the dictionary group changes
+- **(settings)** settings segmented buttons no longer squeeze list-tile titles, and fall back to what fits when they run out of room
+- **(settings)** the Gothic translation no longer shows an empty box where the back button and navigation bar should be, its labels no longer overflow their controls, and "Gothic" is named in Gothic in the language list
+- **(settings)** a long translation no longer breaks the main page navigation bar
+- **(word page)** the word page now uses a plain back button
+
+---
 ## [2.0.1](https://github.com/mumu-lhl/Ciyue/compare/v2.0.0..v2.0.1) - 2026-10-29
 
 ### Features

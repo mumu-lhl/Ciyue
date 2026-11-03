@@ -1,0 +1,7 @@
+* Search inside definitions with full-text search
+* ZIM dictionaries from Kiwix
+* Online pronunciation from Wiktionary and Forvo
+* Native text-to-speech on Linux
+* Dictionaries from SD cards on Android
+* Keyboard shortcuts and entry zoom on desktop
+* Local web service and browser extension
