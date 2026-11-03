@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
@@ -64,7 +66,38 @@ class _WordSearchBarWithSuggestionsState
   /// is superseded mid-debounce so the list doesn't flicker.
   List<Widget>? _lastSuggestions;
 
+  /// Captured during a synchronous build.
+  ///
+  /// The suggestion builders below run after an `await`, and a submitted word
+  /// replaces the page they belong to. Looking an inherited widget up on the
+  /// state's context at that point registers a dependency on a tree that is
+  /// being torn down, which trips the framework's `_dependents.isEmpty`
+  /// assertion. Reading the cached values instead never touches the tree.
+  AppLocalizations? _l10n;
+  ThemeData? _theme;
+
+  /// Suppresses the automatic opening right after a close.
+  ///
+  /// The anchor restores the focus to this box when its view is dismissed, and
+  /// `isOpen` still reads `false` at that point, so the focus listener would
+  /// reopen the view immediately: closing it with Esc looked like it did
+  /// nothing. A tap opens the view through the anchor itself, so the listener
+  /// is not needed for that.
+  bool _ignoreNextFocusOpen = false;
+
+  /// Ends the suppression above. Kept as a timer so that [dispose] can cancel
+  /// it: a callback that outlives the state leaves a pending timer behind,
+  /// which the test binding treats as a failure.
+  Timer? _reopenSuppression;
+
   static const _suggestionDebounce = Duration(milliseconds: 100);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _l10n = AppLocalizations.of(context);
+    _theme = Theme.of(context);
+  }
 
   SearchController? get _effectiveController =>
       widget.controller ?? _anchorController;
@@ -109,7 +142,9 @@ class _WordSearchBarWithSuggestionsState
     final controller = _effectiveController;
     if (controller != null && identical(activeSearchController, controller)) {
       activeSearchController = null;
+      searchSuggestionViewOpen = false;
     }
+    _reopenSuppression?.cancel();
     super.dispose();
   }
 
@@ -131,7 +166,10 @@ class _WordSearchBarWithSuggestionsState
     // look up another word, so it opens as soon as it takes the focus: the
     // text they type has to land where they can see it. The box of the home
     // page keeps its own behaviour and only opens when it is tapped.
-    if (!widget.isHome && controller != null && !controller.isOpen) {
+    if (!widget.isHome &&
+        controller != null &&
+        !controller.isOpen &&
+        !_ignoreNextFocusOpen) {
       controller.openView();
     }
   }
@@ -150,8 +188,12 @@ class _WordSearchBarWithSuggestionsState
     if (normalizedWord.isEmpty) return;
 
     ref.read(historyModelProvider).addHistory(normalizedWord);
-    if (controller.isAttached && controller.isOpen) {
-      controller.closeView(normalizedWord);
+    // `isOpen` lags behind the view, so the flag the anchor reports is the one
+    // that tells whether there is a list to close.
+    if (searchSuggestionViewOpen ||
+        (controller.isAttached && controller.isOpen)) {
+      searchSuggestionViewOpen = false;
+      if (controller.isAttached) controller.closeView(normalizedWord);
     }
     // Drop the field focus as well: on Android the IME turns a physical Esc
     // into BACK while it is up, so the key would never reach the app, and
@@ -165,19 +207,28 @@ class _WordSearchBarWithSuggestionsState
     } else {
       final location = GoRouterState.of(context).uri.toString();
       final target = "/word/${Uri.encodeComponent(normalizedWord)}";
-      // Sync tab history so back/forward buttons work (the tab system and
-      // router system were out of sync).
-      try {
-        ref.read(homeModelProvider).navigateInCurrentTab(normalizedWord);
-      } catch (_) {}
-      // If already on a word page, replace instead of pushing to avoid
-      // accumulating a deep stack of word pages (user reported: hard to
-      // go back to home after many lookups).
-      if (location.startsWith("/word/")) {
-        context.go(target);
-      } else {
-        context.push(target);
-      }
+      // Both the tab bookkeeping and the navigation wait for the next frame.
+      // Submitting the field has already closed the anchor's view, and either
+      // rebuilding the page that owns it (the history update notifies) or
+      // replacing that page (the route change) inside the same frame
+      // deactivates the view's inherited scope while its dependents are still
+      // attached, which trips the framework's `_dependents.isEmpty`
+      // assertion.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        // Sync tab history so back/forward buttons work (the tab system and
+        // router system were out of sync).
+        try {
+          ref.read(homeModelProvider).navigateInCurrentTab(normalizedWord);
+        } catch (_) {}
+        // A pushed entry page follows the tab's current word and swaps the
+        // entry in place, so it needs no navigation at all; replacing its
+        // route would rebuild the page that owns this search box. Only a
+        // lookup made from the home page has to open a page.
+        if (!location.startsWith("/word/")) {
+          context.push(target);
+        }
+      });
     }
 
     // The lookup is done: hand the focus to the entry, so the next Esc reaches
@@ -195,6 +246,10 @@ class _WordSearchBarWithSuggestionsState
           viewHintText: AppLocalizations.of(context)!.search,
           viewOnOpen: () {
             _markActive();
+            searchSuggestionViewOpen = true;
+            // Widgets cached for the previous view belong to a tree that is
+            // no longer there; rebuild them instead of reusing the elements.
+            _lastSuggestions = null;
             final ctrl = _effectiveController;
             if (ctrl == null) return;
             if (widget.word.isNotEmpty && !widget.isHome) {
@@ -213,8 +268,19 @@ class _WordSearchBarWithSuggestionsState
             }
           },
           viewOnClose: () {
+            searchSuggestionViewOpen = false;
+            _ignoreNextFocusOpen = true;
+            _reopenSuppression?.cancel();
+            _reopenSuppression = Timer(const Duration(milliseconds: 400), () {
+              _ignoreNextFocusOpen = false;
+            });
             final ctrl = _effectiveController;
-            if (ctrl != null && widget.word.isNotEmpty && !widget.isHome) {
+            // Only fill in a word when there is nothing to lose: a box the
+            // reader was halfway through filling must keep what they typed.
+            if (ctrl != null &&
+                ctrl.text.trim().isEmpty &&
+                widget.word.isNotEmpty &&
+                !widget.isHome) {
               ctrl.text = widget.word;
             }
           },
@@ -265,7 +331,13 @@ class _WordSearchBarWithSuggestionsState
             }
           },
           suggestionsBuilder: (BuildContext context, SearchController controller) async {
-            List<Widget> keepPrevious() => _lastSuggestions ?? const <Widget>[];
+            // Once the anchor's view is gone, handing the cached widgets back
+            // re-inserts elements that belonged to the torn-down tree and
+            // trips the framework's `_dependents.isEmpty` assertion. An empty
+            // list is the safe answer at that point.
+            List<Widget> keepPrevious() => controller.isOpen
+                ? (_lastSuggestions ?? const <Widget>[])
+                : const <Widget>[];
 
             final searchWord = controller.text.trim();
             final gen = ++_suggestionGen;
@@ -291,19 +363,26 @@ class _WordSearchBarWithSuggestionsState
             final suggestions = await dictionaryLookup.searchSuggestions(
               searchWord,
             );
-            if (!context.mounted || gen != _suggestionGen) {
+            // The `context` handed to this builder belongs to the view the
+            // anchor opens, and a submitted word closes that view. Its element
+            // stays mounted after that, so asking it for an inherited widget
+            // throws; this state is the one that knows whether it is still in
+            // the tree, and it survives the view closing.
+            if (!mounted || gen != _suggestionGen) {
               // A newer keystroke arrived while querying: drop the stale
               // result instead of overwriting fresh suggestions.
               return keepPrevious();
             }
-            final l10n = AppLocalizations.of(context)!;
+            final l10n = _l10n;
+            final theme = _theme;
+            if (l10n == null) return keepPrevious();
 
             ListTile buildSuggestionTile(String word) {
               return ListTile(
                 title: Text(word),
                 trailing: const Icon(Icons.arrow_forward),
                 onTap: () {
-                  if (!context.mounted) return;
+                  if (!mounted) return;
                   _openWord(controller, word);
                 },
               );
@@ -321,9 +400,8 @@ class _WordSearchBarWithSuggestionsState
                   ),
                   child: Text(
                     l10n.spellingSuggestions,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.secondary
-                          .withValues(alpha: 0.7),
+                    style: theme?.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.secondary.withValues(alpha: 0.7),
                     ),
                   ),
                 ),
@@ -332,9 +410,9 @@ class _WordSearchBarWithSuggestionsState
                 leading: const Icon(Icons.find_in_page),
                 title: Text(l10n.searchInDefinitions(searchWord)),
                 onTap: () {
-                  if (!context.mounted) return;
+                  if (!mounted) return;
                   controller.closeView(searchWord);
-                  context.push(
+                  this.context.push(
                     "/full-text-search?query=${Uri.encodeQueryComponent(searchWord)}",
                   );
                 },

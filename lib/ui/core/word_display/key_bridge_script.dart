@@ -39,6 +39,8 @@ String keyBridgeScript() {
     ['PageDown', false, false, false],
     ['ArrowUp', true, false, false],
     ['ArrowDown', true, false, false],
+    ['ArrowLeft', false, true, false],
+    ['ArrowRight', false, true, false],
     ['Backquote', true, false, false]
   ];
   for (var n = 0; n <= 9; n++) {

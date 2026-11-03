@@ -72,6 +72,12 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
         playWordPronunciation(context, activeWord);
       }
     },
+    // Browser-like history navigation. The plain arrows belong to the entry
+    // (scrolling, moving the caret) and the WebView keeps them for itself.
+    const SingleActivator(LogicalKeyboardKey.arrowLeft, alt: true):
+        homeModel.goBack,
+    const SingleActivator(LogicalKeyboardKey.arrowRight, alt: true):
+        homeModel.goForward,
     const SingleActivator(LogicalKeyboardKey.escape): () =>
         _toggleSearchFocus(ref),
     const SingleActivator(LogicalKeyboardKey.pageDown, control: true):
@@ -366,6 +372,10 @@ LogicalKeyboardKey? _logicalKeyForCode(String code) {
       return LogicalKeyboardKey.arrowUp;
     case "ArrowDown":
       return LogicalKeyboardKey.arrowDown;
+    case "ArrowLeft":
+      return LogicalKeyboardKey.arrowLeft;
+    case "ArrowRight":
+      return LogicalKeyboardKey.arrowRight;
     case "Escape":
       return LogicalKeyboardKey.escape;
     case "Backquote":
@@ -441,6 +451,25 @@ class _SearchEscapeCloserState extends ConsumerState<SearchEscapeCloser> {
         HardwareKeyboard.instance.isMetaPressed) {
       return false;
     }
+    if (!mounted) return false;
+    // The suggestion view is a route of its own, and `SearchController.isOpen`
+    // is still false while that route is opening: Esc used to miss the view and
+    // move the focus into the box instead, so the reader had to press it twice
+    // to close the list. Closing the route itself always works.
+    if (searchSuggestionViewOpen) {
+      searchSuggestionViewOpen = false;
+      // Hand the focus back before the view goes: the entry's own search box
+      // reopens its view as soon as it is focused, so a box that kept the
+      // focus would bring the list straight back.
+      FocusManager.instance.primaryFocus?.unfocus();
+      // `closeView` pops the route through the anchor that owns it, which is
+      // the only navigator guaranteed to be the one the view was pushed onto.
+      final ctrl = activeSearchController ?? widget.controller;
+      if (ctrl != null && ctrl.isAttached) {
+        ctrl.closeView(null);
+      }
+      return true;
+    }
     final homeModel = ref.read(homeModelProvider);
     final controller = widget.controller ?? homeModel.searchController;
     final node = widget.focusNode ?? _nearestSearchNode(ref);
@@ -462,7 +491,9 @@ class _SearchEscapeCloserState extends ConsumerState<SearchEscapeCloser> {
     if (!(ModalRoute.of(context)?.isCurrent ?? false)) return false;
     final focused = activeSearchFocusNode;
     talker.info(
-      "esc handler: focused=${focused?.hasFocus} dict=$activeEntryDictId",
+      "esc handler: focused=${focused?.hasFocus} dict=$activeEntryDictId "
+      "active=${activeController?.isOpen}/${activeController?.isAttached} "
+      "own=${controller.isOpen}/${controller.isAttached}",
     );
     if (focused != null && focused.hasFocus) {
       focused.unfocus();

@@ -46,6 +46,16 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   final SearchController _searchController = SearchController();
   List<int>? _lastValidDictIds;
 
+  /// The word on screen.
+  ///
+  /// A pushed entry page follows the tab's current word, so a lookup swaps the
+  /// entry in place instead of replacing the route. Replacing it rebuilds the
+  /// page the title search box lives in, and the search anchor that submitted
+  /// the word does not survive being torn down that way: the framework trips
+  /// its element assertions. The pane inside the home split view keeps taking
+  /// the word from its parent, which already follows the selection.
+  late String _word;
+
   /// The tab bar's controller while the tab layout is on screen. Kept so
   /// that [dispose] can tell whether the shared one is still ours.
   TabController? _tabController;
@@ -57,7 +67,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
 
   Widget? _buildSearchBar(Settings settings) {
     return buildTitle(
-      widget.word,
+      _word,
       settings,
       controller: _searchController,
       focusNode: _searchFocusNode,
@@ -88,17 +98,14 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   /// drawn until one of them has something, which keeps the page looking as it
   /// always did for a word nobody can help with.
   Widget _buildMissingWordSuggestions(BuildContext context) {
-    final splits = ref.watch(wordSplitsProvider(widget.word)).asData?.value;
-    final phrases = ref
-        .watch(phraseSuggestionsProvider(widget.word))
-        .asData
-        ?.value;
+    final splits = ref.watch(wordSplitsProvider(_word)).asData?.value;
+    final phrases = ref.watch(phraseSuggestionsProvider(_word)).asData?.value;
     final longVowels = ref
-        .watch(longVowelSuggestionsProvider(widget.word))
+        .watch(longVowelSuggestionsProvider(_word))
         .asData
         ?.value;
     final spelling = ref
-        .watch(missingWordSpellingSuggestionsProvider(widget.word))
+        .watch(missingWordSpellingSuggestionsProvider(_word))
         .asData
         ?.value;
     if ((splits == null || splits.isEmpty) &&
@@ -160,6 +167,10 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     if (widget.showBackButton) {
       pageSearchFocusNode = _searchFocusNode;
     }
+    final selected = widget.showBackButton
+        ? ref.watch(homeModelProvider.select((model) => model.selectedWord))
+        : null;
+    _word = selected != null && selected.isNotEmpty ? selected : widget.word;
     final settings = ref.watch(settingsProvider);
     // Switching the group reloads every dictionary. Drop the cached lookup
     // and entry HTML so every tab is queried again; otherwise the first tab
@@ -174,7 +185,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         ref.invalidate(wordContentProvider);
       }
     });
-    final validDictIdsAsync = ref.watch(validDictIdsProvider(widget.word));
+    final validDictIdsAsync = ref.watch(validDictIdsProvider(_word));
     if (validDictIdsAsync.hasValue) {
       _lastValidDictIds = validDictIdsAsync.requireValue;
     }
@@ -216,7 +227,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          widget.word,
+                          _word,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
@@ -257,13 +268,13 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                 floatingActionButton: isDesktopScreen
                     ? null
                     : Button(
-                        word: widget.word,
+                        word: _word,
                         showAIButtons: settings.aiExplainWord,
                       ),
                 body: Stack(
                   children: [
                     settings.aiExplainWord
-                        ? AIExplainView(word: widget.word)
+                        ? AIExplainView(word: _word)
                         : _buildWebView(validDictIds[0]),
                     const Positioned(
                       left: 16,
@@ -337,7 +348,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                           floatingActionButton: isDesktopScreen
                               ? null
                               : Button(
-                                  word: widget.word,
+                                  word: _word,
                                   showAIButtons: isAIExplainTabSelected,
                                 ),
                           body: Stack(
@@ -389,7 +400,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                 : null;
 
             return ExpansionWordDisplay(
-              word: widget.word,
+              word: _word,
               validDictIds: validDictIds,
               searchController: _searchController,
               pagerInfo: widget.pagerInfo,
@@ -458,13 +469,13 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           : null,
       automaticallyImplyLeading: widget.showBackButton,
       title: settings.searchBarInAppBar
-          ? (title ?? Text(widget.word, overflow: TextOverflow.ellipsis))
+          ? (title ?? Text(_word, overflow: TextOverflow.ellipsis))
           : (widget.pagerInfo != null
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(widget.word, overflow: TextOverflow.ellipsis),
+                      Text(_word, overflow: TextOverflow.ellipsis),
                       Text(
                         "${widget.pagerInfo!.currentIndex + 1} / ${widget.pagerInfo!.totalCount}",
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -473,7 +484,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                       ),
                     ],
                   )
-                : Text(widget.word, overflow: TextOverflow.ellipsis)),
+                : Text(_word, overflow: TextOverflow.ellipsis)),
       actions: [
         // Same switch as the home screen: the sidebar-icon setting decides
         // whether the dictionary-group switcher is offered on word pages too.
@@ -484,13 +495,15 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           IconButton(
             tooltip: locale.back,
             icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: homeModel.canGoBack ? () => homeModel.goBack() : null,
+            onPressed: homeModel.canGoBack
+                ? () => _stepThroughHistory(back: true)
+                : null,
           ),
           IconButton(
             tooltip: locale.forward,
             icon: const Icon(Icons.arrow_forward_rounded),
             onPressed: homeModel.canGoForward
-                ? () => homeModel.goForward()
+                ? () => _stepThroughHistory(back: false)
                 : null,
           ),
         ],
@@ -519,23 +532,23 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           ),
         ],
         if (isDesktopScreen) ...[
-          WordPronounceIconButton(word: widget.word),
-          WordStarIconButton(word: widget.word),
+          WordPronounceIconButton(word: _word),
+          WordStarIconButton(word: _word),
           if (showAIButtons) ...[
-            RefreshAIExplainIconButton(word: widget.word),
-            EditAIExplainIconButton(word: widget.word),
+            RefreshAIExplainIconButton(word: _word),
+            EditAIExplainIconButton(word: _word),
           ],
         ],
         IconButton(
           tooltip: locale.aiChat,
           icon: const Icon(Icons.chat_bubble_outline),
           onPressed: () =>
-              context.push("/chat?word=${Uri.encodeComponent(widget.word)}"),
+              context.push("/chat?word=${Uri.encodeComponent(_word)}"),
         ),
         IconButton(
           tooltip: locale.copy,
           icon: const Icon(Icons.copy),
-          onPressed: () => app_utils.addToClipboard(context, widget.word),
+          onPressed: () => app_utils.addToClipboard(context, _word),
         ),
       ],
       bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
@@ -544,10 +557,23 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     );
   }
 
+  /// Steps the word history of the tab and shows the word it landed on.
+  ///
+  /// The page renders [_word], which follows the tab's selection, so moving
+  /// the index is enough: the entry swaps itself in place.
+  void _stepThroughHistory({required bool back}) {
+    final homeModel = ref.read(homeModelProvider);
+    if (back) {
+      homeModel.goBack();
+    } else {
+      homeModel.goForward();
+    }
+  }
+
   PreferredSizeWidget buildTabBar(BuildContext context) {
     final dictManager = ref.watch(dictManagerProvider);
     final settings = ref.watch(settingsProvider);
-    final validDictIdsAsync = ref.watch(validDictIdsProvider(widget.word));
+    final validDictIdsAsync = ref.watch(validDictIdsProvider(_word));
 
     return PreferredSize(
       preferredSize: const Size.fromHeight(48),
@@ -581,7 +607,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
       if (settings.aiExplainWord)
         KeepAliveWidget(
           key: ValueKey("ai_tab_$groupId"),
-          child: AIExplainView(word: widget.word),
+          child: AIExplainView(word: _word),
         ),
       for (final id in validDictIds)
         KeepAliveWidget(
@@ -598,6 +624,6 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   }
 
   Widget _buildWebView(int id) {
-    return buildWebView(widget.word, id, false);
+    return buildWebView(_word, id, false);
   }
 }
