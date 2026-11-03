@@ -12,6 +12,16 @@ Ciyue can read a word out in two ways: **pronunciation packs** (recordings store
 
 Packs are added in Settings → Audio → Pronunciation Packs. You can add several and drag them to change their priority.
 
+## Quick pronunciation controls on the word page
+
+While looking up a word, **long-press the speaker (read-aloud) button** in the bottom-right corner of the word page to open the pronunciation settings sheet. It brings the controls that normally live under Settings → Audio right next to the word you are looking at:
+
+- **TTS voice**: your favourite TTS languages/voices are listed; tap one to switch to it, and the current word is read aloud with that voice straight away, so you can compare.
+- **Pronunciation pack order**: each pack is a row with up and down arrows on the right to change its priority (the same order an MDX dictionary uses when it looks up a recording).
+- **Online pronunciation sources**: toggle online sources such as Wiktionary and Forvo on the spot.
+
+The long press has already opened the sheet, so the tap that comes with releasing the button only dismisses it — it does not also play the word.
+
 ## Pack formats
 
 A pack can be an `.mdd` file or a plain zip — with the `.zip` or `.zips` extension (the latter is GoldenDict's extension for pronunciation archives; the file itself is a plain zip).

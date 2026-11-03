@@ -2,7 +2,7 @@
 
 ## Where do I get dictionaries?
 
-Ciyue does not ship with dictionaries. Download `.mdx` / `.mdd` files, or StarDict dictionaries (`.ifo` / `.idx` / `.dict`), from the [recommended dictionaries](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries) list on the Wiki, then add them in **Settings → Manage dictionaries**.
+Ciyue does not ship with dictionaries. Download `.mdx` / `.mdd` files, or StarDict dictionaries (`.ifo` / `.idx` / `.dict`), from the [recommended dictionaries](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries) list on the Wiki, then add them in **Settings → Manage dictionaries**. For offline encyclopaedic dictionaries (Wiktionary, Wikipedia, Wikisource and more), you can also download `.zim` files from [Kiwix](https://www.kiwix.org/) via the [Kiwix ZIM directory on Wikimedia dumps](https://dumps.wikimedia.org/other/kiwix/zim/).
 
 ## Why does Ciyue need the INTERNET permission?
 

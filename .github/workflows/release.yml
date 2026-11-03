@@ -97,6 +97,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_CLIFF_TAG_PATTERN: '^v[0-9]+[.][0-9]+[.][0-9]+(-(alpha|beta)[.][0-9]+(-[0-9]+)?)?$'
 
+      - name: Add system requirements to release notes
+        shell: bash
+        run: |
+          {
+            cat .github/release-notes/system-requirements.md
+            echo
+            cat RELEASE_NOTES.md
+          } > "$RUNNER_TEMP/RELEASE_NOTES.md"
+          mv "$RUNNER_TEMP/RELEASE_NOTES.md" RELEASE_NOTES.md
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.47.8
