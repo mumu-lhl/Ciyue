@@ -87,6 +87,7 @@ In the **Expansion** style there are no such tabs, and these keys do nothing at 
 | `Ctrl`+`R` | Read the word aloud — or stop it when it is already playing |
 | `Ctrl`+`Shift`+`S` | Stop the playback |
 | `Ctrl`+`↑` / `Ctrl`+`↓` | Pick the previous / next entry in the history |
+| `Alt`+`←` / `Alt`+`→` | Go back / forward through the history of the entry |
 
 ## Zooming the entry
 
