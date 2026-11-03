@@ -2,7 +2,7 @@
 
 ## 词典去哪里下载？
 
-词悦不自带词典。从 Wiki 的[推荐词典](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries)下载 `.mdx` / `.mdd` 文件，或者 StarDict 词典（`.ifo` / `.idx` / `.dict`），然后在 **设置 → 管理词典** 中添加。
+词悦不自带词典。从 Wiki 的[推荐词典](https://github.com/mumu-lhl/Ciyue/wiki#recommended-dictionaries)下载 `.mdx` / `.mdd` 文件，或者 StarDict 词典（`.ifo` / `.idx` / `.dict`），然后在 **设置 → 管理词典** 中添加。离线百科类词典（维基辞典、维基百科、维基文库等）也可以从 [Kiwix](https://www.kiwix.org/) 获取：到 [dumps.wikimedia.org/other/kiwix/zim/](https://dumps.wikimedia.org/other/kiwix/zim/) 下载 `.zim` 文件。
 
 ## 为什么词悦需要 INTERNET 权限？
 

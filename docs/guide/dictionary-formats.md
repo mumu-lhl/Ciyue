@@ -4,8 +4,8 @@ Ciyue reads three dictionary families: **MDict** (`.mdx` / `.mdd`), **StarDict**
 (`.ifo` / `.idx` / `.dict`), and **ZIM** (`.zim`). They hold headwords, HTML or
 plain-text definitions, and the pictures and audio those definitions reference.
 
-This page describes what is inside each format, what Ciyue reads, and how to move
-a dictionary from one format to the other.
+This page describes what is inside each format, what Ciyue reads, and how to convert
+a dictionary between the formats it reads.
 
 ::: warning One dictionary per stem
 Ciyue identifies a dictionary by its path without the extension, so `dict.mdx`
