@@ -645,9 +645,24 @@ void InAppWebView::InitWpeBackend() {
 
   egl_display_ = egl_display;
 
-  // Initialize WPE FDO with the EGL display (only once per process)
+  // Initialize WPE FDO (only once per process). This choice decides which kind
+  // of buffer the view backends export, so it has to match how the frame is
+  // consumed: with the GL texture disabled (FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL)
+  // every frame goes through ReadPixelsFromEglImage(), which imports the
+  // exported DMA-BUF EGLImage into a GL texture and reads it back. Importing
+  // that image crashes llvmpipe inside libgallium (Mesa 25.0.7 on Debian 13),
+  // and a GPU buffer buys nothing for a CPU readback, so ask for SHM export
+  // instead; OnExportShmBuffer() already consumes those buffers.
+  const bool shm_export =
+      g_getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr;
   static std::once_flag s_wpe_fdo_init_flag;
-  std::call_once(s_wpe_fdo_init_flag, [egl_display]() {
+  std::call_once(s_wpe_fdo_init_flag, [egl_display, shm_export]() {
+    if (shm_export) {
+      if (!wpe_fdo_initialize_shm()) {
+        errorLog("InAppWebView: Failed to initialize WPE FDO shm export");
+      }
+      return;
+    }
     if (!wpe_fdo_initialize_for_egl_display(egl_display)) {
       errorLog("InAppWebView: Failed to initialize WPE FDO");
       // Try again with headless mode
@@ -1257,6 +1272,20 @@ void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
     if (image != nullptr && exportable_ != nullptr) {
       ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_, image);
     }
+    return;
+  }
+
+  // Software frames are supposed to arrive as SHM buffers (see the SHM export
+  // initialization above). If a DMA-BUF still shows up, do not hand it to
+  // ReadPixelsFromEglImage(): the GL import there crashes llvmpipe inside
+  // libgallium, so drop the frame instead of taking the process down.
+  if (g_getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr) {
+    static bool warned_about_dmabuf = false;
+    if (!warned_about_dmabuf) {
+      warned_about_dmabuf = true;
+      errorLog("InAppWebView: Dropping a DMA-BUF frame in software mode");
+    }
+    ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_, image);
     return;
   }
 
