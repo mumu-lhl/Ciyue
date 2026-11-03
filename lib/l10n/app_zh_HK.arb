@@ -850,5 +850,11 @@
   "vocabularyExtractCount": "每次提取生詞數",
   "vocabularyPromptHelper": "用於從對話中提取生詞的提示詞。變量：$count、$difficulty、$text",
   "vocabularyPromptTitle": "生詞提取提示詞",
-  "wordQuiz": "單詞測驗"
+  "wordQuiz": "單詞測驗",
+  "webView2MissingTitle": "需要 Microsoft Edge WebView2",
+  "@webView2MissingTitle": {},
+  "webView2MissingMessage": "詞悅使用 WebView2 顯示詞典內容。請安裝 Microsoft Edge WebView2 執行階段，然後重新啟動詞悅。\n\nWindows 11 與大多數 Windows 10 已內建；Windows 10 LTSC 以及不帶 Edge 的系統映像則沒有。",
+  "@webView2MissingMessage": {},
+  "webView2Install": "安裝",
+  "@webView2Install": {}
 }
