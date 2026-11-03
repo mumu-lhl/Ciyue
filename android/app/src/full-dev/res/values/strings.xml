@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Every locale that defines app_name in main needs an override here:
+         a locale-specific string always wins over this default one, so
+         overriding only this file would leave English and Chinese builds
+         labelled "Ciyue"/"词悦" anyway. -->
+    <string name="app_name">Ciyue Dev</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- full-dev uses a violet launcher background so it is not mistaken for
+         the "full" build when both are installed side by side. The adaptive
+         icon in mipmap-anydpi-v26/launcher_icon.xml picks this up. -->
+    <color name="ic_launcher_background">#7B3FBF</color>
+</resources>
