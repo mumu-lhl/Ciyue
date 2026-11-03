@@ -87,7 +87,11 @@ String keyBridgeScript() {
       var text = selection ? selection.toString().trim() : '';
       if (!text) return;
       e.preventDefault();
-      post('Enter', text);
+      // Ctrl opens the lookup in a new tab, the way Ctrl+click does for a link.
+      post(
+        e.ctrlKey && !e.altKey && !e.metaKey ? 'EnterNewTab' : 'Enter',
+        text
+      );
       return;
     }
 

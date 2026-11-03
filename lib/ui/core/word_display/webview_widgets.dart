@@ -314,11 +314,11 @@ void _registerKeyBridgeHandler(
     callback: (args) {
       final name = args.isNotEmpty ? args[0].toString() : "";
       final payload = args.length > 1 ? args[1].toString() : "";
-      if (name == "Enter") {
+      if (name == "Enter" || name == "EnterNewTab") {
         handleOpenWordNavigation(
           context,
           payload,
-          newTab: false,
+          newTab: name == "EnterNewTab",
           dictId: dictId,
         );
       } else if (name == "Zoom") {
