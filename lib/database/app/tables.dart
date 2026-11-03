@@ -4,6 +4,7 @@ class DictGroup extends Table {
   TextColumn get dictIds => text()();
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().unique()();
+  IntColumn get order => integer().withDefault(const Constant(0))();
 }
 
 /// Type:

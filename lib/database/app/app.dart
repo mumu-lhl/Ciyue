@@ -181,10 +181,15 @@ class AppDatabase extends _$AppDatabase {
         from23To24: (m, schema) async {
           await m.addColumn(schema.quizMistakes, schema.quizMistakes.options);
         },
+        from24To25: (m, schema) async {
+          // Existing groups all get 0, and getAllGroups() falls back to the id
+          // to keep them in creation order, with the default group on top.
+          await m.addColumn(schema.dictGroup, schema.dictGroup.order);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 24;
+  int get schemaVersion => 25;
 }

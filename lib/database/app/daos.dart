@@ -23,14 +23,48 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
     with _$DictGroupDaoMixin {
   DictGroupDao(super.attachedDatabase);
 
-  Future<int> addGroup(String name, List<int> dictIds) {
+  Future<int> addGroup(String name, List<int> dictIds) async {
+    // Append the new group to the end of the list instead of the position its
+    // id would give it.
+    final last =
+        await (select(dictGroup)
+              ..orderBy([
+                (t) =>
+                    OrderingTerm(expression: t.order, mode: OrderingMode.desc),
+              ])
+              ..limit(1))
+            .getSingleOrNull();
+
     return into(dictGroup).insert(
-      DictGroupCompanion(name: Value(name), dictIds: Value(dictIds.join(","))),
+      DictGroupCompanion(
+        name: Value(name),
+        dictIds: Value(dictIds.join(",")),
+        order: Value((last?.order ?? -1) + 1),
+      ),
     );
   }
 
   Future<List<DictGroupData>> getAllGroups() {
-    return select(dictGroup).get();
+    return (select(dictGroup)..orderBy([
+          (t) => OrderingTerm(expression: t.order),
+          // Groups migrated from v24 all share order 0, so keep them in
+          // creation order: the default group was created first.
+          (t) => OrderingTerm(expression: t.id),
+        ]))
+        .get();
+  }
+
+  /// Persists [groups], writing their position in the list as their order.
+  Future<void> updateOrder(List<DictGroupData> groups) {
+    return batch((batch) {
+      for (var i = 0; i < groups.length; i++) {
+        batch.update(
+          dictGroup,
+          DictGroupCompanion(order: Value(i)),
+          where: (t) => t.id.isValue(groups[i].id),
+        );
+      }
+    });
   }
 
   Future<List<int>> getDictIds(int id) async {

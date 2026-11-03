@@ -927,6 +927,106 @@ class GroupDeleteButton extends ConsumerWidget {
   }
 }
 
+class _GroupTile extends ConsumerWidget {
+  final DictGroupData group;
+  final int index;
+
+  const _GroupTile({super.key, required this.group, required this.index});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final isCurrent = group.id == dictManager.groupId;
+    final isDefault = group.name == "Default";
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Material(
+        color: isCurrent
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.4)
+            : theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  final targetGroupId = group.id;
+                  context.pop();
+                  if (targetGroupId != dictManager.groupId) {
+                    ref
+                        .read(dictManagerModelProvider)
+                        .setCurrentGroup(targetGroupId);
+                  }
+                },
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: 12,
+                    // The delete button fills the right side of the other
+                    // groups, but the default one has none.
+                    right: isDefault ? 12 : 0,
+                    top: 8,
+                    bottom: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isCurrent
+                            ? Icons.radio_button_checked_rounded
+                            : Icons.radio_button_unchecked_rounded,
+                        color: isCurrent
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.onSurfaceVariant,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          isDefault ? l10n.default_ : group.name,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontWeight: isCurrent
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                      GroupDeleteButton(group: group),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // The default group is created at first run and always stays on
+            // top, so it cannot be dragged.
+            if (!isDefault)
+              ReorderableDragStartListener(
+                index: index,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.grab,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 10.0,
+                    ),
+                    child: Icon(
+                      Icons.drag_handle_rounded,
+                      size: 20,
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.7,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class GroupDialog extends ConsumerWidget {
   const GroupDialog({super.key});
 
@@ -950,69 +1050,20 @@ class GroupDialog extends ConsumerWidget {
       ),
       content: SizedBox(
         width: double.maxFinite,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final group in dictManager.groups)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6.0),
-                  child: Material(
-                    color: group.id == dictManager.groupId
-                        ? theme.colorScheme.primaryContainer.withValues(
-                            alpha: 0.4,
-                          )
-                        : theme.colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(12),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () {
-                        final targetGroupId = group.id;
-                        context.pop();
-                        if (targetGroupId != dictManager.groupId) {
-                          ref
-                              .read(dictManagerModelProvider)
-                              .setCurrentGroup(targetGroupId);
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              group.id == dictManager.groupId
-                                  ? Icons.radio_button_checked_rounded
-                                  : Icons.radio_button_unchecked_rounded,
-                              color: group.id == dictManager.groupId
-                                  ? theme.colorScheme.primary
-                                  : theme.colorScheme.onSurfaceVariant,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                group.name == "Default"
-                                    ? l10n.default_
-                                    : group.name,
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontWeight: group.id == dictManager.groupId
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ),
-                            GroupDeleteButton(group: group),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+        child: ReorderableListView(
+          shrinkWrap: true,
+          buildDefaultDragHandles: false,
+          onReorderItem: (oldIndex, newIndex) {
+            ref.read(dictManagerModelProvider).moveGroup(oldIndex, newIndex);
+          },
+          children: [
+            for (int i = 0; i < dictManager.groups.length; i++)
+              _GroupTile(
+                key: ValueKey(dictManager.groups[i].id),
+                group: dictManager.groups[i],
+                index: i,
+              ),
+          ],
         ),
       ),
       actions: [
@@ -1284,6 +1335,7 @@ class ManageDictionariesBody extends ConsumerWidget {
                           id: 0,
                           name: "Default",
                           dictIds: "[]",
+                          order: 0,
                         ),
                 );
                 final groupName = currentGroup.name == "Default"
