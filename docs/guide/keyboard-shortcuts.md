@@ -27,17 +27,18 @@ The wide window has two search boxes: the one in the left column and the one in 
 
 ### Looking up a selection
 
-Select a word or a phrase in the entry and press `Enter` to look it up. This is EBWin's behaviour, and on the desktop it is the only way to look up a word: the right-click menu of the entry is Chromium's own.
+Select a word or a phrase in the entry and press `Enter` to look it up. This is EBWin and EBMac's behaviour, and on the desktop it is currently the only way to look up a selected word: the entry's right-click menu is Chromium's own, offering only *Copy* and *Inspect Element*.
 
-Selecting beats double-clicking, because double-clicking only ever selects one part of a word in the languages that do not separate words with spaces:
+Selecting and pressing Enter beats double-clicking a single word, because in languages that do not separate words with spaces what a double-click selects is down to luck; and even in a language like English you sometimes meet compound words and phrasal verbs that a double-click cannot catch:
 
-| Language | Double-click selects | Selecting the phrase gets |
+| Language | Word to look up | A single click selects the whole word |
 |---|---|---|
-| German | `Bundesbank` of `Bundesbankdirektor` | `Bundesbankdirektor` |
-| Japanese | `日本` of `日本語词典` | `日本語词典` |
-| Chinese | `现代` of `现代汉语词典` | `现代汉语词典` |
+| German | `Bundesbank` within `Bundesbankdirektor` | `Bundesbankdirektor` |
+| Japanese | `日本語` within `日本語辞典` | `日本語辞典` |
+| Chinese | `汉语` within `现代汉语词典` | `现代汉语词典` |
+| English | `throw away` | `throw` or `away` |
 
-On Android the long-press menu offers the same lookup next to *Copy* and *Read aloud*. Right-clicking a word selects it as well, so the menu looks up that word.
+On Android, the long-press menu also offers the same lookup next to *Copy* and *Read aloud*; right-clicking a word selects it as well, and the menu's *Query* item looks up that word.
 
 ## Tabs
 
