@@ -1,6 +1,29 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:material_ui/material_ui.dart";
+
+/// Returns [groups] with the group at [oldIndex] moved to [newIndex].
+///
+/// The default group is created at first run and always stays on top: it
+/// cannot be moved, and nothing can be dropped above it, so the target index
+/// is clamped to the positions below it. [groups] itself is returned when
+/// nothing changes, so callers can skip the write.
+List<DictGroupData> reorderGroups(
+  List<DictGroupData> groups,
+  int oldIndex,
+  int newIndex,
+) {
+  if (oldIndex <= 0 || oldIndex >= groups.length) return groups;
+
+  final target = newIndex.clamp(1, groups.length - 1);
+  if (target == oldIndex) return groups;
+
+  final reordered = List<DictGroupData>.of(groups);
+  final group = reordered.removeAt(oldIndex);
+  reordered.insert(target, group);
+  return reordered;
+}
 
 class DictManagerModel extends ChangeNotifier {
   /// Called when the set of dictionaries to look up in changed, so that the
@@ -79,8 +102,8 @@ class DictManagerModel extends ChangeNotifier {
 
   /// Switches to the group at [position] (1-based) in the group list.
   ///
-  /// The position follows the order the groups are shown in, which is the
-  /// order they were created in, so the first one is the default group.
+  /// The position follows the order the groups are shown in, which the reader
+  /// can change except for the default group that always stays on top.
   /// Returns false when there is no such group.
   Future<bool> switchToGroupAt(int position) async {
     final groups = dictManager.groups;
@@ -112,6 +135,19 @@ class DictManagerModel extends ChangeNotifier {
     if (!checkIsEmpty()) {
       notifyListeners();
     }
+  }
+
+  /// Moves the group at [oldIndex] to [newIndex], the indexes being positions
+  /// in the list shown to the reader.
+  Future<void> moveGroup(int oldIndex, int newIndex) async {
+    final groups = reorderGroups(dictManager.groups, oldIndex, newIndex);
+    if (identical(groups, dictManager.groups)) return;
+
+    dictManager.groups = groups;
+    state += 1;
+    notifyListeners();
+
+    await dictGroupDao.updateOrder(groups);
   }
 
   Future<void> updateGroupList() async {
