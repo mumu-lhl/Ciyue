@@ -249,6 +249,20 @@ InAppWebView::InAppWebView(FlPluginRegistrar* registrar, FlBinaryMessenger* mess
     : plugin_(params.plugin), registrar_(registrar), messenger_(messenger), gtk_window_(params.gtkWindow), fl_view_(params.flView), manager_(params.manager), id_(id), settings_(params.initialSettings),
       initial_user_scripts_(params.initialUserScripts) {
   js_bridge_secret_ = GenerateRandomSecret();
+
+  // Closing the window finalizes the GtkWindow before the plugin's webviews are
+  // torn down. Hold the cached pointers weakly so they turn null on finalize
+  // instead of dangling: the destructor otherwise calls
+  // g_signal_handler_disconnect() on freed memory, which GLib reports as
+  // "invalid (NULL) pointer instance" and can end in a segfault on exit.
+  if (gtk_window_ != nullptr) {
+    g_object_add_weak_pointer(G_OBJECT(gtk_window_),
+                              reinterpret_cast<gpointer*>(&gtk_window_));
+  }
+  if (fl_view_ != nullptr) {
+    g_object_add_weak_pointer(G_OBJECT(fl_view_),
+                              reinterpret_cast<gpointer*>(&fl_view_));
+  }
   
   if (params.windowId.has_value()) {
     window_id_ = params.windowId.value();
@@ -560,6 +574,20 @@ InAppWebView::~InAppWebView() {
     webview_ = nullptr;
   }
 #endif
+
+  // Drop the weak pointers now that their owner is going away: a registration
+  // that outlives this object would write into freed memory when the window or
+  // view is finalized later.
+  if (gtk_window_ != nullptr) {
+    g_object_remove_weak_pointer(G_OBJECT(gtk_window_),
+                                 reinterpret_cast<gpointer*>(&gtk_window_));
+    gtk_window_ = nullptr;
+  }
+  if (fl_view_ != nullptr) {
+    g_object_remove_weak_pointer(G_OBJECT(fl_view_),
+                                 reinterpret_cast<gpointer*>(&fl_view_));
+    fl_view_ = nullptr;
+  }
 }
 
 void InAppWebView::InitWpeBackend() {
