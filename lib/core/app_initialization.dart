@@ -16,6 +16,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/changelog_dialog.dart";
 import "package:ciyue/utils.dart";
 import "package:dynamic_color/dynamic_color.dart";
+import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
 import "package:flutter_tts/flutter_tts.dart";
@@ -27,6 +28,7 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:simple_secure_storage/simple_secure_storage.dart";
 import "package:tray_manager/tray_manager.dart" as tray;
+import "package:url_launcher/url_launcher.dart";
 import "package:window_manager/window_manager.dart";
 
 Future<void> reloadHunspell() async {
@@ -197,6 +199,59 @@ void disposeTrayMenu() {
   _exitAppMenuItem = null;
 }
 
+/// WebView2 ships with Edge on Windows 10/11, but LTSC and trimmed-down
+/// images have no Edge, so the Evergreen Runtime can be missing entirely.
+/// Every dictionary entry is rendered through WebView2, so point the user at
+/// the installer instead of failing later inside `WebViewEnvironment.create`.
+Future<void> _showWebView2InstallPromptIfNeeded() async {
+  if (!Platform.isWindows) {
+    return;
+  }
+
+  String? version;
+  try {
+    version = await WebViewEnvironment.getAvailableVersion();
+  } catch (error, stackTrace) {
+    talker.error("Failed to check the WebView2 runtime", error, stackTrace);
+    return;
+  }
+  if (version != null) {
+    return;
+  }
+
+  final context = navigatorKey.currentContext;
+  if (context == null || !context.mounted) {
+    return;
+  }
+
+  final l10n = AppLocalizations.of(context)!;
+  await showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(l10n.webView2MissingTitle),
+      content: Text(l10n.webView2MissingMessage),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: Text(l10n.close),
+        ),
+        FilledButton(
+          onPressed: () {
+            Navigator.pop(dialogContext);
+            unawaited(
+              launchUrl(
+                Uri.parse("https://go.microsoft.com/fwlink/p/?LinkId=2124703"),
+                mode: LaunchMode.externalApplication,
+              ),
+            );
+          },
+          child: Text(l10n.webView2Install),
+        ),
+      ],
+    ),
+  );
+}
+
 Future<void> initApp({bool isFloatingWindow = false}) async {
   runningInFloatingWindow = isFloatingWindow;
   talker.info("Initializing application...");
@@ -253,6 +308,8 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
       final locale = Localizations.localeOf(context);
 
       await initTrayMenu();
+
+      await _showWebView2InstallPromptIfNeeded();
 
       packageInfo = await PackageInfo.fromPlatform();
 

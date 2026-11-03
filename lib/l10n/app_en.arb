@@ -1235,5 +1235,13 @@
   "copyServerUrl": "Copy Server URL",
   "@copyServerUrl": {},
   "urlCopied": "Server URL copied to clipboard",
-  "@urlCopied": {}
+  "@urlCopied": {},
+  "webView2MissingTitle": "Microsoft Edge WebView2 is required",
+  "@webView2MissingTitle": {
+    "description": "Shown on Windows when the WebView2 Evergreen Runtime is not installed."
+  },
+  "webView2MissingMessage": "Ciyue uses WebView2 to render dictionary entries. Install the Microsoft Edge WebView2 Runtime, then restart Ciyue.\n\nWindows 11 and most Windows 10 installations already include it; Windows 10 LTSC and images without Edge do not.",
+  "@webView2MissingMessage": {},
+  "webView2Install": "Install",
+  "@webView2Install": {}
 }
