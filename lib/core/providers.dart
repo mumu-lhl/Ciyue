@@ -138,31 +138,42 @@ final fullTextSearchServiceProvider =
 /// autoDispose: bounds memory (no unbounded per-word cache). The wait for
 /// dictionary loading is bounded too: without a timeout a stuck init would
 /// hang this future (and its polling timer) forever, even after dispose.
+/// Waits until the dictionaries of the current group finished loading.
+///
+/// A group switch registers the dictionaries with their metadata first and
+/// loads their entries in the background. A lookup that runs before that
+/// finishes matches nothing, and the empty result would be cached for the
+/// whole keep-alive window — that is what left the first tab blank after
+/// switching back. Wait (bounded) for the entries instead.
+Future<void> _waitForDictionaries() async {
+  // When nothing is loaded there is nothing to wait for. The manager starts in
+  // its `isLoading == true` state and only clears it after initialization, so
+  // without this guard the poll below would spin forever (e.g. in tests that
+  // never run initApp, leaving a pending timer at teardown).
+  if (dictManager.dicts.isEmpty) return;
+
+  var waited = 0;
+  while (dictManager.isLoading && waited < 200) {
+    await Future.delayed(const Duration(milliseconds: 50));
+    waited++;
+  }
+
+  await Future.wait(
+    dictManager.dicts.values.map(
+      (dict) => dict
+          .waitForLoading()
+          .timeout(const Duration(seconds: 10), onTimeout: () {})
+          .catchError((Object _) {}),
+    ),
+  );
+}
+
 final dictionaryLookupProvider = FutureProvider.autoDispose
     .family<DictionaryLookupResult, String>((ref, word) async {
       // The group may have switched, which changes the dictionaries the word
       // is looked up in. The cached result of the old group is worthless.
       ref.watch(dictSetVersionProvider);
-
-      var waited = 0;
-      while (dictManager.isLoading && waited < 200) {
-        await Future.delayed(const Duration(milliseconds: 50));
-        waited++;
-      }
-
-      // The group switch registers dictionaries with their metadata first and
-      // loads their entries in the background. A lookup that runs before that
-      // finishes matches nothing, and the empty result would be cached for the
-      // whole keep-alive window — that is what left the first tab blank after
-      // switching back. Wait (bounded) for the entries instead.
-      await Future.wait(
-        dictManager.dicts.values.map(
-          (dict) => dict
-              .waitForLoading()
-              .timeout(const Duration(seconds: 10), onTimeout: () {})
-              .catchError((Object _) {}),
-        ),
-      );
+      await _waitForDictionaries();
 
       return dictionaryLookup.lookup(word);
     });
@@ -237,6 +248,10 @@ final validDictIdsProvider = FutureProvider.autoDispose
 /// the page goes away, so revisiting the same word does not probe again.
 final wordSplitsProvider = FutureProvider.autoDispose
     .family<List<WordSplit>, String>((ref, word) async {
+      // A split is only offered when a dictionary of the current group holds
+      // the pieces, so switching the group changes the answer.
+      ref.watch(dictSetVersionProvider);
+      await _waitForDictionaries();
       return dictionaryLookup.wordSplitsFor(word);
     });
 
@@ -246,6 +261,9 @@ final wordSplitsProvider = FutureProvider.autoDispose
 /// rather than after them.
 final phraseSuggestionsProvider = FutureProvider.autoDispose
     .family<List<String>, String>((ref, word) async {
+      // The readings are filtered by the dictionaries of the current group.
+      ref.watch(dictSetVersionProvider);
+      await _waitForDictionaries();
       return dictionaryLookup.phraseSuggestionsFor(word);
     });
 
@@ -256,6 +274,10 @@ final phraseSuggestionsProvider = FutureProvider.autoDispose
 /// rather than after the spelling suggestions.
 final longVowelSuggestionsProvider = FutureProvider.autoDispose
     .family<List<String>, String>((ref, word) async {
+      // The readings are only offered when a dictionary of the current group
+      // holds them.
+      ref.watch(dictSetVersionProvider);
+      await _waitForDictionaries();
       return dictionaryLookup.longVowelSuggestionsFor(word);
     });
 
@@ -266,6 +288,10 @@ final longVowelSuggestionsProvider = FutureProvider.autoDispose
 /// almost immediately.
 final missingWordSpellingSuggestionsProvider = FutureProvider.autoDispose
     .family<List<String>, String>((ref, word) async {
+      // Hunspell's corrections are dropped when no dictionary of the current
+      // group can open them.
+      ref.watch(dictSetVersionProvider);
+      await _waitForDictionaries();
       return dictionaryLookup.spellingSuggestionsFor(word);
     });
 
