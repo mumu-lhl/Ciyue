@@ -2,7 +2,7 @@
 
 Ciyue's shortcuts follow the conventions of [GoldenDict-ng](https://github.com/xiaoyifang/goldendict-ng), [EBWin](https://ebstudio.info/manual/EBWin4/EBWin4.html) and [EBMac](https://ebstudio.info/manual/EBMac/index.php): the keys you already know from other dictionaries do the same thing here.
 
-Most of them are **desktop only**, because Flutter on Android has trouble keeping the focus needed to trigger a keyboard shortcut. On Android, apart from a few shortcuts, most cannot activate reliably because the focus gets lost. Fortunately, the Android devices that actually use a keyboard are few — usually UMPCs like the GPD Win Max or OneXPlayer running Waydroid, or some Android tablets and phones with a built-in keyboard.
+Most of them are **desktop only**, because Flutter on Android has trouble keeping the focus needed to trigger a keyboard shortcut. On Android, apart from a few shortcuts, most cannot activate reliably because the focus gets lost. Fortunately, the Android devices that actually use a keyboard are few — only UMPCs like the GPD Win Max or OneXPlayer running Waydroid, and some Android tablets and phones with a built-in keyboard. And on a UMPC you can use the desktop build anyway.
 
 ## Two levels
 
