@@ -1067,5 +1067,11 @@
   "browserExtensionDescription": "配合 Chrome/Edge/Firefox 扩展，可在网页中实现极速划词翻译及生词本收藏。",
   "openExtensionFolder": "打开扩展插件目录",
   "copyServerUrl": "复制服务地址",
-  "urlCopied": "服务地址已复制到剪贴板"
+  "urlCopied": "服务地址已复制到剪贴板",
+  "webView2MissingTitle": "需要 Microsoft Edge WebView2",
+  "@webView2MissingTitle": {},
+  "webView2MissingMessage": "词悦使用 WebView2 显示词典内容。请安装 Microsoft Edge WebView2 运行时，然后重新启动词悦。\n\nWindows 11 和大多数 Windows 10 已自带；Windows 10 LTSC 以及不带 Edge 的系统镜像没有自带。",
+  "@webView2MissingMessage": {},
+  "webView2Install": "安装",
+  "@webView2Install": {}
 }
