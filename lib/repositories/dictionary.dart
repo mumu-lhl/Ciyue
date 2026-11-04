@@ -13,6 +13,7 @@ import "package:ciyue/repositories/zim.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/services/lookup_keys.dart";
 import "package:ciyue/services/media_tags.dart";
+import "package:ciyue/services/text_encoding.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/zip_archive_reader.dart";
 import "package:ciyue/utils.dart";
@@ -24,7 +25,6 @@ import "package:file_selector/file_selector.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
 import "package:html_unescape/html_unescape_small.dart";
-import "package:mime/mime.dart";
 import "package:path/path.dart";
 import "package:path_provider/path_provider.dart";
 import "package:ciyue/core/providers.dart";
@@ -1098,7 +1098,11 @@ class Mdict implements LoadedDictionary {
             return;
           }
         } else if (request.method == "GET" && request.uri.path != "/") {
-          final filename = request.uri.path.substring(1);
+          // `Uri.path` keeps percent-encoding, so a stylesheet whose name
+          // contains non-ASCII characters or spaces arrives as `%E6%BC%A2...`
+          // and would never match the file on disk. Decode it first, the way
+          // the web-server resource route does.
+          final filename = Uri.decodeComponent(request.uri.path.substring(1));
           final resource = await _readResourceDesktop(filename);
           if (resource == null) {
             request.response
@@ -1108,7 +1112,7 @@ class Mdict implements LoadedDictionary {
           }
           request.response
             ..headers.contentType = ContentType.parse(
-              lookupMimeType(filename) ?? "application/octet-stream",
+              resourceContentType(filename, resource),
             )
             ..add(resource)
             ..close();
