@@ -22,6 +22,7 @@ Ctrl+`  /  Ctrl+1…9      Groups: which dictionaries a lookup uses
 | `Ctrl`+`F` | Move the focus into the search box |
 | `Esc` | Move the focus into the search box **and select the text in it**, so typing replaces the word; press it again to return to the entry |
 | `Enter` on a selection | Look up the selected text (see below) |
+| `Ctrl`+`Enter` on a selection | Look it up in a new tab, the way `Ctrl`+click does for a link |
 
 The wide window has two search boxes: the one in the left column and the one in the title bar of the entry. `Ctrl`+`F` and `Esc` go to the one you used last, so they follow you around the window instead of always landing on the left one.
 
@@ -56,7 +57,7 @@ The browser-like tabs at the top hold one word each.
 | `Ctrl`+`Shift`+`Tab` | Go to the previous tab |
 | `Ctrl`+`PgDn` / `Ctrl`+`PgUp` | Go to the next / previous tab |
 
-In the full-screen word list on mobile, `←` / `→` move to the previous / next word.
+When the entry was opened from a word list, `←` / `→` move to the previous / next word. This holds on the desktop too, not only in the full-screen list on mobile.
 
 ### Dictionary groups
 
@@ -87,6 +88,8 @@ In the **Expansion** style there are no such tabs, and these keys do nothing at 
 | `Ctrl`+`R` | Read the word aloud — or stop it when it is already playing |
 | `Ctrl`+`Shift`+`S` | Stop the playback |
 | `Ctrl`+`↑` / `Ctrl`+`↓` | Pick the previous / next entry in the history |
+| `Alt`+`←` / `Alt`+`→` | Go back / forward through the history of the entry |
+| `PgDn` / `PgUp` | Page through the entry, in the expansion layout |
 
 ## Zooming the entry
 

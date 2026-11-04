@@ -40,6 +40,13 @@ void Function(String key)? expansionPageHandler;
 FocusNode? activeSearchFocusNode;
 SearchController? activeSearchController;
 
+// Whether a suggestion view is on screen.
+//
+// `SearchController.isOpen` cannot answer this while the view is opening, so
+// Esc used to need two presses: the first one missed the open view and moved
+// the focus into the box instead. The view reports itself here.
+bool searchSuggestionViewOpen = false;
+
 // The search box the page on screen owns. The key bridge has no page context
 // of its own, so Esc from an entry has to reach the right box through this.
 FocusNode? pageSearchFocusNode;

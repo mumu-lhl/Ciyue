@@ -39,6 +39,8 @@ String keyBridgeScript() {
     ['PageDown', false, false, false],
     ['ArrowUp', true, false, false],
     ['ArrowDown', true, false, false],
+    ['ArrowLeft', false, true, false],
+    ['ArrowRight', false, true, false],
     ['Backquote', true, false, false]
   ];
   for (var n = 0; n <= 9; n++) {
@@ -85,7 +87,11 @@ String keyBridgeScript() {
       var text = selection ? selection.toString().trim() : '';
       if (!text) return;
       e.preventDefault();
-      post('Enter', text);
+      // Ctrl opens the lookup in a new tab, the way Ctrl+click does for a link.
+      post(
+        e.ctrlKey && !e.altKey && !e.metaKey ? 'EnterNewTab' : 'Enter',
+        text
+      );
       return;
     }
 
