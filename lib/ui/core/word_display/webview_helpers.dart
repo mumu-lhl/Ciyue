@@ -5,6 +5,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/audio.dart";
+import "package:ciyue/services/text_encoding.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/ai_markdown.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
@@ -431,12 +432,18 @@ class LocalResourcesPathHandler extends CustomPathHandler {
     if (dict is Mdict && path == dict.fontName) {
       final file = File(dict.fontPath!);
       final data = await file.readAsBytes();
-      return WebResourceResponse(data: data, contentType: lookupMimeType(path));
+      return WebResourceResponse(
+        data: data,
+        contentType: resourceContentType(path, data),
+      );
     }
 
     try {
       final data = await dict.readResourceFile(path);
-      return WebResourceResponse(data: data, contentType: lookupMimeType(path));
+      return WebResourceResponse(
+        data: data,
+        contentType: resourceContentType(path, data),
+      );
     } catch (e) {
       return WebResourceResponse(data: null);
     }

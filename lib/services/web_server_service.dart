@@ -8,7 +8,7 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
-import "package:mime/mime.dart";
+import "package:ciyue/services/text_encoding.dart";
 
 /// Service providing a local HTTP server for Web UI and REST API.
 ///
@@ -356,14 +356,9 @@ class WebServerService {
       return;
     }
 
-    String mime = lookupMimeType(resourcePath) ?? "application/octet-stream";
-    if (resourcePath.endsWith(".spx")) {
-      mime = "audio/ogg";
-    } else if (resourcePath.endsWith(".css")) {
-      mime = "text/css; charset=utf-8";
-    } else if (resourcePath.endsWith(".js")) {
-      mime = "application/javascript; charset=utf-8";
-    }
+    final mime = resourcePath.endsWith(".spx")
+        ? "audio/ogg"
+        : resourceContentType(resourcePath, bytes);
 
     request.response.headers.set("Content-Type", mime);
     request.response.headers.set(
