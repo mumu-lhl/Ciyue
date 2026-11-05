@@ -13,6 +13,7 @@ import "appearance/dictionary_switch_style_selector.dart";
 import "appearance/drawer_icon_switch.dart";
 import "appearance/language_selector.dart";
 import "appearance/more_options_button_switch.dart";
+import "appearance/search_pane_switch.dart";
 import "appearance/searchbar_in_word_display_switch.dart";
 import "appearance/searchbar_location_selector.dart";
 import "appearance/tab_bar_position_selector.dart";
@@ -57,6 +58,7 @@ class AppearanceSettingsPage extends StatelessWidget {
                   SearchbarLocationSelector(),
                   TabBarPositionSelector(),
                   SearchbarInWordDisplaySwitch(),
+                  SearchPaneSwitch(),
                 ],
               ),
               if (settings.advance) ...[

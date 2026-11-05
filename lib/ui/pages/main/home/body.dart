@@ -33,7 +33,10 @@ class HomeBody extends ConsumerWidget {
     ref.watch(homeModelProvider.select((value) => value.state));
     ref.watch(dictManagerModelProvider.select((value) => value.isEmpty));
 
-    final content = isLargeScreen(context)
+    // The split view is a landscape layout: a portrait tablet keeps the
+    // mobile column even when it is wide enough to count as a large screen.
+    final content =
+        isLargeScreen(context) && MediaQuery.sizeOf(context).aspectRatio > 1.0
         ? const _DesktopHomeSplitView()
         : const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,6 +73,9 @@ class _DesktopHomeSplitView extends ConsumerWidget {
     final historyEmpty = ref.watch(
       historyModelProvider.select((model) => model.history.isEmpty),
     );
+    final showSearchPane = ref.watch(
+      settingsProvider.select((settings) => settings.showSearchPane),
+    );
     final firstHistoryWord = ref.watch(
       historyModelProvider.select(
         (model) => model.history.isEmpty ? null : model.history.first.word,
@@ -92,34 +98,36 @@ class _DesktopHomeSplitView extends ConsumerWidget {
         autofocus: true,
         child: Row(
           children: [
-            SizedBox(
-              width: 360,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                    child: HomeSearchBar(
+            if (showSearchPane) ...[
+              SizedBox(
+                width: 360,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                      child: HomeSearchBar(
+                        onWordSelected: (word) {
+                          homeModel.selectedWord = word;
+                        },
+                      ),
+                    ),
+                    const ActionButtons(),
+                    const HistoryLabel(),
+                    HistoryList(
+                      selectedWord: selectedWord,
                       onWordSelected: (word) {
                         homeModel.selectedWord = word;
                       },
+                      onWordTertiarySelected: (word) {
+                        homeModel.openWordInNewTab(word);
+                      },
                     ),
-                  ),
-                  const ActionButtons(),
-                  const HistoryLabel(),
-                  HistoryList(
-                    selectedWord: selectedWord,
-                    onWordSelected: (word) {
-                      homeModel.selectedWord = word;
-                    },
-                    onWordTertiarySelected: (word) {
-                      homeModel.openWordInNewTab(word);
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const VerticalDivider(thickness: 1, width: 1),
+              const VerticalDivider(thickness: 1, width: 1),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -252,6 +260,9 @@ class _DesktopWordTabBar extends ConsumerWidget {
     final activeIndex = ref.watch(
       homeModelProvider.select((model) => model.activeTabIndex),
     );
+    final showSearchPane = ref.watch(
+      settingsProvider.select((settings) => settings.showSearchPane),
+    );
     final homeModel = ref.read(homeModelProvider);
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
@@ -269,6 +280,21 @@ class _DesktopWordTabBar extends ConsumerWidget {
       ),
       child: Row(
         children: [
+          // Collapses the search pane; the tab bar itself stays visible so
+          // the pane can be expanded again from here.
+          IconButton(
+            icon: Icon(
+              showSearchPane
+                  ? Icons.keyboard_double_arrow_left
+                  : Icons.keyboard_double_arrow_right,
+              size: 18,
+            ),
+            tooltip: showSearchPane ? l10n.hideSearchPane : l10n.showSearchPane,
+            splashRadius: 16,
+            onPressed: () {
+              ref.read(settingsProvider).setShowSearchPane(!showSearchPane);
+            },
+          ),
           Expanded(
             child: ReorderableListView.builder(
               scrollDirection: Axis.horizontal,

@@ -453,6 +453,7 @@ const preferencesAllowList = <String>{
   "secureScreen",
   "searchBarInAppBar",
   "showSidebarIcon",
+  "showSearchPane",
   "dictionariesDirectory",
   "exportPath",
   "notification",

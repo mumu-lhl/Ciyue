@@ -63,6 +63,7 @@ class Settings extends ChangeNotifier {
   late bool searchBarInAppBar;
   late TabBarPosition tabBarPosition;
   late bool showSidebarIcon;
+  late bool showSearchPane;
   late bool showMoreOptionsButton;
   late bool showSearchBarInWordDisplay;
   late DictionarySwitchStyle dictionarySwitchStyle;
@@ -173,6 +174,7 @@ class Settings extends ChangeNotifier {
         prefs.getBool("dictionaryDarkReaderEnabled") ?? false;
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
+    showSearchPane = prefs.getBool("showSearchPane") ?? true;
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
     showSearchBarInWordDisplay =
         prefs.getBool("showSearchBarInWordDisplay") ?? true;
@@ -414,6 +416,12 @@ class Settings extends ChangeNotifier {
   Future<void> setDictionaryDarkReaderEnabled(bool value) async {
     dictionaryDarkReaderEnabled = value;
     await prefs.setBool("dictionaryDarkReaderEnabled", value);
+    notifyListeners();
+  }
+
+  Future<void> setShowSearchPane(bool value) async {
+    showSearchPane = value;
+    await prefs.setBool("showSearchPane", value);
     notifyListeners();
   }
 
