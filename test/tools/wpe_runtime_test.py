@@ -165,6 +165,22 @@ class LinuxPackagingDependenciesTest(unittest.TestCase):
         ):
             self.assertFalse(bundle_linux_dependencies.is_system_library(library))
 
+    def test_bundle_excludes_openssl(self):
+        # The pinned Arch snapshot's libcrypto (3.3.1) shadows the host copy that
+        # the host's libssl.so.3 needs (Debian 13 asks for OPENSSL_3.4.0), so the
+        # host GIO modules fail their version check and are dropped at runtime.
+        sys.path.insert(0, str(ROOT / "tools"))
+        import bundle_linux_dependencies
+
+        for library in ("libcrypto.so.3", "libssl.so.3"):
+            self.assertIn(library, bundle_linux_dependencies.SYSTEM_LIBRARIES)
+
+    def test_deb_and_rpm_require_host_openssl(self):
+        control = (ROOT / "linux/packaging/deb/control").read_text()
+        self.assertIn("libssl3", control)
+        spec = (ROOT / "linux/packaging/rpm/ciyue.spec").read_text()
+        self.assertIn("openssl-libs", spec)
+
     def test_bundle_excludes_glib(self):
         # Host libraries are compiled against the host GLib, so the bundled copy
         # must not shadow it; libgstaudio from a newer distribution asks for

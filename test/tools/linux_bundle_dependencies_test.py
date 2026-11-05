@@ -109,6 +109,17 @@ class LinuxBundleDependenciesTest(unittest.TestCase):
                 check=True,
             )
 
+            # OpenSSL is host-provided for the same reason: a bundled libcrypto
+            # answers the host libssl's version check and the module is dropped.
+            stale_crypto = bundle_lib / "libcrypto.so.3"
+            subprocess.run(
+                [
+                    "gcc", "-shared", "-fPIC", str(source),
+                    "-Wl,-soname,libcrypto.so.3", "-o", str(stale_crypto),
+                ],
+                check=True,
+            )
+
             collected = subprocess.run(
                 [
                     sys.executable, str(TOOL), "--bundle", str(root / "bundle"),
@@ -120,8 +131,10 @@ class LinuxBundleDependenciesTest(unittest.TestCase):
             )
             self.assertIn("Removed host-provided libwayland-client.so.0", collected.stdout)
             self.assertIn("Removed host-provided libgstapp-1.0.so.0", collected.stdout)
+            self.assertIn("Removed host-provided libcrypto.so.3", collected.stdout)
             self.assertFalse(stale.exists())
             self.assertFalse(stale_gst.exists())
+            self.assertFalse(stale_crypto.exists())
 
 
 if __name__ == "__main__":

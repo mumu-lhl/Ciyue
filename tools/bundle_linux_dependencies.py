@@ -81,6 +81,21 @@ HOST_MEDIA_LIBRARIES = {
     "libasound.so.2",
 }
 
+# OpenSSL is part of the same host boundary. The pinned Arch snapshot ships
+# 3.3.1, while distributions keep moving: Debian 13 (trixie) has 3.5.x, whose
+# libssl.so.3 requires `OPENSSL_3.4.0` from libcrypto. GIO modules come from the
+# host, so libgiolibproxy/libssl is loaded into a process where the bundle's
+# libcrypto is already resident under the same SONAME (the desktop_updater
+# plugin links it). The version check then fails with
+# "version `OPENSSL_3.4.0' not found (required by /lib/x86_64-linux-gnu/libssl.so.3)"
+# followed by "Failed to load module: .../gio/modules/libgiolibproxy.so".
+# The bundle's own consumers (desktop_updater, libtss2-esys) only ask for
+# OPENSSL_3.0.0, which every distribution at the GLIBC 2.35 baseline provides.
+HOST_CRYPTO_LIBRARIES = {
+    "libcrypto.so.3",
+    "libssl.so.3",
+}
+
 # GLib sits below everything else in the same stack, so it inherits the same rule
 # from the other direction: every host library we load (GStreamer, GTK modules
 # pulled in by the user's desktop, the GLib-based parts of the graphics stack) was
@@ -155,6 +170,7 @@ SYSTEM_LIBRARIES = (
     | HOST_GRAPHICS_LIBRARIES
     | WAYLAND_RUNTIME_LIBRARIES
     | HOST_MEDIA_LIBRARIES
+    | HOST_CRYPTO_LIBRARIES
     | HOST_GLIB_LIBRARIES
     | HOST_TOOLKIT_LIBRARIES
 )
