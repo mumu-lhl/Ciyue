@@ -23,31 +23,9 @@ G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 // crisp size instead of downscaling one bitmap.
 static const int kWindowIconSizes[] = {16, 24, 32, 48, 64};
 
-// Sets the icon shown in the title bar and the task switcher.
-//
-// Packaging installs the icon into the icon theme under the name "ciyue" (see
-// the .desktop file), which is the right source once the app is installed. A
-// run straight out of the build tree has no theme entry, so fall back to the
-// copy bundled next to the executable.
-static void my_application_set_window_icon(GtkWindow* window) {
-  GtkIconTheme* theme = gtk_icon_theme_get_default();
-  if (theme != nullptr && gtk_icon_theme_has_icon(theme, "ciyue")) {
-    gtk_window_set_icon_name(window, "ciyue");
-    return;
-  }
-
-  g_autofree gchar* executable = g_file_read_link("/proc/self/exe", nullptr);
-  if (executable == nullptr) {
-    return;
-  }
-  g_autofree gchar* directory = g_path_get_dirname(executable);
-  g_autofree gchar* icon_path = g_build_filename(
-      directory, "data", "flutter_assets", "assets", "icon.png", nullptr);
-  if (!g_file_test(icon_path, G_FILE_TEST_EXISTS)) {
-    g_warning("Window icon not found: %s", icon_path);
-    return;
-  }
-
+// Builds the icon ladder from the PNG next to the executable, which is the only
+// source that exists when running straight out of a build tree or a bundle.
+static GList* my_application_load_icon_file(const gchar* icon_path) {
   GList* icons = nullptr;
   for (const int size : kWindowIconSizes) {
     g_autoptr(GError) error = nullptr;
@@ -59,6 +37,51 @@ static void my_application_set_window_icon(GtkWindow* window) {
       continue;
     }
     icons = g_list_append(icons, pixbuf);
+  }
+  return icons;
+}
+
+// Builds the same ladder from the icon theme, which is what packaging installs.
+static GList* my_application_load_icon_theme(void) {
+  GtkIconTheme* theme = gtk_icon_theme_get_default();
+  if (theme == nullptr) {
+    return nullptr;
+  }
+
+  GList* icons = nullptr;
+  for (const int size : kWindowIconSizes) {
+    g_autoptr(GError) error = nullptr;
+    GdkPixbuf* pixbuf = gtk_icon_theme_load_icon(
+        theme, "ciyue", size, static_cast<GtkIconLookupFlags>(0), &error);
+    if (pixbuf != nullptr) {
+      icons = g_list_append(icons, pixbuf);
+    }
+  }
+  return icons;
+}
+
+// Sets the icon shown in the title bar and the task switcher.
+//
+// The window property is `_NET_WM_ICON`, and only the icon *list* fills it:
+// gtk_window_set_icon_name() leaves it unset, and the XFCE panel then falls back
+// to a placeholder even though its .desktop entry points at the same icon. So
+// both sources are resolved into a list, the bundled PNG first and the theme
+// entry second.
+static void my_application_set_window_icon(GtkWindow* window) {
+  GList* icons = nullptr;
+
+  g_autofree gchar* executable = g_file_read_link("/proc/self/exe", nullptr);
+  if (executable != nullptr) {
+    g_autofree gchar* directory = g_path_get_dirname(executable);
+    g_autofree gchar* icon_path = g_build_filename(
+        directory, "data", "flutter_assets", "assets", "icon.png", nullptr);
+    if (g_file_test(icon_path, G_FILE_TEST_EXISTS)) {
+      icons = my_application_load_icon_file(icon_path);
+    }
+  }
+
+  if (icons == nullptr) {
+    icons = my_application_load_icon_theme();
   }
 
   if (icons != nullptr) {
