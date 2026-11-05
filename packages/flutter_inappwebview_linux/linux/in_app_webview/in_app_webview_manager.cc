@@ -23,10 +23,38 @@ InAppWebViewManager::InAppWebViewManager(PluginInstance* plugin)
   gtk_window_ = plugin->gtkWindow();
   fl_view_ = plugin->flView();
 
+  if (gtk_window_ != nullptr) {
+    // Closing the window destroys it -- and with it the Flutter engine -- before
+    // the plugin's GObject dispose runs. Tear the webviews down from the
+    // window's "destroy" signal so their channels and textures are released
+    // while the engine is still alive; otherwise the destructors call into
+    // freed engine objects ("invalid (NULL) pointer instance") and the process
+    // can segfault on exit. The weak pointer keeps the cached window honest.
+    g_object_add_weak_pointer(G_OBJECT(gtk_window_),
+                              reinterpret_cast<gpointer*>(&gtk_window_));
+    window_destroy_handler_id_ = g_signal_connect(
+        gtk_window_, "destroy", G_CALLBACK(OnWindowDestroyed), this);
+  }
+
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
   method_channel_ = fl_method_channel_new(messenger_, METHOD_CHANNEL_NAME, FL_METHOD_CODEC(codec));
 
   fl_method_channel_set_method_call_handler(method_channel_, HandleMethodCall, this, nullptr);
+}
+
+void InAppWebViewManager::OnWindowDestroyed(GtkWidget* widget, gpointer user_data) {
+  auto* self = static_cast<InAppWebViewManager*>(user_data);
+  // The window is going away, so there is nothing left to disconnect from.
+  self->window_destroy_handler_id_ = 0;
+  self->DisposeAllViews();
+}
+
+void InAppWebViewManager::DisposeAllViews() {
+  // Move the maps out before destroying anything: a view's destructor can reach
+  // back into the manager, and must not see a half-cleared map.
+  auto platform_views = std::move(platform_views_);
+  auto keep_alive_views = std::move(keepAliveWebViews_);
+  auto window_views = std::move(windowWebViews_);
 }
 
 FlPluginRegistrar* InAppWebViewManager::registrar() const {
@@ -34,11 +62,17 @@ FlPluginRegistrar* InAppWebViewManager::registrar() const {
 }
 
 InAppWebViewManager::~InAppWebViewManager() {
-  platform_views_.clear();
-  
-  keepAliveWebViews_.clear();
-  
-  windowWebViews_.clear();
+  if (gtk_window_ != nullptr && window_destroy_handler_id_ != 0) {
+    g_signal_handler_disconnect(gtk_window_, window_destroy_handler_id_);
+  }
+  window_destroy_handler_id_ = 0;
+  if (gtk_window_ != nullptr) {
+    g_object_remove_weak_pointer(G_OBJECT(gtk_window_),
+                                 reinterpret_cast<gpointer*>(&gtk_window_));
+    gtk_window_ = nullptr;
+  }
+
+  DisposeAllViews();
 
   if (method_channel_ != nullptr) {
     fl_method_channel_set_method_call_handler(method_channel_, nullptr, nullptr, nullptr);

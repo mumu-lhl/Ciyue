@@ -249,6 +249,20 @@ InAppWebView::InAppWebView(FlPluginRegistrar* registrar, FlBinaryMessenger* mess
     : plugin_(params.plugin), registrar_(registrar), messenger_(messenger), gtk_window_(params.gtkWindow), fl_view_(params.flView), manager_(params.manager), id_(id), settings_(params.initialSettings),
       initial_user_scripts_(params.initialUserScripts) {
   js_bridge_secret_ = GenerateRandomSecret();
+
+  // Closing the window finalizes the GtkWindow before the plugin's webviews are
+  // torn down. Hold the cached pointers weakly so they turn null on finalize
+  // instead of dangling: the destructor otherwise calls
+  // g_signal_handler_disconnect() on freed memory, which GLib reports as
+  // "invalid (NULL) pointer instance" and can end in a segfault on exit.
+  if (gtk_window_ != nullptr) {
+    g_object_add_weak_pointer(G_OBJECT(gtk_window_),
+                              reinterpret_cast<gpointer*>(&gtk_window_));
+  }
+  if (fl_view_ != nullptr) {
+    g_object_add_weak_pointer(G_OBJECT(fl_view_),
+                              reinterpret_cast<gpointer*>(&fl_view_));
+  }
   
   if (params.windowId.has_value()) {
     window_id_ = params.windowId.value();
@@ -560,6 +574,20 @@ InAppWebView::~InAppWebView() {
     webview_ = nullptr;
   }
 #endif
+
+  // Drop the weak pointers now that their owner is going away: a registration
+  // that outlives this object would write into freed memory when the window or
+  // view is finalized later.
+  if (gtk_window_ != nullptr) {
+    g_object_remove_weak_pointer(G_OBJECT(gtk_window_),
+                                 reinterpret_cast<gpointer*>(&gtk_window_));
+    gtk_window_ = nullptr;
+  }
+  if (fl_view_ != nullptr) {
+    g_object_remove_weak_pointer(G_OBJECT(fl_view_),
+                                 reinterpret_cast<gpointer*>(&fl_view_));
+    fl_view_ = nullptr;
+  }
 }
 
 void InAppWebView::InitWpeBackend() {
@@ -645,9 +673,24 @@ void InAppWebView::InitWpeBackend() {
 
   egl_display_ = egl_display;
 
-  // Initialize WPE FDO with the EGL display (only once per process)
+  // Initialize WPE FDO (only once per process). This choice decides which kind
+  // of buffer the view backends export, so it has to match how the frame is
+  // consumed: with the GL texture disabled (FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL)
+  // every frame goes through ReadPixelsFromEglImage(), which imports the
+  // exported DMA-BUF EGLImage into a GL texture and reads it back. Importing
+  // that image crashes llvmpipe inside libgallium (Mesa 25.0.7 on Debian 13),
+  // and a GPU buffer buys nothing for a CPU readback, so ask for SHM export
+  // instead; OnExportShmBuffer() already consumes those buffers.
+  const bool shm_export =
+      g_getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr;
   static std::once_flag s_wpe_fdo_init_flag;
-  std::call_once(s_wpe_fdo_init_flag, [egl_display]() {
+  std::call_once(s_wpe_fdo_init_flag, [egl_display, shm_export]() {
+    if (shm_export) {
+      if (!wpe_fdo_initialize_shm()) {
+        errorLog("InAppWebView: Failed to initialize WPE FDO shm export");
+      }
+      return;
+    }
     if (!wpe_fdo_initialize_for_egl_display(egl_display)) {
       errorLog("InAppWebView: Failed to initialize WPE FDO");
       // Try again with headless mode
@@ -1257,6 +1300,20 @@ void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
     if (image != nullptr && exportable_ != nullptr) {
       ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_, image);
     }
+    return;
+  }
+
+  // Software frames are supposed to arrive as SHM buffers (see the SHM export
+  // initialization above). If a DMA-BUF still shows up, do not hand it to
+  // ReadPixelsFromEglImage(): the GL import there crashes llvmpipe inside
+  // libgallium, so drop the frame instead of taking the process down.
+  if (g_getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr) {
+    static bool warned_about_dmabuf = false;
+    if (!warned_about_dmabuf) {
+      warned_about_dmabuf = true;
+      errorLog("InAppWebView: Dropping a DMA-BUF frame in software mode");
+    }
+    ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_, image);
     return;
   }
 

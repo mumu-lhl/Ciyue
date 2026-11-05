@@ -53,6 +53,7 @@ class InAppWebViewManager {
   FlPluginRegistrar* registrar_ = nullptr;
   GtkWindow* gtk_window_ = nullptr;  // Cached during plugin registration
   FlView* fl_view_ = nullptr;  // Cached FlView for focus restoration
+  gulong window_destroy_handler_id_ = 0;
   FlMethodChannel* method_channel_ = nullptr;
   FlTextureRegistrar* texture_registrar_ = nullptr;
   FlBinaryMessenger* messenger_ = nullptr;
@@ -79,6 +80,11 @@ class InAppWebViewManager {
   void CreateInAppWebView(FlMethodCall* method_call);
   void DisposeWebView(int64_t texture_id);
   void ClearAllCache(FlMethodCall* method_call, bool includeDiskFiles);
+
+  // Tears every webview down. Runs when the window is destroyed, while the
+  // engine-owned objects the views talk to are still alive.
+  void DisposeAllViews();
+  static void OnWindowDestroyed(GtkWidget* widget, gpointer user_data);
 
  public:
   // Window webview management for multi-window support
