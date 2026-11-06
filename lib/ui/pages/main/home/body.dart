@@ -1,6 +1,7 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -9,7 +10,9 @@ import "package:flutter/gestures.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
 import "actions.dart";
+import "app_bar.dart" show GroupSelectorButton;
 import "history.dart";
+import "more_button.dart";
 import "search.dart";
 import "shortcuts.dart";
 
@@ -35,8 +38,7 @@ class HomeBody extends ConsumerWidget {
 
     // The split view is a landscape layout: a portrait tablet keeps the
     // mobile column even when it is wide enough to count as a large screen.
-    final content =
-        isLargeScreen(context) && MediaQuery.sizeOf(context).aspectRatio > 1.0
+    final content = useDesktopLayout(context)
         ? const _DesktopHomeSplitView()
         : const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,9 +109,10 @@ class _DesktopHomeSplitView extends ConsumerWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                       child: HomeSearchBar(
-                        onWordSelected: (word) {
-                          homeModel.selectedWord = word;
-                        },
+                        // The pane's own title search box owns the common
+                        // "look up here" path. This pane can be collapsed, so
+                        // its search box opens the word in a new tab instead.
+                        onWordSelected: homeModel.openWordInNewTab,
                       ),
                     ),
                     const ActionButtons(),
@@ -132,7 +135,9 @@ class _DesktopHomeSplitView extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (!tabsEmpty) const _DesktopWordTabBar(),
+                  // Keep the tab bar even with no tabs: it hosts the new-tab
+                  // button and, in the split view, the home-wide controls.
+                  const _DesktopWordTabBar(),
                   Expanded(
                     child: selectedWord != null && selectedWord.isNotEmpty
                         ? DesktopWordDisplayPane(word: selectedWord)
@@ -163,11 +168,15 @@ class _DesktopHomeSplitView extends ConsumerWidget {
                                             ),
                                       ),
                                       const SizedBox(height: 12),
-                                      FilledButton.tonalIcon(
-                                        onPressed: () => homeModel.newTab(),
-                                        icon: const Icon(Icons.add, size: 18),
-                                        label: Text(
-                                          AppLocalizations.of(context)!.newTab,
+                                      SizedBox(
+                                        width: 320,
+                                        child: WordSearchBarWithSuggestions(
+                                          word: "",
+                                          isHome: true,
+                                          autoFocus: true,
+                                          onWordSelected: (word) {
+                                            homeModel.selectedWord = word;
+                                          },
                                         ),
                                       ),
                                     ],
@@ -262,6 +271,12 @@ class _DesktopWordTabBar extends ConsumerWidget {
     );
     final showSearchPane = ref.watch(
       settingsProvider.select((settings) => settings.showSearchPane),
+    );
+    final showSidebarIcon = ref.watch(
+      settingsProvider.select((settings) => settings.showSidebarIcon),
+    );
+    final showMoreOptions = ref.watch(
+      settingsProvider.select((settings) => settings.showMoreOptionsButton),
     );
     final homeModel = ref.read(homeModelProvider);
     final theme = Theme.of(context);
@@ -431,6 +446,10 @@ class _DesktopWordTabBar extends ConsumerWidget {
             splashRadius: 16,
             onPressed: () => homeModel.newTab(),
           ),
+          // In the split view these home-wide controls live in the tab bar,
+          // leaving the top row with just navigation and the global chat.
+          if (showSidebarIcon) const GroupSelectorButton(),
+          if (showMoreOptions) const MoreButton(),
           const SizedBox(width: 6),
         ],
       ),

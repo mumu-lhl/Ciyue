@@ -71,6 +71,12 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
       settings,
       controller: _searchController,
       focusNode: _searchFocusNode,
+      // The home pane already shows the selected word, so a lookup here
+      // swaps the current tab instead of pushing a standalone entry page.
+      // A pushed word page keeps its own navigation behaviour.
+      onWordSelected: widget.showBackButton
+          ? null
+          : (word) => ref.read(homeModelProvider).selectedWord = word,
     );
   }
 
@@ -486,9 +492,10 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   )
                 : Text(_word, overflow: TextOverflow.ellipsis)),
       actions: [
-        // Same switch as the home screen: the sidebar-icon setting decides
-        // whether the dictionary-group switcher is offered on word pages too.
-        if (settings.showSidebarIcon)
+        // The embedded home pane keeps its group switcher in the word tab
+        // bar, so drawing another one here would duplicate it. A standalone
+        // word page has no tab bar and needs its own switcher.
+        if (settings.showSidebarIcon && widget.showBackButton)
           GroupSelectorButton(compact: !isDesktopScreen),
         // Desktop back/forward (mobile has these in the bottom bar).
         if (isDesktopScreen && homeModel != null) ...[
@@ -540,7 +547,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           ],
         ],
         IconButton(
-          tooltip: locale.aiChat,
+          // The home top row offers a general chat; this one is scoped to
+          // the word on screen, so the tooltip says which.
+          tooltip: locale.askAboutWord(_word),
           icon: const Icon(Icons.chat_bubble_outline),
           onPressed: () =>
               context.push("/chat?word=${Uri.encodeComponent(_word)}"),
