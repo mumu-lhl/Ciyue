@@ -92,4 +92,44 @@ void main() {
     expect(homeModel.tabs.length, 2);
     expect(homeModel.selectedWord, "hello");
   });
+
+  testWidgets("empty new tab keeps a search box when the pane is collapsed", (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    settings.showSearchPane = true;
+
+    final homeModel = HomeModel();
+    addTearDown(homeModel.searchController.dispose);
+    addTearDown(homeModel.searchBarFocusNode.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          homeModelProvider.overrideWith((ref) => homeModel),
+          historyModelProvider.overrideWith((ref) => _TestHistoryModel()),
+          dictManagerModelProvider.overrideWith((ref) => DictManagerModel()),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: HomeBody()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // The left pane and the empty state each own a search box; the latter
+    // uses its own SearchController so they never share an anchor.
+    expect(find.byType(WordSearchBarWithSuggestions), findsNWidgets(2));
+
+    await tester.tap(find.byTooltip("Hide Search Pane"));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HomeSearchBar), findsNothing);
+    expect(find.byType(WordSearchBarWithSuggestions), findsOneWidget);
+  });
 }

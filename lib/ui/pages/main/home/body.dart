@@ -1,6 +1,7 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -167,11 +168,15 @@ class _DesktopHomeSplitView extends ConsumerWidget {
                                             ),
                                       ),
                                       const SizedBox(height: 12),
-                                      FilledButton.tonalIcon(
-                                        onPressed: () => homeModel.newTab(),
-                                        icon: const Icon(Icons.add, size: 18),
-                                        label: Text(
-                                          AppLocalizations.of(context)!.newTab,
+                                      SizedBox(
+                                        width: 320,
+                                        child: WordSearchBarWithSuggestions(
+                                          word: "",
+                                          isHome: true,
+                                          autoFocus: true,
+                                          onWordSelected: (word) {
+                                            homeModel.selectedWord = word;
+                                          },
                                         ),
                                       ),
                                     ],
