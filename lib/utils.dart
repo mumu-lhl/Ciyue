@@ -24,6 +24,25 @@ bool isLargeScreen(BuildContext context) {
   return MediaQuery.of(context).size.width >= 600.0;
 }
 
+/// The wide-landscape layout: the home split view.
+///
+/// Portrait tablets and phones keep the compact layout even when they are
+/// wide enough to count as large screens.
+bool useDesktopLayout(BuildContext context) {
+  return isLargeScreen(context) &&
+      MediaQuery.of(context).size.aspectRatio > 1.0;
+}
+
+/// Whether the top navigation row replaces the vertical rail.
+///
+/// Four labels plus the global chat button need a genuinely wide window.
+/// Narrower windows keep the rail, which also leaves landscape phones (wide
+/// enough for the split view, but well under this threshold) on the layout
+/// they already had.
+bool useTopNavBar(BuildContext context) {
+  return useDesktopLayout(context) && MediaQuery.of(context).size.width >= 900;
+}
+
 Future<bool> requestManageExternalStorage(BuildContext context) async {
   final deviceInfo = DeviceInfoPlugin();
   final androidInfo = await deviceInfo.androidInfo;

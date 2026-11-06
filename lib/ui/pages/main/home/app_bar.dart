@@ -2,6 +2,7 @@ import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
@@ -52,6 +53,9 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
       );
     } else {
       final isDesktop = MediaQuery.sizeOf(context).width >= 600.0;
+      // In the split view the word tab bar owns the group switcher and the
+      // home options. Compact layouts have no tab bar and keep both here.
+      final inSplitView = useDesktopLayout(context);
       final searchBar = (settings.searchBarInAppBar && !isDesktop)
           ? const HomeSearchBar()
           : null;
@@ -79,9 +83,10 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
           // On mobile the drawer already hosts the dictionary-group
           // list; a second switcher here (icon + group name +
           // dropdown arrow) eats a wide slice of the search row.
-          if (isDesktop && settings.showSidebarIcon)
+          if (isDesktop && settings.showSidebarIcon && !inSplitView)
             const GroupSelectorButton(),
-          if (settings.showMoreOptionsButton) const MoreButton(),
+          if (settings.showMoreOptionsButton && !inSplitView)
+            const MoreButton(),
         ],
       );
     }

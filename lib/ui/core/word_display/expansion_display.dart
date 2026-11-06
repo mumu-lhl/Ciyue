@@ -48,7 +48,14 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
   final ScrollController _scrollController = ScrollController();
 
   Widget? _buildSearchBar(Settings settings) {
-    return buildTitle(widget.word, settings, controller: _searchController);
+    return buildTitle(
+      widget.word,
+      settings,
+      controller: _searchController,
+      onWordSelected: widget.showBackButton
+          ? null
+          : (word) => ref.read(homeModelProvider).selectedWord = word,
+    );
   }
 
   void _goBack(BuildContext context) {

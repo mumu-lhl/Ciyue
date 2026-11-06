@@ -9,6 +9,7 @@ import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart";
 import "package:ciyue/ui/pages/main/home/drawer.dart";
 import "package:ciyue/ui/pages/main/home/scaffold.dart";
+import "package:ciyue/ui/pages/main/home_top_nav_bar.dart";
 import "package:ciyue/ui/pages/translate/translate_page.dart";
 import "package:ciyue/ui/pages/main/settings.dart";
 import "package:ciyue/ui/pages/main/wordbook.dart";
@@ -18,6 +19,7 @@ import "package:ciyue/services/toast.dart";
 import "package:flutter/services.dart";
 import "package:home_widget/home_widget.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/utils.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
 class Home extends ConsumerStatefulWidget {
@@ -39,6 +41,9 @@ class _HomeState extends ConsumerState<Home> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   late String searchWord;
   var _currentIndex = 0;
+  // null = follow the automatic size rule; otherwise the reader's manual
+  // choice for this run (horizontal top row / vertical rail).
+  bool? _navStyleOverride;
   DateTime? _lastPressedAt;
 
   // Using FocusScope for each page within the IndexedStack.
@@ -85,6 +90,18 @@ class _HomeState extends ConsumerState<Home> {
   @override
   Widget build(BuildContext context) {
     final ratio = MediaQuery.sizeOf(context).aspectRatio;
+    final useDesktop = useDesktopLayout(context);
+    // A manual toggle only overrides the size rule for this run; portrait
+    // and compact layouts never show either of these navigation styles.
+    final useTopNav =
+        useDesktop && (_navStyleOverride ?? useTopNavBar(context));
+    void toggleNavStyle() {
+      final auto = useTopNavBar(context);
+      setState(() {
+        _navStyleOverride = !(_navStyleOverride ?? auto);
+      });
+    }
+
     final historyModel = ref.watch(historyModelProvider);
     ref.watch(homeModelProvider.select((value) => value.state));
     ref.watch(dictManagerModelProvider.select((value) => value.isEmpty));
@@ -123,7 +140,19 @@ class _HomeState extends ConsumerState<Home> {
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
           key: _scaffoldKey,
-          appBar: _currentIndex == 0
+          // With a vertical rail the rail has to reach the very top of the
+          // window, so the home app bar moves into the content column to its
+          // right instead of spanning the full width above it.
+          appBar: useTopNav
+              ? HomeTopNavBar(
+                  currentIndex: _currentIndex,
+                  destinations: buildCommonDestinations(),
+                  onDestinationSelected: _selectDestination,
+                  onToggleNavStyle: toggleNavStyle,
+                )
+              : ratio > 1.0
+              ? null
+              : _currentIndex == 0
               ? PreferredSize(
                   preferredSize: const Size.fromHeight(kToolbarHeight),
                   child: (!dictManager.isEmpty || settings.aiExplainWord)
@@ -134,7 +163,12 @@ class _HomeState extends ConsumerState<Home> {
           drawer: _currentIndex == 0 && !historyModel.isSelecting
               ? const HomeDrawer()
               : null,
-          body: ratio > 1.0
+          // Top row: destinations live in the app bar and the page gets the
+          // full width. Rail: it spans the full height, with the home app bar
+          // as the first row of the content column to its right.
+          body: useTopNav
+              ? IndexedStack(index: _currentIndex, children: _pages)
+              : ratio > 1.0
               ? Row(
                   children: [
                     NavigationRail(
@@ -150,26 +184,30 @@ class _HomeState extends ConsumerState<Home> {
                           ),
                       ],
                       selectedIndex: _currentIndex,
-                      onDestinationSelected: (int index) {
-                        if (index != 0) {
-                          FocusScope.of(context).unfocus();
-                        } else {
-                          ref
-                              .read(homeModelProvider)
-                              .searchBarFocusNode
-                              .requestFocus();
-                        }
-                        setState(() {
-                          _currentIndex = index;
-                        });
-                      },
-                      leading: const SizedBox(),
+                      onDestinationSelected: _selectDestination,
+                      leading: useDesktop
+                          ? IconButton(
+                              tooltip: AppLocalizations.of(context)!
+                                  .switchToTopNavigation,
+                              icon: const Icon(Icons.swap_horiz),
+                              onPressed: toggleNavStyle,
+                            )
+                          : const SizedBox(),
                     ),
                     const VerticalDivider(thickness: 1, width: 1),
                     Expanded(
-                      child: IndexedStack(
-                        index: _currentIndex,
-                        children: _pages,
+                      child: Column(
+                        children: [
+                          if (_currentIndex == 0 &&
+                              (!dictManager.isEmpty || settings.aiExplainWord))
+                            const HomeAppBar(),
+                          Expanded(
+                            child: IndexedStack(
+                              index: _currentIndex,
+                              children: _pages,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -201,6 +239,17 @@ class _HomeState extends ConsumerState<Home> {
         ),
       ),
     );
+  }
+
+  void _selectDestination(int index) {
+    if (index != 0) {
+      FocusScope.of(context).unfocus();
+    } else {
+      ref.read(homeModelProvider).searchBarFocusNode.requestFocus();
+    }
+    setState(() {
+      _currentIndex = index;
+    });
   }
 
   List<(Icon, String)> buildCommonDestinations() {
