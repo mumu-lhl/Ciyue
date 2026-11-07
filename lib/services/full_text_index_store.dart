@@ -352,8 +352,17 @@ class FullTextIndexStore {
   /// The MATCH is a prefix query on the reversed-headword column (see
   /// [buildSuffixMatchExpression]), which on its own also matches headwords
   /// that merely CONTAIN the query — FTS5 phrases match at any position —
-  /// so hits are post-filtered here with `headword.endsWith(query)`.
-  /// Without that filter, suffix `主义` would also return `主义者`.
+  /// so hits are post-filtered with `headword.endsWith(query)`. Without
+  /// that filter, suffix `主义` would also return `主义者`.
+  ///
+  /// The endsWith check is pushed into SQL as well, so `LIMIT` applies
+  /// after filtering instead of before it: without the pushdown, a
+  /// common CJK suffix (者/人/国) loses recall because the short
+  /// containing-but-not-ending headwords fill all pre-filter slots.
+  /// SQLite's `lower()` only folds ASCII, while the Dart filter folds
+  /// all of Unicode, so the SQL condition is only a pre-screen — the
+  /// Dart `endsWith` below stays as the final arbiter and is never
+  /// dropped.
   Future<List<FullTextHit>> searchSuffixOne(
     int dictionaryId,
     String query, {
@@ -368,6 +377,7 @@ class FullTextIndexStore {
       // weigh 0 so they cannot reorder suffix hits.
       bm25Weights: "0.0, 1.0, 0.0",
       limit: limit,
+      endsWithQuery: query,
     );
     final foldedQuery = query.toLowerCase();
     return [
@@ -402,6 +412,7 @@ class FullTextIndexStore {
     String matchExpression, {
     required String bm25Weights,
     required int limit,
+    String? endsWithQuery,
   }) async {
     await _ensureMeta();
     final content = _contentTable(dictionaryId);
@@ -412,13 +423,19 @@ class FullTextIndexStore {
           "snippet($fts, 2, ?, ?, ?, ?) AS snippet, "
           "bm25($fts, $bm25Weights) AS rank "
           "FROM $fts JOIN $content AS c ON c.rowid = $fts.rowid "
-          "WHERE $fts MATCH ? ORDER BY rank LIMIT ?",
+          "WHERE $fts MATCH ? "
+          "${endsWithQuery == null ? "" : "AND substr(lower(c.headword), -length(?)) = lower(?) "}"
+          "ORDER BY rank LIMIT ?",
           variables: [
             Variable.withString(snippetMatchStart),
             Variable.withString(snippetMatchEnd),
             Variable.withString("…"),
             Variable.withInt(24),
             Variable.withString(matchExpression),
+            if (endsWithQuery != null) ...[
+              Variable.withString(endsWithQuery),
+              Variable.withString(endsWithQuery),
+            ],
             Variable.withInt(limit),
           ],
         )

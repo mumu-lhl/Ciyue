@@ -108,14 +108,25 @@ class _FullTextSearchPageState extends ConsumerState<FullTextSearchPage> {
     });
   }
 
+  /// Starts index builds for dictionaries that have none. A failed
+  /// build is not retried here: the failed tile owns the retry button.
+  ///
+  /// Dictionaries stamped ready get a fingerprint check too, for the
+  /// same reason as the search bar's: a stale ready stamp (older schema
+  /// or replaced dictionary file) only shows up when `ensureBuilt`
+  /// compares the fingerprint. The check is one meta read when current;
+  /// only a stale fingerprint starts a rebuild. Once checked, the
+  /// dictionary is not re-checked by this page, so a failed rebuild is
+  /// not retried on every build.
   void _maybeStartBuilds(
     FullTextSearchService service,
     List<LoadedDictionary> dictionaries,
   ) {
     for (final dictionary in dictionaries) {
       if (_autoStarted.contains(dictionary.id)) continue;
-      if (service.stateFor(dictionary.id).status !=
-          FullTextIndexStatus.notBuilt) {
+      final status = service.stateFor(dictionary.id).status;
+      if (status != FullTextIndexStatus.notBuilt &&
+          status != FullTextIndexStatus.ready) {
         continue;
       }
       _autoStarted.add(dictionary.id);

@@ -190,6 +190,46 @@ void main() {
       );
     });
 
+    test("suffix recall survives many containing-but-not-ending headwords "
+        "(issue #824 review)", () async {
+      // The review's probe: 60 two-character "者X" decoys that contain
+      // the query without ending in it, plus 3 true endings. Before
+      // the SQL pushdown the LIMIT applied before the endsWith filter,
+      // the short decoys filled all 50 pre-filter slots, and the
+      // query came back empty.
+      final rows = [
+        for (var i = 0; i < 60; i++)
+          FullTextIndexRow(
+            rowid: i + 1,
+            headword: "者${String.fromCharCode(0x4E00 + i)}",
+            body: "decoy",
+          ),
+        const FullTextIndexRow(
+          rowid: 61,
+          headword: "参加者",
+          body: "a participant",
+        ),
+        const FullTextIndexRow(
+          rowid: 62,
+          headword: "责任者",
+          body: "a responsible person",
+        ),
+        const FullTextIndexRow(
+          rowid: 63,
+          headword: "test者",
+          body: "a test person",
+        ),
+      ];
+      expect(await store.ensureDictionary(11, "fp"), isTrue);
+      await store.insertBatch(11, rows, rows.length);
+      await store.markComplete(11, rows.length);
+
+      expect(
+        (await store.searchSuffixOne(11, "者")).map((h) => h.headword),
+        containsAll(["参加者", "责任者", "test者"]),
+      );
+    });
+
     test("multi-word AND matches non-adjacent headword characters", () async {
       await buildIndex();
       // The acceptance example: the old phrase builder ("中 国",

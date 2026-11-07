@@ -4,7 +4,24 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/services/full_text_index_builder.dart";
 import "package:ciyue/services/full_text_index_store.dart";
 import "package:ciyue/services/full_text_search_service.dart";
+import "package:drift/drift.dart";
+import "package:drift/native.dart";
 import "package:flutter_test/flutter_test.dart";
+
+/// Minimal drift handle for seeding raw FTS tables the store itself would
+/// never create — a v1-shaped index, for the stale-index rebuild test.
+class _RawFtsDatabase extends GeneratedDatabase {
+  _RawFtsDatabase(super.executor);
+
+  @override
+  int get schemaVersion => 1;
+
+  @override
+  List<TableInfo<Table, Object?>> get allTables => const [];
+
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities => const [];
+}
 
 class FakeDictionary implements LoadedDictionary {
   @override
@@ -100,6 +117,94 @@ void main() {
     await service.ensureBuilt(dictionary);
     expect(buildCalls, 2);
   });
+
+  test(
+    "stale v1 ready index is rebuilt, not served (issue #824 review)",
+    () async {
+      cannedRows = const [
+        FullTextIndexRow(rowid: 1, headword: "社会主义", body: "一种社会制度"),
+        FullTextIndexRow(rowid: 2, headword: "主义者", body: "信奉某种主义的人"),
+        FullTextIndexRow(rowid: 3, headword: "参加者", body: "参与的人"),
+      ];
+      // Seed a v1-shaped index: two-column tables (no `headword_rev`) and
+      // a pre-version fingerprint ("size:mtime", no `v2:` prefix), stamped
+      // ready — the shape a multi-group user carries in a group that was
+      // not current when the schema changed.
+      final file = File("${dir.path}/full_text_search.db");
+      final raw = _RawFtsDatabase(NativeDatabase(file));
+      await raw.customStatement(
+        "CREATE TABLE fts_content_1 ("
+        "rowid INTEGER PRIMARY KEY, "
+        "headword TEXT NOT NULL, "
+        "body TEXT NOT NULL)",
+      );
+      await raw.customStatement(
+        "CREATE VIRTUAL TABLE fts_1 USING fts5("
+        "headword, body, "
+        "content='fts_content_1', content_rowid='rowid', "
+        "tokenize='unicode61')",
+      );
+      await raw.customStatement(
+        "CREATE TABLE fts_meta ("
+        "dictionary_id INTEGER PRIMARY KEY, "
+        "fingerprint TEXT NOT NULL, "
+        "total INTEGER NOT NULL DEFAULT 0, "
+        "indexed INTEGER NOT NULL DEFAULT 0, "
+        "state TEXT NOT NULL DEFAULT 'building', "
+        "updated_at INTEGER NOT NULL)",
+      );
+      await raw.customStatement(
+        "INSERT INTO fts_content_1 (rowid, headword, body) "
+        "VALUES (1, '社会主义', '一种社会制度')",
+      );
+      await raw.customStatement(
+        "INSERT INTO fts_1 (rowid, headword, body) "
+        "VALUES (1, '社会 主义', '一 种 社会 制度')",
+      );
+      await raw.customStatement(
+        "INSERT INTO fts_meta "
+        "(dictionary_id, fingerprint, total, indexed, state, updated_at) "
+        "VALUES (1, '4:1234567890', 1, 1, 'ready', 1234567890)",
+      );
+      await raw.close();
+
+      // Reconcile no longer trusts the stale ready stamp: the fingerprint
+      // differs, so the index reports notBuilt until it is rebuilt.
+      expect(await service.indexStatus(), FullTextIndexStatus.notBuilt);
+
+      await service.ensureBuilt(dictionary);
+      expect(buildCalls, 1);
+      expect(service.stateFor(1).status, FullTextIndexStatus.ready);
+
+      // The rebuilt tables carry the v2 shape and fingerprint, and suffix
+      // search — which throws on the v1 tables — works again.
+      final check = _RawFtsDatabase(NativeDatabase(file));
+      final meta = await check
+          .customSelect(
+            "SELECT fingerprint FROM fts_meta WHERE dictionary_id = 1",
+          )
+          .getSingle();
+      expect(
+        meta.read<String>("fingerprint"),
+        startsWith("v$fullTextIndexSchemaVersion:"),
+      );
+      final create = await check
+          .customSelect(
+            "SELECT sql FROM sqlite_master WHERE name = 'fts_content_1'",
+          )
+          .getSingle();
+      expect(create.read<String>("sql"), contains("headword_rev"));
+      await check.close();
+
+      expect((await service.searchSuffix("主义")).map((h) => h.headword), [
+        "社会主义",
+      ]);
+      expect(
+        (await service.searchSuffix("者")).map((h) => h.headword),
+        containsAll(["主义者", "参加者"]),
+      );
+    },
+  );
 
   test("fingerprint carries the FTS schema version", () async {
     final fingerprint = await FullTextSearchService.fingerprintFor(

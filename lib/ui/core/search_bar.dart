@@ -247,14 +247,25 @@ class _WordSearchBarWithSuggestionsState
   /// Starts index builds for dictionaries that have none, for the modes
   /// that need the index. A failed build is not retried here: the
   /// full-text page owns the retry button.
+  ///
+  /// Dictionaries stamped ready get a fingerprint check too: a meta row
+  /// that still says ready after a schema change (or a replaced
+  /// dictionary file) is stale, and `ensureBuilt` is the only place the
+  /// fingerprint is compared — without this, a stale index in a group
+  /// that was not current at reconcile time would keep serving queries
+  /// its tables cannot run. The check is one meta read when current;
+  /// only a stale fingerprint starts a rebuild. Once checked, the
+  /// dictionary is not re-checked here, so a failed rebuild is not
+  /// retried on every keystroke.
   void _maybeStartFtsBuilds() {
     final service = ref.read(fullTextSearchServiceProvider);
     for (final dictionary in [
       for (final id in dictManager.dictIds) dictManager.dicts[id],
     ].whereType<LoadedDictionary>()) {
       if (_ftsBuildsStarted.contains(dictionary.id)) continue;
-      if (service.stateFor(dictionary.id).status !=
-          FullTextIndexStatus.notBuilt) {
+      final status = service.stateFor(dictionary.id).status;
+      if (status != FullTextIndexStatus.notBuilt &&
+          status != FullTextIndexStatus.ready) {
         continue;
       }
       _ftsBuildsStarted.add(dictionary.id);

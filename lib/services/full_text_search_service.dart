@@ -100,13 +100,49 @@ class FullTextSearchService extends ChangeNotifier {
     try {
       final store = await _storeInstance();
       await store.pruneExcept(await _knownDictionaryIds());
+      final byId = <int, LoadedDictionary>{
+        for (final d in dictionaries().whereType<LoadedDictionary>()) d.id: d,
+      };
       for (final entry in await store.allMeta()) {
+        var status = switch (entry.state) {
+          FullTextIndexDbState.ready => FullTextIndexStatus.ready,
+          FullTextIndexDbState.failed => FullTextIndexStatus.failed,
+          FullTextIndexDbState.building => FullTextIndexStatus.notBuilt,
+        };
+        if (status == FullTextIndexStatus.ready) {
+          // A meta row stamped ready is only trusted while its
+          // fingerprint still matches the dictionary on disk. An index
+          // built by an older schema (v1 has no `headword_rev`) or for
+          // a replaced dictionary file would otherwise keep reporting
+          // ready while every FTS query against it throws — which
+          // `_searchReady` swallows per dictionary as silent empty
+          // results. The downgrade is in-memory only; the rebuild
+          // itself runs through `ensureBuilt`. A fingerprint that
+          // cannot be computed (dictionary file gone, e.g. an
+          // unmounted SD card) leaves the index alone: the file is
+          // needed to rebuild anyway, so the stale tables stay usable
+          // until it comes back. Dictionaries outside the current
+          // group cannot be checked here — they have no type/path in
+          // scope — the auto-build entries cover them when the group
+          // becomes current.
+          final dictionary = byId[entry.dictionaryId];
+          if (dictionary != null) {
+            try {
+              final fingerprint = await fingerprintFor(
+                dictionary.type,
+                dictionary.path,
+              );
+              if (fingerprint.isNotEmpty && fingerprint != entry.fingerprint) {
+                status = FullTextIndexStatus.notBuilt;
+              }
+            } catch (_) {
+              // A stat failure must not break startup reconcile; the
+              // next `ensureBuilt` re-checks the fingerprint.
+            }
+          }
+        }
         _states[entry.dictionaryId] = FullTextIndexState(
-          status: switch (entry.state) {
-            FullTextIndexDbState.ready => FullTextIndexStatus.ready,
-            FullTextIndexDbState.failed => FullTextIndexStatus.failed,
-            FullTextIndexDbState.building => FullTextIndexStatus.notBuilt,
-          },
+          status: status,
           indexed: entry.indexed,
           total: entry.total,
         );
@@ -171,6 +207,14 @@ class FullTextSearchService extends ChangeNotifier {
         dictionary.type,
         dictionary.path,
       );
+      if (fingerprint.isEmpty) {
+        // The dictionary file is not on disk (e.g. an unmounted SD
+        // card): nothing can be built, and `ensureDictionary` would
+        // drop the existing tables for a rebuild that cannot run. Leave
+        // the state alone — a ready index stays usable, an unbuilt one
+        // keeps its build button for when the file comes back.
+        return;
+      }
       rebuild = await store.ensureDictionary(dictionary.id, fingerprint);
     } catch (_) {
       // No usable store to record the failure in; keep it in memory so
@@ -324,6 +368,18 @@ class FullTextSearchService extends ChangeNotifier {
     );
   }
 
+  /// Whether [error] shows the index tables do not match the query
+  /// (stale or damaged tables), as opposed to a transient failure or a
+  /// bad query. User input only ever reaches MATCH expressions, never a
+  /// column or table position, so these SQLite messages can only come
+  /// from our SQL against the wrong tables.
+  bool _isIndexShapeError(Object error) {
+    final message = error.toString().toLowerCase();
+    return message.contains("no such column") ||
+        message.contains("no such table") ||
+        message.contains("column index out of range");
+  }
+
   /// Runs [run] against every active dictionary with a ready index and
   /// merges the hits, best rank first, capped at 100. A dictionary still
   /// building, never built, or unreadable contributes nothing.
@@ -349,8 +405,27 @@ class FullTextSearchService extends ChangeNotifier {
       }
       try {
         hits.addAll(await run(store, dictionary.id));
-      } catch (_) {
+      } catch (e) {
         // One unreadable index must not break search across the rest.
+        // But a query that fails because the tables do not match the
+        // query — a stale index whose shape predates the columns the
+        // query needs — is index corruption, not a bad query: user
+        // input only ever reaches MATCH expressions, never a column or
+        // table position, so "no such column/table" and "column index
+        // out of range" can only come from our SQL against the wrong
+        // tables. Mark it failed so the full-text page offers a retry
+        // instead of silently returning nothing. Anything else (a
+        // locked database, an I/O error) leaves the state alone and
+        // retries on the next search.
+        if (_isIndexShapeError(e)) {
+          _states[dictionary.id] = const FullTextIndexState(
+            status: FullTextIndexStatus.failed,
+          );
+          try {
+            await store.markFailed(dictionary.id);
+          } catch (_) {}
+          notifyListeners();
+        }
       }
     }
     // bm25 ranks are per-table estimates, so cross-dictionary ordering is
