@@ -1,6 +1,7 @@
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/services/tts.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/language_names.dart";
 import "package:ciyue/ui/core/language_picker.dart";
 import "package:ciyue/ui/core/custom_context_menu.dart";
 import "package:ciyue/ui/pages/translate/translate_history_page.dart";
@@ -97,7 +98,6 @@ class _AiTranslatePageState extends State<AiTranslatePage> {
                               _LanguageSelectionRow(
                                 sourceLanguage: viewModel.sourceLanguage,
                                 targetLanguage: viewModel.targetLanguage,
-                                getLanguageName: viewModel.getLanguageName,
                                 onSwap: viewModel.swapLanguages,
                                 onSourceTap: () => _showLanguagePicker(
                                   context,
@@ -505,7 +505,6 @@ class _LanguageSelectionRow extends StatelessWidget {
   const _LanguageSelectionRow({
     required this.sourceLanguage,
     required this.targetLanguage,
-    required this.getLanguageName,
     required this.onSwap,
     required this.onSourceTap,
     required this.onTargetTap,
@@ -513,27 +512,25 @@ class _LanguageSelectionRow extends StatelessWidget {
 
   final String sourceLanguage;
   final String targetLanguage;
-  final String Function(String) getLanguageName;
   final VoidCallback onSwap;
   final VoidCallback onSourceTap;
   final VoidCallback onTargetTap;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _LanguageChip(
-            languageName: getLanguageName(sourceLanguage) == "Auto Detect"
-                ? AppLocalizations.of(context)!.autoDetect
-                : getLanguageName(sourceLanguage),
+            languageName: localizedLanguageName(sourceLanguage, l10n),
             onTap: onSourceTap,
           ),
           IconButton(icon: const Icon(Icons.swap_horiz), onPressed: onSwap),
           _LanguageChip(
-            languageName: getLanguageName(targetLanguage),
+            languageName: localizedLanguageName(targetLanguage, l10n),
             onTap: onTargetTap,
           ),
         ],
@@ -641,7 +638,6 @@ class _DesktopTranslateView extends StatelessWidget {
             _LanguageSelectionRow(
               sourceLanguage: viewModel.sourceLanguage,
               targetLanguage: viewModel.targetLanguage,
-              getLanguageName: viewModel.getLanguageName,
               onSwap: viewModel.swapLanguages,
               onSourceTap: onSourceTap,
               onTargetTap: onTargetTap,
@@ -683,7 +679,8 @@ class _DesktopTranslateView extends StatelessWidget {
                               children: [
                                 if (viewModel.inputController.text.isNotEmpty)
                                   IconButton(
-                                    tooltip: "Clear",
+                                    tooltip: AppLocalizations.of(context)!
+                                        .clear,
                                     icon: const Icon(Icons.clear),
                                     onPressed: () =>
                                         viewModel.inputController.clear(),

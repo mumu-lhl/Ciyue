@@ -1,3 +1,4 @@
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
 
 void showSelectionModal<T>({
@@ -82,7 +83,8 @@ class _SelectionModalContentState<T> extends State<_SelectionModalContent<T>> {
             child: TextField(
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
-                hintText: widget.searchHint ?? "Search",
+                hintText:
+                    widget.searchHint ?? AppLocalizations.of(context)?.search,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -103,7 +105,7 @@ class _SelectionModalContentState<T> extends State<_SelectionModalContent<T>> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      "No matching items",
+                      AppLocalizations.of(context)?.noMatchingItems ?? "",
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.outline,
                       ),

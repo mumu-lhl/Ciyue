@@ -44,7 +44,7 @@ class ActionButtons extends StatelessWidget {
                     size: 18,
                     color: Theme.of(context).colorScheme.secondary,
                   ),
-                  label: const Text("Flashcards"),
+                  label: Text(AppLocalizations.of(context)!.flashcards),
                   backgroundColor: Theme.of(context)
                       .colorScheme
                       .surfaceContainerLow,

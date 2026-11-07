@@ -449,7 +449,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   ((!settings.searchBarInAppBar && searchBar != null)
                       ? BottomAppBar(child: searchBar)
                       : null),
-              body: Center(child: Text("Error: $err")),
+              body: Center(
+                child: Text(
+                  AppLocalizations.of(context)!.errorDetails(err.toString()),
+                ),
+              ),
             );
           },
         ),

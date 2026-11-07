@@ -43,7 +43,7 @@ class _NormalActions extends ConsumerWidget {
         ),
         if (isDesktop) ...[
           IconButton(
-            tooltip: "Search",
+            tooltip: AppLocalizations.of(context)!.search,
             icon: const Icon(Icons.search),
             onPressed: () {
               showDialog(
@@ -54,7 +54,7 @@ class _NormalActions extends ConsumerWidget {
           ),
           if (model.selectedDate != null)
             IconButton(
-              tooltip: "Clear date",
+              tooltip: AppLocalizations.of(context)!.clearDate,
               icon: const Icon(Icons.clear),
               onPressed: () {
                 model.selectedDate = null;
@@ -62,7 +62,7 @@ class _NormalActions extends ConsumerWidget {
               },
             ),
           IconButton(
-            tooltip: "Calendar",
+            tooltip: AppLocalizations.of(context)!.calendar,
             icon: const Icon(Icons.calendar_month),
             onPressed: () async {
               final DateTime? picked = await showDialog(

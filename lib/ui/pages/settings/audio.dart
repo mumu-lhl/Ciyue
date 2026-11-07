@@ -7,6 +7,7 @@ import "package:ciyue/services/linux_tts.dart";
 import "package:ciyue/services/linux_tts_driver.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/tts.dart";
+import "package:ciyue/ui/core/language_names.dart";
 import "package:ciyue/ui/core/title_text.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/platform.dart";
@@ -330,35 +331,35 @@ class _OnlinePronunciationSettingsState
     extends State<OnlinePronunciationSettings> {
   static const _forvoApiKeyStorageKey = "forvoApiKey";
   static const _forvoApiKeyPlaceholder = "••••••••";
-  static const _onlinePronunciationLanguages = <String, String>{
-    "en": "English",
-    "de": "German",
-    "fr": "French",
-    "es": "Spanish",
-    "it": "Italian",
-    "pt": "Portuguese",
-    "ru": "Russian",
-    "ja": "Japanese",
-    "ko": "Korean",
-    "zh": "Chinese",
-    "nl": "Dutch",
-    "sv": "Swedish",
-    "da": "Danish",
-    "no": "Norwegian",
-    "fi": "Finnish",
-    "pl": "Polish",
-    "cs": "Czech",
-    "hu": "Hungarian",
-    "tr": "Turkish",
-    "ar": "Arabic",
-    "he": "Hebrew",
-    "hi": "Hindi",
-    "th": "Thai",
-    "vi": "Vietnamese",
-    "id": "Indonesian",
-    "uk": "Ukrainian",
-    "el": "Greek",
-  };
+  static const _onlinePronunciationLanguages = <String>[
+    "en",
+    "de",
+    "fr",
+    "es",
+    "it",
+    "pt",
+    "ru",
+    "ja",
+    "ko",
+    "zh",
+    "nl",
+    "sv",
+    "da",
+    "no",
+    "fi",
+    "pl",
+    "cs",
+    "hu",
+    "tr",
+    "ar",
+    "he",
+    "hi",
+    "th",
+    "vi",
+    "id",
+    "uk",
+    "el",
+  ];
 
   final _forvoApiKeyController = TextEditingController();
   final _forvoApiKeyFocusNode = FocusNode();
@@ -550,7 +551,7 @@ class _OnlinePronunciationSettingsState
     required String value,
     required ValueChanged<String> onChanged,
   }) {
-    final effectiveValue = _onlinePronunciationLanguages.containsKey(value)
+    final effectiveValue = _onlinePronunciationLanguages.contains(value)
         ? value
         : "";
     return DropdownButtonFormField<String>(
@@ -565,8 +566,11 @@ class _OnlinePronunciationSettingsState
           value: "",
           child: Text(localizations.onlinePronunciationFollowSystemLanguage),
         ),
-        for (final entry in _onlinePronunciationLanguages.entries)
-          DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+        for (final code in _onlinePronunciationLanguages)
+          DropdownMenuItem(
+            value: code,
+            child: Text(localizedLanguageName(code, localizations)),
+          ),
       ],
       onChanged: enabled
           ? (language) {

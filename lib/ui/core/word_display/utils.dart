@@ -3,6 +3,7 @@ import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/repositories/stardict.dart";
@@ -207,7 +208,9 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
         return _buildContent(content, pendingAnchor);
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text("Error: $err")),
+      error: (err, stack) => Center(
+        child: Text(AppLocalizations.of(context)!.errorDetails(err.toString())),
+      ),
     );
   }
 }

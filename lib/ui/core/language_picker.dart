@@ -1,4 +1,5 @@
 import "package:ciyue/services/translation.dart";
+import "package:ciyue/ui/core/language_names.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -20,15 +21,15 @@ class LanguagePicker extends StatefulWidget {
 
 class _LanguagePickerState extends State<LanguagePicker> {
   late final TextEditingController _searchController;
-  late List<MapEntry<String, String>> _filteredLanguages;
+  late List<String> _filteredLanguages;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    _filteredLanguages = languageMap.entries.toList();
+    _filteredLanguages = languageMap.keys.toList();
     if (!widget.isSource) {
-      _filteredLanguages.removeWhere((entry) => entry.key == "auto");
+      _filteredLanguages.remove("auto");
     }
   }
 
@@ -39,20 +40,19 @@ class _LanguagePickerState extends State<LanguagePicker> {
   }
 
   void _filterLanguages(String query) {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
-      _filteredLanguages = languageMap.entries
-          .where(
-            (entry) => entry.value.toLowerCase().contains(query.toLowerCase()),
-          )
-          .toList();
+      final needle = query.toLowerCase();
+      _filteredLanguages = languageMap.keys.where((code) {
+        final name = localizedLanguageName(code, l10n).toLowerCase();
+        return name.contains(needle) ||
+            (languageMap[code] ?? "").toLowerCase().contains(needle) ||
+            code.toLowerCase().contains(needle);
+      }).toList();
       if (!widget.isSource) {
-        _filteredLanguages.removeWhere((entry) => entry.key == "auto");
+        _filteredLanguages.remove("auto");
       }
     });
-  }
-
-  String getLanguageName(String code) {
-    return languageMap[code] ?? code;
   }
 
   @override
@@ -111,11 +111,9 @@ class _LanguagePickerState extends State<LanguagePicker> {
             itemCount: _filteredLanguages.length,
             separatorBuilder: (context, index) => const SizedBox(height: 2),
             itemBuilder: (context, index) {
-              final entry = _filteredLanguages[index];
-              final isSelected = entry.key == widget.selectedLanguage;
-              final displayName = getLanguageName(entry.key) == "Auto Detect"
-                  ? l10n.autoDetect
-                  : getLanguageName(entry.key);
+              final code = _filteredLanguages[index];
+              final isSelected = code == widget.selectedLanguage;
+              final displayName = localizedLanguageName(code, l10n);
 
               return ListTile(
                 shape: RoundedRectangleBorder(
@@ -140,7 +138,7 @@ class _LanguagePickerState extends State<LanguagePicker> {
                         size: 20,
                       )
                     : null,
-                onTap: () => widget.onLanguageSelected(entry.key),
+                onTap: () => widget.onLanguageSelected(code),
               );
             },
           ),
