@@ -265,6 +265,7 @@ class _SourceConfigFields extends StatelessWidget {
         ],
       );
     }
+    final l10n = AppLocalizations.of(context)!;
     switch (source.id) {
       case "deeplx":
         return TextFormField(
@@ -278,13 +279,13 @@ class _SourceConfigFields extends StatelessWidget {
       case "deepl":
         return _keyField(
           controller: viewModel.deeplApiKeyController,
-          label: "DeepL API Key",
+          label: l10n.deeplApiKeyLabel,
           onChanged: viewModel.setDeeplApiKey,
         );
       case "googleCloud":
         return _keyField(
           controller: viewModel.googleCloudApiKeyController,
-          label: "Google Cloud API Key",
+          label: l10n.googleCloudApiKeyLabel,
           onChanged: viewModel.setGoogleCloudApiKey,
         );
       case "azure":
@@ -292,14 +293,14 @@ class _SourceConfigFields extends StatelessWidget {
           children: [
             _keyField(
               controller: viewModel.azureApiKeyController,
-              label: "Azure API Key",
+              label: l10n.azureApiKeyLabel,
               onChanged: viewModel.setAzureApiKey,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: viewModel.azureRegionController,
-              decoration: const InputDecoration(
-                labelText: "Azure Region",
+              decoration: InputDecoration(
+                labelText: l10n.azureRegionLabel,
                 prefixIcon: Icon(Icons.public_rounded),
               ),
               onChanged: viewModel.setAzureRegion,
@@ -311,14 +312,14 @@ class _SourceConfigFields extends StatelessWidget {
           children: [
             _keyField(
               controller: viewModel.yandexApiKeyController,
-              label: "Yandex API Key",
+              label: l10n.yandexApiKeyLabel,
               onChanged: viewModel.setYandexApiKey,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: viewModel.yandexFolderIdController,
-              decoration: const InputDecoration(
-                labelText: "Yandex Folder ID",
+              decoration: InputDecoration(
+                labelText: l10n.yandexFolderIdLabel,
                 prefixIcon: Icon(Icons.folder_outlined),
               ),
               onChanged: viewModel.setYandexFolderId,

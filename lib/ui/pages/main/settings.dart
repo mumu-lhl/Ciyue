@@ -302,7 +302,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _SettingsItem(
         section: _SettingsSection.flashcards,
         icon: Icons.style,
-        title: "Flashcards",
+        title: locale?.flashcards ?? "Flashcards",
       ),
       _SettingsItem(
         section: _SettingsSection.hunspell,
@@ -481,7 +481,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const HistoryPageListTile(),
                     ListTile(
                       leading: const Icon(Icons.style),
-                      title: const Text("Flashcards"),
+                      title: Text(l10n?.flashcards ?? "Flashcards"),
                       onTap: () => context.push("/settings/flashcards"),
                     ),
                     const HunspellPageListTile(),

@@ -1515,7 +1515,7 @@ Future<void> selectAudioMdd(BuildContext context, List<String> paths) async {
 /// pipeline.
 Future<void> importDictionaryFilesOnDesktop(BuildContext context) async {
   final XTypeGroup typeGroup = XTypeGroup(
-    label: "Dictionary File",
+    label: AppLocalizations.of(context)!.dictionaryFile,
     extensions: <String>["mdx", "ifo", "zim"],
   );
 
@@ -1561,7 +1561,7 @@ Future<void> importDictionaryFilesOnDesktop(BuildContext context) async {
 
 Future<void> selectMddOnDesktop(BuildContext context) async {
   final XTypeGroup typeGroup = XTypeGroup(
-    label: "MDD File",
+    label: AppLocalizations.of(context)!.mddFile,
     extensions: <String>["mdd"],
   );
 

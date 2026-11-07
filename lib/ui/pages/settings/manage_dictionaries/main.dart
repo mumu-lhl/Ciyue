@@ -1473,7 +1473,7 @@ class UpdateButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      tooltip: "Refresh",
+      tooltip: AppLocalizations.of(context)!.refresh,
       icon: const Icon(Icons.refresh_rounded),
       onPressed: () {
         PlatformMethod.updateDictionaries();

@@ -137,10 +137,6 @@ class AiTranslateViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getLanguageName(String code) {
-    return languageMap[code] ?? code;
-  }
-
   Future<void> setTranslationProvider(String provider) async {
     await settings.setTranslationProvider(provider);
     notifyListeners();

@@ -763,7 +763,7 @@ class ChatBubble extends StatelessWidget {
                     IconButton(
                       iconSize: 16,
                       visualDensity: VisualDensity.compact,
-                      tooltip: "Extract vocabulary",
+                      tooltip: AppLocalizations.of(context)!.extractVocabulary,
                       icon: const Icon(Icons.school_outlined),
                       onPressed: () {
                         if (onExtractVocabulary != null && onSaveWord != null) {

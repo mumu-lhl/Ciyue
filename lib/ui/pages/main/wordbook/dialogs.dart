@@ -38,8 +38,9 @@ class _SearchWordDialogState extends ConsumerState<SearchWordDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text("Search"),
+      title: Text(l10n.search),
       content: SizedBox(
         width: double.maxFinite,
         height: 300,
@@ -49,7 +50,7 @@ class _SearchWordDialogState extends ConsumerState<SearchWordDialog> {
               controller: _searchController,
               autofocus: true,
               decoration: InputDecoration(
-                labelText: "Search",
+                labelText: l10n.search,
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: () {
@@ -59,7 +60,7 @@ class _SearchWordDialogState extends ConsumerState<SearchWordDialog> {
               ),
             ),
             CheckboxListTile(
-              title: const Text("Fuzzy search"),
+              title: Text(l10n.fuzzySearch),
               value: _model.fuzzySearch,
               onChanged: (value) {
                 _model.toggleFuzzySearch();
@@ -73,7 +74,7 @@ class _SearchWordDialogState extends ConsumerState<SearchWordDialog> {
                   final model = ref.watch(wordbookModelProvider);
                   if (model.searchResults.isEmpty &&
                       _searchController.text.isNotEmpty) {
-                    return const Center(child: Text("No results found"));
+                    return Center(child: Text(l10n.noResultsFound));
                   }
                   return ListView.builder(
                     shrinkWrap: true,

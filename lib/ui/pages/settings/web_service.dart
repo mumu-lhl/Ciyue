@@ -89,17 +89,14 @@ class _WebServiceSettingsPageState extends State<WebServiceSettingsPage> {
             children: [
               Text(AppLocalizations.of(context)!.browserExtensionDescription),
               const SizedBox(height: 16),
-              const Text(
-                "Chrome / Edge / Brave 安装步骤：\n"
-                "1. 在浏览器打开 chrome://extensions/\n"
-                "2. 开启右上角「开发者模式」\n"
-                "3. 点击「加载已解压的扩展程序」\n"
-                "4. 选择词悦目录下的 browser_extension 文件夹即可！",
+              Text(
+                AppLocalizations.of(context)!.browserExtensionInstallSteps,
                 style: TextStyle(height: 1.5),
               ),
               const SizedBox(height: 12),
               SelectableText(
-                "扩展目录路径：$extensionDir",
+                AppLocalizations.of(context)!
+                    .extensionDirectoryPath(extensionDir),
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
@@ -107,7 +104,7 @@ class _WebServiceSettingsPageState extends State<WebServiceSettingsPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
+              child: Text(AppLocalizations.of(context)!.confirm),
             ),
           ],
         );

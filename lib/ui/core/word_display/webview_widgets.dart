@@ -709,7 +709,12 @@ class WebviewDisplayDescription extends ConsumerWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
+            return Center(
+              child: Text(
+                AppLocalizations.of(context)!
+                    .errorDetails(snapshot.error.toString()),
+              ),
+            );
           }
           return _buildDescription(dict);
         },

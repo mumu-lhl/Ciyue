@@ -1,3 +1,4 @@
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
 import "package:url_launcher/url_launcher.dart";
@@ -9,8 +10,9 @@ class CiyueError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text("Error")),
+      appBar: AppBar(title: Text(l10n.error)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -23,17 +25,17 @@ class CiyueError extends StatelessWidget {
                   Uri.parse("https://github.com/mumu-lhl/ciyue/issues"),
                 );
               },
-              child: const Text("Report Issue"),
+              child: Text(l10n.reportIssue),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: error.toString()));
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Error copied to clipboard")),
+                  SnackBar(content: Text(l10n.errorCopiedToClipboard)),
                 );
               },
-              child: const Text("Copy Error"),
+              child: Text(l10n.copyError),
             ),
           ],
         ),
