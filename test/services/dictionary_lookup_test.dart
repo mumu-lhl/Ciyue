@@ -1,6 +1,12 @@
+import "dart:io";
+
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/models/hunspell.dart";
+import "package:ciyue/models/search_mode.dart";
 import "package:ciyue/services/dictionary_lookup.dart";
+import "package:ciyue/services/full_text_index_builder.dart";
+import "package:ciyue/services/full_text_index_store.dart";
+import "package:ciyue/services/full_text_search_service.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/lookup_keys.dart";
 import "package:test/test.dart";
@@ -580,6 +586,122 @@ void main() {
     // The exact entry still comes back; only the stem candidates are missing.
     expect(result.entriesFor(1).map((entry) => entry.headword), ["rims"]);
   });
+
+  group("search mode dispatch (issue #824)", () {
+    const ftsRows = [
+      FullTextIndexRow(rowid: 1, headword: "中国", body: "中国是一个国家"),
+      FullTextIndexRow(rowid: 2, headword: "中华民国", body: "历史上的国家"),
+      FullTextIndexRow(rowid: 3, headword: "中华人民共和国", body: "成立于1949年"),
+      FullTextIndexRow(rowid: 4, headword: "中华", body: "中华民族"),
+      FullTextIndexRow(rowid: 5, headword: "美国", body: "美利坚合众国"),
+      FullTextIndexRow(rowid: 6, headword: "读者", body: "本を読む人"),
+      FullTextIndexRow(rowid: 7, headword: "作者", body: "本を書く人"),
+      FullTextIndexRow(rowid: 8, headword: "運動", body: "体を動かすこと"),
+      FullTextIndexRow(rowid: 9, headword: "行動", body: "行動すること"),
+      FullTextIndexRow(rowid: 10, headword: "動詞", body: "品詞の一つ"),
+    ];
+
+    test("suffix mode returns headwords ending with the query", () async {
+      final service = await makeFtsService(ftsRows);
+      final lookup = makeLookup(
+        dictionary: FakeDictionarySource(id: 1, entries: const {}),
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      final chinese = await lookup.searchSuggestions(
+        "者",
+        mode: SearchMode.suffix,
+        fullText: service,
+      );
+      expect(chinese.dictionarySuggestions, containsAll(["读者", "作者"]));
+
+      final japanese = await lookup.searchSuggestions(
+        "動",
+        mode: SearchMode.suffix,
+        fullText: service,
+      );
+      expect(japanese.dictionarySuggestions, containsAll(["運動", "行動"]));
+      expect(japanese.dictionarySuggestions, isNot(contains("動詞")));
+    });
+
+    test("multi-word mode matches non-adjacent headword characters", () async {
+      final service = await makeFtsService(ftsRows);
+      final lookup = makeLookup(
+        dictionary: FakeDictionarySource(id: 1, entries: const {}),
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      final result = await lookup.searchSuggestions(
+        "中国",
+        mode: SearchMode.multiWord,
+        fullText: service,
+      );
+      expect(
+        result.dictionarySuggestions,
+        containsAll(["中国", "中华民国", "中华人民共和国"]),
+      );
+      expect(result.dictionarySuggestions, isNot(contains("中华")));
+      expect(result.dictionarySuggestions, isNot(contains("美国")));
+    });
+
+    test("full-text mode returns definition hits, not headwords", () async {
+      final service = await makeFtsService(ftsRows);
+      final lookup = makeLookup(
+        dictionary: FakeDictionarySource(id: 1, entries: const {}),
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      final result = await lookup.searchSuggestions(
+        "国家",
+        mode: SearchMode.fullText,
+        fullText: service,
+      );
+      expect(result.dictionarySuggestions, isEmpty);
+      expect(
+        result.fullTextHits.map((hit) => hit.headword),
+        containsAll(["中国", "中华民国"]),
+      );
+      expect(result.fullTextIndexStatus, FullTextIndexStatus.ready);
+    });
+
+    test(
+      "an FTS mode without a service reports not-built, not empty",
+      () async {
+        final lookup = makeLookup(
+          dictionary: FakeDictionarySource(id: 1, entries: const {}),
+          morphology: FakeMorphology(stemsResult: const []),
+          enabled: false,
+        );
+
+        final result = await lookup.searchSuggestions(
+          "者",
+          mode: SearchMode.suffix,
+        );
+        expect(result.dictionarySuggestions, isEmpty);
+        expect(result.fullTextIndexStatus, FullTextIndexStatus.notBuilt);
+      },
+    );
+
+    test("prefix mode is the default and keeps its behaviour", () async {
+      final lookup = makeLookup(
+        dictionary: FakeDictionarySource(
+          id: 1,
+          entries: {"rims": "rims content", "rim": "rim content"},
+        ),
+        morphology: FakeMorphology(stemsResult: ["rim"]),
+        enabled: true,
+        mode: HunspellLookupMode.supplement,
+      );
+
+      final result = await lookup.searchSuggestions("rims");
+
+      expect(result.dictionarySuggestions, ["rims", "rim"]);
+      expect(result.fullTextIndexStatus, FullTextIndexStatus.ready);
+    });
+  });
 }
 
 DictionaryLookup makeLookup({
@@ -595,6 +717,64 @@ DictionaryLookup makeLookup({
     morphologyEnabled: () => enabled,
     lookupMode: () => mode,
   );
+}
+
+/// A real [FullTextSearchService] over canned rows, so mode dispatch can
+/// be tested without a dictionary file: the fake runner feeds [rows]
+/// straight into the store instead of reading a dictionary.
+Future<FullTextSearchService> makeFtsService(
+  List<FullTextIndexRow> rows,
+) async {
+  final dir = await Directory.systemTemp.createTemp("search_mode_lookup_");
+  final mdxFile = File("${dir.path}/dict.mdx");
+  await mdxFile.writeAsBytes([1, 2, 3, 4]);
+  final dictionary = _FtsFakeDictionary(
+    id: 1,
+    type: 1,
+    path: "${dir.path}/dict",
+  );
+  final service = FullTextSearchService(
+    dictionaries: () => [dictionary],
+    knownIds: () async => {1},
+    databaseDirectory: () async => dir.path,
+    runner:
+        (
+          FullTextBuildRequest request, {
+          required Future<void> Function(List<FullTextIndexRow>, int, int)
+          onBatch,
+          required Future<void> Function(int) onTotal,
+          required FullTextBuildCancelToken cancelToken,
+        }) async {
+          await onTotal(rows.length);
+          for (final row in rows) {
+            await onBatch([row], row.rowid, rows.length);
+          }
+        },
+  );
+  await service.ensureBuilt(dictionary);
+  addTearDown(() async {
+    service.dispose();
+    await dir.delete(recursive: true);
+  });
+  return service;
+}
+
+class _FtsFakeDictionary implements LoadedDictionary {
+  @override
+  final int id;
+  @override
+  final int type;
+  @override
+  final String path;
+
+  _FtsFakeDictionary({
+    required this.id,
+    required this.type,
+    required this.path,
+  });
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class FakeMorphology implements MorphologyProvider {

@@ -4,6 +4,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/models/audio.dart";
 import "package:ciyue/models/hunspell.dart";
+import "package:ciyue/models/search_mode.dart";
 import "package:material_ui/material_ui.dart";
 
 final settings = Settings();
@@ -67,6 +68,9 @@ class Settings extends ChangeNotifier {
   late bool showMoreOptionsButton;
   late bool showSearchBarInWordDisplay;
   late DictionarySwitchStyle dictionarySwitchStyle;
+
+  /// How the search bar matches the query against headwords.
+  late SearchMode searchMode;
 
   late bool autoRemoveSearchWord;
   late bool autoFocusSearch;
@@ -189,6 +193,11 @@ class Settings extends ChangeNotifier {
         dictionarySwitchStyleString,
       );
     }
+
+    searchMode = SearchMode.values.firstWhere(
+      (mode) => mode.name == prefs.getString("searchMode"),
+      orElse: () => SearchMode.prefix,
+    );
 
     autoUpdate = prefs.getBool("autoUpdate") ?? false;
     // Migrate from old bool pref to enum. Old true -> preview channel.
@@ -434,6 +443,12 @@ class Settings extends ChangeNotifier {
   Future<void> setDictionarySwitchStyle(DictionarySwitchStyle style) async {
     dictionarySwitchStyle = style;
     await prefs.setString("dictionarySwitchStyle", style.name);
+    notifyListeners();
+  }
+
+  Future<void> setSearchMode(SearchMode mode) async {
+    searchMode = mode;
+    await prefs.setString("searchMode", mode.name);
     notifyListeners();
   }
 

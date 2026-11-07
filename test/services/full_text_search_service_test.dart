@@ -101,6 +101,50 @@ void main() {
     expect(buildCalls, 2);
   });
 
+  test("fingerprint carries the FTS schema version", () async {
+    final fingerprint = await FullTextSearchService.fingerprintFor(
+      1,
+      "${dir.path}/dict",
+    );
+    // A stored fingerprint from before the version stamp ("size:mtime")
+    // differs, so existing users' indexes rebuild for the new columns
+    // instead of serving stale tables to the suffix query.
+    expect(fingerprint, startsWith("v$fullTextIndexSchemaVersion:"));
+    expect(
+      await FullTextSearchService.fingerprintFor(1, "${dir.path}/missing"),
+      "",
+    );
+  });
+
+  test("suffix and multi-word search use the index", () async {
+    cannedRows = const [
+      FullTextIndexRow(rowid: 1, headword: "中国", body: "中国是一个国家"),
+      FullTextIndexRow(rowid: 2, headword: "中华民国", body: "历史上的国家"),
+      FullTextIndexRow(rowid: 3, headword: "中华人民共和国", body: "成立于1949年"),
+      FullTextIndexRow(rowid: 4, headword: "主义者", body: "信奉某种主义的人"),
+      FullTextIndexRow(rowid: 5, headword: "社会主义", body: "一种社会制度"),
+      FullTextIndexRow(rowid: 6, headword: "apple", body: "中国是一种水果"),
+    ];
+    await service.ensureBuilt(dictionary);
+
+    expect((await service.searchSuffix("主义")).map((h) => h.headword), ["社会主义"]);
+    expect(
+      (await service.searchHeadwordAnd("中国")).map((h) => h.headword),
+      containsAll(["中国", "中华民国", "中华人民共和国"]),
+    );
+    expect(
+      (await service.searchHeadwordAnd("中国")).map((h) => h.headword),
+      isNot(contains("apple")),
+    );
+    // A mode that needs the index reports its status instead of failing
+    // silently when nothing is ready.
+    expect(await service.indexStatus(), FullTextIndexStatus.ready);
+  });
+
+  test("indexStatus reports an unbuilt index", () async {
+    expect(await service.indexStatus(), FullTextIndexStatus.notBuilt);
+  });
+
   test("a failing store open reports failed and retries", () async {
     var directoryCalls = 0;
     final flaky = FullTextSearchService(

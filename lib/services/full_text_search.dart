@@ -140,3 +140,100 @@ String buildFtsMatchExpression(String query) {
   }
   return terms.join(" AND ");
 }
+
+/// Reverses a headword by rune (code point), never by UTF-16 code unit:
+/// reversing by unit would split surrogate pairs, so a character from the
+/// CJK extension planes (U+20000 and above) would come back as two lone
+/// surrogates that SQLite cannot store.
+String reverseHeadword(String headword) {
+  return String.fromCharCodes(headword.runes.toList().reversed);
+}
+
+/// Builds an FTS5 `MATCH` expression for suffix search against the
+/// reversed-headword column (`headword_rev`, see [reverseHeadword]).
+///
+/// The query is reversed first, so a suffix becomes a prefix of the stored
+/// text: `ing` -> `gni*` anchors at the start of the reversed token, and a
+/// CJK suffix becomes a phrase of single characters in reversed order.
+/// Every term is qualified with `{headword_rev} :`, so body text can never
+/// match. A trailing Latin segment is a prefix query (`*`); a CJK segment
+/// is an exact phrase.
+///
+/// This expression is only a pre-filter: FTS5 phrases match at ANY position
+/// in the column, so a CJK suffix also matches headwords that merely
+/// CONTAIN it (`主义` matches `主义者` in the reversed column). Callers MUST
+/// post-filter hits with `headword.endsWith(query)`.
+String buildSuffixMatchExpression(String query) {
+  final reversed = reverseHeadword(query);
+  final terms = <String>[];
+  for (final run in _wordRuns(reversed)) {
+    final cjk = _isCjkRune(run.runes.first);
+    if (cjk) {
+      terms.add(
+        "{headword_rev} : "
+        '"${run.runes.map(String.fromCharCode).join(" ")}"',
+      );
+    } else {
+      // A prefix query is a bare token followed by `*`; anything that is
+      // not part of a token (`"`, `*`, punctuation) is dropped first, since
+      // the `unicode61` tokenizer would split on it anyway.
+      final cleaned = run.replaceAll(RegExp(r'["*]'), "");
+      if (cleaned.isNotEmpty) {
+        terms.add("{headword_rev} : $cleaned*");
+      }
+    }
+  }
+  return terms.join(" AND ");
+}
+
+/// Builds an FTS5 `MATCH` expression for multi-word AND search against the
+/// headword column only.
+///
+/// Every character/word of the query must appear in the headword, in any
+/// order and not necessarily adjacent: `中国` becomes
+/// `{headword} : "中" AND {headword} : "国"`, which matches 中国, 中华民国 and
+/// 中华人民共和国 alike. This is deliberately NOT [buildFtsMatchExpression]:
+/// that builder turns a CJK run into one adjacent phrase (`"中 国"`), which
+/// would miss 中华民国, and matching the whole table would also match body
+/// text, making the mode indistinguishable from full-text search.
+String buildHeadwordAndMatchExpression(String query) {
+  final terms = <String>[];
+  for (final token in query.split(_whitespace)) {
+    if (token.isEmpty) continue;
+    for (final run in _wordRuns(token)) {
+      if (_isCjkRune(run.runes.first)) {
+        for (final rune in run.runes) {
+          terms.add('{headword} : "${String.fromCharCode(rune)}"');
+        }
+      } else {
+        terms.add('{headword} : "${run.replaceAll('"', '""')}"');
+      }
+    }
+  }
+  return terms.join(" AND ");
+}
+
+/// Splits [text] into maximal runs of word characters, alternating CJK and
+/// non-CJK runs, dropping everything that is not a word character
+/// (whitespace, punctuation). A run's first rune decides its kind.
+List<String> _wordRuns(String text) {
+  final runs = <String>[];
+  final runes = text.runes.toList();
+  var i = 0;
+  while (i < runes.length) {
+    if (!_isWordRune(runes[i])) {
+      i++;
+      continue;
+    }
+    final cjk = _isCjkRune(runes[i]);
+    var j = i + 1;
+    while (j < runes.length &&
+        _isWordRune(runes[j]) &&
+        _isCjkRune(runes[j]) == cjk) {
+      j++;
+    }
+    runs.add(String.fromCharCodes(runes.sublist(i, j)));
+    i = j;
+  }
+  return runs;
+}

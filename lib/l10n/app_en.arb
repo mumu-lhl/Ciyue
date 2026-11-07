@@ -44,6 +44,24 @@
   "@rebuildFullTextIndex": {},
   "deleteFullTextIndex": "Delete index",
   "@deleteFullTextIndex": {},
+  "searchModePrefix": "Prefix",
+  "@searchModePrefix": {},
+  "searchModeSuffix": "Suffix",
+  "@searchModeSuffix": {},
+  "searchModeMultiWord": "Multi-word",
+  "@searchModeMultiWord": {},
+  "searchModeFullText": "Full text",
+  "@searchModeFullText": {},
+  "searchModeTooltip": "Search mode: {mode}",
+  "@searchModeTooltip": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "searchModeIndexNotBuilt": "Index not built yet — tap to open full-text search",
+  "@searchModeIndexNotBuilt": {},
   "spellingSuggestions": "Spelling suggestions",
   "@spellingSuggestions": {},
   "phraseSuggestions": "Phrasal verbs",

@@ -2,13 +2,36 @@ import "dart:async";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
+import "package:ciyue/models/search_mode.dart";
+import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
+import "package:ciyue/services/full_text_index_store.dart";
+import "package:ciyue/services/full_text_search.dart";
+import "package:ciyue/services/full_text_search_service.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
+
+/// Icon for each search mode, shown on the search bar's cycling button.
+IconData _searchModeIcon(SearchMode mode) => switch (mode) {
+  SearchMode.prefix => Icons.sort_by_alpha,
+  SearchMode.suffix => Icons.vertical_align_bottom,
+  SearchMode.multiWord => Icons.link,
+  SearchMode.fullText => Icons.find_in_page,
+};
+
+/// Localised label for each search mode, used in the button tooltip.
+String _searchModeLabel(AppLocalizations l10n, SearchMode mode) =>
+    switch (mode) {
+      SearchMode.prefix => l10n.searchModePrefix,
+      SearchMode.suffix => l10n.searchModeSuffix,
+      SearchMode.multiWord => l10n.searchModeMultiWord,
+      SearchMode.fullText => l10n.searchModeFullText,
+    };
 
 /// Selects the whole text in the field that owns [focusNode].
 ///
@@ -89,6 +112,16 @@ class _WordSearchBarWithSuggestionsState
   /// it: a callback that outlives the state leaves a pending timer behind,
   /// which the test binding treats as a failure.
   Timer? _reopenSuppression;
+
+  /// Dictionaries this bar already asked to build an index for, so a
+  /// failed build is retried only from the full-text page, not on every
+  /// keystroke in a mode that needs the index.
+  final Set<int> _ftsBuildsStarted = {};
+
+  /// Sorted ids of the dictionaries whose index is ready, as last seen in
+  /// [build]. When the set changes while the suggestion view is open in a
+  /// mode that needs the index, the view re-runs so fresh results appear.
+  String? _lastFtsReadyKey;
 
   static const _suggestionDebounce = Duration(milliseconds: 100);
 
@@ -183,6 +216,60 @@ class _WordSearchBarWithSuggestionsState
     }
   }
 
+  /// Re-runs the suggestion list for the current text and mode.
+  ///
+  /// Bumps [_suggestionGen] first so in-flight results from the old mode
+  /// or query discard themselves in the generation guard. Closes and
+  /// reopens the view when it is open: the anchor only runs
+  /// `suggestionsBuilder` on open or text change, so this is the only way
+  /// to refresh it. No-op when the view is closed.
+  void _refreshSuggestionsView() {
+    final controller = _effectiveController;
+    if (controller == null || !mounted) return;
+    _suggestionGen++;
+    if (!controller.isAttached || !controller.isOpen) return;
+    final text = controller.text;
+    controller.closeView(text);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && controller.isAttached) {
+        controller.openView();
+      }
+    });
+  }
+
+  /// Advances the search mode and refreshes the open suggestion view so
+  /// it shows the new mode's results instead of the old mode's.
+  Future<void> _cycleSearchMode(SearchController controller) async {
+    await settings.setSearchMode(settings.searchMode.next);
+    _refreshSuggestionsView();
+  }
+
+  /// Starts index builds for dictionaries that have none, for the modes
+  /// that need the index. A failed build is not retried here: the
+  /// full-text page owns the retry button.
+  void _maybeStartFtsBuilds() {
+    final service = ref.read(fullTextSearchServiceProvider);
+    for (final dictionary in [
+      for (final id in dictManager.dictIds) dictManager.dicts[id],
+    ].whereType<LoadedDictionary>()) {
+      if (_ftsBuildsStarted.contains(dictionary.id)) continue;
+      if (service.stateFor(dictionary.id).status !=
+          FullTextIndexStatus.notBuilt) {
+        continue;
+      }
+      _ftsBuildsStarted.add(dictionary.id);
+      unawaited(service.ensureBuilt(dictionary));
+    }
+  }
+
+  /// Closes the suggestion view and opens the full-text page with the
+  /// current query, which is where index builds run and report progress.
+  void _openFullTextPage(SearchController controller, String query) {
+    if (!mounted) return;
+    controller.closeView(query);
+    context.push("/full-text-search?query=${Uri.encodeQueryComponent(query)}");
+  }
+
   void _openWord(SearchController controller, String word) {
     final normalizedWord = word.trim();
     if (normalizedWord.isEmpty) return;
@@ -240,6 +327,32 @@ class _WordSearchBarWithSuggestionsState
 
   @override
   Widget build(BuildContext context) {
+    final searchMode = ref.watch(
+      settingsProvider.select((settings) => settings.searchMode),
+    );
+    // Re-run the suggestions when an index build finishes while the view
+    // is open in a mode that needs the index. Only the ready set matters:
+    // per-batch progress notifies must not refresh the view, so the key is
+    // the sorted ready ids, not the progress values.
+    final ftsService = ref.watch(fullTextSearchServiceProvider);
+    final readyKey =
+        (ftsService.states.entries
+                .where(
+                  (entry) => entry.value.status == FullTextIndexStatus.ready,
+                )
+                .map((entry) => entry.key)
+                .toList()
+              ..sort())
+            .join(",");
+    if (_lastFtsReadyKey != readyKey) {
+      final hadPrevious = _lastFtsReadyKey != null;
+      _lastFtsReadyKey = readyKey;
+      if (hadPrevious && searchMode != SearchMode.prefix && _isViewOpen) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _refreshSuggestionsView();
+        });
+      }
+    }
     return SafeArea(
       child: Center(
         child: SearchAnchor(
@@ -320,6 +433,19 @@ class _WordSearchBarWithSuggestionsState
               },
               onSubmitted: (word) => _openWord(controller, word),
               leading: const Icon(Icons.search),
+              // The bar is 42px high and ~500 wide, so there is no room
+              // for a dropdown: one small button cycles prefix -> suffix
+              // -> multi-word -> full text. Submitting still opens the
+              // exact headword in every mode.
+              trailing: [
+                IconButton(
+                  icon: Icon(_searchModeIcon(searchMode)),
+                  tooltip: AppLocalizations.of(context)!.searchModeTooltip(
+                    _searchModeLabel(AppLocalizations.of(context)!, searchMode),
+                  ),
+                  onPressed: () => _cycleSearchMode(controller),
+                ),
+              ],
             );
           },
           searchController: widget.controller,
@@ -340,19 +466,28 @@ class _WordSearchBarWithSuggestionsState
                 : const <Widget>[];
 
             final searchWord = controller.text.trim();
+            // The race guard captures the query AND the mode: an in-flight
+            // FTS query from the old mode must not paint its results after
+            // a mode switch, and vice versa.
+            final mode = settings.searchMode;
             final gen = ++_suggestionGen;
 
             // Debounce: only the last keystroke of a burst runs the
             // query. Superseded calls return the previous suggestions.
             await Future.delayed(_suggestionDebounce);
             if (!mounted) return keepPrevious();
-            if (gen != _suggestionGen || controller.text.trim() != searchWord) {
+            if (gen != _suggestionGen ||
+                settings.searchMode != mode ||
+                controller.text.trim() != searchWord) {
               return keepPrevious();
             }
 
             while (ref.read(dictManagerModelProvider).isSwitchingGroup) {
               await Future.delayed(const Duration(milliseconds: 40));
               if (!mounted) return keepPrevious();
+              if (gen != _suggestionGen || settings.searchMode != mode) {
+                return keepPrevious();
+              }
             }
 
             if (searchWord.isEmpty) {
@@ -360,17 +495,29 @@ class _WordSearchBarWithSuggestionsState
               return _lastSuggestions!;
             }
 
+            // The modes that need the index start its build on first use,
+            // like the full-text page does, instead of sitting on "not
+            // built" until the user opens that page.
+            if (mode != SearchMode.prefix) {
+              _maybeStartFtsBuilds();
+            }
+
             final suggestions = await dictionaryLookup.searchSuggestions(
               searchWord,
+              mode: mode,
+              fullText: ref.read(fullTextSearchServiceProvider),
             );
             // The `context` handed to this builder belongs to the view the
             // anchor opens, and a submitted word closes that view. Its element
             // stays mounted after that, so asking it for an inherited widget
             // throws; this state is the one that knows whether it is still in
             // the tree, and it survives the view closing.
-            if (!mounted || gen != _suggestionGen) {
-              // A newer keystroke arrived while querying: drop the stale
-              // result instead of overwriting fresh suggestions.
+            if (!mounted ||
+                gen != _suggestionGen ||
+                settings.searchMode != mode) {
+              // A newer keystroke arrived while querying, or the mode
+              // changed: drop the stale result instead of overwriting
+              // fresh suggestions.
               return keepPrevious();
             }
             final l10n = _l10n;
@@ -388,33 +535,87 @@ class _WordSearchBarWithSuggestionsState
               );
             }
 
+            ListTile buildFullTextTile(FullTextHit hit) {
+              return ListTile(
+                title: Text(hit.headword),
+                subtitle: Text(
+                  parseSnippet(hit.snippet).map((s) => s.text).join(),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: const Icon(Icons.arrow_forward),
+                onTap: () {
+                  if (!mounted) return;
+                  _openWord(controller, hit.headword);
+                },
+              );
+            }
+
+            // The modes that need the index never fail silently: when an
+            // index is unbuilt, building or failed, the bar says so up
+            // front and offers the full-text page, where the build runs
+            // and reports progress.
+            ListTile? buildIndexStatusTile() {
+              if (mode == SearchMode.prefix) return null;
+              switch (suggestions.fullTextIndexStatus) {
+                case FullTextIndexStatus.ready:
+                  return null;
+                case FullTextIndexStatus.building:
+                  return ListTile(
+                    leading: const Icon(Icons.hourglass_top),
+                    title: Text(l10n.buildingFullTextIndex),
+                    onTap: () => _openFullTextPage(controller, searchWord),
+                  );
+                case FullTextIndexStatus.failed:
+                  return ListTile(
+                    leading: const Icon(Icons.warning),
+                    title: Text(l10n.fullTextIndexFailed),
+                    onTap: () => _openFullTextPage(controller, searchWord),
+                  );
+                case FullTextIndexStatus.notBuilt:
+                  return ListTile(
+                    leading: const Icon(Icons.hourglass_top),
+                    title: Text(l10n.searchModeIndexNotBuilt),
+                    onTap: () => _openFullTextPage(controller, searchWord),
+                  );
+              }
+            }
+
+            final statusTile = buildIndexStatusTile();
+            final statusTiles = statusTile == null
+                ? null
+                : <Widget>[statusTile];
             _lastSuggestions = [
-              if (settings.aiExplainWord) buildSuggestionTile(searchWord),
-              ...suggestions.dictionarySuggestions.map(buildSuggestionTile),
-              if (suggestions.spellingSuggestions.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: 16,
-                    top: 10,
-                    bottom: 5,
-                  ),
-                  child: Text(
-                    l10n.spellingSuggestions,
-                    style: theme?.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.secondary.withValues(alpha: 0.7),
+              ...?statusTiles,
+              if (mode == SearchMode.fullText)
+                ...suggestions.fullTextHits.map(buildFullTextTile)
+              else ...[
+                if (settings.aiExplainWord) buildSuggestionTile(searchWord),
+                ...suggestions.dictionarySuggestions.map(buildSuggestionTile),
+                if (suggestions.spellingSuggestions.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      start: 16,
+                      top: 10,
+                      bottom: 5,
+                    ),
+                    child: Text(
+                      l10n.spellingSuggestions,
+                      style: theme?.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.secondary.withValues(
+                          alpha: 0.7,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ...suggestions.spellingSuggestions.map(buildSuggestionTile),
+                ...suggestions.spellingSuggestions.map(buildSuggestionTile),
+              ],
               ListTile(
                 leading: const Icon(Icons.find_in_page),
                 title: Text(l10n.searchInDefinitions(searchWord)),
                 onTap: () {
                   if (!mounted) return;
-                  controller.closeView(searchWord);
-                  this.context.push(
-                    "/full-text-search?query=${Uri.encodeQueryComponent(searchWord)}",
-                  );
+                  _openFullTextPage(controller, searchWord);
                 },
               ),
             ];

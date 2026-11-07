@@ -44,6 +44,24 @@
   "@rebuildFullTextIndex": {},
   "deleteFullTextIndex": "删除索引",
   "@deleteFullTextIndex": {},
+  "searchModePrefix": "前缀",
+  "@searchModePrefix": {},
+  "searchModeSuffix": "后缀",
+  "@searchModeSuffix": {},
+  "searchModeMultiWord": "多词",
+  "@searchModeMultiWord": {},
+  "searchModeFullText": "全文",
+  "@searchModeFullText": {},
+  "searchModeTooltip": "搜索模式：{mode}",
+  "@searchModeTooltip": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "searchModeIndexNotBuilt": "索引尚未建立——点按打开全文搜索",
+  "@searchModeIndexNotBuilt": {},
   "theme": "主题",
   "@theme": {},
   "dynamicColor": "Material 动态配色",

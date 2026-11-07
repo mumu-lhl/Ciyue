@@ -64,6 +64,66 @@ void main() {
     });
   });
 
+  group("reverseHeadword", () {
+    test("reverses by rune, keeping astral-plane characters whole", () {
+      expect(reverseHeadword("running"), "gninnur");
+      expect(reverseHeadword("主义"), "义主");
+      // U+20000 is a surrogate pair in UTF-16; reversing by unit would
+      // split it into two lone surrogates.
+      expect(reverseHeadword("a\u{20000}b"), "b\u{20000}a");
+    });
+  });
+
+  group("buildSuffixMatchExpression", () {
+    test("Latin suffix becomes a prefix query on the reversed column", () {
+      expect(buildSuffixMatchExpression("ing"), "{headword_rev} : gni*");
+    });
+
+    test("CJK suffix becomes a reversed character phrase", () {
+      expect(buildSuffixMatchExpression("主义"), '{headword_rev} : "义 主"');
+    });
+
+    test("mixed query segments by run: CJK exact, Latin tail as prefix", () {
+      expect(
+        buildSuffixMatchExpression("test者"),
+        '{headword_rev} : "者" AND {headword_rev} : tset*',
+      );
+    });
+
+    test("punctuation-only and empty queries have no expression", () {
+      expect(buildSuffixMatchExpression("..."), "");
+      expect(buildSuffixMatchExpression("   "), "");
+    });
+  });
+
+  group("buildHeadwordAndMatchExpression", () {
+    test("CJK characters are ANDed as separate headword terms", () {
+      expect(
+        buildHeadwordAndMatchExpression("中国"),
+        '{headword} : "中" AND {headword} : "国"',
+      );
+    });
+
+    test("Latin words are ANDed as whole headword terms", () {
+      expect(
+        buildHeadwordAndMatchExpression("pick up"),
+        '{headword} : "pick" AND {headword} : "up"',
+      );
+    });
+
+    test("mixed query ANDs its CJK characters and Latin words", () {
+      expect(
+        buildHeadwordAndMatchExpression("中国apple"),
+        '{headword} : "中" AND {headword} : "国" AND {headword} : "apple"',
+      );
+    });
+
+    test("punctuation-only and empty queries have no expression", () {
+      expect(buildHeadwordAndMatchExpression("..."), "");
+      expect(buildHeadwordAndMatchExpression("   "), "");
+    });
+  });
+
   group("parseSnippet", () {
     test("splits markers into plain and match segments", () {
       final segments = parseSnippet(

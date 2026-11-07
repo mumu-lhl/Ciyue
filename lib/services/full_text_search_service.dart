@@ -121,6 +121,11 @@ class FullTextSearchService extends ChangeNotifier {
 
   /// The primary file whose size + mtime identifies a dictionary's content.
   /// Mirrors the `.cidx` fingerprint idea: a changed file rebuilds.
+  ///
+  /// The FTS schema version is stamped in front: when the table shape
+  /// changes (v2 adds `headword_rev`), the fingerprint differs from the
+  /// one stored with the old tables, so the index rebuilds instead of
+  /// serving stale tables that the new queries cannot use.
   static Future<String> fingerprintFor(int type, String basePath) async {
     final candidates = <String>[];
     if (DictionaryType.isStardict(type)) {
@@ -138,7 +143,8 @@ class FullTextSearchService extends ChangeNotifier {
       final file = File(candidate);
       if (await file.exists()) {
         final stat = await file.stat();
-        return "${stat.size}:${stat.modified.millisecondsSinceEpoch}";
+        return "v$fullTextIndexSchemaVersion:"
+            "${stat.size}:${stat.modified.millisecondsSinceEpoch}";
       }
     }
     return "";
@@ -261,11 +267,73 @@ class FullTextSearchService extends ChangeNotifier {
     _cancelTokens[dictionaryId]?.cancel();
   }
 
+  /// Worst index status across the active dictionaries: a build in flight
+  /// anywhere reports building, then a failed build, then a dictionary
+  /// never built; only when every index is ready does this report ready.
+  /// The search bar shows this instead of an unexplained empty list when a
+  /// mode needs the index.
+  Future<FullTextIndexStatus> indexStatus() async {
+    await _reconcileOnce();
+    var status = FullTextIndexStatus.ready;
+    for (final dictionary in dictionaries()) {
+      switch (stateFor(dictionary.id).status) {
+        case FullTextIndexStatus.building:
+          return FullTextIndexStatus.building;
+        case FullTextIndexStatus.failed:
+          status = FullTextIndexStatus.failed;
+        case FullTextIndexStatus.notBuilt:
+          if (status == FullTextIndexStatus.ready) {
+            status = FullTextIndexStatus.notBuilt;
+          }
+        case FullTextIndexStatus.ready:
+          break;
+      }
+    }
+    return status;
+  }
+
   /// Searches every active dictionary with a ready index. Dictionaries
   /// still building or never built are skipped; the page drives builds.
   Future<List<FullTextHit>> search(String query) async {
     final expression = buildFtsMatchExpression(query);
     if (expression.isEmpty) return const [];
+    return _searchReady(
+      (store, dictionaryId) =>
+          store.searchOne(dictionaryId, expression, limit: 50),
+    );
+  }
+
+  /// Suffix search across the active dictionaries: headwords ending with
+  /// [query]. Same ready-only rule as [search].
+  Future<List<FullTextHit>> searchSuffix(String query) async {
+    if (buildSuffixMatchExpression(query).isEmpty) return const [];
+    return _searchReady(
+      (store, dictionaryId) =>
+          store.searchSuffixOne(dictionaryId, query, limit: 50),
+    );
+  }
+
+  /// Multi-word AND search across the active dictionaries: headwords
+  /// containing every character/word of [query]. Same ready-only rule as
+  /// [search].
+  Future<List<FullTextHit>> searchHeadwordAnd(String query) async {
+    if (buildHeadwordAndMatchExpression(query).isEmpty) return const [];
+    return _searchReady(
+      (store, dictionaryId) =>
+          store.searchHeadwordAndOne(dictionaryId, query, limit: 50),
+    );
+  }
+
+  /// Runs [run] against every active dictionary with a ready index and
+  /// merges the hits, best rank first, capped at 100. A dictionary still
+  /// building, never built, or unreadable contributes nothing.
+  Future<List<FullTextHit>> _searchReady(
+    Future<List<FullTextHit>> Function(
+      FullTextIndexStore store,
+      int dictionaryId,
+    )
+    run,
+  ) async {
     await _reconcileOnce();
     final FullTextIndexStore store;
     try {
@@ -280,9 +348,7 @@ class FullTextSearchService extends ChangeNotifier {
         continue;
       }
       try {
-        hits.addAll(
-          await store.searchOne(dictionary.id, expression, limit: 50),
-        );
+        hits.addAll(await run(store, dictionary.id));
       } catch (_) {
         // One unreadable index must not break search across the rest.
       }

@@ -4,6 +4,18 @@ import "package:ciyue/services/full_text_search.dart";
 import "package:drift/drift.dart";
 import "package:drift/native.dart";
 
+/// Schema version of the per-dictionary FTS5 tables.
+///
+/// Bump when the table shape changes. The version is stamped into the
+/// fingerprint ([FullTextSearchService.fingerprintFor]), so existing users'
+/// indexes rebuild instead of keeping tables without the new columns —
+/// without that, a suffix query would throw "no such column", which the
+/// service swallows per dictionary and suffix mode would come back
+/// silently empty for everyone who already had an index.
+///
+/// v2 adds the `headword_rev` column (suffix search).
+const int fullTextIndexSchemaVersion = 2;
+
 /// One indexed entry: the row id is the entry's ordinal in the dictionary's
 /// iteration order (1-based), which is what makes a cancelled build
 /// resumable — rebuilding skips the rows already stored.
@@ -161,11 +173,15 @@ class FullTextIndexStore {
         "CREATE TABLE $content ("
         "rowid INTEGER PRIMARY KEY, "
         "headword TEXT NOT NULL, "
+        "headword_rev TEXT NOT NULL, "
         "body TEXT NOT NULL)",
       );
+      // The external content table and the FTS5 table must carry the same
+      // columns. `headword_rev` is the headword reversed by rune (see
+      // [reverseHeadword]): suffix search is a prefix MATCH on it.
       await _db.customStatement(
         "CREATE VIRTUAL TABLE $fts USING fts5("
-        "headword, body, "
+        "headword, headword_rev, body, "
         "content='$content', content_rowid='rowid', "
         "tokenize='unicode61')",
       );
@@ -195,17 +211,20 @@ class FullTextIndexStore {
     final fts = _ftsTable(dictionaryId);
     await _db.transaction(() async {
       for (final row in rows) {
+        final headwordRev = reverseHeadword(row.headword);
         await _db.customStatement(
-          "INSERT OR REPLACE INTO $content (rowid, headword, body) "
-          "VALUES (?, ?, ?)",
-          [row.rowid, row.headword, row.body],
+          "INSERT OR REPLACE INTO $content "
+          "(rowid, headword, headword_rev, body) "
+          "VALUES (?, ?, ?, ?)",
+          [row.rowid, row.headword, headwordRev, row.body],
         );
         await _db.customStatement(
-          "INSERT OR REPLACE INTO $fts (rowid, headword, body) "
-          "VALUES (?, ?, ?)",
+          "INSERT OR REPLACE INTO $fts (rowid, headword, headword_rev, body) "
+          "VALUES (?, ?, ?, ?)",
           [
             row.rowid,
             tokenizeForIndex(row.headword),
+            tokenizeForIndex(headwordRev),
             tokenizeForIndex(row.body),
           ],
         );
@@ -289,7 +308,8 @@ class FullTextIndexStore {
 
   /// Runs [matchExpression] (see [buildFtsMatchExpression]) against one
   /// dictionary's index, best rank first. Headword matches weigh 10x body
-  /// matches via the `bm25` column weights.
+  /// matches via the `bm25` column weights; `headword_rev` weighs 0, so
+  /// the reversed column never leaks into full-text ranking.
   Future<List<FullTextHit>> searchOne(
     int dictionaryId,
     String matchExpression, {
@@ -301,8 +321,96 @@ class FullTextIndexStore {
     final rows = await _db
         .customSelect(
           "SELECT c.headword AS headword, "
-          "snippet($fts, 1, ?, ?, ?, ?) AS snippet, "
-          "bm25($fts, 10.0, 1.0) AS rank "
+          "snippet($fts, 2, ?, ?, ?, ?) AS snippet, "
+          "bm25($fts, 10.0, 0.0, 1.0) AS rank "
+          "FROM $fts JOIN $content AS c ON c.rowid = $fts.rowid "
+          "WHERE $fts MATCH ? ORDER BY rank LIMIT ?",
+          variables: [
+            Variable.withString(snippetMatchStart),
+            Variable.withString(snippetMatchEnd),
+            Variable.withString("…"),
+            Variable.withInt(24),
+            Variable.withString(matchExpression),
+            Variable.withInt(limit),
+          ],
+        )
+        .get();
+    return [
+      for (final row in rows)
+        FullTextHit(
+          dictionaryId: dictionaryId,
+          headword: row.read<String>("headword"),
+          snippet: row.read<String>("snippet"),
+          rank: row.read<double>("rank"),
+        ),
+    ];
+  }
+
+  /// Suffix search on one dictionary's index: headwords ending with
+  /// [query], best rank first.
+  ///
+  /// The MATCH is a prefix query on the reversed-headword column (see
+  /// [buildSuffixMatchExpression]), which on its own also matches headwords
+  /// that merely CONTAIN the query — FTS5 phrases match at any position —
+  /// so hits are post-filtered here with `headword.endsWith(query)`.
+  /// Without that filter, suffix `主义` would also return `主义者`.
+  Future<List<FullTextHit>> searchSuffixOne(
+    int dictionaryId,
+    String query, {
+    int limit = 50,
+  }) async {
+    final expression = buildSuffixMatchExpression(query);
+    if (expression.isEmpty) return const [];
+    final hits = await _searchWithExpression(
+      dictionaryId,
+      expression,
+      // Only the reversed column carries the match; the other columns
+      // weigh 0 so they cannot reorder suffix hits.
+      bm25Weights: "0.0, 1.0, 0.0",
+      limit: limit,
+    );
+    final foldedQuery = query.toLowerCase();
+    return [
+      for (final hit in hits)
+        if (hit.headword.toLowerCase().endsWith(foldedQuery)) hit,
+    ];
+  }
+
+  /// Multi-word AND search on one dictionary's index: headwords containing
+  /// every character/word of [query], in any order, best rank first.
+  ///
+  /// The MATCH is qualified to the headword column only (see
+  /// [buildHeadwordAndMatchExpression]), so a body that mentions the query
+  /// never matches — unlike [searchOne], which searches headword and body.
+  Future<List<FullTextHit>> searchHeadwordAndOne(
+    int dictionaryId,
+    String query, {
+    int limit = 50,
+  }) async {
+    final expression = buildHeadwordAndMatchExpression(query);
+    if (expression.isEmpty) return const [];
+    return _searchWithExpression(
+      dictionaryId,
+      expression,
+      bm25Weights: "10.0, 0.0, 1.0",
+      limit: limit,
+    );
+  }
+
+  Future<List<FullTextHit>> _searchWithExpression(
+    int dictionaryId,
+    String matchExpression, {
+    required String bm25Weights,
+    required int limit,
+  }) async {
+    await _ensureMeta();
+    final content = _contentTable(dictionaryId);
+    final fts = _ftsTable(dictionaryId);
+    final rows = await _db
+        .customSelect(
+          "SELECT c.headword AS headword, "
+          "snippet($fts, 2, ?, ?, ?, ?) AS snippet, "
+          "bm25($fts, $bm25Weights) AS rank "
           "FROM $fts JOIN $content AS c ON c.rowid = $fts.rowid "
           "WHERE $fts MATCH ? ORDER BY rank LIMIT ?",
           variables: [

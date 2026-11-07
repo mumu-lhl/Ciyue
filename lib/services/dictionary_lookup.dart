@@ -1,6 +1,9 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/models/hunspell.dart";
+import "package:ciyue/models/search_mode.dart";
+import "package:ciyue/services/full_text_index_store.dart";
+import "package:ciyue/services/full_text_search_service.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/lookup_keys.dart";
 import "package:ciyue/services/long_vowel_lookup.dart";
@@ -39,9 +42,21 @@ class DictionarySearchSuggestions {
   final List<String> dictionarySuggestions;
   final List<String> spellingSuggestions;
 
+  /// Full-text definition hits, only filled in [SearchMode.fullText]:
+  /// the other modes surface headwords through [dictionarySuggestions].
+  final List<FullTextHit> fullTextHits;
+
+  /// Worst full-text index status across the active dictionaries. Only
+  /// meaningful for the modes that need the index ([SearchMode.suffix],
+  /// [SearchMode.multiWord], [SearchMode.fullText]); prefix mode leaves
+  /// it at [FullTextIndexStatus.ready].
+  final FullTextIndexStatus fullTextIndexStatus;
+
   const DictionarySearchSuggestions({
     required this.dictionarySuggestions,
     required this.spellingSuggestions,
+    this.fullTextHits = const [],
+    this.fullTextIndexStatus = FullTextIndexStatus.ready,
   });
 }
 
@@ -140,7 +155,25 @@ class DictionaryLookup {
     return DictionaryLookupResult(entriesByDictionary: matches);
   }
 
-  Future<DictionarySearchSuggestions> searchSuggestions(String query) async {
+  /// Suggestions for [query] under [mode].
+  ///
+  /// Prefix mode is the historical behaviour: headword-prefix matches plus
+  /// morphology stems and spelling suggestions. The other modes are served
+  /// by the full-text index through [fullText]: suffix and multi-word AND
+  /// return matching headwords as [DictionarySearchSuggestions
+  /// .dictionarySuggestions], full-text mode returns definition hits in
+  /// [DictionarySearchSuggestions.fullTextHits]. When [fullText] is null
+  /// (or no index is ready) those modes report
+  /// [FullTextIndexStatus.notBuilt] instead of an unexplained empty list,
+  /// so the UI can say why there is nothing to show.
+  ///
+  /// Exact lookup on submit is deliberately NOT mode-dependent: Enter
+  /// always opens the exact headword, in every mode.
+  Future<DictionarySearchSuggestions> searchSuggestions(
+    String query, {
+    SearchMode mode = SearchMode.prefix,
+    FullTextSearchService? fullText,
+  }) async {
     if (query.isEmpty) {
       return const DictionarySearchSuggestions(
         dictionarySuggestions: [],
@@ -148,6 +181,57 @@ class DictionaryLookup {
       );
     }
 
+    if (mode != SearchMode.prefix) {
+      return _fullTextSuggestions(query, mode, fullText);
+    }
+
+    return _prefixSuggestions(query);
+  }
+
+  Future<DictionarySearchSuggestions> _fullTextSuggestions(
+    String query,
+    SearchMode mode,
+    FullTextSearchService? fullText,
+  ) async {
+    if (fullText == null) {
+      return const DictionarySearchSuggestions(
+        dictionarySuggestions: [],
+        spellingSuggestions: [],
+        fullTextIndexStatus: FullTextIndexStatus.notBuilt,
+      );
+    }
+    // Same width handling as the prefix path: a full-width query must
+    // still reach its half-width headwords.
+    final hits = <FullTextHit>[];
+    final seenHeadwords = <String>{};
+    for (final variant in widthVariants(query)) {
+      final variantHits = switch (mode) {
+        SearchMode.suffix => await fullText.searchSuffix(variant),
+        SearchMode.multiWord => await fullText.searchHeadwordAnd(variant),
+        SearchMode.fullText => await fullText.search(variant),
+        SearchMode.prefix => const <FullTextHit>[],
+      };
+      for (final hit in variantHits) {
+        if (seenHeadwords.add(hit.headword)) hits.add(hit);
+      }
+    }
+    final status = await fullText.indexStatus();
+    if (mode == SearchMode.fullText) {
+      return DictionarySearchSuggestions(
+        dictionarySuggestions: const [],
+        spellingSuggestions: const [],
+        fullTextHits: hits,
+        fullTextIndexStatus: status,
+      );
+    }
+    return DictionarySearchSuggestions(
+      dictionarySuggestions: [for (final hit in hits) hit.headword],
+      spellingSuggestions: const [],
+      fullTextIndexStatus: status,
+    );
+  }
+
+  Future<DictionarySearchSuggestions> _prefixSuggestions(String query) async {
     final activeDictionaries = dictionaries();
     // Skip dictionaries that fail instead of failing the whole suggestion
     // list: a single broken dictionary must not break global search.
