@@ -41,8 +41,7 @@ class FullTextIndexOverviewPage extends ConsumerWidget {
                       key: ValueKey(dictionary.id),
                       path: dictionary.path,
                       id: dictionary.id,
-                      title: dictionary.title != null &&
-                              dictionary.title != ""
+                      title: dictionary.title != null && dictionary.title != ""
                           ? dictionary.title
                           : basename(dictionary.path),
                     ),
