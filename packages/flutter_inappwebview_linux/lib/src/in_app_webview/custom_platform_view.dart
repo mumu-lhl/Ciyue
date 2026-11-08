@@ -106,13 +106,13 @@ PointerButton _getButton(int value) {
   }
 }
 
-/// Picks the button that has just gone down out of the [buttons] bitmask.
+/// Picks a button out of a possibly combined [buttons] bitmask for a down
+/// event. A PointerDownEvent does not say which bit changed, so prefer the
+/// non-primary button when several are set. Release events keep [_getButton]
+/// because their mask describes what is left, not what was released.
 ///
-/// A PointerDownEvent only carries the current mask, not which button changed.
-/// Holding the left button and pressing the right one (a rocker gesture) gives
-/// 1 | 2 = 3, which [_getButton] maps to [PointerButton.none] — WPE would then
-/// never see a right-button press. Prefer the non-primary button here; release
-/// events keep using [_getButton] because their mask describes what is left.
+/// Pressing a second button while one is held usually produces only a
+/// PointerMoveEvent; the pointer-move handler forwards that edge separately.
 PointerButton _getDownButton(int value) {
   if (value & kSecondaryMouseButton != 0) return PointerButton.secondary;
   if (value & kTertiaryButton != 0) return PointerButton.tertiary;
@@ -388,6 +388,11 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
   final GlobalKey _key = GlobalKey();
   final _downButtons = <int, PointerButton>{};
 
+  /// Last button bitmask seen on this pointer. Flutter reports an extra mouse
+  /// button pressed while another one is held only as a move event, so WPE has
+  /// to be told about the change explicitly.
+  int _lastButtons = 0;
+
   PointerDeviceKind _pointerKind = PointerDeviceKind.unknown;
 
   MouseCursor _cursor = SystemMouseCursors.basic;
@@ -603,6 +608,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
 
                   final button = _getDownButton(ev.buttons);
                   _downButtons[ev.pointer] = button;
+                  _lastButtons = ev.buttons;
 
                   // Detect double/triple click
                   final now = DateTime.now();
@@ -652,6 +658,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                   // still down, causing sticky selection.
                   final button =
                       _downButtons.remove(ev.pointer) ?? PointerButton.primary;
+                  _lastButtons = 0;
                   _controller._setPointerButtonState(
                     InAppWebViewPointerEventKind.up,
                     button,
@@ -675,6 +682,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                   // Same as onPointerUp: don't drop the event if state was lost.
                   final button =
                       _downButtons.remove(ev.pointer) ?? PointerButton.primary;
+                  _lastButtons = 0;
                   _controller._setPointerButtonState(
                     InAppWebViewPointerEventKind.cancel,
                     button,
@@ -693,6 +701,34 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     ); // 2 = move
                     return;
                   }
+
+                  // Pressing a second button while one is already held does not
+                  // produce another PointerDownEvent: only the buttons bitmask
+                  // changes, here in a move event. Without forwarding the edge,
+                  // WPE never sees the right-button press and the page gets
+                  // neither mousedown(button 2) nor contextmenu, which breaks
+                  // rocker gestures (and any other right-click while dragging).
+                  final previous = _lastButtons;
+                  _lastButtons = ev.buttons;
+                  final rightWasDown = (previous & kSecondaryMouseButton) != 0;
+                  final rightIsDown = (ev.buttons & kSecondaryMouseButton) != 0;
+                  if (rightIsDown && !rightWasDown) {
+                    _controller._setPointerButtonStateWithClickCount(
+                      InAppWebViewPointerEventKind.down,
+                      PointerButton.secondary,
+                      1,
+                      modifiers: _getCurrentModifiers(),
+                    );
+                  } else if (!rightIsDown && rightWasDown) {
+                    // A right-button release while the left button stays down
+                    // is also only a move event; leave no button stuck in WPE.
+                    _controller._setPointerButtonState(
+                      InAppWebViewPointerEventKind.up,
+                      PointerButton.secondary,
+                      modifiers: _getCurrentModifiers(),
+                    );
+                  }
+
                   _controller._setCursorPos(
                     ev.localPosition,
                     modifiers: _getCurrentModifiers(),

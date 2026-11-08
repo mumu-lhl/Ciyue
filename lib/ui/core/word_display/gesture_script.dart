@@ -63,6 +63,14 @@ String gestureScript() {
     }
   }, true);
 
+  // WPE can report an extra button only as a move event with an updated
+  // bitmask, dispatching neither mousedown nor contextmenu for it.
+  document.addEventListener('mousemove', function (e) {
+    if (leftDown && !e.ctrlKey && (e.buttons & 2) !== 0) {
+      sendRocker();
+    }
+  }, true);
+
   document.addEventListener('wheel', function (e) {
     // Holding the left button also starts a rocker gesture; the two are told
     // apart by the event type, not by the button.

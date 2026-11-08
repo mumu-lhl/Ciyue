@@ -23,6 +23,11 @@ void main() {
       expect(script, contains("rockerSent = false;"));
     });
 
+    test("falls back to the move-event button bitmask", () {
+      expect(script, contains("document.addEventListener('mousemove'"));
+      expect(script, contains("(e.buttons & 2) !== 0"));
+    });
+
     test("uses a non-passive wheel listener and throttles repeat events", () {
       expect(script, contains("{ capture: true, passive: false }"));
       expect(script, contains("if (now - lastWheelAt < 80) return;"));
