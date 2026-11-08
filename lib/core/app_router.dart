@@ -16,6 +16,7 @@ import "package:ciyue/ui/pages/settings/backup.dart";
 import "package:ciyue/ui/pages/settings/cloud_sync.dart";
 import "package:ciyue/ui/pages/settings/history.dart";
 import "package:ciyue/ui/pages/settings/hunspell.dart";
+import "package:ciyue/ui/pages/settings/manage_dictionaries/full_text_index_overview.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/properties.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/settings_dictionary.dart";
@@ -188,6 +189,10 @@ final router = GoRouter(
         path: (state.extra as Map<String, dynamic>)["path"],
         id: (state.extra as Map<String, dynamic>)["id"],
       ),
+    ),
+    GoRoute(
+      path: "/full-text-index-overview",
+      builder: (context, state) => const FullTextIndexOverviewPage(),
     ),
     GoRoute(
       path: "/writing_check",

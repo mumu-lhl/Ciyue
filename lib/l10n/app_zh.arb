@@ -44,6 +44,8 @@
   "@rebuildFullTextIndex": {},
   "deleteFullTextIndex": "删除索引",
   "@deleteFullTextIndex": {},
+  "fullTextIndexOverview": "全文索引总览",
+  "@fullTextIndexOverview": {},
   "searchModePrefix": "前缀",
   "@searchModePrefix": {},
   "searchModeSuffix": "后缀",
