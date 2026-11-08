@@ -18,8 +18,8 @@ import "package:go_router/go_router.dart";
 
 /// Icon for each search mode, shown on the search bar's cycling button.
 IconData _searchModeIcon(SearchMode mode) => switch (mode) {
-  SearchMode.prefix => Icons.sort_by_alpha,
-  SearchMode.suffix => Icons.vertical_align_bottom,
+  SearchMode.prefix => Icons.first_page,
+  SearchMode.suffix => Icons.last_page,
   SearchMode.multiWord => Icons.link,
   SearchMode.fullText => Icons.find_in_page,
 };
