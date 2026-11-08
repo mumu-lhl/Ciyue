@@ -45,6 +45,8 @@
   "language": "語言",
   "@language": {},
   "lookup": "查詢",
+  "lookupInNewTab": "在新分頁中查詢",
+  "@lookupInNewTab": {},
   "@lookup": {},
   "notFound": "沒有找到",
   "@notFound": {},

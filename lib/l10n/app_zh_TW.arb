@@ -23,6 +23,8 @@
   "system": "系統",
   "language": "語言",
   "lookup": "查詢",
+  "lookupInNewTab": "在新分頁中查詢",
+  "@lookupInNewTab": {},
   "notFound": "沒有找到",
   "notSupport": "不支援該檔案",
   "copy": "複製",

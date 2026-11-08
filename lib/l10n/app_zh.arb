@@ -91,6 +91,8 @@
   "language": "语言",
   "@language": {},
   "lookup": "查询",
+  "lookupInNewTab": "在新标签页中查询",
+  "@lookupInNewTab": {},
   "@lookup": {},
   "notFound": "没有找到",
   "@notFound": {},

@@ -105,6 +105,8 @@
   "language": "Language",
   "@language": {},
   "lookup": "Lookup",
+  "lookupInNewTab": "Look up in a New Tab",
+  "@lookupInNewTab": {},
   "@lookup": {},
   "notFound": "Not found",
   "@notFound": {},
