@@ -83,7 +83,7 @@ void main(List<String> args) async {
 
   // Show a splash immediately so the first frame isn't blocked on disk I/O
   // (prefs migration) and heavy init.
-  runApp(const _StartupSplash());
+  runApp(const ProviderScope(child: _StartupSplash()));
   try {
     drift.driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
