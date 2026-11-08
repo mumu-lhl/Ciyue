@@ -38,10 +38,13 @@ void main() {
       expect(script, contains("['PageDown', false, true, false, false]"));
     });
 
-    test("forwards Cmd/Super+Arrow and compares the meta flag", () {
+    test("forwards Alt+Arrow for history only", () {
       final script = keyBridgeScript();
-      expect(script, contains("['ArrowUp', false, false, false, true]"));
-      expect(script, contains("['ArrowDown', false, false, false, true]"));
+      expect(script, contains("['ArrowUp', false, true, false, false]"));
+      expect(script, contains("['ArrowDown', false, true, false, false]"));
+      expect(script, isNot(contains("['ArrowUp', true, false, false, false]")));
+      // The meta column stays so a Cmd combination cannot be forwarded as
+      // the same key without its modifier.
       expect(script, contains("s[4] === e.metaKey"));
     });
   });

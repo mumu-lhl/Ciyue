@@ -24,7 +24,9 @@ String keyBridgeScript() {
   }
   // The combinations the app binds behind the entry. Only these are taken
   // from the WebView, so Ctrl+C and the other browser keys keep working.
-  // [code, ctrl, alt, shift, meta]
+  // [code, ctrl, alt, shift, meta]. The meta column stays even though no
+  // shortcut binds Cmd/Super: without it a Cmd combination could be
+  // forwarded as the same key without its modifier.
   var shortcuts = [
     ['Escape', false, false, false, false],
     ['KeyF', true, false, false, false],
@@ -40,10 +42,8 @@ String keyBridgeScript() {
     ['PageDown', false, false, false, false],
     ['PageUp', false, true, false, false],
     ['PageDown', false, true, false, false],
-    ['ArrowUp', true, false, false, false],
-    ['ArrowDown', true, false, false, false],
-    ['ArrowUp', false, false, false, true],
-    ['ArrowDown', false, false, false, true],
+    ['ArrowUp', false, true, false, false],
+    ['ArrowDown', false, true, false, false],
     ['ArrowLeft', false, true, false, false],
     ['ArrowRight', false, true, false, false],
     ['Backquote', true, false, false, false]

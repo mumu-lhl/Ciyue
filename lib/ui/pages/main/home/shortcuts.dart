@@ -70,16 +70,14 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
         homeModel.nextTab,
     const SingleActivator(LogicalKeyboardKey.tab, control: true, shift: true):
         homeModel.previousTab,
-    const SingleActivator(LogicalKeyboardKey.arrowDown, control: true):
+    // Alt is the modifier the desktop environments leave alone here: macOS
+    // Mission Control takes Ctrl+Up/Down, and window tiling takes
+    // Super/Win+Up/Down on KDE, GNOME and Windows. Option+Up/Down is only a
+    // text-field command (paragraph start/end), which the focus guards and
+    // the global handler already leave to the field.
+    const SingleActivator(LogicalKeyboardKey.arrowDown, alt: true):
         selectNextHistory,
-    const SingleActivator(LogicalKeyboardKey.arrowUp, control: true):
-        selectPreviousHistory,
-    // Mission Control takes Ctrl+Up/Down on macOS, while KDE, GNOME and
-    // Windows take Super/Win+Up/Down for window tiling. Keeping both bound
-    // leaves one free combination on every desktop.
-    const SingleActivator(LogicalKeyboardKey.arrowDown, meta: true):
-        selectNextHistory,
-    const SingleActivator(LogicalKeyboardKey.arrowUp, meta: true):
+    const SingleActivator(LogicalKeyboardKey.arrowUp, alt: true):
         selectPreviousHistory,
     const SingleActivator(LogicalKeyboardKey.keyR, control: true): () {
       if (activeWord != null && activeWord.isNotEmpty) {
