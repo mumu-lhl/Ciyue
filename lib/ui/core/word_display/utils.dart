@@ -35,6 +35,22 @@ int? dictTabIndexForNumber({
   return aiExplainWord ? number : number - 1;
 }
 
+/// Maps one step through the dictionary tab bar to a tab index.
+///
+/// [current] is the visible tab and [length] counts every tab, including the
+/// AI one when it is shown. [step] is -1 or 1. The bar wraps at either end,
+/// the way word tabs do with `Ctrl`+`Tab`. Returns null when there is nothing
+/// to step between.
+int? adjacentDictTabIndex({
+  required int current,
+  required int length,
+  required int step,
+}) {
+  if (length <= 1) return null;
+  final from = current.clamp(0, length - 1).toInt();
+  return (from + step) % length;
+}
+
 Widget? buildTitle(
   String word,
   Settings settings, {

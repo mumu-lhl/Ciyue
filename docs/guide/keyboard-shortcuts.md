@@ -13,6 +13,7 @@ Ctrl+`  /  Ctrl+1…9      Groups: which dictionaries a lookup uses
         │
         └── Alt+0…9       Dictionaries: which result you are looking at
                             Alt+0 = AI explanation, Alt+1…9 = the first nine dictionaries
+                            Alt+PgUp / Alt+PgDn = previous / next dictionary tab
 ```
 
 ## Looking up
@@ -78,6 +79,10 @@ When the dictionary switch style is **Tabs**, every dictionary gets a tab in the
 |---|---|
 | `Alt`+`1` … `Alt`+`9` | Show the first to the ninth dictionary |
 | `Alt`+`0` | Show the AI explanation, when it is enabled |
+| `Alt`+`PgUp` | Show the previous dictionary tab |
+| `Alt`+`PgDn` | Show the next dictionary tab |
+
+Stepping wraps around at either end, the way word tabs do with `Ctrl`+`Tab`. The AI tab is part of the cycle when the explanation is enabled, and stepping reaches dictionaries past the ninth, which the number keys cannot name.
 
 In the **Expansion** style there are no such tabs, and these keys do nothing at all.
 
@@ -116,5 +121,5 @@ Only the entry is scaled, the rest of the window keeps its size. The level is re
 
 - The group and dictionary tab shortcuts only act while an entry is on screen.
 - On a keyboard where the window manager takes `Alt`+a number, the dictionary tabs cannot be reached that way.
-- `Ctrl`+`PgUp` and `Ctrl`+`PgDn` change the word tab; the same keys without `Ctrl` scroll the entry in the expansion layout.
+- `Ctrl`+`PgUp` and `Ctrl`+`PgDn` change the word tab, while `Alt`+`PgUp` and `Alt`+`PgDn` change the dictionary tab; the same keys without a modifier scroll the entry in the expansion layout.
 - On the desktop layout the arrow keys move the keyboard focus between controls; `Enter` or `Space` activates the focused one.

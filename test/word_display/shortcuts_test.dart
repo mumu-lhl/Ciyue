@@ -1,5 +1,6 @@
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/ui/core/word_display/content_scale_script.dart";
+import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:flutter_test/flutter_test.dart";
 
@@ -24,6 +25,14 @@ void main() {
       expect(script, contains("1.250"));
       expect(script, contains("root.style.zoom = v"));
       expect(script, contains("window.ciyueSetZoom"));
+    });
+  });
+
+  group("keyBridgeScript", () {
+    test("forwards Alt+PageUp and Alt+PageDown", () {
+      final script = keyBridgeScript();
+      expect(script, contains("['PageUp', false, true, false]"));
+      expect(script, contains("['PageDown', false, true, false]"));
     });
   });
 
@@ -118,6 +127,27 @@ void main() {
         ),
         isNull,
       );
+    });
+  });
+
+  group("adjacentDictTabIndex", () {
+    test("steps through the tabs", () {
+      expect(adjacentDictTabIndex(current: 1, length: 4, step: 1), 2);
+      expect(adjacentDictTabIndex(current: 1, length: 4, step: -1), 0);
+    });
+
+    test("wraps at either end", () {
+      expect(adjacentDictTabIndex(current: 3, length: 4, step: 1), 0);
+      expect(adjacentDictTabIndex(current: 0, length: 4, step: -1), 3);
+    });
+
+    test("clamps an index from a tab bar that changed", () {
+      expect(adjacentDictTabIndex(current: 9, length: 4, step: 1), 0);
+    });
+
+    test("returns null when there is nothing to step between", () {
+      expect(adjacentDictTabIndex(current: 0, length: 0, step: 1), isNull);
+      expect(adjacentDictTabIndex(current: 0, length: 1, step: 1), isNull);
     });
   });
 }
