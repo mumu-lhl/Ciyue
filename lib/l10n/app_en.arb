@@ -44,6 +44,8 @@
   "@rebuildFullTextIndex": {},
   "deleteFullTextIndex": "Delete index",
   "@deleteFullTextIndex": {},
+  "fullTextIndexOverview": "Full-text index overview",
+  "@fullTextIndexOverview": {},
   "searchModePrefix": "Prefix",
   "@searchModePrefix": {},
   "searchModeSuffix": "Suffix",
