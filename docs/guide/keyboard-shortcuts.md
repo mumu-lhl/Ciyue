@@ -93,6 +93,7 @@ In the **Expansion** style there are no such tabs, and these keys do nothing at 
 | `Ctrl`+`R` | Read the word aloud — or stop it when it is already playing |
 | `Ctrl`+`Shift`+`S` | Stop the playback |
 | `Ctrl`+`↑` / `Ctrl`+`↓` | Pick the previous / next entry in the history |
+| `Cmd`/`Super`/`Win`+`↑` / `↓` | Same as above; both pairs are bound |
 | `Alt`+`←` / `Alt`+`→` | Go back / forward through the history of the entry |
 | `PgDn` / `PgUp` | Page through the entry, in the expansion layout |
 
@@ -122,4 +123,6 @@ Only the entry is scaled, the rest of the window keeps its size. The level is re
 - The group and dictionary tab shortcuts only act while an entry is on screen.
 - On a keyboard where the window manager takes `Alt`+a number, the dictionary tabs cannot be reached that way.
 - `Ctrl`+`PgUp` and `Ctrl`+`PgDn` change the word tab, while `Alt`+`PgUp` and `Alt`+`PgDn` change the dictionary tab; the same keys without a modifier scroll the entry in the expansion layout.
+- Shortcuts with a modifier also fire while the entry's native WebView holds the focus, regardless of which control is focused. Bare `PgUp` / `PgDn` still belong to the entry's scrolling and to text fields.
+- macOS Mission Control takes `Ctrl`+`↑` / `↓`, while window tiling on KDE, GNOME and Windows takes `Super` / `Win`+`↑` / `↓`. Both pairs are bound, so use the one your system leaves free. A combination the system intercepts never reaches Ciyue at all: change the key or turn the system shortcut off.
 - On the desktop layout the arrow keys move the keyboard focus between controls; `Enter` or `Space` activates the focused one.

@@ -94,8 +94,7 @@ class _DesktopHomeSplitView extends ConsumerWidget {
       });
     }
 
-    return CallbackShortcuts(
-      bindings: homeShortcutBindings(ref, context),
+    return HomeShortcuts(
       child: Focus(
         autofocus: true,
         child: Row(
