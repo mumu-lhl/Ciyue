@@ -29,6 +29,7 @@ export default defineConfig({
             items: [
               { text: 'Overview', link: '/guide/' },
               { text: 'Getting Started', link: '/guide/getting-started' },
+              { text: 'Search Modes', link: '/guide/search-modes' },
               { text: 'Dictionary Formats', link: '/guide/dictionary-formats' },
               { text: 'Translation', link: '/guide/translation' },
               { text: 'Cloud Sync', link: '/guide/cloud-sync' },
@@ -67,6 +68,7 @@ export default defineConfig({
             items: [
               { text: '总览', link: '/zh/guide/' },
               { text: '快速上手', link: '/zh/guide/getting-started' },
+              { text: '搜索模式', link: '/zh/guide/search-modes' },
               { text: '词典格式', link: '/zh/guide/dictionary-formats' },
               { text: '翻译', link: '/zh/guide/translation' },
               { text: '云同步', link: '/zh/guide/cloud-sync' },
