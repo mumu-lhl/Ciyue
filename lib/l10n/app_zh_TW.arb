@@ -851,9 +851,9 @@
   "@searchModeIndexNotBuilt": {},
   "searchModeMultiWord": "多詞",
   "@searchModeMultiWord": {},
-  "searchModePrefix": "字首",
+  "searchModePrefix": "正序",
   "@searchModePrefix": {},
-  "searchModeSuffix": "字尾",
+  "searchModeSuffix": "倒序",
   "@searchModeSuffix": {},
   "searchModeTooltip": "搜尋模式：{mode}",
   "@searchModeTooltip": {}

@@ -18,8 +18,8 @@ import "package:go_router/go_router.dart";
 
 /// Icon for each search mode, shown on the search bar's cycling button.
 IconData _searchModeIcon(SearchMode mode) => switch (mode) {
-  SearchMode.prefix => Icons.sort_by_alpha,
-  SearchMode.suffix => Icons.vertical_align_bottom,
+  SearchMode.prefix => Icons.first_page,
+  SearchMode.suffix => Icons.last_page,
   SearchMode.multiWord => Icons.link,
   SearchMode.fullText => Icons.find_in_page,
 };
@@ -461,6 +461,37 @@ class _WordSearchBarWithSuggestionsState
           },
           searchController: widget.controller,
           isFullScreen: !isLargeScreen(context),
+          // The default view header is just back + field + clear, so the
+          // mode can only be cycled from the closed bar. Give the open
+          // view the same trailing pair — clear, then the mode button —
+          // so the mode stays switchable while suggestions are shown.
+          // With no text the close button dismisses the view like the
+          // back arrow does.
+          viewTrailing: [
+            IconButton(
+              icon: const Icon(Icons.close),
+              tooltip: MaterialLocalizations.of(context).clearButtonTooltip,
+              onPressed: () {
+                final ctrl = _effectiveController;
+                if (ctrl == null) return;
+                if (ctrl.text.isNotEmpty) {
+                  ctrl.clear();
+                } else {
+                  ctrl.closeView(null);
+                }
+              },
+            ),
+            IconButton(
+              icon: Icon(_searchModeIcon(searchMode)),
+              tooltip: AppLocalizations.of(context)!.searchModeTooltip(
+                _searchModeLabel(AppLocalizations.of(context)!, searchMode),
+              ),
+              onPressed: () {
+                final ctrl = _effectiveController;
+                if (ctrl != null) _cycleSearchMode(ctrl);
+              },
+            ),
+          ],
           viewOnSubmitted: (String word) {
             final ctrl = _effectiveController;
             if (ctrl != null) {

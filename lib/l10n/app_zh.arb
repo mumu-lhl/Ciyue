@@ -48,7 +48,7 @@
   "@fullTextIndexOverview": {},
   "searchModePrefix": "前缀",
   "@searchModePrefix": {},
-  "searchModeSuffix": "后缀",
+  "searchModeSuffix": "倒序",
   "@searchModeSuffix": {},
   "searchModeMultiWord": "多词",
   "@searchModeMultiWord": {},

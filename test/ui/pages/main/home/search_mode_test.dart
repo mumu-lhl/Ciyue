@@ -210,7 +210,7 @@ void main() {
       await pumpBar(tester, controller: controller, router: router);
 
       expect(find.byTooltip("Search mode: Prefix"), findsOneWidget);
-      expect(find.byIcon(Icons.sort_by_alpha), findsOneWidget);
+      expect(find.byIcon(Icons.first_page), findsOneWidget);
 
       await tester.tap(find.byTooltip("Search mode: Prefix"));
       await tester.pumpAndSettle();
