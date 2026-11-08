@@ -37,10 +37,11 @@ full-text index, so it needs that index (see below).
 
 Headwords that contain **all** the characters you type, in any order and not
 necessarily next to each other. Search `中国` (or `中 国`) and the suggestions
-include 中国, 国中, 中立国, 中国通, 大秦景教流行中国碑, 中华民国鄂州约法,
-中华民国北伐铁血团 — every headword holds both characters, but they need not
-be adjacent or in order. This is an intent neither prefix nor suffix matching
-can express.
+include 中国 (adjacent, in order), 国中 (adjacent, reversed), 中国通 and
+大秦景教流行中国碑 (both containing the adjacent pair 中国), and 中立国,
+中华民国鄂州约法, 中华民国北伐铁血团 (with other characters in between).
+Every headword holds both characters, but they need not be adjacent or in
+order — an intent neither prefix nor suffix matching can express.
 
 ## Full text — search the definitions
 
