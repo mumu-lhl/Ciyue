@@ -8,8 +8,18 @@ import "package:ciyue/ui/core/text_buttons.dart";
 import "package:fuzzy/fuzzy.dart";
 
 class WordbookModel extends ChangeNotifier {
-  late Future<List<WordbookData>> allWords;
-  late Future<List<WordbookTag>> tags;
+  // These used to be `late` fields filled in by the word list widget's
+  // initState. The word book page now reads `allWords` while building its
+  // split view, which happens before any child is mounted, so the lists have
+  // to be loadable on their own.
+  Future<List<WordbookData>>? _allWords;
+  Future<List<WordbookData>> get allWords => _allWords ??= _loadWords();
+  set allWords(Future<List<WordbookData>> value) => _allWords = value;
+
+  Future<List<WordbookTag>>? _tags;
+  Future<List<WordbookTag>> get tags => _tags ??= wordbookTagsDao.getAllTags();
+  set tags(Future<List<WordbookTag>> value) => _tags = value;
+
   int totalWordCount = 0;
   DateTime? selectedDate;
   int? selectedTag;
@@ -133,19 +143,32 @@ class WordbookModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateWordList() {
+  Future<List<WordbookData>> _loadWords() {
     if (selectedDate != null) {
-      allWords = wordbookDao.getWordsByYearMonth(
+      return wordbookDao.getWordsByYearMonth(
         selectedDate!.year,
         selectedDate!.month,
         tag: selectedTag,
       );
-    } else {
-      allWords = wordbookDao.getAllWordsWithTag(
-        tag: selectedTag,
-        skipTagged: selectedTag == null && settings.skipTaggedWord,
-      );
     }
+    return wordbookDao.getAllWordsWithTag(
+      tag: selectedTag,
+      skipTagged: selectedTag == null && settings.skipTaggedWord,
+    );
+  }
+
+  /// Reloads both lists without notifying listeners.
+  ///
+  /// Called from a page's initState, where notifying would rebuild the tree
+  /// while it is still being built. Later refreshes go through
+  /// [updateWordList], which notifies via [loadTotalWordCount].
+  void refreshLists() {
+    allWords = _loadWords();
+    tags = wordbookTagsDao.getAllTags();
+  }
+
+  void updateWordList() {
+    allWords = _loadWords();
     loadTotalWordCount();
   }
 
