@@ -119,7 +119,7 @@ Only the entry is scaled, the rest of the window keeps its size. The level is re
 
 ## Mouse gestures (desktop)
 
-Two mouse gestures switch tabs while reading an entry. **Settings → Appearance** lets each gesture be assigned its own action: off, switch dictionary tabs, or switch word tabs.
+Two mouse gestures switch tabs while reading an entry. **Settings → Other** lets each gesture be assigned its own action: off, switch dictionary tabs, or switch word tabs.
 
 | Gesture | How | Default action |
 |---|---|---|
