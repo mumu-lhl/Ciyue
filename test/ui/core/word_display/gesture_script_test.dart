@@ -17,14 +17,21 @@ void main() {
       expect(script, contains("if (e.ctrlKey) return;"));
     });
 
+    test("falls back to contextmenu without sending the rocker twice", () {
+      expect(script, contains("sendRocker();"));
+      expect(script, contains("if (rockerSent) return;"));
+      expect(script, contains("rockerSent = false;"));
+    });
+
     test("uses a non-passive wheel listener and throttles repeat events", () {
       expect(script, contains("{ capture: true, passive: false }"));
       expect(script, contains("if (now - lastWheelAt < 80) return;"));
+      expect(script, contains("if (!leftDown) return;"));
     });
 
     test("swallows the click that follows a gesture", () {
       expect(script, contains("document.addEventListener('click'"));
-      expect(script, contains("document.addEventListener('auxclick'"));
+      expect(script, isNot(contains("middleDown")));
     });
   });
 

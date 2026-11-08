@@ -59,7 +59,13 @@ void handleGesture(WidgetRef ref, String payload) {
   final configured = gesture.kind == GestureKind.rocker
       ? settings.rockerGestureAction
       : settings.wheelGestureAction;
-  final action = resolveGestureAction(configured, dictTabController != null);
+  final hasDictionaryTabs = dictTabController != null;
+  final action = resolveGestureAction(configured, hasDictionaryTabs);
+  talker.info(
+    "gesture: kind=${gesture.kind.name} direction=${gesture.direction} "
+    "configured=${configured.name} action=${action.name} "
+    "dictionaryTabs=$hasDictionaryTabs",
+  );
   if (action == MouseGestureAction.off) return;
   if (action == MouseGestureAction.dictionaryTabs) {
     _stepDictionaryTab(gesture.direction);

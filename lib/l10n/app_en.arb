@@ -1404,7 +1404,7 @@
   "@mouseGestures": {},
   "rockerGesture": "Rocker gesture (hold left, click right)",
   "@rockerGesture": {},
-  "wheelGesture": "Wheel gesture (hold middle button, scroll)",
+  "wheelGesture": "Wheel gesture (hold left button, scroll)",
   "@wheelGesture": {},
   "gestureActionOff": "Off",
   "@gestureActionOff": {},

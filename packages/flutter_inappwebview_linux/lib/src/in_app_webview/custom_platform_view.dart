@@ -106,6 +106,20 @@ PointerButton _getButton(int value) {
   }
 }
 
+/// Picks the button that has just gone down out of the [buttons] bitmask.
+///
+/// A PointerDownEvent only carries the current mask, not which button changed.
+/// Holding the left button and pressing the right one (a rocker gesture) gives
+/// 1 | 2 = 3, which [_getButton] maps to [PointerButton.none] — WPE would then
+/// never see a right-button press. Prefer the non-primary button here; release
+/// events keep using [_getButton] because their mask describes what is left.
+PointerButton _getDownButton(int value) {
+  if (value & kSecondaryMouseButton != 0) return PointerButton.secondary;
+  if (value & kTertiaryButton != 0) return PointerButton.tertiary;
+  if (value & kPrimaryMouseButton != 0) return PointerButton.primary;
+  return PointerButton.none;
+}
+
 const MethodChannel _pluginChannel = IN_APP_WEBVIEW_STATIC_CHANNEL;
 
 class CustomFlutterViewControllerValue {
@@ -587,7 +601,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
                     modifiers: modifiers,
                   );
 
-                  final button = _getButton(ev.buttons);
+                  final button = _getDownButton(ev.buttons);
                   _downButtons[ev.pointer] = button;
 
                   // Detect double/triple click

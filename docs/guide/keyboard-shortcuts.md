@@ -124,7 +124,9 @@ Two mouse gestures switch tabs while reading an entry. **Settings → Appearance
 | Gesture | How | Default action |
 |---|---|---|
 | Rocker | Hold the **left** button and click the **right** one | Next dictionary tab |
-| Wheel | Hold the **middle** button and scroll up / down | Previous / next word tab |
+| Wheel | Hold the **left** button and scroll up / down | Previous / next word tab |
+
+Both gestures start by holding the left button: clicking the right one is a rocker, scrolling is a wheel gesture, and the two do not conflict. The left button is used instead of the middle one because the middle button is usually the wheel itself — holding it down while scrolling is awkward.
 
 Rocker only has this one direction: dictionary tabs wrap around, so a few presses cycle back to the start. The wheel gesture is bidirectional, which suits moving back and forth through a longer list of word tabs.
 
@@ -132,7 +134,7 @@ In the **Expansion** style there are no dictionary tabs, so that action falls ba
 
 - Windows, Linux and macOS only; Android has no right button or wheel.
 - An ordinary right click is untouched — the context menu is suppressed only while the left button is held. On macOS `Ctrl`+left click is a system-level right click and is excluded from the gesture.
-- Wheel events are throttled so one physical scroll does not jump several tabs, and the page's own scrolling is stopped while the middle button is held.
+- Wheel events are throttled so one physical scroll does not jump several tabs, and the page's own scrolling is stopped while the left button is held.
 - The click that follows a gesture is swallowed, so it cannot open a dictionary link by accident.
 
 ## Notes

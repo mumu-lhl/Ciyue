@@ -1222,7 +1222,7 @@
   "@mouseGestures": {},
   "rockerGesture": "摇杆手势（按住左键点右键）",
   "@rockerGesture": {},
-  "wheelGesture": "滚轮手势（按住中键滚动）",
+  "wheelGesture": "滚轮手势（按住左键滚动）",
   "@wheelGesture": {},
   "gestureActionOff": "关闭",
   "@gestureActionOff": {},

@@ -24,8 +24,11 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
   @override
   late final int type;
 
+  // Metadata-only and full initialization can both run for the same
+  // dictionary, so this is assigned more than once; `late final` would throw
+  // "Field 'entriesTotal' has already been initialized" on the second pass.
   @override
-  late final int entriesTotal;
+  late int entriesTotal;
 
   @override
   int port = 0;

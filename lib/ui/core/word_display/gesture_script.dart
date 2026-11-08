@@ -4,8 +4,9 @@
 ///   is supported, so the action has to be a cyclic one. The context menu is
 ///   suppressed *only* while the left button is down, which leaves an ordinary
 ///   right click untouched.
-/// * Wheel: scroll while the middle button is held. The wheel listener has to
-///   be non-passive so `preventDefault()` can stop the page from scrolling.
+/// * Wheel: scroll while the left button is held. The wheel listener has to be
+///   non-passive so `preventDefault()` can stop the page from scrolling. The
+///   left button also starts a rocker gesture; the event type tells them apart.
 ///
 /// `Ctrl` is excluded everywhere: on macOS Ctrl+left click is translated by the
 /// system into a right click, and treating it as a gesture would swallow both
@@ -20,8 +21,8 @@ String gestureScript() {
   }
 
   var leftDown = false;
-  var middleDown = false;
   var suppressClick = false;
+  var rockerSent = false;
   var lastWheelAt = 0;
 
   function send(kind, direction) {
@@ -29,36 +30,43 @@ String gestureScript() {
     post(JSON.stringify({ kind: kind, direction: direction }));
   }
 
+  function sendRocker() {
+    // Some WebViews only dispatch contextmenu for the right button, so both
+    // paths can see the same press. Send it exactly once.
+    if (rockerSent) return;
+    rockerSent = true;
+    send('rocker', 1);
+  }
+
   document.addEventListener('mousedown', function (e) {
     suppressClick = false;
     if (e.ctrlKey) return;
     if (e.button === 0) {
       leftDown = true;
-    } else if (e.button === 1) {
-      middleDown = true;
-      // Stop the browser's middle-button autoscroll.
-      e.preventDefault();
+      rockerSent = false;
     } else if (e.button === 2 && leftDown) {
       e.preventDefault();
       e.stopPropagation();
-      send('rocker', 1);
+      sendRocker();
     }
   }, true);
 
   document.addEventListener('mouseup', function (e) {
     if (e.button === 0) leftDown = false;
-    if (e.button === 1) middleDown = false;
   }, true);
 
   document.addEventListener('contextmenu', function (e) {
     if (leftDown && !e.ctrlKey) {
       e.preventDefault();
       e.stopPropagation();
+      sendRocker();
     }
   }, true);
 
   document.addEventListener('wheel', function (e) {
-    if (!middleDown) return;
+    // Holding the left button also starts a rocker gesture; the two are told
+    // apart by the event type, not by the button.
+    if (!leftDown) return;
     e.preventDefault();
     e.stopPropagation();
     // One physical scroll fires several wheel events, especially on a
@@ -69,17 +77,10 @@ String gestureScript() {
     send('wheel', e.deltaY > 0 ? 1 : -1);
   }, { capture: true, passive: false });
 
-  // The left button is released after a rocker gesture, so the browser may
-  // still dispatch a click on a dictionary link. Swallow that one event.
+  // A gesture ends with the left button up, which may still dispatch a click
+  // on a dictionary link. Swallow that one event.
   document.addEventListener('click', function (e) {
     if (!suppressClick) return;
-    e.preventDefault();
-    e.stopPropagation();
-    suppressClick = false;
-  }, true);
-
-  document.addEventListener('auxclick', function (e) {
-    if (!suppressClick || e.button !== 1) return;
     e.preventDefault();
     e.stopPropagation();
     suppressClick = false;
