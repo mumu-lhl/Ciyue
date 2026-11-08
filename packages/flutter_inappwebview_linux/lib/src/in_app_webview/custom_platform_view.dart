@@ -405,6 +405,9 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
 
     _controller.initialize(
       onPlatformViewCreated: (id) {
+        // The native view can finish creating after this widget has been
+        // disposed: switching words or tabs rebuilds the platform view.
+        if (!mounted) return;
         widget.onPlatformViewCreated?.call(id);
         setState(() {});
       },
@@ -417,6 +420,8 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
     });
 
     _cursorSubscription = _controller._cursor.listen((cursor) {
+      // A cursor event can still arrive after cancel() in dispose().
+      if (!mounted) return;
       setState(() {
         _cursor = cursor;
       });
