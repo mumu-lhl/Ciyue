@@ -13,6 +13,7 @@ import "appearance/dictionary_switch_style_selector.dart";
 import "appearance/drawer_icon_switch.dart";
 import "appearance/language_selector.dart";
 import "appearance/more_options_button_switch.dart";
+import "appearance/mouse_gesture_selectors.dart";
 import "appearance/search_pane_switch.dart";
 import "appearance/searchbar_in_word_display_switch.dart";
 import "appearance/searchbar_location_selector.dart";
@@ -25,6 +26,9 @@ class AppearanceSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop =
+        Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.appearance)),
       body: Center(
@@ -61,6 +65,10 @@ class AppearanceSettingsPage extends StatelessWidget {
                   SearchPaneSwitch(),
                 ],
               ),
+              if (isDesktop) ...[
+                const SizedBox(height: 16),
+                const SettingsGroupCard(children: [MouseGestureSelectors()]),
+              ],
               if (settings.advance) ...[
                 const SizedBox(height: 16),
                 const SettingsGroupCard(

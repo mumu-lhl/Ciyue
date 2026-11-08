@@ -1217,5 +1217,17 @@
   "languageNameUk": "乌克兰语",
   "@languageNameUk": {},
   "languageNameEl": "希腊语",
-  "@languageNameEl": {}
+  "@languageNameEl": {},
+  "mouseGestures": "鼠标手势",
+  "@mouseGestures": {},
+  "rockerGesture": "摇杆手势（按住左键点右键）",
+  "@rockerGesture": {},
+  "wheelGesture": "滚轮手势（按住中键滚动）",
+  "@wheelGesture": {},
+  "gestureActionOff": "关闭",
+  "@gestureActionOff": {},
+  "gestureActionDictionaryTabs": "切换词典标签",
+  "@gestureActionDictionaryTabs": {},
+  "gestureActionWordTabs": "切换单词标签",
+  "@gestureActionWordTabs": {}
 }
