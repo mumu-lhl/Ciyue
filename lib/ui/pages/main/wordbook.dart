@@ -11,12 +11,81 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:ciyue/ui/pages/flashcards/overview_card.dart";
 import "package:ciyue/utils.dart";
+import "package:flutter/services.dart";
 
-class WordBookScreen extends ConsumerWidget {
+class WordBookScreen extends ConsumerStatefulWidget {
   const WordBookScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WordBookScreen> createState() => _WordBookScreenState();
+}
+
+class _WordBookScreenState extends ConsumerState<WordBookScreen> {
+  // Cached by the split view so the key handler can step without waiting for
+  // a Future. Kept on the state because the handler is registered once.
+  List<String> _words = const [];
+  int _currentIndex = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    // The split view reads the word list while building its right pane, before
+    // any child is mounted. Load it here so both panes share the same Future.
+    ref.read(wordbookModelProvider).refreshLists();
+    HardwareKeyboard.instance.addHandler(_handleArrowKey);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleArrowKey);
+    super.dispose();
+  }
+
+  /// The shell keeps every tab alive in an IndexedStack and clears the focus
+  /// whenever the reader switches tabs, so a focus-based CallbackShortcuts
+  /// never gets the arrow keys here. Watch the raw key stream instead.
+  bool _handleArrowKey(KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return false;
+    final forward = event.logicalKey == LogicalKeyboardKey.arrowRight;
+    if (!forward && event.logicalKey != LogicalKeyboardKey.arrowLeft) {
+      return false;
+    }
+    if (!mounted || !isLargeScreen(context)) return false;
+    // Only the visible tab's FocusScope can request focus in the shell.
+    final scope = FocusScope.of(context);
+    if (!scope.canRequestFocus) return false;
+    // Dialogs, search views and pushed word pages sit above this route.
+    if (ModalRoute.of(context)?.isCurrent == false) return false;
+    final keyboard = HardwareKeyboard.instance;
+    if (keyboard.isControlPressed ||
+        keyboard.isAltPressed ||
+        keyboard.isMetaPressed ||
+        keyboard.isShiftPressed) {
+      return false;
+    }
+    // Only an input inside this page may block the shortcut: a search box on
+    // an inactive tab can still hold the primary focus after a tab switch.
+    if (scope.hasFocus &&
+        FocusManager.instance.primaryFocus?.context?.widget is EditableText) {
+      return false;
+    }
+    return _stepWord(forward);
+  }
+
+  bool _stepWord(bool forward) {
+    final model = ref.read(wordbookModelProvider);
+    if (_words.isEmpty) return false;
+    // With nothing selected yet, start at the first (or last) word.
+    final next = _currentIndex < 0
+        ? (forward ? 0 : _words.length - 1)
+        : _currentIndex + (forward ? 1 : -1);
+    if (next < 0 || next >= _words.length) return false;
+    model.selectedWord = _words[next];
+    return true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     ref.watch(wordbookModelProvider.select((model) => model.selectedDate));
     final isDesktop = isLargeScreen(context);
 
@@ -24,35 +93,68 @@ class WordBookScreen extends ConsumerWidget {
       final selectedWord = ref.watch(
         wordbookModelProvider.select((model) => model.selectedWord),
       );
+      final wordsFuture = ref.watch(
+        wordbookModelProvider.select((model) => model.allWords),
+      );
 
       return Scaffold(
         appBar: const WordbookAppBar(),
-        body: Row(
-          children: [
-            const SizedBox(width: 360, child: WordViewWithTagsClips()),
-            const VerticalDivider(thickness: 1, width: 1),
-            Expanded(
-              child: selectedWord != null && selectedWord.isNotEmpty
-                  ? KeyedSubtree(
-                      key: ValueKey(selectedWord),
-                      child: WordDisplay(
-                        word: selectedWord,
-                        showBackButton: false,
-                      ),
-                    )
-                  : Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.empty,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                      ),
-                    ),
-            ),
-          ],
+        body: FutureBuilder<List<WordbookData>>(
+          future: wordsFuture,
+          builder: (context, snapshot) {
+            final wordList = (snapshot.data ?? const <WordbookData>[])
+                .map((entry) => entry.word)
+                .toList();
+            final index = selectedWord != null
+                ? wordList.indexOf(selectedWord)
+                : -1;
+
+            // Cache the list and the selection for the key handler. The right
+            // pane follows `selectedWord`, so stepping swaps the entry without
+            // leaving the master-detail layout.
+            _words = wordList;
+            _currentIndex = index;
+
+            final pagerInfo = selectedWord != null && index >= 0
+                ? WordPagerInfo(
+                    currentIndex: index,
+                    totalCount: wordList.length,
+                    onPrevious: index > 0 ? () => _stepWord(false) : null,
+                    onNext: index < wordList.length - 1
+                        ? () => _stepWord(true)
+                        : null,
+                  )
+                : null;
+
+            return Row(
+              children: [
+                const SizedBox(width: 360, child: WordViewWithTagsClips()),
+                const VerticalDivider(thickness: 1, width: 1),
+                Expanded(
+                  child: selectedWord != null && selectedWord.isNotEmpty
+                      ? KeyedSubtree(
+                          key: ValueKey(selectedWord),
+                          child: WordDisplay(
+                            word: selectedWord,
+                            showBackButton: false,
+                            pagerInfo: pagerInfo,
+                          ),
+                        )
+                      : Center(
+                          child: Text(
+                            AppLocalizations.of(context)!.empty,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                          ),
+                        ),
+                ),
+              ],
+            );
+          },
         ),
       );
     }
@@ -221,26 +323,11 @@ class _WordListTile extends ConsumerWidget {
   }
 }
 
-class WordViewWithTagsClips extends ConsumerStatefulWidget {
+class WordViewWithTagsClips extends ConsumerWidget {
   const WordViewWithTagsClips({super.key});
 
   @override
-  ConsumerState<WordViewWithTagsClips> createState() =>
-      _WordViewWithTagsClipsState();
-}
-
-class _WordViewWithTagsClipsState extends ConsumerState<WordViewWithTagsClips> {
-  @override
-  void initState() {
-    super.initState();
-
-    final wordbookModel = ref.read(wordbookModelProvider);
-    wordbookModel.allWords = wordbookDao.getAllWordsWithTag();
-    wordbookModel.tags = wordbookTagsDao.getAllTags();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final selectedTag = ref.watch(
       wordbookModelProvider.select((m) => m.selectedTag),
     );

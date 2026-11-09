@@ -175,4 +175,32 @@ void main() {
     expect(findWord("apple"), findsOneWidget);
     expect(find.text("1 / 3"), findsOneWidget);
   });
+
+  testWidgets(
+    "pager keeps each page's own word when the home tab has a selection",
+    (tester) async {
+      final fakeRecords = _FakeOpenRecordsRepository();
+      const words = ["apple", "banana", "cherry"];
+
+      await tester.pumpWidget(
+        buildTestHost(words: words, initialIndex: 0, openRecords: fakeRecords),
+      );
+      await tester.pumpAndSettle();
+
+      // A pushed entry page follows the home tab's selection; the pager must
+      // not, otherwise every page would show this same word.
+      final context = tester.element(find.byType(WordDisplayPager));
+      ProviderScope.containerOf(context).read(homeModelProvider).selectedWord =
+          "apple";
+      await tester.pumpAndSettle();
+
+      expect(findWord("apple"), findsOneWidget);
+
+      await tester.tap(find.widgetWithIcon(IconButton, Icons.chevron_right));
+      await tester.pumpAndSettle();
+
+      expect(findWord("banana"), findsOneWidget);
+      expect(find.text("2 / 3"), findsOneWidget);
+    },
+  );
 }

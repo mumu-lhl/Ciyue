@@ -173,7 +173,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     if (widget.showBackButton) {
       pageSearchFocusNode = _searchFocusNode;
     }
-    final selected = widget.showBackButton
+    // A pushed entry page follows the tab's current word so a lookup swaps the
+    // entry in place. The word-list pager is the exception: each page owns the
+    // word it was built with, and following the tab would make every page show
+    // whatever the home page last selected.
+    final selected = widget.showBackButton && widget.pagerInfo == null
         ? ref.watch(homeModelProvider.select((model) => model.selectedWord))
         : null;
     _word = selected != null && selected.isNotEmpty ? selected : widget.word;
