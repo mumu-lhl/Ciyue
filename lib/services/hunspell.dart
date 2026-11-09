@@ -271,6 +271,16 @@ List<String> _phraseStems(
 /// into millions of candidates.
 const maxCharVariantCombinations = 4096;
 
+/// Longest run of text [_charVariantStems] will look up character by character.
+///
+/// The combination bound above limits the product, but each character costs one
+/// Hunspell call whatever the product is: a pasted paragraph where a single
+/// character has a variant stays under 4096 spellings and would still ask the
+/// table once per character. This is the same ceiling `maxSplitLength` uses for
+/// word splitting, and past it the whole-word `st:` entries are all that is
+/// worth trying — nobody looks a word that long up by variant.
+const maxCharVariantWordLength = 64;
+
 /// Spellings of a run of CJK text, combined from its characters.
 ///
 /// Hunspell links whole words, so `闲 st:閒` alone never reaches `闲适`:
@@ -280,15 +290,18 @@ const maxCharVariantCombinations = 4096;
 /// characters up instead keeps the table the size of the character set and
 /// builds the combinations here, cheapest (fewest characters replaced) first.
 ///
-/// Returns nothing when the text has no wide characters, when no character in
-/// it has a variant, or when the combinations would exceed
-/// [maxCharVariantCombinations]. A truncated set is worse than none: a missing
-/// spelling is indistinguishable from "the dictionary does not have it", while
-/// the exact spelling is still looked up by the caller either way.
+/// Returns nothing when the text has no wide characters, when it is longer than
+/// [maxCharVariantWordLength], when no character in it has a variant, or when
+/// the combinations would exceed [maxCharVariantCombinations]. A truncated set
+/// is worse than none: a missing spelling is indistinguishable from "the
+/// dictionary does not have it", while the exact spelling is still looked up by
+/// the caller either way.
 List<String> _charVariantStems(
   List<_LoadedHunspellSource> dictionaries,
   String word,
 ) {
+  if (word.runes.length > maxCharVariantWordLength) return const <String>[];
+
   final chars = <String>[];
   var hasWideChar = false;
   for (final rune in word.runes) {

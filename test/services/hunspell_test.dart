@@ -277,6 +277,21 @@ void main() {
     // word-level entries are all that comes back.
     expect(await manager.stems("たい積"), unorderedEquals(["体積", "堆積", "滞積"]));
   });
+
+  test("stops expanding a run longer than the character limit", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+    await _loadCjkVariants(manager);
+
+    // 64 characters still expand — the bound keeps the per-character lookups
+    // bounded, it does not refuse long words as such.
+    expect(await manager.stems("${"木" * 62}闲适"), hasLength(5));
+
+    // 65 characters are left alone, so a pasted paragraph costs one lookup per
+    // dictionary rather than one per character. The product here is only 6, so
+    // the combination bound alone would have let it through.
+    expect(await manager.stems("${"木" * 63}闲适"), isEmpty);
+  });
 }
 
 Future<void> _loadCjkVariants(HunspellManager manager) {
