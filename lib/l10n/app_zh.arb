@@ -46,7 +46,7 @@
   "@deleteFullTextIndex": {},
   "fullTextIndexOverview": "全文索引总览",
   "@fullTextIndexOverview": {},
-  "searchModePrefix": "前缀",
+  "searchModePrefix": "正序",
   "@searchModePrefix": {},
   "searchModeSuffix": "倒序",
   "@searchModeSuffix": {},
