@@ -62,6 +62,11 @@ entries**, so irregular forms cannot be resolved at all. Maintained sets:
   no spell checking, so it needs a purpose-built Hunspell dictionary. This set
   builds on Gary's original version and adds mixed-script (kana + kanji) to kanji
   resolution (e.g. まん延 → 蔓延), more verb conjugations, and half-width kana.
+- Chinese: <https://github.com/yx-wh/hunspell_zh> — an empty `.aff` and a `st:`
+  table generated from several Chinese dictionaries. It ships two builds:
+  `zh_CN_pruned` is the one to use here (a few hundred kilobytes), while `zh_CN`
+  keeps every word-level line and is only needed by readers that neither compose
+  characters nor run OpenCC.
 
 ## Chinese: simplified, traditional and variant characters
 
@@ -131,6 +136,10 @@ traditional form has a different length.
 
 ### Building the table
 
+A table generated from several common Chinese dictionaries is published at
+<https://github.com/yx-wh/hunspell_zh>; build your own when it does not cover the
+dictionaries you read.
+
 1. Export the headwords of the dictionaries you actually read. The table is worth
    building from real headwords, because a `st:` target that no dictionary
    contains resolves to nothing.
@@ -148,6 +157,12 @@ traditional form has a different length.
 4. Put the result next to the empty `.aff` above and import the pair. A table
    generated from one dictionary set only knows that set's vocabulary — an extra
    dictionary is best folded in by regenerating it.
+
+Most word-level lines such a table carries are derivable and can be dropped: one
+that Ciyue rebuilds from the single-character lines, and that OpenCC produces
+anyway, is needed by neither reader. `prune_zh_dic.py` in the repository above
+runs that comparison and takes a 29 MB table down to under 1 MB without losing a
+candidate — 1.1 million word-level lines fall to 37 thousand.
 
 ## Encoding: `.dic` files use composed forms
 
