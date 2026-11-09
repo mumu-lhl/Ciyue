@@ -17,6 +17,7 @@ nothing has to be packed into the `.mdx`, and any language you can find an
 | `fällt` (de) | `fällt` + `fallen` / `fällen` |
 | `abgekämpft` (de) | `abkämpfen` |
 | `かって` (ja) | `かって` (勝手) / `かう` (買う) / `かつ` (勝つ) / `かる` (狩る) |
+| `闲适` (zh) | `闲适` (exact entry) + every spelling your table declares, e.g. `閒適` |
 
 How many lemmas come back depends entirely on the Hunspell files you use — when
 a form really has several stems, all of them are listed. For Japanese the stems
@@ -61,6 +62,92 @@ entries**, so irregular forms cannot be resolved at all. Maintained sets:
   no spell checking, so it needs a purpose-built Hunspell dictionary. This set
   builds on Gary's original version and adds mixed-script (kana + kanji) to kanji
   resolution (e.g. まん延 → 蔓延), more verb conjugations, and half-width kana.
+
+## Chinese: simplified, traditional and variant characters
+
+Chinese has no inflection, so a Chinese `.dic` uses `st:` for a different job:
+recording which characters are the same character written another way. Ciyue
+reads such a table **per character as well as per word**, which is what lets a
+query typed in one form reach a headword stored in another.
+
+### The `.aff` stays an empty shell
+
+```text
+SET UTF-8
+LANG zh
+FLAG long
+```
+
+Nothing else — no affix rules, no compound settings. Hunspell then behaves as a
+hash table from a spelling to its variants, which is all this needs.
+
+### One line per character, written in both directions
+
+```text
+闲 st:閒
+闲 st:閑
+閒 st:闲
+閑 st:闲
+适 st:適
+適 st:适
+```
+
+Both directions have to be listed. `闲 st:閒` only turns `闲` into `閒`; without
+`閒 st:闲` the reverse query (`閒适` → `闲适`) finds nothing. Single-character
+lines are also what makes mixed spellings work — the table never has to contain
+them, because the combinations are built at query time:
+
+| Submitted | Spellings read from the table above |
+| --- | --- |
+| `闲适` | `闲适`, `閒適`\*, `閑适`, `閒适`, `闲適`, `閑適` |
+
+\* from a word-level line, see below. Every other entry is a character
+combination: `闲適` would need no line of its own.
+
+### One line per word when character-wise conversion is not enough
+
+```text
+闲适 st:閒適
+```
+
+A word-level line is read **before** the character combinations, so the form the
+table's author chose comes first, even when it replaces more characters than a
+combination would. It is also the only way to express a mapping that is not
+character-for-character — 干/乾/幹 or 发/髮/發 style splits, or a wording whose
+traditional form has a different length.
+
+### What this does not do
+
+- **It is exact, not a prefix.** `st:` maps whole words, so typing `木红` does not
+  suggest a headword stored as `木紅毬`; submit `木红球` (or `木紅毬`) instead and
+  the characters are expanded. The suggestion list keeps working on the prefix
+  you typed.
+- **Only spellings your table covers are reachable.** A character with no entry
+  stays as typed — the expansion reuses what the `.dic` declares and adds
+  nothing of its own.
+- **The lookup mode decides when variants are used.** In 补充 (Supplement) an
+  exact entry and its variants show side by side; in 后备 (Fallback) the variants
+  are only tried for dictionaries where the exact spelling found nothing.
+
+### Building the table
+
+1. Export the headwords of the dictionaries you actually read. The table is worth
+   building from real headwords, because a `st:` target that no dictionary
+   contains resolves to nothing.
+2. Convert each headword to the standard form — OpenCC `t2s` is a good start,
+   then fix the one-to-many characters by hand (`发` → `髮` / `發`, `干` →
+   `乾` / `幹`).
+3. Write **both** directions for every pair, and add the single-character pairs
+   from a variant-character table:
+
+   ```python
+   lines.append(f"{variant} st:{standard}")
+   lines.append(f"{standard} st:{variant}")
+   ```
+
+4. Put the result next to the empty `.aff` above and import the pair. A table
+   generated from one dictionary set only knows that set's vocabulary — an extra
+   dictionary is best folded in by regenerating it.
 
 ## Encoding: `.dic` files use composed forms
 

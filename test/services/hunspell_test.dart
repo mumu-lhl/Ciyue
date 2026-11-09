@@ -206,4 +206,108 @@ void main() {
       unorderedEquals(["drunk driver", "drink driver"]),
     );
   });
+
+  test("combines the single-character variants of a CJK word", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+    await _loadCjkVariants(manager);
+
+    // `闲 st:閒` and `闲 st:閑` link one character, not the word, so `闲适`
+    // has five spellings and no `.dic` line was written for any of them.
+    final stems = await manager.stems("闲适");
+
+    expect(stems, hasLength(5));
+    expect(stems, unorderedEquals(["闲適", "閒适", "閒適", "閑适", "閑適"]));
+    // Closest to what was typed first: one replaced character before two.
+    expect(stems.take(3), unorderedEquals(["闲適", "閒适", "閑适"]));
+    expect(stems.skip(3), unorderedEquals(["閒適", "閑適"]));
+  });
+
+  test("keeps an explicit word-level link ahead of the combinations", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+    await _loadCjkVariants(manager);
+
+    // `黄钟 st:黃鐘` is the spelling the dictionary itself links, so it is
+    // tried before the character combinations the other entries generate.
+    final stems = await manager.stems("黄钟");
+
+    expect(stems.first, equals("黃鐘"));
+    expect(stems, unorderedEquals(["黃鐘", "黃钟", "黄鐘"]));
+  });
+
+  test(
+    "reaches the standard spelling from a query written with variants",
+    () async {
+      final manager = HunspellManager();
+      addTearDown(manager.close);
+      await _loadCjkVariants(manager);
+
+      // What another app shares after the user selects `閒適` in it: the
+      // dictionary stores `闲适`, and only the character table knows they match.
+      expect(await manager.stems("閒適"), contains("闲适"));
+      expect(await manager.stems("黃鐘"), contains("黄钟"));
+    },
+  );
+
+  test("does not expand text without wide characters", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+
+    await manager.reload([
+      HunspellSourceInfo(
+        id: 5,
+        name: "multiple_stems",
+        affPath: File("packages/hunspell_ffi/test/fixtures/multiple_stems.aff")
+            .absolute
+            .path,
+        dicPath: File("packages/hunspell_ffi/test/fixtures/multiple_stems.dic")
+            .absolute
+            .path,
+        language: null,
+        enabled: true,
+        order: 0,
+      ),
+    ]);
+
+    // A Latin word keeps its whole-word stems only: character expansion is for
+    // scripts written without spaces.
+    expect(await manager.stems("mixed"), unorderedEquals(["stem1", "stem2"]));
+    // `たい積` is wide text, but none of its characters has a variant, so the
+    // word-level entries are all that comes back.
+    expect(await manager.stems("たい積"), unorderedEquals(["体積", "堆積", "滞積"]));
+  });
+
+  test("stops expanding a run longer than the character limit", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+    await _loadCjkVariants(manager);
+
+    // 64 characters still expand — the bound keeps the per-character lookups
+    // bounded, it does not refuse long words as such.
+    expect(await manager.stems("${"木" * 62}闲适"), hasLength(5));
+
+    // 65 characters are left alone, so a pasted paragraph costs one lookup per
+    // dictionary rather than one per character. The product here is only 6, so
+    // the combination bound alone would have let it through.
+    expect(await manager.stems("${"木" * 63}闲适"), isEmpty);
+  });
+}
+
+Future<void> _loadCjkVariants(HunspellManager manager) {
+  return manager.reload([
+    HunspellSourceInfo(
+      id: 4,
+      name: "cjk_variants",
+      affPath: File("packages/hunspell_ffi/test/fixtures/cjk_variants.aff")
+          .absolute
+          .path,
+      dicPath: File("packages/hunspell_ffi/test/fixtures/cjk_variants.dic")
+          .absolute
+          .path,
+      language: null,
+      enabled: true,
+      order: 0,
+    ),
+  ]);
 }

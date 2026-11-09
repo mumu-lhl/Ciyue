@@ -124,10 +124,17 @@ void _hunspellWorker(SendPort sendPort) {
     if (trimmed.isEmpty) return const <String>[];
 
     final tokens = trimmed.split(RegExp(r"\s+"));
-    if (tokens.length == 1) {
-      return _singleWordStems(dictionaries, trimmed);
+    if (tokens.length > 1) {
+      return _phraseStems(dictionaries, tokens, trimmed);
     }
-    return _phraseStems(dictionaries, tokens, trimmed);
+
+    // A single token is still tried whole first: `闲适 st:閑適` in the `.dic`
+    // is the explicit way to link one word to another, and it wins over the
+    // character-by-character spellings below.
+    final stems = _singleWordStems(dictionaries, trimmed);
+    final variants = _charVariantStems(dictionaries, trimmed);
+    if (variants.isEmpty) return stems;
+    return <String>{...stems, ...variants}.toList(growable: false);
   }
 
   List<String> doSuggestions(String word) {
@@ -255,6 +262,104 @@ List<String> _phraseStems(
   }
 
   return results.toList(growable: false);
+}
+
+/// Most spellings [_charVariantStems] generates for a single query.
+///
+/// A `zh_CN.dic` whose characters map to many others is a mistake, not a
+/// dictionary; the bound only stops such a file from turning one keystroke
+/// into millions of candidates.
+const maxCharVariantCombinations = 4096;
+
+/// Longest run of text [_charVariantStems] will look up character by character.
+///
+/// The combination bound above limits the product, but each character costs one
+/// Hunspell call whatever the product is: a pasted paragraph where a single
+/// character has a variant stays under 4096 spellings and would still ask the
+/// table once per character. This is the same ceiling `maxSplitLength` uses for
+/// word splitting, and past it the whole-word `st:` entries are all that is
+/// worth trying — nobody looks a word that long up by variant.
+const maxCharVariantWordLength = 64;
+
+/// Spellings of a run of CJK text, combined from its characters.
+///
+/// Hunspell links whole words, so `闲 st:閒` alone never reaches `闲适`:
+/// Chinese and Japanese are written without spaces, which makes a
+/// multi-character word one token to [doStems], and the explicit way to cover
+/// it in the `.dic` is one `闲适 st:閒適` line per spelling. Looking the
+/// characters up instead keeps the table the size of the character set and
+/// builds the combinations here, cheapest (fewest characters replaced) first.
+///
+/// Returns nothing when the text has no wide characters, when it is longer than
+/// [maxCharVariantWordLength], when no character in it has a variant, or when
+/// the combinations would exceed [maxCharVariantCombinations]. A truncated set
+/// is worse than none: a missing spelling is indistinguishable from "the
+/// dictionary does not have it", while the exact spelling is still looked up by
+/// the caller either way.
+List<String> _charVariantStems(
+  List<_LoadedHunspellSource> dictionaries,
+  String word,
+) {
+  if (word.runes.length > maxCharVariantWordLength) return const <String>[];
+
+  final chars = <String>[];
+  var hasWideChar = false;
+  for (final rune in word.runes) {
+    if (rune >= 0x2E80) hasWideChar = true;
+    chars.add(String.fromCharCode(rune));
+  }
+  if (!hasWideChar) return const <String>[];
+
+  final candidatesPerChar = <List<String>>[];
+  var combinations = 0;
+  for (final char in chars) {
+    // The character itself is always worth trying, even where the `.dic` has
+    // no entry for it: `閒适` is a spelling too.
+    final candidates = <String>{
+      char,
+      ..._singleWordStems(dictionaries, char),
+    }.toList(growable: false);
+    if (candidates.length > 1) {
+      combinations = combinations == 0
+          ? candidates.length
+          : combinations * candidates.length;
+      if (combinations > maxCharVariantCombinations) return const <String>[];
+    }
+    candidatesPerChar.add(candidates);
+  }
+  if (combinations == 0) return const <String>[];
+
+  final costPerSpelling = <String, int>{};
+  final buffer = <String>[];
+  void walk(int index, int cost) {
+    if (index == chars.length) {
+      final spelling = buffer.join();
+      if (spelling == word) return;
+      final existing = costPerSpelling[spelling];
+      if (existing == null || cost < existing) {
+        costPerSpelling[spelling] = cost;
+      }
+      return;
+    }
+
+    for (final candidate in candidatesPerChar[index]) {
+      buffer.add(candidate);
+      walk(index + 1, cost + (candidate == chars[index] ? 0 : 1));
+      buffer.removeLast();
+    }
+  }
+
+  walk(0, 0);
+
+  // Insertion order alone would follow the `.dic`'s order, which says nothing
+  // about how close a spelling is to what was typed; the tie-break keeps the
+  // result stable across runs so the list does not reshuffle between lookups.
+  final ordered = costPerSpelling.entries.toList()
+    ..sort((a, b) {
+      final byCost = a.value.compareTo(b.value);
+      return byCost != 0 ? byCost : a.key.compareTo(b.key);
+    });
+  return [for (final entry in ordered) entry.key];
 }
 
 final hunspellManager = HunspellManager();
