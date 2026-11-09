@@ -75,6 +75,10 @@ recording which characters are the same character written another way. Ciyue
 reads such a table **per character as well as per word**, which is what lets a
 query typed in one form reach a headword stored in another.
 
+A table like that is published at <https://github.com/yx-wh/hunspell_zh_CN>:
+import its `zh_CN.aff` and `zh_CN.dic` and it works. The rest of this section is
+what the file contains, and how to build your own.
+
 ### The `.aff` stays an empty shell
 
 ```text
