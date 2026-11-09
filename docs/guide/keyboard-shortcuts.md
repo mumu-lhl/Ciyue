@@ -29,7 +29,7 @@ The wide window has two search boxes: the one in the left column and the one in 
 
 ### Looking up a selection
 
-Select a word or a phrase in the entry and press `Enter` to look it up. This is EBWin and EBMac's behaviour, and on the desktop it is currently the only way to look up a selected word: the entry's right-click menu is Chromium's own, offering only *Copy* and *Inspect Element*.
+Select a word or a phrase in the entry and press `Enter` to look it up. This is EBWin and EBMac's behaviour. On Windows and Linux a right click on a word looks it up too; macOS keeps WKWebView's own menu.
 
 Selecting and pressing Enter beats double-clicking a single word, because in languages that do not separate words with spaces what a double-click selects is down to luck; and even in a language like English you sometimes meet compound words and phrasal verbs that a double-click cannot catch:
 
@@ -41,6 +41,8 @@ Selecting and pressing Enter beats double-clicking a single word, because in lan
 | English | `throw away` | `throw` or `away` |
 
 On Android, the long-press menu also offers the same lookup next to *Copy* and *Read aloud*; right-clicking a word selects it as well, and the menu's *Query* item looks up that word.
+
+On **Windows and Linux**, the entry's right-click menu is drawn by Ciyue and offers *Lookup*, *Look up in a New Tab*, *Copy* and *Read Aloud*. Right-clicking a word selects it; clicking inside an existing selection keeps the whole phrase for Copy and for the lookups. **macOS** is unchanged: WKWebView's own menu also offers the system dictionary services.
 
 ## Tabs
 
@@ -133,7 +135,7 @@ Rocker only has this one direction: dictionary tabs wrap around, so a few presse
 In the **Expansion** style there are no dictionary tabs, so that action falls back to switching word tabs instead of doing nothing.
 
 - Windows, Linux and macOS only; Android has no right button or wheel.
-- An ordinary right click is untouched — the context menu is suppressed only while the left button is held. On macOS `Ctrl`+left click is a system-level right click and is excluded from the gesture.
+- Only a right click while the left button is held counts as a gesture, and it does not open a menu. An ordinary right click opens Ciyue's own menu on Windows and Linux, and the system menu on macOS. On macOS `Ctrl`+left click is a system-level right click and is excluded from the gesture.
 - Wheel events are throttled so one physical scroll does not jump several tabs, and the page's own scrolling is stopped while the left button is held.
 - The click that follows a gesture is swallowed, so it cannot open a dictionary link by accident.
 

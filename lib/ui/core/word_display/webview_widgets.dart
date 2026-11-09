@@ -10,6 +10,8 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/content_scale_script.dart";
+import "package:ciyue/ui/core/word_display/desktop_context_menu_actions.dart";
+import "package:ciyue/ui/core/word_display/desktop_context_menu_script.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
 import "package:ciyue/ui/core/word_display/gesture_actions.dart";
@@ -128,6 +130,7 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
   double contentScale = 1.0,
   bool? useBridge,
   bool isDesktop = false,
+  bool desktopContextMenu = false,
 }) {
   // Tell the page which theme the app is in: the WebView's own night mode
   // follows the OS, not the app, so dictionary stylesheets cannot react to
@@ -218,8 +221,12 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
         source: gestureScript(),
         injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
       ),
+    // macOS keeps its engine menu (and its system dictionary services), so
+    // only Windows and Linux swap the word script for the app's own menu.
     UserScript(
-      source: contextWordScript(),
+      source: desktopContextMenu
+          ? desktopContextMenuScript()
+          : contextWordScript(),
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
     UserScript(
@@ -311,6 +318,8 @@ Future<void> _applyPendingAnchor(
 ///   appearance settings and resolves against the current layout.
 /// * `ContextWord` is the word a right click selected, so the menu can use it
 ///   even when the native menu has already cleared the selection.
+/// * `DesktopContextMenu` is a Windows/Linux right click: its position and
+///   selected word open the app's own menu.
 void _registerKeyBridgeHandler(
   InAppWebViewController controller, {
   required BuildContext context,
@@ -318,6 +327,7 @@ void _registerKeyBridgeHandler(
   required WidgetRef ref,
   required void Function(String key) onZoomKey,
   void Function(String word)? onContextWord,
+  void Function(String payload)? onDesktopContextMenu,
 }) {
   controller.addJavaScriptHandler(
     handlerName: "ciyueKey",
@@ -339,6 +349,8 @@ void _registerKeyBridgeHandler(
         handleGesture(ref, payload);
       } else if (name == "ContextWord") {
         onContextWord?.call(payload);
+      } else if (name == "DesktopContextMenu") {
+        onDesktopContextMenu?.call(payload);
       }
       return null;
     },
@@ -832,6 +844,26 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   InAppWebViewController? _desktopController;
   Future<void> _desktopContentLoad = Future<void>.value();
 
+  /// Wraps the WebView so the CSS coordinates of a right click can be turned
+  /// into the overlay coordinates `showMenu` needs.
+  final _webViewAnchorKey = GlobalKey();
+
+  void _handleDesktopContextMenu(String payload) {
+    final request = parseDesktopContextMenu(payload);
+    if (request == null || request.word.isEmpty) return;
+    final anchorContext = _webViewAnchorKey.currentContext;
+    if (anchorContext == null) return;
+    unawaited(
+      showDesktopContextMenu(
+        context: context,
+        anchorContext: anchorContext,
+        ref: ref,
+        dictId: widget.dictId,
+        request: request,
+      ),
+    );
+  }
+
   @override
   void dispose() {
     entryFocusTargets.remove(this);
@@ -971,11 +1003,17 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
         darkReaderEnabled: useDarkReader,
       );
 
+      // WebView2 and WPE show a bare engine menu. Windows and Linux replace
+      // it with the app's own; macOS keeps WKWebView's menu for the system
+      // dictionary services.
+      final useDesktopContextMenu = Platform.isWindows || Platform.isLinux;
+
       final webviewSettings = InAppWebViewSettings(
         useWideViewPort: false,
         algorithmicDarkeningAllowed: !isLightTheme,
         resourceCustomSchemes: ["entry", "gdlookup", "sound", "bword"],
         transparentBackground: true,
+        disableContextMenu: useDesktopContextMenu,
       );
 
       // macOS uses the same local-server load path as Linux; only Windows
@@ -995,6 +1033,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
               isDarkTheme: !isLightTheme,
               contentScale: settings.contentScale,
               isDesktop: true,
+              desktopContextMenu: useDesktopContextMenu,
             ),
             initialSettings: webviewSettings,
             initialData: load.initialData,
@@ -1046,6 +1085,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                 onZoomKey: (key) =>
                     applyZoomKey(ref.read(settingsProvider), key),
                 ref: ref,
+                onDesktopContextMenu: _handleDesktopContextMenu,
               );
               entryFocusTargets[this] = (
                 dictId: () => widget.dictId,
@@ -1147,6 +1187,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   isDarkTheme: !isLightTheme,
                   contentScale: settings.contentScale,
                   isDesktop: true,
+                  desktopContextMenu: useDesktopContextMenu,
                 ),
                 webViewEnvironment: snapshot.data?.environment,
                 initialSettings: webviewSettings,
@@ -1258,6 +1299,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                     onZoomKey: (key) =>
                         applyZoomKey(ref.read(settingsProvider), key),
                     ref: ref,
+                    onDesktopContextMenu: _handleDesktopContextMenu,
                   );
                   entryFocusTargets[this] = (
                     dictId: () => widget.dictId,
@@ -1284,6 +1326,9 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
     // scroll, causing rapid jitter on tall pages.
     // In non-expansion mode (full page), constrain to screen height and let
     // the WebView scroll internally.
+    // The key is the anchor for right-click CSS coordinates. Keep it outside
+    // the FutureBuilders so a rebuild that swaps the WebView does not move it.
+    final anchored = KeyedSubtree(key: _webViewAnchorKey, child: webview);
     if (widget.isExpansion) {
       final height =
           ref.watch(
@@ -1295,11 +1340,11 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
       // ExpansionPanelList gives unbounded height; the Linux platform view
       // uses SizedBox.expand internally so it needs a finite constraint.
       // Use at least 1 to avoid zero-size issues before JS reports height.
-      return SizedBox(height: height > 0 ? height : 1, child: webview);
+      return SizedBox(height: height > 0 ? height : 1, child: anchored);
     }
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height),
-      child: webview,
+      child: anchored,
     );
   }
 }
