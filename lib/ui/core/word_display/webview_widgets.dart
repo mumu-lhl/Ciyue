@@ -218,7 +218,7 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
     ),
     if (isDesktop)
       UserScript(
-        source: gestureScript(),
+        source: gestureScript(bitmaskFallback: Platform.isLinux),
         injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
       ),
     // macOS keeps its engine menu (and its system dictionary services), so
