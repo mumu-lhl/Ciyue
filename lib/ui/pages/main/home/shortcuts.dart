@@ -224,7 +224,7 @@ void _selectAdjacentHistory(WidgetRef ref, HomeModel homeModel, int delta) {
   homeModel.selectedWord = history[newIndex].word;
 }
 
-/// Binds `Alt`+0..9 to the dictionary tabs of the entry.
+/// Binds `Alt`+0..9 and `Alt`+PgUp/PgDn to the dictionary tabs of the entry.
 ///
 /// The tabs live inside the entry page, but the shortcut has to sit next
 /// to the other app-level ones so that it works wherever the focus is.
@@ -232,9 +232,9 @@ void _selectAdjacentHistory(WidgetRef ref, HomeModel homeModel, int delta) {
 /// up.
 ///
 /// `Alt`+0 jumps to the AI explanation, `Alt`+1..9 to the first nine
-/// dictionaries. A key that names no tab does nothing: in the expansion
-/// layout there are no tabs at all, and a number past the last dictionary
-/// has nowhere to go.
+/// dictionaries, and `Alt`+PgUp/PgDn step to the neighbouring tab. A key
+/// that names no tab does nothing: in the expansion layout there are no
+/// tabs at all, and a number past the last dictionary has nowhere to go.
 Map<SingleActivator, VoidCallback> _dictionaryTabShortcuts(
   WidgetRef ref,
   HomeModel homeModel,
@@ -259,14 +259,40 @@ Map<SingleActivator, VoidCallback> _dictionaryTabShortcuts(
         dictionaryCount: dictionaryCount,
       );
       if (index == null) return;
-      try {
-        tabController.animateTo(index);
-      } catch (_) {
-        // The tab bar was torn down between the check and the call.
-      }
+      _animateToDictTab(index);
     };
   }
+  shortcuts[const SingleActivator(LogicalKeyboardKey.pageUp, alt: true)] = () =>
+      _stepDictTab(-1);
+  shortcuts[const SingleActivator(
+    LogicalKeyboardKey.pageDown,
+    alt: true,
+  )] = () =>
+      _stepDictTab(1);
   return shortcuts;
+}
+
+void _animateToDictTab(int index) {
+  final tabController = dictTabController;
+  if (tabController == null) return;
+  try {
+    tabController.animateTo(index);
+  } catch (_) {
+    // The tab bar was torn down between the check and the call.
+  }
+}
+
+void _stepDictTab(int step) {
+  if (_isTypingInAField()) return;
+  final tabController = dictTabController;
+  if (tabController == null) return;
+  final index = adjacentDictTabIndex(
+    current: tabController.index,
+    length: tabController.length,
+    step: step,
+  );
+  if (index == null) return;
+  _animateToDictTab(index);
 }
 
 /// Binds `Ctrl`+` and `Ctrl`+1..9 to the dictionary groups.

@@ -37,6 +37,8 @@ String keyBridgeScript() {
     ['PageDown', true, false, false],
     ['PageUp', false, false, false],
     ['PageDown', false, false, false],
+    ['PageUp', false, true, false],
+    ['PageDown', false, true, false],
     ['ArrowUp', true, false, false],
     ['ArrowDown', true, false, false],
     ['ArrowLeft', false, true, false],
