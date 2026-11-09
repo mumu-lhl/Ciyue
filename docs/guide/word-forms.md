@@ -62,11 +62,11 @@ entries**, so irregular forms cannot be resolved at all. Maintained sets:
   no spell checking, so it needs a purpose-built Hunspell dictionary. This set
   builds on Gary's original version and adds mixed-script (kana + kanji) to kanji
   resolution (e.g. まん延 → 蔓延), more verb conjugations, and half-width kana.
-- Chinese: <https://github.com/yx-wh/hunspell_zh> — an empty `.aff` and a `st:`
-  table generated from several Chinese dictionaries. It ships two builds:
-  `zh_CN_pruned` is the one to use here (a few hundred kilobytes), while `zh_CN`
-  keeps every word-level line and is only needed by readers that neither compose
-  characters nor run OpenCC.
+- Chinese: <https://github.com/yx-wh/hunspell_zh_CN> — an empty `.aff` and a `st:`
+  table generated from several Chinese dictionaries. The published `zh_CN.dic` is
+  the pruned build, which is all Ciyue and GoldenDict-ng need; a reader that
+  neither composes characters nor runs OpenCC has to build the full table with
+  the scripts in that repository.
 
 ## Chinese: simplified, traditional and variant characters
 
@@ -137,8 +137,8 @@ traditional form has a different length.
 ### Building the table
 
 A table generated from several common Chinese dictionaries is published at
-<https://github.com/yx-wh/hunspell_zh>; build your own when it does not cover the
-dictionaries you read.
+<https://github.com/yx-wh/hunspell_zh_CN>; build your own when it does not cover
+the dictionaries you read.
 
 1. Export the headwords of the dictionaries you actually read. The table is worth
    building from real headwords, because a `st:` target that no dictionary

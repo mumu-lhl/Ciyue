@@ -51,7 +51,7 @@ Hunspell `.aff`/`.dic`，那种语言就能用。
 - 德文：<https://github.com/yx-wh/hunspell_de_DE> —— 为可分动词的分词、`zu`
   不定式补了 2,000 多条 `st:`。
 - 日文：<https://github.com/yx-wh/hunspell_ja_JP> —— 由于日文通常无需拼写检查，需要单独为日文设计Hunspell词典文件。这个版本在Gary原始版本的基础上增加了混书形式到汉字的还原（例如「まん延」→「蔓延」）、补充了一些动词的活用、补充了半角假名。
-- 中文：<https://github.com/yx-wh/hunspell_zh> —— 空壳 `.aff` 加一份从多部中文词典生成的 `st:` 表。仓库提供两个版本：`zh_CN_pruned` 是这里该用的（几百 KB），`zh_CN` 保留了全部词级条目，只给既不按字组合、也不走 OpenCC 的读取器用。
+- 中文：<https://github.com/yx-wh/hunspell_zh_CN> —— 空壳 `.aff` 加一份从多部中文词典生成的 `st:` 表。仓库发布的 `zh_CN.dic` 是精简版，词悦和 GoldenDict-ng 用它就够；既不按字组合、也不走 OpenCC 的读取器，需要用仓库里的脚本自行生成全量表。
 
 ## 中文：简体、繁体与异体字
 
@@ -113,7 +113,7 @@ FLAG long
 
 ### 怎么生成这张表
 
-由多部常用中文词典生成的词表发布在 <https://github.com/yx-wh/hunspell_zh>；如果它没覆盖你用的词典，再自己生成。
+由多部常用中文词典生成的词表发布在 <https://github.com/yx-wh/hunspell_zh_CN>；如果它没覆盖你用的词典，再自己生成。
 
 1. 导出你实际在用的词典的词头。表最好按真实词头生成，因为 `st:` 右侧指向的词条
    如果在任何词典里都不存在，查过去依然是空；
