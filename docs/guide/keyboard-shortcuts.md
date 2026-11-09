@@ -92,7 +92,7 @@ In the **Expansion** style there are no such tabs, and these keys do nothing at 
 |---|---|
 | `Ctrl`+`R` | Read the word aloud — or stop it when it is already playing |
 | `Ctrl`+`Shift`+`S` | Stop the playback |
-| `Ctrl`+`↑` / `Ctrl`+`↓` | Pick the previous / next entry in the history |
+| `Alt`+`↑` / `Alt`+`↓` | Pick the previous / next entry in the history |
 | `Alt`+`←` / `Alt`+`→` | Go back / forward through the history of the entry |
 | `PgDn` / `PgUp` | Page through the entry, in the expansion layout |
 
@@ -122,4 +122,6 @@ Only the entry is scaled, the rest of the window keeps its size. The level is re
 - The group and dictionary tab shortcuts only act while an entry is on screen.
 - On a keyboard where the window manager takes `Alt`+a number, the dictionary tabs cannot be reached that way.
 - `Ctrl`+`PgUp` and `Ctrl`+`PgDn` change the word tab, while `Alt`+`PgUp` and `Alt`+`PgDn` change the dictionary tab; the same keys without a modifier scroll the entry in the expansion layout.
+- Shortcuts with a modifier also fire while the entry's native WebView holds the focus, regardless of which control is focused. Bare `PgUp` / `PgDn` still belong to the entry's scrolling and to text fields.
+- History navigation uses only `Alt`+`↑` / `↓`: macOS Mission Control takes `Ctrl`+`↑` / `↓`, while window tiling on KDE, GNOME and Windows takes `Super` / `Win`+`↑` / `↓`. `Alt` is the pair every mainstream desktop leaves free. Inside a macOS text field `Option`+`↑` / `↓` moves to the paragraph start / end, so Ciyue yields to the field while it has the focus.
 - On the desktop layout the arrow keys move the keyboard focus between controls; `Enter` or `Space` activates the focused one.

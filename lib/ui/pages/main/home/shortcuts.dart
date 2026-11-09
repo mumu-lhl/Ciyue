@@ -35,12 +35,25 @@ const _digitKeys = <LogicalKeyboardKey>[
 /// itself instead of relying on [CallbackShortcuts].
 Map<SingleActivator, VoidCallback> homeShortcutBindings(
   WidgetRef ref,
-  BuildContext context,
-) {
+  BuildContext context, {
+  bool forGlobalHandler = false,
+}) {
   final homeModel = ref.read(homeModelProvider);
   final history = ref.read(historyModelProvider).history;
   final activeWord =
       homeModel.selectedWord ?? (history.isEmpty ? null : history.first.word);
+
+  void selectNextHistory() {
+    if (!homeModel.searchBarFocusNode.hasFocus) {
+      _selectAdjacentHistory(ref, homeModel, 1);
+    }
+  }
+
+  void selectPreviousHistory() {
+    if (!homeModel.searchBarFocusNode.hasFocus) {
+      _selectAdjacentHistory(ref, homeModel, -1);
+    }
+  }
 
   return {
     const SingleActivator(LogicalKeyboardKey.keyF, control: true): () {
@@ -57,16 +70,15 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
         homeModel.nextTab,
     const SingleActivator(LogicalKeyboardKey.tab, control: true, shift: true):
         homeModel.previousTab,
-    const SingleActivator(LogicalKeyboardKey.arrowDown, control: true): () {
-      if (!homeModel.searchBarFocusNode.hasFocus) {
-        _selectAdjacentHistory(ref, homeModel, 1);
-      }
-    },
-    const SingleActivator(LogicalKeyboardKey.arrowUp, control: true): () {
-      if (!homeModel.searchBarFocusNode.hasFocus) {
-        _selectAdjacentHistory(ref, homeModel, -1);
-      }
-    },
+    // Alt is the modifier the desktop environments leave alone here: macOS
+    // Mission Control takes Ctrl+Up/Down, and window tiling takes
+    // Super/Win+Up/Down on KDE, GNOME and Windows. Option+Up/Down is only a
+    // text-field command (paragraph start/end), which the focus guards and
+    // the global handler already leave to the field.
+    const SingleActivator(LogicalKeyboardKey.arrowDown, alt: true):
+        selectNextHistory,
+    const SingleActivator(LogicalKeyboardKey.arrowUp, alt: true):
+        selectPreviousHistory,
     const SingleActivator(LogicalKeyboardKey.keyR, control: true): () {
       if (activeWord != null && activeWord.isNotEmpty) {
         playWordPronunciation(context, activeWord);
@@ -78,16 +90,22 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
         homeModel.goBack,
     const SingleActivator(LogicalKeyboardKey.arrowRight, alt: true):
         homeModel.goForward,
-    const SingleActivator(LogicalKeyboardKey.escape): () =>
-        _toggleSearchFocus(ref),
+    // Esc has SearchEscapeCloser's own global handler, and the bare page keys
+    // belong to the WebView and to text fields. None of them may be consumed
+    // by the global handler.
+    if (!forGlobalHandler)
+      const SingleActivator(LogicalKeyboardKey.escape): () =>
+          _toggleSearchFocus(ref),
+    if (!forGlobalHandler)
+      const SingleActivator(LogicalKeyboardKey.pageDown): () =>
+          _pageEntry(ref, "PageDown"),
+    if (!forGlobalHandler)
+      const SingleActivator(LogicalKeyboardKey.pageUp): () =>
+          _pageEntry(ref, "PageUp"),
     const SingleActivator(LogicalKeyboardKey.pageDown, control: true):
         homeModel.nextTab,
     const SingleActivator(LogicalKeyboardKey.pageUp, control: true):
         homeModel.previousTab,
-    const SingleActivator(LogicalKeyboardKey.pageDown): () =>
-        _pageEntry(ref, "PageDown"),
-    const SingleActivator(LogicalKeyboardKey.pageUp): () =>
-        _pageEntry(ref, "PageUp"),
     const SingleActivator(
       LogicalKeyboardKey.keyS,
       control: true,
@@ -109,6 +127,106 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
     ..._dictionaryTabShortcuts(ref, homeModel),
     ..._groupShortcuts(ref),
   };
+}
+
+/// Runs one shortcut action per physical key press.
+///
+/// A platform view can hand the same press to both the global key handler and
+/// the WebView bridge, so both entry points meet here. Key repeats are not
+/// de-duplicated: holding a key down must keep stepping.
+class ShortcutDispatcher {
+  String? _lastSignature;
+  DateTime? _lastAt;
+
+  bool dispatch(
+    Map<SingleActivator, VoidCallback> bindings,
+    SingleActivator activator, {
+    bool isRepeat = false,
+  }) {
+    final action = shortcutActionFor(bindings, activator);
+    if (action == null) return false;
+    if (!isRepeat) {
+      final signature = _signature(activator);
+      final now = DateTime.now();
+      final lastAt = _lastAt;
+      if (signature == _lastSignature &&
+          lastAt != null &&
+          now.difference(lastAt).inMilliseconds < 100) {
+        return true;
+      }
+      _lastSignature = signature;
+      _lastAt = now;
+    }
+    action();
+    return true;
+  }
+
+  String _signature(SingleActivator a) =>
+      "${a.trigger.keyId}:${a.control}:${a.alt}:${a.shift}:${a.meta}";
+}
+
+final shortcutDispatcher = ShortcutDispatcher();
+
+/// Runs the home shortcuts from the Flutter focus tree and, as a fallback,
+/// from the global key stream.
+///
+/// [CallbackShortcuts] needs a focused Flutter widget behind it. A native
+/// WebView can take that focus and leave the tree deaf to keys, so the global
+/// handler covers the same table without waiting for focus. Bare page keys and
+/// Esc stay out of the global table: the former belong to the WebView, the
+/// latter already has SearchEscapeCloser's own global handler.
+class HomeShortcuts extends ConsumerStatefulWidget {
+  final Widget child;
+
+  const HomeShortcuts({super.key, required this.child});
+
+  @override
+  ConsumerState<HomeShortcuts> createState() => _HomeShortcutsState();
+}
+
+class _HomeShortcutsState extends ConsumerState<HomeShortcuts> {
+  late final bool Function(KeyEvent) _handler;
+
+  @override
+  void initState() {
+    super.initState();
+    _handler = _handleGlobalKey;
+    HardwareKeyboard.instance.addHandler(_handler);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handler);
+    super.dispose();
+  }
+
+  bool _handleGlobalKey(KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return false;
+    if (!mounted) return false;
+    // Text fields keep their own combinations (^T / ^W on macOS, for
+    // example), and a focused Flutter widget is served by CallbackShortcuts.
+    if (_isTypingInAField()) return false;
+    if (ModalRoute.of(context)?.isCurrent == false) return false;
+    final keyboard = HardwareKeyboard.instance;
+    final activator = SingleActivator(
+      event.logicalKey,
+      control: keyboard.isControlPressed,
+      alt: keyboard.isAltPressed,
+      shift: keyboard.isShiftPressed,
+      meta: keyboard.isMetaPressed,
+    );
+    return shortcutDispatcher.dispatch(
+      homeShortcutBindings(ref, context, forGlobalHandler: true),
+      activator,
+      isRepeat: event is KeyRepeatEvent,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => CallbackShortcuts(
+    bindings: homeShortcutBindings(ref, context),
+    child: widget.child,
+  );
 }
 
 /// Moves the focus into the inline search box.

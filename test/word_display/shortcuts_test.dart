@@ -2,6 +2,9 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/ui/core/word_display/content_scale_script.dart";
 import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
+import "package:ciyue/ui/pages/main/home/shortcuts.dart";
+import "package:flutter/services.dart";
+import "package:flutter/widgets.dart";
 import "package:flutter_test/flutter_test.dart";
 
 void main() {
@@ -31,8 +34,18 @@ void main() {
   group("keyBridgeScript", () {
     test("forwards Alt+PageUp and Alt+PageDown", () {
       final script = keyBridgeScript();
-      expect(script, contains("['PageUp', false, true, false]"));
-      expect(script, contains("['PageDown', false, true, false]"));
+      expect(script, contains("['PageUp', false, true, false, false]"));
+      expect(script, contains("['PageDown', false, true, false, false]"));
+    });
+
+    test("forwards Alt+Arrow for history only", () {
+      final script = keyBridgeScript();
+      expect(script, contains("['ArrowUp', false, true, false, false]"));
+      expect(script, contains("['ArrowDown', false, true, false, false]"));
+      expect(script, isNot(contains("['ArrowUp', true, false, false, false]")));
+      // The meta column stays so a Cmd combination cannot be forwarded as
+      // the same key without its modifier.
+      expect(script, contains("s[4] === e.metaKey"));
     });
   });
 
@@ -148,6 +161,56 @@ void main() {
     test("returns null when there is nothing to step between", () {
       expect(adjacentDictTabIndex(current: 0, length: 0, step: 1), isNull);
       expect(adjacentDictTabIndex(current: 0, length: 1, step: 1), isNull);
+    });
+  });
+
+  group("bridgeShortcutActivator", () {
+    test("keeps the meta flag", () {
+      final activator = bridgeShortcutActivator(
+        '{"code":"ArrowUp","meta":true}',
+      );
+      expect(activator, isNotNull);
+      expect(activator!.trigger, LogicalKeyboardKey.arrowUp);
+      expect(activator.meta, isTrue);
+      expect(activator.control, isFalse);
+    });
+  });
+
+  group("ShortcutDispatcher", () {
+    test("runs an action once when both paths see the same press", () {
+      final dispatcher = ShortcutDispatcher();
+      var calls = 0;
+      const activator = SingleActivator(LogicalKeyboardKey.arrowUp, meta: true);
+      final bindings = <SingleActivator, VoidCallback>{
+        activator: () => calls++,
+      };
+      expect(dispatcher.dispatch(bindings, activator), isTrue);
+      expect(dispatcher.dispatch(bindings, activator), isTrue);
+      expect(calls, 1);
+    });
+
+    test("keeps key repeats running", () {
+      final dispatcher = ShortcutDispatcher();
+      var calls = 0;
+      const activator = SingleActivator(
+        LogicalKeyboardKey.arrowDown,
+        control: true,
+      );
+      final bindings = <SingleActivator, VoidCallback>{
+        activator: () => calls++,
+      };
+      expect(dispatcher.dispatch(bindings, activator), isTrue);
+      expect(dispatcher.dispatch(bindings, activator, isRepeat: true), isTrue);
+      expect(calls, 2);
+    });
+
+    test("leaves unbound keys alone", () {
+      final dispatcher = ShortcutDispatcher();
+      const activator = SingleActivator(LogicalKeyboardKey.keyQ);
+      expect(
+        dispatcher.dispatch(const <SingleActivator, VoidCallback>{}, activator),
+        isFalse,
+      );
     });
   });
 }

@@ -24,35 +24,38 @@ String keyBridgeScript() {
   }
   // The combinations the app binds behind the entry. Only these are taken
   // from the WebView, so Ctrl+C and the other browser keys keep working.
+  // [code, ctrl, alt, shift, meta]. The meta column stays even though no
+  // shortcut binds Cmd/Super: without it a Cmd combination could be
+  // forwarded as the same key without its modifier.
   var shortcuts = [
-    ['Escape', false, false, false],
-    ['KeyF', true, false, false],
-    ['KeyT', true, false, false],
-    ['KeyW', true, false, false],
-    ['KeyR', true, false, false],
-    ['KeyS', true, false, true],
-    ['Tab', true, false, false],
-    ['Tab', true, false, true],
-    ['PageUp', true, false, false],
-    ['PageDown', true, false, false],
-    ['PageUp', false, false, false],
-    ['PageDown', false, false, false],
-    ['PageUp', false, true, false],
-    ['PageDown', false, true, false],
-    ['ArrowUp', true, false, false],
-    ['ArrowDown', true, false, false],
-    ['ArrowLeft', false, true, false],
-    ['ArrowRight', false, true, false],
-    ['Backquote', true, false, false]
+    ['Escape', false, false, false, false],
+    ['KeyF', true, false, false, false],
+    ['KeyT', true, false, false, false],
+    ['KeyW', true, false, false, false],
+    ['KeyR', true, false, false, false],
+    ['KeyS', true, false, true, false],
+    ['Tab', true, false, false, false],
+    ['Tab', true, false, true, false],
+    ['PageUp', true, false, false, false],
+    ['PageDown', true, false, false, false],
+    ['PageUp', false, false, false, false],
+    ['PageDown', false, false, false, false],
+    ['PageUp', false, true, false, false],
+    ['PageDown', false, true, false, false],
+    ['ArrowUp', false, true, false, false],
+    ['ArrowDown', false, true, false, false],
+    ['ArrowLeft', false, true, false, false],
+    ['ArrowRight', false, true, false, false],
+    ['Backquote', true, false, false, false]
   ];
   for (var n = 0; n <= 9; n++) {
-    shortcuts.push(['Digit' + n, true, false, false]);
-    shortcuts.push(['Digit' + n, false, true, false]);
+    shortcuts.push(['Digit' + n, true, false, false, false]);
+    shortcuts.push(['Digit' + n, false, true, false, false]);
   }
   function shortcutFor(e) {
     for (var i = 0; i < shortcuts.length; i++) {
       var s = shortcuts[i];
-      if (s[0] === e.code && s[1] === e.ctrlKey && s[2] === e.altKey && s[3] === e.shiftKey) {
+      if (s[0] === e.code && s[1] === e.ctrlKey && s[2] === e.altKey && s[3] === e.shiftKey && s[4] === e.metaKey) {
         return {
           code: e.code,
           key: e.key,

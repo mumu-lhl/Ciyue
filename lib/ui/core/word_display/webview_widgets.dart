@@ -337,7 +337,7 @@ void _registerKeyBridgeHandler(
 void _dispatchShortcut(WidgetRef ref, BuildContext context, String payload) {
   final activator = bridgeShortcutActivator(payload);
   if (activator == null) return;
-  shortcutActionFor(homeShortcutBindings(ref, context), activator)?.call();
+  shortcutDispatcher.dispatch(homeShortcutBindings(ref, context), activator);
 }
 
 /// Pushes the entry zoom into a page that is already open.
