@@ -7,6 +7,7 @@ import "package:ciyue/services/startup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/badges.dart";
 import "package:ciyue/ui/core/settings_group.dart";
+import "package:ciyue/ui/pages/settings/mouse_gesture_selectors.dart";
 import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
@@ -112,6 +113,10 @@ class OtherSettingsPage extends StatelessWidget {
                   const AdvanceSwitch(),
                 ],
               ),
+              if (isDesktop()) ...[
+                const SizedBox(height: 16),
+                const SettingsGroupCard(children: [MouseGestureSelectors()]),
+              ],
             ],
           ),
         ),

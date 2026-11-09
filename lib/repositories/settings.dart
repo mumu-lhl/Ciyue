@@ -13,6 +13,11 @@ enum TabBarPosition { top, bottom }
 
 enum DictionarySwitchStyle { expansion, tag }
 
+/// What a mouse gesture in the entry does. The dictionary tabs only exist in
+/// the tab layout, so that action falls back to word tabs in the expansion
+/// layout.
+enum MouseGestureAction { off, dictionaryTabs, wordTabs }
+
 /// Update channel for app updates.
 enum UpdateChannel {
   /// Stable releases only.
@@ -68,6 +73,8 @@ class Settings extends ChangeNotifier {
   late bool showMoreOptionsButton;
   late bool showSearchBarInWordDisplay;
   late DictionarySwitchStyle dictionarySwitchStyle;
+  late MouseGestureAction rockerGestureAction;
+  late MouseGestureAction wheelGestureAction;
 
   /// How the search bar matches the query against headwords.
   late SearchMode searchMode;
@@ -193,6 +200,15 @@ class Settings extends ChangeNotifier {
         dictionarySwitchStyleString,
       );
     }
+
+    rockerGestureAction = MouseGestureAction.values.firstWhere(
+      (action) => action.name == prefs.getString("rockerGestureAction"),
+      orElse: () => MouseGestureAction.dictionaryTabs,
+    );
+    wheelGestureAction = MouseGestureAction.values.firstWhere(
+      (action) => action.name == prefs.getString("wheelGestureAction"),
+      orElse: () => MouseGestureAction.wordTabs,
+    );
 
     searchMode = SearchMode.values.firstWhere(
       (mode) => mode.name == prefs.getString("searchMode"),
@@ -443,6 +459,18 @@ class Settings extends ChangeNotifier {
   Future<void> setDictionarySwitchStyle(DictionarySwitchStyle style) async {
     dictionarySwitchStyle = style;
     await prefs.setString("dictionarySwitchStyle", style.name);
+    notifyListeners();
+  }
+
+  Future<void> setRockerGestureAction(MouseGestureAction action) async {
+    rockerGestureAction = action;
+    await prefs.setString("rockerGestureAction", action.name);
+    notifyListeners();
+  }
+
+  Future<void> setWheelGestureAction(MouseGestureAction action) async {
+    wheelGestureAction = action;
+    await prefs.setString("wheelGestureAction", action.name);
     notifyListeners();
   }
 

@@ -12,6 +12,8 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/content_scale_script.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
+import "package:ciyue/ui/core/word_display/gesture_actions.dart";
+import "package:ciyue/ui/core/word_display/gesture_script.dart";
 import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
 import "package:ciyue/ui/core/word_display/resource_url_script.dart";
 import "package:ciyue/ui/core/word_display/selection_style_script.dart";
@@ -125,6 +127,7 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
   bool isDarkTheme = false,
   double contentScale = 1.0,
   bool? useBridge,
+  bool isDesktop = false,
 }) {
   // Tell the page which theme the app is in: the WebView's own night mode
   // follows the OS, not the app, so dictionary stylesheets cannot react to
@@ -210,6 +213,11 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
       source: keyBridgeScript(),
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
+    if (isDesktop)
+      UserScript(
+        source: gestureScript(),
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+      ),
     UserScript(
       source: contextWordScript(),
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
@@ -299,6 +307,8 @@ Future<void> _applyPendingAnchor(
 ///   its own; the app zooms the entry instead.
 /// * `Shortcut` is any other key the home page binds; it is replayed through
 ///   the same table the Flutter focus tree uses.
+/// * `Gesture` is a desktop mouse gesture; its action is looked up in the
+///   appearance settings and resolves against the current layout.
 /// * `ContextWord` is the word a right click selected, so the menu can use it
 ///   even when the native menu has already cleared the selection.
 void _registerKeyBridgeHandler(
@@ -325,6 +335,8 @@ void _registerKeyBridgeHandler(
         onZoomKey(payload);
       } else if (name == "Shortcut") {
         _dispatchShortcut(ref, context, payload);
+      } else if (name == "Gesture") {
+        handleGesture(ref, payload);
       } else if (name == "ContextWord") {
         onContextWord?.call(payload);
       }
@@ -982,6 +994,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
               darkReaderSource: darkReaderSource,
               isDarkTheme: !isLightTheme,
               contentScale: settings.contentScale,
+              isDesktop: true,
             ),
             initialSettings: webviewSettings,
             initialData: load.initialData,
@@ -1133,6 +1146,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   darkReaderSource: darkReaderSource,
                   isDarkTheme: !isLightTheme,
                   contentScale: settings.contentScale,
+                  isDesktop: true,
                 ),
                 webViewEnvironment: snapshot.data?.environment,
                 initialSettings: webviewSettings,

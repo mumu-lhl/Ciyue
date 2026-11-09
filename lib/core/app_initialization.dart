@@ -511,6 +511,8 @@ const preferencesAllowList = <String>{
   "enableHistory",
   "versionCode",
   "dictionarySwitchStyle",
+  "rockerGestureAction",
+  "wheelGestureAction",
   "translationProvider",
   "deeplxUrl",
   "deeplApiKey",
