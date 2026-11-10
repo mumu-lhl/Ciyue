@@ -52,7 +52,6 @@ class ChatSession {
   /// Word this conversation is about (word-detail entry), if any.
   String? initialContext;
 
-  /// Active roleplay scenario id, if any.
   String? scenarioId;
 
   final List<ChatMessage> messages;
@@ -110,7 +109,6 @@ class ChatSession {
   }
 }
 
-/// A preset roleplay scenario for language learning.
 class ChatScenario {
   final String id;
   final String titleKey;
@@ -295,7 +293,6 @@ class ChatViewModel extends ChangeNotifier {
     _isStreaming = false;
   }
 
-  /// Start a fresh conversation and switch to it.
   void newSession() {
     _stopStream();
     _discardPristineActive();
@@ -460,14 +457,12 @@ class ChatViewModel extends ChangeNotifier {
     return true;
   }
 
-  /// Start a roleplay scenario in its own new session.
   void startScenario(ChatScenario scenario) {
     _stopStream();
     _discardPristineActive();
     _activate(_createSession(scenarioId: scenario.id));
     _persistSessions();
     _notify();
-    // Send an opening message from the AI.
     _sendScenarioOpener();
   }
 
@@ -560,7 +555,6 @@ class ChatViewModel extends ChangeNotifier {
     }
   }
 
-  /// Save a word to the wordbook.
   Future<bool> saveWordToWordbook(String word) async {
     try {
       final dao = WordbookDao(mainDatabase);
@@ -575,7 +569,6 @@ class ChatViewModel extends ChangeNotifier {
 
   final List<String> _pendingImagePaths = [];
 
-  /// Images attached to the message being composed.
   List<String> get pendingImagePaths => List.unmodifiable(_pendingImagePaths);
 
   Future<Directory> _chatImagesDir() async {
@@ -644,7 +637,6 @@ class ChatViewModel extends ChangeNotifier {
     }
   }
 
-  /// Whether the current provider can generate images at all.
   bool get imageGenerationSupported =>
       ModelProviderManager.supportsImageGeneration(settings.aiProvider);
 

@@ -239,7 +239,6 @@ void main() {
     );
     expect(tabControllers.last.initialIndex, equals(0));
 
-    // Push new word 'banana' with dictId=30 (index 2)
     currentContext.push("/word/banana?dictId=30");
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));

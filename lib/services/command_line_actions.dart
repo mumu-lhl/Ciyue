@@ -68,7 +68,6 @@ Examples:
 """;
 }
 
-/// Builds the text shown for `--version`.
 Future<String> buildVersionText() async {
   try {
     final info = await PackageInfo.fromPlatform();

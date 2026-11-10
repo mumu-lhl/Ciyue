@@ -274,10 +274,8 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
         );
       }
 
-      // Ensure it's removed from dictionaryListDao
       await dictionaryListDao.remove(dictionary.path);
 
-      // Try to delete the associated dictionary database file
       final databasePath = join(
         (await databaseDirectory()).path,
         "dictionary_${dictionary.id}.sqlite",
@@ -295,18 +293,15 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
         }
       }
 
-      // Remove from dictManager if it was loaded
       if (dictManager.contain(dictionary.id)) {
         await dictManager.close(dictionary.id);
       }
 
-      // Remove from all groups
       await dictGroupDao.removeDictIdFromAllGroups(dictionary.id);
       dictManager.dictIds = [
         for (final dict in dictManager.dicts.values) dict.id,
       ];
 
-      // Update UI
       if (context.mounted) {
         ref.read(manageDictionariesModelProvider).update();
         ref.read(dictManagerModelProvider).checkIsEmpty();

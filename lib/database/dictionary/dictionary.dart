@@ -84,12 +84,10 @@ class DictionaryDatabase extends _$DictionaryDatabase {
   }
 
   Future<bool> wordExist(String word) async {
-    // First try with original word
     var result = await (select(
       dictionary,
     )..where((u) => u.key.isValue(word))).get();
 
-    // If not found, try with lowercase version
     if (result.isEmpty) {
       result = await (select(
         dictionary,

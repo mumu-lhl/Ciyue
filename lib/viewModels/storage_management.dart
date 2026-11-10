@@ -91,7 +91,7 @@ class StorageManagementViewModel extends ChangeNotifier {
   Future<bool> deleteEntity(FileSystemEntity entity) async {
     try {
       await entity.delete(recursive: true);
-      await _loadEntities(); // Reload the list after deletion
+      await _loadEntities();
       return true;
     } catch (e) {
       _errorMessage = "Error deleting entity: $e";

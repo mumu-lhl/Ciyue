@@ -7,7 +7,6 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 
 import "prompt_editor_page.dart";
 
-/// Localized display title for a prompt definition.
 String promptTitle(AppLocalizations locale, AiPromptDefinition definition) {
   return switch (definition.id) {
     "explain" => locale.aiExplainWordPrompt,
@@ -21,7 +20,6 @@ String promptTitle(AppLocalizations locale, AiPromptDefinition definition) {
   };
 }
 
-/// Localized helper text (purpose + variables) for a prompt definition.
 String promptHelper(AppLocalizations locale, AiPromptDefinition definition) {
   return switch (definition.id) {
     "explain" => locale.customExplainPromptHelper,

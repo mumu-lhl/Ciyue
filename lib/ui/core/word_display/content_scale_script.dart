@@ -2,12 +2,10 @@ import "dart:async";
 
 import "package:ciyue/repositories/settings.dart";
 
-/// Zooms the dictionary entry content in or out.
 void changeContentScale(Settings settings, double delta) {
   unawaited(settings.setContentScale(settings.contentScale + delta));
 }
 
-/// Puts the dictionary entry content back to its normal size.
 void resetContentScale(Settings settings) {
   unawaited(settings.setContentScale(1.0));
 }

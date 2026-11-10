@@ -31,7 +31,6 @@ class LongPressDetector extends StatefulWidget {
   /// Called when the child is held down for [timeout].
   final VoidCallback onLongPress;
 
-  /// How long the child has to be held down.
   final Duration timeout;
 
   /// How far the finger may drift before the press stops counting as a long

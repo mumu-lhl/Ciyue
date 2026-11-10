@@ -64,13 +64,11 @@ void main() {
       expect(model.tabs, ["first", "second", "third"]);
       expect(model.activeTabIndex, 2);
 
-      // Close the currently active (last) tab
       model.closeTab(2);
       expect(model.tabs, ["first", "second"]);
       expect(model.activeTabIndex, 1);
       expect(model.selectedWord, "second");
 
-      // Close middle tab when last tab is active
       model.openWordInNewTab("third");
       model.switchToTab(0);
       model.closeTab(1);
@@ -78,7 +76,6 @@ void main() {
       expect(model.activeTabIndex, 0);
       expect(model.selectedWord, "first");
 
-      // Close all remaining tabs
       model.closeAllTabs();
       expect(model.tabs, isEmpty);
       expect(model.activeTabIndex, -1);
@@ -113,19 +110,17 @@ void main() {
       model.openWordInNewTab("banana");
       model.openWordInNewTab("cherry");
 
-      model.switchToTab(1); // active: banana
+      model.switchToTab(1);
       expect(model.selectedWord, "banana");
 
-      // Move apple from 0 to after cherry (destination index 2)
       model.reorderTabs(0, 2);
       expect(model.tabs, ["banana", "cherry", "apple"]);
-      expect(model.activeTabIndex, 0); // banana is now index 0
+      expect(model.activeTabIndex, 0);
       expect(model.selectedWord, "banana");
 
-      // Move cherry from 1 to 0
       model.reorderTabs(1, 0);
       expect(model.tabs, ["cherry", "banana", "apple"]);
-      expect(model.activeTabIndex, 1); // banana is now index 1
+      expect(model.activeTabIndex, 1);
       expect(model.selectedWord, "banana");
     });
   });
@@ -142,38 +137,32 @@ void main() {
       expect(model.canGoBack, isFalse);
       expect(model.canGoForward, isFalse);
 
-      // Navigate to second word in same tab
       model.navigateInCurrentTab("banana");
       expect(model.tabs, ["banana"]);
       expect(model.selectedWord, "banana");
       expect(model.canGoBack, isTrue);
       expect(model.canGoForward, isFalse);
 
-      // Navigate to third word
       model.navigateInCurrentTab("cherry");
       expect(model.selectedWord, "cherry");
       expect(model.canGoBack, isTrue);
       expect(model.canGoForward, isFalse);
 
-      // Go back to banana
       model.goBack();
       expect(model.selectedWord, "banana");
       expect(model.canGoBack, isTrue);
       expect(model.canGoForward, isTrue);
 
-      // Go back to apple
       model.goBack();
       expect(model.selectedWord, "apple");
       expect(model.canGoBack, isFalse);
       expect(model.canGoForward, isTrue);
 
-      // Go forward to banana
       model.goForward();
       expect(model.selectedWord, "banana");
       expect(model.canGoBack, isTrue);
       expect(model.canGoForward, isTrue);
 
-      // Go forward to cherry
       model.goForward();
       expect(model.selectedWord, "cherry");
       expect(model.canGoBack, isTrue);
@@ -186,7 +175,7 @@ void main() {
       model.navigateInCurrentTab("banana");
       model.navigateInCurrentTab("cherry");
 
-      model.goBack(); // at banana
+      model.goBack();
       expect(model.selectedWord, "banana");
       expect(model.canGoForward, isTrue);
 

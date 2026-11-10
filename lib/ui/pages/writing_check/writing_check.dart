@@ -136,7 +136,6 @@ class _DesktopWritingCheckView extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Left: Input Card
           Expanded(
             child: Card(
               elevation: 0,
@@ -187,7 +186,6 @@ class _DesktopWritingCheckView extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 16),
-          // Right: Result Card
           Expanded(
             child: Card(
               elevation: 0,

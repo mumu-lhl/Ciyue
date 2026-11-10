@@ -24,15 +24,12 @@ import "package:ciyue/viewModels/writing_check.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_riverpod/legacy.dart";
 
-/// Provider for global settings.
 final settingsProvider = ChangeNotifierProvider((ref) => settings);
 
-/// HomeModel provider.
 final homeModelProvider = ChangeNotifierProvider<HomeModel>(
   (ref) => HomeModel(),
 );
 
-/// DictManagerModel provider.
 final dictManagerModelProvider = ChangeNotifierProvider<DictManagerModel>(
   (ref) => DictManagerModel(
     onDictionariesChanged: () =>
@@ -40,59 +37,48 @@ final dictManagerModelProvider = ChangeNotifierProvider<DictManagerModel>(
   ),
 );
 
-/// HistoryModel provider.
 final historyModelProvider = ChangeNotifierProvider<HistoryModel>(
   (ref) => HistoryModel(),
 );
 
-/// WordbookModel provider.
 final wordbookModelProvider = ChangeNotifierProvider<WordbookModel>(
   (ref) => WordbookModel(),
 );
 
-/// AudioModel provider.
 final audioModelProvider = ChangeNotifierProvider<AudioModel>(
   (ref) => AudioModel()..init(),
 );
 
-/// ManageDictionariesModel provider.
 final manageDictionariesModelProvider =
     ChangeNotifierProvider<ManageDictionariesModel>(
       (ref) => ManageDictionariesModel(),
     );
 
-/// AIPrompts provider.
 final aiPromptsProvider = ChangeNotifierProvider<AIPrompts>(
   (ref) => AIPrompts(),
 );
 
-/// SelectionTextViewModel provider.
 final selectionTextViewModelProvider =
     ChangeNotifierProvider<SelectionTextViewModel>(
       (ref) => SelectionTextViewModel(),
     );
 
-/// OpenRecordsRepository provider.
 final openRecordsRepositoryProvider = Provider<OpenRecordsRepository>(
   (ref) => OpenRecordsRepository(),
 );
 
-/// WritingCheckHistoryDao provider.
 final writingCheckHistoryDaoProvider = Provider<WritingCheckHistoryDao>(
   (ref) => WritingCheckHistoryDao(mainDatabase),
 );
 
-/// TranslateHistoryDao provider.
 final translateHistoryDaoProvider = Provider<TranslateHistoryDao>(
   (ref) => TranslateHistoryDao(mainDatabase),
 );
 
-/// AboutViewModel provider.
 final aboutViewModelProvider = Provider<AboutViewModel>(
   (ref) => AboutViewModel(),
 );
 
-/// AISettingsViewModel provider.
 final aiSettingsViewModelProvider =
     ChangeNotifierProvider.autoDispose<AISettingsViewModel>((ref) {
       final aiPrompts = ref.watch(aiPromptsProvider);
@@ -115,7 +101,6 @@ final dictionaryDarkReaderProvider =
       DictionaryDarkReaderNotifier.new,
     );
 
-/// Provider for the dictionary manager.
 final dictManagerProvider = Provider((ref) => dictManager);
 
 /// Full-text search over dictionary definitions: lazy per-dictionary FTS5
@@ -295,7 +280,6 @@ final missingWordSpellingSuggestionsProvider = FutureProvider.autoDispose
       return dictionaryLookup.spellingSuggestionsFor(word);
     });
 
-/// Notifier for managing the heights of multiple WebViews.
 class WebViewHeightsNotifier extends Notifier<Map<String, double>> {
   /// Max cached heights. Prevents unbounded memory growth as the user
   /// looks up more words.
@@ -328,7 +312,6 @@ class WebViewHeightsNotifier extends Notifier<Map<String, double>> {
   }
 }
 
-/// Provider for managing WebView heights.
 final webviewHeightsProvider =
     NotifierProvider<WebViewHeightsNotifier, Map<String, double>>(
       WebViewHeightsNotifier.new,
@@ -346,12 +329,10 @@ class DictSetVersionNotifier extends Notifier<int> {
   void bump() => state++;
 }
 
-/// Provider for the version of the set of dictionaries.
 final dictSetVersionProvider = NotifierProvider<DictSetVersionNotifier, int>(
   DictSetVersionNotifier.new,
 );
 
-/// WritingCheckViewModel provider.
 final writingCheckViewModelProvider =
     ChangeNotifierProvider.autoDispose<WritingCheckViewModel>((ref) {
       return WritingCheckViewModel(

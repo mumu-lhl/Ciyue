@@ -102,13 +102,11 @@ class AI {
     return aiProvider.request(prompt);
   }
 
-  /// Stream the response as text chunks arrive.
   Stream<String> requestStream(String prompt, {CancellationToken? cancel}) {
     _ensureConfigured();
     return aiProvider.requestStream(prompt, cancel: cancel);
   }
 
-  /// Stream with conversation history for multi-turn chat.
   Stream<String> requestStreamWithHistory(
     String prompt, {
     List<ChatTurn> history = const [],
@@ -125,7 +123,6 @@ class AI {
   }
 }
 
-/// A single turn in a conversation.
 class ChatTurn {
   final String text;
   final bool isUser;
@@ -139,7 +136,6 @@ class ChatTurn {
   const ChatTurn.system(this.text) : isUser = false, isSystem = true;
 }
 
-/// Convert [ChatTurn]s to Genkit messages.
 List<Message> chatTurnsToGenkitMessages(List<ChatTurn> history) {
   return [
     for (final turn in history)

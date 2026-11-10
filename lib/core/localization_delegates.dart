@@ -53,7 +53,6 @@ class FallbackWidgetsLocalizationsDelegate
   bool shouldReload(FallbackWidgetsLocalizationsDelegate old) => false;
 }
 
-/// The same fallback for the Cupertino localizations.
 class FallbackCupertinoLocalizationsDelegate
     extends LocalizationsDelegate<CupertinoLocalizations> {
   const FallbackCupertinoLocalizationsDelegate([

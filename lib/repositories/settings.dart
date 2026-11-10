@@ -18,9 +18,7 @@ enum DictionarySwitchStyle { expansion, tag }
 /// layout.
 enum MouseGestureAction { off, dictionaryTabs, wordTabs }
 
-/// Update channel for app updates.
 enum UpdateChannel {
-  /// Stable releases only.
   stable,
 
   /// Beta/Alpha prereleases (excludes nightly builds).
@@ -34,7 +32,6 @@ enum UpdateChannel {
 const minContentScale = 0.5;
 const maxContentScale = 2.0;
 
-/// Keeps the content zoom within the supported range.
 double clampContentScale(double value) =>
     value.clamp(minContentScale, maxContentScale).toDouble();
 

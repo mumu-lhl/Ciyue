@@ -45,7 +45,6 @@ class MddResourceData {
   int get compressedSize => offsetInfo.compressedSize;
 }
 
-/// Instantiates the appropriate [LoadedDictionary] for [path] and [type].
 LoadedDictionary createLoadedDictionary({
   required String path,
   required int type,
@@ -151,7 +150,6 @@ class DictManager {
   /// here first.
   Future<void>? _groupSwitch;
 
-  /// Completes when no group switch is running.
   Future<void> waitForGroupSwitch() => _groupSwitch ?? Future<void>.value();
 
   Future<void> setCurrentGroup(int id) async {
@@ -638,13 +636,11 @@ class Mdict implements LoadedDictionary {
     final cssName = "$name.css";
     final jsName = "$name.js";
 
-    // Check filesystem
     final cssFile = File("${dirname(path)}/$cssName");
     hasCss = await cssFile.exists();
     final jsFile = File("${dirname(path)}/$jsName");
     hasJs = await jsFile.exists();
 
-    // Check MDD
     if (!hasCss || !hasJs) {
       if (!hasCss) {
         final results = await readResource(cssName);
@@ -656,7 +652,6 @@ class Mdict implements LoadedDictionary {
       }
     }
 
-    // Check zip audio packs.
     if (!hasCss) {
       hasCss = await containsZipResource(cssName);
     }
@@ -718,7 +713,6 @@ class Mdict implements LoadedDictionary {
       Uint8List? data;
 
       if (readerResources.isEmpty) {
-        // Find resource under directory if no mdd, else in a zip pack.
         data = await _readLooseResourceFile(filename);
       } else {
         // An external .css/.js next to the dictionary overrides the copy
@@ -1015,7 +1009,6 @@ class Mdict implements LoadedDictionary {
   Future<List<MddResourceData>> readResource(String key) async {
     final resourceData = <MddResourceData>[];
 
-    // Fast path: use cached key mapping if we've resolved this key before.
     final cached = _resourceKeyCache[key];
     if (cached != null && cached.readerIndex < readerResources.length) {
       final readerResource = readerResources[cached.readerIndex];
@@ -1058,7 +1051,6 @@ class Mdict implements LoadedDictionary {
         continue;
       }
 
-      // Cache the successful mapping for future lookups.
       _resourceKeyCache[key] = (foundKey: foundKey, readerIndex: i);
 
       final offsetInfo = await readerResource.locate(foundKey);

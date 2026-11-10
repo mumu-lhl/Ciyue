@@ -44,13 +44,10 @@ void main() {
 
       await tester.pump();
 
-      // Check for TextFormField
       expect(find.byType(TextFormField), findsOneWidget);
 
-      // Check for sync button
       expect(find.byIcon(Icons.sync), findsOneWidget);
 
-      // Check for dropdown icon button
       expect(find.byIcon(Icons.arrow_drop_down), findsOneWidget);
     },
   );
@@ -93,21 +90,18 @@ void main() {
       ),
     );
 
-    // Open modal
     await tester.tap(find.text("Open Modal"));
     await tester.pumpAndSettle();
 
     expect(find.text("Select Model"), findsOneWidget);
-    expect(find.byType(TextField), findsOneWidget); // Search bar
+    expect(find.byType(TextField), findsOneWidget);
 
-    // Search for "claude"
     await tester.enterText(find.byType(TextField), "claude");
     await tester.pump();
 
     expect(find.text("Claude 3.7 Sonnet"), findsOneWidget);
     expect(find.text("GPT-4o"), findsNothing);
 
-    // Select the filtered item
     await tester.tap(find.text("Claude 3.7 Sonnet"));
     await tester.pumpAndSettle();
 

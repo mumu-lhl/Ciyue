@@ -207,7 +207,6 @@ class _QuizPageState extends State<QuizPage> {
             ),
           ],
           const SizedBox(height: 24),
-          // Options
           Expanded(
             child: ListView.builder(
               itemCount: question.options.length,

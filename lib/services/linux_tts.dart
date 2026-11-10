@@ -67,7 +67,6 @@ class LinuxTtsAvailability {
   final bool ssip;
   final bool espeak;
 
-  /// True when at least one backend is usable.
   bool get any => ssip || espeak;
 
   @override
@@ -252,7 +251,6 @@ int espeakPitchFromSpeechPitch(double pitch) {
 // espeak-ng process runner
 // ---------------------------------------------------------------------------
 
-/// The result of one `espeak-ng` invocation.
 class EspeakResult {
   const EspeakResult({
     required this.exitCode,
@@ -494,7 +492,6 @@ class LinuxTtsService {
        // initializing formal would rename it to `_pumpInterval`.
        _pumpInterval = pumpInterval; // ignore: prefer_initializing_formals
 
-  /// The shared instance used by the app.
   static final LinuxTtsService instance = LinuxTtsService();
 
   final SsipTransportFactory _transportFactory;

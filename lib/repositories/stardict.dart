@@ -42,7 +42,6 @@ class Stardict extends BaseLoadedDictionary {
     entriesTotal = reader.wordCount;
   }
 
-  /// Registers a new StarDict dictionary.
   Future<void> add() async {
     _ensureReader();
     await reader.init();

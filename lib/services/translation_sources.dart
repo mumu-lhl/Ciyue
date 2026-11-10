@@ -30,7 +30,6 @@ abstract class TranslationSource {
   /// Whether this is an AI provider source (renders markdown output).
   bool get isAi => id.startsWith("ai:");
 
-  /// Whether the required configuration is present.
   bool get isConfigured;
 
   Future<TranslationResult> translate(

@@ -74,27 +74,22 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Initial page is banana (index 1)
       expect(findWord("banana"), findsOneWidget);
       expect(find.text("2 / 3"), findsOneWidget);
 
-      // Verify history recorded for initial word
       expect(fakeRecords.history.contains("banana"), isTrue);
 
-      // Find Previous and Next buttons by icon
       final prevFinder = find.widgetWithIcon(IconButton, Icons.chevron_left);
       final nextFinder = find.widgetWithIcon(IconButton, Icons.chevron_right);
 
       expect(prevFinder, findsOneWidget);
       expect(nextFinder, findsOneWidget);
 
-      // Both should be enabled at index 1
       final prevBtn = tester.widget<IconButton>(prevFinder);
       final nextBtn = tester.widget<IconButton>(nextFinder);
       expect(prevBtn.onPressed, isNotNull);
       expect(nextBtn.onPressed, isNotNull);
 
-      // Tap Previous button -> navigate to "apple"
       await tester.tap(prevFinder);
       await tester.pumpAndSettle();
 
@@ -102,11 +97,9 @@ void main() {
       expect(find.text("1 / 3"), findsOneWidget);
       expect(fakeRecords.history.contains("apple"), isTrue);
 
-      // At index 0, previous button should be disabled
       final prevBtnAt0 = tester.widget<IconButton>(prevFinder);
       expect(prevBtnAt0.onPressed, isNull);
 
-      // Tap Next button twice -> navigate to "cherry"
       await tester.tap(nextFinder);
       await tester.pumpAndSettle();
       expect(findWord("banana"), findsOneWidget);
@@ -117,7 +110,6 @@ void main() {
       expect(find.text("3 / 3"), findsOneWidget);
       expect(fakeRecords.history.contains("cherry"), isTrue);
 
-      // At last index, next button should be disabled
       final nextBtnAtEnd = tester.widget<IconButton>(nextFinder);
       expect(nextBtnAtEnd.onPressed, isNull);
     },
@@ -135,14 +127,12 @@ void main() {
     expect(findWord("apple"), findsOneWidget);
     expect(find.text("1 / 3"), findsOneWidget);
 
-    // Swipe left (fling from right to left) to go to "banana"
     await tester.fling(find.byType(PageView), const Offset(-400, 0), 1000);
     await tester.pumpAndSettle();
 
     expect(findWord("banana"), findsOneWidget);
     expect(find.text("2 / 3"), findsOneWidget);
 
-    // Swipe right (fling from left to right) to go back to "apple"
     await tester.fling(find.byType(PageView), const Offset(400, 0), 1000);
     await tester.pumpAndSettle();
 
@@ -161,14 +151,12 @@ void main() {
 
     expect(findWord("apple"), findsOneWidget);
 
-    // Press ArrowRight
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.pumpAndSettle();
 
     expect(findWord("banana"), findsOneWidget);
     expect(find.text("2 / 3"), findsOneWidget);
 
-    // Press ArrowLeft
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pumpAndSettle();
 

@@ -12,7 +12,6 @@ void main() {
   late WritingCheckHistoryDao writingCheckHistoryDao;
 
   setUp(() {
-    // Use an in-memory database for testing
     database = AppDatabase(NativeDatabase.memory());
     wordbookDao = WordbookDao(database);
     openRecordsDao = OpenRecordsDao(database);
@@ -61,16 +60,10 @@ void main() {
       // 4. Verify results
       final allWords = await wordbookDao.getAllWords();
 
-      // We expect 3 records total:
-      // 1. original 'apple' (tag 1)
-      // 2. 'apple' (tag 2)
-      // 3. 'banana' (tag 1)
       expect(allWords.length, 3);
 
-      // Verify duplicate was not added (count remains 1 for apple/tag:1)
       expect(allWords.where((w) => w.word == "apple" && w.tag == 1).length, 1);
 
-      // Verify new records were added
       expect(allWords.where((w) => w.word == "apple" && w.tag == 2).length, 1);
       expect(allWords.where((w) => w.word == "banana").length, 1);
     });
@@ -111,7 +104,6 @@ void main() {
       // 4. Verify results
       final allHistory = await translateHistoryDao.getAllHistory();
 
-      // Expect 2 records: 'hello' and 'world'
       expect(allHistory.length, 2);
       expect(
         allHistory.map((e) => e.inputText),
@@ -166,14 +158,8 @@ void main() {
       // 4. Verify results
       final allHistory = await writingCheckHistoryDao.getAllHistory();
 
-      // Expect 3 records:
-      // 1. Original
-      // 2. Different output
-      // 3. Different time
-      // The exact duplicate should be skipped.
       expect(allHistory.length, 3);
 
-      // Verify the duplicate logic by counting entries with original content
       final originalContentCount = allHistory
           .where(
             (e) =>

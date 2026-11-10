@@ -13,7 +13,6 @@ import "package:material_ui/material_ui.dart";
 class MissingWordSuggestionsView extends StatelessWidget {
   final MissingWordSuggestions suggestions;
 
-  /// Called with the word behind the tapped chip.
   final void Function(String word) onSelected;
 
   const MissingWordSuggestionsView({

@@ -46,13 +46,11 @@ class _ProcessTextRequest {
 class DictionaryDirectoryPick {
   const DictionaryDirectoryPick._({this.path, required this.unresolvable});
 
-  /// The user cancelled the picker.
   const DictionaryDirectoryPick.cancelled() : this._(unresolvable: false);
 
   /// The picked tree could not be resolved to a readable filesystem path.
   const DictionaryDirectoryPick.unresolvable() : this._(unresolvable: true);
 
-  /// The picked tree resolved to a readable filesystem path.
   const DictionaryDirectoryPick.resolved(String path)
     : this._(path: path, unresolvable: false);
 

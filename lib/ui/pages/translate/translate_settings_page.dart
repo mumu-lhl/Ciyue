@@ -45,7 +45,6 @@ class _AiTranslateSettingsPageState extends State<AiTranslateSettingsPage> {
                   vertical: 12,
                 ),
                 children: [
-                  // Output options
                   _SettingsCard(
                     child: DropdownButtonFormField<bool>(
                       decoration: InputDecoration(
@@ -72,7 +71,6 @@ class _AiTranslateSettingsPageState extends State<AiTranslateSettingsPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Sources section header
                   Padding(
                     padding: const EdgeInsets.only(left: 4, bottom: 4),
                     child: Text(
@@ -90,7 +88,6 @@ class _AiTranslateSettingsPageState extends State<AiTranslateSettingsPage> {
                       ),
                     ),
                   ),
-                  // Reorderable source list
                   ReorderableListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -109,7 +106,6 @@ class _AiTranslateSettingsPageState extends State<AiTranslateSettingsPage> {
                     },
                   ),
                   const SizedBox(height: 12),
-                  // History toggle
                   _SettingsCard(
                     padding: EdgeInsets.zero,
                     child: SwitchListTile(
@@ -227,7 +223,6 @@ class _SourceSettingsTile extends StatelessWidget {
   }
 }
 
-/// Config text fields per source id.
 class _SourceConfigFields extends StatelessWidget {
   const _SourceConfigFields({required this.viewModel, required this.source});
 

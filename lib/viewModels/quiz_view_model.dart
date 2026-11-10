@@ -10,7 +10,6 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:material_ui/material_ui.dart";
 
-/// Question types supported by the quiz.
 class QuizQuestionType {
   static const String choice = "choice";
   static const String spelling = "spelling";
@@ -311,7 +310,6 @@ class QuizViewModel extends ChangeNotifier {
           return;
         }
 
-        // Pick random words for the quiz.
         final random = math.Random();
         final shuffled = List<WordbookData>.from(allWords)..shuffle(random);
         final count = questionCount.clamp(1, allWords.length);
@@ -389,7 +387,6 @@ class QuizViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Submit a spelling answer. Returns true if correct.
   bool submitSpelling(String answer) {
     if (_state != QuizState.answering || _spellingChecked) return false;
     final q = currentQuestion!;

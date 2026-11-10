@@ -59,7 +59,6 @@ final Map<
 >
 entryFocusTargets = {};
 
-// The dictionary the reader is looking at.
 int? activeEntryDictId;
 
 // Gives the focus back to the entry the reader is looking at.

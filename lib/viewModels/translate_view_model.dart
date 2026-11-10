@@ -10,7 +10,6 @@ import "package:material_ui/material_ui.dart";
 
 enum SourceResultStatus { loading, success, error }
 
-/// One source's outcome in a multi-source translation run.
 class SourceResult {
   final TranslationSource source;
   SourceResultStatus status = SourceResultStatus.loading;

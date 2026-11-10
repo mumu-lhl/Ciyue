@@ -141,7 +141,6 @@ void main() {
       expect(find.byIcon(Icons.add_rounded), findsOneWidget);
       expect(find.byIcon(Icons.more_vert_rounded), findsOneWidget);
 
-      // Initial state: canGoBack and canGoForward should be false
       final backButton = tester.widget<IconButton>(
         find.widgetWithIcon(IconButton, Icons.arrow_back_rounded),
       );
@@ -151,7 +150,6 @@ void main() {
       expect(backButton.onPressed, isNull);
       expect(forwardButton.onPressed, isNull);
 
-      // Tab count badge displays '1'
       expect(find.text("1"), findsOneWidget);
     },
   );
@@ -165,7 +163,6 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    // Navigate to second word
     homeModel.navigateInCurrentTab("banana");
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
@@ -175,20 +172,17 @@ void main() {
     );
     expect(backButton.onPressed, isNotNull);
 
-    // Tap back button
     await tester.tap(find.widgetWithIcon(IconButton, Icons.arrow_back_rounded));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(homeModel.selectedWord, "apple");
 
-    // Forward button should now be enabled
     final forwardButton = tester.widget<IconButton>(
       find.widgetWithIcon(IconButton, Icons.arrow_forward_rounded),
     );
     expect(forwardButton.onPressed, isNotNull);
 
-    // Tap forward button
     await tester.tap(
       find.widgetWithIcon(IconButton, Icons.arrow_forward_rounded),
     );
@@ -212,7 +206,6 @@ void main() {
 
     expect(find.byType(MobileTabOverview), findsNothing);
 
-    // Tap tab badge to open overview
     homeModel.toggleTabOverview();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
@@ -221,7 +214,6 @@ void main() {
     expect(find.text("apple"), findsOneWidget);
     expect(find.text("banana"), findsOneWidget);
 
-    // Tap first tab card to switch back to apple
     await tester.tap(find.text("apple"));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
@@ -241,7 +233,6 @@ void main() {
 
     expect(find.byType(MobileNewTabPage), findsNothing);
 
-    // Tap '+' (New Tab) button in bottom bar
     await tester.tap(find.widgetWithIcon(IconButton, Icons.add_rounded));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
@@ -249,7 +240,6 @@ void main() {
     expect(find.byType(MobileNewTabPage), findsOneWidget);
     expect(homeModel.tabs.length, 2);
 
-    // Tapping back button on the new tab closes it
     await tester.tap(find.byType(BackButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
@@ -268,14 +258,12 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Open new tab
       homeModel.newTab();
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.byType(MobileNewTabPage), findsOneWidget);
 
-      // Enter text and submit
       await tester.enterText(find.byType(SearchBar), "cherry");
       await tester.testTextInput.receiveAction(TextInputAction.search);
       await tester.pump();
@@ -339,18 +327,15 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Push /word/apple from home
       rootContext.push("/word/apple");
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(homeModel.tabs, ["apple"]);
 
-      // Tap back button in AppBar to exit back to home
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
 
-      // After exiting, tabs are cleanly cleared
       expect(homeModel.tabs, isEmpty);
       expect(find.text("Home"), findsOneWidget);
     },

@@ -71,11 +71,9 @@ void main() {
 
       await tester.pump();
 
-      // Idle state: should show volume_up icon
       expect(find.byIcon(Icons.volume_up), findsOneWidget);
       expect(find.byType(AudioWaveformIcon), findsNothing);
 
-      // Tap button to play
       final fab = find.byTooltip("Read Aloud");
       expect(fab, findsOneWidget);
       await tester.tap(fab);
@@ -85,10 +83,8 @@ void main() {
       expect(fakeAudioModel.playedWord, "sintonico");
       expect(fakeAudioModel.fakePlaying, isTrue);
 
-      // Playing state: should now show AudioWaveformIcon inside button
       expect(find.byType(AudioWaveformIcon), findsOneWidget);
 
-      // Tap button again to stop
       await tester.tap(fab);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 250));

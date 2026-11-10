@@ -273,7 +273,6 @@ class Updater {
   }
 
   static String get _desktopChannel {
-    // Map update channel to desktop updater channel name.
     switch (settings.updateChannel) {
       case UpdateChannel.stable:
         return "stable";

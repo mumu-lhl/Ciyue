@@ -47,35 +47,29 @@ class AiSettingsPage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // AI Provider
                     TitleText(AppLocalizations.of(context)!.aiProvider),
                     const SizedBox(height: 6),
                     const SettingsFieldCard(child: ProviderSetting()),
                     const SizedBox(height: 24),
 
-                    // AI API URL
                     if (ModelProviderManager
                         .modelProviders[provider]!
                         .allowCustomAPIUrl)
                       const AIAPIUrl(),
 
-                    // AI Model
                     TitleText(AppLocalizations.of(context)!.aiModel),
                     const SizedBox(height: 6),
                     const SettingsFieldCard(child: ModelSetting()),
                     const SizedBox(height: 24),
 
-                    // API Key
                     TitleText(AppLocalizations.of(context)!.apiKey),
                     const SizedBox(height: 6),
                     const SettingsFieldCard(child: APIKeySetting()),
                     const SizedBox(height: 24),
 
-                    // Explain Word
                     const SettingsFieldCard(child: ExplainWordSetting()),
                     const SizedBox(height: 24),
 
-                    // Prompt Management (dedicated page)
                     SettingsFieldCard(
                       child: ListTile(
                         leading: const Icon(Icons.edit_note_outlined),
@@ -96,7 +90,6 @@ class AiSettingsPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
 
-                    // Learning Settings
                     TitleText(AppLocalizations.of(context)!.learningSettings),
                     const SizedBox(height: 6),
                     const SettingsFieldCard(child: LearningSettings()),

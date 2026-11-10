@@ -39,7 +39,6 @@ class Zim extends BaseLoadedDictionary {
     entriesTotal = reader.wordCount;
   }
 
-  /// Registers a new ZIM dictionary into storage.
   Future<void> add() async {
     _ensureReader();
     await _initReaderWithCache();

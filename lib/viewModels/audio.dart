@@ -90,7 +90,6 @@ Future<ZipAudioHit?> readZipAudioEntry(String path, String word) async {
   return null;
 }
 
-/// Drops the cached reader for [path], if any.
 void closeZipAudioReader(String path) {
   _zipAudioReaders.remove(path)?.close();
 }

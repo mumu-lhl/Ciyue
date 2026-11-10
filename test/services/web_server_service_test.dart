@@ -112,7 +112,6 @@ void main() {
 
       final client = HttpClient();
 
-      // Suggest empty
       final reqSuggest = await client.getUrl(
         Uri.parse("${webServerService.url}/api/suggest"),
       );
@@ -122,7 +121,6 @@ void main() {
       final jsonSuggest = jsonDecode(bodySuggest) as Map<String, dynamic>;
       expect(jsonSuggest["dictionarySuggestions"], isEmpty);
 
-      // Lookup empty
       final reqLookup = await client.getUrl(
         Uri.parse("${webServerService.url}/api/lookup"),
       );
@@ -156,7 +154,6 @@ void main() {
 
     final client = HttpClient();
 
-    // Groups
     final reqGroups = await client.getUrl(
       Uri.parse("${webServerService.url}/api/groups"),
     );
@@ -165,7 +162,6 @@ void main() {
     final bodyGroups = await utf8.decoder.bind(resGroups).join();
     expect(jsonDecode(bodyGroups), isA<List>());
 
-    // AI Status
     final reqAi = await client.getUrl(
       Uri.parse("${webServerService.url}/api/ai/status"),
     );
@@ -175,7 +171,6 @@ void main() {
     final jsonAi = jsonDecode(bodyAi) as Map<String, dynamic>;
     expect(jsonAi, contains("configured"));
 
-    // AI Explain without word -> 400
     final reqExplain = await client.getUrl(
       Uri.parse("${webServerService.url}/api/ai/explain"),
     );

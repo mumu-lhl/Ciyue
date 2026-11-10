@@ -6,10 +6,8 @@ import "package:desktop_updater/desktop_updater.dart" as desktop_updater;
 /// Persists the updater's pending-install marker in the app support directory.
 final class JsonFileUpdateRecoveryStore
     implements desktop_updater.UpdateRecoveryStore {
-  /// Creates a file-backed recovery store.
   JsonFileUpdateRecoveryStore(this.file);
 
-  /// File used to persist the pending install marker.
   final File file;
 
   @override

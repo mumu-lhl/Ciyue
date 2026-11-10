@@ -95,7 +95,6 @@ void main() {
       await tester.pumpWidget(buildHost(word: "apple"));
       expect(controller.text, "apple");
 
-      // Tap the search bar to open view
       await tester.tap(find.byType(SearchBar));
       await tester.pumpAndSettle();
       expect(controller.isOpen, isTrue);
@@ -106,7 +105,6 @@ void main() {
         const TextSelection(baseOffset: 0, extentOffset: 5),
       );
 
-      // Tap clear ("X") button
       final clearButton = find.byTooltip("Clear text");
       expect(clearButton, findsOneWidget);
       await tester.tap(clearButton);
@@ -124,11 +122,9 @@ void main() {
         reason: "Controller text must not be overwritten while view is open",
       );
 
-      // Close the view without searching
       controller.closeView(null);
       await tester.pumpAndSettle();
 
-      // After closing, the search bar restores the word for the current page
       expect(controller.text, "apple");
     },
   );

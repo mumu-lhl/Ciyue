@@ -789,7 +789,6 @@ const _stardictRoles = {"ifo", "idx", "dict", "syn", "res", "resdir"};
 /// limit.
 const maxResourceDirectoryFiles = 100;
 
-/// Most bytes carried from a dictionary's `res/` folder.
 const _maxResourceDirectoryBytes = 20 * 1024 * 1024;
 
 /// The base name the files of one StarDict dictionary share: `sample.dict.dz`
@@ -854,7 +853,6 @@ void _validateFileSet(List<_DictionaryPackageFile> files) {
   final hasZim = count("zim") > 0;
   final formatCount =
       (hasMdx ? 1 : 0) + (hasStardict ? 1 : 0) + (hasZim ? 1 : 0);
-  // A package is exactly one format.
   if (formatCount != 1 || files.length > 1000 || count("font") > 1) {
     throw const FormatException("Invalid dictionary package file set.");
   }

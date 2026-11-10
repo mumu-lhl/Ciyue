@@ -89,10 +89,8 @@ void main() {
         ),
       );
 
-      // Idle: no text visible
       expect(find.text("sintonico"), findsNothing);
 
-      // Active: set isPlaying and playingWord
       fakeModel.fakePlaying = true;
       fakeModel.fakePlayingWord = "sintonico";
       fakeModel.notifyListeners();
@@ -102,7 +100,6 @@ void main() {
       expect(find.text("sintonico"), findsOneWidget);
       expect(find.byType(AudioWaveformIcon), findsOneWidget);
 
-      // Tap close button
       final closeButton = find.byIcon(Icons.close);
       expect(closeButton, findsOneWidget);
       await tester.tap(closeButton);

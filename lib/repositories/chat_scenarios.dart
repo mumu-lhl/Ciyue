@@ -52,7 +52,6 @@ class ChatScenarioManager with ChangeNotifier {
 
   List<ChatScenario> get customScenarios => List.unmodifiable(_customScenarios);
 
-  /// All enabled scenarios: presets (not disabled) + custom.
   List<ChatScenario> get allScenarios => [
     for (final s in ChatScenario.presets)
       if (!_disabledPresets.contains(s.id)) s,

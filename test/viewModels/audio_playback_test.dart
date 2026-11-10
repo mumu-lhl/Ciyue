@@ -20,10 +20,8 @@ void main() {
       final model = AudioModel();
       addTearDown(model.dispose);
 
-      // Initial state
       expect(model.isWordPlaying("sintonico"), isFalse);
 
-      // Set playing state
       model.setPlaybackStateForTesting(isPlaying: true, word: "Sintonico");
 
       expect(model.isPlaying, isTrue);
@@ -32,7 +30,6 @@ void main() {
       expect(model.isWordPlaying("SINTONICO"), isTrue);
       expect(model.isWordPlaying("other"), isFalse);
 
-      // Stop audio
       await model.stopAudio();
       expect(model.isPlaying, isFalse);
       expect(model.playingWord, isNull);
