@@ -19,7 +19,8 @@ Hunspell `.aff`/`.dic`，那种语言就能用。
 | `闲适`（中） | `闲适`（精确词条）+ 词表里声明的各种写法，例如 `閒適` |
 
 能还原出几个原形，完全取决于你用的 Hunspell 文件——一个形式真有多个词干时，
-就会全部列出。
+就会全部列出。这其中有一半是词悦自己的改动：原版 Hunspell 会丢掉一部分，
+见「词悦使用的 Hunspell」。
 
 ## 怎么开启
 
@@ -51,12 +52,49 @@ Hunspell `.aff`/`.dic`，那种语言就能用。
 - 德文：<https://github.com/yx-wh/hunspell_de_DE> —— 为可分动词的分词、`zu`
   不定式补了 2,000 多条 `st:`。
 - 日文：<https://github.com/yx-wh/hunspell_ja_JP> —— 由于日文通常无需拼写检查，需要单独为日文设计Hunspell词典文件。这个版本在Gary原始版本的基础上增加了混书形式到汉字的还原（例如「まん延」→「蔓延」）、补充了一些动词的活用、补充了半角假名。
+- 中文：<https://github.com/yx-wh/hunspell_zh_CN> —— 空壳 `.aff` 加一份从多部中文词典生成的 `st:` 表。仓库发布的 `zh_CN.dic` 是精简版，词悦和 GoldenDict-ng 用它就够；既不按字组合、也不走 OpenCC 的读取器，需要用仓库里的脚本自行生成全量表。
+
+## 词悦使用的 Hunspell
+
+词悦编译的是 Hunspell **1.7.3**，另外打了两处只与词干有关的补丁：
+
+- `hashmgr.cxx` —— 同一个词的第二个条目，只有「都没挂 flag」**且**「描述相同」时才会被丢弃。上游只要两条都没挂 flag 就丢弃，于是同一个拼写的两行 `st:` 只会留下第一行（[hunspell#1171](https://github.com/hunspell/hunspell/issues/1171)）。
+- `hunspell.cxx` —— `stem()` 会返回一条分析记录里的**全部** `st:` 字段，而不只是第一个。
+
+版本停在 1.7.3，是因为这两个文件是整份替换的。词悦也不依赖后续版本（1.7.6）里那处
+只影响命令行的汉字修复——词形还原从不执行 `hunspell -m`，那个问题出在命令行的输出层，
+不在 `analyze()` 或 `stem()` 里。
+
+靠这两处改动，一个拼写才能在词表里出现多次——日文的同形异义词、中文的异体字都是这么写的：
+
+```text
+たい積 st:体積
+たい積 st:堆積
+```
+
+原版 1.7.3 及以后的构建只保留第一行，更早的版本会两条都留。GoldenDict 和发行版
+自带的 `hunspell` 用的是系统库，所以在 1.7.3 及以后它们会少出几个原形。
+
+在原版上的绕法，是给重复条目挂一个 `.aff` 里未定义的 flag：
+
+```text
+たい積/X st:体積
+たい積/X st:堆積
+```
+
+`alen != 0` 会让条目走 `next_homonym` 分支、绕过查重，而 `.aff` 里没有 `X` 对应的
+词缀规则，所以不会多出任何词形。这样补过的词表在词悦里照常可用——未定义的 flag 只是
+被带着走——不必特意去掉。
 
 ## 中文：简体、繁体与异体字
 
 中文没有词形变化，所以中文的 `.dic` 用 `st:` 干另一件事：记录**哪些字是同一个字的
 另一种写法**。Ciyue 会**按词、也按字**去读这张表，因此用一种写法输入的查询，能够
 命中用另一种写法立的词条。
+
+现成的表发布在 <https://github.com/yx-wh/hunspell_zh_CN>，导入其中的 `zh_CN.aff`
+和 `zh_CN.dic` 即可使用。下面说明这份文件里是什么，以及没有覆盖到你的词典时怎么自己
+生成。
 
 ### `.aff` 保持空壳
 
@@ -81,8 +119,10 @@ FLAG long
 ```
 
 两个方向必须都写。`闲 st:閒` 只把 `闲` 指向 `閒`；没有 `閒 st:闲`，反向的
-`閒适` → `闲适` 就查不到。单字条目还是「混写」能成立的原因——混写本身不必进表，
-因为组合是查询时算出来的：
+`閒适` → `闲适` 就查不到。而 `闲` 本身还要写两行，这只有在「词悦使用的 Hunspell」
+那处补丁下才成立——原版会留下 `闲 st:閒`、丢掉 `闲 st:閑`。
+
+单字条目还是「混写」能成立的原因——混写本身不必进表，因为组合是查询时算出来的：
 
 | 输入 | 从上面这张表展开出的写法 |
 | --- | --- |
@@ -112,6 +152,8 @@ FLAG long
 
 ### 怎么生成这张表
 
+由多部常用中文词典生成的词表发布在 <https://github.com/yx-wh/hunspell_zh_CN>；如果它没覆盖你用的词典，再自己生成。
+
 1. 导出你实际在用的词典的词头。表最好按真实词头生成，因为 `st:` 右侧指向的词条
    如果在任何词典里都不存在，查过去依然是空；
 2. 把每个词头转换成标准形——OpenCC `t2s` 是个不错的起点，然后手工校正一对多的
@@ -125,6 +167,10 @@ FLAG long
 
 4. 把结果和上面的空壳 `.aff` 放在一起导入。按一套词典生成的表只认识那套词典的
    词汇，要加入新词典，重新生成一次最省事。
+
+这类表里的词级条目绝大多数是可推导的、可以删掉：既能被 Ciyue 用单字行重建、又能被
+OpenCC 产出的，两个读取器都不需要。仓库里的 `prune_zh_dic.py` 做的就是这件事，29 MB
+能压到 1 MB 以下，一个候选都不少——113 万条词级条目降到 3.7 万。
 
 ## 编码：`.dic` 用组合形式（NFC）
 
@@ -158,23 +204,31 @@ python3 -c "import sys,unicodedata; p=sys.argv[1]; t=open(p,encoding='utf-8').re
 **`abzukämpfen` / `abgekämpft` 还原不出来。** 可分动词的 `zu` 和 `ge` 是中缀，
 Hunspell 剥不掉，必须用 `st:` 显式标注，见上面的德文词典。
 
-**在命令行里测日文会不对劲。** `hunspell -m`（CLI）在分析时会丢掉汉字部分，
-例如 `美味しかった` 会被报成 `しかった st:しかる`；而 Ciyue 和 GoldenDict 用的
-库 API 会正确返回 `st:美味しい`。**测试请写一小段 C++ 代码直接调用 Hunspell 的
-API，别用命令行的 `hunspell`**——现成的测试程序见下方「测试 Hunspell 词典」。
+**一个拼写写了两条 `st:`，只回来一个原形。** 如果 `.dic` 把同一个词写了两遍、
+`st:` 不同、又都没挂 flag，原版 Hunspell 1.7.3 及以后只保留第一条；词悦打过补丁的
+版本两条都会保留，见「词悦使用的 Hunspell」。给重复条目挂一个 `.aff` 里未定义的
+flag（`たい積/X st:堆積`），两边都能恢复。
 
 ## 测试 Hunspell 词典
 
-英文和德文用命令行就够了：
+想快速看一对 `.aff`/`.dic` 返回什么，命令行最省事，新版对汉字也已经正常：
 
 ```bash
 hunspell -d ./en_US -s <<< "hoped"        # -> hope
 hunspell -d ./de_DE -s <<< "abgekämpft"   # -> abkämpfen
+hunspell -d ./ja_JP -s <<< "美味しかった"  # -> 美味しい
 ```
 
-日文才是需要直接调用库的情况：命令行和库在这里行为不一致，想知道一对
-`.aff`/`.dic` 实际返回什么，最可靠的办法是直接调用 `analyze()` —— 也就是
-Ciyue 和 GoldenDict 用的那个函数。
+命令行有两处容易误判：
+
+- **旧版会把汉字丢掉。** 旧版 `hunspell -m` 遇到 `美味しかった` 会报成
+  `しかった st:しかる`，那是输出层的问题，不是词表的问题；1.7.6 会返回
+  `st:美味しい`，和库 API 一致。
+- **1.7.3 起的版本会丢掉重复的 `st:`。** 同一个词、都没挂 flag 的两条只留第一条
+  （issue #1171）。词悦内置的 Hunspell 不会；发行版自带的会，所以同一套文件在它
+  那里可能少出几个原形。
+
+想知道词悦本身拿到什么，就调 `stem()`（词形还原背后的函数），而不是命令行。
 
 <details>
 <summary>测试程序（C++，约 20 行）</summary>
@@ -195,9 +249,9 @@ int main(int argc, char * argv[]) {
     // 创建 Hunspell 实例（传入 .aff 和 .dic 路径）
     Hunspell hunspell(argv[1], argv[2]);
 
-    // 调用 analyze —— GoldenDict 用的就是这个函数；hunspell -m 也调它，
-    // 只是命令行那层的输出会把汉字丢掉
-    std::vector<std::string> results = hunspell.analyze(argv[3]);
+    // 词形还原走的是 Hunspell_stem，它把 analyze() 的结果过滤到 `st:` 字段；
+    // 想看完整记录，把这里换成 analyze() 即可
+    std::vector<std::string> results = hunspell.stem(argv[3]);
 
     for (const auto & line : results) {
         std::cout << line << std::endl;
@@ -219,8 +273,8 @@ g++ test_analyze.cpp -o test_analyze $(pkg-config --cflags --libs hunspell)
 ./test_analyze ja_JP.aff ja_JP.dic 美味しかった
 ```
 
-输出用的是 Hunspell 自己的格式，例如 `st:美味しい fl:XQ fl:Ta`，其中 `st:` 就是
-词形还原会用到的词干。
+`stem()` 每行输出一个词干，例如 `美味しい`。把调用换回 `analyze()` 就能看到
+完整记录（`st:美味しい fl:XQ fl:Ta`），`st:` 正是词形还原会保留的字段。
 
 </details>
 
