@@ -230,6 +230,16 @@ void main() {
     expect(Uri.decodeComponent(encoded), "female/2830_1_1_female.spx");
   });
 
+  test("normalisation is idempotent for already rewritten links", () {
+    final once = normalizeDictionaryUrls(
+      '<a href="bword://tag#sumeru">x</a>'
+      '<a href="sound://female/2830_1_1_female.spx">y</a>',
+    );
+    // The Web UI and the in-app WebView both normalise; a second pass must
+    // not encode the localhost/ prefix into a file name.
+    expect(normalizeDictionaryUrls(once), once);
+  });
+
   group("linked words survive the URL container", () {
     test("the encoded path decodes back to the original word", () {
       expect(
@@ -255,6 +265,24 @@ void main() {
         wordFromEntryUrl(WebUri("gdlookup://localhost/a%2Fb")).word,
         "a/b",
       );
+    });
+
+    test("ZIM article links round-trip a UTF-8 headword and anchor", () {
+      String encode(String value) => utf8
+          .encode(value)
+          .map(
+            (byte) =>
+                "%${byte.toRadixString(16).padLeft(2, "0").toUpperCase()}",
+          )
+          .join();
+      final target = wordFromEntryUrl(
+        WebUri(
+          "gdlookup://localhost/${encode("1千紀")}"
+          "?gdanchor=${encode("第一節")}",
+        ),
+      );
+      expect(target.word, "1千紀");
+      expect(target.anchor, "第一節");
     });
 
     test("legacy entry and bword links still resolve", () {
