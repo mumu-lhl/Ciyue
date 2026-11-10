@@ -181,8 +181,8 @@ traditional form has a different length.
 - **Only spellings your table covers are reachable.** A character with no entry
   stays as typed — the expansion reuses what the `.dic` declares and adds
   nothing of its own.
-- **The lookup mode decides when variants are used.** In 补充 (Supplement) an
-  exact entry and its variants show side by side; in 后备 (Fallback) the variants
+- **The lookup mode decides when variants are used.** In Supplement mode an
+  exact entry and its variants show side by side; in Fallback mode the variants
   are only tried for dictionaries where the exact spelling found nothing.
 
 ### Building the table
