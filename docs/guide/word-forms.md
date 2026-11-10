@@ -20,8 +20,10 @@ nothing has to be packed into the `.mdx`, and any language you can find an
 | `闲适` (zh) | `闲适` (exact entry) + every spelling your table declares, e.g. `閒適` |
 
 How many lemmas come back depends entirely on the Hunspell files you use — when
-a form really has several stems, all of them are listed. For Japanese the stems
-are kana, with the kanji form shown in parentheses.
+a form really has several stems, all of them are listed. That is partly Ciyue's
+own doing: a stock Hunspell would drop some of them, see
+[Ciyue's Hunspell build](#ciyues-hunspell-build). For Japanese the stems are
+kana, with the kanji form shown in parentheses.
 
 ## How to enable it
 
@@ -68,6 +70,47 @@ entries**, so irregular forms cannot be resolved at all. Maintained sets:
   neither composes characters nor runs OpenCC has to build the full table with
   the scripts in that repository.
 
+## Ciyue's Hunspell build
+
+Ciyue compiles Hunspell **1.7.3** with two local patches, both about stems:
+
+- `hashmgr.cxx` — a second entry for the same word is only discarded when it has
+  no flags **and** the same description. Upstream drops it whenever neither entry
+  carries a flag, so two flagless `st:` lines for one spelling lose the second
+  one ([hunspell#1171](https://github.com/hunspell/hunspell/issues/1171)).
+- `hunspell.cxx` — `stem()` returns every `st:` field of an analysis record, not
+  just the first.
+
+The pin stays at 1.7.3 because those two files are replaced wholesale. Nothing in
+Ciyue depends on the CLI-only CJK fix that later releases (1.7.6) carry: word-form
+lookup never runs `hunspell -m`, and that bug lived in the tool's output path, not
+in `analyze()` or `stem()`.
+
+Together they let one spelling be listed several times, which is how Japanese
+homonyms and Chinese variant characters are declared:
+
+```text
+たい積 st:体積
+たい積 st:堆積
+```
+
+Stock Hunspell 1.7.3 and later keeps only the first line; older builds keep both.
+GoldenDict and a distro `hunspell` use whatever library the system provides, so
+on 1.7.3+ they report fewer stems for the same files.
+
+The workaround for a stock build is to give the duplicates a flag the `.aff`
+never defines:
+
+```text
+たい積/X st:体積
+たい積/X st:堆積
+```
+
+`alen != 0` sends the entry down the `next_homonym` branch instead of the
+duplicate check, and since no affix rule uses `X`, no extra word forms appear.
+Dictionaries padded this way work unchanged in Ciyue — the undefined flag is
+simply carried along — so there is no reason to strip it.
+
 ## Chinese: simplified, traditional and variant characters
 
 Chinese has no inflection, so a Chinese `.dic` uses `st:` for a different job:
@@ -102,9 +145,13 @@ hash table from a spelling to its variants, which is all this needs.
 ```
 
 Both directions have to be listed. `闲 st:閒` only turns `闲` into `閒`; without
-`閒 st:闲` the reverse query (`閒适` → `闲适`) finds nothing. Single-character
-lines are also what makes mixed spellings work — the table never has to contain
-them, because the combinations are built at query time:
+`閒 st:闲` the reverse query (`閒适` → `闲适`) finds nothing. `闲` also needs two
+lines, which is only safe because of the patch described in
+[Ciyue's Hunspell build](#ciyues-hunspell-build) — a stock build would keep
+`闲 st:閒` and drop `闲 st:閑`.
+
+Single-character lines are also what makes mixed spellings work — the table never
+has to contain them, because the combinations are built at query time:
 
 | Submitted | Spellings read from the table above |
 | --- | --- |
@@ -209,26 +256,35 @@ flag from `hop` yourself.
 and `ge` are infixes, which Hunspell cannot strip — they have to be annotated
 explicitly with `st:`. See the German set above.
 
-**Japanese behaves oddly from a shell.** `hunspell -m` (the CLI) drops CJK text
-while analysing, e.g. it reports `しかった st:しかる` for `美味しかった`, while the
-library API used by Ciyue and GoldenDict correctly returns `st:美味しい`. **When
-testing, write a small C++ program that calls the Hunspell API directly — do not
-use the command-line `hunspell`.** A ready-made harness is in
-[Testing a dictionary directly](#testing-a-dictionary-directly).
+**One spelling, two `st:` lines, and only one lemma comes back.** If a `.dic`
+lists the same word twice with different `st:` and neither line carries a flag,
+stock Hunspell 1.7.3 and later keeps only the first entry; Ciyue's patched build
+keeps both — see [Ciyue's Hunspell build](#ciyues-hunspell-build). Giving the
+duplicates a flag the `.aff` never defines (`たい積/X st:堆積`) restores them in
+either build.
 
 ## Testing a dictionary directly
 
-For English and German the command-line tool is enough:
+The command-line tool is the quickest way to see what a `.aff`/`.dic` pair
+returns, and a current build handles CJK correctly:
 
 ```bash
 hunspell -d ./en_US -s <<< "hoped"        # -> hope
 hunspell -d ./de_DE -s <<< "abgekämpft"   # -> abkämpfen
+hunspell -d ./ja_JP -s <<< "美味しかった"  # -> 美味しい
 ```
 
-Japanese is the case that needs a direct call: the CLI and the library do not
-behave identically there, so the reliable way to see what a `.aff`/`.dic` pair
-returns is to call `analyze()` yourself — the same function Ciyue and GoldenDict
-use.
+Two CLI traps are worth knowing:
+
+- **Old builds dropped CJK text.** `hunspell -m` from older releases reported
+  `しかった st:しかる` for `美味しかった`; that was the output layer, not the
+  dictionary. 1.7.6 returns `st:美味しい`, the same as the library API.
+- **Every build from 1.7.3 on drops duplicate `st:` lines** that share a word
+  and carry no flags (issue #1171). Ciyue's bundled Hunspell does not, so a
+  distro build can report fewer stems than Ciyue for the same files.
+
+To see what Ciyue itself gets, call `stem()` — the function behind word-form
+lookup — instead of the CLI.
 
 <details>
 <summary>Test harness (C++, ~20 lines)</summary>
@@ -249,9 +305,9 @@ int main(int argc, char * argv[]) {
     // Open the dictionary pair.
     Hunspell hunspell(argv[1], argv[2]);
 
-    // The entry point GoldenDict uses. `hunspell -m` wraps it as well,
-    // but its output path is what mangles CJK text.
-    std::vector<std::string> results = hunspell.analyze(argv[3]);
+    // Word-form lookup goes through Hunspell_stem, which filters analyze()
+    // down to the `st:` fields. Swap in analyze() to see the whole record.
+    std::vector<std::string> results = hunspell.stem(argv[3]);
 
     for (const auto & line : results) {
         std::cout << line << std::endl;
@@ -273,8 +329,9 @@ g++ test_analyze.cpp -o test_analyze $(pkg-config --cflags --libs hunspell)
 ./test_analyze ja_JP.aff ja_JP.dic 美味しかった
 ```
 
-The output uses Hunspell's own format, e.g. `st:美味しい fl:XQ fl:Ta`, where
-`st:` is the stem that word-form lookup will use.
+`stem()` prints one stem per line, e.g. `美味しい`. Switch the call back to
+`analyze()` to see the raw record (`st:美味しい fl:XQ fl:Ta`), where `st:` is the
+field word-form lookup keeps.
 
 </details>
 
