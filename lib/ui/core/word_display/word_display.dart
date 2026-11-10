@@ -46,6 +46,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   final SearchController _searchController = SearchController();
   List<int>? _lastValidDictIds;
 
+  /// The dictionary set version [_lastValidDictIds] belongs to.
+  int? _lastDictSetVersion;
+
   /// The word on screen.
   ///
   /// A pushed entry page follows the tab's current word, so a lookup swaps the
@@ -195,9 +198,24 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         ref.invalidate(wordContentProvider);
       }
     });
+    // Enabling or disabling a dictionary inside the same group changes the
+    // lookup set without changing the group id. Watching the version rebuilds
+    // this page, and this drops the ids of the previous set so a WebView is
+    // never rebuilt with a dictionary that has already been removed.
+    final dictSetVersion = ref.watch(dictSetVersionProvider);
+    if (dictSetVersion != _lastDictSetVersion) {
+      _lastDictSetVersion = dictSetVersion;
+      _lastValidDictIds = null;
+    }
     final validDictIdsAsync = ref.watch(validDictIdsProvider(_word));
     if (validDictIdsAsync.hasValue) {
-      _lastValidDictIds = validDictIdsAsync.requireValue;
+      // Drop ids of dictionaries that are no longer loaded (group edit). A
+      // loading AsyncValue can still carry the previous group's ids, and
+      // building a WebView for one of those leaves it spinning forever.
+      final known = validDictIdsAsync.requireValue
+          .where((id) => dictManager.dicts.containsKey(id))
+          .toList(growable: false);
+      _lastValidDictIds = known.isEmpty ? null : known;
     }
 
     // Keep the current dictionary view in the tree while checking the next
@@ -308,12 +326,13 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                 }
               }
 
-              // Rebuild the tab controller when the group changes: its
-              // length changes too, and a reused controller can leave the
-              // first page blank after switching back.
+              // Rebuild the tab controller when the group changes or the
+              // dictionary set is edited: its length changes too, and a reused
+              // controller keeps the old index, which can leave the page blank
+              // (or on the removed dictionary) after toggling dictionaries.
               final groupId = ref.watch(dictManagerProvider).groupId;
               return DefaultTabController(
-                key: ValueKey("tab_group_$groupId"),
+                key: ValueKey("tab_group_${groupId}_$dictSetVersion"),
                 initialIndex: initialTabIndex,
                 length: dictsLength,
                 child: Builder(

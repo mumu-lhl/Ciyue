@@ -844,6 +844,14 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   InAppWebViewController? _desktopController;
   Future<void> _desktopContentLoad = Future<void>.value();
 
+  /// Local server port the document on screen was loaded from.
+  ///
+  /// Disabling a dictionary and enabling it again keeps the id and the HTML
+  /// but starts a new server on a new port. Comparing content alone does not
+  /// notice that, so the old document would keep asking the closed server for
+  /// resources and render blank.
+  int _loadedPort = 0;
+
   /// Wraps the WebView so the CSS coordinates of a right click can be turned
   /// into the overlay coordinates `showMenu` needs.
   final _webViewAnchorKey = GlobalKey();
@@ -917,8 +925,24 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
             return;
           }
 
-          final dict = ref.read(dictManagerProvider).dicts[requestedDictId];
-          if (dict == null || dict.port == 0) return;
+          var dict = ref.read(dictManagerProvider).dicts[requestedDictId];
+          if (dict == null) return;
+          if (dict.port == 0) {
+            // A dictionary that was just enabled still has its local server
+            // starting. Waiting is what makes the first paint possible: a port
+            // that arrives later does not rebuild the WebView, so returning
+            // here would leave the tab blank until the next word.
+            await dict.waitForLoading();
+            if (!mounted ||
+                !identical(_desktopController, controller) ||
+                requestedContent != widget.content ||
+                requestedDictId != widget.dictId) {
+              return;
+            }
+            dict = ref.read(dictManagerProvider).dicts[requestedDictId];
+            if (dict == null || dict.port == 0) return;
+          }
+          _loadedPort = dict.port;
           final baseUrl = "http://127.0.0.1:${dict.port}/";
           if (Platform.isWindows) {
             // Same POST request the initial Windows load uses; loadData
@@ -976,7 +1000,26 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
       _applyContentScale(_desktopController, next);
     });
     final darkReaderSetting = ref.watch(dictionaryDarkReaderProvider);
-    final port = dictManager.dicts[dictId]!.port;
+    // A group switch removes dictionaries before the old WebView is torn
+    // down, so the id can be gone for a frame. Fall back to the loading
+    // state instead of crashing with a null check.
+    final port = dictManager.dicts[dictId]?.port ?? 0;
+    // The document on screen came from a server that has since been closed:
+    // the dictionary was disabled and enabled again, keeping its id and its
+    // HTML but not its port. Content equality cannot catch this, so reload.
+    if (port != 0 && _loadedPort != 0 && port != _loadedPort) {
+      final controller = _desktopController;
+      if (controller != null) {
+        talker.info(
+          "Dictionary content reload: dict=$dictId port $_loadedPort -> $port",
+        );
+        _loadedPort = port;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !identical(_desktopController, controller)) return;
+          unawaited(_scheduleDesktopContentLoad(controller));
+        });
+      }
+    }
     final Widget webview;
 
     if (port == 0) {

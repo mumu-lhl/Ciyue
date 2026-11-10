@@ -152,6 +152,10 @@ Future<void> _waitForDictionaries() async {
   // never run initApp, leaving a pending timer at teardown).
   if (dictManager.dicts.isEmpty) return;
 
+  talker.info(
+    "waitForDictionaries start: ids=${dictManager.dicts.keys.toList()} "
+    "isLoading=${dictManager.isLoading}",
+  );
   var waited = 0;
   while (dictManager.isLoading && waited < 200) {
     await Future.delayed(const Duration(milliseconds: 50));
@@ -166,6 +170,7 @@ Future<void> _waitForDictionaries() async {
           .catchError((Object _) {}),
     ),
   );
+  talker.info("waitForDictionaries done: polled=${waited * 50}ms");
 }
 
 final dictionaryLookupProvider = FutureProvider.autoDispose
@@ -190,6 +195,14 @@ final wordContentProvider = FutureProvider.autoDispose
       final timer = Timer(const Duration(minutes: 5), link.close);
       ref.onDispose(timer.cancel);
 
+      // Watching the version above the early return matters: a dictionary that
+      // leaves the group and is enabled again keeps the same id but gets a new
+      // instance (a new local server port for ZIM), and the empty entry cached
+      // by the branch below would otherwise outlive the keep-alive window and
+      // leave the re-enabled tab blank. Subscribing here also means the lookup
+      // is redone as soon as the set changes, not when the next word is typed.
+      ref.watch(dictSetVersionProvider);
+
       var dict = dictManager.dicts[params.dictId];
       if (dict == null) {
         // A group switch clears the dictionaries before reloading them, and
@@ -203,7 +216,11 @@ final wordContentProvider = FutureProvider.autoDispose
           waited++;
         }
         dict = dictManager.dicts[params.dictId];
-        if (dict == null) return "";
+        if (dict == null) {
+          // Never keep a blank entry alive; see above.
+          link.close();
+          return "";
+        }
       }
 
       final lookup = await ref.watch(

@@ -112,9 +112,23 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
     if (widget.dictId != oldWidget.dictId) _lastLinuxContent = null;
   }
 
+  /// Identifies the dictionary instance behind this entry view.
+  ///
+  /// The instance decides the local server port. Disabling a dictionary and
+  /// enabling it again reuses the id and can hand back the very same HTML, so
+  /// content equality would keep the old WebView — one whose server is gone —
+  /// and the tab would stay blank. Keying on the instance rebuilds the view
+  /// only when the dictionary really changed.
+  Key _entryViewKey() {
+    final dict = ref.read(dictManagerProvider).dicts[widget.dictId];
+    return ValueKey("entry_${widget.dictId}_${identityHashCode(dict)}");
+  }
+
   Widget _buildContent(String content, String? anchor) {
+    final instanceKey = _entryViewKey();
     if (Platform.isAndroid) {
       return WebviewAndroid(
+        key: instanceKey,
         word: widget.word,
         content: content,
         dictId: widget.dictId,
@@ -123,6 +137,7 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
       );
     } else if (isDesktop()) {
       return WebviewWindows(
+        key: instanceKey,
         word: widget.word,
         content: content,
         dictId: widget.dictId,
@@ -130,7 +145,7 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
         anchor: anchor,
       );
     } else {
-      return FakeWebViewByAI(html: content);
+      return FakeWebViewByAI(key: instanceKey, html: content);
     }
   }
 
@@ -215,7 +230,11 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
         contentAsync.isLoading &&
         _lastLinuxContent != null &&
         _lastLinuxContent!.isNotEmpty) {
-      return WebviewWindows(content: _lastLinuxContent!, dictId: widget.dictId);
+      return WebviewWindows(
+        key: _entryViewKey(),
+        content: _lastLinuxContent!,
+        dictId: widget.dictId,
+      );
     }
 
     return contentAsync.when(
