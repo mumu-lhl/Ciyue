@@ -13,8 +13,20 @@ void main() {
     });
 
     test("suppresses the menu only while the left button is down", () {
-      expect(script, contains("if (leftDown && !e.ctrlKey)"));
       expect(script, contains("if (e.ctrlKey) return;"));
+    });
+
+    test(
+      "treats a contextmenu as a rocker only when the right button is in",
+      () {
+        // A touch/pen long press fires contextmenu with button 0; only a real
+        // right press (button 2 or a tracked right-down) may start a rocker.
+        expect(script, contains("(e.button === 2 || rightDown)"));
+      },
+    );
+
+    test("resets the button state when the window loses focus", () {
+      expect(script, contains("window.addEventListener('blur'"));
     });
 
     test("falls back to contextmenu without sending the rocker twice", () {
@@ -26,6 +38,15 @@ void main() {
     test("falls back to the move-event button bitmask", () {
       expect(script, contains("document.addEventListener('mousemove'"));
       expect(script, contains("(e.buttons & 2) !== 0"));
+    });
+
+    test("omits the bitmask fallback where the engine reports the button", () {
+      // WebView2 reports the right button as a real mousedown and keeps the
+      // right bit set after the app's context menu opens, so reading the
+      // bitmask would turn a later left click into a false rocker.
+      final windows = gestureScript(bitmaskFallback: false);
+      expect(windows, isNot(contains("(e.buttons & 2) !== 0")));
+      expect(windows, isNot(contains("addEventListener('mousemove'")));
     });
 
     test("uses a non-passive wheel listener and throttles repeat events", () {
