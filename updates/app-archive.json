@@ -139,6 +139,14 @@
       "release": "https://mumulhl.eu.org/Ciyue/updates/releases/2.1.0/linux/release.json"
     },
     {
+      "version": "2.2.0",
+      "buildNumber": 108,
+      "platform": "linux",
+      "channel": "stable",
+      "mandatory": false,
+      "release": "https://mumulhl.eu.org/Ciyue/updates/releases/2.2.0/linux/release.json"
+    },
+    {
       "version": "1.23.1-beta.2",
       "buildNumber": 89,
       "platform": "windows",
@@ -273,11 +281,19 @@
       "channel": "stable",
       "mandatory": false,
       "release": "https://mumulhl.eu.org/Ciyue/updates/releases/2.1.0/windows/release.json"
+    },
+    {
+      "version": "2.2.0",
+      "buildNumber": 108,
+      "platform": "windows",
+      "channel": "stable",
+      "mandatory": false,
+      "release": "https://mumulhl.eu.org/Ciyue/updates/releases/2.2.0/windows/release.json"
     }
   ],
   "signature": {
     "algorithm": "ed25519",
     "publicKeyId": "release-f3d56da10d0866ff2cff4c65",
-    "value": "Nm7z9Y7OPuzHVcAdlK0GQpHcNI4zpvsydlXO3ApyNdNPcNa4d7V/VW3tbGfg5jW0V5p3iubPar6Klw/+sBHaCA=="
+    "value": "ph4BeDps1xReP6O9UlJn235C28yl/Eez3VU8Kq83rm3/ZRzskq/kbt+jamv9Y+PdjzvPBKXSF+tIU31TnTq2Bg=="
   }
 }
