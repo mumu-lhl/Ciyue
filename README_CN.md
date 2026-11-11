@@ -7,17 +7,20 @@
 
 [English](./README.md) | 中文
 
-支持 Android、Windows、Linux、macOS，支持 MDX/MDD 与 StarDict 的词典。
+支持 Android、Windows、Linux、macOS，支持 MDX/MDD、StarDict 与 ZIM 词典。
 
 ## 特点
-* 支持 MDX/MDD 与 StarDict 词典
+* 支持 MDX/MDD、StarDict 与 ZIM 词典
 * 多词典同时搜索和显示
+* 全文搜索，检索词典全文内容
 * 多源翻译，包括免费服务与 AI 服务（OpenAI、Gemini、DeepSeek 等）
 * AI 对话，支持自定义提示词
+* AI 结构化单词解释
 * 单词本与错题本，支持复习测验
 * 抽认卡（FSRS 间隔重复）
 * AI 写作检查
-* 朗读，支持发音包与语音合成
+* 朗读，支持发音包、在线发音（Wiktionary、Forvo）与语音合成
+* 云同步，同步设置、单词本与历史记录（WebDAV、S3、SFTP）
 * 悬浮窗，随时查词
 * Material You 设计
 

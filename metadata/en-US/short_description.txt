@@ -1,1 +1,1 @@
-A dictionary supporting MDX and StarDict
+A dictionary supporting MDX, StarDict and ZIM

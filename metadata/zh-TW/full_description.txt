@@ -1,10 +1,17 @@
-詞悅是一個簡單的 mdict 詞典。
+詞悅是一款支援 MDX/MDD、StarDict 與 ZIM 的詞典應用。
 
 特點:
 
-* 支持 MDX/MDD
-* 支持多字典搜尋和顯示
-* 支持 Material You
-* AI 翻譯 (支援 OpenAI, Gemini, Deepseek...)
-* 支持朗讀
-* 收藏單詞到單詞本
+* 支援 MDX/MDD、StarDict 與 ZIM 詞典
+* 多詞典同時搜尋和顯示
+* 全文搜尋，檢索詞典全文內容
+* 多源翻譯，包括免費服務與 AI 服務（OpenAI、Gemini、DeepSeek 等）
+* AI 對話，支援自訂提示詞
+* AI 結構化單詞解釋
+* 單詞本與錯題本，支援複習測驗
+* 抽認卡（FSRS 間隔重複）
+* AI 寫作檢查
+* 朗讀，支援發音包、線上發音（Wiktionary、Forvo）與語音合成
+* 雲端同步，同步設定、單詞本與歷史記錄（WebDAV、S3、SFTP）
+* 懸浮窗，隨時查詞
+* Material You 設計
