@@ -211,6 +211,10 @@ class CustomPlatformViewController
   }
 
   /// Sets the surface size to the provided [size].
+  ///
+  /// [size] is the logical (device independent) size of the widget; the native
+  /// side multiplies it by [scaleFactor] itself, so it must not be
+  /// pre-multiplied here or the page viewport ends up too wide on HiDPI.
   Future<void> _setSize(Size size, double scaleFactor) async {
     if (_isDisposed) {
       return;
@@ -384,7 +388,8 @@ class CustomPlatformView extends StatefulWidget {
   _CustomPlatformViewState createState() => _CustomPlatformViewState();
 }
 
-class _CustomPlatformViewState extends State<CustomPlatformView> {
+class _CustomPlatformViewState extends State<CustomPlatformView>
+    with WidgetsBindingObserver {
   final GlobalKey _key = GlobalKey();
   final _downButtons = <int, PointerButton>{};
 
@@ -421,6 +426,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     _controller.initialize(
       onPlatformViewCreated: (id) {
@@ -817,6 +823,15 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
     );
   }
 
+  /// The device pixel ratio travels with the surface size, and a desktop scale
+  /// change (KDE display settings, moving the window to another monitor) can
+  /// change it without the widget's logical size changing. Re-report it so WPE
+  /// renders at the new resolution instead of keeping the old one.
+  @override
+  void didChangeMetrics() {
+    _reportSurfaceSize();
+  }
+
   void _reportSurfaceSize() async {
     final context = _key.currentContext;
     final box = context?.findRenderObject() as RenderBox?;
@@ -844,6 +859,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView> {
       }
       _downButtons.clear();
     }
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
     _cursorSubscription?.cancel();
     _controller.dispose();

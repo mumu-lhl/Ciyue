@@ -265,9 +265,14 @@ class InAppWebView {
   // User content controller
   UserContentController* userContentController() const { return user_content_controller_.get(); }
 
-  // Size management
+  // Size management. [width] and [height] are logical (device independent)
+  // pixels; WPE multiplies them by the scale factor to get the physical size,
+  // so a high-DPI viewport must not be pre-multiplied here.
   void setSize(int width, int height);
-  void setScaleFactor(double scale_factor);
+  // [from_flutter] marks a device pixel ratio reported by the Flutter widget.
+  // GTK only knows integer scales, so a ratio from Flutter wins over it; the
+  // GTK value is used as a first guess until Flutter reports one.
+  void setScaleFactor(double scale_factor, bool from_flutter = false);
   void schedulePendingResize();  // Schedules the debounced WPE resize
 
   // DOM selection management
@@ -561,6 +566,9 @@ class InAppWebView {
   int width_ = 800;
   int height_ = 600;
   double scale_factor_ = 1.0;
+  // Set once Flutter has reported its device pixel ratio; from then on the
+  // window's (integer) GTK scale-factor no longer overrides it.
+  bool scale_from_flutter_ = false;
 
   // Debounce rapid setSize calls: coalesce to a single WPE resize per idle tick.
   // Without this, a resize->relayout->height-change feedback loop thrashes WPE's
