@@ -1,10 +1,10 @@
 name: Browser
 
-# Regression for the dictionary link rewriter (#725, #738).
+# Regression for the dictionary link rewriter (#725, #738) and for the
+# per-entry document mode of the Web UI's iframes.
 #
-# The test extracts the script out of
-# lib/ui/core/word_display/entry_link_script.dart and runs it in a desktop
-# Chromium, so no Flutter SDK and no app build are needed here.
+# The tests extract their scripts out of the Dart sources and run them in a
+# desktop Chromium, so no Flutter SDK and no app build are needed here.
 #
 # `paths` keeps this off unrelated pull requests. If it is ever made a required
 # check, drop the filters: a required check that never runs leaves the pull
@@ -14,12 +14,14 @@ on:
   push:
     paths:
       - "lib/ui/core/word_display/entry_link_script.dart"
+      - "lib/services/web_server_service.dart"
       - "test/browser/**"
       - "justfile"
       - ".github/workflows/browser-tests.yml"
   pull_request:
     paths:
       - "lib/ui/core/word_display/entry_link_script.dart"
+      - "lib/services/web_server_service.dart"
       - "test/browser/**"
       - "justfile"
       - ".github/workflows/browser-tests.yml"
@@ -53,3 +55,6 @@ jobs:
 
       - name: Run the link tests
         run: uv run --with playwright python test/browser/dictionary_entry_links_test.py
+
+      - name: Run the document mode tests
+        run: uv run --with playwright python test/browser/dictionary_document_mode_test.py

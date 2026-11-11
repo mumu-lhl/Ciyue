@@ -1022,6 +1022,21 @@ const String _webUiHtml = r'''<!DOCTYPE html>
   </div>
 
   <script>
+    // A DOCTYPE inside <body> is ignored by the HTML parser, so an entry's
+    // own doctype has to lead the iframe document. MDict/StarDict entries
+    // carry an injected HTML5 doctype; a ZIM page keeps whatever its archive
+    // author wrote (or none, which yields quirks mode). Leading whitespace
+    // and comments stay with the doctype.
+    function splitEntryDoctype(content) {
+      const raw = content || '';
+      const match = raw.match(/^((?:\s|<!--[\s\S]*?-->)*)(<!doctype[^>]*>)/i);
+      if (!match) return { doctype: '', content: raw };
+      return {
+        doctype: match[1] + match[2],
+        content: raw.slice(match[0].length)
+      };
+    }
+
     const input = document.getElementById('query-input');
     const clearBtn = document.getElementById('clear-btn');
     const searchBtn = document.getElementById('search-btn');
@@ -1323,8 +1338,9 @@ const String _webUiHtml = r'''<!DOCTYPE html>
         if (!frame) return;
         const frameDoc = frame.contentDocument || frame.contentWindow.document;
 
+        const entry = splitEntryDoctype(item.content);
         const docHtml = `
-          <!DOCTYPE html>
+          ${entry.doctype}
           <html>
           <head>
             <base href="${window.location.origin}${item.resourceBase}">
@@ -1337,7 +1353,7 @@ const String _webUiHtml = r'''<!DOCTYPE html>
             <script src="/assets/darkreader.js"><\/script>
           </head>
           <body>
-            ${item.content}
+            ${entry.content}
             <script>
               function syncTheme(isDark) {
                 if (!window.DarkReader) return;

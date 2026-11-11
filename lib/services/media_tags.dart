@@ -20,6 +20,18 @@
 /// so only a missing `controls` attribute keeps it from being playable.
 library;
 
+/// Helpers for a dictionary entry's document mode.
+///
+/// MDict and StarDict entries are HTML fragments: without a doctype the
+/// WebView parses them in quirks mode. Prepending an HTML5 doctype switches
+/// those entries to standards mode, matching GoldenDict-ng. ZIM entries are
+/// complete archived HTML pages instead, so their own doctype (or the lack of
+/// one) must decide the mode, the same way Kiwix displays them.
+const String standardsModeDoctype = "<!DOCTYPE html>\n";
+
+/// Prepends an HTML5 doctype so an HTML fragment renders in standards mode.
+String forceStandardsMode(String html) => "$standardsModeDoctype$html";
+
 /// `<audio src="…">fallback</audio>`; group 2 is the source, group 3 the
 /// fallback content. Extra attributes before `>` are tolerated.
 final _audioTag = RegExp(

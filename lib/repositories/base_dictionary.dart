@@ -142,8 +142,20 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
   /// Hook for subclasses to release reader resources.
   Future<void> onClose();
 
+  /// MDict and StarDict articles are HTML fragments, so they need an injected
+  /// doctype to render in standards mode. ZIM articles are complete pages and
+  /// opt out to keep whatever document mode the archive's author chose.
+  bool get useStandardsMode => true;
+
+  /// Applies this format's document mode. Formats that override
+  /// [wrapContentWithResources] call it too, so an injected doctype stays
+  /// ahead of any stylesheet/script tags they prepend.
+  String applyDocumentMode(String html) =>
+      useStandardsMode ? forceStandardsMode(html) : html;
+
   @override
-  String wrapContentWithResources(String content) => rewriteMediaTags(content);
+  String wrapContentWithResources(String content) =>
+      applyDocumentMode(rewriteMediaTags(content));
 
   /// MIME type declared by the dictionary format for [filename], or null when
   /// the format does not carry one. Resource handlers fall back to guessing
