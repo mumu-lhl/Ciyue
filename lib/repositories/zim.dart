@@ -36,7 +36,10 @@ class Zim extends BaseLoadedDictionary {
     _ensureReader();
     await reader.initMetadata();
     setDefaultTitle();
-    entriesTotal = reader.wordCount;
+    // wordCount counts parsed articles and is zero until the full index is
+    // built. The header's entry count is available right away and is what
+    // the properties page calls "total number of entries".
+    entriesTotal = reader.entryCount;
   }
 
   /// Reads the archive's name and entry count without building the index.
@@ -80,7 +83,9 @@ class Zim extends BaseLoadedDictionary {
     try {
       await reader.initMetadata();
       setDefaultTitle();
-      entriesTotal = reader.wordCount;
+      // Metadata-only loads back the properties page, where no article
+      // index has been parsed yet; wordCount would be zero.
+      entriesTotal = reader.entryCount;
     } finally {
       isLoading = false;
     }
