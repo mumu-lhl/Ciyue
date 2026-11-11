@@ -1293,6 +1293,17 @@ Future<void> selectZim(
 
     final dict = Zim(path: pathNoExtension);
     try {
+      // The parse below takes minutes on a large archive. Say which one and
+      // how big it is first; a failure here is reported by add() below.
+      try {
+        final preview = await dict.inspect();
+        if (context.mounted) {
+          LoadingDialogContentState.updateText?.call(
+            AppLocalizations.of(context)!
+                .dictionaryIndexingName(preview.title, preview.entries),
+          );
+        }
+      } catch (_) {}
       await dict.add();
       talker.info("Added ZIM dictionary: $pathNoExtension");
     } catch (e) {

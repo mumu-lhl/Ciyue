@@ -39,6 +39,20 @@ class Zim extends BaseLoadedDictionary {
     entriesTotal = reader.wordCount;
   }
 
+  /// Reads the archive's name and entry count without building the index.
+  ///
+  /// The import dialog uses this to say what the long parse is working on;
+  /// [ZimReader.initMetadata] only touches the header and the MIME list.
+  Future<({String title, int entries})> inspect() async {
+    _ensureReader();
+    await reader.initMetadata();
+    final name = reader.bookName;
+    return (
+      title: name.isEmpty ? basename(path) : HtmlUnescape().convert(name),
+      entries: reader.entryCount,
+    );
+  }
+
   Future<void> add() async {
     _ensureReader();
     await _initReaderWithCache();

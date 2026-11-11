@@ -508,6 +508,18 @@
   "@loading": {},
   "dictionaryIndexing": "Building the dictionary index. The first open of a large ZIM can take several minutes.",
   "@dictionaryIndexing": {},
+  "dictionaryIndexingName": "Building the index for {name} ({count} entries)...",
+  "@dictionaryIndexingName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "addingWord": "Adding Word: {word}",
   "@addingWord": {
     "placeholders": {
