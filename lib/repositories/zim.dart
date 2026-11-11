@@ -55,10 +55,20 @@ class Zim extends BaseLoadedDictionary {
 
   Future<void> add() async {
     _ensureReader();
-    await _initReaderWithCache();
+    // The cache file is named after the dictionary id, so the database row
+    // has to exist before the index snapshot is written. Registering last
+    // made _cacheFile() read the still-uninitialized late id and silently
+    // skip the cache entirely on import.
+    await reader.initMetadata();
     setDefaultTitle();
+    id = await dictionaryListDao.add(path, title, type: DictionaryType.zim);
+    try {
+      await _initReaderWithCache();
+    } catch (_) {
+      await dictionaryListDao.remove(path);
+      rethrow;
+    }
     entriesTotal = reader.wordCount;
-    await dictionaryListDao.add(path, title, type: DictionaryType.zim);
     isLoading = false;
   }
 
@@ -93,7 +103,9 @@ class Zim extends BaseLoadedDictionary {
       final dictId = id;
       final cacheDir = await getApplicationCacheDirectory();
       return File(join(cacheDir.path, "dict_reader_${dictId}_zim.cidx"));
-    } catch (_) {
+    } catch (e) {
+      // A silent null here hides the real reason a cache never appears.
+      talker.warning("No ZIM .cidx cache path for $path: $e");
       return null;
     }
   }
