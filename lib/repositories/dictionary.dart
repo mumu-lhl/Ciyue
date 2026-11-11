@@ -65,6 +65,14 @@ class DictManager {
 
   bool get isEmpty => dicts.isEmpty;
 
+  /// Marks the manager as finished loading.
+  ///
+  /// Tests register dictionaries by hand instead of running
+  /// [setCurrentGroup], and the polling in `wordContentProvider` would
+  /// otherwise wait out its whole timeout for a load that never starts.
+  @visibleForTesting
+  void markLoaded() => _isLoading = false;
+
   /// Registers a dictionary after its small header-only initialization.
   ///
   /// The expensive key/record/resource loading is started in the background.
@@ -165,6 +173,7 @@ class DictManager {
   }
 
   Future<void> _loadGroup(int id) async {
+    talker.info("loadGroup start: target=$id current=$groupId");
     _isLoading = true;
 
     try {
@@ -220,6 +229,7 @@ class DictManager {
         await dictGroupDao.updateDictIds(groupId, dictIds);
       }
     } finally {
+      talker.info("loadGroup done: target=$id dicts=$dictIds");
       _isLoading = false;
     }
   }

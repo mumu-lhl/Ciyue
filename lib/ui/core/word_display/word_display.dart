@@ -46,6 +46,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   final SearchController _searchController = SearchController();
   List<int>? _lastValidDictIds;
 
+  /// The dictionary set version [_lastValidDictIds] belongs to.
+  int? _lastDictSetVersion;
+
   /// The word on screen.
   ///
   /// A pushed entry page follows the tab's current word, so a lookup swaps the
@@ -182,6 +185,13 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         : null;
     _word = selected != null && selected.isNotEmpty ? selected : widget.word;
     final settings = ref.watch(settingsProvider);
+    // The theme reaches an entry through a user script that only runs when the
+    // WebView is created. The tab key below carries this flag, so a flip
+    // rebuilds the views exactly like a dictionary-group switch does.
+    final isDarkTheme =
+        !(settings.themeMode == ThemeMode.light ||
+            settings.themeMode == ThemeMode.system &&
+                MediaQuery.of(context).platformBrightness == Brightness.light);
     // Switching the group reloads every dictionary. Drop the cached lookup
     // and entry HTML so every tab is queried again; otherwise the first tab
     // keeps the empty result cached while the switch was in flight.
@@ -195,9 +205,24 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         ref.invalidate(wordContentProvider);
       }
     });
+    // Enabling or disabling a dictionary inside the same group changes the
+    // lookup set without changing the group id. Watching the version rebuilds
+    // this page, and this drops the ids of the previous set so a WebView is
+    // never rebuilt with a dictionary that has already been removed.
+    final dictSetVersion = ref.watch(dictSetVersionProvider);
+    if (dictSetVersion != _lastDictSetVersion) {
+      _lastDictSetVersion = dictSetVersion;
+      _lastValidDictIds = null;
+    }
     final validDictIdsAsync = ref.watch(validDictIdsProvider(_word));
     if (validDictIdsAsync.hasValue) {
-      _lastValidDictIds = validDictIdsAsync.requireValue;
+      // Drop ids of dictionaries that are no longer loaded (group edit). A
+      // loading AsyncValue can still carry the previous group's ids, and
+      // building a WebView for one of those leaves it spinning forever.
+      final known = validDictIdsAsync.requireValue
+          .where((id) => dictManager.dicts.containsKey(id))
+          .toList(growable: false);
+      _lastValidDictIds = known.isEmpty ? null : known;
     }
 
     // Keep the current dictionary view in the tree while checking the next
@@ -308,12 +333,15 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                 }
               }
 
-              // Rebuild the tab controller when the group changes: its
-              // length changes too, and a reused controller can leave the
-              // first page blank after switching back.
+              // Rebuild the tab controller when the group changes, the
+              // dictionary set is edited, or the theme flips: a reused
+              // controller keeps the old index and the old WebView, which can
+              // leave the page blank or in the previous colour scheme.
               final groupId = ref.watch(dictManagerProvider).groupId;
               return DefaultTabController(
-                key: ValueKey("tab_group_$groupId"),
+                key: ValueKey(
+                  "tab_group_${groupId}_${dictSetVersion}_$isDarkTheme",
+                ),
                 initialIndex: initialTabIndex,
                 length: dictsLength,
                 child: Builder(
@@ -617,9 +645,15 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     final settings = ref.watch(settingsProvider);
     // Switching the dictionary group reloads every dictionary, and the
     // platform WebView views cannot be reused across that switch — the first
-    // one would come back blank. Include the group id in the keys so all
-    // entries are rebuilt instead of reusing their old views.
+    // one would come back blank. A theme flip has the same constraint: the
+    // colour comes from a user script that runs only on creation. Include
+    // both in the keys so all entries are rebuilt instead of reusing their
+    // old views.
     final groupId = ref.watch(dictManagerProvider).groupId;
+    final isDarkTheme =
+        !(settings.themeMode == ThemeMode.light ||
+            settings.themeMode == ThemeMode.system &&
+                MediaQuery.of(context).platformBrightness == Brightness.light);
     final children = <Widget>[
       if (settings.aiExplainWord)
         KeepAliveWidget(
@@ -628,7 +662,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         ),
       for (final id in validDictIds)
         KeepAliveWidget(
-          key: ValueKey("dict_${id}_$groupId"),
+          key: ValueKey("dict_${id}_${groupId}_$isDarkTheme"),
           child: _buildWebView(id),
         ),
     ];

@@ -8,6 +8,35 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/services/media_tags.dart";
 import "package:mime/mime.dart";
 
+/// The MIME type [dict] declares for [filename], if its format carries one.
+/// Formats that only have a file name return null, so callers keep the
+/// extension-based guess. Kept as a capability check rather than an interface
+/// member: only ZIM stores a MIME type per entry.
+Future<String?> declaredResourceMimeType(
+  LoadedDictionary dict,
+  String filename,
+) async {
+  if (dict is BaseLoadedDictionary) {
+    return await dict.resourceMimeType(filename);
+  }
+  return null;
+}
+
+/// The headword of the article at [path] in a format that serves its HTML
+/// through the local HTTP server, or null when [path] is a resource (or not
+/// part of this dictionary). Lets a navigation to a local article URL (a
+/// `meta refresh` redirect, for instance) go through the normal lookup flow
+/// instead of rendering the raw HTML.
+Future<String?> declaredEntryTitleAtPath(
+  LoadedDictionary dict,
+  String path,
+) async {
+  if (dict is BaseLoadedDictionary) {
+    return await dict.entryTitleAtPath(path);
+  }
+  return null;
+}
+
 /// A base implementation of [LoadedDictionary] providing common lifecycle,
 /// desktop HTTP server management, asynchronous loading coordination, and
 /// common dictionary lookup helpers.
@@ -116,6 +145,16 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
   @override
   String wrapContentWithResources(String content) => rewriteMediaTags(content);
 
+  /// MIME type declared by the dictionary format for [filename], or null when
+  /// the format does not carry one. Resource handlers fall back to guessing
+  /// from the file name when this is null.
+  Future<String?> resourceMimeType(String filename) async => null;
+
+  /// The headword of the article at a local-server [path], or null when the
+  /// path is a resource or unknown. Formats that do not serve article HTML
+  /// over the local server keep the default.
+  Future<String?> entryTitleAtPath(String path) async => null;
+
   @override
   Future<String?> resolveExactKey(String word) async {
     final resolved = await resolveKeys([word]);
@@ -161,13 +200,15 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
           }
         } else if (request.method == "GET" && request.uri.path != "/") {
           final filename = Uri.decodeComponent(request.uri.path.substring(1));
+          final mime =
+              await resourceMimeType(filename) ??
+              lookupMimeType(filename) ??
+              "application/octet-stream";
           if (onReadResourceStream != null) {
             try {
               final stream = await onReadResourceStream(filename);
               if (stream != null) {
-                request.response.headers.contentType = ContentType.parse(
-                  lookupMimeType(filename) ?? "application/octet-stream",
-                );
+                request.response.headers.contentType = ContentType.parse(mime);
                 await request.response.addStream(stream);
                 await request.response.close();
                 return;
@@ -179,9 +220,7 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
               final data = await onReadResource(filename);
               if (data != null) {
                 request.response
-                  ..headers.contentType = ContentType.parse(
-                    lookupMimeType(filename) ?? "application/octet-stream",
-                  )
+                  ..headers.contentType = ContentType.parse(mime)
                   ..add(data)
                   ..close();
                 return;

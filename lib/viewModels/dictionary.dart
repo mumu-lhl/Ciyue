@@ -60,6 +60,10 @@ class DictManagerModel extends ChangeNotifier {
     await dictManager.add(id, path);
     _lastKnownIsEmpty = dictManager.isEmpty;
 
+    talker.info(
+      "dict add: id=$id dicts=${dictManager.dicts.keys.toList()} "
+      "ids=${dictManager.dictIds}",
+    );
     update();
   }
 
@@ -71,6 +75,10 @@ class DictManagerModel extends ChangeNotifier {
     await dictManager.close(id);
     _lastKnownIsEmpty = dictManager.isEmpty;
 
+    talker.info(
+      "dict close: id=$id dicts=${dictManager.dicts.keys.toList()} "
+      "ids=${dictManager.dictIds}",
+    );
     state += 1;
 
     notifyListeners();
@@ -127,10 +135,19 @@ class DictManagerModel extends ChangeNotifier {
         .map((d) => d.id)
         .toList();
 
+    talker.info(
+      "updateDictIds: dicts=${dictManager.dicts.keys.toList()} "
+      "was=${dictManager.dictIds} active=$activeDictIds",
+    );
     dictManager.dictIds = activeDictIds;
     await dictGroupDao.updateDictIds(dictManager.groupId, activeDictIds);
 
     state += 1;
+    // The enabled set is the lookup set: cached lookups for the words on
+    // screen have to be redone with the dictionaries that are now active.
+    // Without this, toggling a dictionary in the current group leaves the
+    // open tab on the previous dictionary until the app is restarted.
+    onDictionariesChanged?.call();
 
     if (!checkIsEmpty()) {
       notifyListeners();

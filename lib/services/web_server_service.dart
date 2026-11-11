@@ -3,7 +3,9 @@ import "dart:convert";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/models/dictionary_links.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
+import "package:ciyue/repositories/base_dictionary.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
@@ -292,7 +294,12 @@ class WebServerService {
 
       final entries = lookupResult.entriesFor(dictId);
       for (final entry in entries) {
-        final content = dict.wrapContentWithResources(entry.content);
+        // The Web UI is rendered by an external browser, so it never goes
+        // through the in-app WebView's url normalisation: apply it here too,
+        // otherwise bword:// and sound:// links stay unclickable in the frames.
+        final content = normalizeDictionaryUrls(
+          dict.wrapContentWithResources(entry.content),
+        );
         results.add({
           "dictId": dict.id,
           "dictTitle": dict.title,
@@ -356,9 +363,10 @@ class WebServerService {
       return;
     }
 
+    final declaredMime = await declaredResourceMimeType(dict, resourcePath);
     final mime = resourcePath.endsWith(".spx")
         ? "audio/ogg"
-        : resourceContentType(resourcePath, bytes);
+        : (declaredMime ?? resourceContentType(resourcePath, bytes));
 
     request.response.headers.set("Content-Type", mime);
     request.response.headers.set(
@@ -1205,7 +1213,7 @@ const String _webUiHtml = r'''<!DOCTYPE html>
       } catch (_) {}
     }
 
-    async function doLookup(word) {
+    async function doLookup(word, anchor, dictId) {
       currentWord = word;
       spinner.style.display = 'block';
       resultsArea.innerHTML = '';
@@ -1215,18 +1223,23 @@ const String _webUiHtml = r'''<!DOCTYPE html>
         const res = await fetch(`/api/lookup?word=${encodeURIComponent(word)}`);
         const data = await res.json();
         spinner.style.display = 'none';
-        renderResults(data);
+        renderResults(data, anchor || '', dictId);
       } catch (e) {
         spinner.style.display = 'none';
         resultsArea.innerHTML = `<div class="empty-state">查询失败: ${escapeHtml(e.message)}</div>`;
       }
     }
 
-    function renderResults(data) {
+    function renderResults(data, anchor, dictId) {
       if (!data.results || data.results.length === 0) {
         resultsArea.innerHTML = `<div class="empty-state">未在当前分组词典中找到 “<b>${escapeHtml(data.word)}</b>”</div>`;
         return;
       }
+
+      // Only the dictionary the link came from should scroll to the anchor.
+      const anchorIndex = anchor
+        ? data.results.findIndex((it) => it.dictId === dictId)
+        : -1;
 
       let html = `
         <div class="word-header-card">
@@ -1348,6 +1361,36 @@ const String _webUiHtml = r'''<!DOCTYPE html>
                 }
               });
 
+              function __ciyueDecode(value) {
+                try { return decodeURIComponent(value); } catch (_) { return value; }
+              }
+
+              // Mirrors parseEntryLink in entry_anchor.dart: ## is one literal
+              // hash, a lone # starts the anchor.
+              function __ciyueParseEntryLink(raw) {
+                let word = '';
+                let i = 0;
+                while (i < raw.length) {
+                  const ch = raw.charAt(i);
+                  if (ch !== '#') { word += ch; i++; continue; }
+                  if (raw.charAt(i + 1) === '#') { word += '#'; i += 2; continue; }
+                  return {
+                    word: __ciyueDecode(word),
+                    anchor: __ciyueDecode(raw.slice(i + 1)),
+                  };
+                }
+                return { word: __ciyueDecode(word), anchor: '' };
+              }
+
+              function __ciyueLookup(word, anchor) {
+                window.parent.postMessage({
+                  type: 'LOOKUP',
+                  word: word,
+                  anchor: anchor || '',
+                  dictId: ${item.dictId},
+                }, '*');
+              }
+
               document.addEventListener('click', (e) => {
                 const a = e.target.closest('a');
                 if (!a) return;
@@ -1355,12 +1398,27 @@ const String _webUiHtml = r'''<!DOCTYPE html>
                 if (!href) return;
                 if (href.startsWith('sound://')) {
                   e.preventDefault();
-                  const soundFile = href.replace('sound://', '');
-                  new Audio('${window.location.origin}${item.resourceBase}' + soundFile).play();
+                  let soundFile = href.replace('sound://', '');
+                  if (soundFile.toLowerCase().startsWith('localhost/')) {
+                    soundFile = soundFile.slice('localhost/'.length);
+                  }
+                  try { soundFile = decodeURIComponent(soundFile); } catch (_) {}
+                  new Audio('${window.location.origin}${item.resourceBase}' + encodeURIComponent(soundFile)).play();
+                } else if (href.startsWith('gdlookup://localhost/')) {
+                  e.preventDefault();
+                  const rest = href.slice('gdlookup://localhost/'.length);
+                  const q = rest.indexOf('?');
+                  const payload = q < 0 ? rest : rest.slice(0, q);
+                  const query = q < 0 ? '' : rest.slice(q + 1);
+                  let anchor = '';
+                  if (query) {
+                    anchor = new URLSearchParams(query).get('gdanchor') || '';
+                  }
+                  __ciyueLookup(__ciyueDecode(payload), anchor);
                 } else if (href.startsWith('entry://')) {
                   e.preventDefault();
-                  const targetWord = href.replace('entry://', '');
-                  window.parent.postMessage({ type: 'LOOKUP', word: targetWord }, '*');
+                  const target = __ciyueParseEntryLink(href.slice('entry://'.length));
+                  __ciyueLookup(target.word, target.anchor);
                 }
               });
             <\/script>
@@ -1377,6 +1435,13 @@ const String _webUiHtml = r'''<!DOCTYPE html>
             const h = frameDoc.body.scrollHeight;
             if (h > 100) frame.style.height = Math.min(Math.max(h + 20, 160), 650) + 'px';
           } catch (_) {}
+          if (index === anchorIndex) {
+            try {
+              const el = frameDoc.getElementById(anchor) ||
+                         frameDoc.getElementsByName(anchor)[0];
+              if (el) el.scrollIntoView({ block: 'start' });
+            } catch (_) {}
+          }
         };
       });
     }
@@ -1437,7 +1502,7 @@ const String _webUiHtml = r'''<!DOCTYPE html>
     window.addEventListener('message', (e) => {
       if (e.data && e.data.type === 'LOOKUP' && e.data.word) {
         input.value = e.data.word;
-        doLookup(e.data.word);
+        doLookup(e.data.word, e.data.anchor || '', e.data.dictId);
       }
     });
 

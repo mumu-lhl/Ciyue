@@ -17,4 +17,19 @@ void main() {
     expect(theme.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
     expect(theme.source, contains("var dark = false"));
   });
+
+  test("theme script hands MediaWiki skins the app theme", () {
+    final scripts = dictionaryUserScripts(isDarkTheme: true);
+    final theme = scripts.firstWhere((s) => s.source.contains("ciyue-dark"));
+    expect(theme.source, contains('"skin-theme-clientpref-night"'));
+    expect(theme.source, contains('"skin-theme-clientpref-os"'));
+    // Light is the skin default, so both classes are removed instead of
+    // handing out `-os`, which would keep following the system theme.
+    expect(theme.source, contains("root.classList.remove(unwanted[i])"));
+    // The parser may set the class after the script runs.
+    expect(
+      theme.source,
+      contains('document.addEventListener("DOMContentLoaded", apply'),
+    );
+  });
 }
