@@ -1,1 +1,1 @@
-詞悦是一個簡單的 mdict 詞典
+支持 MDX、StarDict 與 ZIM 的詞典

@@ -20,6 +20,7 @@ import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
 import "package:ciyue/ui/core/word_display/resource_url_script.dart";
 import "package:ciyue/ui/core/word_display/selection_style_script.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
+import "package:ciyue/ui/core/word_display/windows_rocker_edge.dart";
 import "package:ciyue/ui/pages/main/home/shortcuts.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/gestures.dart";
@@ -96,6 +97,52 @@ Color? resolveDictionaryBackgroundColor({
 String? _cachedDarkReaderSource;
 String? _cachedDarkReaderScript;
 
+/// Applies the app theme to a dictionary page.
+///
+/// MediaWiki skins (Wikipedia and its sister projects, the bulk of ZIM
+/// content) ship a complete dark theme behind `skin-theme-clientpref-*`.
+/// `-os` follows the operating system, not the app, so it is removed in both
+/// directions; light is the skin's default with no theme class at all.
+///
+/// This only runs when a WebView is created. The view is keyed on the theme,
+/// so flipping it rebuilds the view and runs this script again rather than
+/// trying to patch a live document.
+String dictionaryThemeScript({required bool isDarkTheme}) =>
+    """
+(function() {
+  var dark = ${isDarkTheme ? "true" : "false"};
+
+  function apply() {
+    var root = document.documentElement;
+    if (!root) return false;
+    var unwanted = dark
+      ? ["skin-theme-clientpref-day", "skin-theme-clientpref-os"]
+      : ["skin-theme-clientpref-night", "skin-theme-clientpref-os"];
+    for (var i = 0; i < unwanted.length; i++) {
+      root.classList.remove(unwanted[i]);
+    }
+    if (dark) root.classList.add("skin-theme-clientpref-night");
+    // The app's own hook for custom CSS.
+    root.classList.toggle("ciyue-dark", dark);
+    return true;
+  }
+
+  if (!apply()) {
+    // <html> does not exist yet.
+    var observer = new MutationObserver(function() {
+      if (apply()) observer.disconnect();
+    });
+    observer.observe(document, { childList: true, subtree: true });
+  }
+  // The parser may write the class onto <html> after this script runs, and
+  // the skin's own scripts may set it again when the document is ready.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", apply, { once: true });
+  }
+  window.addEventListener("load", apply, { once: true });
+})();
+""";
+
 String _darkReaderScript(String darkReaderSource) {
   if (!identical(_cachedDarkReaderSource, darkReaderSource)) {
     _cachedDarkReaderSource = darkReaderSource;
@@ -132,28 +179,10 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
   bool isDesktop = false,
   bool desktopContextMenu = false,
 }) {
-  // Tell the page which theme the app is in: the WebView's own night mode
-  // follows the OS, not the app, so dictionary stylesheets cannot react to
-  // the in-app theme through prefers-color-scheme. They can key off this
-  // class instead: `html.ciyue-dark { ... }`.
-  final themeScript =
-      """
-(function() {
-  var dark = ${isDarkTheme ? "true" : "false"};
-  function apply() {
-    var root = document.documentElement;
-    if (!root) return false;
-    root.classList.toggle("ciyue-dark", dark);
-    return true;
-  }
-  if (!apply()) {
-    var observer = new MutationObserver(function() {
-      if (apply()) observer.disconnect();
-    });
-    observer.observe(document, { childList: true, subtree: true });
-  }
-})();
-""";
+  // Tells the page which theme the app is in and, for MediaWiki skins, hands
+  // them their matching theme class. `html.ciyue-dark` stays the hook custom
+  // CSS can key off.
+  final themeScript = dictionaryThemeScript(isDarkTheme: isDarkTheme);
   final encodedCss = jsonEncode(customCss);
   final color = background;
   final backgroundColor = color == null
@@ -376,6 +405,22 @@ void _applyContentScale(InAppWebViewController? controller, double scale) {
   );
 }
 
+/// Applies the theme once the document has finished loading.
+///
+/// The user script runs at document start, but the skin's own scripts load
+/// afterwards and write their `-os` class back onto `<html>`. Re-applying on
+/// load stop is the cheap equivalent of reloading the entry, without the
+/// scroll jump.
+void _applyDictionaryTheme(
+  InAppWebViewController? controller, {
+  required bool isDarkTheme,
+}) {
+  if (controller == null) return;
+  controller.evaluateJavascript(
+    source: dictionaryThemeScript(isDarkTheme: isDarkTheme),
+  );
+}
+
 class WebviewAndroid extends ConsumerStatefulWidget {
   final String word;
   final String content;
@@ -480,7 +525,6 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         settings.themeMode == ThemeMode.light ||
         settings.themeMode == ThemeMode.system &&
             MediaQuery.of(context).platformBrightness == Brightness.light;
-
     // Rebuild settings only when dependencies change.
     var webviewSettings = _cachedSettings;
     if (webviewSettings == null ||
@@ -570,6 +614,10 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
     }
 
     final webview = InAppWebView(
+      // The theme only reaches a page through its user scripts, which run on
+      // creation. Keying on it rebuilds the view so the new theme is applied
+      // instead of leaving the old document in the previous colour scheme.
+      key: ValueKey("android-theme-${!isLightTheme}"),
       initialUserScripts: dictionaryUserScripts(
         customCss: settings.dictionaryCustomCss,
         background: settings.dictionaryBackgroundColor,
@@ -600,6 +648,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         context,
       ),
       onLoadStop: (controller, url) async {
+        _applyDictionaryTheme(controller, isDarkTheme: !isLightTheme);
         await _applyPendingAnchor(
           controller,
           ref,
@@ -850,9 +899,31 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   InAppWebViewController? _desktopController;
   Future<void> _desktopContentLoad = Future<void>.value();
 
+  /// Local server port the document on screen was loaded from.
+  ///
+  /// Disabling a dictionary and enabling it again keeps the id and the HTML
+  /// but starts a new server on a new port. Comparing content alone does not
+  /// notice that, so the old document would keep asking the closed server for
+  /// resources and render blank.
+  int _loadedPort = 0;
+
   /// Wraps the WebView so the CSS coordinates of a right click can be turned
   /// into the overlay coordinates `showMenu` needs.
   final _webViewAnchorKey = GlobalKey();
+
+  /// WebView2 never sees a chorded right press; see [WindowsRockerEdgeDetector].
+  final _windowsRockerEdge = WindowsRockerEdgeDetector();
+
+  void _updateWindowsButtonEdge(int buttons) {
+    if (!_windowsRockerEdge.update(buttons)) return;
+    final controller = _desktopController;
+    if (controller == null) return;
+    unawaited(
+      controller.evaluateJavascript(
+        source: "window.ciyueRocker && window.ciyueRocker()",
+      ),
+    );
+  }
 
   void _handleDesktopContextMenu(String payload) {
     final request = parseDesktopContextMenu(payload);
@@ -923,8 +994,24 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
             return;
           }
 
-          final dict = ref.read(dictManagerProvider).dicts[requestedDictId];
-          if (dict == null || dict.port == 0) return;
+          var dict = ref.read(dictManagerProvider).dicts[requestedDictId];
+          if (dict == null) return;
+          if (dict.port == 0) {
+            // A dictionary that was just enabled still has its local server
+            // starting. Waiting is what makes the first paint possible: a port
+            // that arrives later does not rebuild the WebView, so returning
+            // here would leave the tab blank until the next word.
+            await dict.waitForLoading();
+            if (!mounted ||
+                !identical(_desktopController, controller) ||
+                requestedContent != widget.content ||
+                requestedDictId != widget.dictId) {
+              return;
+            }
+            dict = ref.read(dictManagerProvider).dicts[requestedDictId];
+            if (dict == null || dict.port == 0) return;
+          }
+          _loadedPort = dict.port;
           final baseUrl = "http://127.0.0.1:${dict.port}/";
           if (Platform.isWindows) {
             // Same POST request the initial Windows load uses; loadData
@@ -983,19 +1070,36 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
     });
     final darkReaderSetting = ref.watch(dictionaryDarkReaderProvider);
     // A group edit removes dictionaries before the old WebView is torn down,
-    // so the id can be gone for a frame. Fall back to the loading state.
+    // so the id can be gone for a frame. Fall back to the loading state
+    // instead of crashing with a null check.
     final port = dictManager.dicts[dictId]?.port ?? 0;
+    // The document on screen came from a server that has since been closed:
+    // the dictionary was disabled and enabled again, keeping its id and its
+    // HTML but not its port. Content equality cannot catch this, so reload.
+    if (port != 0 && _loadedPort != 0 && port != _loadedPort) {
+      final controller = _desktopController;
+      if (controller != null) {
+        talker.info(
+          "Dictionary content reload: dict=$dictId port $_loadedPort -> $port",
+        );
+        _loadedPort = port;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !identical(_desktopController, controller)) return;
+          unawaited(_scheduleDesktopContentLoad(controller));
+        });
+      }
+    }
     final Widget webview;
+
+    final isLightTheme =
+        settings.themeMode == ThemeMode.light ||
+        settings.themeMode == ThemeMode.system &&
+            MediaQuery.of(context).platformBrightness == Brightness.light;
 
     if (port == 0) {
       webview = const Center(child: CircularProgressIndicator());
     } else {
       final url = "http://127.0.0.1:$port/";
-
-      final isLightTheme =
-          settings.themeMode == ThemeMode.light ||
-          settings.themeMode == ThemeMode.system &&
-              MediaQuery.of(context).platformBrightness == Brightness.light;
 
       final useDarkReader = shouldUseDarkReaderForDictionary(
         isWindows: Platform.isWindows,
@@ -1032,7 +1136,9 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
         Widget buildDesktopWebView(String darkReaderSource) {
           final darkReaderReady = useDarkReader && darkReaderSource.isNotEmpty;
           return InAppWebView(
-            key: ValueKey("dark-reader-$darkReaderReady"),
+            key: ValueKey(
+              "theme-${!isLightTheme}-dark-reader-$darkReaderReady",
+            ),
             initialUserScripts: dictionaryUserScripts(
               customCss: settings.dictionaryCustomCss,
               background: dictionaryBackgroundColor,
@@ -1052,6 +1158,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
               context,
             ),
             onLoadStop: (controller, url) async {
+              _applyDictionaryTheme(controller, isDarkTheme: !isLightTheme);
               await _applyPendingAnchor(
                 controller,
                 ref,
@@ -1186,7 +1293,9 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                 darkReaderEnabled: darkReaderReady,
               );
               return InAppWebView(
-                key: ValueKey("dark-reader-$darkReaderReady"),
+                key: ValueKey(
+                  "theme-${!isLightTheme}-dark-reader-$darkReaderReady",
+                ),
                 initialUserScripts: dictionaryUserScripts(
                   customCss: settings.dictionaryCustomCss,
                   background: background,
@@ -1215,6 +1324,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                   context,
                 ),
                 onLoadStop: (controller, url) async {
+                  _applyDictionaryTheme(controller, isDarkTheme: !isLightTheme);
                   await _applyPendingAnchor(
                     controller,
                     ref,
@@ -1336,7 +1446,17 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
     // the WebView scroll internally.
     // The key is the anchor for right-click CSS coordinates. Keep it outside
     // the FutureBuilders so a rebuild that swaps the WebView does not move it.
-    final anchored = KeyedSubtree(key: _webViewAnchorKey, child: webview);
+    Widget wrapped = KeyedSubtree(key: _webViewAnchorKey, child: webview);
+    if (Platform.isWindows) {
+      // Only WebView2 misses the chorded second button. Linux forwards it in
+      // its platform view and macOS already sees the right press.
+      wrapped = Listener(
+        onPointerDown: (e) => _updateWindowsButtonEdge(e.buttons),
+        onPointerMove: (e) => _updateWindowsButtonEdge(e.buttons),
+        onPointerUp: (e) => _updateWindowsButtonEdge(e.buttons),
+        child: wrapped,
+      );
+    }
     if (widget.isExpansion) {
       final height =
           ref.watch(
@@ -1348,11 +1468,11 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
       // ExpansionPanelList gives unbounded height; the Linux platform view
       // uses SizedBox.expand internally so it needs a finite constraint.
       // Use at least 1 to avoid zero-size issues before JS reports height.
-      return SizedBox(height: height > 0 ? height : 1, child: anchored);
+      return SizedBox(height: height > 0 ? height : 1, child: wrapped);
     }
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height),
-      child: anchored,
+      child: wrapped,
     );
   }
 }

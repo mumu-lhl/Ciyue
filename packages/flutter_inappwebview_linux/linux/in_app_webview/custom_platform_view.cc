@@ -329,10 +329,15 @@ void CustomPlatformView::HandleMethodCallImpl(FlMethodCall* method_call) {
             }
           }
         }
-        webview_->setScaleFactor(scale_factor);
-        int physical_width = static_cast<int>(std::round(width * scale_factor));
-        int physical_height = static_cast<int>(std::round(height * scale_factor));
-        webview_->setSize(physical_width, physical_height);
+        webview_->setScaleFactor(scale_factor, /*from_flutter=*/true);
+        // WPE sizes a view in logical coordinates and applies the scale factor
+        // itself (WPEToplevel:resize and WPEView:width/height are logical, the
+        // physical size is that size times WPEView:scale). Passing the physical
+        // size here made the page viewport `scale` times too wide, so on a 2x
+        // desktop the entry was laid out at 1x inside a 2x app: the dictionary
+        // text stayed small while the rest of the UI was scaled.
+        webview_->setSize(static_cast<int>(std::round(width)),
+                          static_cast<int>(std::round(height)));
       }
     }
     fl_method_call_respond_success(method_call, nullptr, nullptr);

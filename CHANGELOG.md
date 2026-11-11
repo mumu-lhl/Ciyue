@@ -3,6 +3,84 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
+## [2.2.0](https://github.com/mumu-lhl/Ciyue/compare/v2.1.0..2.2.0) - 2026-11-11
+
+### Bug Fixes
+
+- **(desktop)** repair back/forward and the suggestion view - ([ffbbadd](https://github.com/mumu-lhl/Ciyue/commit/ffbbadd7ec2273ecef9e51930fd70b25853bc786)) - YX
+- **(desktop)** make rocker gestures work on WPE and use the left button for wheel - ([2683b23](https://github.com/mumu-lhl/Ciyue/commit/2683b236a2f54d17a77fd0f3fc038c1360e3ef1c)) - YX
+- **(desktop)** keep the rocker bitmask fallback off Windows - ([f95a554](https://github.com/mumu-lhl/Ciyue/commit/f95a554755795dfbb1b2d38a465b14af723757df)) - YX
+- **(dictionaries)** keep entries visible after toggling a dictionary - ([7e60eb1](https://github.com/mumu-lhl/Ciyue/commit/7e60eb10ec2f4fcbaa06e2b643e4ccf18551fa2b)) - YX
+- **(dictionaries)** rebuild entry views when the theme flips - ([4f76bf6](https://github.com/mumu-lhl/Ciyue/commit/4f76bf6cf8c857f54e3403a86b78b5c5962ee763)) - YX
+- **(home)** keep a search box on the empty new-tab page - ([118b0c7](https://github.com/mumu-lhl/Ciyue/commit/118b0c766e8528692349c4ec1ceb3fa808ff0baa)) - YX
+- **(hunspell)** bound the character count of a variant expansion - ([2f0ec56](https://github.com/mumu-lhl/Ciyue/commit/2f0ec5668e7799893d56cb13178e83622650781a)) - YX
+- **(l10n)** localize hardcoded UI strings and complete zh-HK/zh-TW/de catalogs - ([ef9c9eb](https://github.com/mumu-lhl/Ciyue/commit/ef9c9ebb39b554a2f5a73acf6eb0a5db9a81fbfe)) - YX
+- **(l10n)** use 正序 for the prefix search-mode label to pair with 倒序 - ([0bc0ba1](https://github.com/mumu-lhl/Ciyue/commit/0bc0ba1274ba67deaa04681127d7271523702282)) - YX
+- **(linux)** take OpenSSL from the host instead of the bundle - ([67c0657](https://github.com/mumu-lhl/Ciyue/commit/67c0657eb265bc88fd9f033f4b90f5c9ccc03fe9)) - YX
+- **(linux)** keep DMA-BUF frames out of the software readback path - ([cdca394](https://github.com/mumu-lhl/Ciyue/commit/cdca3946cd71c5b361ead3508c79181284db4881)) - YX
+- **(linux)** hold the window and view pointers weakly while a webview lives - ([f830118](https://github.com/mumu-lhl/Ciyue/commit/f830118ea0e87ef5441e0dc8ac44e5ef2b4c99bc)) - YX
+- **(linux)** tear webviews down when the window closes, not after the engine - ([57b0c6f](https://github.com/mumu-lhl/Ciyue/commit/57b0c6fd668fd5f805e8324b058ffd4cc8eef601)) - YX
+- **(linux)** fill _NET_WM_ICON from an icon list so the panel shows the icon - ([19792c7](https://github.com/mumu-lhl/Ciyue/commit/19792c7b5c1367d005900bca33b9aabb0bf87f15)) - YX
+- **(linux-webview)** skip async callbacks after the platform view is disposed - ([a33dd90](https://github.com/mumu-lhl/Ciyue/commit/a33dd90812d1c544b4a821f7b96dd86cc16cb534)) - YX
+- **(linux-webview)** forward a second mouse button from move events - ([116be5a](https://github.com/mumu-lhl/Ciyue/commit/116be5a31e7a59a8cd5d694e34f772182313d8c6)) - YX
+- **(linux-webview)** size the WPE view in logical pixels - ([8d7fd8a](https://github.com/mumu-lhl/Ciyue/commit/8d7fd8aad98b0dd0b8905ce7265986e870ea9a88)) - YX
+- **(main)** wrap startup splash in ProviderScope - ([a18ca57](https://github.com/mumu-lhl/Ciyue/commit/a18ca5700491ad1a9d62e7d2c29f3387dec622cb)) - YX
+- **(search)** rebuild stale FTS indexes and fix suffix recall - ([8fc0eb3](https://github.com/mumu-lhl/Ciyue/commit/8fc0eb3b873ac7ef2577c591a94ac58d17f61765)) - Mumulhl
+- **(search)** first_page/last_page icons; 正序/倒序 for 前缀/后缀 - ([842f17c](https://github.com/mumu-lhl/Ciyue/commit/842f17cf65ec52820093d2ee6aa7ce9ef464a169)) - YX
+- **(search)** show clear and mode buttons in the open search view - ([6fa146c](https://github.com/mumu-lhl/Ciyue/commit/6fa146c92004515e8519bdcc9ad438561f02cf62)) - YX
+- **(shortcuts)** global fallback for native focus and platform-safe history keys - ([e51e2f1](https://github.com/mumu-lhl/Ciyue/commit/e51e2f1857841435fea3c7ee4d72a88847f65df2)) - YX
+- **(windows)** detect the chorded right button outside WebView2 - ([b4b3b89](https://github.com/mumu-lhl/Ciyue/commit/b4b3b89a88ab21883901a02d39e6dcc511897e68)) - YX
+- **(wordbook)** page through the word list on desktop - ([d1c2eb3](https://github.com/mumu-lhl/Ciyue/commit/d1c2eb3646e45bf9218a417f8e5a9d03bfc7ce5a)) - YX
+- **(zim)** open in-archive article links as entry lookups - ([08b71b3](https://github.com/mumu-lhl/Ciyue/commit/08b71b3127d57cdeb8b2967bbe4d576a3ecf5a51)) - YX
+- serve dictionary resources with non-ASCII names and correct charset - ([b002cd0](https://github.com/mumu-lhl/Ciyue/commit/b002cd037de70dde586ea306aba55da4bee5ab95)) - YX
+
+### Documentation
+
+- **(word-forms)** point at the published Chinese table - ([667aba2](https://github.com/mumu-lhl/Ciyue/commit/667aba25c11f8bc68fb42f64540484a0689ecb0e)) - YX
+- **(word-forms)** fix the Chinese table link - ([4175c50](https://github.com/mumu-lhl/Ciyue/commit/4175c50b907ac0ee94b5b75c1a498e44ae5f85c7)) - YX
+- **(word-forms)** link the Chinese table from the section itself - ([691857f](https://github.com/mumu-lhl/Ciyue/commit/691857f4e9335231d41c3a2d0d1fefdf7beeaa63)) - YX
+- **(word-forms)** document Ciyue's patched Hunspell and duplicate st: entries - ([6bba0e0](https://github.com/mumu-lhl/Ciyue/commit/6bba0e0ae55bb16088d73b6097eaef9de99bf97c)) - YX
+- **(word-forms)** use 兜底 consistently and drop Chinese terms from the English guide - ([dd69624](https://github.com/mumu-lhl/Ciyue/commit/dd696243b4b7acec8f54588ed2e72ffa0860bd6d)) - YX
+- list Alt+Left/Right for the entry history - ([b7d14ff](https://github.com/mumu-lhl/Ciyue/commit/b7d14ff649e6604a20835af926f5aaf3852b1797)) - YX
+- document the four search modes - ([f643b14](https://github.com/mumu-lhl/Ciyue/commit/f643b1476b7c8e966fcbcafd1c77b2941f98099c)) - YX
+- align Chinese guide wording and sync the English examples - ([65d7375](https://github.com/mumu-lhl/Ciyue/commit/65d7375481c14846e15d3feebf7b6f8287ab0648)) - YX
+
+### Features
+
+- **(desktop)** look up a selection in a new tab with Ctrl+Enter - ([326d536](https://github.com/mumu-lhl/Ciyue/commit/326d53603c010d31d782f7debd6373276525cd22)) - YX
+- **(desktop)** mouse gestures for switching dictionary and word tabs - ([109281c](https://github.com/mumu-lhl/Ciyue/commit/109281c7d811658bb7c7bcf48a5736856fa6c175)) - YX
+- **(desktop)** custom right-click menu on Windows and Linux - ([35178db](https://github.com/mumu-lhl/Ciyue/commit/35178dbab0fd0fc857d200af3607f173193358e2)) - YX
+- **(home)** rework wide-screen navigation and search box roles - ([43b5680](https://github.com/mumu-lhl/Ciyue/commit/43b568055d13be58fc1fd87e14519b1bb3a99ab1)) - YX
+- **(hunspell)** combine single-character variants for CJK lookups - ([a53be16](https://github.com/mumu-lhl/Ciyue/commit/a53be16e2524e8576a574119e468e7213eb2520e)) - YX
+- **(index)** add full-text index overview page - ([2baff86](https://github.com/mumu-lhl/Ciyue/commit/2baff869b782f0bb428998c780f7ea5fe8c6165a)) - YX
+- **(search)** search-mode selector with suffix and multi-word AND modes - ([72f8ef7](https://github.com/mumu-lhl/Ciyue/commit/72f8ef790ea55cc0871a9f65ae9804fb91c4af68)) - Mumulhl
+- **(shortcuts)** step through dictionary tabs with Alt+PgUp/PgDn - ([b1996a4](https://github.com/mumu-lhl/Ciyue/commit/b1996a49a307ce6388852fc0e8ff332a6a3d8090)) - YX
+- **(stardict)** link a stylesheet named after the dictionary - ([41ce52b](https://github.com/mumu-lhl/Ciyue/commit/41ce52bc237134a0ba9d9facab5327581af65e16)) - YX
+- collapsible search pane on large screens; portrait tablets use mobile layout (#817) - ([dbddd7d](https://github.com/mumu-lhl/Ciyue/commit/dbddd7df00b6b344d3cadb9231d225d6c258b0a9)) - Mumulhl
+
+### Miscellaneous Chores
+
+- remove comments that merely restate the code - ([719c36b](https://github.com/mumu-lhl/Ciyue/commit/719c36b9bfc8944288d5643a6df6cf7b9d6f145a)) - Mumulhl
+
+### Refactoring
+
+- **(settings)** move mouse gesture actions to the Other page - ([95e4e79](https://github.com/mumu-lhl/Ciyue/commit/95e4e791513983b745a9eb7adc5359b6cd75f563)) - YX
+- **(shortcuts)** use only Alt+Up/Down for history navigation - ([91a9474](https://github.com/mumu-lhl/Ciyue/commit/91a94741d82a17760963f4d62d0089315da0802a)) - YX
+
+### Style
+
+- format full_text_index_overview.dart - ([6dd0765](https://github.com/mumu-lhl/Ciyue/commit/6dd076587b1e6f62ecaec97fff4f23d5ddd5d1ca)) - YX
+
+### Tests
+
+- **(search)** expect first_page icon for the prefix mode button - ([a52170d](https://github.com/mumu-lhl/Ciyue/commit/a52170d02789abc73464233628bdc021db5ec4c8)) - YX
+- **(stardict)** cover a non-ASCII stylesheet name - ([1178d1c](https://github.com/mumu-lhl/Ciyue/commit/1178d1cb9b5ca7a4bdc74af1f68d990f7292e0e7)) - YX
+
+### Build
+
+- **(deps)** bump source-map-js - ([ab0f062](https://github.com/mumu-lhl/Ciyue/commit/ab0f0622495951c1b1b365453cd5e5e1d6bd06fc)) - dependabot[bot]
+
+---
 ## [2.1.0](https://github.com/mumu-lhl/Ciyue/compare/v2.0.1..v2.1.0) - 2026-11-03
 
 ### Bug Fixes

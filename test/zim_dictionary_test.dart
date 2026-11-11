@@ -16,18 +16,46 @@ Future<String> writeTestZimFixture(Directory dir) async {
   builder.addArticle(
     "Apple",
     "Apple",
-    "<h1>Apple</h1><p>A delicious fruit.</p><img src=\"I/apple.png\" />",
+    "<h1>Apple</h1>"
+        "<p>A delicious <a href=\"Banana\">fruit</a>.</p>"
+        "<a href=\"Banana#section\">section</a>"
+        "<a href=\"fruit\">redirect</a>"
+        "<a href=\"style\">stylesheet link</a>"
+        "<a href=\"I/apple.png\">image link</a>"
+        "<a href=\"./_mw_/site.css\">missing stylesheet</a>"
+        "<a href=\"#cite_note-1\">footnote</a>"
+        "<a href=\"https://example.com/Apple\">external</a>"
+        "<a href=\"A:B@C\">odd name</a>"
+        "<a href=\"I/voice.ogg\">listen</a>"
+        "<a href=\"Missing_Page\">missing</a>"
+        "<a href=\"../A/Gone_Entry\">gone</a>"
+        "<a href=\"entry://SomeWord\">entry scheme</a>"
+        "<a href=\"geo:40.2,44.7\">geo</a>"
+        "<img src=\"I/apple.png\" />",
   );
   builder.addArticle(
     "Banana",
     "Banana",
     "<h1>Banana</h1><p>A yellow fruit.</p>",
   );
+  builder.addArticle(
+    "A:B@C",
+    "A:B@C",
+    "<h1>A:B@C</h1><p>A name made of URL punctuation.</p>",
+  );
   builder.addRedirect("fruit", "fruit", "Apple");
   builder.addResource(
     "apple.png",
     [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
     "image/png",
+    namespace: "I",
+  );
+  // No extension on purpose: only the entry's own MIME type identifies it.
+  builder.addResource("style", [0x62, 0x6F, 0x64, 0x79], "text/css");
+  builder.addResource(
+    "voice.ogg",
+    [0x4F, 0x67, 0x67, 0x53],
+    "audio/ogg",
     namespace: "I",
   );
 
@@ -144,11 +172,102 @@ void main() {
     final entries = await dict.readExactEntries(["Apple"]);
     expect(entries, hasLength(1));
     expect(entries.first.headword, "Apple");
-    expect(entries.first.content, contains("A delicious fruit."));
+    expect(entries.first.content, contains("A delicious"));
     expect(entries.first.content, contains('<img src="I/apple.png" />'));
 
     final html = dict.wrapContentWithResources(entries.first.content);
     expect(html, contains('<img src="I/apple.png" />'));
+  });
+
+  test("rewrites ZIM article links into gdlookup entry links", () async {
+    final entries = await dict.readExactEntries(["Apple"]);
+    final html = entries.single.content;
+
+    expect(html, contains('href="gdlookup://localhost/%42%61%6E%61%6E%61"'));
+    expect(
+      html,
+      contains(
+        'href="gdlookup://localhost/%42%61%6E%61%6E%61'
+        '?gdanchor=%73%65%63%74%69%6F%6E"',
+      ),
+    );
+    expect(html, contains('href="gdlookup://localhost/%66%72%75%69%74"'));
+    // `:` and `@` are legal entry-name characters; the whole name is encoded
+    // byte by byte so the URI parser cannot read `A:` as a scheme.
+    expect(html, contains('href="gdlookup://localhost/%41%3A%42%40%43"'));
+    // Audio entries become sound:// so a tap plays them instead of navigating
+    // to a resource URL.
+    expect(
+      html,
+      contains('href="sound://localhost/%49%2F%76%6F%69%63%65%2E%6F%67%67"'),
+    );
+    // A path the archive does not answer is still a lookup: the reader gets
+    // the not-found page instead of a bare 404. Kiwix slugs (`_`) become
+    // spaces, and `../A/Foo` is reduced to its last segment.
+    expect(
+      html,
+      contains(
+        'href="gdlookup://localhost/%4D%69%73%73%69%6E%67%20%50%61%67%65"',
+      ),
+    );
+    expect(
+      html,
+      contains('href="gdlookup://localhost/%47%6F%6E%65%20%45%6E%74%72%79"'),
+    );
+    expect(html, contains('href="entry://SomeWord"'));
+    // Real Wikipedia ZIMs emit geo: coordinate links; they are external
+    // protocols, not dead article paths.
+    expect(html, contains('href="geo:40.2,44.7"'));
+
+    // Resources, pure anchors, external URLs and images stay as authored.
+    for (final untouched in [
+      'href="style"',
+      'href="I/apple.png"',
+      'href="./_mw_/site.css"',
+      'href="#cite_note-1"',
+      'href="https://example.com/Apple"',
+      '<img src="I/apple.png" />',
+    ]) {
+      expect(html, contains(untouched), reason: untouched);
+    }
+
+    expect(
+      dict.wrapContentWithResources(html),
+      contains('href="gdlookup://localhost/%42%61%6E%61%6E%61"'),
+    );
+  });
+
+  test("resolves local article paths back to headwords", () async {
+    expect(await dict.entryTitleAtPath("Banana"), "Banana");
+    expect(await dict.entryTitleAtPath("fruit"), "fruit");
+    expect(await dict.entryTitleAtPath("I/voice.ogg"), isNull);
+    expect(await dict.entryTitleAtPath("Missing_Page"), isNull);
+  });
+
+  test("desktop http server answers with the ZIM entry mime type", () async {
+    final prev = HttpOverrides.current;
+    HttpOverrides.global = null;
+    try {
+      final article = await http.get(
+        Uri.parse("http://127.0.0.1:${dict.port}/Banana"),
+      );
+      expect(article.statusCode, 200);
+      expect(article.headers["content-type"], contains("text/html"));
+
+      final stylesheet = await http.get(
+        Uri.parse("http://127.0.0.1:${dict.port}/style"),
+      );
+      expect(stylesheet.statusCode, 200);
+      expect(stylesheet.headers["content-type"], contains("text/css"));
+
+      final audio = await http.get(
+        Uri.parse("http://127.0.0.1:${dict.port}/I/voice.ogg"),
+      );
+      expect(audio.statusCode, 200);
+      expect(audio.headers["content-type"], contains("audio/ogg"));
+    } finally {
+      HttpOverrides.global = prev;
+    }
   });
 
   test("desktop http server serves ZIM resources", () async {

@@ -1,4 +1,36 @@
 ---
+## [2.2.0](https://github.com/mumu-lhl/Ciyue/compare/v2.1.0..v2.2.0) - 2026-11-11
+
+### Features
+
+- **Search modes** - switch between prefix, suffix, multi-word AND, and full-text search, with a full-text index overview page to check, rebuild, or delete a dictionary's index; the search box has clear and mode buttons, and prefix/suffix use first/last-page icons
+- **Collapsible search pane** - the search pane can now be collapsed on large screens, and portrait tablets use the phone layout
+- **Wide-screen navigation** - the wide-screen navigation and search box roles are reworked, and the empty new-tab page keeps a search box
+- **Mouse gestures on desktop** - rocker gestures now switch dictionary and word tabs on Linux (WPE) and Windows, with the wheel gesture using the left button; gesture actions are configured on the Other settings page
+- **Custom right-click menu** - Windows and Linux now use Ciyue's own right-click menu
+- **Look up a selection in a new tab** - on desktop, Ctrl+Enter looks up the selected text in a new tab
+- **Step through dictionary tabs** - Alt+PgUp/PgDn now steps through dictionary tabs
+- **CJK variant stems** - lookups now combine single-character variants, so words written with a variant character are found too
+- **StarDict stylesheets** - a stylesheet file named after the dictionary is now loaded automatically
+- **Translations** - hardcoded interface strings are now localized, and the Traditional Chinese (Hong Kong/Taiwan) and German translations are complete
+
+### Bug Fixes
+
+- **(shortcuts)** desktop shortcuts now work even when a native control has the focus, and history navigation uses Alt+Up/Down
+- **(desktop)** back/forward navigation and the suggestion view are repaired
+- **(wordbook)** the word list can now be paged through on desktop
+- **(word page)** entries now follow the theme immediately when it flips, including MediaWiki-skinned dictionaries
+- **(dictionary)** entries stay visible after a dictionary is toggled off and on again, instead of staying blank
+- **(dictionary)** dictionary resources with non-ASCII file names now load with the correct charset
+- **(zim)** links to articles inside a ZIM archive now open as entry lookups
+- **(linux)** the app icon now shows in taskbars such as XFCE's
+- **(linux)** closing a window or releasing an entry view no longer crashes occasionally
+- **(linux)** lookups no longer crash on systems using software rendering without a GPU
+- **(linux)** the bundle now takes OpenSSL from the host system, so proxy-related features work again on newer distributions like Debian 13
+- **(linux)** the WebView is now sized in logical pixels, so entries render at the right size on HiDPI screens
+
+---
+
 ## [2.1.0](https://github.com/mumu-lhl/Ciyue/compare/v2.0.1..v2.1.0) - 2026-11-03
 
 ### Features

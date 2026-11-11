@@ -3,6 +3,8 @@ import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
+import "package:ciyue/models/dictionary_links.dart";
+import "package:ciyue/repositories/base_dictionary.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/services/text_encoding.dart";
@@ -18,87 +20,13 @@ import "package:path/path.dart";
 import "package:ciyue/core/providers.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
+export "package:ciyue/models/dictionary_links.dart"
+    show entryLinkHref, normalizeDictionaryUrls;
+
 DateTime? _lastOpenWordTime;
 String? _lastOpenWordName;
 String? _lastOpenWordAnchor;
 bool? _lastOpenWordIsNewTab;
-
-final _bwordHrefPattern = RegExp(
-  r'''(href\s*=\s*)(["'])bword://([^"']*)\2''',
-  caseSensitive: false,
-);
-
-final _soundUrlPattern = RegExp(
-  r'''((?:href|src)\s*=\s*)(["'])sound://([^"']*)\2''',
-  caseSensitive: false,
-);
-
-String _percentEncodeAll(String value) {
-  final encoded = <String>[];
-  for (final byte in utf8.encode(value)) {
-    encoded.add("%${byte.toRadixString(16).padLeft(2, "0").toUpperCase()}");
-  }
-  return encoded.join();
-}
-
-/// The canonical `gdlookup://` href for a parsed link, or an empty string when
-/// there is no headword to look up.
-///
-/// The anchor rides as a `?gdanchor=` query item, never as a fragment: a `#`
-/// in a URL is a same-document position, so a fragment would be swallowed
-/// before the navigation handler ever sees it.
-String entryLinkHref(EntryLinkTarget target) {
-  if (target.word.isEmpty) return "";
-  final href = StringBuffer(
-    "gdlookup://localhost/${_percentEncodeAll(target.word)}",
-  );
-  final anchor = target.anchor;
-  if (anchor != null && anchor.isNotEmpty) {
-    href.write("?gdanchor=${_percentEncodeAll(anchor)}");
-  }
-  return href.toString();
-}
-
-/// Rewrites the two dictionary link shapes whose payload the URL parser
-/// mangles, before the page is loaded:
-///
-/// * Babylon cross references, `bword://Word` → `gdlookup://localhost/<word>`
-/// * audio references, `sound://FILE.spx` → `sound://localhost/<file>`
-///
-/// Both move the payload out of the **host** and into the path, because hosts
-/// are folded to lower case on the way through the URL parser: `entry://Abend`
-/// arrives as `abend`, and `sound://ID4107451.spx` arrives as
-/// `id4107451_287466265.spx`, which matches neither a headword nor an `.mdd`
-/// resource. Names that happen to be all lower case or all digits survive the
-/// folding, which is why only some dictionaries were affected — and why the
-/// same file plays in one dictionary and stays silent in the next.
-///
-/// A lone `#` in a Babylon link separates the headword from an anchor and `##`
-/// escapes a literal `#`; see [parseEntryLink].
-String normalizeDictionaryUrls(String html) {
-  var result = html;
-
-  if (result.toLowerCase().contains("bword:")) {
-    result = result.replaceAllMapped(_bwordHrefPattern, (match) {
-      final href = entryLinkHref(parseEntryLink(match[3] ?? ""));
-      if (href.isEmpty) return match[0] ?? "";
-      return '${match[1]}"$href"';
-    });
-  }
-
-  if (result.toLowerCase().contains("sound://")) {
-    result = result.replaceAllMapped(_soundUrlPattern, (match) {
-      final file = (match[3] ?? "").split("#").first;
-      if (file.isEmpty) return match[0] ?? "";
-      // Already normalised: a second pass would encode the `localhost/` prefix
-      // into the file name.
-      if (file.toLowerCase().startsWith("localhost/")) return match[0] ?? "";
-      return '${match[1]}"sound://localhost/${_percentEncodeAll(file)}"';
-    });
-  }
-
-  return result;
-}
 
 void handleOpenWordNavigation(
   BuildContext context,
@@ -365,8 +293,59 @@ shouldOverrideUrlLoadingWarpper(int dictId, BuildContext context) {
       return NavigationActionPolicy.CANCEL;
     }
 
+    // A navigation to this dictionary's own local server is an article, not
+    // an external URL: a `meta refresh` redirect lands here with the raw
+    // dictionary HTML. Resolve it back to a headword so it renders through
+    // the normal pipeline (link rewriting, history, sibling dictionaries).
+    final localTitle = await _localArticleTitle(dictId, url);
+    if (localTitle != null) {
+      if (context.mounted) {
+        handleOpenWordNavigation(
+          context,
+          localTitle,
+          newTab: false,
+          dictId: dictId,
+          anchor: _fragmentOf(url),
+        );
+      }
+      return NavigationActionPolicy.CANCEL;
+    }
+
     return navigationPolicyForUrl(url);
   };
+}
+
+/// The headword behind a navigation to this dictionary's own local server,
+/// or null when the URL is external or points at a resource.
+Future<String?> _localArticleTitle(int dictId, WebUri url) async {
+  if (url.scheme != "http") return null;
+  final dict = dictManager.dicts[dictId];
+  if (dict == null) return null;
+
+  final isLoopback =
+      url.host == "127.0.0.1" && dict.port != 0 && url.port == dict.port;
+  // The Android asset loader serves every dictionary from this host; the
+  // per-dictionary path lookup below decides whether it is an article.
+  final isAssetLoader = url.host == "ciyue.internal";
+  if (!isLoopback && !isAssetLoader) return null;
+
+  final rawPath = url.path.startsWith("/") ? url.path.substring(1) : url.path;
+  if (rawPath.isEmpty) return null;
+  return declaredEntryTitleAtPath(dict, _decodeURIComponent(rawPath));
+}
+
+String _decodeURIComponent(String value) {
+  try {
+    return Uri.decodeComponent(value);
+  } catch (_) {
+    return value;
+  }
+}
+
+String? _fragmentOf(WebUri url) {
+  final fragment = url.fragment;
+  if (fragment.isEmpty) return null;
+  return _decodeURIComponent(fragment);
 }
 
 /// Plays a pronunciation resource referenced by a `sound://` link.
@@ -427,7 +406,12 @@ class LocalResourcesPathHandler extends CustomPathHandler {
       return WebResourceResponse(data: null);
     }
 
-    final dict = dictManager.dicts[dictId]!;
+    final dict = dictManager.dicts[dictId];
+    // The dictionary can be gone while a resource request from its old
+    // WebView is still in flight (group switch / removal).
+    if (dict == null) {
+      return WebResourceResponse(data: null);
+    }
 
     if (dict is Mdict && path == dict.fontName) {
       final file = File(dict.fontPath!);
@@ -440,9 +424,10 @@ class LocalResourcesPathHandler extends CustomPathHandler {
 
     try {
       final data = await dict.readResourceFile(path);
+      final declaredMime = await declaredResourceMimeType(dict, path);
       return WebResourceResponse(
         data: data,
-        contentType: resourceContentType(path, data),
+        contentType: declaredMime ?? resourceContentType(path, data),
       );
     } catch (e) {
       return WebResourceResponse(data: null);

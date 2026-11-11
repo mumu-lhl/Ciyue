@@ -1,0 +1,7 @@
+* Search modes: prefix, suffix, multi-word and full-text
+* Mouse gestures on desktop
+* Collapsible search pane on large screens
+* Custom right-click menu on Windows and Linux
+* CJK variant stems for lookups
+* StarDict stylesheets named after the dictionary
+* Linux taskbar icon and HiDPI fixes

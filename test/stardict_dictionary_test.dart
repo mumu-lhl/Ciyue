@@ -7,7 +7,7 @@ import "package:flutter_test/flutter_test.dart";
 
 /// Writes a minimal StarDict dictionary (ifo/idx/dict/syn) into [dir] and
 /// returns its base path. Entries use embedded type markers.
-Future<String> writeFixture(Directory dir) async {
+Future<String> writeFixture(Directory dir, {String name = "fixture"}) async {
   final entries = <String, List<int>>{
     "apple": _entry([("m", "a fruit"), ("t", "'æpl")]),
     "banana": _entry([
@@ -44,7 +44,7 @@ Future<String> writeFixture(Directory dir) async {
       )..setUint32(0, wordIndex["apple"]!, Endian.big)).buffer.asUint8List(),
     );
 
-  final base = "${dir.path}/fixture";
+  final base = "${dir.path}/$name";
   await File("$base.dict").writeAsBytes(dictBytes.takeBytes());
   await File("$base.idx").writeAsBytes(idx.takeBytes());
   await File("$base.syn").writeAsBytes(syn.takeBytes());
@@ -116,6 +116,44 @@ void main() {
 
   test("wrapContentWithResources leaves StarDict HTML untouched", () {
     expect(dict.wrapContentWithResources("<p>x</p>"), "<p>x</p>");
+  });
+
+  test("links a stylesheet named after the dictionary", () async {
+    final cssDir = await Directory.systemTemp.createTemp("stardict_css_test");
+    addTearDown(() => cssDir.delete(recursive: true));
+    final base = await writeFixture(cssDir);
+    await File("$base.css").writeAsString("body { color: red; }");
+
+    final withCss = Stardict(path: base)..id = 43;
+    addTearDown(() => withCss.close());
+    await withCss.init();
+
+    expect(withCss.hasCss, isTrue);
+    expect(
+      withCss.wrapContentWithResources("<p>x</p>"),
+      '<link rel="stylesheet" href="fixture.css">\n<p>x</p>',
+    );
+    expect(await withCss.readResourceFile("fixture.css"), isNotNull);
+  });
+
+  test("percent-encodes a non-ASCII stylesheet name", () async {
+    final cssDir = await Directory.systemTemp.createTemp("stardict_css_zh");
+    addTearDown(() => cssDir.delete(recursive: true));
+    final base = await writeFixture(cssDir, name: "中文词典");
+    await File("$base.css").writeAsString("body { color: red; }");
+
+    final withCss = Stardict(path: base)..id = 44;
+    addTearDown(() => withCss.close());
+    await withCss.init();
+
+    expect(withCss.hasCss, isTrue);
+    expect(
+      withCss.wrapContentWithResources("<p>x</p>"),
+      contains('href="${Uri.encodeComponent("中文词典")}.css"'),
+    );
+    // Both the desktop server and the Android path handler decode the request
+    // path before it reaches the dictionary.
+    expect(await withCss.readResourceFile("中文词典.css"), isNotNull);
   });
 
   test("structured fields are cached for entries read by lookup", () async {

@@ -850,9 +850,13 @@ void InAppWebView::InitWebView(const InAppWebViewCreationParams& params) {
   // WPEDisplayHeadless doesn't track real display scale, so we need to get it from GTK
   // and manually notify WPE when it changes
   if (gtk_window_ != nullptr) {
-    // Get initial scale from GTK window (which tracks the actual display scale)
+    // Get initial scale from GTK window (which tracks the actual display scale).
+    // Only a first guess: the window's scale-factor is an integer, so a 1.5x
+    // desktop reports 1. Once Flutter reports its device pixel ratio, that value
+    // wins (see setScaleFactor).
     int gtk_scale = gtk_widget_get_scale_factor(GTK_WIDGET(gtk_window_));
-    if (gtk_scale > 0 && static_cast<double>(gtk_scale) != scale_factor_) {
+    if (!scale_from_flutter_ && gtk_scale > 0 &&
+        static_cast<double>(gtk_scale) != scale_factor_) {
       scale_factor_ = static_cast<double>(gtk_scale);
       // Notify WPE about the real display scale
       if (wpe_toplevel_ != nullptr) {
@@ -866,7 +870,14 @@ void InAppWebView::InitWebView(const InAppWebViewCreationParams& params) {
           auto* self = static_cast<InAppWebView*>(user_data);
           auto* widget = GTK_WIDGET(object);
           int new_scale = gtk_widget_get_scale_factor(widget);
-          
+
+          // GTK only reports integer scales, so following it would flatten the
+          // 1.5x (or any fractional) ratio Flutter reported into 1x. Flutter
+          // sends its new ratio when the metrics change, so leave it alone.
+          if (self->scale_from_flutter_) {
+            return;
+          }
+
           if (new_scale > 0 && static_cast<double>(new_scale) != self->scale_factor_) {
             self->scale_factor_ = static_cast<double>(new_scale);
             
@@ -2956,8 +2967,15 @@ void InAppWebView::schedulePendingResize() {
       nullptr);
 }
 
-void InAppWebView::setScaleFactor(double scale_factor) {
-  if (scale_factor == scale_factor_)
+void InAppWebView::setScaleFactor(double scale_factor, bool from_flutter) {
+  if (from_flutter && scale_factor > 0) {
+    // Flutter's device pixel ratio is what the texture this view feeds is drawn
+    // with, and unlike the window's scale-factor it can be fractional. Record
+    // that this value is authoritative so a GTK scale change cannot undo it.
+    scale_from_flutter_ = true;
+  }
+  // WPE requires a positive scale; `!(x > 0)` also rejects NaN.
+  if (!(scale_factor > 0) || scale_factor == scale_factor_)
     return;
   scale_factor_ = scale_factor;
 

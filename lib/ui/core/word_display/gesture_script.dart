@@ -19,14 +19,14 @@
 /// new button shows up only in `PointerMoveEvent.buttons`. The Linux platform
 /// view forwards that edge to WPE, and this listener is a second net on top.
 /// WebView2 (Windows) has no such forwarding — its `onPointerMove` only moves the
-/// cursor, so the page often never sees the second button — and its `e.buttons`
-/// reports the right bit as held even for a left-only press (notably once the
-/// app's own context menu has opened), so reading the bitmask there turns a plain
-/// left press into a false rocker. That is why the fallback stays off Windows.
+/// cursor — and its `e.buttons` reports the right bit as held even for a
+/// left-only press (notably once the app's own context menu has opened), so
+/// reading the bitmask there turns a plain left press into a false rocker.
+/// That is why the fallback stays off Windows.
 ///
-/// Known limitation: without that forwarding the rocker on Windows is only
-/// intermittent. Fixing it properly means forwarding the button edge in the
-/// Windows plugin's `onPointerMove`, exactly as the Linux platform view does.
+/// Windows watches Flutter's pointer events outside the WebView instead and
+/// calls the `window.ciyueRocker` hook exported below on the right-button
+/// edge; see `WindowsRockerEdgeDetector`.
 String gestureScript({bool bitmaskFallback = true}) {
   final bitmaskFallbackBlock = bitmaskFallback
       ? """
@@ -59,12 +59,20 @@ String gestureScript({bool bitmaskFallback = true}) {
   }
 
   function sendRocker() {
-    // A right press can surface as mousedown, as contextmenu, or as the
-    // move-event bitmask below. Send it exactly once per press.
+    // A right press can surface as mousedown, as contextmenu, as the
+    // move-event bitmask below, or as the Windows hook. Send it exactly once
+    // per press.
     if (rockerSent) return;
     rockerSent = true;
     send('rocker', 1);
   }
+
+  // WebView2 is not told about a chorded right press, so the app watches
+  // Flutter's pointer events and calls this hook on the button edge. The
+  // left-button state and the one-shot guard stay here in the page.
+  window.ciyueRocker = function () {
+    if (leftDown) sendRocker();
+  };
 
   document.addEventListener('mousedown', function (e) {
     suppressClick = false;
