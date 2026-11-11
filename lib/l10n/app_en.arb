@@ -506,6 +506,8 @@
   "@floatingWindow": {},
   "loading": "Loading...",
   "@loading": {},
+  "dictionaryIndexing": "Building the dictionary index. The first open of a large ZIM can take several minutes.",
+  "@dictionaryIndexing": {},
   "addingWord": "Adding Word: {word}",
   "@addingWord": {
     "placeholders": {

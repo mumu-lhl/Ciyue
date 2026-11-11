@@ -438,8 +438,28 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               body: firstLoadedDictId != -1
                   ? _buildWebView(firstLoadedDictId)
                   : Center(
-                      child: CircularProgressIndicator(
-                        color: Theme.of(context).colorScheme.primary,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 200,
+                              child: LinearProgressIndicator(),
+                            ),
+                            if (dictManager.dicts.values.any(
+                              (dict) => dict.isLoading,
+                            )) ...[
+                              const SizedBox(height: 16),
+                              Text(
+                                AppLocalizations.of(context)!
+                                    .dictionaryIndexing,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ),
             );
