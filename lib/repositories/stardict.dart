@@ -6,6 +6,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/base_dictionary.dart";
 import "package:ciyue/services/lookup_keys.dart";
+import "package:ciyue/services/media_tags.dart";
 import "package:ciyue/services/zip_archive_reader.dart";
 import "package:ciyue/services/stardict_html.dart";
 import "package:ciyue/utils.dart";
@@ -19,6 +20,13 @@ import "package:path/path.dart";
 class Stardict extends BaseLoadedDictionary {
   late final StarDictReader reader;
   bool _readerInitialized = false;
+
+  /// Whether the dictionary ships a stylesheet named after itself.
+  ///
+  /// StarDict has no place in the `.ifo` for app-wide styles, so a converter
+  /// or the reader can drop `<name>.css` next to the files (or into `res/`
+  /// and `res.zip`). It is linked from every entry when present.
+  bool hasCss = false;
 
   Stardict({required super.path});
 
@@ -84,6 +92,9 @@ class Stardict extends BaseLoadedDictionary {
       await reader.init();
       setDefaultTitle();
       entriesTotal = reader.wordCount;
+      // The stylesheet can sit next to the dictionary or inside res/ and
+      // res.zip; readResourceFile already knows all three places.
+      hasCss = await readResourceFile("${basename(path)}.css") != null;
       if (isDesktop()) {
         await startDesktopServer(onReadResource: readResourceFile);
       }
@@ -97,6 +108,7 @@ class Stardict extends BaseLoadedDictionary {
 
   @override
   Future<void> onClose() async {
+    hasCss = false;
     _structuredFieldsCache.clear();
     for (final reader in _zipReaders.values) {
       reader?.close();
@@ -194,6 +206,19 @@ class Stardict extends BaseLoadedDictionary {
     final reader = file.existsSync() ? ZipArchiveReader(file) : null;
     _zipReaders[archivePath] = reader;
     return reader;
+  }
+
+  /// Links the dictionary's own stylesheet ahead of the entry HTML.
+  ///
+  /// Entries are HTML fragments, so a `<link>` before them is valid, the same
+  /// convention MDict uses for `<name>.css`.
+  @override
+  String wrapContentWithResources(String content) {
+    final header = hasCss
+        ? '<link rel="stylesheet" href="'
+              '${Uri.encodeComponent(basename(path))}.css">\n'
+        : "";
+    return header + rewriteMediaTags(content);
   }
 
   @override

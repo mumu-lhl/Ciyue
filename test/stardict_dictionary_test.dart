@@ -118,6 +118,24 @@ void main() {
     expect(dict.wrapContentWithResources("<p>x</p>"), "<p>x</p>");
   });
 
+  test("links a stylesheet named after the dictionary", () async {
+    final cssDir = await Directory.systemTemp.createTemp("stardict_css_test");
+    addTearDown(() => cssDir.delete(recursive: true));
+    final base = await writeFixture(cssDir);
+    await File("$base.css").writeAsString("body { color: red; }");
+
+    final withCss = Stardict(path: base)..id = 43;
+    addTearDown(() => withCss.close());
+    await withCss.init();
+
+    expect(withCss.hasCss, isTrue);
+    expect(
+      withCss.wrapContentWithResources("<p>x</p>"),
+      '<link rel="stylesheet" href="fixture.css">\n<p>x</p>',
+    );
+    expect(await withCss.readResourceFile("fixture.css"), isNotNull);
+  });
+
   test("structured fields are cached for entries read by lookup", () async {
     await dict.readExactEntries(["apple", "banana"]);
 
