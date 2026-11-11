@@ -121,7 +121,17 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
   /// only when the dictionary really changed.
   Key _entryViewKey() {
     final dict = ref.read(dictManagerProvider).dicts[widget.dictId];
-    return ValueKey("entry_${widget.dictId}_${identityHashCode(dict)}");
+    // The theme reaches a page through its user scripts, which only run when
+    // the view is created. Keying on it rebuilds the view on a theme flip,
+    // the same way a dictionary-group switch rebuilds the tab.
+    final settings = ref.read(settingsProvider);
+    final isLightTheme =
+        settings.themeMode == ThemeMode.light ||
+        settings.themeMode == ThemeMode.system &&
+            MediaQuery.of(context).platformBrightness == Brightness.light;
+    return ValueKey(
+      "entry_${widget.dictId}_${identityHashCode(dict)}_$isLightTheme",
+    );
   }
 
   Widget _buildContent(String content, String? anchor) {
