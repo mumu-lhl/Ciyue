@@ -35,6 +35,16 @@ void main() {
       expect(script, contains("rockerSent = false;"));
     });
 
+    test("exports a rocker hook for the Windows pointer edge", () {
+      expect(script, contains("window.ciyueRocker = function ()"));
+      expect(script, contains("if (leftDown) sendRocker();"));
+      // Windows runs with the bitmask fallback off, so the hook must not
+      // depend on it.
+      final windows = gestureScript(bitmaskFallback: false);
+      expect(windows, contains("window.ciyueRocker = function ()"));
+      expect(windows, isNot(contains("(e.buttons & 2) !== 0")));
+    });
+
     test("falls back to the move-event button bitmask", () {
       expect(script, contains("document.addEventListener('mousemove'"));
       expect(script, contains("(e.buttons & 2) !== 0"));

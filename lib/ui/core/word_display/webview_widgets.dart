@@ -20,6 +20,7 @@ import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
 import "package:ciyue/ui/core/word_display/resource_url_script.dart";
 import "package:ciyue/ui/core/word_display/selection_style_script.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
+import "package:ciyue/ui/core/word_display/windows_rocker_edge.dart";
 import "package:ciyue/ui/pages/main/home/shortcuts.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/gestures.dart";
@@ -848,6 +849,20 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   /// into the overlay coordinates `showMenu` needs.
   final _webViewAnchorKey = GlobalKey();
 
+  /// WebView2 never sees a chorded right press; see [WindowsRockerEdgeDetector].
+  final _windowsRockerEdge = WindowsRockerEdgeDetector();
+
+  void _updateWindowsButtonEdge(int buttons) {
+    if (!_windowsRockerEdge.update(buttons)) return;
+    final controller = _desktopController;
+    if (controller == null) return;
+    unawaited(
+      controller.evaluateJavascript(
+        source: "window.ciyueRocker && window.ciyueRocker()",
+      ),
+    );
+  }
+
   void _handleDesktopContextMenu(String payload) {
     final request = parseDesktopContextMenu(payload);
     if (request == null || request.word.isEmpty) return;
@@ -1328,7 +1343,17 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
     // the WebView scroll internally.
     // The key is the anchor for right-click CSS coordinates. Keep it outside
     // the FutureBuilders so a rebuild that swaps the WebView does not move it.
-    final anchored = KeyedSubtree(key: _webViewAnchorKey, child: webview);
+    Widget wrapped = KeyedSubtree(key: _webViewAnchorKey, child: webview);
+    if (Platform.isWindows) {
+      // Only WebView2 misses the chorded second button. Linux forwards it in
+      // its platform view and macOS already sees the right press.
+      wrapped = Listener(
+        onPointerDown: (e) => _updateWindowsButtonEdge(e.buttons),
+        onPointerMove: (e) => _updateWindowsButtonEdge(e.buttons),
+        onPointerUp: (e) => _updateWindowsButtonEdge(e.buttons),
+        child: wrapped,
+      );
+    }
     if (widget.isExpansion) {
       final height =
           ref.watch(
@@ -1340,11 +1365,11 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
       // ExpansionPanelList gives unbounded height; the Linux platform view
       // uses SizedBox.expand internally so it needs a finite constraint.
       // Use at least 1 to avoid zero-size issues before JS reports height.
-      return SizedBox(height: height > 0 ? height : 1, child: anchored);
+      return SizedBox(height: height > 0 ? height : 1, child: wrapped);
     }
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height),
-      child: anchored,
+      child: wrapped,
     );
   }
 }
