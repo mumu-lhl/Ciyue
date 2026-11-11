@@ -57,6 +57,7 @@ class Zim extends BaseLoadedDictionary {
     _ensureReader();
     await _initReaderWithCache();
     setDefaultTitle();
+    entriesTotal = reader.wordCount;
     await dictionaryListDao.add(path, title, type: DictionaryType.zim);
     isLoading = false;
   }
@@ -111,15 +112,16 @@ class Zim extends BaseLoadedDictionary {
 
     await reader.init();
     if (cache != null) {
-      // Cache the parsed index in the background for instant future cold starts
-      unawaited(() async {
-        try {
-          final cidxBytes = await reader.exportCidx();
-          await cache.writeAsBytes(cidxBytes, flush: true);
-        } catch (e, st) {
-          talker.error("Failed to write ZIM .cidx cache for $path", e, st);
-        }
-      }());
+      // Write the snapshot before returning. The import closes this reader as
+      // soon as add() finishes, and closing marks the reader uninitialized,
+      // so a background export raced close() and silently never produced a
+      // cache for large archives — the next open parsed everything again.
+      try {
+        final cidxBytes = await reader.exportCidx();
+        await cache.writeAsBytes(cidxBytes, flush: true);
+      } catch (e, st) {
+        talker.error("Failed to write ZIM .cidx cache for $path", e, st);
+      }
     }
   }
 
