@@ -119,23 +119,23 @@ Only the entry is scaled, the rest of the window keeps its size. The level is re
 | `Space` | Show the answer | Flashcards |
 | `1` … `4` | Rate the card | Flashcards |
 
-## Mouse gestures (desktop)
+## Mouse gestures
 
 Two mouse gestures switch tabs while reading an entry. **Settings → Other** lets each gesture be assigned its own action: off, switch dictionary tabs, or switch word tabs.
 
 | Gesture | How | Default action |
 |---|---|---|
-| Rocker | Hold the **left** button and click the **right** one | Next dictionary tab |
+| Rocker | Hold **left**, click **right** for next or **middle** for previous | Next / previous dictionary tab (wraps) |
 | Wheel | Hold the **left** button and scroll up / down | Previous / next word tab |
 
-Both gestures start by holding the left button: clicking the right one is a rocker, scrolling is a wheel gesture, and the two do not conflict. The left button is used instead of the middle one because the middle button is usually the wheel itself — holding it down while scrolling is awkward.
+Both gestures start by holding the left button: clicking the right or middle one is a rocker, scrolling is a wheel gesture, and the two do not conflict. The left button is the press-and-hold key so that a rocker and a wheel gesture can share it without ambiguity.
 
-Rocker only has this one direction: dictionary tabs wrap around, so a few presses cycle back to the start. The wheel gesture is bidirectional, which suits moving back and forth through a longer list of word tabs.
+Rocker is bidirectional too: the right button steps forward, the middle button steps back, and dictionary tabs wrap around. The wheel gesture is also bidirectional, which suits moving back and forth through a longer list of word tabs.
 
 In the **Expansion** style there are no dictionary tabs, so that action falls back to switching word tabs instead of doing nothing.
 
-- Windows, Linux and macOS only; Android has no right button or wheel.
-- Only a right click while the left button is held counts as a gesture, and it does not open a menu. An ordinary right click opens Ciyue's own menu on Windows and Linux, and the system menu on macOS. On macOS `Ctrl`+left click is a system-level right click and is excluded from the gesture.
+- Works on Windows, Linux, macOS, and Android with a real mouse (for example inside Waydroid); the on-screen touch has no right or middle button.
+- Only a right or middle click while the left button is held counts as a rocker, and it does not open a menu. An ordinary right click opens Ciyue's own menu on Windows and Linux, and the system menu on macOS. On macOS `Ctrl`+left click is a system-level right click and is excluded from the gesture.
 - Wheel events are throttled so one physical scroll does not jump several tabs, and the page's own scrolling is stopped while the left button is held.
 - The click that follows a gesture is swallowed, so it cannot open a dictionary link by accident.
 

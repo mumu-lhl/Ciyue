@@ -1222,7 +1222,7 @@
   "@languageNameEl": {},
   "mouseGestures": "鼠标手势",
   "@mouseGestures": {},
-  "rockerGesture": "摇杆手势（按住左键点右键）",
+  "rockerGesture": "摇杆手势（按住左键点右键或中键）",
   "@rockerGesture": {},
   "wheelGesture": "滚轮手势（按住左键滚动）",
   "@wheelGesture": {},
