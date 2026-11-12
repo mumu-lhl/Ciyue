@@ -3,8 +3,6 @@ package org.eu.mumulhl.ciyue
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import io.flutter.util.PathUtils
-import java.io.File
 
 class ProcessTextActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,12 +14,19 @@ class ProcessTextActivity : Activity() {
             return
         }
 
-        val dataDirectory = PathUtils.getDataDirectory(applicationContext)
-        val disableFloatingWindowFile = File(dataDirectory, "disable_floating_window")
-
-        if (!disableFloatingWindowFile.exists()) {
+        if (FloatingWindowSettings.isEnabled(this)) {
+            // The reader decides the style by supplying the selected word's
+            // geometry: with it the popup becomes a half-screen window that
+            // avoids the word, without it a centred card over the reader.
+            val mode = if (ColorDict.hasGeometry(intent)) {
+                FloatingWindowSettings.Mode.HALF
+            } else {
+                FloatingWindowSettings.Mode.TRANSPARENT
+            }
             val floatingWindowIntent = Intent(this, FloatingWindowActivity::class.java).apply {
                 putExtra(FloatingWindowEngine.EXTRA_TEXT_TO_SHOW, text)
+                putExtra(FloatingWindowSettings.EXTRA_MODE, mode.value)
+                ColorDict.forwardGeometry(this@ProcessTextActivity.intent, this)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             }

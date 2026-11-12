@@ -37,8 +37,13 @@ class EngineConfigurator(context: Context) {
     private var nextProcessTextId = 0L
     var exportContent = ""
 
-    private data class ProcessTextRequest(val id: Long, val text: String) {
-        fun toMap(): Map<String, Any> = mapOf("id" to id, "text" to text)
+    private data class ProcessTextRequest(
+        val id: Long,
+        val text: String,
+        val mode: String,
+    ) {
+        fun toMap(): Map<String, Any> =
+            mapOf("id" to id, "text" to text, "mode" to mode)
     }
 
     interface Callback {
@@ -399,14 +404,17 @@ class EngineConfigurator(context: Context) {
         callback = null
     }
 
-    fun handleProcessText(text: String) {
+    fun handleProcessText(
+        text: String,
+        mode: String = FloatingWindowSettings.Mode.TRANSPARENT.value,
+    ) {
         if (text.isBlank()) {
             return
         }
 
         // Keep the latest request until Dart acknowledges it. The method call
         // may arrive before the Dart entrypoint has installed its handler.
-        val request = ProcessTextRequest(++nextProcessTextId, text)
+        val request = ProcessTextRequest(++nextProcessTextId, text, mode)
         pendingProcessText = request
         methodChannel?.invokeMethod("processText", request.toMap())
     }

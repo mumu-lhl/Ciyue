@@ -5,13 +5,13 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/startup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/services/floating_window_preferences.dart";
 import "package:ciyue/ui/core/badges.dart";
 import "package:ciyue/ui/core/settings_group.dart";
 import "package:ciyue/ui/pages/settings/mouse_gesture_selectors.dart";
 import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
-import "package:path_provider/path_provider.dart";
 
 class FloatingWindow extends StatefulWidget {
   const FloatingWindow({super.key});
@@ -21,57 +21,127 @@ class FloatingWindow extends StatefulWidget {
 }
 
 class _FloatingWindowState extends State<FloatingWindow> {
-  bool _isFloatingWindowEnabled = true;
+  final FloatingWindowPreferences _preferences = FloatingWindowPreferences();
+  bool _enabled = true;
+  FloatingWindowPanelFraction _fraction =
+      FloatingWindowPanelFraction.defaultFraction;
 
   @override
   void initState() {
     super.initState();
-    _checkFloatingWindowStatus();
+    _load();
   }
 
-  Future<File> _getDisableFloatingWindowFile() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return File("${directory.path}/disable_floating_window");
-  }
-
-  Future<void> _checkFloatingWindowStatus() async {
-    final file = await _getDisableFloatingWindowFile();
-    final exists = await file.exists();
+  Future<void> _load() async {
+    final mode = await _preferences.readMode();
+    final fraction = await _preferences.readPanelFraction();
+    if (!mounted) return;
     setState(() {
-      _isFloatingWindowEnabled = !exists;
+      _enabled = mode != FloatingWindowMode.off;
+      _fraction = fraction;
     });
   }
 
-  Future<void> _toggleFloatingWindow(bool value) async {
-    final file = await _getDisableFloatingWindowFile();
-    if (value) {
-      if (await file.exists()) {
-        await file.delete();
-      }
-    } else {
-      if (!await file.exists()) {
-        await file.create();
-      }
-    }
-    setState(() {
-      _isFloatingWindowEnabled = value;
-    });
+  Future<void> _setEnabled(bool enabled) async {
+    await _preferences.writeMode(
+      enabled ? FloatingWindowMode.transparent : FloatingWindowMode.off,
+    );
+    if (!mounted) return;
+    setState(() => _enabled = enabled);
+  }
+
+  Future<void> _setFraction(FloatingWindowPanelFraction fraction) async {
+    floatingWindowPanelFraction.value = fraction;
+    setState(() => _fraction = fraction);
+    await _preferences.writePanelFraction(fraction);
   }
 
   @override
   Widget build(BuildContext context) {
-    return SwitchListTile(
-      secondary: const Icon(Icons.window),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(AppLocalizations.of(context)!.floatingWindow),
-          const SizedBox(width: 8),
-          const BaseBadge(text: "Beta"),
+    final locale = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SwitchListTile(
+          secondary: const Icon(Icons.window),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(locale.floatingWindow),
+              const SizedBox(width: 8),
+              const BaseBadge(text: "Beta"),
+            ],
+          ),
+          subtitle: Text(locale.floatingWindowSwitchDescription),
+          value: _enabled,
+          onChanged: _setEnabled,
+        ),
+        if (_enabled) ...[
+          _PanelFractionSlider(
+            icon: Icons.width_full,
+            title: locale.floatingWindowCardWidth,
+            value: _fraction.width,
+            min: 0.5,
+            max: 1.0,
+            onChanged: (value) =>
+                setState(() => _fraction = _fraction.copyWith(width: value)),
+            onChangeEnd: (value) =>
+                _setFraction(_fraction.copyWith(width: value)),
+          ),
+          _PanelFractionSlider(
+            icon: Icons.height,
+            title: locale.floatingWindowCardHeight,
+            value: _fraction.height,
+            min: 0.4,
+            max: 1.0,
+            onChanged: (value) =>
+                setState(() => _fraction = _fraction.copyWith(height: value)),
+            onChangeEnd: (value) =>
+                _setFraction(_fraction.copyWith(height: value)),
+          ),
         ],
+      ],
+    );
+  }
+}
+
+/// One percentage slider for the centred card. The value is previewed while
+/// dragging and written to disk when the drag ends.
+class _PanelFractionSlider extends StatelessWidget {
+  const _PanelFractionSlider({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    required this.onChangeEnd,
+  });
+
+  final IconData icon;
+  final String title;
+  final double value;
+  final double min;
+  final double max;
+  final ValueChanged<double> onChanged;
+  final ValueChanged<double> onChangeEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = "${(value * 100).round()}%";
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Slider(
+        value: value.clamp(min, max),
+        min: min,
+        max: max,
+        divisions: ((max - min) / 0.05).round(),
+        label: percent,
+        onChanged: onChanged,
+        onChangeEnd: onChangeEnd,
       ),
-      value: _isFloatingWindowEnabled,
-      onChanged: _toggleFloatingWindow,
+      trailing: Text(percent),
     );
   }
 }

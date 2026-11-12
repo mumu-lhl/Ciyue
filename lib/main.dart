@@ -9,11 +9,11 @@ import "package:ciyue/core/localization_delegates.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/command_line.dart";
 import "package:ciyue/services/command_line_actions.dart";
-import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/services/macos_command_line.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/single_instance.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/floating_window_shell.dart";
 import "package:ciyue/utils.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
@@ -190,6 +190,7 @@ void floatingWindow(List<String> args) async {
     if (searchWordFromProcessText.isEmpty && args.isNotEmpty) {
       searchWordFromProcessText = args.first.trim();
     }
+    await reloadFloatingWindowPanelFraction();
     navigateToProcessText(searchWordFromProcessText);
 
     runApp(const ProviderScope(child: Ciyue()));
@@ -448,35 +449,9 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
       return app;
     }
 
-    // The Activity window covers the display so Android can deliver edge-back
-    // gestures to it. Keep only the dictionary view visible and use the
-    // transparent area as the floating-window dismiss target.
-    return Stack(
-      alignment: Alignment.topLeft,
-      fit: StackFit.expand,
-      children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            unawaited(dismissFloatingWindow());
-          },
-          child: const SizedBox.expand(),
-        ),
-        Align(
-          alignment: Alignment.center,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 600;
-              final width = isWide ? 540.0 : constraints.maxWidth * 0.85;
-              final height = isWide
-                  ? (constraints.maxHeight * 0.7).clamp(420.0, 720.0)
-                  : constraints.maxHeight * 0.55;
-              return SizedBox(width: width, height: height, child: app);
-            },
-          ),
-        ),
-      ],
-    );
+    // The transparent mode keeps a centred card with a tap-outside dismiss
+    // target; the half-screen mode fills its whole opaque window instead.
+    return floatingWindowView(child: app);
   }
 
   @override

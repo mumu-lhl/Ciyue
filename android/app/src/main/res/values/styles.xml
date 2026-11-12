@@ -20,13 +20,22 @@
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
 
-    <style name="Theme.Transparent" parent="@android:style/Theme.Translucent.NoTitleBar">
-        <!-- The translucent parent is dark even in day mode. WebView uses
+    <!-- Dialog-style parent, the same shape ColorDict popups use: the
+         window's bounds come from Window.setLayout/setGravity instead of
+         being forced to the whole display, so the half-screen mode is a
+         half-screen window from the moment it is created. Waydroid packages
+         ordinary full-screen activities as separate desktop windows and
+         leaves their old surface behind on a resize, which painted a black
+         rectangle above the popup. -->
+    <style name="Theme.Transparent" parent="@android:style/Theme.Holo.Dialog.NoActionBar">
+        <!-- The dialog parent is dark even in day mode. WebView uses
              isLightTheme for prefers-color-scheme, independently of Flutter's
              algorithmicDarkeningAllowed setting. Match NormalTheme. -->
         <item name="android:isLightTheme">@bool/floating_window_is_light_theme</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowAnimationStyle">@null</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:backgroundDimEnabled">false</item>

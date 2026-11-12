@@ -1,7 +1,12 @@
 package org.eu.mumulhl.ciyue
 
+import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
+import android.util.DisplayMetrics
+import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
@@ -30,6 +35,7 @@ class FloatingWindowActivity : FlutterActivity() {
     }
 
     private var releaseEngineOnDestroy = false
+    private var mode = FloatingWindowSettings.Mode.TRANSPARENT
 
     // Tell FlutterActivity that the engine is cached and owned by the engine
     // holder. This prevents the Activity from treating it as a new engine on
@@ -50,24 +56,78 @@ class FloatingWindowActivity : FlutterActivity() {
         }
     }
 
+    private fun readConfiguration(intent: Intent?) {
+        mode = FloatingWindowSettings.Mode.parse(
+            intent?.getStringExtra(FloatingWindowSettings.EXTRA_MODE),
+        )
+    }
+
+    @Suppress("DEPRECATION")
+    private fun displaySize(): Pair<Int, Int> {
+        val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bounds = manager.maximumWindowMetrics.bounds
+            return bounds.width() to bounds.height()
+        }
+        val metrics = DisplayMetrics()
+        manager.defaultDisplay.getRealMetrics(metrics)
+        return metrics.widthPixels to metrics.heightPixels
+    }
+
+    /**
+     * Give the window its final size as soon as it is created.
+     *
+     * The Activity uses a dialog-style theme (like the ColorDict popups
+     * readers expect), so Window.setLayout/setGravity fully control the
+     * window. Resizing a full-screen translucent Activity after the fact
+     * leaves the old full-screen surface behind in Waydroid, which shows up
+     * as a black rectangle above the popup.
+     *
+     * In the half-screen mode the reader tells us where the selected word is
+     * through the ColorDict extras; Dart fills the whole window, so there are
+     * no transparent pixels left either.
+     */
+    private fun applyWindowLayout() {
+        if (mode != FloatingWindowSettings.Mode.HALF) {
+            window.setLayout(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+            )
+            window.setGravity(Gravity.TOP or Gravity.START)
+            return
+        }
+
+        val geometry = ColorDict.geometry(
+            intent,
+            FloatingWindowSettings.DEFAULT_GRAVITY,
+        )
+
+        val (displayWidth, displayHeight) = displaySize()
+        val height = (geometry.height ?: (displayHeight * 0.5f).toInt())
+            .coerceAtMost(displayHeight)
+        val width = geometry.width?.coerceAtMost(displayWidth)
+            ?: WindowManager.LayoutParams.MATCH_PARENT
+        window.setLayout(width, height)
+        window.setGravity(geometry.gravity or Gravity.START)
+
+        val layoutParams = window.attributes
+        layoutParams.x = geometry.marginLeft - geometry.marginRight
+        layoutParams.y = geometry.marginTop - geometry.marginBottom
+        window.attributes = layoutParams
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        readConfiguration(intent)
         FloatingWindowEngine.prepare(
             this,
             intent?.getStringExtra(FloatingWindowEngine.EXTRA_TEXT_TO_SHOW).orEmpty(),
+            mode.value,
         )
         activityReference = WeakReference(this)
         applySecureFlag()
         super.onCreate(savedInstanceState)
 
-        // Keep the Activity window full-screen so Android's edge-back gesture
-        // targets this Activity instead of the window underneath it. The
-        // Flutter content is constrained to the visible floating panel in the
-        // Dart layout.
-        val layoutParams = WindowManager.LayoutParams()
-        layoutParams.copyFrom(window.attributes)
-        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
-        layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT
-        window.attributes = layoutParams
+        applyWindowLayout()
     }
 
     private fun keepFlutterViewVisible() {
@@ -99,10 +159,20 @@ class FloatingWindowActivity : FlutterActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        readConfiguration(intent)
+        applyWindowLayout()
         FloatingWindowEngine.prepare(
             this,
             intent.getStringExtra(FloatingWindowEngine.EXTRA_TEXT_TO_SHOW).orEmpty(),
+            mode.value,
         )
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // The fallback half-screen height is derived from the display size,
+        // so a rotation or a window resize has to recompute it.
+        applyWindowLayout()
     }
 
     private fun dismiss() {

@@ -29,7 +29,11 @@ object FloatingWindowEngine {
     private var configurator: EngineConfigurator? = null
     private var trimMemoryReleaseRegistered = false
 
-    fun prepare(context: Context, text: String): FlutterEngine {
+    fun prepare(
+        context: Context,
+        text: String,
+        mode: String = FloatingWindowSettings.Mode.TRANSPARENT.value,
+    ): FlutterEngine {
         registerTrimMemoryRelease(context)
 
         val cache = FlutterEngineCache.getInstance()
@@ -40,7 +44,7 @@ object FloatingWindowEngine {
                 configurator = it
             }
             currentConfigurator.configure(cachedEngine)
-            currentConfigurator.handleProcessText(text)
+            currentConfigurator.handleProcessText(text, mode)
             return cachedEngine
         }
 
@@ -48,7 +52,7 @@ object FloatingWindowEngine {
         val newConfigurator = createConfigurator(context)
         try {
             newConfigurator.configure(newEngine)
-            newConfigurator.handleProcessText(text)
+            newConfigurator.handleProcessText(text, mode)
             newEngine.dartExecutor.executeDartEntrypoint(
                 DartExecutor.DartEntrypoint(
                     FlutterInjector.instance().flutterLoader().findAppBundlePath(),
