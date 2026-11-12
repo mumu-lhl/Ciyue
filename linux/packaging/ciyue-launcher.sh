@@ -36,25 +36,15 @@ if [ -z "${WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS:-}" ]; then
   fi
 fi
 
-# If the host system has no accessible DRM device, WebKit's DMA-BUF
-# renderer cannot create a GBM device. Gracefully disable the DMA-BUF renderer
-# to fall back to shared memory (SHM) rendering.
+# The accessible-DRM probe lives in the plugin, not here.
 #
-# The plugin treats this variable as a request for the whole software path, not
-# just for the WebProcess: ResolveRenderingMode() sees it and selects the
-# pixel-buffer texture to match. Setting it here alone used to desynchronise the
-# two sides, and the host silently discarded every frame.
-if [ -z "${WEBKIT_DISABLE_DMABUF_RENDERER:-}" ]; then
-  HAS_DRM_DEVICE=0
-  for dev in /dev/dri/renderD* /dev/dri/card*; do
-    if [ -e "$dev" ] && [ -r "$dev" ] && [ -w "$dev" ]; then
-      HAS_DRM_DEVICE=1
-      break
-    fi
-  done
-  if [ "$HAS_DRM_DEVICE" -eq 0 ]; then
-    export WEBKIT_DISABLE_DMABUF_RENDERER=1
-  fi
-fi
+# ResolveRenderingMode() already globs /dev/dri and, when no node is usable,
+# selects the software path: it sets both the host texture type and the
+# WebProcess's DMA-BUF switch together, so the three layers cannot disagree.
+# Keeping a second copy of the probe here gave the launcher its own opinion,
+# and a mismatch silently produced a blank WebView with a live DOM.
+#
+# The plugin runs during plugin registration, before any WebProcess is spawned,
+# so it still reaches the process that reads the variable.
 
 exec "$HERE/ciyue.bin" "$@"

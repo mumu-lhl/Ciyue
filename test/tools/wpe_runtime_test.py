@@ -83,12 +83,28 @@ class LinuxPackagingDependenciesTest(unittest.TestCase):
         self.assertIn("mesa-libgbm", spec)
         self.assertIn("libdrm", spec)
 
-    def test_launcher_checks_sandbox_and_drm_availability(self):
+    def test_launcher_checks_sandbox_availability(self):
         launcher = (ROOT / "linux/packaging/ciyue-launcher.sh").read_text()
         self.assertIn("WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS", launcher)
         self.assertIn("bwrap", launcher)
         self.assertIn("xdg-dbus-proxy", launcher)
-        self.assertIn("WEBKIT_DISABLE_DMABUF_RENDERER", launcher)
+
+    def test_drm_probe_is_not_duplicated_in_the_launcher(self):
+        # The launcher used to export WEBKIT_DISABLE_DMABUF_RENDERER when no
+        # DRM node was accessible, while the plugin ran its own probe and made
+        # the same decision independently. Two opinions let the host texture
+        # type and the WebProcess buffer type disagree, which renders a blank
+        # WebView while its DOM keeps working.
+        launcher = (ROOT / "linux/packaging/ciyue-launcher.sh").read_text()
+        self.assertNotIn("export WEBKIT_DISABLE_DMABUF_RENDERER", launcher)
+        self.assertNotIn("HAS_DRM_DEVICE", launcher)
+
+        rendering = (
+            ROOT
+            / "packages/flutter_inappwebview_linux/linux/utils/software_rendering.cc"
+        ).read_text()
+        self.assertIn("WEBKIT_DISABLE_DMABUF_RENDERER", rendering)
+        self.assertIn("HasAccessibleDrmNode", rendering)
 
     def test_bundle_excludes_host_graphics_libraries(self):
         sys.path.insert(0, str(ROOT / "tools"))
