@@ -245,7 +245,11 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
       source: keyBridgeScript(),
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
-    if (isDesktop)
+    // Mouse gestures are also useful on Android with a mouse (or in Waydroid,
+    // which maps the desktop pointer to an Android mouse input). The script
+    // already excludes a touch long-press by checking the button, so a plain
+    // tap-and-hold never reaches a rocker.
+    if (isDesktop || Platform.isAndroid)
       UserScript(
         source: gestureScript(bitmaskFallback: Platform.isLinux),
         injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,

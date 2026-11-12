@@ -1,9 +1,9 @@
 /// Desktop-only mouse gestures, forwarded to Dart through the key bridge.
 ///
-/// * Rocker: hold the left button and click the right one. Only this direction
-///   is supported, so the action has to be a cyclic one. The context menu is
-///   suppressed *only* while the left button is down, which leaves an ordinary
-///   right click untouched.
+/// * Rocker: hold the left button and click the right one to step forward, or
+///   the middle one to step back. Both directions share the one rocker action.
+///   The context menu is suppressed *only* while the left button is down, which
+///   leaves an ordinary right click untouched.
 /// * Wheel: scroll while the left button is held. The wheel listener has to be
 ///   non-passive so `preventDefault()` can stop the page from scrolling. The
 ///   left button also starts a rocker gesture; the event type tells them apart.
@@ -31,10 +31,14 @@ String gestureScript({bool bitmaskFallback = true}) {
   final bitmaskFallbackBlock = bitmaskFallback
       ? """
   // WPE can report an extra button only as a move event with an updated
-  // bitmask, dispatching neither mousedown nor contextmenu for it.
+  // bitmask, dispatching neither mousedown nor contextmenu for it. The right
+  // button (bit 2) rocks forward, the middle one (bit 4) rocks back.
   document.addEventListener('mousemove', function (e) {
     if (leftDown && !e.ctrlKey && (e.buttons & 2) !== 0) {
-      sendRocker();
+      sendRocker(1);
+    }
+    if (leftDown && !e.ctrlKey && (e.buttons & 4) !== 0) {
+      sendRocker(-1);
     }
   }, true);
 """
@@ -58,20 +62,21 @@ String gestureScript({bool bitmaskFallback = true}) {
     post(JSON.stringify({ kind: kind, direction: direction }));
   }
 
-  function sendRocker() {
-    // A right press can surface as mousedown, as contextmenu, as the
-    // move-event bitmask below, or as the Windows hook. Send it exactly once
-    // per press.
+  // A press can surface as mousedown, as contextmenu, as the move-event
+  // bitmask below, or as the Windows hook. Send it exactly once per press.
+  // Direction is +1 for the right button (forward) and -1 for the middle one
+  // (back), so a single rocker setting drives both ways.
+  function sendRocker(direction) {
     if (rockerSent) return;
     rockerSent = true;
-    send('rocker', 1);
+    send('rocker', direction);
   }
 
   // WebView2 is not told about a chorded right press, so the app watches
   // Flutter's pointer events and calls this hook on the button edge. The
   // left-button state and the one-shot guard stay here in the page.
   window.ciyueRocker = function () {
-    if (leftDown) sendRocker();
+    if (leftDown) sendRocker(1);
   };
 
   document.addEventListener('mousedown', function (e) {
@@ -85,7 +90,14 @@ String gestureScript({bool bitmaskFallback = true}) {
       if (leftDown) {
         e.preventDefault();
         e.stopPropagation();
-        sendRocker();
+        sendRocker(1);
+      }
+    } else if (e.button === 1) {
+      // Middle button rocks the other way (back).
+      if (leftDown) {
+        e.preventDefault();
+        e.stopPropagation();
+        sendRocker(-1);
       }
     }
   }, true);
@@ -103,7 +115,7 @@ String gestureScript({bool bitmaskFallback = true}) {
     if (leftDown && !e.ctrlKey && (e.button === 2 || rightDown)) {
       e.preventDefault();
       e.stopPropagation();
-      sendRocker();
+      sendRocker(1);
     }
   }, true);
 
@@ -134,6 +146,15 @@ $bitmaskFallbackBlock
   // A gesture ends with the left button up, which may still dispatch a click
   // on a dictionary link. Swallow that one event.
   document.addEventListener('click', function (e) {
+    if (!suppressClick) return;
+    e.preventDefault();
+    e.stopPropagation();
+    suppressClick = false;
+  }, true);
+
+  // A rocker that ends on the middle button would otherwise open a link in a
+  // new tab through auxclick; swallow it the same way as click.
+  document.addEventListener('auxclick', function (e) {
     if (!suppressClick) return;
     e.preventDefault();
     e.stopPropagation();

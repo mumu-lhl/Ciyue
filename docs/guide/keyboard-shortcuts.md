@@ -2,7 +2,7 @@
 
 Ciyue's shortcuts follow the conventions of [GoldenDict-ng](https://github.com/xiaoyifang/goldendict-ng), [EBWin](https://ebstudio.info/manual/EBWin4/EBWin4.html) and [EBMac](https://ebstudio.info/manual/EBMac/index.php): the keys you already know from other dictionaries do the same thing here.
 
-Most of them are **desktop only**, because Flutter on Android has trouble keeping the focus needed to trigger a keyboard shortcut. On Android, apart from a few shortcuts, most cannot activate reliably because the focus gets lost. Fortunately, the Android devices that actually use a keyboard are few — only UMPCs like the GPD Win Max or OneXPlayer running Waydroid, and some Android tablets and phones with a built-in keyboard. And on a UMPC you can use the desktop build anyway.
+Most of them also trigger on Android when the focus is where it needs to be. Still, the Android devices that actually use a keyboard are few — usually only UMPCs like the GPD Win Max or OneXPlayer running Waydroid, and some Android tablets and phones with a built-in keyboard. A touchscreen UMPC can run both the desktop build and the Android build inside Waydroid at the same time.
 
 ## Two levels
 
@@ -33,11 +33,11 @@ Select a word or a phrase in the entry and press `Enter` to look it up. This is 
 
 Selecting and pressing Enter beats double-clicking a single word, because in languages that do not separate words with spaces what a double-click selects is down to luck; and even in a language like English you sometimes meet compound words and phrasal verbs that a double-click cannot catch:
 
-| Language | Word to look up | A single click selects the whole word |
+| Language | Word to look up | A double click selects |
 |---|---|---|
 | German | `Bundesbank` within `Bundesbankdirektor` | `Bundesbankdirektor` |
-| Japanese | `日本語` within `日本語辞典` | `日本語辞典` |
-| Chinese | `汉语` within `现代汉语词典` | `现代汉语词典` |
+| Japanese | `組み合って` within `組み合っている` | `組み` |
+| Chinese | `鄂州` within `中华民国鄂州约法` | `鄂` or `州` |
 | English | `throw away` | `throw` or `away` |
 
 On Android, the long-press menu also offers the same lookup next to *Copy* and *Read aloud*; right-clicking a word selects it as well, and the menu's *Query* item looks up that word.
@@ -119,23 +119,23 @@ Only the entry is scaled, the rest of the window keeps its size. The level is re
 | `Space` | Show the answer | Flashcards |
 | `1` … `4` | Rate the card | Flashcards |
 
-## Mouse gestures (desktop)
+## Mouse gestures
 
 Two mouse gestures switch tabs while reading an entry. **Settings → Other** lets each gesture be assigned its own action: off, switch dictionary tabs, or switch word tabs.
 
 | Gesture | How | Default action |
 |---|---|---|
-| Rocker | Hold the **left** button and click the **right** one | Next dictionary tab |
+| Rocker | Hold **left**, click **right** for next or **middle** for previous | Next / previous dictionary tab (wraps) |
 | Wheel | Hold the **left** button and scroll up / down | Previous / next word tab |
 
-Both gestures start by holding the left button: clicking the right one is a rocker, scrolling is a wheel gesture, and the two do not conflict. The left button is used instead of the middle one because the middle button is usually the wheel itself — holding it down while scrolling is awkward.
+Both gestures start by holding the left button: clicking the right or middle one is a rocker, scrolling is a wheel gesture, and the two do not conflict. The left button is the press-and-hold key so that a rocker and a wheel gesture can share it without ambiguity.
 
-Rocker only has this one direction: dictionary tabs wrap around, so a few presses cycle back to the start. The wheel gesture is bidirectional, which suits moving back and forth through a longer list of word tabs.
+Rocker is bidirectional too: the right button steps forward, the middle button steps back, and dictionary tabs wrap around. The wheel gesture is also bidirectional, which suits moving back and forth through a longer list of word tabs.
 
 In the **Expansion** style there are no dictionary tabs, so that action falls back to switching word tabs instead of doing nothing.
 
-- Windows, Linux and macOS only; Android has no right button or wheel.
-- Only a right click while the left button is held counts as a gesture, and it does not open a menu. An ordinary right click opens Ciyue's own menu on Windows and Linux, and the system menu on macOS. On macOS `Ctrl`+left click is a system-level right click and is excluded from the gesture.
+- Works on Windows, Linux, macOS, and Android with a real mouse (for example inside Waydroid); the on-screen touch has no right or middle button.
+- Only a right or middle click while the left button is held counts as a rocker, and it does not open a menu. An ordinary right click opens Ciyue's own menu on Windows and Linux, and the system menu on macOS. On macOS `Ctrl`+left click is a system-level right click and is excluded from the gesture.
 - Wheel events are throttled so one physical scroll does not jump several tabs, and the page's own scrolling is stopped while the left button is held.
 - The click that follows a gesture is swallowed, so it cannot open a dictionary link by accident.
 
