@@ -2,7 +2,7 @@
 
 Ciyue's shortcuts follow the conventions of [GoldenDict-ng](https://github.com/xiaoyifang/goldendict-ng), [EBWin](https://ebstudio.info/manual/EBWin4/EBWin4.html) and [EBMac](https://ebstudio.info/manual/EBMac/index.php): the keys you already know from other dictionaries do the same thing here.
 
-Most of them are **desktop only**, because Flutter on Android has trouble keeping the focus needed to trigger a keyboard shortcut. On Android, apart from a few shortcuts, most cannot activate reliably because the focus gets lost. Fortunately, the Android devices that actually use a keyboard are few — only UMPCs like the GPD Win Max or OneXPlayer running Waydroid, and some Android tablets and phones with a built-in keyboard. And on a UMPC you can use the desktop build anyway.
+Most of them also trigger on Android when the focus is where it needs to be. Still, the Android devices that actually use a keyboard are few — usually only UMPCs like the GPD Win Max or OneXPlayer running Waydroid, and some Android tablets and phones with a built-in keyboard. A touchscreen UMPC can run both the desktop build and the Android build inside Waydroid at the same time.
 
 ## Two levels
 
@@ -33,11 +33,11 @@ Select a word or a phrase in the entry and press `Enter` to look it up. This is 
 
 Selecting and pressing Enter beats double-clicking a single word, because in languages that do not separate words with spaces what a double-click selects is down to luck; and even in a language like English you sometimes meet compound words and phrasal verbs that a double-click cannot catch:
 
-| Language | Word to look up | A single click selects the whole word |
+| Language | Word to look up | A double click selects |
 |---|---|---|
 | German | `Bundesbank` within `Bundesbankdirektor` | `Bundesbankdirektor` |
-| Japanese | `日本語` within `日本語辞典` | `日本語辞典` |
-| Chinese | `汉语` within `现代汉语词典` | `现代汉语词典` |
+| Japanese | `組み合って` within `組み合っている` | `組み` |
+| Chinese | `鄂州` within `中华民国鄂州约法` | `鄂` or `州` |
 | English | `throw away` | `throw` or `away` |
 
 On Android, the long-press menu also offers the same lookup next to *Copy* and *Read aloud*; right-clicking a word selects it as well, and the menu's *Query* item looks up that word.
