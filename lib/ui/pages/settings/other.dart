@@ -113,7 +113,7 @@ class OtherSettingsPage extends StatelessWidget {
                   const AdvanceSwitch(),
                 ],
               ),
-              if (isDesktop()) ...[
+              if (isDesktop() || Platform.isAndroid) ...[
                 const SizedBox(height: 16),
                 const SettingsGroupCard(children: [MouseGestureSelectors()]),
               ],
