@@ -252,7 +252,31 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
         if (Platform.isLinux) _lastLinuxContent = content;
         return _buildContent(content, pendingAnchor);
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () {
+        // A large ZIM spends minutes building its index on first open. Say
+        // what is happening instead of showing a bare spinner.
+        final initializing = dict?.isLoading ?? false;
+        final l10n = AppLocalizations.of(context);
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(width: 200, child: LinearProgressIndicator()),
+                if (initializing && l10n != null) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.dictionaryIndexing,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
       error: (err, stack) => Center(
         child: Text(AppLocalizations.of(context)!.errorDetails(err.toString())),
       ),

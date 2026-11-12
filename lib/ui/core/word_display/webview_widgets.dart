@@ -801,11 +801,7 @@ class WebviewDisplayDescription extends ConsumerWidget {
         if (snapshot.hasData) {
           return Scaffold(
             appBar: AppBar(),
-            body: WebviewAndroid(
-              content: snapshot.data!,
-              dictId: dictId,
-              isExpansion: false,
-            ),
+            body: _descriptionView(snapshot.data!),
           );
         } else {
           return const Center(child: CircularProgressIndicator());
@@ -814,15 +810,25 @@ class WebviewDisplayDescription extends ConsumerWidget {
     );
   }
 
+  /// Renders description HTML with the platform's WebView. The Android
+  /// implementation depends on `WebViewAssetLoader`, which no other platform
+  /// provides, so building it on desktop threw as soon as the page opened.
+  Widget _descriptionView(String html) {
+    if (Platform.isAndroid) {
+      return WebviewAndroid(content: html, dictId: dictId, isExpansion: false);
+    }
+    if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+      return WebviewWindows(content: html, dictId: dictId);
+    }
+    return FakeWebViewByAI(html: html);
+  }
+
   Widget _buildDescription(LoadedDictionary dict) {
     var html = dict.description;
     html = HtmlUnescape().convert(html);
     html = dict.wrapContentWithResources(html);
 
-    return Scaffold(
-      appBar: AppBar(),
-      body: WebviewAndroid(content: html, dictId: dictId, isExpansion: false),
-    );
+    return Scaffold(appBar: AppBar(), body: _descriptionView(html));
   }
 
   Future<String> getDescriptionFromInactiveDict() async {
@@ -1063,9 +1069,9 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
       _applyContentScale(_desktopController, next);
     });
     final darkReaderSetting = ref.watch(dictionaryDarkReaderProvider);
-    // A group switch removes dictionaries before the old WebView is torn
-    // down, so the id can be gone for a frame. Fall back to the loading
-    // state instead of crashing with a null check.
+    // A group edit removes dictionaries before the old WebView is torn down,
+    // so the id can be gone for a frame. Fall back to the loading state
+    // instead of crashing with a null check.
     final port = dictManager.dicts[dictId]?.port ?? 0;
     // The document on screen came from a server that has since been closed:
     // the dictionary was disabled and enabled again, keeping its id and its

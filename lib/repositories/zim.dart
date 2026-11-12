@@ -64,14 +64,42 @@ class Zim extends BaseLoadedDictionary {
     _ensureReader();
     await reader.initMetadata();
     setDefaultTitle();
-    entriesTotal = reader.wordCount;
+    // wordCount counts parsed articles and is zero until the full index is
+    // built. The header's entry count is available right away and is what
+    // the properties page calls "total number of entries".
+    entriesTotal = reader.entryCount;
+  }
+
+  /// Reads the archive's name and entry count without building the index.
+  ///
+  /// The import dialog uses this to say what the long parse is working on;
+  /// [ZimReader.initMetadata] only touches the header and the MIME list.
+  Future<({String title, int entries})> inspect() async {
+    _ensureReader();
+    await reader.initMetadata();
+    final name = reader.bookName;
+    return (
+      title: name.isEmpty ? basename(path) : HtmlUnescape().convert(name),
+      entries: reader.entryCount,
+    );
   }
 
   Future<void> add() async {
     _ensureReader();
-    await _initReaderWithCache();
+    // The cache file is named after the dictionary id, so the database row
+    // has to exist before the index snapshot is written. Registering last
+    // made _cacheFile() read the still-uninitialized late id and silently
+    // skip the cache entirely on import.
+    await reader.initMetadata();
     setDefaultTitle();
-    await dictionaryListDao.add(path, title, type: DictionaryType.zim);
+    id = await dictionaryListDao.add(path, title, type: DictionaryType.zim);
+    try {
+      await _initReaderWithCache();
+    } catch (_) {
+      await dictionaryListDao.remove(path);
+      rethrow;
+    }
+    entriesTotal = reader.wordCount;
     isLoading = false;
   }
 
@@ -83,7 +111,9 @@ class Zim extends BaseLoadedDictionary {
     try {
       await reader.initMetadata();
       setDefaultTitle();
-      entriesTotal = reader.wordCount;
+      // Metadata-only loads back the properties page, where no article
+      // index has been parsed yet; wordCount would be zero.
+      entriesTotal = reader.entryCount;
     } finally {
       isLoading = false;
     }
@@ -106,7 +136,9 @@ class Zim extends BaseLoadedDictionary {
       final dictId = id;
       final cacheDir = await getApplicationCacheDirectory();
       return File(join(cacheDir.path, "dict_reader_${dictId}_zim.cidx"));
-    } catch (_) {
+    } catch (e) {
+      // A silent null here hides the real reason a cache never appears.
+      talker.warning("No ZIM .cidx cache path for $path: $e");
       return null;
     }
   }
@@ -125,15 +157,16 @@ class Zim extends BaseLoadedDictionary {
 
     await reader.init();
     if (cache != null) {
-      // Cache the parsed index in the background for instant future cold starts
-      unawaited(() async {
-        try {
-          final cidxBytes = await reader.exportCidx();
-          await cache.writeAsBytes(cidxBytes, flush: true);
-        } catch (e, st) {
-          talker.error("Failed to write ZIM .cidx cache for $path", e, st);
-        }
-      }());
+      // Write the snapshot before returning. The import closes this reader as
+      // soon as add() finishes, and closing marks the reader uninitialized,
+      // so a background export raced close() and silently never produced a
+      // cache for large archives — the next open parsed everything again.
+      try {
+        final cidxBytes = await reader.exportCidx();
+        await cache.writeAsBytes(cidxBytes, flush: true);
+      } catch (e, st) {
+        talker.error("Failed to write ZIM .cidx cache for $path", e, st);
+      }
     }
   }
 
