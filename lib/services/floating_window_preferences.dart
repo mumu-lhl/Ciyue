@@ -29,6 +29,30 @@ enum FloatingWindowMode {
   };
 }
 
+/// Size of the centred card as a fraction of the window.
+class FloatingWindowPanelFraction {
+  const FloatingWindowPanelFraction({
+    required this.width,
+    required this.height,
+  });
+
+  /// The default keeps the phone-sized card unchanged and makes a landscape
+  /// card wider and lower, which is what the landscape layout wants.
+  static const defaultFraction = FloatingWindowPanelFraction(
+    width: 0.85,
+    height: 0.55,
+  );
+
+  final double width;
+  final double height;
+
+  FloatingWindowPanelFraction copyWith({double? width, double? height}) =>
+      FloatingWindowPanelFraction(
+        width: width ?? this.width,
+        height: height ?? this.height,
+      );
+}
+
 /// The mode of the current floating-window engine.
 ///
 /// The settings page and the floating window run in separate isolates, so a
@@ -38,10 +62,19 @@ final ValueNotifier<FloatingWindowMode> floatingWindowMode = ValueNotifier(
   FloatingWindowMode.transparent,
 );
 
+/// The card size of the current floating-window engine.
+///
+/// The settings page writes it to a file; the floating engine reloads that
+/// file on every lookup, so a change applies to the next lookup even when the
+/// engine stays warm.
+final ValueNotifier<FloatingWindowPanelFraction> floatingWindowPanelFraction =
+    ValueNotifier(FloatingWindowPanelFraction.defaultFraction);
+
 /// File names shared with FloatingWindowSettings.kt, which reads them before
 /// the Flutter engine exists.
 const floatingWindowModeFileName = "floating_window_mode";
 const floatingWindowLegacyDisabledFileName = "disable_floating_window";
+const floatingWindowPanelFractionFileName = "floating_window_panel_fraction";
 
 class FloatingWindowPreferences {
   FloatingWindowPreferences({Future<Directory> Function()? directory})
@@ -81,5 +114,31 @@ class FloatingWindowPreferences {
     } else if (await legacy.exists()) {
       await legacy.delete();
     }
+  }
+
+  Future<FloatingWindowPanelFraction> readPanelFraction() async {
+    final file = await _file(floatingWindowPanelFractionFileName);
+    if (!await file.exists()) {
+      return FloatingWindowPanelFraction.defaultFraction;
+    }
+
+    final parts = (await file.readAsString()).trim().split("x");
+    if (parts.length != 2) {
+      return FloatingWindowPanelFraction.defaultFraction;
+    }
+    final width = double.tryParse(parts[0]);
+    final height = double.tryParse(parts[1]);
+    if (width == null || height == null) {
+      return FloatingWindowPanelFraction.defaultFraction;
+    }
+    return FloatingWindowPanelFraction(
+      width: width.clamp(0.5, 1.0),
+      height: height.clamp(0.4, 1.0),
+    );
+  }
+
+  Future<void> writePanelFraction(FloatingWindowPanelFraction fraction) async {
+    await (await _file(floatingWindowPanelFractionFileName))
+        .writeAsString("${fraction.width}x${fraction.height}");
   }
 }

@@ -23,6 +23,8 @@ class FloatingWindow extends StatefulWidget {
 class _FloatingWindowState extends State<FloatingWindow> {
   final FloatingWindowPreferences _preferences = FloatingWindowPreferences();
   bool _enabled = true;
+  FloatingWindowPanelFraction _fraction =
+      FloatingWindowPanelFraction.defaultFraction;
 
   @override
   void initState() {
@@ -32,8 +34,12 @@ class _FloatingWindowState extends State<FloatingWindow> {
 
   Future<void> _load() async {
     final mode = await _preferences.readMode();
+    final fraction = await _preferences.readPanelFraction();
     if (!mounted) return;
-    setState(() => _enabled = mode != FloatingWindowMode.off);
+    setState(() {
+      _enabled = mode != FloatingWindowMode.off;
+      _fraction = fraction;
+    });
   }
 
   Future<void> _setEnabled(bool enabled) async {
@@ -44,22 +50,98 @@ class _FloatingWindowState extends State<FloatingWindow> {
     setState(() => _enabled = enabled);
   }
 
+  Future<void> _setFraction(FloatingWindowPanelFraction fraction) async {
+    floatingWindowPanelFraction.value = fraction;
+    setState(() => _fraction = fraction);
+    await _preferences.writePanelFraction(fraction);
+  }
+
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
-    return SwitchListTile(
-      secondary: const Icon(Icons.window),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(locale.floatingWindow),
-          const SizedBox(width: 8),
-          const BaseBadge(text: "Beta"),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SwitchListTile(
+          secondary: const Icon(Icons.window),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(locale.floatingWindow),
+              const SizedBox(width: 8),
+              const BaseBadge(text: "Beta"),
+            ],
+          ),
+          subtitle: Text(locale.floatingWindowSwitchDescription),
+          value: _enabled,
+          onChanged: _setEnabled,
+        ),
+        if (_enabled) ...[
+          _PanelFractionSlider(
+            icon: Icons.width_full,
+            title: locale.floatingWindowCardWidth,
+            value: _fraction.width,
+            min: 0.5,
+            max: 1.0,
+            onChanged: (value) =>
+                setState(() => _fraction = _fraction.copyWith(width: value)),
+            onChangeEnd: (value) =>
+                _setFraction(_fraction.copyWith(width: value)),
+          ),
+          _PanelFractionSlider(
+            icon: Icons.height,
+            title: locale.floatingWindowCardHeight,
+            value: _fraction.height,
+            min: 0.4,
+            max: 1.0,
+            onChanged: (value) =>
+                setState(() => _fraction = _fraction.copyWith(height: value)),
+            onChangeEnd: (value) =>
+                _setFraction(_fraction.copyWith(height: value)),
+          ),
         ],
+      ],
+    );
+  }
+}
+
+/// One percentage slider for the centred card. The value is previewed while
+/// dragging and written to disk when the drag ends.
+class _PanelFractionSlider extends StatelessWidget {
+  const _PanelFractionSlider({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    required this.onChangeEnd,
+  });
+
+  final IconData icon;
+  final String title;
+  final double value;
+  final double min;
+  final double max;
+  final ValueChanged<double> onChanged;
+  final ValueChanged<double> onChangeEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = "${(value * 100).round()}%";
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Slider(
+        value: value.clamp(min, max),
+        min: min,
+        max: max,
+        divisions: ((max - min) / 0.05).round(),
+        label: percent,
+        onChanged: onChanged,
+        onChangeEnd: onChangeEnd,
       ),
-      subtitle: Text(locale.floatingWindowSwitchDescription),
-      value: _enabled,
-      onChanged: _setEnabled,
+      trailing: Text(percent),
     );
   }
 }

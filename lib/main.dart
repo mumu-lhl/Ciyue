@@ -190,6 +190,7 @@ void floatingWindow(List<String> args) async {
     if (searchWordFromProcessText.isEmpty && args.isNotEmpty) {
       searchWordFromProcessText = args.first.trim();
     }
+    await reloadFloatingWindowPanelFraction();
     navigateToProcessText(searchWordFromProcessText);
 
     runApp(const ProviderScope(child: Ciyue()));

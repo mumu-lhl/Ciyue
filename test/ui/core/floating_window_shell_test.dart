@@ -25,19 +25,19 @@ void main() {
   testWidgets("landscape windows get a wider, lower panel", (tester) async {
     final size = await measurePanel(tester, const Size(1280, 800));
 
-    expect(size.width, 900.0);
-    expect(size.height, 520.0);
-    // Previous geometry: 540 x (800 * 0.7) = 540 x 560.
-    expect(size.width, greaterThan(540.0));
-    expect(size.height, lessThan(560.0));
+    // 0.85 of the width and 0.55 of the height: no pixel cap any more.
+    expect(size.width, closeTo(1088.0, 0.001));
+    expect(size.height, closeTo(440.0, 0.001));
+    expect(size.height, lessThan(size.width));
   });
 
   testWidgets("landscape phone does not overflow the window", (tester) async {
     const window = Size(844, 390);
     final size = await measurePanel(tester, window);
 
-    expect(size.width, closeTo(675.2, 0.001));
-    expect(size.height, closeTo(253.5, 0.001));
+    expect(size.width, closeTo(717.4, 0.001));
+    // 0.55 of the height would be 214.5, below the readable minimum.
+    expect(size.height, minPanelHeight);
     expect(size.width, lessThanOrEqualTo(window.width));
     expect(size.height, lessThanOrEqualTo(window.height));
   });
@@ -48,15 +48,15 @@ void main() {
     const window = Size(800, 360);
     final size = await measurePanel(tester, window);
 
-    // The old 420 minimum was taller than this window.
+    expect(size.height, minPanelHeight);
     expect(size.height, lessThanOrEqualTo(window.height));
   });
 
-  testWidgets("portrait tablet keeps the original card", (tester) async {
+  testWidgets("portrait tablet uses the same fraction", (tester) async {
     final size = await measurePanel(tester, const Size(800, 1280));
 
-    expect(size.width, 540.0);
-    expect(size.height, 720.0);
+    expect(size.width, closeTo(680.0, 0.001));
+    expect(size.height, closeTo(704.0, 0.001));
   });
 
   testWidgets("portrait phone keeps the original card", (tester) async {
@@ -66,13 +66,62 @@ void main() {
     expect(size.height, closeTo(440.0, 0.001));
   });
 
-  testWidgets("small portrait free-form window keeps the original card", (
+  testWidgets("a tiny free-form window still gets a readable card", (
     tester,
   ) async {
     final size = await measurePanel(tester, const Size(286, 575));
 
-    expect(size.width, closeTo(243.1, 0.001));
+    // 0.85 of the width would be 243.1, below the readable minimum.
+    expect(size.width, minPanelWidth);
     expect(size.height, closeTo(316.25, 0.001));
+  });
+
+  test("a tiny fraction is raised to the readable minimum", () {
+    const constraints = BoxConstraints(maxWidth: 400, maxHeight: 400);
+
+    final size = floatingWindowPanelSize(
+      constraints,
+      fraction: const FloatingWindowPanelFraction(width: 0.5, height: 0.4),
+    );
+
+    expect(size.width, minPanelWidth);
+    expect(size.height, minPanelHeight);
+  });
+
+  test("a window smaller than the minimum is never overflowed", () {
+    const constraints = BoxConstraints(maxWidth: 200, maxHeight: 180);
+
+    final size = floatingWindowPanelSize(
+      constraints,
+      fraction: const FloatingWindowPanelFraction(width: 0.5, height: 0.5),
+    );
+
+    expect(size.width, 200.0);
+    expect(size.height, 180.0);
+  });
+
+  test("panel size follows the configured fraction", () {
+    const constraints = BoxConstraints(maxWidth: 800, maxHeight: 600);
+
+    final size = floatingWindowPanelSize(
+      constraints,
+      fraction: const FloatingWindowPanelFraction(width: 0.5, height: 0.5),
+    );
+
+    expect(size.width, 400.0);
+    expect(size.height, 300.0);
+  });
+
+  test("a full fraction covers the whole window", () {
+    const constraints = BoxConstraints(maxWidth: 2000, maxHeight: 2000);
+
+    final size = floatingWindowPanelSize(
+      constraints,
+      fraction: const FloatingWindowPanelFraction(width: 1.0, height: 1.0),
+    );
+
+    expect(size.width, 2000.0);
+    expect(size.height, 2000.0);
   });
 
   Future<void> pumpModeView(WidgetTester tester, Size window) async {
@@ -113,7 +162,7 @@ void main() {
     await tester.pump();
 
     final size = tester.getSize(find.byKey(const ValueKey("mode_view_child")));
-    expect(size.width, closeTo(819.2, 0.001));
-    expect(size.height, closeTo(390.0, 0.001));
+    expect(size.width, closeTo(870.4, 0.001));
+    expect(size.height, closeTo(330.0, 0.001));
   });
 }

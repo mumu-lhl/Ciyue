@@ -34,9 +34,9 @@ void main() {
   });
 
   test("remembers the selected mode", () async {
-    await store().writeMode(FloatingWindowMode.halfScreen);
+    await store().writeMode(FloatingWindowMode.transparent);
 
-    expect(await store().readMode(), FloatingWindowMode.halfScreen);
+    expect(await store().readMode(), FloatingWindowMode.transparent);
   });
 
   test("keeps the legacy marker in sync", () async {
@@ -72,5 +72,40 @@ void main() {
       FloatingWindowMode.off,
     );
     expect(FloatingWindowMode.parse(null), FloatingWindowMode.transparent);
+  });
+
+  test("defaults to the built-in card size", () async {
+    final fraction = await store().readPanelFraction();
+
+    expect(fraction.width, FloatingWindowPanelFraction.defaultFraction.width);
+    expect(fraction.height, FloatingWindowPanelFraction.defaultFraction.height);
+  });
+
+  test("remembers the card size", () async {
+    await store().writePanelFraction(
+      const FloatingWindowPanelFraction(width: 0.7, height: 0.6),
+    );
+
+    final fraction = await store().readPanelFraction();
+    expect(fraction.width, 0.7);
+    expect(fraction.height, 0.6);
+  });
+
+  test("clamps out-of-range card sizes", () async {
+    await File("${directory.path}/$floatingWindowPanelFractionFileName")
+        .writeAsString("1.5x0.1");
+
+    final fraction = await store().readPanelFraction();
+    expect(fraction.width, 1.0);
+    expect(fraction.height, 0.4);
+  });
+
+  test("falls back on malformed card sizes", () async {
+    await File("${directory.path}/$floatingWindowPanelFractionFileName")
+        .writeAsString("oops");
+
+    final fraction = await store().readPanelFraction();
+    expect(fraction.width, FloatingWindowPanelFraction.defaultFraction.width);
+    expect(fraction.height, FloatingWindowPanelFraction.defaultFraction.height);
   });
 }

@@ -27,15 +27,21 @@ class FloatingWindowShell extends StatelessWidget {
         ),
         Align(
           alignment: Alignment.center,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final size = floatingWindowPanelSize(constraints);
-              return SizedBox(
-                width: size.width,
-                height: size.height,
-                child: child,
-              );
-            },
+          child: ValueListenableBuilder<FloatingWindowPanelFraction>(
+            valueListenable: floatingWindowPanelFraction,
+            builder: (context, fraction, _) => LayoutBuilder(
+              builder: (context, constraints) {
+                final size = floatingWindowPanelSize(
+                  constraints,
+                  fraction: fraction,
+                );
+                return SizedBox(
+                  width: size.width,
+                  height: size.height,
+                  child: child,
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -43,33 +49,43 @@ class FloatingWindowShell extends StatelessWidget {
   }
 }
 
+/// Smallest card the panel may shrink to. Without it a small percentage in a
+/// narrow free-form window would make the dictionary text unreadable.
+const minPanelWidth = 280.0;
+const minPanelHeight = 240.0;
+
 /// Panel geometry for [FloatingWindowShell].
 ///
-/// Landscape windows are wide but short: spread the dictionary horizontally
-/// and keep the panel low, so it stays readable without covering the whole
-/// display or overflowing a short free-form window. Portrait keeps the
-/// original compact, phone-shaped card.
-Size floatingWindowPanelSize(BoxConstraints constraints) {
+/// [fraction] is the user's card size: width and height as a fraction of the
+/// window, so the window itself is the only upper bound - a full 100% simply
+/// covers the whole screen and is still dismissible with back. The readable
+/// minimum wins over a tiny fraction, but a window smaller than the minimum
+/// wins over both, so the card never overflows the window.
+Size floatingWindowPanelSize(
+  BoxConstraints constraints, {
+  FloatingWindowPanelFraction fraction =
+      FloatingWindowPanelFraction.defaultFraction,
+}) {
   final maxWidth = constraints.maxWidth;
   final maxHeight = constraints.maxHeight;
 
-  final double width;
-  final double height;
-  if (maxWidth > maxHeight) {
-    // 0.8 of the width, capped so the panel does not become a full-screen
-    // card on tablets; 0.65 of the height leaves room for the transparent
-    // dismiss area above and below on short landscape windows.
-    width = math.min(maxWidth * 0.8, 900.0);
-    height = math.min(maxHeight * 0.65, 560.0);
-  } else {
-    final isWide = maxWidth >= 600.0;
-    width = isWide ? 540.0 : maxWidth * 0.85;
-    height = isWide ? (maxHeight * 0.7).clamp(420.0, 720.0) : maxHeight * 0.55;
-  }
+  return Size(
+    (maxWidth * fraction.width)
+        .clamp(math.min(minPanelWidth, maxWidth), maxWidth)
+        .toDouble(),
+    (maxHeight * fraction.height)
+        .clamp(math.min(minPanelHeight, maxHeight), maxHeight)
+        .toDouble(),
+  );
+}
 
-  // Never let the hard limits exceed the window, e.g. a short landscape
-  // window or a small free-form window.
-  return Size(math.min(width, maxWidth), math.min(height, maxHeight));
+/// Reloads the card size from disk and notifies the panel.
+///
+/// The settings page writes the file from the main isolate; the floating
+/// engine is a separate isolate, so it reads the file again on every lookup.
+Future<void> reloadFloatingWindowPanelFraction() async {
+  final preferences = FloatingWindowPreferences();
+  floatingWindowPanelFraction.value = await preferences.readPanelFraction();
 }
 
 /// Wraps the dictionary view for the Android floating window.

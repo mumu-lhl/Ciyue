@@ -134,6 +134,10 @@ class PlatformMethod {
           final request = _ProcessTextRequest.fromPlatform(call.arguments);
 
           try {
+            // The settings page runs in the main isolate; pick up a card-size
+            // change before showing the next lookup.
+            floatingWindowPanelFraction.value =
+                await FloatingWindowPreferences().readPanelFraction();
             navigateToProcessText(
               request.text,
               requestId: request.id,
