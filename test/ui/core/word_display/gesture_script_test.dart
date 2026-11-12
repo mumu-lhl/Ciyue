@@ -8,7 +8,9 @@ void main() {
 
     test("forwards gestures through the key bridge", () {
       expect(script, contains("'ciyueKey', 'Gesture'"));
-      expect(script, contains("send('rocker', 1)"));
+      expect(script, contains("send('rocker', direction)"));
+      expect(script, contains("sendRocker(1)"));
+      expect(script, contains("sendRocker(-1)"));
       expect(script, contains("send('wheel', e.deltaY > 0 ? 1 : -1)"));
     });
 
@@ -30,14 +32,14 @@ void main() {
     });
 
     test("falls back to contextmenu without sending the rocker twice", () {
-      expect(script, contains("sendRocker();"));
+      expect(script, contains("sendRocker(1);"));
       expect(script, contains("if (rockerSent) return;"));
       expect(script, contains("rockerSent = false;"));
     });
 
     test("exports a rocker hook for the Windows pointer edge", () {
       expect(script, contains("window.ciyueRocker = function ()"));
-      expect(script, contains("if (leftDown) sendRocker();"));
+      expect(script, contains("if (leftDown) sendRocker(1);"));
       // Windows runs with the bitmask fallback off, so the hook must not
       // depend on it.
       final windows = gestureScript(bitmaskFallback: false);
