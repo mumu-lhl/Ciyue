@@ -43,6 +43,8 @@ CIYUE_RENDER_MODE=software ciyue
 
 Other values: `auto` (default, detect automatically) and `hardware` (force hardware acceleration). The lower-level `FLUTTER_INAPPWEBVIEW_SKIP_DMABUF_CHECK=1` and `FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL=1` take precedence over `CIYUE_RENDER_MODE`.
 
+If a visible WebView receives no frame within 5 seconds under hardware mode, Ciyue records the failure and **uses software rendering on the next start**, without any manual configuration. The record expires after 7 days so hardware gets another try. To retry immediately, use `CIYUE_RENDER_MODE=hardware ciyue`, which also clears the record. WebViews that were never visible are not counted as failures.
+
 If the area stays blank under software rendering, the rendering mode is not the cause. Reproduce once with `ciyue -l` and report it on [GitHub](https://github.com/mumu-lhl/Ciyue/issues): the `rendering mode=` and `no frame within 5s` lines in the log show which layer stopped receiving frames.
 
 ## Only one of my MDX and StarDict dictionaries shows up. Why?

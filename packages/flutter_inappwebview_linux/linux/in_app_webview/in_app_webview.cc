@@ -1325,6 +1325,15 @@ gboolean InAppWebView::OnFirstFrameWatchdog(gpointer user_data) {
     message +=
         " The hardware EGL path is not working on this GPU; start again with "
         "CIYUE_RENDER_MODE=software to switch to the software renderer.";
+    // Only remember the failure when the view was actually on screen. A WebView
+    // that was created but never shown produces no frames for a legitimate
+    // reason, and recording that would demote a healthy GPU for a week.
+    if (self->isVisible()) {
+      RecordRenderingFailure();
+      message += " A fallback was recorded: the next start will use software rendering.";
+    } else {
+      message += " The view was not visible, so no fallback was recorded.";
+    }
   }
   errorLog(message);
   return G_SOURCE_REMOVE;

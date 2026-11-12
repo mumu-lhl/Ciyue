@@ -59,6 +59,25 @@ inline bool UsesSoftwareRendering() {
 // Returns true when software/SHM rendering is in effect.
 bool ApplySoftwareRenderingIfNeeded();
 
+// Records that the hardware path produced no frame within the watchdog window.
+//
+// A heuristic can guess wrong on a GPU it considers "known good", and the
+// result is a blank WebView with a live DOM. Writing a marker turns that into
+// a one-time failure: the next start reads it and switches to software, so the
+// machine heals itself instead of rendering blank again.
+//
+// The marker expires after a week, and forcing hardware clears it. Both exist
+// so a single slow start -- a large dictionary, a cold page load -- cannot pin
+// the process to software permanently.
+void RecordRenderingFailure();
+
+// True when an unexpired failure marker exists. Internal to the mode decision;
+// exposed for tests and for the watchdog's own "already recorded" check.
+bool HasRecentRenderingFailure();
+
+// Removes the marker, so the next start tries hardware again.
+void ClearRenderingFailure();
+
 }  // namespace flutter_inappwebview_plugin
 
 #endif  // FLUTTER_INAPPWEBVIEW_LINUX_UTILS_SOFTWARE_RENDERING_H_
