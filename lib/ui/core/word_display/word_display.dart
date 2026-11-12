@@ -381,6 +381,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                             showTab,
                             title: searchBar,
                             showAIButtons: isAIExplainTabSelected,
+                            validDictIds: validDictIds,
                           ),
                           bottomNavigationBar: widget.bottomNavigationBar,
                           floatingActionButton: isDesktopScreen
@@ -402,7 +403,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                                   if (settings.tabBarPosition ==
                                           TabBarPosition.bottom &&
                                       showTab)
-                                    buildTabBar(context),
+                                    buildTabBar(context, validDictIds),
                                   if (!settings.searchBarInAppBar &&
                                       searchBar != null)
                                     searchBar,
@@ -518,6 +519,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     bool showTab, {
     Widget? title,
     bool showAIButtons = false,
+    List<int> validDictIds = const [],
   }) {
     final settings = ref.watch(settingsProvider);
     final isDesktopScreen = app_utils.isLargeScreen(context);
@@ -617,7 +619,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         ),
       ],
       bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
-          ? buildTabBar(context)
+          ? buildTabBar(context, validDictIds)
           : null,
     );
   }
@@ -635,25 +637,28 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     }
   }
 
-  PreferredSizeWidget buildTabBar(BuildContext context) {
+  PreferredSizeWidget buildTabBar(
+    BuildContext context,
+    List<int> validDictIds,
+  ) {
     final dictManager = ref.watch(dictManagerProvider);
     final settings = ref.watch(settingsProvider);
-    final validDictIdsAsync = ref.watch(validDictIdsProvider(_word));
 
+    // Use the same ids that DefaultTabController.length was computed from.
+    // Watching validDictIdsProvider again here used to return the previous
+    // group's ids while the switch was in flight; filtering those against the
+    // newly loaded dicts left zero tabs and TabBar threw a RangeError.
+    // Keep one tab per id so the count always matches the controller.
     return PreferredSize(
       preferredSize: const Size.fromHeight(48),
-      child: validDictIdsAsync.when(
-        data: (validDictIds) => TabBar(
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
-          tabs: [
-            if (settings.aiExplainWord) Tab(text: "AI"),
-            for (final id in validDictIds)
-              if (dictManager.dicts[id] case final dict?) Tab(text: dict.title),
-          ],
-        ),
-        loading: () => const SizedBox.shrink(),
-        error: (_, _) => const SizedBox.shrink(),
+      child: TabBar(
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
+        tabs: [
+          if (settings.aiExplainWord) Tab(text: "AI"),
+          for (final id in validDictIds)
+            Tab(text: dictManager.dicts[id]?.title ?? ""),
+        ],
       ),
     );
   }
