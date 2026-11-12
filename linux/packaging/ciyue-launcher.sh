@@ -39,6 +39,11 @@ fi
 # If the host system has no accessible DRM device, WebKit's DMA-BUF
 # renderer cannot create a GBM device. Gracefully disable the DMA-BUF renderer
 # to fall back to shared memory (SHM) rendering.
+#
+# The plugin treats this variable as a request for the whole software path, not
+# just for the WebProcess: ResolveRenderingMode() sees it and selects the
+# pixel-buffer texture to match. Setting it here alone used to desynchronise the
+# two sides, and the host silently discarded every frame.
 if [ -z "${WEBKIT_DISABLE_DMABUF_RENDERER:-}" ]; then
   HAS_DRM_DEVICE=0
   for dev in /dev/dri/renderD* /dev/dri/card*; do

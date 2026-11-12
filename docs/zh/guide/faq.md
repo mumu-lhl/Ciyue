@@ -33,6 +33,18 @@ F-Droid 按自己的节奏构建和发布应用，所以版本会比 GitHub 晚�
 - 有些词典需要调自定义 CSS：**管理词典 → 词典 → 自定义 CSS**。
 - 如果某本词典导致查词崩溃，请到 [GitHub](https://github.com/mumu-lhl/Ciyue/issues) 提 issue 并注明词典名称。
 
+## （Linux）词条区域是空白的，但文字能选中、复制和搜索？
+
+页面本身是正常的，只是 WebView 的画面没有送到 Flutter。词悦默认自动选择渲染方式：虚拟机和部分显卡驱动退回软件渲染，已知良好的 GPU 使用硬件加速。如果自动选择在你的显卡上用错了路径，手动指定软件渲染：
+
+```bash
+CIYUE_RENDER_MODE=software ciyue
+```
+
+其他取值：`auto`（默认，自动选择）、`hardware`（强制硬件加速）。底层的 `FLUTTER_INAPPWEBVIEW_SKIP_DMABUF_CHECK=1` 和 `FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL=1` 优先级更高，会覆盖 `CIYUE_RENDER_MODE`。
+
+如果软件渲染下仍然空白，就不是渲染方式的问题。用 `ciyue -l` 复现一次，再到 [GitHub](https://github.com/mumu-lhl/Ciyue/issues) 反馈：日志里的 `rendering mode=` 和 `no frame within 5s` 两行能直接指出是哪一层没有收到帧。
+
 ## 同一目录里的 MDX 和 StarDict 词典只出现一个？
 
 词悦用「去掉扩展名的路径」来标识一本词典，所以 `foo.mdx` 与 `foo.ifo` / `foo.idx` / `foo.dict` 会被当成同一本：MDX 会被注册，StarDict 那份会被跳过。想让两本同时出现，请把主文件名区分开，例如 `foo-mdx.mdx` 与 `foo-stardict.ifo`。

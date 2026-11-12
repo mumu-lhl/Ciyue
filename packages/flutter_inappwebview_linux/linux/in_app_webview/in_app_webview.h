@@ -446,13 +446,6 @@ class InAppWebView {
   // Check if WPE WebKit is available on the system
   static bool IsWpeWebKitAvailable();
 
-#ifdef HAVE_WPE_PLATFORM
-  // Check if DMA-BUF rendering should be used
-  // Returns true if DMA-BUF rendering is expected to work, false if SHM should be used
-  // Note: Environment detection is done at plugin registration via utils/software_rendering.h
-  static bool PreflightDmaBufSupport();
-#endif
-
   // === Multi-Window Support ===
 
   // Set the window ID for this webview (used in window.open scenarios)
@@ -561,6 +554,16 @@ class InAppWebView {
   // Flag to skip pixel readback when using zero-copy EGL texture mode
   // When true, OnExportDmaBuf won't call ReadPixelsFromEglImage
   bool skip_pixel_readback_ = false;
+
+  // First-frame watchdog. A WebView that never receives a frame shows nothing
+  // while its DOM keeps working, which is indistinguishable from a rendering
+  // bug without a log line. Written from the WPE rendering thread, read from
+  // the GTK main loop.
+  std::atomic<bool> received_first_frame_{false};
+  guint first_frame_watchdog_id_ = 0;
+
+  // Reports when no frame arrives shortly after creation (blank-WebView symptom).
+  static gboolean OnFirstFrameWatchdog(gpointer user_data);
 
   // View dimensions
   int width_ = 800;

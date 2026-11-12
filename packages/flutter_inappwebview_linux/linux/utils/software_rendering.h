@@ -1,26 +1,62 @@
-// Utility to detect if software rendering should be used
-// This checks for VM environments where DMA-BUF/GPU acceleration may not work properly
+// Single source of truth for how WebView frames reach Flutter.
+//
+// Three parties have to agree on one mode:
+//
+//   host texture      FlTextureGL          vs  FlPixelBufferTexture
+//   WPE exportable    wpe_fdo_initialize_for_egl_display()  vs  wpe_fdo_initialize_shm()
+//   WebProcess        DMA-BUF frames      vs  SHM frames
+//
+// They are chosen by different libraries with no shared state, so they used to
+// be kept in sync by every call site reading the same environment variable.
+// That worked only as long as all call sites agreed; a single missing check
+// produced a WebView that received no frame at all (blank view, live DOM, text
+// still selectable). ResolveRenderingMode() now decides once, and every call
+// site derives from it instead of re-reading the environment.
 
 #ifndef FLUTTER_INAPPWEBVIEW_LINUX_UTILS_SOFTWARE_RENDERING_H_
 #define FLUTTER_INAPPWEBVIEW_LINUX_UTILS_SOFTWARE_RENDERING_H_
 
 namespace flutter_inappwebview_plugin {
 
-// Check if software rendering should be automatically enabled.
-// This detects VM environments (UTM, QEMU, VMware, VirtualBox, etc.) where
-// GPU acceleration via DMA-BUF may not work correctly.
-//
-// Environment variables:
-// - LIBGL_ALWAYS_SOFTWARE=1 : Force software rendering (standard WebKit flag)
-// - FLUTTER_INAPPWEBVIEW_SKIP_DMABUF_CHECK=1 : Skip detection, use hardware
-//
-// If this returns true, LIBGL_ALWAYS_SOFTWARE=1 should be set BEFORE any
-// EGL/GL/WPE initialization to ensure WebKit uses SHM buffers.
-bool ShouldUseSoftwareRendering();
+enum class RenderingMode {
+  // Host: FlTextureGL, zero-copy. WPE exports DMA-BUF EGLImages.
+  kHardwareEgl,
+  // Host: FlPixelBufferTexture, CPU copy. WPE exports SHM buffers.
+  kSoftwareShm,
+};
 
-// Apply software rendering environment if needed.
-// Call this ONCE at plugin initialization, BEFORE any WebView is created.
-// Returns true if software rendering was enabled.
+// Resolve the rendering mode exactly once per process and reconcile the
+// environment variables read by WebKit's WebProcess, which inherits them at
+// spawn time. Thread-safe; later calls return the cached value.
+//
+// Must run before the first WebView is created and before the WebProcess
+// starts, otherwise the WebProcess may have inherited a different mode.
+//
+// Inputs, in priority order:
+//   - FLUTTER_INAPPWEBVIEW_SKIP_DMABUF_CHECK=1 : force hardware, skip detection
+//   - FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL    : (presence) force software
+//   - WEBKIT_DISABLE_DMABUF_RENDERER           : (presence) force software; set
+//     by the launcher when no DRM device exists, so the host has to match
+//   - LIBGL_ALWAYS_SOFTWARE=1                  : honoured, never set here
+//   - no accessible DRM node                   : software
+//   - known good GPU driver                    : hardware
+//   - virtual machine / problematic driver     : software
+//   - otherwise                                : hardware
+//
+// LIBGL_ALWAYS_SOFTWARE is never set by this code: it is a process-wide Mesa
+// switch that also pushes Flutter's own GL backend onto llvmpipe, which can
+// blank the whole window.
+RenderingMode ResolveRenderingMode();
+
+// True when the host uses FlPixelBufferTexture and the WebProcess must export
+// SHM buffers. Equivalent to ResolveRenderingMode() == kSoftwareShm.
+inline bool UsesSoftwareRendering() {
+  return ResolveRenderingMode() == RenderingMode::kSoftwareShm;
+}
+
+// Applies the resolved mode's environment. Kept as the plugin-registration
+// entry point: calling it early pins the decision before any WebView exists.
+// Returns true when software/SHM rendering is in effect.
 bool ApplySoftwareRenderingIfNeeded();
 
 }  // namespace flutter_inappwebview_plugin
