@@ -5,6 +5,7 @@ import "package:ciyue/services/cloud_sync/dictionary_sync.dart";
 import "package:ciyue/services/cloud_sync/preview_service.dart";
 import "package:ciyue/services/cloud_sync/session_service.dart";
 import "package:ciyue/services/cloud_sync/sync_models.dart";
+import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/cloud_sync.dart";
 import "package:drift/native.dart";
@@ -81,7 +82,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(DropdownButtonFormField<CloudSyncProvider>));
+    await tester.tap(find.byType(AppDropdown<CloudSyncProvider>));
     await tester.pumpAndSettle();
     await tester.tap(find.text("S3-compatible storage").last);
     await tester.pumpAndSettle();

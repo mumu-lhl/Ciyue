@@ -5,6 +5,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/linux_tts.dart";
 import "package:ciyue/services/linux_tts_driver.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:ciyue/ui/pages/settings/audio.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:material_ui/material_ui.dart";
@@ -118,7 +119,7 @@ void main() {
     expect(find.text("Default voice"), findsOneWidget);
 
     // Picking a voice persists the voice id.
-    await tester.tap(find.byType(DropdownButtonFormField<String?>));
+    await tester.tap(find.byType(AppDropdown<String?>));
     await tester.pumpAndSettle();
     await tester.tap(find.text("English_(America) (en-us)").last);
     await tester.pumpAndSettle();

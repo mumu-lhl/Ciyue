@@ -1,4 +1,5 @@
 import "package:ciyue/models/updater/updater.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
@@ -23,7 +24,9 @@ class UpdateAvailable extends StatelessWidget {
         ),
         TextButton(
           onPressed: () async {
-            final url = "https://github.com/mumu-lhl/Ciyue/releases/latest";
+            final url = settings.updateChannel == UpdateChannel.nightly
+                ? "https://github.com/mumu-lhl/Ciyue/releases/tag/nightly"
+                : "https://github.com/mumu-lhl/Ciyue/releases/latest";
             if (await canLaunchUrl(Uri.parse(url))) {
               launchUrl(Uri.parse(url));
             }

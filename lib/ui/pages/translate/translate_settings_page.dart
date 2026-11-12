@@ -1,5 +1,6 @@
 import "package:ciyue/services/translation_sources.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:ciyue/ui/pages/settings/ai_settings/ai_settings_page.dart";
 import "package:ciyue/viewModels/translate_settings_view_model.dart";
 import "package:material_ui/material_ui.dart";
@@ -46,13 +47,10 @@ class _AiTranslateSettingsPageState extends State<AiTranslateSettingsPage> {
                 ),
                 children: [
                   _SettingsCard(
-                    child: DropdownButtonFormField<bool>(
-                      decoration: InputDecoration(
-                        labelText: locale.outputType,
-                        prefixIcon: const Icon(Icons.tune_rounded),
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      initialValue: viewModel.isRichOutput,
+                    child: AppDropdown<bool>(
+                      value: viewModel.isRichOutput,
+                      label: locale.outputType,
+                      prefixIcon: const Icon(Icons.tune_rounded),
                       items: [
                         DropdownMenuItem(
                           value: true,

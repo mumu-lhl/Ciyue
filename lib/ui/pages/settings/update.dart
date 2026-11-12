@@ -2,6 +2,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:ciyue/ui/core/settings_group.dart";
 import "package:ciyue/ui/core/update_available.dart";
 import "package:material_ui/material_ui.dart";
@@ -78,9 +79,15 @@ class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
     return ListTile(
       title: Text(locale!.updateChannel),
       subtitle: Text(_channelDisplayName(settings.updateChannel, locale)),
-      trailing: DropdownButton<UpdateChannel>(
+      trailing: AppDropdown<UpdateChannel>(
         value: settings.updateChannel,
-        underline: const SizedBox.shrink(),
+        dense: true,
+        items: UpdateChannel.values.map((channel) {
+          return DropdownMenuItem(
+            value: channel,
+            child: Text(_channelDisplayName(channel, locale)),
+          );
+        }).toList(),
         onChanged: (channel) async {
           if (channel == null) return;
           await settings.setUpdateChannel(channel);
@@ -89,12 +96,6 @@ class _PrereleaseUpdatesSwitchState extends State<PrereleaseUpdatesSwitch> {
           }
           setState(() {});
         },
-        items: UpdateChannel.values.map((channel) {
-          return DropdownMenuItem(
-            value: channel,
-            child: Text(_channelDisplayName(channel, locale)),
-          );
-        }).toList(),
       ),
       leading: const Icon(Icons.settings_suggest_outlined),
     );

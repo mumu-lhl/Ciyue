@@ -7,6 +7,7 @@ import "package:ciyue/services/linux_tts.dart";
 import "package:ciyue/services/linux_tts_driver.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/tts.dart";
+import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:ciyue/ui/core/language_names.dart";
 import "package:ciyue/ui/core/title_text.dart";
 import "package:ciyue/repositories/dictionary.dart";
@@ -82,13 +83,9 @@ class PronunciationModeSelector extends StatelessWidget {
       children: [
         TitleText(localizations.pronunciation),
         const SizedBox(height: 12),
-        DropdownButtonFormField<PronunciationMode>(
-          initialValue: settings.pronunciationMode,
-          isExpanded: true,
-          decoration: InputDecoration(
-            labelText: localizations.pronunciation,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        AppDropdown<PronunciationMode>(
+          value: settings.pronunciationMode,
+          label: localizations.pronunciation,
           items: [
             DropdownMenuItem(
               value: PronunciationMode.packFirst,
@@ -554,13 +551,9 @@ class _OnlinePronunciationSettingsState
     final effectiveValue = _onlinePronunciationLanguages.contains(value)
         ? value
         : "";
-    return DropdownButtonFormField<String>(
-      initialValue: effectiveValue,
-      isExpanded: true,
-      decoration: InputDecoration(
-        labelText: localizations.onlinePronunciationLanguage,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    return AppDropdown<String>(
+      value: effectiveValue,
+      label: localizations.onlinePronunciationLanguage,
       items: [
         DropdownMenuItem(
           value: "",
@@ -593,15 +586,11 @@ class TTSEngines extends StatelessWidget {
       children: [
         TitleText(AppLocalizations.of(context)!.ttsEngines),
         const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
-          initialValue:
+        AppDropdown<String>(
+          value:
               settings.ttsEngine ??
               (ttsEngines.isNotEmpty ? ttsEngines.first : null),
-          isExpanded: true,
-          decoration: InputDecoration(
-            labelText: AppLocalizations.of(context)!.ttsEngines,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+          label: AppLocalizations.of(context)!.ttsEngines,
           items: [
             for (final engine in ttsEngines)
               DropdownMenuItem(
@@ -713,20 +702,12 @@ class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
           style: helperStyle,
         ),
         const SizedBox(height: 12),
-        DropdownButtonFormField<String?>(
-          // Rebuild the field when the effective selection changes
-          // (e.g. the saved voice only becomes known once the async
-          // voice list loads): FormField otherwise keeps its first
-          // initialValue forever.
-          key: ValueKey(effectiveValue),
-          initialValue: effectiveValue,
-          // Voice names from espeak can be long, so let the field fill the
-          // available width and shorten the label instead of overflowing.
-          isExpanded: true,
-          decoration: InputDecoration(
-            labelText: localizations.linuxTtsVoice,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        // AppDropdown is controlled, so the selected voice follows the
+        // async voice list without a ValueKey rebuild (long espeak names
+        // still ellipsize in the field and in the menu).
+        AppDropdown<String?>(
+          value: effectiveValue,
+          label: localizations.linuxTtsVoice,
           items: [
             DropdownMenuItem(
               value: null,
@@ -738,9 +719,7 @@ class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
                 child: Text(voice.displayName, overflow: TextOverflow.ellipsis),
               ),
           ],
-          onChanged: (voice) {
-            settings.setLinuxTtsVoice(voice);
-          },
+          onChanged: (voice) => settings.setLinuxTtsVoice(voice),
         ),
         const SizedBox(height: 8),
         Align(

@@ -158,12 +158,15 @@ class Updater {
           );
         }
 
-        final latestVersion = latestRelease["tag_name"].toString().substring(
-          1,
-        ); // Remove 'v' prefix
+        final tag = latestRelease["tag_name"].toString();
+        final latestVersion = displayVersion(tag);
         return Update(
           success: true,
-          isUpdateAvailable: latestVersion != packageInfo.version,
+          isUpdateAvailable: _isUpdateAvailable(
+            channel,
+            latestRelease,
+            latestVersion,
+          ),
           version: latestVersion,
         );
       } else {
@@ -180,6 +183,50 @@ class Updater {
         version: packageInfo.version,
       );
     }
+  }
+
+  /// The version shown for a release tag. Stable/preview tags carry a 'v'
+  /// prefix (v2.2.0); the rolling nightly tag is literally "nightly", so
+  /// only strip a leading 'v' — cutting the first character unconditionally
+  /// turned it into "ightly".
+  static String displayVersion(String tag) =>
+      tag.startsWith("v") ? tag.substring(1) : tag;
+
+  /// Whether a nightly build is newer than the installed one. Nightly
+  /// builds are a single rolling release, so the tag never changes and
+  /// cannot tell whether the installed build is current. Compare commit
+  /// hashes instead: the nightly release body carries the commit it was
+  /// built from (`Commit hash: ...`, already in the release body produced
+  /// by nightly.yml), and nightly CI bakes the same short hash into the
+  /// build (`--dart-define=GIT_COMMIT_HASH=...`). Builds without a baked
+  /// hash (older nightlies, local builds) report an update, as before.
+  static bool nightlyUpdateAvailable({
+    required String installedCommit,
+    required String releaseBody,
+  }) {
+    final latestCommit = RegExp(r"Commit hash: ([0-9a-f]+)")
+        .firstMatch(releaseBody)
+        ?.group(1);
+    if (installedCommit.isEmpty || latestCommit == null) {
+      return true;
+    }
+    return installedCommit != latestCommit;
+  }
+
+  static bool _isUpdateAvailable(
+    UpdateChannel channel,
+    Map<String, dynamic> latestRelease,
+    String latestVersion,
+  ) {
+    if (channel == UpdateChannel.nightly) {
+      final installedCommit = const String.fromEnvironment("GIT_COMMIT_HASH");
+      final body = latestRelease["body"] as String? ?? "";
+      return nightlyUpdateAvailable(
+        installedCommit: installedCommit,
+        releaseBody: body,
+      );
+    }
+    return latestVersion != packageInfo.version;
   }
 
   static Future<void> _autoUpdateDesktop() async {

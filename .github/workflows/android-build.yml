@@ -110,6 +110,13 @@ jobs:
       - name: Build Android
         shell: bash
         run: |
+          # Baked once per job so every APK of this build carries the
+          # same commit hash and timestamp; the release branches below
+          # append them, the dev branch builds its own EXTRA_ARGS.
+          METADATA_ARGS=""
+          if [[ "${{ inputs.include_metadata_defines }}" == "true" ]]; then
+            METADATA_ARGS="--dart-define=GIT_COMMIT_HASH=$(git rev-parse --short HEAD) --dart-define=BUILD_TIMESTAMP=$(date +%s)"
+          fi
           case "${{ inputs.build_mode }}" in
             ci_full_dev)
               EXTRA_ARGS=""
@@ -122,16 +129,16 @@ jobs:
               flutter build apk --flavor full-dev $EXTRA_ARGS
               ;;
             release_common)
-              flutter build apk --flavor=common
-              flutter build apk --flavor=common --split-per-abi --target-platform=android-arm64
-              flutter build apk --flavor=common --split-per-abi --target-platform=android-arm
-              flutter build apk --flavor=common --split-per-abi --target-platform=android-x64
+              flutter build apk --flavor=common $METADATA_ARGS
+              flutter build apk --flavor=common --split-per-abi --target-platform=android-arm64 $METADATA_ARGS
+              flutter build apk --flavor=common --split-per-abi --target-platform=android-arm $METADATA_ARGS
+              flutter build apk --flavor=common --split-per-abi --target-platform=android-x64 $METADATA_ARGS
               ;;
             release_full)
-              flutter build apk --flavor=full
-              flutter build apk --flavor=full --split-per-abi --target-platform=android-arm64
-              flutter build apk --flavor=full --split-per-abi --target-platform=android-arm
-              flutter build apk --flavor=full --split-per-abi --target-platform=android-x64
+              flutter build apk --flavor=full $METADATA_ARGS
+              flutter build apk --flavor=full --split-per-abi --target-platform=android-arm64 $METADATA_ARGS
+              flutter build apk --flavor=full --split-per-abi --target-platform=android-arm $METADATA_ARGS
+              flutter build apk --flavor=full --split-per-abi --target-platform=android-x64 $METADATA_ARGS
               ;;
             *)
               echo "Unsupported build_mode: ${{ inputs.build_mode }}"

@@ -2,6 +2,7 @@ import "dart:convert";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:ciyue/viewModels/quiz_view_model.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -137,9 +138,8 @@ class _LearningSettingsState extends ConsumerState<LearningSettings> {
           // Full width in the subtitle lets them lay out horizontally.
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: DropdownButton<String>(
+            child: AppDropdown<String>(
               value: _difficulty,
-              isExpanded: true,
               items: [
                 for (final d in difficulties)
                   DropdownMenuItem(value: d, child: Text(d)),

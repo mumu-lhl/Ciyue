@@ -8,6 +8,7 @@ import "package:ciyue/services/cloud_sync/dictionary_sync.dart";
 import "package:ciyue/services/cloud_sync/preview_service.dart";
 import "package:ciyue/services/cloud_sync/session_service.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:ciyue/ui/core/settings_group.dart";
 import "package:dio/dio.dart";
 import "package:file_selector/file_selector.dart" show openFile;
@@ -514,11 +515,9 @@ class _CloudSyncSettingsPageState extends ConsumerState<CloudSyncSettingsPage> {
               SettingsFieldCard(
                 child: Column(
                   children: [
-                    DropdownButtonFormField<CloudSyncProvider>(
-                      initialValue: _provider,
-                      decoration: InputDecoration(
-                        labelText: l10n.cloudSyncProviderType,
-                      ),
+                    AppDropdown<CloudSyncProvider>(
+                      value: _provider,
+                      label: l10n.cloudSyncProviderType,
                       items: [
                         for (final provider in CloudSyncProvider.values)
                           DropdownMenuItem(

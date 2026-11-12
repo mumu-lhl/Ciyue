@@ -1,6 +1,7 @@
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
@@ -40,14 +41,14 @@ class MouseGestureSelectors extends ConsumerWidget {
     );
   }
 
-  DropdownButton<MouseGestureAction> _actionDropdown(
+  AppDropdown<MouseGestureAction> _actionDropdown(
     AppLocalizations locale,
     MouseGestureAction value,
     Future<void> Function(MouseGestureAction) onChanged,
   ) {
-    return DropdownButton<MouseGestureAction>(
+    return AppDropdown<MouseGestureAction>(
       value: value,
-      isDense: true,
+      dense: true,
       items: [
         DropdownMenuItem(
           value: MouseGestureAction.off,

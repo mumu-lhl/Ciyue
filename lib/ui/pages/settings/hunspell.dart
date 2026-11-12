@@ -9,6 +9,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:ciyue/ui/core/settings_group.dart";
 import "package:ciyue/utils.dart";
 import "package:file_selector/file_selector.dart";
@@ -88,8 +89,9 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                     leading: const Icon(Icons.tune),
                     title: Text(l10n.hunspellLookupMode),
                     subtitle: Text(l10n.hunspellLookupModeDescription),
-                    trailing: DropdownButton<HunspellLookupMode>(
+                    trailing: AppDropdown<HunspellLookupMode>(
                       value: settings.hunspellLookupMode,
+                      dense: true,
                       items: [
                         DropdownMenuItem(
                           value: HunspellLookupMode.fallback,
