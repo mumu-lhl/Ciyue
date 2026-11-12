@@ -5,13 +5,13 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/startup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/services/floating_window_preferences.dart";
 import "package:ciyue/ui/core/badges.dart";
 import "package:ciyue/ui/core/settings_group.dart";
 import "package:ciyue/ui/pages/settings/mouse_gesture_selectors.dart";
 import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
-import "package:path_provider/path_provider.dart";
 
 class FloatingWindow extends StatefulWidget {
   const FloatingWindow({super.key});
@@ -21,57 +21,87 @@ class FloatingWindow extends StatefulWidget {
 }
 
 class _FloatingWindowState extends State<FloatingWindow> {
-  bool _isFloatingWindowEnabled = true;
+  final FloatingWindowPreferences _preferences = FloatingWindowPreferences();
+  FloatingWindowMode _mode = FloatingWindowMode.transparent;
 
   @override
   void initState() {
     super.initState();
-    _checkFloatingWindowStatus();
+    _load();
   }
 
-  Future<File> _getDisableFloatingWindowFile() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return File("${directory.path}/disable_floating_window");
+  Future<void> _load() async {
+    final mode = await _preferences.readMode();
+    if (!mounted) return;
+    setState(() => _mode = mode);
   }
 
-  Future<void> _checkFloatingWindowStatus() async {
-    final file = await _getDisableFloatingWindowFile();
-    final exists = await file.exists();
-    setState(() {
-      _isFloatingWindowEnabled = !exists;
-    });
+  Future<void> _selectMode() async {
+    final locale = AppLocalizations.of(context)!;
+    final selected = await showDialog<FloatingWindowMode>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(locale.floatingWindowMode),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final mode in FloatingWindowMode.values)
+              ListTile(
+                leading: Icon(
+                  mode == _mode
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                ),
+                title: Text(_modeLabel(locale, mode)),
+                subtitle: Text(_modeDescription(locale, mode)),
+                onTap: () => Navigator.pop(context, mode),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (selected == null || selected == _mode) return;
+    await _preferences.writeMode(selected);
+    if (!mounted) return;
+    setState(() => _mode = selected);
   }
 
-  Future<void> _toggleFloatingWindow(bool value) async {
-    final file = await _getDisableFloatingWindowFile();
-    if (value) {
-      if (await file.exists()) {
-        await file.delete();
-      }
-    } else {
-      if (!await file.exists()) {
-        await file.create();
-      }
-    }
-    setState(() {
-      _isFloatingWindowEnabled = value;
-    });
-  }
+  String _modeLabel(AppLocalizations locale, FloatingWindowMode mode) =>
+      switch (mode) {
+        FloatingWindowMode.transparent => locale.floatingWindowModeTransparent,
+        FloatingWindowMode.halfScreen => locale.floatingWindowModeHalfScreen,
+        FloatingWindowMode.off => locale.floatingWindowModeOff,
+      };
+
+  String _modeDescription(AppLocalizations locale, FloatingWindowMode mode) =>
+      switch (mode) {
+        FloatingWindowMode.transparent =>
+          locale.floatingWindowModeTransparentDescription,
+        FloatingWindowMode.halfScreen =>
+          locale.floatingWindowModeHalfScreenDescription,
+        FloatingWindowMode.off => locale.floatingWindowModeOffDescription,
+      };
 
   @override
   Widget build(BuildContext context) {
-    return SwitchListTile(
-      secondary: const Icon(Icons.window),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(AppLocalizations.of(context)!.floatingWindow),
-          const SizedBox(width: 8),
-          const BaseBadge(text: "Beta"),
-        ],
-      ),
-      value: _isFloatingWindowEnabled,
-      onChanged: _toggleFloatingWindow,
+    final locale = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.window),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(locale.floatingWindow),
+              const SizedBox(width: 8),
+              const BaseBadge(text: "Beta"),
+            ],
+          ),
+          subtitle: Text(_modeLabel(locale, _mode)),
+          onTap: _selectMode,
+        ),
+      ],
     );
   }
 }

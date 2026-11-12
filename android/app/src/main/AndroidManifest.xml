@@ -69,6 +69,15 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <!-- Readers such as Moon+ Reader use the ColorDict protocol for
+                 "look up the selected word". They also send EXTRA_GRAVITY /
+                 EXTRA_HEIGHT so the popup avoids the selected word. -->
+            <intent-filter>
+                <action android:name="colordict.intent.action.SEARCH" />
+                <action android:name="goldendict.intent.action.SEARCH" />
+                <action android:name="android.intent.action.SEARCH_LONG_PRESS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".ShareTextActivity"

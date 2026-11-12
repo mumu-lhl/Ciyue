@@ -4,6 +4,7 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/services/audio.dart";
+import "package:ciyue/services/floating_window_preferences.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/ui/pages/main/main.dart";
@@ -22,8 +23,13 @@ const _platform = MethodChannel("org.eu.mumulhl.ciyue");
 class _ProcessTextRequest {
   final int id;
   final String text;
+  final FloatingWindowMode mode;
 
-  const _ProcessTextRequest({required this.id, required this.text});
+  const _ProcessTextRequest({
+    required this.id,
+    required this.text,
+    required this.mode,
+  });
 
   factory _ProcessTextRequest.fromPlatform(Object? arguments) {
     if (arguments is! Map) {
@@ -36,7 +42,13 @@ class _ProcessTextRequest {
       throw const FormatException("Invalid process-text request");
     }
 
-    return _ProcessTextRequest(id: id.toInt(), text: text);
+    final modeValue = arguments["mode"];
+    return _ProcessTextRequest(
+      id: id.toInt(),
+      text: text,
+      // Older payloads and requests from the main engine have no mode.
+      mode: FloatingWindowMode.parse(modeValue is String ? modeValue : null),
+    );
   }
 }
 
@@ -65,10 +77,21 @@ class DictionaryDirectoryPick {
 
 int? _lastNavigatedProcessTextRequestId;
 
-void navigateToProcessText(String text, {int? requestId}) {
+void navigateToProcessText(
+  String text, {
+  int? requestId,
+  FloatingWindowMode? mode,
+}) {
   final normalizedText = text.trim();
   if (normalizedText.isEmpty) {
     return;
+  }
+
+  // Android sends the current mode with every lookup, including the pending
+  // one consumed during a cold start. The settings page lives in the main
+  // engine, so this is how the floating engine learns about a mode change.
+  if (mode != null) {
+    floatingWindowMode.value = mode;
   }
 
   if (requestId != null) {
@@ -111,7 +134,11 @@ class PlatformMethod {
           final request = _ProcessTextRequest.fromPlatform(call.arguments);
 
           try {
-            navigateToProcessText(request.text, requestId: request.id);
+            navigateToProcessText(
+              request.text,
+              requestId: request.id,
+              mode: request.mode,
+            );
             await _acknowledgeProcessText(request);
           } catch (error, stackTrace) {
             talker.error("Failed to handle process text", error, stackTrace);
@@ -255,7 +282,11 @@ class PlatformMethod {
       }
 
       final request = _ProcessTextRequest.fromPlatform(pending);
-      navigateToProcessText(request.text, requestId: request.id);
+      navigateToProcessText(
+        request.text,
+        requestId: request.id,
+        mode: request.mode,
+      );
       await _acknowledgeProcessText(request);
     } catch (error, stackTrace) {
       talker.error("Failed to consume pending process text", error, stackTrace);

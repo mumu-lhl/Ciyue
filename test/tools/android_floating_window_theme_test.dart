@@ -26,9 +26,39 @@ void main() {
     expect(activity, contains('android:resizeableActivity="true"'));
   });
 
+  test("lookups accept the ColorDict protocol", () {
+    final manifest = File("android/app/src/main/AndroidManifest.xml")
+        .readAsStringSync();
+    final activity = RegExp(
+      r'<activity\s[^>]*android:name="\.ProcessTextActivity"[^>]*>'
+      r"[\s\S]*?</activity>",
+    ).firstMatch(manifest)?.group(0);
+    expect(activity, contains("colordict.intent.action.SEARCH"));
+    expect(activity, contains("goldendict.intent.action.SEARCH"));
+    expect(activity, contains("android.intent.action.SEARCH_LONG_PRESS"));
+  });
+
+  test("the floating window is a dialog-style window", () {
+    final styles = File("$resources/values/styles.xml").readAsStringSync();
+    final parent = RegExp(
+      r'<style\s+name="Theme\.Transparent"\s+parent="([^"]+)"',
+    ).firstMatch(styles)?.group(1);
+    // A dialog-style parent lets Window.setLayout/setGravity size the window
+    // from the moment it is created, the way ColorDict popups do.
+    expect(parent, contains("Dialog"));
+    expect(
+      styleItem(styles, "Theme.Transparent", "android:windowIsFloating"),
+      "false",
+    );
+    expect(
+      styleItem(styles, "Theme.Transparent", "android:backgroundDimEnabled"),
+      "false",
+    );
+  });
+
   // WebView derives prefers-color-scheme from the native isLightTheme,
   // independently of Flutter's algorithmicDarkeningAllowed setting.
-  // Theme.Translucent.NoTitleBar inherits false, even in values (day).
+  // The dialog parent inherits false, even in values (day).
   for (final night in [false, true]) {
     for (final api31 in [false, true]) {
       final qualifier =
@@ -79,7 +109,7 @@ void main() {
             "Theme.Transparent",
             "android:windowIsFloating",
           ),
-          isNull,
+          "false",
         );
         expect(
           styleItem(
