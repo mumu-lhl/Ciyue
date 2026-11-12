@@ -9,16 +9,18 @@ import java.io.File
 /**
  * Floating-window configuration shared with the Dart settings page.
  *
- * The settings page writes these files into its application documents
- * directory; ProcessTextActivity reads them before any Flutter engine is
- * running, so it can decide which Activity a lookup should open.
+ * The settings page only stores whether the floating window is enabled. The
+ * window style is not a user choice: it follows the lookup intent, see
+ * ProcessTextActivity.
  */
 object FloatingWindowSettings {
     const val MODE_FILE = "floating_window_mode"
     const val LEGACY_DISABLED_FILE = "disable_floating_window"
-    const val PLACEMENT_FILE = "floating_window_half_placement"
 
     const val EXTRA_MODE = "extra_floating_window_mode"
+
+    /** Used when the reader sends a height but no gravity. */
+    const val DEFAULT_GRAVITY = Gravity.BOTTOM
 
     enum class Mode(val value: String) {
         TRANSPARENT("transparent"),
@@ -40,12 +42,6 @@ object FloatingWindowSettings {
             if (file.exists()) file.readText().trim() else null
         }.getOrNull()
 
-    private fun write(context: Context, name: String, value: String) {
-        runCatching {
-            File(dataDirectory(context), name).writeText(value)
-        }
-    }
-
     fun mode(context: Context): Mode {
         val saved = read(context, MODE_FILE)
         if (saved != null) {
@@ -58,18 +54,7 @@ object FloatingWindowSettings {
         return if (legacy.exists()) Mode.OFF else Mode.TRANSPARENT
     }
 
-    /** The side the reader last asked for, used when a lookup arrives through
-     *  ACTION_SEND / ACTION_PROCESS_TEXT and carries no ColorDict geometry. */
-    fun rememberedPlacement(context: Context): Int =
-        if (read(context, PLACEMENT_FILE) == "top") Gravity.TOP else Gravity.BOTTOM
-
-    fun rememberPlacement(context: Context, gravity: Int) {
-        write(
-            context,
-            PLACEMENT_FILE,
-            if (gravity == Gravity.TOP) "top" else "bottom",
-        )
-    }
+    fun isEnabled(context: Context): Boolean = mode(context) != Mode.OFF
 }
 
 /**
@@ -95,7 +80,7 @@ object ColorDict {
     const val EXTRA_MARGIN_BOTTOM = "EXTRA_MARGIN_BOTTOM"
     const val EXTRA_MARGIN_RIGHT = "EXTRA_MARGIN_RIGHT"
 
-    private val GEOMETRY_KEYS = listOf(
+    private val FORWARD_KEYS = listOf(
         EXTRA_FULLSCREEN,
         EXTRA_HEIGHT,
         EXTRA_WIDTH,
@@ -106,12 +91,31 @@ object ColorDict {
         EXTRA_MARGIN_RIGHT,
     )
 
+    /** Keys that describe the popup geometry. EXTRA_FULLSCREEN is only a
+     *  display hint, so an intent carrying just that stays a centred card. */
+    private val LAYOUT_KEYS = listOf(
+        EXTRA_HEIGHT,
+        EXTRA_WIDTH,
+        EXTRA_GRAVITY,
+        EXTRA_MARGIN_LEFT,
+        EXTRA_MARGIN_TOP,
+        EXTRA_MARGIN_BOTTOM,
+        EXTRA_MARGIN_RIGHT,
+    )
+
+    /** True when the reader told us where the selected word is; only then the
+     *  lookup becomes a half-screen window. */
+    fun hasGeometry(intent: Intent?): Boolean {
+        val extras = intent?.extras ?: return false
+        return LAYOUT_KEYS.any { extras.containsKey(it) }
+    }
+
     /** Copy the reader's geometry from the incoming intent to the one that
      *  launches the floating Activity. Only those keys are forwarded so an
      *  unrelated extra can never change the window layout. */
     fun forwardGeometry(source: Intent?, target: Intent) {
         val extras = source?.extras ?: return
-        for (key in GEOMETRY_KEYS) {
+        for (key in FORWARD_KEYS) {
             if (!extras.containsKey(key)) continue
             when (val value = extras.get(key)) {
                 is Int -> target.putExtra(key, value)
@@ -130,7 +134,6 @@ object ColorDict {
         val marginTop: Int,
         val marginRight: Int,
         val marginBottom: Int,
-        val readerProvidedGravity: Boolean,
     )
 
     fun geometry(intent: Intent?, fallbackGravity: Int): Geometry {
@@ -167,7 +170,6 @@ object ColorDict {
             marginTop = margin(EXTRA_MARGIN_TOP),
             marginRight = margin(EXTRA_MARGIN_RIGHT),
             marginBottom = margin(EXTRA_MARGIN_BOTTOM),
-            readerProvidedGravity = hasGravity,
         )
     }
 }

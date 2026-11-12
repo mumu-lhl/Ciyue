@@ -49,6 +49,18 @@ Create a file named `dictionaries.lua` inside the `koreader` directory with:
 
 Then look up words from KOReader via the dictionary action.
 
+## How do I use the floating window with Moon+ Reader?
+
+Enable **Settings → Other → Floating Window** in Ciyue. The window style follows the reader automatically: when the reader sends the position of the selected word (the ColorDict protocol), Ciyue opens a half-screen window on the opposite half of the screen so the word stays visible; without that information it shows the centred card instead. Turning the switch off makes lookups open the main Ciyue window.
+
+To look words up from Moon+ Reader:
+
+1. Select some text; in the menu that appears, tap **More**, then tap **Settings** to open the dictionary settings.
+2. Set **Dictionary 1 (single tap on the dictionary button)** or **Dictionary 2 (long press on the dictionary button)** to **深蓝词典|欧路词典|MDict|ColorDict**.
+3. Tick **Ciyue** in the dictionary list that appears.
+
+If a different dictionary opens instead, Android has remembered a default for that action: open **Android Settings → Apps → that dictionary app → Open by default → Clear default preferences** and try again.
+
 ## Where is my data stored?
 
 - **Android**: the app's private storage (`/data/data/org.eu.mumulhl.ciyue/`); dictionaries default to the app's documents directory, configurable in settings.

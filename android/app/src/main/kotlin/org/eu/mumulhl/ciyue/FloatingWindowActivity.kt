@@ -99,11 +99,8 @@ class FloatingWindowActivity : FlutterActivity() {
 
         val geometry = ColorDict.geometry(
             intent,
-            FloatingWindowSettings.rememberedPlacement(this),
+            FloatingWindowSettings.DEFAULT_GRAVITY,
         )
-        if (geometry.readerProvidedGravity) {
-            FloatingWindowSettings.rememberPlacement(this, geometry.gravity)
-        }
 
         val (displayWidth, displayHeight) = displaySize()
         val height = (geometry.height ?: (displayHeight * 0.5f).toInt())

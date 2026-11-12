@@ -22,7 +22,7 @@ class FloatingWindow extends StatefulWidget {
 
 class _FloatingWindowState extends State<FloatingWindow> {
   final FloatingWindowPreferences _preferences = FloatingWindowPreferences();
-  FloatingWindowMode _mode = FloatingWindowMode.transparent;
+  bool _enabled = true;
 
   @override
   void initState() {
@@ -33,75 +33,33 @@ class _FloatingWindowState extends State<FloatingWindow> {
   Future<void> _load() async {
     final mode = await _preferences.readMode();
     if (!mounted) return;
-    setState(() => _mode = mode);
+    setState(() => _enabled = mode != FloatingWindowMode.off);
   }
 
-  Future<void> _selectMode() async {
-    final locale = AppLocalizations.of(context)!;
-    final selected = await showDialog<FloatingWindowMode>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(locale.floatingWindowMode),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final mode in FloatingWindowMode.values)
-              ListTile(
-                leading: Icon(
-                  mode == _mode
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_unchecked,
-                ),
-                title: Text(_modeLabel(locale, mode)),
-                subtitle: Text(_modeDescription(locale, mode)),
-                onTap: () => Navigator.pop(context, mode),
-              ),
-          ],
-        ),
-      ),
+  Future<void> _setEnabled(bool enabled) async {
+    await _preferences.writeMode(
+      enabled ? FloatingWindowMode.transparent : FloatingWindowMode.off,
     );
-    if (selected == null || selected == _mode) return;
-    await _preferences.writeMode(selected);
     if (!mounted) return;
-    setState(() => _mode = selected);
+    setState(() => _enabled = enabled);
   }
-
-  String _modeLabel(AppLocalizations locale, FloatingWindowMode mode) =>
-      switch (mode) {
-        FloatingWindowMode.transparent => locale.floatingWindowModeTransparent,
-        FloatingWindowMode.halfScreen => locale.floatingWindowModeHalfScreen,
-        FloatingWindowMode.off => locale.floatingWindowModeOff,
-      };
-
-  String _modeDescription(AppLocalizations locale, FloatingWindowMode mode) =>
-      switch (mode) {
-        FloatingWindowMode.transparent =>
-          locale.floatingWindowModeTransparentDescription,
-        FloatingWindowMode.halfScreen =>
-          locale.floatingWindowModeHalfScreenDescription,
-        FloatingWindowMode.off => locale.floatingWindowModeOffDescription,
-      };
 
   @override
   Widget build(BuildContext context) {
     final locale = AppLocalizations.of(context)!;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ListTile(
-          leading: const Icon(Icons.window),
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(locale.floatingWindow),
-              const SizedBox(width: 8),
-              const BaseBadge(text: "Beta"),
-            ],
-          ),
-          subtitle: Text(_modeLabel(locale, _mode)),
-          onTap: _selectMode,
-        ),
-      ],
+    return SwitchListTile(
+      secondary: const Icon(Icons.window),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(locale.floatingWindow),
+          const SizedBox(width: 8),
+          const BaseBadge(text: "Beta"),
+        ],
+      ),
+      subtitle: Text(locale.floatingWindowSwitchDescription),
+      value: _enabled,
+      onChanged: _setEnabled,
     );
   }
 }

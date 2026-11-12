@@ -14,8 +14,15 @@ class ProcessTextActivity : Activity() {
             return
         }
 
-        val mode = FloatingWindowSettings.mode(this)
-        if (mode != FloatingWindowSettings.Mode.OFF) {
+        if (FloatingWindowSettings.isEnabled(this)) {
+            // The reader decides the style by supplying the selected word's
+            // geometry: with it the popup becomes a half-screen window that
+            // avoids the word, without it a centred card over the reader.
+            val mode = if (ColorDict.hasGeometry(intent)) {
+                FloatingWindowSettings.Mode.HALF
+            } else {
+                FloatingWindowSettings.Mode.TRANSPARENT
+            }
             val floatingWindowIntent = Intent(this, FloatingWindowActivity::class.java).apply {
                 putExtra(FloatingWindowEngine.EXTRA_TEXT_TO_SHOW, text)
                 putExtra(FloatingWindowSettings.EXTRA_MODE, mode.value)
