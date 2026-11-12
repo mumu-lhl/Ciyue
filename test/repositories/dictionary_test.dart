@@ -16,6 +16,23 @@ void main() {
         (call) async => Directory.systemTemp.path,
       );
 
+  test("MDict entries are wrapped in standards mode", () {
+    final dictionary = Mdict(path: "/tmp/sample.mdx");
+    expect(
+      dictionary.wrapContentWithResources("<p>definition</p>"),
+      "<!DOCTYPE html>\n<p>definition</p>",
+    );
+
+    dictionary.hasCss = true;
+    dictionary.hasJs = true;
+    final withResources = dictionary.wrapContentWithResources(
+      "<p>definition</p>",
+    );
+    expect(withResources, startsWith("<!DOCTYPE html>\n"));
+    expect(withResources, contains('href="sample.mdx.css"'));
+    expect(withResources, contains('src="sample.mdx.js"'));
+  });
+
   test("follows chained @@@LINK records", () async {
     final directory = await Directory.systemTemp.createTemp("ciyue_mdict_");
     final mdxFile = await _writeMdx(directory, [

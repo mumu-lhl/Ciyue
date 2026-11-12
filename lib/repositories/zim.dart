@@ -47,6 +47,11 @@ class Zim extends BaseLoadedDictionary {
 
   Zim({required super.path});
 
+  /// A ZIM article is a complete HTML page; its own doctype (or the lack of
+  /// one) decides the document mode, exactly as Kiwix renders it.
+  @override
+  bool get useStandardsMode => false;
+
   void _ensureReader() {
     if (!_readerInitialized) {
       reader = ZimReader("$path.zim");

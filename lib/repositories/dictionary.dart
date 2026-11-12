@@ -941,7 +941,9 @@ class Mdict implements LoadedDictionary {
     }
     // An MDict file can carry converter-produced `<audio>` markup too, so the
     // repair is not limited to StarDict.
-    return header + rewriteMediaTags(content);
+    // Articles are fragments, so the doctype has to precede the dictionary's
+    // stylesheet/script tags as well as the entry markup.
+    return forceStandardsMode(header + rewriteMediaTags(content));
   }
 
   @override

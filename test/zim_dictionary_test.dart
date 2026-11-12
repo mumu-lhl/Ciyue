@@ -177,6 +177,9 @@ void main() {
 
     final html = dict.wrapContentWithResources(entries.first.content);
     expect(html, contains('<img src="I/apple.png" />'));
+    // ZIM pages keep their own doctype instead of being forced into
+    // standards mode like MDict and StarDict fragments.
+    expect(html, isNot(startsWith("<!DOCTYPE")));
   });
 
   test("rewrites ZIM article links into gdlookup entry links", () async {

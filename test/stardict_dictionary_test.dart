@@ -114,8 +114,11 @@ void main() {
     expect(entries[1].content, contains("香蕉"));
   });
 
-  test("wrapContentWithResources leaves StarDict HTML untouched", () {
-    expect(dict.wrapContentWithResources("<p>x</p>"), "<p>x</p>");
+  test("wrapContentWithResources puts StarDict HTML in standards mode", () {
+    expect(
+      dict.wrapContentWithResources("<p>x</p>"),
+      "<!DOCTYPE html>\n<p>x</p>",
+    );
   });
 
   test("links a stylesheet named after the dictionary", () async {
@@ -131,7 +134,7 @@ void main() {
     expect(withCss.hasCss, isTrue);
     expect(
       withCss.wrapContentWithResources("<p>x</p>"),
-      '<link rel="stylesheet" href="fixture.css">\n<p>x</p>',
+      '<!DOCTYPE html>\n<link rel="stylesheet" href="fixture.css">\n<p>x</p>',
     );
     expect(await withCss.readResourceFile("fixture.css"), isNotNull);
   });

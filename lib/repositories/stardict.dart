@@ -217,7 +217,7 @@ class Stardict extends BaseLoadedDictionary {
         ? '<link rel="stylesheet" href="'
               '${Uri.encodeComponent(basename(path))}.css">\n'
         : "";
-    return header + rewriteMediaTags(content);
+    return applyDocumentMode(header + rewriteMediaTags(content));
   }
 
   @override
