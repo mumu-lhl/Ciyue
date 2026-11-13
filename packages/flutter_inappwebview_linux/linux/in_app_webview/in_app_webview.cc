@@ -69,6 +69,7 @@
 #include "../utils/flutter.h"
 #include "../utils/gl_context.h"
 #include "../utils/log.h"
+#include "../utils/software_rendering.h"
 #include "../utils/uri.h"
 #include "in_app_webview_manager.h"
 #include "simd_convert.h"
@@ -230,20 +231,6 @@ bool InAppWebView::IsWpeWebKitAvailable() {
   return available;
 }
 
-#ifdef HAVE_WPE_PLATFORM
-// Check if DMA-BUF rendering should be used (called at WebView initialization)
-// Returns true if DMA-BUF rendering is expected to work
-// Note: The actual environment detection and LIBGL_ALWAYS_SOFTWARE setting
-// is now done at plugin registration time via utils/software_rendering.h
-bool InAppWebView::PreflightDmaBufSupport() {
-  const char* sw_env = getenv("LIBGL_ALWAYS_SOFTWARE");
-  if (sw_env && (strcmp(sw_env, "1") == 0 || strcasecmp(sw_env, "true") == 0)) {
-    return false;  // Software rendering mode
-  }
-  return true;  // Hardware rendering mode
-}
-#endif
-
 InAppWebView::InAppWebView(FlPluginRegistrar* registrar, FlBinaryMessenger* messenger, int64_t id,
                            const InAppWebViewCreationParams& params)
     : plugin_(params.plugin), registrar_(registrar), messenger_(messenger), gtk_window_(params.gtkWindow), fl_view_(params.flView), manager_(params.manager), id_(id), settings_(params.initialSettings),
@@ -275,6 +262,11 @@ InAppWebView::InAppWebView(FlPluginRegistrar* registrar, FlBinaryMessenger* mess
   InitWpeBackend();
   InitWebView(params);
   RegisterEventHandlers();
+
+  // If the WebProcess never delivers a frame, the entry area stays blank while
+  // its DOM keeps working (text can still be selected and copied). Report once
+  // instead of leaving a silent failure.
+  first_frame_watchdog_id_ = g_timeout_add_seconds(5, OnFirstFrameWatchdog, this);
 
   // Set up monitor change handlers and initial refresh rate (like Cog browser does)
   // This helps WPE synchronize frame production with the display
@@ -383,6 +375,10 @@ InAppWebView::~InAppWebView() {
   debugLog("dealloc InAppWebView");
   is_disposing_.store(true);
   async_lifetime_token_.reset();
+  if (first_frame_watchdog_id_ != 0) {
+    g_source_remove(first_frame_watchdog_id_);
+    first_frame_watchdog_id_ = 0;
+  }
 #ifdef HAVE_WPE_PLATFORM
   if (force_resize_source_id_ != 0) {
     g_source_remove(force_resize_source_id_);
@@ -673,16 +669,16 @@ void InAppWebView::InitWpeBackend() {
 
   egl_display_ = egl_display;
 
-  // Initialize WPE FDO (only once per process). This choice decides which kind
-  // of buffer the view backends export, so it has to match how the frame is
-  // consumed: with the GL texture disabled (FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL)
-  // every frame goes through ReadPixelsFromEglImage(), which imports the
-  // exported DMA-BUF EGLImage into a GL texture and reads it back. Importing
-  // that image crashes llvmpipe inside libgallium (Mesa 25.0.7 on Debian 13),
-  // and a GPU buffer buys nothing for a CPU readback, so ask for SHM export
-  // instead; OnExportShmBuffer() already consumes those buffers.
-  const bool shm_export =
-      g_getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr;
+  // Initialize WPE FDO (only once per process). This decides which kind of
+  // buffer the view backends export, and it has to match both the host texture
+  // type and the frame consumer, so it is derived from the same
+  // ResolveRenderingMode() decision as everything else.
+  //
+  // In software mode the host uses a FlPixelBufferTexture and consumes SHM
+  // buffers in OnExportShmBuffer(). Asking for DMA-BUF export there would make
+  // OnExportDmaBuf drop every frame, and importing the exported EGLImage into
+  // llvmpipe crashes inside libgallium (Mesa 25.0.7 on Debian 13).
+  const bool shm_export = UsesSoftwareRendering();
   static std::once_flag s_wpe_fdo_init_flag;
   std::call_once(s_wpe_fdo_init_flag, [egl_display, shm_export]() {
     if (shm_export) {
@@ -1305,6 +1301,36 @@ void InAppWebView::OnFrameDisplayed(void* data) {
   self->NotifyFrameAvailable();
 }
 
+gboolean InAppWebView::OnFirstFrameWatchdog(gpointer user_data) {
+  auto* self = static_cast<InAppWebView*>(user_data);
+  self->first_frame_watchdog_id_ = 0;
+  if (self->is_disposing_.load() || self->received_first_frame_.load()) {
+    return G_SOURCE_REMOVE;
+  }
+  // Report the resolved mode rather than inferring it from the environment:
+  // the environment is now an output of the decision, so reading it back would
+  // just echo it. The raw variables are still logged to prove they were set.
+  const RenderingMode mode = ResolveRenderingMode();
+  std::string message =
+      std::string("InAppWebView: no frame within 5s, mode=") +
+      (mode == RenderingMode::kSoftwareShm ? "softwareSHM" : "hardwareEGL") +
+      " DISABLE_GL=" +
+      (getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr ? "1" : "0") +
+      " WEBKIT_DISABLE_DMABUF_RENDERER=" +
+      (getenv("WEBKIT_DISABLE_DMABUF_RENDERER") != nullptr ? "1" : "0") +
+      ". A blank WebView with a live DOM looks exactly like this.";
+  if (mode == RenderingMode::kHardwareEgl) {
+    // Name the exact recovery step instead of leaving the reader to guess.
+    // This is diagnostic only: a watchdog cannot tell "the GPU failed" from
+    // "the dictionary is still loading", so it must not change any setting.
+    message +=
+        " The hardware EGL path is not working on this GPU; start again with "
+        "CIYUE_RENDER_MODE=software to switch to the software renderer.";
+  }
+  errorLog(message);
+  return G_SOURCE_REMOVE;
+}
+
 #ifdef HAVE_WPE_BACKEND_LEGACY
 void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
   if (is_disposing_.load() || image == nullptr) {
@@ -1314,15 +1340,24 @@ void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
     return;
   }
 
+  if (!received_first_frame_.exchange(true)) {
+    infoLog("InAppWebView: first frame via DMA-BUF");
+  }
+
   // Software frames are supposed to arrive as SHM buffers (see the SHM export
   // initialization above). If a DMA-BUF still shows up, do not hand it to
   // ReadPixelsFromEglImage(): the GL import there crashes llvmpipe inside
   // libgallium, so drop the frame instead of taking the process down.
-  if (g_getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr) {
+  if (UsesSoftwareRendering()) {
     static bool warned_about_dmabuf = false;
     if (!warned_about_dmabuf) {
       warned_about_dmabuf = true;
-      errorLog("InAppWebView: Dropping a DMA-BUF frame in software mode");
+      errorLog("InAppWebView: Dropping a DMA-BUF frame in software mode. "
+               "The WebProcess is still using its DMA-BUF renderer; set "
+               "WEBKIT_DISABLE_DMABUF_RENDERER=1 before it starts, or the "
+               "WebView stays blank. Do not use LIBGL_ALWAYS_SOFTWARE: it is "
+               "process-wide and also forces Flutter's GL backend onto "
+               "llvmpipe, which can blank the whole window.");
     }
     ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_, image);
     return;
@@ -8166,6 +8201,10 @@ void InAppWebView::initializeWindowIdJS() {
 void InAppWebView::OnExportShmBuffer(struct wpe_fdo_shm_exported_buffer* buffer) {
   if (buffer == nullptr) {
     return;
+  }
+
+  if (!received_first_frame_.exchange(true)) {
+    infoLog("InAppWebView: first frame via SHM");
   }
 
   // Get the wl_shm_buffer from the exported buffer

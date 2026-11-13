@@ -8,6 +8,7 @@
 
 #include "../utils/flutter.h"
 #include "../utils/log.h"
+#include "../utils/software_rendering.h"
 #include "inappwebview_egl_texture.h"
 #include "inappwebview_texture.h"
 
@@ -61,13 +62,12 @@ void ScheduleTextureFrameNotification(
                   DestroyTextureFrameNotification);
 }
 
-// Check if GL textures should be used (enabled by default, can be disabled)
-// Disable with FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL=1 to force software rendering.
+// The texture type must match the frame transport picked by
+// ResolveRenderingMode(). Do not re-read FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL
+// here: a texture that disagrees with the WebProcess's buffer type receives no
+// frames at all and renders a blank WebView with a live DOM.
 bool UseGLTextureEnvOverride() {
-  if (g_getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr) {
-    return false;
-  }
-  return true;
+  return ResolveRenderingMode() == RenderingMode::kHardwareEgl;
 }
 
 // Check if OpenGL is actually available in the current GDK backend

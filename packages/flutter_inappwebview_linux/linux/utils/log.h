@@ -50,7 +50,31 @@ static inline void debugLog(const T& value, const bool& isError = false,
 
 static inline void errorLog(const std::string& msg, const std::string& filename = "",
                             const int& line = 0) {
+#ifdef NDEBUG
+  // apply_standard_settings() defines NDEBUG for Profile and Release, which
+  // compiles every debugLog out -- errors included. Release builds then ship
+  // with no C++ diagnostics at all, which made a field blank-WebView report
+  // very hard to attribute. Keep errors on stderr in shipped builds.
+  (void)filename;
+  (void)line;
+  g_warning("[flutter_inappwebview] %s", msg.c_str());
+#else
   debugLog(msg, true, filename, line);
+#endif
+}
+
+// Informational messages that must survive in shipped builds.
+//
+// debugLog is compiled out for Profile/Release, but a field report still needs
+// to know which rendering mode was chosen and which frame path is active. Keep
+// this for one-shot decisions (mode selection, first-frame watchdog), not for
+// per-frame output.
+static inline void infoLog(const std::string& msg) {
+#ifdef NDEBUG
+  g_message("[flutter_inappwebview] %s", msg.c_str());
+#else
+  debugLog(msg);
+#endif
 }
 
 // GError logging helper

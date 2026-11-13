@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <glob.h>
+#include <mutex>
 #include <string>
 #include <unistd.h>
 
@@ -170,63 +171,117 @@ bool HasAccessibleDrmNode() {
 
 }  // namespace
 
-bool ShouldUseSoftwareRendering() {
-  // Check user override: skip detection
+namespace {
+
+RenderingMode DetectRenderingMode() {
+  // Explicit escape hatch: try the hardware EGL zero-copy path and skip every
+  // heuristic below.
   const char* skip_check = getenv("FLUTTER_INAPPWEBVIEW_SKIP_DMABUF_CHECK");
-  if (skip_check && (strcmp(skip_check, "1") == 0 || strcasecmp(skip_check, "true") == 0)) {
-    return false;
-  }
-  
-  // Already set by user or another component
-  const char* already_sw = getenv("LIBGL_ALWAYS_SOFTWARE");
-  if (already_sw && (strcmp(already_sw, "1") == 0 || strcasecmp(already_sw, "true") == 0)) {
-    return true;  // Already in software mode
+  if (skip_check != nullptr &&
+      (strcmp(skip_check, "1") == 0 || strcasecmp(skip_check, "true") == 0)) {
+    debugLog("SKIP_DMABUF_CHECK set, forcing hardware EGL rendering");
+    return RenderingMode::kHardwareEgl;
   }
 
-  // If no accessible DRM device exists, hardware acceleration is impossible
-  if (!HasAccessibleDrmNode()) {
-    debugLog("No accessible DRM node found in /dev/dri, enabling software rendering");
-    return true;
+  // The host application asked for the software pixel-buffer texture. Its
+  // texture type and the WebProcess buffer type are chosen independently, so
+  // this is also a request to make the WebProcess export SHM. Ignoring it
+  // leaves the host dropping every DMA-BUF frame: a blank WebView whose DOM is
+  // still alive.
+  if (getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr) {
+    debugLog("DISABLE_GL set, using SHM rendering");
+    return RenderingMode::kSoftwareShm;
   }
-  
-  // If we have a known good GPU driver, use hardware rendering
+
+  // If another component already disabled WebKit's DMA-BUF renderer, the
+  // WebProcess will export SHM frames, so the host has to use the pixel-buffer
+  // texture. The plugin owns the only DRM probe; this merely respects an
+  // external request instead of second-guessing it.
+  if (getenv("WEBKIT_DISABLE_DMABUF_RENDERER") != nullptr) {
+    debugLog("WEBKIT_DISABLE_DMABUF_RENDERER already set, using SHM rendering");
+    return RenderingMode::kSoftwareShm;
+  }
+
+  // Honour an explicit user override, but never set this ourselves: it is a
+  // process-wide Mesa switch that also affects Flutter's own GL renderer.
+  const char* already_sw = getenv("LIBGL_ALWAYS_SOFTWARE");
+  if (already_sw != nullptr &&
+      (strcmp(already_sw, "1") == 0 || strcasecmp(already_sw, "true") == 0)) {
+    debugLog("LIBGL_ALWAYS_SOFTWARE was set by the user; using SHM rendering");
+    return RenderingMode::kSoftwareShm;
+  }
+
+  // If no accessible DRM device exists, hardware acceleration is impossible.
+  if (!HasAccessibleDrmNode()) {
+    debugLog("No accessible DRM node found in /dev/dri, using SHM rendering");
+    return RenderingMode::kSoftwareShm;
+  }
+
+  // If we have a known good GPU driver, use hardware rendering.
   if (HasKnownGoodGpuDriver()) {
     debugLog("Known good GPU driver found, using hardware rendering");
-    return false;
+    return RenderingMode::kHardwareEgl;
   }
 
-  const bool in_vm = IsRunningInVirtualMachine();
-  
-  // Detect VM environment
-  if (in_vm) {
-    return true;
+  // Detect VM environment.
+  if (IsRunningInVirtualMachine()) {
+    debugLog("Virtual machine detected, using SHM rendering");
+    return RenderingMode::kSoftwareShm;
   }
-  
-  // Detect problematic GPU drivers only inside a VM
-  if (in_vm && HasProblematicGpuDriver()) {
-    return true;
+
+  // Some VMs hide the hypervisor from DMI and cpuinfo (e.g. VirGL with a
+  // custom SMBIOS), but their virtio-gpu/vmwgfx driver still cannot produce
+  // usable DMA-BUF frames. This used to be gated on in_vm as well, which made
+  // the check unreachable: the branch above already returned for every VM.
+  if (HasProblematicGpuDriver()) {
+    debugLog("Problematic GPU driver detected, using SHM rendering");
+    return RenderingMode::kSoftwareShm;
   }
-  
-  return false;
+
+  return RenderingMode::kHardwareEgl;
+}
+
+void ApplyRenderingModeEnvironment(RenderingMode mode) {
+  if (mode == RenderingMode::kSoftwareShm) {
+    // Both switches have to be set, and before the WebProcess starts: it
+    // inherits the environment at spawn time.
+    //
+    // DISABLE_GL selects the host's pixel-buffer texture and discards DMA-BUF
+    // frames; WEBKIT_DISABLE_DMABUF_RENDERER makes the WebProcess emit SHM
+    // frames instead. Both are scoped to WebKit.
+    //
+    // LIBGL_ALWAYS_SOFTWARE is deliberately not set here; see the header.
+    setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1", 1);
+    setenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL", "1", 1);
+  }
+
+  // debugLog is compiled out in shipped builds, so the decision has to go
+  // through infoLog: without it, a field log cannot tell which rendering mode
+  // ran.
+  infoLog(std::string("rendering mode=") +
+          (mode == RenderingMode::kSoftwareShm ? "softwareSHM" : "hardwareEGL") +
+          " DISABLE_GL=" +
+          (getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr ? "1" : "0") +
+          " WEBKIT_DISABLE_DMABUF_RENDERER=" +
+          (getenv("WEBKIT_DISABLE_DMABUF_RENDERER") != nullptr ? "1" : "0") +
+          " LIBGL_ALWAYS_SOFTWARE=" +
+          (getenv("LIBGL_ALWAYS_SOFTWARE") != nullptr ? "1" : "0"));
+}
+
+}  // namespace
+
+RenderingMode ResolveRenderingMode() {
+  static std::once_flag once;
+  static RenderingMode mode = RenderingMode::kHardwareEgl;
+  std::call_once(once, []() {
+    mode = DetectRenderingMode();
+    ApplyRenderingModeEnvironment(mode);
+  });
+  return mode;
 }
 
 bool ApplySoftwareRenderingIfNeeded() {
-  // Already set - nothing to do
-  const char* already_sw = getenv("LIBGL_ALWAYS_SOFTWARE");
-  if (already_sw && (strcmp(already_sw, "1") == 0 || strcasecmp(already_sw, "true") == 0)) {
-    debugLog("Software rendering already enabled (LIBGL_ALWAYS_SOFTWARE set)");
-    return true;
-  }
-  
-  if (ShouldUseSoftwareRendering()) {
-    // Set BEFORE any EGL/GL initialization
-    setenv("LIBGL_ALWAYS_SOFTWARE", "1", 0);  // Don't override if already set
-    debugLog("Auto-enabled software rendering for VM/problematic GPU environment");
-    return true;
-  }
-  
-  debugLog("Using hardware GPU rendering");
-  return false;
+  return ResolveRenderingMode() == RenderingMode::kSoftwareShm;
 }
 
 }  // namespace flutter_inappwebview_plugin

@@ -33,6 +33,18 @@ Go to **Settings → Backup** to export your data (wordbook, history, tags, flas
 - Some dictionaries need a custom CSS tweak: **Manage dictionaries → dictionary → Custom CSS**.
 - If a dictionary crashes the lookup, please [open an issue](https://github.com/mumu-lhl/Ciyue/issues) with the dictionary name.
 
+## (Linux) The entry area is blank, but the text can still be selected, copied and searched?
+
+The page itself is fine; its frames are just not reaching Flutter. Ciyue picks the rendering mode automatically: virtual machines and some GPU drivers fall back to software rendering, while known good GPUs use hardware acceleration. If the automatic choice takes the wrong path on your GPU, force software rendering:
+
+```bash
+CIYUE_RENDER_MODE=software ciyue
+```
+
+Other values: `auto` (default, detect automatically) and `hardware` (force hardware acceleration). The lower-level `FLUTTER_INAPPWEBVIEW_SKIP_DMABUF_CHECK=1` and `FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL=1` take precedence over `CIYUE_RENDER_MODE`.
+
+If the area stays blank under software rendering, the rendering mode is not the cause. Reproduce once with `ciyue -l` and report it on [GitHub](https://github.com/mumu-lhl/Ciyue/issues): the `rendering mode=` and `no frame within 5s` lines in the log show which layer stopped receiving frames.
+
 ## Only one of my MDX and StarDict dictionaries shows up. Why?
 
 Ciyue identifies a dictionary by its path without the extension, so `foo.mdx` and `foo.ifo` / `foo.idx` / `foo.dict` count as the same dictionary: the MDX file is registered and the StarDict one is skipped. Give them different base names — for example `foo-mdx.mdx` and `foo-stardict.ifo` — to keep both.

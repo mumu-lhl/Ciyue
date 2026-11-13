@@ -27,6 +27,12 @@ static gboolean inappwebview_texture_copy_pixels(FlPixelBufferTexture* texture,
 
   if (self->webview == nullptr) {
     // Return a 1x1 transparent pixel as fallback
+    static bool warned_null_webview = false;
+    if (!warned_null_webview) {
+      warned_null_webview = true;
+      flutter_inappwebview_plugin::errorLog(
+          "InAppWebViewTexture: webview is null, serving a 1x1 transparent frame");
+    }
     *out_buffer = self->default_buffer;
     *width = 1;
     *height = 1;
@@ -58,6 +64,12 @@ static gboolean inappwebview_texture_copy_pixels(FlPixelBufferTexture* texture,
 
   if (!self->webview->CopyPixelBufferTo(self->staging_buffer, self->staging_buffer_size, &buf_width,
                                         &buf_height)) {
+    static bool warned_copy_failed = false;
+    if (!warned_copy_failed) {
+      warned_copy_failed = true;
+      flutter_inappwebview_plugin::errorLog(
+          "InAppWebViewTexture: CopyPixelBufferTo failed, serving a 1x1 transparent frame");
+    }
     *out_buffer = self->default_buffer;
     *width = 1;
     *height = 1;

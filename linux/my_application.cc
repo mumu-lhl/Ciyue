@@ -90,6 +90,52 @@ static void my_application_set_window_icon(GtkWindow* window) {
   }
 }
 
+// Selects the WebView rendering mode from CIYUE_RENDER_MODE.
+//
+// The frame transport itself is decided in exactly one place, the plugin's
+// ResolveRenderingMode(). This function only expresses a preference by setting
+// the inputs that decision reads, so there is still a single place where the
+// answer is produced and the texture type, the WPE exportable type and the
+// WebProcess's buffer type cannot disagree.
+//
+//   auto (default)  let the plugin detect: a virtual machine or an unusable
+//                   driver falls back to software, a known good GPU uses the
+//                   hardware zero-copy path
+//   software        force the software pixel-buffer path
+//   hardware        force the hardware EGL zero-copy path
+//
+// Explicit FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL or
+// FLUTTER_INAPPWEBVIEW_SKIP_DMABUF_CHECK always win, so the low-level escape
+// hatches keep working unchanged.
+//
+// An unknown value falls back to software with a warning: a typo must not
+// silently select the hardware path on a GPU where it has never been verified.
+static void my_application_select_render_mode() {
+  if (g_getenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL") != nullptr ||
+      g_getenv("FLUTTER_INAPPWEBVIEW_SKIP_DMABUF_CHECK") != nullptr) {
+    return;
+  }
+
+  const gchar* mode = g_getenv("CIYUE_RENDER_MODE");
+  if (mode == nullptr || *mode == '\0' || g_ascii_strcasecmp(mode, "auto") == 0) {
+    // Leave both signals unset and let ResolveRenderingMode() run detection.
+    return;
+  }
+  if (g_ascii_strcasecmp(mode, "software") == 0) {
+    g_setenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL", "1", TRUE);
+    return;
+  }
+  if (g_ascii_strcasecmp(mode, "hardware") == 0) {
+    g_setenv("FLUTTER_INAPPWEBVIEW_SKIP_DMABUF_CHECK", "1", TRUE);
+    return;
+  }
+
+  g_warning("Ignoring unknown CIYUE_RENDER_MODE '%s'; expected auto, software "
+            "or hardware. Falling back to software rendering.",
+            mode);
+  g_setenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL", "1", TRUE);
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
@@ -129,11 +175,17 @@ static void my_application_activate(GApplication* application) {
   my_application_set_window_icon(window);
   gtk_widget_show(GTK_WIDGET(window));
 
-  // The WPE EGL texture export is blank on this VM (VirGL); the pixel buffer
-  // path renders correctly. Remove this once the package's EGL path is fixed.
-  g_setenv("FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL", "1", TRUE);
+  // Must run before the plugin is registered: ResolveRenderingMode() pins the
+  // decision on first use and the WebProcess inherits the environment at spawn
+  // time, so a later change would not reach it.
+  my_application_select_render_mode();
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
+  // Impeller is left at the SDK default (on for Linux since Flutter 3.47).
+  // It was ruled out as the cause of a blank dictionary entry: with the
+  // software pixel buffer path, Impeller and Skia both render correctly in
+  // A/B runs on the same machine. Android still disables it for a separate
+  // Mali black-screen bug (flutter/flutter#195424).
   fl_dart_project_set_dart_entrypoint_arguments(project, self->dart_entrypoint_arguments);
 
   FlView* view = fl_view_new(project);
