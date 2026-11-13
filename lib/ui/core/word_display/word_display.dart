@@ -29,6 +29,19 @@ class WordDisplay extends ConsumerStatefulWidget {
   final bool showBackButton;
   final Widget? bottomNavigationBar;
 
+  /// When true, the page syncs [homeModelProvider]'s `selectedWord` to [word]
+  /// when it is opened or its word changes.
+  ///
+  /// A pushed entry page shows `selectedWord` (so an in-page lookup can swap
+  /// the entry in place instead of rebuilding the route), but it is also
+  /// reached by plain navigation — a home history tap or a dictionary link —
+  /// that never updates `selectedWord`, leaving the page stuck on the previous
+  /// word. This flag lets the one caller that needs it (the `/word/:word`
+  /// route, whose word comes straight from the URL) keep the two in step,
+  /// matching what [MobileWordBrowser] already does for small screens. Every
+  /// other caller manages `selectedWord` itself or shows a different word.
+  final bool syncSelectionOnOpen;
+
   const WordDisplay({
     super.key,
     required this.word,
@@ -36,6 +49,7 @@ class WordDisplay extends ConsumerStatefulWidget {
     this.initialDictId,
     this.showBackButton = true,
     this.bottomNavigationBar,
+    this.syncSelectionOnOpen = false,
   });
 
   @override
@@ -67,6 +81,45 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   /// The search box in the title bar, so Esc can move the focus into it and
   /// back to the entry.
   final FocusNode _searchFocusNode = FocusNode();
+
+  /// Keeps the shared selection in step with the word this page was opened
+  /// with.
+  ///
+  /// A pushed entry page shows [homeModelProvider]'s `selectedWord` (so an
+  /// in-page lookup can swap the entry in place instead of rebuilding the
+  /// route). But it is also reached by plain navigation — a home history tap
+  /// or a dictionary link — that never updates `selectedWord`, leaving the
+  /// page stuck on whatever word was looked up last. Sync the two whenever the
+  /// route's word changes, which is exactly what [MobileWordBrowser] already
+  /// does for the small-screen layout. The in-page swap sets `selectedWord`
+  /// itself and does not change the route, so it is unaffected.
+  @override
+  void initState() {
+    super.initState();
+    _syncSelectedWord();
+  }
+
+  @override
+  void didUpdateWidget(covariant WordDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.word != widget.word) {
+      _syncSelectedWord();
+    }
+  }
+
+  void _syncSelectedWord() {
+    if (!widget.syncSelectionOnOpen) return;
+    final word = widget.word.trim();
+    if (word.isEmpty) return;
+    // Deferred: Riverpod forbids modifying a provider from a widget
+    // life-cycle (initState/didUpdateWidget) because the tree is still
+    // building. The swap path sets `selectedWord` itself and does not change
+    // the route, so it is never reverted by this sync.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(homeModelProvider).selectedWord = word;
+    });
+  }
 
   Widget? _buildSearchBar(Settings settings) {
     return buildTitle(
