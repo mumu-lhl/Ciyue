@@ -271,6 +271,88 @@ void main() {
 
     expect(entry?.content, "@@@LINK=haus");
   }, timeout: const Timeout(Duration(seconds: 15)));
+
+  test("readExactEntries reads each distinct headword once", () async {
+    final directory = await Directory.systemTemp.createTemp("ciyue_mdict_");
+    final mdxFile = await _writeMdx(directory, [
+      ("book", "<p>book definition</p>"),
+    ]);
+    final path = mdxFile.path.substring(0, mdxFile.path.length - 4);
+    await dictionaryListDao.add(path, "Test dictionary");
+    final dictionary = Mdict(path: path);
+
+    addTearDown(() async {
+      await dictionary.close();
+      await dictionaryListDao.remove(path);
+      await directory.delete(recursive: true);
+    });
+
+    await dictionary.init();
+
+    final entries = await dictionary.readExactEntries(["book", "Book", "BOOK"]);
+    expect(entries, hasLength(1));
+    expect(entries.single.headword, "book");
+    expect(entries.single.content, "<p>book definition</p>");
+  }, timeout: const Timeout(Duration(seconds: 15)));
+
+  test(
+    "readExactEntries keeps distinct spellings as separate entries",
+    () async {
+      final directory = await Directory.systemTemp.createTemp("ciyue_mdict_");
+      final mdxFile = await _writeMdx(directory, [
+        ("abend", "<p>evening (lowercase)</p>"),
+        ("Abend", "<p>evening (capitalised)</p>"),
+      ]);
+      final path = mdxFile.path.substring(0, mdxFile.path.length - 4);
+      await dictionaryListDao.add(path, "Test dictionary");
+      final dictionary = Mdict(path: path);
+
+      addTearDown(() async {
+        await dictionary.close();
+        await dictionaryListDao.remove(path);
+        await directory.delete(recursive: true);
+      });
+
+      await dictionary.init();
+
+      // The all-caps query folds to the lowercase headword, so three
+      // candidates yield two entries in first-seen order.
+      final entries = await dictionary.readExactEntries([
+        "abend",
+        "Abend",
+        "ABEND",
+      ]);
+      expect(entries.map((entry) => entry.headword), ["abend", "Abend"]);
+      expect(entries[0].content, contains("lowercase"));
+      expect(entries[1].content, contains("capitalised"));
+    },
+    timeout: const Timeout(Duration(seconds: 15)),
+  );
+
+  test("readExactEntries honours already-resolved keys", () async {
+    final directory = await Directory.systemTemp.createTemp("ciyue_mdict_");
+    final mdxFile = await _writeMdx(directory, [
+      ("book", "<p>book definition</p>"),
+    ]);
+    final path = mdxFile.path.substring(0, mdxFile.path.length - 4);
+    await dictionaryListDao.add(path, "Test dictionary");
+    final dictionary = Mdict(path: path);
+
+    addTearDown(() async {
+      await dictionary.close();
+      await dictionaryListDao.remove(path);
+      await directory.delete(recursive: true);
+    });
+
+    await dictionary.init();
+
+    final entries = await dictionary.readExactEntries(
+      ["Book"],
+      resolvedKeys: {"Book": "book"},
+    );
+    expect(entries, hasLength(1));
+    expect(entries.single.headword, "book");
+  }, timeout: const Timeout(Duration(seconds: 15)));
 }
 
 Future<File> _writeMdx(

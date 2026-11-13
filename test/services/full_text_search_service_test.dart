@@ -57,8 +57,11 @@ void main() {
     await onBatch([cannedRows.first], 1, cannedRows.length);
     if (pauseForCancel) {
       // Give the test a window to cancel before the remaining rows land.
+      // Long on purpose: the window must outlive the test's polling for
+      // the building state (two concurrent builds in the
+      // cancelBuildsExcept test), not just one.
       var waited = 0;
-      while (!cancelToken.isCancelled && waited < 400) {
+      while (!cancelToken.isCancelled && waited < 1200) {
         await Future.delayed(const Duration(milliseconds: 5));
         waited++;
       }
@@ -282,11 +285,12 @@ void main() {
     final building = service.ensureBuilt(dictionary);
     // Wait until the build is actually running before cancelling: the
     // token only exists once the store is open and the fingerprint read.
-    var waited = 0;
+    // Wall-time wait, as in the tests below: opening the store is slow
+    // under full-suite load.
+    final deadline = DateTime.now().add(const Duration(seconds: 30));
     while (service.stateFor(1).status != FullTextIndexStatus.building &&
-        waited < 200) {
+        DateTime.now().isBefore(deadline)) {
       await Future.delayed(const Duration(milliseconds: 5));
-      waited++;
     }
     expect(service.stateFor(1).status, FullTextIndexStatus.building);
     service.cancelBuild(1);
@@ -314,11 +318,12 @@ void main() {
   test("rebuildDictionary cancels an in-flight build first", () async {
     pauseForCancel = true;
     service.ensureBuilt(dictionary);
-    var waited = 0;
+    // Same wall-time wait as the cancelBuildsExcept test below: opening
+    // the store is slow under full-suite load.
+    final deadline = DateTime.now().add(const Duration(seconds: 30));
     while (service.stateFor(1).status != FullTextIndexStatus.building &&
-        waited < 200) {
+        DateTime.now().isBefore(deadline)) {
       await Future.delayed(const Duration(milliseconds: 5));
-      waited++;
     }
     expect(service.stateFor(1).status, FullTextIndexStatus.building);
     pauseForCancel = false;
@@ -337,5 +342,98 @@ void main() {
 
   test("search skips dictionaries without a ready index", () async {
     expect(await service.search("apple"), isEmpty);
+  });
+
+  test("cancelBuildsExcept cancels only the builds outside the keep "
+      "set", () async {
+    final dir2 = await Directory.systemTemp.createTemp("fts_service_two_");
+    final mdx2 = File("${dir2.path}/dict.mdx");
+    await mdx2.writeAsBytes([1, 2, 3, 4]);
+    final dictionary2 = FakeDictionary(
+      id: 2,
+      type: 1,
+      path: "${dir2.path}/dict",
+    );
+    addTearDown(() => dir2.delete(recursive: true));
+    final two = FullTextSearchService(
+      dictionaries: () => [dictionary, dictionary2],
+      knownIds: () async => {1, 2},
+      databaseDirectory: () async => dir.path,
+      runner: fakeRunner,
+    );
+    addTearDown(two.dispose);
+
+    // Both builds pause after their first batch; only dictionary 2 leaves
+    // the group.
+    pauseForCancel = true;
+    final build1 = two.ensureBuilt(dictionary);
+    final build2 = two.ensureBuilt(dictionary2);
+    // Opening the store (background-isolate spawn, WAL setup, reconcile,
+    // FTS table creation) is slow under full-suite load — over 400 5 ms
+    // polls in the 2026-11-13 gate — so wait on wall time, not on a fixed
+    // number of polls. The runner's pause window is not consumed by this
+    // wait: build 2's runner only starts pausing once build 2 reaches
+    // `building`, and the cancel below lands right after.
+    final deadline = DateTime.now().add(const Duration(seconds: 30));
+    while ((two.stateFor(1).status != FullTextIndexStatus.building ||
+            two.stateFor(2).status != FullTextIndexStatus.building) &&
+        DateTime.now().isBefore(deadline)) {
+      await Future.delayed(const Duration(milliseconds: 5));
+    }
+    expect(two.stateFor(1).status, FullTextIndexStatus.building);
+    expect(two.stateFor(2).status, FullTextIndexStatus.building);
+    expect(two.stateFor(1).status, FullTextIndexStatus.building);
+    expect(two.stateFor(2).status, FullTextIndexStatus.building);
+
+    two.cancelBuildsExcept({1});
+    pauseForCancel = false;
+    await Future.wait([build1, build2]);
+
+    expect(two.stateFor(1).status, FullTextIndexStatus.ready);
+    // Only the first row landed before the cancel; the partial index
+    // stays resumable.
+    expect(two.stateFor(2).status, FullTextIndexStatus.notBuilt);
+    expect(two.stateFor(2).indexed, 1);
+  });
+
+  test("search merges hits from several dictionaries", () async {
+    final dir2 = await Directory.systemTemp.createTemp("fts_service_merge_");
+    final mdx2 = File("${dir2.path}/dict.mdx");
+    await mdx2.writeAsBytes([1, 2, 3, 4]);
+    final dictionary2 = FakeDictionary(
+      id: 2,
+      type: 1,
+      path: "${dir2.path}/dict",
+    );
+    addTearDown(() => dir2.delete(recursive: true));
+    final two = FullTextSearchService(
+      dictionaries: () => [dictionary, dictionary2],
+      knownIds: () async => {1, 2},
+      databaseDirectory: () async => dir.path,
+      runner: fakeRunner,
+    );
+    addTearDown(two.dispose);
+
+    await two.ensureBuilt(dictionary);
+    await two.ensureBuilt(dictionary2);
+    expect(two.stateFor(1).status, FullTextIndexStatus.ready);
+    expect(two.stateFor(2).status, FullTextIndexStatus.ready);
+
+    // The same headword from both dictionaries, merged by rank.
+    final hits = await two.search("apple");
+    expect(hits.map((h) => h.dictionaryId).toSet(), {1, 2});
+    expect(hits.map((h) => h.headword).toSet(), {"apple"});
+  });
+
+  test("a newer search supersedes an in-flight one", () async {
+    await service.ensureBuilt(dictionary);
+
+    // Issued back to back: the first search has not even left its first
+    // await when the second one bumps the generation, so its hits are
+    // stale by the time the background queries return.
+    final first = service.search("apple");
+    final second = service.search("苹果");
+    expect(await first, isEmpty);
+    expect((await second).map((h) => h.headword), ["苹果"]);
   });
 }

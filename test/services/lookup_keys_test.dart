@@ -63,4 +63,27 @@ void main() {
       );
     });
   });
+
+  group("lookupVariants cache (P0-4)", () {
+    test("returns the same list for the same word", () {
+      // The cache hands back the built list itself, so a repeat call does
+      // no regex title-casing at all.
+      final first = lookupVariants("Nahida");
+      final second = lookupVariants("Nahida");
+      expect(identical(first, second), isTrue);
+      expect(first, containsAll(["Nahida", "nahida", "NAHIDA"]));
+    });
+
+    test("the cache is bounded and evicts the oldest entry", () {
+      // 512 entries fit; the 513th build evicts the oldest one.
+      const probe = "evictProbeWord";
+      final first = lookupVariants(probe);
+      for (var i = 0; i < 512; i++) {
+        lookupVariants("$probe-$i");
+      }
+      final second = lookupVariants(probe);
+      expect(identical(first, second), isFalse);
+      expect(second, first);
+    });
+  });
 }

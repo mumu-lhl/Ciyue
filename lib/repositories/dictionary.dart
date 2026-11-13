@@ -808,9 +808,10 @@ class Mdict implements LoadedDictionary {
 
   Future<DictionaryEntryData?> _readExactEntry(
     String word,
-    Set<String> visitedHeadwords,
-  ) async {
-    final headword = await resolveExactKey(word);
+    Set<String> visitedHeadwords, {
+    String? resolvedHeadword,
+  }) async {
+    final headword = resolvedHeadword ?? await resolveExactKey(word);
     if (headword == null) {
       return null;
     }
@@ -840,6 +841,7 @@ class Mdict implements LoadedDictionary {
         final linkedEntry = await _readExactEntry(
           linkedHeadword,
           pathHeadwords,
+          resolvedHeadword: linkedHeadword,
         );
         if (linkedEntry != null) {
           resolvedContents.add(linkedEntry.content);
@@ -904,19 +906,33 @@ class Mdict implements LoadedDictionary {
 
   @override
   Future<List<DictionaryEntryData>> readExactEntries(
-    Iterable<String> words,
-  ) async {
-    final entries = <DictionaryEntryData>[];
+    Iterable<String> words, {
+    Map<String, String>? resolvedKeys,
+  }) async {
+    // Resolve every candidate to its headword first — reusing the exact keys
+    // the caller already computed — then dedup by headword in first-seen
+    // order and read each distinct headword once, in parallel. Candidates
+    // that fold to one headword (`word`/`Word`/`WORD`) used to be read in
+    // full and dropped after; different headwords (`abend`/`Abend`) are
+    // still each read.
+    final headwords = <String>[];
     final seenHeadwords = <String>{};
-
     for (final word in words) {
-      final entry = await readExactEntry(word);
-      if (entry != null && seenHeadwords.add(entry.headword)) {
-        entries.add(entry);
-      }
+      final headword = resolvedKeys?[word] ?? await resolveExactKey(word);
+      if (headword == null) continue;
+      if (seenHeadwords.add(headword)) headwords.add(headword);
     }
-
-    return entries;
+    // Each read uses its own file handle (the reader opens one per
+    // record-block miss) and the record-block cache is only touched by
+    // synchronous map operations, so reading distinct headwords
+    // concurrently is safe; it overlaps the disk waits.
+    final entries = await Future.wait(
+      headwords.map(
+        (headword) =>
+            _readExactEntry(headword, const {}, resolvedHeadword: headword),
+      ),
+    );
+    return entries.whereType<DictionaryEntryData>().toList(growable: false);
   }
 
   Future<String> readWord(String word) async {

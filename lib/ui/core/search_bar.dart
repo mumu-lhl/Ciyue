@@ -113,6 +113,16 @@ class _WordSearchBarWithSuggestionsState
   /// which the test binding treats as a failure.
   Timer? _reopenSuppression;
 
+  /// Cancellable debounce for suggestion queries.
+  ///
+  /// A new keystroke cancels the pending timer, so the query for the old
+  /// text is never even started — with `Future.delayed` it would run and
+  /// only have its result thrown away. The completer of a superseded
+  /// debounced call is completed with the previous suggestions so no
+  /// awaited builder future is left hanging.
+  Timer? _debounceTimer;
+  Completer<List<Widget>>? _pendingSuggestionsCompleter;
+
   /// Dictionaries this bar already asked to build an index for, so a
   /// failed build is retried only from the full-text page, not on every
   /// keystroke in a mode that needs the index.
@@ -178,6 +188,7 @@ class _WordSearchBarWithSuggestionsState
       searchSuggestionViewOpen = false;
     }
     _reopenSuppression?.cancel();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -514,157 +525,205 @@ class _WordSearchBarWithSuggestionsState
             final mode = settings.searchMode;
             final gen = ++_suggestionGen;
 
-            // Debounce: only the last keystroke of a burst runs the
-            // query. Superseded calls return the previous suggestions.
-            await Future.delayed(_suggestionDebounce);
-            if (!mounted) return keepPrevious();
-            if (gen != _suggestionGen ||
-                settings.searchMode != mode ||
-                controller.text.trim() != searchWord) {
-              return keepPrevious();
-            }
-
-            while (ref.read(dictManagerModelProvider).isSwitchingGroup) {
-              await Future.delayed(const Duration(milliseconds: 40));
-              if (!mounted) return keepPrevious();
-              if (gen != _suggestionGen || settings.searchMode != mode) {
-                return keepPrevious();
-              }
-            }
-
-            if (searchWord.isEmpty) {
-              _lastSuggestions = [const SizedBox.shrink()];
-              return _lastSuggestions!;
-            }
-
-            // The modes that need the index start its build on first use,
-            // like the full-text page does, instead of sitting on "not
-            // built" until the user opens that page.
-            if (mode != SearchMode.prefix) {
-              _maybeStartFtsBuilds();
-            }
-
-            final suggestions = await dictionaryLookup.searchSuggestions(
+            return _debouncedSuggestions(
+              controller,
               searchWord,
-              mode: mode,
-              fullText: ref.read(fullTextSearchServiceProvider),
+              mode,
+              gen,
+              keepPrevious,
             );
-            // The `context` handed to this builder belongs to the view the
-            // anchor opens, and a submitted word closes that view. Its element
-            // stays mounted after that, so asking it for an inherited widget
-            // throws; this state is the one that knows whether it is still in
-            // the tree, and it survives the view closing.
-            if (!mounted ||
-                gen != _suggestionGen ||
-                settings.searchMode != mode) {
-              // A newer keystroke arrived while querying, or the mode
-              // changed: drop the stale result instead of overwriting
-              // fresh suggestions.
-              return keepPrevious();
-            }
-            final l10n = _l10n;
-            final theme = _theme;
-            if (l10n == null) return keepPrevious();
-
-            ListTile buildSuggestionTile(String word) {
-              return ListTile(
-                title: Text(word),
-                trailing: const Icon(Icons.arrow_forward),
-                onTap: () {
-                  if (!mounted) return;
-                  _openWord(controller, word);
-                },
-              );
-            }
-
-            ListTile buildFullTextTile(FullTextHit hit) {
-              return ListTile(
-                title: Text(hit.headword),
-                subtitle: Text(
-                  parseSnippet(hit.snippet).map((s) => s.text).join(),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: const Icon(Icons.arrow_forward),
-                onTap: () {
-                  if (!mounted) return;
-                  _openWord(controller, hit.headword);
-                },
-              );
-            }
-
-            // The modes that need the index never fail silently: when an
-            // index is unbuilt, building or failed, the bar says so up
-            // front and offers the full-text page, where the build runs
-            // and reports progress.
-            ListTile? buildIndexStatusTile() {
-              if (mode == SearchMode.prefix) return null;
-              switch (suggestions.fullTextIndexStatus) {
-                case FullTextIndexStatus.ready:
-                  return null;
-                case FullTextIndexStatus.building:
-                  return ListTile(
-                    leading: const Icon(Icons.hourglass_top),
-                    title: Text(l10n.buildingFullTextIndex),
-                    onTap: () => _openFullTextPage(controller, searchWord),
-                  );
-                case FullTextIndexStatus.failed:
-                  return ListTile(
-                    leading: const Icon(Icons.warning),
-                    title: Text(l10n.fullTextIndexFailed),
-                    onTap: () => _openFullTextPage(controller, searchWord),
-                  );
-                case FullTextIndexStatus.notBuilt:
-                  return ListTile(
-                    leading: const Icon(Icons.hourglass_top),
-                    title: Text(l10n.searchModeIndexNotBuilt),
-                    onTap: () => _openFullTextPage(controller, searchWord),
-                  );
-              }
-            }
-
-            final statusTile = buildIndexStatusTile();
-            final statusTiles = statusTile == null
-                ? null
-                : <Widget>[statusTile];
-            _lastSuggestions = [
-              ...?statusTiles,
-              if (mode == SearchMode.fullText)
-                ...suggestions.fullTextHits.map(buildFullTextTile)
-              else ...[
-                if (settings.aiExplainWord) buildSuggestionTile(searchWord),
-                ...suggestions.dictionarySuggestions.map(buildSuggestionTile),
-                if (suggestions.spellingSuggestions.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: 16,
-                      top: 10,
-                      bottom: 5,
-                    ),
-                    child: Text(
-                      l10n.spellingSuggestions,
-                      style: theme?.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.secondary.withValues(
-                          alpha: 0.7,
-                        ),
-                      ),
-                    ),
-                  ),
-                ...suggestions.spellingSuggestions.map(buildSuggestionTile),
-              ],
-              ListTile(
-                leading: const Icon(Icons.find_in_page),
-                title: Text(l10n.searchInDefinitions(searchWord)),
-                onTap: () {
-                  if (!mounted) return;
-                  _openFullTextPage(controller, searchWord);
-                },
-              ),
-            ];
-            return _lastSuggestions!;
           },
         ),
       ),
     );
+  }
+
+  /// Runs the suggestion query after the debounce, cancelling any query a
+  /// newer keystroke has already superseded.
+  Future<List<Widget>> _debouncedSuggestions(
+    SearchController controller,
+    String searchWord,
+    SearchMode mode,
+    int gen,
+    List<Widget> Function() keepPrevious,
+  ) {
+    // Debounce: only the last keystroke of a burst runs the query.
+    // Superseded calls return the previous suggestions.
+    _debounceTimer?.cancel();
+    final superseded = _pendingSuggestionsCompleter;
+    if (superseded != null && !superseded.isCompleted) {
+      superseded.complete(keepPrevious());
+    }
+    final completer = Completer<List<Widget>>();
+    _pendingSuggestionsCompleter = completer;
+    _debounceTimer = Timer(_suggestionDebounce, () async {
+      if (!mounted || gen != _suggestionGen) {
+        if (!completer.isCompleted) completer.complete(keepPrevious());
+        return;
+      }
+      try {
+        completer.complete(
+          await _runSuggestions(
+            controller,
+            searchWord,
+            mode,
+            gen,
+            keepPrevious,
+          ),
+        );
+      } catch (_) {
+        if (!completer.isCompleted) completer.complete(keepPrevious());
+      }
+    });
+    return completer.future;
+  }
+
+  /// The suggestion work itself, run once the debounce has expired.
+  Future<List<Widget>> _runSuggestions(
+    SearchController controller,
+    String searchWord,
+    SearchMode mode,
+    int gen,
+    List<Widget> Function() keepPrevious,
+  ) async {
+    if (!mounted) return keepPrevious();
+    if (gen != _suggestionGen ||
+        settings.searchMode != mode ||
+        controller.text.trim() != searchWord) {
+      return keepPrevious();
+    }
+
+    while (ref.read(dictManagerModelProvider).isSwitchingGroup) {
+      await Future.delayed(const Duration(milliseconds: 40));
+      if (!mounted) return keepPrevious();
+      if (gen != _suggestionGen || settings.searchMode != mode) {
+        return keepPrevious();
+      }
+    }
+
+    if (searchWord.isEmpty) {
+      _lastSuggestions = [const SizedBox.shrink()];
+      return _lastSuggestions!;
+    }
+
+    // The modes that need the index start its build on first use,
+    // like the full-text page does, instead of sitting on "not
+    // built" until the user opens that page.
+    if (mode != SearchMode.prefix) {
+      _maybeStartFtsBuilds();
+    }
+
+    final suggestions = await dictionaryLookup.searchSuggestions(
+      searchWord,
+      mode: mode,
+      fullText: ref.read(fullTextSearchServiceProvider),
+    );
+    // The `context` handed to this builder belongs to the view the
+    // anchor opens, and a submitted word closes that view. Its element
+    // stays mounted after that, so asking it for an inherited widget
+    // throws; this state is the one that knows whether it is still in
+    // the tree, and it survives the view closing.
+    if (!mounted || gen != _suggestionGen || settings.searchMode != mode) {
+      // A newer keystroke arrived while querying, or the mode
+      // changed: drop the stale result instead of overwriting
+      // fresh suggestions.
+      return keepPrevious();
+    }
+    final l10n = _l10n;
+    final theme = _theme;
+    if (l10n == null) return keepPrevious();
+
+    ListTile buildSuggestionTile(String word) {
+      return ListTile(
+        title: Text(word),
+        trailing: const Icon(Icons.arrow_forward),
+        onTap: () {
+          if (!mounted) return;
+          _openWord(controller, word);
+        },
+      );
+    }
+
+    ListTile buildFullTextTile(FullTextHit hit) {
+      return ListTile(
+        title: Text(hit.headword),
+        subtitle: Text(
+          parseSnippet(hit.snippet).map((s) => s.text).join(),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: const Icon(Icons.arrow_forward),
+        onTap: () {
+          if (!mounted) return;
+          _openWord(controller, hit.headword);
+        },
+      );
+    }
+
+    // The modes that need the index never fail silently: when an
+    // index is unbuilt, building or failed, the bar says so up
+    // front and offers the full-text page, where the build runs
+    // and reports progress.
+    ListTile? buildIndexStatusTile() {
+      if (mode == SearchMode.prefix) return null;
+      switch (suggestions.fullTextIndexStatus) {
+        case FullTextIndexStatus.ready:
+          return null;
+        case FullTextIndexStatus.building:
+          return ListTile(
+            leading: const Icon(Icons.hourglass_top),
+            title: Text(l10n.buildingFullTextIndex),
+            onTap: () => _openFullTextPage(controller, searchWord),
+          );
+        case FullTextIndexStatus.failed:
+          return ListTile(
+            leading: const Icon(Icons.warning),
+            title: Text(l10n.fullTextIndexFailed),
+            onTap: () => _openFullTextPage(controller, searchWord),
+          );
+        case FullTextIndexStatus.notBuilt:
+          return ListTile(
+            leading: const Icon(Icons.hourglass_top),
+            title: Text(l10n.searchModeIndexNotBuilt),
+            onTap: () => _openFullTextPage(controller, searchWord),
+          );
+      }
+    }
+
+    final statusTile = buildIndexStatusTile();
+    final statusTiles = statusTile == null ? null : <Widget>[statusTile];
+    _lastSuggestions = [
+      ...?statusTiles,
+      if (mode == SearchMode.fullText)
+        ...suggestions.fullTextHits.map(buildFullTextTile)
+      else ...[
+        if (settings.aiExplainWord) buildSuggestionTile(searchWord),
+        ...suggestions.dictionarySuggestions.map(buildSuggestionTile),
+        if (suggestions.spellingSuggestions.isNotEmpty)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: 16,
+              top: 10,
+              bottom: 5,
+            ),
+            child: Text(
+              l10n.spellingSuggestions,
+              style: theme?.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.secondary.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+        ...suggestions.spellingSuggestions.map(buildSuggestionTile),
+      ],
+      ListTile(
+        leading: const Icon(Icons.find_in_page),
+        title: Text(l10n.searchInDefinitions(searchWord)),
+        onTap: () {
+          if (!mounted) return;
+          _openFullTextPage(controller, searchWord);
+        },
+      ),
+    ];
+    return _lastSuggestions!;
   }
 }

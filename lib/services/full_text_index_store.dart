@@ -19,6 +19,12 @@ const int fullTextIndexSchemaVersion = 2;
 /// One indexed entry: the row id is the entry's ordinal in the dictionary's
 /// iteration order (1-based), which is what makes a cancelled build
 /// resumable — rebuilding skips the rows already stored.
+///
+/// The builder isolate precomputes the derived columns ([headwordRev] and
+/// the three tokenized columns) so the main isolate never pays the
+/// per-rune tokenization of a whole batch: [FullTextIndexStore.insertBatch]
+/// only falls back to computing them inline when they are absent (raw rows
+/// from tests and ad-hoc callers).
 class FullTextIndexRow {
   final int rowid;
   final String headword;
@@ -26,10 +32,25 @@ class FullTextIndexRow {
   /// Plain text of the entry, HTML already stripped.
   final String body;
 
+  /// The headword reversed by rune, as stored in the `headword_rev`
+  /// column. Computed from [headword] when absent.
+  final String? headwordRev;
+
+  /// Pre-tokenized text for the FTS5 table, as produced by
+  /// [tokenizeForIndex] in the builder isolate. Absent rows are tokenized
+  /// by [FullTextIndexStore.insertBatch] instead.
+  final String? headwordTokenized;
+  final String? headwordRevTokenized;
+  final String? bodyTokenized;
+
   const FullTextIndexRow({
     required this.rowid,
     required this.headword,
     required this.body,
+    this.headwordRev,
+    this.headwordTokenized,
+    this.headwordRevTokenized,
+    this.bodyTokenized,
   });
 }
 
@@ -92,15 +113,74 @@ class _FtsDatabase extends GeneratedDatabase {
 /// FTS5 virtual tables cannot be expressed as drift tables, so this store
 /// uses raw statements through a table-less [GeneratedDatabase]. The app
 /// database is untouched: no migration, no schema churn.
+///
+/// The database runs in a drift background isolate
+/// ([NativeDatabase.createInBackground]): every statement — queries and
+/// writes alike — executes off the main isolate, so a 150ms common-word
+/// query or a 500-row batch write never blocks the UI thread. SELECTs are
+/// spread over a pool of reader isolates ([_readPoolSize]), so concurrent
+/// queries for several dictionaries run in parallel instead of queueing
+/// behind each other on one connection; writes stay on the worker isolate.
+/// WAL mode is what lets readers proceed while a build holds a write
+/// transaction.
 class FullTextIndexStore {
   final _FtsDatabase _db;
   bool _metaReady = false;
 
+  /// Reader isolates for SELECTs. Three is enough for the usual group
+  /// (a handful of dictionaries) without spawning an isolate per
+  /// dictionary; each idle isolate costs little more than a thread and a
+  /// SQLite connection.
+  static const int _readPoolSize = 3;
+
   FullTextIndexStore(QueryExecutor executor) : _db = _FtsDatabase(executor);
 
   /// Opens the store on [file], creating it when missing.
+  ///
+  /// Runs [NativeDatabase.createInBackground], so the returned store's
+  /// statements execute in drift's worker isolate (plus [ _readPoolSize]
+  /// reader isolates); closing the store shuts those isolates down.
+  /// [setup] runs on every isolate that opens the file.
   static Future<FullTextIndexStore> openFile(File file) async {
-    final store = FullTextIndexStore(NativeDatabase(file));
+    final store = FullTextIndexStore(
+      NativeDatabase.createInBackground(
+        file,
+        readPool: _readPoolSize,
+        setup: (db) {
+          // busy_timeout first: it is connection-local (no lock), and it
+          // lets the write-lock statements below wait out a concurrent
+          // reader instead of failing with SQLITE_BUSY when several
+          // isolates open the file at once. This timeout is part of the
+          // multi-connection architecture, not a tuning knob.
+          db.execute("PRAGMA busy_timeout=5000;");
+          // auto_vacuum MUST come before journal_mode: switching the
+          // journal mode writes the database header, after which an
+          // auto_vacuum change is silently ignored (probe: WAL-first
+          // reads back 0, FULL-first reads back 1). The flag is only
+          // recorded while the database is still empty; existing
+          // databases pick it up through the VACUUM in [dropDictionary].
+          // Only set when unset: every isolate runs this setup, and a
+          // repeat set would take a write lock on every open.
+          try {
+            final current = db.select("PRAGMA auto_vacuum;");
+            if (current.first["auto_vacuum"] != 1) {
+              db.execute("PRAGMA auto_vacuum=FULL;");
+            }
+          } catch (_) {
+            // A concurrent connection holds the write lock, or the file
+            // predates the flag: the index still works, and the
+            // dropDictionary VACUUM path retries.
+          }
+          db.execute("PRAGMA journal_mode=WAL;");
+          db.execute("PRAGMA synchronous=NORMAL;");
+        },
+      ),
+    );
+    // `createInBackground` is lazy: nothing opens the file until the first
+    // statement. Force the open here, as the old direct `NativeDatabase`
+    // constructor plus its `PRAGMA synchronous` did, so the setup above
+    // (WAL, auto_vacuum) has run before this returns and a second
+    // connection reads the persisted pragmas instead of fresh defaults.
     await store._db.customStatement("PRAGMA synchronous = NORMAL");
     return store;
   }
@@ -198,8 +278,37 @@ class FullTextIndexStore {
     return rebuild;
   }
 
+  /// Rows per multi-value INSERT statement. 500 rows bind 2000 variables,
+  /// far below SQLITE_MAX_VARIABLE_NUMBER on every supported build (a
+  /// single 100k-row statement fails to prepare in a probe).
+  static const int _insertChunkRows = 500;
+
+  static String _multiInsertSql(String table, int rowCount) {
+    final sql = StringBuffer(
+      "INSERT OR REPLACE INTO $table "
+      "(rowid, headword, headword_rev, body) VALUES ",
+    );
+    for (var i = 0; i < rowCount; i++) {
+      if (i > 0) sql.write(", ");
+      sql.write("(?, ?, ?, ?)");
+    }
+    return sql.toString();
+  }
+
   /// Appends [rows] to the index, updating the stored progress to
   /// [indexed] (the highest row id stored so far).
+  ///
+  /// One multi-value INSERT per table per chunk instead of two drift calls
+  /// per row: a 500-row batch used to be 1000 round-trips to the database,
+  /// now it is 2 (plus the meta update). The rows are written with their
+  /// explicit row ids into the content table first and then into the FTS5
+  /// table, so `content_rowid` stays consistent exactly as with the old
+  /// row-by-row writes; the tests compare both spellings.
+  ///
+  /// Tokenization itself runs in the builder isolate for build batches
+  /// (see [FullTextIndexRow]): the tokenized columns travel with the row
+  /// and are used as-is. Rows without them are tokenized here, so callers
+  /// that build rows by hand keep working.
   Future<void> insertBatch(
     int dictionaryId,
     List<FullTextIndexRow> rows,
@@ -210,23 +319,33 @@ class FullTextIndexStore {
     final content = _contentTable(dictionaryId);
     final fts = _ftsTable(dictionaryId);
     await _db.transaction(() async {
-      for (final row in rows) {
-        final headwordRev = reverseHeadword(row.headword);
+      for (var start = 0; start < rows.length; start += _insertChunkRows) {
+        final end = (start + _insertChunkRows).clamp(0, rows.length);
+        final chunk = rows.sublist(start, end);
+        final contentValues = <Object?>[];
+        final ftsValues = <Object?>[];
+        for (final row in chunk) {
+          final headwordRev = row.headwordRev ?? reverseHeadword(row.headword);
+          contentValues.addAll([
+            row.rowid,
+            row.headword,
+            headwordRev,
+            row.body,
+          ]);
+          ftsValues.addAll([
+            row.rowid,
+            row.headwordTokenized ?? tokenizeForIndex(row.headword),
+            row.headwordRevTokenized ?? tokenizeForIndex(headwordRev),
+            row.bodyTokenized ?? tokenizeForIndex(row.body),
+          ]);
+        }
         await _db.customStatement(
-          "INSERT OR REPLACE INTO $content "
-          "(rowid, headword, headword_rev, body) "
-          "VALUES (?, ?, ?, ?)",
-          [row.rowid, row.headword, headwordRev, row.body],
+          _multiInsertSql(content, chunk.length),
+          contentValues,
         );
         await _db.customStatement(
-          "INSERT OR REPLACE INTO $fts (rowid, headword, headword_rev, body) "
-          "VALUES (?, ?, ?, ?)",
-          [
-            row.rowid,
-            tokenizeForIndex(row.headword),
-            tokenizeForIndex(headwordRev),
-            tokenizeForIndex(row.body),
-          ],
+          _multiInsertSql(fts, chunk.length),
+          ftsValues,
         );
       }
       await _db.customStatement(
@@ -451,7 +570,16 @@ class FullTextIndexStore {
     ];
   }
 
-  /// Drops a dictionary's tables and meta row entirely.
+  /// Drops a dictionary's tables and meta row entirely, then reclaims the
+  /// freed pages. The file does not shrink on its own: with
+  /// `auto_vacuum=FULL` (set at [openFile]) the DROP frees the pages, but
+  /// a database created before that flag existed only records the flag
+  /// when it is vacuumed — so the VACUUM runs here, right after
+  /// re-asserting the flag, which is exactly the sequence that records it.
+  /// Best-effort: a concurrent reader can keep the database busy, in which
+  /// case the space is reclaimed on the next drop and the index still
+  /// works. Runs in the background isolate, so the (possibly ~1s) rewrite
+  /// of a large index never blocks the UI.
   Future<void> dropDictionary(int dictionaryId) async {
     await _ensureMeta();
     await _db.customStatement(
@@ -463,6 +591,13 @@ class FullTextIndexStore {
     await _db.customStatement("DELETE FROM fts_meta WHERE dictionary_id = ?", [
       dictionaryId,
     ]);
+    try {
+      await _db.customStatement("PRAGMA auto_vacuum=FULL;");
+      await _db.customStatement("VACUUM;");
+    } catch (_) {
+      // Reclaiming space is opportunistic; the drop above already
+      // succeeded, and the next drop retries.
+    }
   }
 
   /// On-disk size of one dictionary's index in bytes: the FTS5 virtual

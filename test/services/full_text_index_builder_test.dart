@@ -1,5 +1,7 @@
+import "dart:async";
 import "dart:convert";
 import "dart:io";
+import "dart:isolate";
 import "dart:typed_data";
 
 import "package:ciyue/models/dictionary_lookup.dart";
@@ -224,6 +226,161 @@ void main() {
       ("Banana", "A yellow fruit"),
     ]);
   });
+
+  test("emitted rows carry pre-tokenized columns", () async {
+    await writeMdxFixture(dir, const [
+      ("apple", "<p>A <b>fruit</b> that grows on trees</p>"),
+      ("苹果", "<p>一种水果</p>"),
+    ]);
+    final rows = await collectBuild(
+      FullTextBuildRequest(
+        dictionaryId: 1,
+        type: 1,
+        basePath: "${dir.path}/fixture",
+      ),
+    );
+    expect(rows.map((r) => r.headword), ["apple", "苹果"]);
+    // The builder isolate tokenizes, so the main isolate only writes.
+    expect(rows[0].headwordRev, "elppa");
+    expect(rows[0].headwordTokenized, "apple");
+    expect(rows[0].headwordRevTokenized, "elppa");
+    expect(rows[0].bodyTokenized, "A fruit that grows on trees");
+    expect(rows[1].headwordRev, "果苹");
+    expect(rows[1].headwordTokenized, "苹 果");
+    expect(rows[1].headwordRevTokenized, "果 苹");
+    expect(rows[1].bodyTokenized, "一 种 水 果");
+  });
+
+  test("resume reuses the same row ids, including rows with empty "
+      "bodies", () async {
+    // Rows whose stripped body is empty are counted but never emitted,
+    // which leaves gaps in the row ids. A resumed build must reproduce
+    // the same counting, or it would skip live rows or re-emit stored
+    // ones under new row ids.
+    await writeMdxFixture(dir, const [
+      ("one", "first"),
+      ("empty", ""),
+      ("two", "second"),
+      ("htmlonly", "<p></p>"),
+      ("three", "third"),
+    ]);
+    final full = await collectBuild(
+      FullTextBuildRequest(
+        dictionaryId: 4,
+        type: 1,
+        basePath: "${dir.path}/fixture",
+      ),
+    );
+    expect(full.map((r) => (r.rowid, r.headword)).toList(), [
+      (1, "one"),
+      (3, "two"),
+      (5, "three"),
+    ]);
+
+    final resumed = await collectBuild(
+      FullTextBuildRequest(
+        dictionaryId: 4,
+        type: 1,
+        basePath: "${dir.path}/fixture",
+        startOrdinal: 3,
+      ),
+    );
+    expect(resumed.map((r) => (r.rowid, r.headword)).toList(), [(5, "three")]);
+    expect(resumed.single.body, "third");
+  });
+
+  test("ZIM build emits each title once", () async {
+    final builder = ZimFixtureBuilder()
+      // Paths and titles order differently on purpose: the build must keep
+      // the reader's order (row ids are assigned in it, so a build started
+      // by the previous release resumes at the same row), not re-sort by
+      // title — "Banana" (path "apple") comes before "Apple" (path
+      // "apple2"), and the duplicate "Apple" (path "zebra") is skipped.
+      ..addArticle("zebra", "Apple", "<p>A fruit</p>")
+      ..addArticle("apple", "Banana", "<p>A yellow fruit</p>")
+      ..addArticle("apple2", "Apple", "<p>A fruit</p>");
+    final zimPath = await builder.write(dir, "zimtest");
+    final rows = await collectBuild(
+      FullTextBuildRequest(
+        dictionaryId: 3,
+        type: DictionaryType.zim,
+        basePath: zimPath.replaceAll(RegExp(r"\.zim$"), ""),
+      ),
+    );
+    // Reader order, not title-sorted order: Banana first, then Apple once.
+    expect(rows.map((r) => (r.rowid, r.headword, r.body)).toList(), [
+      (1, "Banana", "A yellow fruit"),
+      (2, "Apple", "A fruit"),
+    ]);
+  });
+
+  test(
+    "builder waits for the batch ack before sending the next batch",
+    () async {
+      // Drives fullTextIndexBuilderEntry directly with a minimal main loop
+      // that acks each batch after 100ms: with backpressure, batch N+1 only
+      // arrives after the ack for batch N (~100ms later); without it, all
+      // batches would arrive within a few milliseconds of each other. The
+      // listener never awaits the ack delay, so an arrival timestamp is the
+      // send time, not the consumption time.
+      await writeMdxFixture(dir, const [
+        ("one", "first"),
+        ("two", "second"),
+        ("three", "third"),
+        ("four", "fourth"),
+      ]);
+      final mainPort = ReceivePort();
+      final isolate = await Isolate.spawn(fullTextIndexBuilderEntry, [
+        mainPort.sendPort,
+        FullTextBuildRequest(
+          dictionaryId: 9,
+          type: 1,
+          basePath: "${dir.path}/fixture",
+          batchSize: 1,
+        ).toMessage(),
+      ]);
+      final done = Completer<void>();
+      final batchArrivals = <DateTime>[];
+      SendPort? commandPort;
+      try {
+        final subscription = mainPort.listen((message) {
+          final map = message as Map<String, Object?>;
+          switch (map["kind"]) {
+            case "ready":
+              commandPort = map["port"] as SendPort;
+            case "batch":
+              batchArrivals.add(DateTime.now());
+              // Fire-and-forget: the ack goes out 100ms after arrival.
+              Future.delayed(const Duration(milliseconds: 100), () {
+                commandPort?.send({"kind": "ack"});
+              });
+            case "done":
+            case "cancelled":
+              if (!done.isCompleted) done.complete();
+            case "error":
+              if (!done.isCompleted) {
+                done.completeError(
+                  StateError(map["message"] as String? ?? "build failed"),
+                );
+              }
+          }
+        });
+        await done.future.timeout(const Duration(seconds: 10));
+        await subscription.cancel();
+        expect(batchArrivals, hasLength(4));
+        for (var i = 1; i < batchArrivals.length; i++) {
+          final gap = batchArrivals[i]
+              .difference(batchArrivals[i - 1])
+              .inMilliseconds;
+          // ~100ms ack delay, minus scheduling slack.
+          expect(gap, greaterThanOrEqualTo(60));
+        }
+      } finally {
+        mainPort.close();
+        isolate.kill(priority: Isolate.immediate);
+      }
+    },
+  );
 
   test("cancel stops the build and resume continues it", () async {
     await writeMdxFixture(dir, const [

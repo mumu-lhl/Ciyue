@@ -17,7 +17,19 @@ abstract interface class DictionarySource {
 
   Future<List<String>> search(String query);
 
-  Future<List<DictionaryEntryData>> readExactEntries(Iterable<String> words);
+  /// Reads the entries for [words], one per distinct headword, in the order
+  /// the headwords first appear.
+  ///
+  /// [resolvedKeys] lets a caller that already resolved [words] hand over
+  /// what it found — the key is the candidate, the value the headword
+  /// [resolveExactKey] returned for it — so the read does not resolve the
+  /// same spelling twice. Candidates that fold to the same headword
+  /// (`word`/`Word`/`WORD`) are read once; different headwords
+  /// (`abend`/`Abend`) are each read.
+  Future<List<DictionaryEntryData>> readExactEntries(
+    Iterable<String> words, {
+    Map<String, String>? resolvedKeys,
+  });
 }
 
 /// Values stored in the dictionary list's `type` column.
@@ -96,11 +108,44 @@ abstract interface class LoadedDictionary implements DictionarySource {
   Future<void> removeDictionary({int? dictionaryId});
 }
 
+/// One dictionary entry: the headword it is filed under and its content.
+///
+/// [content] is lazy when the entry is built with [DictionaryEntryData.lazy]:
+/// the builder runs only on first access and its result is then cached, so a
+/// StarDict entry shown with native widgets never pays for the HTML
+/// conversion its WebView sibling would have needed. Entries built with the
+/// default constructor already hold their content and never call a builder.
 class DictionaryEntryData {
   final String headword;
-  final String content;
 
-  const DictionaryEntryData({required this.headword, required this.content});
+  /// Content already computed at construction, or null when it is built
+  /// lazily by [_buildContent].
+  final String? _content;
+
+  /// Builds [content] on first access; null when the content is already
+  /// held in [_content]. The builder is wrapped to memoize, so repeated
+  /// reads return the same string without converting again.
+  final String Function()? _buildContent;
+
+  // The parameter name is the public API (`content:`); the field holds it
+  // under a private name so the `content` getter can serve both constructors.
+  const DictionaryEntryData({required this.headword, required String content})
+    : _content = content, // ignore: prefer_initializing_formals
+      _buildContent = null;
+
+  DictionaryEntryData.lazy({
+    required this.headword,
+    required String Function() buildContent,
+  }) : _content = null,
+       _buildContent = _memoizeBuilder(buildContent);
+
+  /// The entry content, converted on first access when built lazily.
+  String get content => _content ?? _buildContent!();
+
+  static String Function() _memoizeBuilder(String Function() buildContent) {
+    String? cached;
+    return () => cached ??= buildContent();
+  }
 }
 
 /// One way to read a long word as several headwords, in reading order.

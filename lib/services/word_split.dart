@@ -65,6 +65,56 @@ const _maxParts = 6;
 /// How many splits are kept per position, and returned overall.
 const _maxSplits = 3;
 
+/// Positions at which a part may start once parts are known to end at
+/// [partEnds]: each end itself, plus — for Latin text — after any linking
+/// morpheme that starts at an end, transitively.
+///
+/// This mirrors where [findSplits] can have a path: a part starts at 0, at
+/// the end of a resolved part, or after a linker swallowed at such a position.
+/// Positions outside this set are never the start of a part [findSplits]
+/// looks up, so probing their slices is wasted work.
+Set<int> splitStartPositions(String word, Iterable<int> partEnds) {
+  final starts = <int>{};
+  final queue = List<int>.from(partEnds);
+  while (queue.isNotEmpty) {
+    final pos = queue.removeLast();
+    if (!starts.add(pos)) continue;
+    if (pos == 0 || !_isLatinText(word)) continue;
+    for (final linker in _linkers) {
+      if (!word.startsWith(linker, pos)) continue;
+      final next = pos + linker.length;
+      if (next < word.length) queue.add(next);
+    }
+  }
+  return starts;
+}
+
+/// Every substring [findSplits] might look up, grouped by start position.
+///
+/// Same set as [splitCandidates], but the grouping lets the caller probe in
+/// stages: slices starting at a position no part can reach — because no
+/// resolved part ends there — are never probed at all. For a long compound
+/// that drops most of the O(n²) set before any dictionary is asked.
+Map<int, List<String>> splitCandidatesByStart(String word) {
+  if (word.length > maxSplitLength || word.length < _minWordLength) {
+    return const {};
+  }
+
+  final minLength = _minPartLength(word);
+  final byStart = <int, List<String>>{};
+  for (var start = 0; start < word.length; start++) {
+    final slices = <String>[];
+    for (var end = start + minLength; end <= word.length; end++) {
+      // The whole word is what failed to match; it cannot be one of its own
+      // parts, so there is no point probing it.
+      if (start == 0 && end == word.length) continue;
+      slices.add(word.substring(start, end));
+    }
+    if (slices.isNotEmpty) byStart[start] = slices;
+  }
+  return byStart;
+}
+
 /// Every substring [findSplits] might look up.
 ///
 /// Splitting needs to know which slices of the word are headwords, and each

@@ -143,7 +143,30 @@ String _mapWidth(String value) {
 /// leads with [word], and [caseVariants] re-adds it unchanged — while still
 /// reaching the cross cells (e.g. typed `ｎｈｋ` also tries `NHK`, typed `NHK`
 /// also tries `ｎｈｋ`).
+///
+/// The result is cached per word: [resolveKeys] rebuilds it for every
+/// candidate of every dictionary (word-split alone hands over thousands of
+/// slices, most of them repeated substrings), and the title-case step runs a
+/// regex per word. The cache is a pure function of [word], so it never goes
+/// stale; it is bounded ([_lookupVariantsCacheMaxEntries]) and evicts the
+/// oldest entry first. Callers must not mutate the returned list — it is the
+/// cached instance.
+const _lookupVariantsCacheMaxEntries = 512;
+final _lookupVariantsCache = <String, List<String>>{};
+
 List<String> lookupVariants(String word) {
+  final cached = _lookupVariantsCache[word];
+  if (cached != null) return cached;
+
+  final variants = _lookupVariantsUncached(word);
+  if (_lookupVariantsCache.length >= _lookupVariantsCacheMaxEntries) {
+    _lookupVariantsCache.remove(_lookupVariantsCache.keys.first);
+  }
+  _lookupVariantsCache[word] = variants;
+  return variants;
+}
+
+List<String> _lookupVariantsUncached(String word) {
   final variants = <String>[];
   void add(String value) {
     if (value.isNotEmpty && !variants.contains(value)) {

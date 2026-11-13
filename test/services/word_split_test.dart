@@ -166,5 +166,38 @@ void main() {
         expect(word.contains(candidate), isTrue, reason: candidate);
       }
     });
+
+    test("grouping by start covers the same set", () {
+      const word = "Animecover";
+      final byStart = splitCandidatesByStart(word);
+      final grouped = {for (final slices in byStart.values) ...slices};
+      expect(grouped, splitCandidates(word));
+      expect(byStart[0], containsAll(["An", "Ani", "Anime"]));
+      // Slices keep the query's spelling; the dictionary's own spelling
+      // only appears in the resolved result.
+      expect(byStart[5], containsAll(["co", "cover"]));
+      expect(byStart.containsKey(9), isFalse);
+    });
+
+    test("grouping is empty outside the supported length", () {
+      expect(splitCandidatesByStart("ab"), isEmpty);
+      expect(splitCandidatesByStart("a" * (maxSplitLength + 1)), isEmpty);
+    });
+  });
+
+  group("splitStartPositions", () {
+    test("a part starts where a resolved part ends", () {
+      expect(splitStartPositions("Animecover", [5]), {5});
+    });
+
+    test("a part may start after a linking morpheme", () {
+      // "Wohnzimmer" ends at 10; the `s` at 10 is a linker, so a part may
+      // also start at 11 ("Schrank").
+      expect(splitStartPositions("Wohnzimmerschrank", [10]), {10, 11});
+    });
+
+    test("linkers do not apply outside the Latin alphabet", () {
+      expect(splitStartPositions("倾奇者", [2]), {2});
+    });
   });
 }

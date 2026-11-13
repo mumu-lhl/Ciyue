@@ -1,5 +1,7 @@
 import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
+import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/search_bar.dart";
@@ -180,6 +182,109 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text("fts:apple"), findsOneWidget);
   });
+
+  testWidgets(
+    "a burst of keystrokes only queries the last text (cancellable Timer)",
+    (tester) async {
+      // The debounce is a Timer, not a Future.delayed: a keystroke that
+      // arrives inside the 100 ms window must cancel the pending query
+      // before it starts, not merely throw its result away after it ran.
+      settings.enableHunspellMorphology = false;
+      final dictionary = _CountingMdict();
+      dictManager.dictIds = [1];
+      dictManager.dicts[1] = dictionary;
+      dictManager.markLoaded();
+      addTearDown(() {
+        dictManager.dicts.clear();
+        dictManager.dictIds = [];
+      });
+
+      final controller = SearchController();
+      addTearDown(controller.dispose);
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: "/",
+            builder: (context, state) => Scaffold(
+              body: WordSearchBarWithSuggestions(
+                word: "",
+                controller: controller,
+                isHome: true,
+              ),
+            ),
+          ),
+          GoRoute(
+            path: "/full-text-search",
+            builder: (context, state) => const Scaffold(body: Text("fts")),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            dictManagerModelProvider.overrideWith((ref) => DictManagerModel()),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+      await tester.tap(find.byType(SearchBar));
+      await tester.pumpAndSettle();
+
+      controller.text = "app";
+      await tester.pump(const Duration(milliseconds: 50));
+      controller.text = "apple";
+      await tester.pump(const Duration(milliseconds: 150));
+      await tester.pumpAndSettle();
+
+      // Only the last keystroke ran: one query, which searches both width
+      // variants ("apple" then "ａｐｐｌｅ"), so two calls in total.
+      expect(dictionary.searchCalls, 2);
+      expect(dictionary.lastQuery, "ａｐｐｌｅ");
+      expect(find.text("Search in definitions: apple"), findsOneWidget);
+    },
+  );
+}
+
+class _CountingMdict extends Mdict {
+  // `id` is a `late` field on Mdict: the suggestion pipeline reads it for
+  // the prefix-cache fingerprint, so a fake that leaves it unset throws a
+  // LateInitializationError (swallowed by the debounce's catch) and the
+  // query never reaches `search`.
+  _CountingMdict() : super(path: "unused") {
+    id = 1;
+  }
+
+  int searchCalls = 0;
+  String? lastQuery;
+
+  @override
+  bool get isReady => true;
+
+  @override
+  Future<List<String>> search(String query) async {
+    searchCalls++;
+    lastQuery = query;
+    return const [];
+  }
+
+  @override
+  Future<String?> resolveExactKey(String word) async => null;
+
+  @override
+  Future<Map<String, String>> resolveKeys(Iterable<String> words) async =>
+      const {};
+
+  @override
+  Future<List<DictionaryEntryData>> readExactEntries(
+    Iterable<String> words, {
+    Map<String, String>? resolvedKeys,
+  }) async => const [];
 }
 
 class _TestHistoryModel extends HistoryModel {

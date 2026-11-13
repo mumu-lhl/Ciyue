@@ -9,6 +9,7 @@ import "package:ciyue/services/full_text_index_store.dart";
 import "package:ciyue/services/full_text_search_service.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/lookup_keys.dart";
+import "package:ciyue/services/word_split.dart";
 import "package:test/test.dart";
 
 void main() {
@@ -93,6 +94,63 @@ void main() {
       "rim",
       "edge",
     ]);
+  });
+
+  test("lookup passes the resolved exact key to readExactEntries", () async {
+    final morphology = FakeMorphology(stemsResult: ["rim"]);
+    final dictionary = FakeDictionarySource(
+      id: 1,
+      entries: {"rims": "rims content", "rim": "rim content"},
+    );
+    final lookup = makeLookup(
+      dictionary: dictionary,
+      morphology: morphology,
+      enabled: false,
+    );
+
+    final result = await lookup.lookup("rims");
+
+    expect(result.entriesFor(1).map((entry) => entry.headword), ["rims"]);
+    // The query spelling itself was already resolved above, so only its
+    // remaining variants are resolved again inside the read: "rims" has
+    // six lookup variants (three cases times two widths), one of which is
+    // covered by the resolved key.
+    expect(dictionary.lastResolvedKeys, {"rims": "rims"});
+    expect(dictionary.lastResolveCalls, 5);
+  });
+
+  test("lookup passes no resolved keys when the word is absent", () async {
+    final morphology = FakeMorphology(stemsResult: const []);
+    final dictionary = FakeDictionarySource(
+      id: 1,
+      entries: {"rim": "rim content"},
+    );
+    final lookup = makeLookup(
+      dictionary: dictionary,
+      morphology: morphology,
+      enabled: false,
+    );
+
+    final result = await lookup.lookup("rims");
+
+    expect(result.entriesFor(1), isEmpty);
+    expect(dictionary.lastResolvedKeys, isNull);
+  });
+
+  test("readExactEntries reads each distinct headword once", () async {
+    final dictionary = FakeDictionarySource(
+      id: 1,
+      entries: {"rims": "rims content", "rim": "rim content"},
+    );
+
+    final entries = await dictionary.readExactEntries([
+      "rims",
+      "Rims",
+      "RIMS",
+      "rim",
+    ]);
+
+    expect(entries.map((entry) => entry.headword), ["rims", "rim"]);
   });
 
   test(
@@ -570,6 +628,230 @@ void main() {
     });
   });
 
+  group("prefix suggestions: cancellation, timeout, cache (P0-3/P0-4)", () {
+    test("an exact repeat answers from the cache without searching", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"rims": "rims content", "rim": "rim content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      final first = await lookup.searchSuggestions("rims");
+      final second = await lookup.searchSuggestions("rims");
+
+      expect(first.dictionarySuggestions, ["rims"]);
+      expect(second.dictionarySuggestions, ["rims"]);
+      // One query costs two `search` calls (half- and full-width variants),
+      // so the cached repeat is 2 total: the first query searched, the
+      // second did not.
+      expect(dictionary.searchCalls, 2);
+    });
+
+    test("a longer query filters the previous keystroke's results", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {
+          "rim": "rim content",
+          "rims": "rims content",
+          "ripe": "ripe content",
+        },
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      expect((await lookup.searchSuggestions("ri")).dictionarySuggestions, [
+        "rim",
+        "rims",
+        "ripe",
+      ]);
+      expect((await lookup.searchSuggestions("rim")).dictionarySuggestions, [
+        "rim",
+        "rims",
+      ]);
+      expect((await lookup.searchSuggestions("rims")).dictionarySuggestions, [
+        "rims",
+      ]);
+      // A longer query with no match is still answered from the cache:
+      // every "rix…" headword would have been among the "ri" results.
+      expect(
+        (await lookup.searchSuggestions("rix")).dictionarySuggestions,
+        isEmpty,
+      );
+      // Four keystrokes, but only the first searched (twice, once per width
+      // variant); the rest were filtered from its cached prefix results.
+      expect(dictionary.searchCalls, 2);
+    });
+
+    test("switching the dictionary set invalidates the cache", () async {
+      var dicts = [
+        FakeDictionarySource(id: 1, entries: {"apple": "apple content"}),
+      ];
+      final lookup = DictionaryLookup(
+        dictionaries: () => dicts,
+        morphology: FakeMorphology(stemsResult: const []),
+        morphologyEnabled: () => false,
+        lookupMode: () => HunspellLookupMode.fallback,
+      );
+
+      expect((await lookup.searchSuggestions("app")).dictionarySuggestions, [
+        "apple",
+      ]);
+
+      // Same id, new instance (a re-enabled dictionary): the cached answer
+      // belongs to the old instance and must not be served.
+      dicts = [
+        FakeDictionarySource(
+          id: 1,
+          entries: {"application": "application content"},
+        ),
+      ];
+      expect((await lookup.searchSuggestions("app")).dictionarySuggestions, [
+        "application",
+      ]);
+      // The new dictionary was searched once: twice for its two width
+      // variants, and never for the old instance's cached answer.
+      expect(dicts.single.searchCalls, 2);
+    });
+
+    test(
+      "a slow stems call times out instead of stalling suggestions",
+      () async {
+        final morphology = FakeMorphology(
+          stemsResult: ["rim"],
+          stemsDelay: const Duration(milliseconds: 600),
+        );
+        final lookup = makeLookup(
+          dictionary: FakeDictionarySource(id: 1, entries: {"rims": "rims"}),
+          others: [
+            FakeDictionarySource(id: 2, entries: {"rim": "rim"}),
+          ],
+          morphology: morphology,
+          enabled: true,
+          mode: HunspellLookupMode.supplement,
+        );
+
+        final stopwatch = Stopwatch()..start();
+        final result = await lookup.searchSuggestions("rims");
+        stopwatch.stop();
+
+        // The stem "rim" would resolve in the second dictionary if it had
+        // arrived; the timeout drops it, and the dictionary result stands.
+        expect(result.dictionarySuggestions, ["rims"]);
+        expect(stopwatch.elapsedMilliseconds, lessThan(900));
+        expect(morphology.stemCalls, 1);
+      },
+    );
+
+    test(
+      "a slow spelling call times out and keeps the dictionary results",
+      () async {
+        final lookup = makeLookup(
+          dictionary: FakeDictionarySource(
+            id: 1,
+            entries: {"apple": "apple content"},
+          ),
+          morphology: FakeMorphology(
+            stemsResult: const [],
+            suggestionsResult: const ["apples"],
+            suggestionsDelay: const Duration(milliseconds: 600),
+          ),
+          enabled: true,
+        );
+
+        final stopwatch = Stopwatch()..start();
+        final result = await lookup.searchSuggestions("appl");
+        stopwatch.stop();
+
+        // A Hunspell timeout is not "no dictionary match": the prefix
+        // result is untouched, only the spelling tail is dropped.
+        expect(result.dictionarySuggestions, ["apple"]);
+        expect(result.spellingSuggestions, isEmpty);
+        expect(stopwatch.elapsedMilliseconds, lessThan(900));
+      },
+    );
+
+    test("a superseded keystroke stops before the Hunspell stages", () async {
+      final morphology = FakeMorphology(stemsResult: ["rim"]);
+      final lookup = makeLookup(
+        dictionary: FakeDictionarySource(
+          id: 1,
+          entries: {"rims": "rims"},
+          searchDelay: const Duration(milliseconds: 300),
+        ),
+        others: [
+          FakeDictionarySource(
+            id: 2,
+            entries: {"rim": "rim"},
+            searchDelay: const Duration(milliseconds: 300),
+          ),
+        ],
+        morphology: morphology,
+        enabled: true,
+        mode: HunspellLookupMode.supplement,
+      );
+
+      final first = lookup.searchSuggestions("rims");
+      await Future.delayed(const Duration(milliseconds: 10));
+      final second = lookup.searchSuggestions("rims");
+
+      // The first keystroke's prefix search finished after the second
+      // arrived: it hands back the prefix matches instead of running the
+      // stem stages for a query nobody is looking at any more.
+      expect((await first).dictionarySuggestions, ["rims"]);
+      expect((await second).dictionarySuggestions, ["rims", "rim"]);
+      expect(morphology.stemCalls, 1);
+    });
+  });
+
+  group("word splits: staged probing (P1-13)", () {
+    test("probes only slices starting where a part can begin", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"Anime": "Anime content", "Cover": "Cover content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      final splits = await lookup.wordSplitsFor("Animecover");
+
+      expect(splits.first.display, "Anime + Cover");
+      final probed = dictionary.resolveKeysBatchSizes.fold<int>(
+        0,
+        (total, batch) => total + batch,
+      );
+      // Prefixes of the word (8) plus the slices starting where "Anime"
+      // ends (4) — not the whole O(n²) set.
+      expect(probed, 12);
+      expect(probed, lessThan(splitCandidates("Animecover").length));
+    });
+
+    test("splits still swallow the linking s", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"Wohnzimmer": "Wohnzimmer", "Schrank": "Schrank"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      final splits = await lookup.wordSplitsFor("Wohnzimmerschrank");
+
+      expect(splits.first.display, "Wohnzimmer + Schrank");
+    });
+  });
+
   test("a failing morphology does not take the lookup down", () async {
     final lookup = makeLookup(
       dictionary: FakeDictionarySource(
@@ -787,23 +1069,32 @@ class FakeMorphology implements MorphologyProvider {
   int suggestionCalls = 0;
   bool stemsThrow;
 
+  /// Artificial latency, for the timeout tests: a Hunspell call slower
+  /// than the suggestion timeout must degrade to empty, not stall the list.
+  final Duration stemsDelay;
+  final Duration suggestionsDelay;
+
   FakeMorphology({
     required this.stemsResult,
     this.suggestionsResult = const [],
     this.stemsByWord = const {},
     this.stemsThrow = false,
+    this.stemsDelay = Duration.zero,
+    this.suggestionsDelay = Duration.zero,
   });
 
   @override
   Future<List<String>> stems(String word) async {
     stemCalls++;
     if (stemsThrow) throw StateError("hunspell worker is gone");
+    await Future.delayed(stemsDelay);
     return stemsByWord[word] ?? stemsResult;
   }
 
   @override
   Future<List<String>> suggestions(String word) async {
     suggestionCalls++;
+    await Future.delayed(suggestionsDelay);
     return suggestionsResult;
   }
 }
@@ -816,10 +1107,22 @@ class FakeDictionarySource implements DictionarySource {
   /// Simulates a dictionary that fails to load or read.
   final bool throws;
 
+  /// How many times the dictionary was prefix-searched: the P0-4 cache
+  /// tests assert a repeat or longer query does not search again.
+  int searchCalls = 0;
+
+  /// Sizes of the batches handed to [resolveKeys]: the P1-13 staged-split
+  /// test asserts only the reachable slices were probed.
+  final List<int> resolveKeysBatchSizes = [];
+
+  /// Artificial latency for prefix search, for the cancellation test.
+  final Duration searchDelay;
+
   FakeDictionarySource({
     required this.id,
     required this.entries,
     this.throws = false,
+    this.searchDelay = Duration.zero,
   });
 
   @override
@@ -836,6 +1139,7 @@ class FakeDictionarySource implements DictionarySource {
   @override
   Future<Map<String, String>> resolveKeys(Iterable<String> words) async {
     if (throws) throw StateError("dictionary is broken");
+    resolveKeysBatchSizes.add(words.length);
     final resolved = <String, String>{};
     for (final word in words) {
       final key = await resolveExactKey(word);
@@ -846,21 +1150,39 @@ class FakeDictionarySource implements DictionarySource {
 
   @override
   Future<List<String>> search(String query) async {
+    searchCalls++;
+    await Future.delayed(searchDelay);
     return entries.keys.where((key) => key.startsWith(query)).toList();
   }
 
+  /// The `resolvedKeys` argument of the most recent [readExactEntries]
+  /// call, or null when the caller passed none.
+  Map<String, String>? lastResolvedKeys;
+
+  /// How many [resolveExactKey] calls the most recent [readExactEntries]
+  /// made: candidates covered by `resolvedKeys` must not be resolved again.
+  int lastResolveCalls = 0;
+
   @override
   Future<List<DictionaryEntryData>> readExactEntries(
-    Iterable<String> words,
-  ) async {
+    Iterable<String> words, {
+    Map<String, String>? resolvedKeys,
+  }) async {
+    lastResolvedKeys = resolvedKeys;
+    lastResolveCalls = 0;
     final result = <DictionaryEntryData>[];
     final seen = <String>{};
     for (final word in words) {
-      final key = await resolveExactKey(word);
+      final key = resolvedKeys?[word] ?? await _countedResolve(word);
       if (key != null && seen.add(key)) {
         result.add(DictionaryEntryData(headword: key, content: entries[key]!));
       }
     }
     return result;
+  }
+
+  Future<String?> _countedResolve(String word) async {
+    lastResolveCalls++;
+    return resolveExactKey(word);
   }
 }

@@ -30,7 +30,14 @@ class DictManagerModel extends ChangeNotifier {
   /// words on screen can be looked up again with the new group.
   final VoidCallback? onDictionariesChanged;
 
-  DictManagerModel({this.onDictionariesChanged});
+  /// Called after a group switch with the ids of the dictionaries in the
+  /// new group, so the caller can stop background work for dictionaries
+  /// that left the group (the full-text service cancels their index
+  /// builds). Wired by the provider that owns the full-text service; null
+  /// in tests and anywhere the switch has no background work to stop.
+  final void Function(Set<int> activeIds)? onGroupSwitched;
+
+  DictManagerModel({this.onDictionariesChanged, this.onGroupSwitched});
 
   int get groupId => dictManager.groupId;
   bool get isEmpty => dictManager.isEmpty;
@@ -93,6 +100,10 @@ class DictManagerModel extends ChangeNotifier {
 
     try {
       await dictManager.setCurrentGroup(id);
+      // The dictionaries that left the group no longer need an index:
+      // stop their builds now instead of letting them copy the whole
+      // dictionary into the build isolate and write it to SQLite.
+      onGroupSwitched?.call(dictManager.dictIds.toSet());
       // Remember the selection so initGroup() restores this group on the next
       // launch instead of falling back to the one stored at first run.
       await prefs.setInt("currentDictionaryGroupId", id);

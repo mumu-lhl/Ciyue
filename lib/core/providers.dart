@@ -34,6 +34,10 @@ final dictManagerModelProvider = ChangeNotifierProvider<DictManagerModel>(
   (ref) => DictManagerModel(
     onDictionariesChanged: () =>
         ref.read(dictSetVersionProvider.notifier).bump(),
+    // Group switches stop the full-text builds of dictionaries that left
+    // the group (P1-6); the service is read lazily, at switch time.
+    onGroupSwitched: (activeIds) =>
+        ref.read(fullTextSearchServiceProvider).cancelBuildsExcept(activeIds),
   ),
 );
 
@@ -130,6 +134,39 @@ final fullTextSearchServiceProvider =
 /// finishes matches nothing, and the empty result would be cached for the
 /// whole keep-alive window — that is what left the first tab blank after
 /// switching back. Wait (bounded) for the entries instead.
+///
+/// Shared: every provider that looks a word up in the current group awaits
+/// the same future instead of polling on its own. The future is keyed by
+/// the dictionary set — group id, dictionary instances, and whether a load
+/// is in flight — so a group switch never reuses the old group's "ready":
+/// a switch creates new dictionary instances and flips [DictManager.isLoading],
+/// both of which change the key, and the next caller waits on a fresh
+/// future for the new group.
+String? _dictionariesReadyFingerprint;
+Future<void>? _dictionariesReadyFuture;
+
+Future<void> dictionariesReady() {
+  final fingerprint = StringBuffer()..write(dictManager.groupId);
+  for (final entry in dictManager.dicts.entries) {
+    fingerprint
+      ..write(",")
+      ..write(entry.key)
+      ..write(":")
+      ..write(identityHashCode(entry.value));
+  }
+  // A load in flight is a different state from the same set loaded: while
+  // the manager is loading, callers must share the future that waits the
+  // load out, not the completed one from before it started.
+  fingerprint.write(dictManager.isLoading ? ":loading" : ":ready");
+  final key = fingerprint.toString();
+  final existing = _dictionariesReadyFuture;
+  if (existing != null && _dictionariesReadyFingerprint == key) {
+    return existing;
+  }
+  _dictionariesReadyFingerprint = key;
+  return _dictionariesReadyFuture = _waitForDictionaries();
+}
+
 Future<void> _waitForDictionaries() async {
   // When nothing is loaded there is nothing to wait for. The manager starts in
   // its `isLoading == true` state and only clears it after initialization, so
@@ -163,7 +200,7 @@ final dictionaryLookupProvider = FutureProvider.autoDispose
       // The group may have switched, which changes the dictionaries the word
       // is looked up in. The cached result of the old group is worthless.
       ref.watch(dictSetVersionProvider);
-      await _waitForDictionaries();
+      await dictionariesReady();
 
       return dictionaryLookup.lookup(word);
     });
@@ -195,11 +232,7 @@ final wordContentProvider = FutureProvider.autoDispose
         // instead of caching an empty entry for the whole keep-alive window —
         // that is what left the first tab blank after switching back.
         await dictManager.waitForGroupSwitch();
-        var waited = 0;
-        while (dictManager.isLoading && waited < 200) {
-          await Future.delayed(const Duration(milliseconds: 50));
-          waited++;
-        }
+        await dictionariesReady();
         dict = dictManager.dicts[params.dictId];
         if (dict == null) {
           // Never keep a blank entry alive; see above.
@@ -253,7 +286,7 @@ final wordSplitsProvider = FutureProvider.autoDispose
       // A split is only offered when a dictionary of the current group holds
       // the pieces, so switching the group changes the answer.
       ref.watch(dictSetVersionProvider);
-      await _waitForDictionaries();
+      await dictionariesReady();
       return dictionaryLookup.wordSplitsFor(word);
     });
 
@@ -265,7 +298,7 @@ final phraseSuggestionsProvider = FutureProvider.autoDispose
     .family<List<String>, String>((ref, word) async {
       // The readings are filtered by the dictionaries of the current group.
       ref.watch(dictSetVersionProvider);
-      await _waitForDictionaries();
+      await dictionariesReady();
       return dictionaryLookup.phraseSuggestionsFor(word);
     });
 
@@ -279,7 +312,7 @@ final longVowelSuggestionsProvider = FutureProvider.autoDispose
       // The readings are only offered when a dictionary of the current group
       // holds them.
       ref.watch(dictSetVersionProvider);
-      await _waitForDictionaries();
+      await dictionariesReady();
       return dictionaryLookup.longVowelSuggestionsFor(word);
     });
 
@@ -293,7 +326,7 @@ final missingWordSpellingSuggestionsProvider = FutureProvider.autoDispose
       // Hunspell's corrections are dropped when no dictionary of the current
       // group can open them.
       ref.watch(dictSetVersionProvider);
-      await _waitForDictionaries();
+      await dictionariesReady();
       return dictionaryLookup.spellingSuggestionsFor(word);
     });
 

@@ -1,7 +1,25 @@
+import "dart:io";
+
 import "package:ciyue/services/full_text_index_store.dart";
 import "package:ciyue/services/full_text_search.dart";
+import "package:drift/drift.dart" hide isNull;
 import "package:drift/native.dart";
 import "package:flutter_test/flutter_test.dart";
+
+/// Minimal drift handle for talking to a store file directly (pragma
+/// reads), mirroring the service test's raw database.
+class _RawDb extends GeneratedDatabase {
+  _RawDb(super.executor);
+
+  @override
+  int get schemaVersion => 1;
+
+  @override
+  List<TableInfo<Table, Object?>> get allTables => const [];
+
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities => const [];
+}
 
 void main() {
   late FullTextIndexStore store;
@@ -294,5 +312,270 @@ void main() {
     await store.ensureDictionary(7, "fp");
     await store.pruneExcept({6});
     expect((await store.allMeta()).map((m) => m.dictionaryId), [6]);
+  });
+
+  group("background isolate store (Slice B)", () {
+    test("openFile uses WAL and auto_vacuum=FULL", () async {
+      final dir = await Directory.systemTemp.createTemp("fts_store_open_");
+      try {
+        final fileStore = await FullTextIndexStore.openFile(
+          File("${dir.path}/fts.db"),
+        );
+        try {
+          // A second connection to the same file reads the persisted
+          // pragmas: WAL (readers run while a build writes) and FULL
+          // (drops free their pages).
+          final check = _RawDb(NativeDatabase(File("${dir.path}/fts.db")));
+          final journal = await check
+              .customSelect("PRAGMA journal_mode")
+              .getSingle();
+          expect(journal.read<String>("journal_mode"), "wal");
+          final vacuum = await check
+              .customSelect("PRAGMA auto_vacuum")
+              .getSingle();
+          expect(vacuum.read<int>("auto_vacuum"), 1);
+          await check.close();
+        } finally {
+          await fileStore.close();
+        }
+      } finally {
+        await dir.delete(recursive: true);
+      }
+    });
+
+    test("multi-value insert matches row-by-row results", () async {
+      // One dictionary written as a single batch, one written one row at
+      // a time: the FTS5 content tables and shadow tables must agree, so
+      // the same queries return the same hits in the same order.
+      const rows = [
+        FullTextIndexRow(rowid: 1, headword: "running", body: "moving fast"),
+        FullTextIndexRow(rowid: 2, headword: "walking", body: "moving on foot"),
+        FullTextIndexRow(rowid: 3, headword: "king-size", body: "a bed size"),
+        FullTextIndexRow(rowid: 4, headword: "社会主义", body: "一种社会制度"),
+        FullTextIndexRow(rowid: 5, headword: "主义者", body: "信奉某种主义的人"),
+        FullTextIndexRow(rowid: 6, headword: "中国", body: "中国是一个国家"),
+        FullTextIndexRow(rowid: 7, headword: "中华民国", body: "历史上的国家"),
+        FullTextIndexRow(rowid: 8, headword: "中华人民共和国", body: "成立于1949年"),
+        FullTextIndexRow(rowid: 9, headword: "apple", body: "中国是一种水果"),
+      ];
+      expect(await store.ensureDictionary(20, "fp"), isTrue);
+      await store.insertBatch(20, rows, rows.length);
+      await store.markComplete(20, rows.length);
+
+      expect(await store.ensureDictionary(21, "fp"), isTrue);
+      for (final row in rows) {
+        await store.insertBatch(21, [row], row.rowid);
+      }
+      await store.markComplete(21, rows.length);
+
+      String dump(List<FullTextHit> hits) =>
+          hits.map((h) => "${h.headword}|${h.rank}|${h.snippet}").join("\n");
+      for (final query in ['"apple"', '"苹 果"', '"中国"']) {
+        expect(
+          dump(await store.searchOne(21, query)),
+          dump(await store.searchOne(20, query)),
+        );
+      }
+      expect(
+        dump(await store.searchSuffixOne(21, "主义")),
+        dump(await store.searchSuffixOne(20, "主义")),
+      );
+      expect(
+        dump(await store.searchSuffixOne(21, "ing")),
+        dump(await store.searchSuffixOne(20, "ing")),
+      );
+      expect(
+        dump(await store.searchHeadwordAndOne(21, "中国")),
+        dump(await store.searchHeadwordAndOne(20, "中国")),
+      );
+      // A re-inserted row keeps its content_rowid: the resumed build
+      // re-sends stored rows with INSERT OR REPLACE. The re-insert
+      // changes bm25 ranks (pre-existing FTS5 REPLACE behaviour —
+      // a single-row re-insert perturbs the rank identically, probe
+      // 2026-11-13), so compare headwords and snippets, not ranks.
+      await store.insertBatch(20, rows.sublist(0, 3), 3);
+      String hitsOnly(List<FullTextHit> hits) =>
+          hits.map((h) => "${h.headword}|${h.snippet}").join("\n");
+      expect(
+        hitsOnly(await store.searchOne(20, '"apple"')),
+        hitsOnly(await store.searchOne(21, '"apple"')),
+      );
+    });
+
+    test("pre-tokenized rows index the same as raw rows", () async {
+      // The builder isolate ships rows with the derived columns already
+      // computed; the store must use them as-is and produce the same
+      // index as tokenizing the raw rows itself.
+      final tokenized = [
+        FullTextIndexRow(
+          rowid: 1,
+          headword: "apple",
+          body: "a round fruit",
+          headwordRev: reverseHeadword("apple"),
+          headwordTokenized: tokenizeForIndex("apple"),
+          headwordRevTokenized: tokenizeForIndex(reverseHeadword("apple")),
+          bodyTokenized: tokenizeForIndex("a round fruit"),
+        ),
+        FullTextIndexRow(
+          rowid: 2,
+          headword: "苹果",
+          body: "苹果是一种水果",
+          headwordRev: reverseHeadword("苹果"),
+          headwordTokenized: tokenizeForIndex("苹果"),
+          headwordRevTokenized: tokenizeForIndex(reverseHeadword("苹果")),
+          bodyTokenized: tokenizeForIndex("苹果是一种水果"),
+        ),
+        FullTextIndexRow(
+          rowid: 3,
+          headword: "running",
+          body: "moving fast",
+          headwordRev: reverseHeadword("running"),
+          headwordTokenized: tokenizeForIndex("running"),
+          headwordRevTokenized: tokenizeForIndex(reverseHeadword("running")),
+          bodyTokenized: tokenizeForIndex("moving fast"),
+        ),
+      ];
+      final raw = [
+        for (final row in tokenized)
+          FullTextIndexRow(
+            rowid: row.rowid,
+            headword: row.headword,
+            body: row.body,
+          ),
+      ];
+      expect(await store.ensureDictionary(22, "fp"), isTrue);
+      await store.insertBatch(22, tokenized, tokenized.length);
+      await store.markComplete(22, tokenized.length);
+      expect(await store.ensureDictionary(23, "fp"), isTrue);
+      await store.insertBatch(23, raw, raw.length);
+      await store.markComplete(23, raw.length);
+
+      String dump(List<FullTextHit> hits) =>
+          hits.map((h) => "${h.headword}|${h.rank}|${h.snippet}").join("\n");
+      expect(
+        dump(await store.searchOne(22, '"apple"')),
+        dump(await store.searchOne(23, '"apple"')),
+      );
+      expect(
+        dump(await store.searchOne(22, '"苹 果"')),
+        dump(await store.searchOne(23, '"苹 果"')),
+      );
+      expect(
+        dump(await store.searchSuffixOne(22, "ing")),
+        dump(await store.searchSuffixOne(23, "ing")),
+      );
+      expect(
+        dump(await store.searchHeadwordAndOne(22, "苹果")),
+        dump(await store.searchHeadwordAndOne(23, "苹果")),
+      );
+    });
+
+    test("dropDictionary reclaims space and records auto_vacuum on a "
+        "pre-existing database", () async {
+      final dir = await Directory.systemTemp.createTemp("fts_store_drop_");
+      try {
+        final file = File("${dir.path}/full_text_search.db");
+        // A database from before the flag: created without the setup, so
+        // auto_vacuum is NONE and the open-time set is ignored until a
+        // VACUUM records it.
+        final legacy = _RawDb(NativeDatabase(file));
+        await legacy.customStatement("CREATE TABLE legacy (x TEXT)");
+        await legacy.customStatement("INSERT INTO legacy VALUES ('seed')");
+        await legacy.close();
+
+        final fileStore = await FullTextIndexStore.openFile(file);
+        try {
+          expect(await fileStore.ensureDictionary(1, "fp"), isTrue);
+          final rows = [
+            for (var i = 1; i <= 500; i++)
+              FullTextIndexRow(
+                rowid: i,
+                headword: "word$i",
+                body:
+                    "entry $i about the history of the apple "
+                    "and the world at large, with the quick brown "
+                    "fox and the lazy dog running through the "
+                    "fields of the valley",
+              ),
+          ];
+          await fileStore.insertBatch(1, rows, rows.length);
+          await fileStore.markComplete(1, rows.length);
+          expect((await fileStore.searchOne(1, '"apple"')), isNotEmpty);
+          // In WAL mode the fresh pages live in the -wal file until a
+          // checkpoint, so the on-disk size of the fresh index is the main
+          // file plus -wal.
+          final wal = File("${file.path}-wal");
+          final built =
+              await file.length() +
+              (await wal.exists() ? await wal.length() : 0);
+          expect(built, greaterThan(100000));
+
+          await fileStore.dropDictionary(1);
+          expect(await fileStore.meta(1), isNull);
+        } finally {
+          await fileStore.close();
+        }
+        // The DROP freed its pages and the VACUUM recorded the flag, so
+        // the file shrank and later drops free their pages immediately.
+        expect(await file.length(), lessThan(100000));
+        final check = _RawDb(NativeDatabase(file));
+        final vacuum = await check
+            .customSelect("PRAGMA auto_vacuum")
+            .getSingle();
+        expect(vacuum.read<int>("auto_vacuum"), 1);
+        await check.close();
+      } finally {
+        await dir.delete(recursive: true);
+      }
+    });
+
+    test("concurrent searches across dictionaries run in parallel on "
+        "the read pool", () async {
+      final dir = await Directory.systemTemp.createTemp("fts_store_pool_");
+      try {
+        final fileStore = await FullTextIndexStore.openFile(
+          File("${dir.path}/fts.db"),
+        );
+        try {
+          final rows = [
+            for (var i = 1; i <= 20000; i++)
+              FullTextIndexRow(
+                rowid: i,
+                headword: "word$i",
+                body:
+                    "entry $i about the history of the apple "
+                    "and the world",
+              ),
+          ];
+          for (final id in [1, 2, 3]) {
+            expect(await fileStore.ensureDictionary(id, "fp$id"), isTrue);
+            await fileStore.insertBatch(id, rows, rows.length);
+            await fileStore.markComplete(id, rows.length);
+          }
+          Future<int> timed(int id) async {
+            final stopwatch = Stopwatch()..start();
+            await fileStore.searchOne(id, '"the"');
+            return stopwatch.elapsedMilliseconds;
+          }
+
+          // Warm the reader connections before timing.
+          await fileStore.searchOne(1, '"the"');
+          final t1 = await timed(1);
+          final t2 = await timed(2);
+          final t3 = await timed(3);
+          final stopwatch = Stopwatch()..start();
+          await Future.wait([timed(1), timed(2), timed(3)]);
+          final wall = stopwatch.elapsedMilliseconds;
+          // Three queries on three reader isolates finish in about one
+          // query's time, not three; the 0.8 bound leaves room for a
+          // loaded machine while still failing on a serialized pool.
+          expect(wall, lessThan((t1 + t2 + t3) * 0.8));
+        } finally {
+          await fileStore.close();
+        }
+      } finally {
+        await dir.delete(recursive: true);
+      }
+    });
   });
 }

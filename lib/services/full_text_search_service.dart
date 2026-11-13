@@ -58,6 +58,16 @@ class FullTextSearchService extends ChangeNotifier {
   final Map<int, FullTextBuildCancelToken> _cancelTokens = {};
   final Map<int, Future<void>> _builds = {};
 
+  /// Monotonic id of the latest search. A search that finishes after a
+  /// newer one started returns empty instead of its (now stale) hits:
+  /// the search bar only ever shows the newest query, and with the store
+  /// on a background isolate the stale query's result would otherwise
+  /// arrive after the newer one and overwrite it. The query itself still
+  /// runs to completion in the background isolate — drift has no
+  /// interrupt — but with a reader pool it occupies one reader while the
+  /// newer query runs on another, so it no longer delays the new one.
+  int _searchGeneration = 0;
+
   FullTextSearchService({
     required this.dictionaries,
     required Future<Set<int>> Function() knownIds,
@@ -311,6 +321,19 @@ class FullTextSearchService extends ChangeNotifier {
     _cancelTokens[dictionaryId]?.cancel();
   }
 
+  /// Cancels the builds of every dictionary except those in [keepIds], e.g.
+  /// when the active group changes and the dictionaries that left the group
+  /// no longer need an index. Already-finished or never-started builds are
+  /// unaffected; a cancelled build keeps its partial index and resumes if
+  /// its dictionary becomes active again.
+  void cancelBuildsExcept(Set<int> keepIds) {
+    for (final entry in _cancelTokens.entries) {
+      if (!keepIds.contains(entry.key)) {
+        entry.value.cancel();
+      }
+    }
+  }
+
   /// Worst index status across the active dictionaries: a build in flight
   /// anywhere reports building, then a failed build, then a dictionary
   /// never built; only when every index is ready does this report ready.
@@ -383,6 +406,11 @@ class FullTextSearchService extends ChangeNotifier {
   /// Runs [run] against every active dictionary with a ready index and
   /// merges the hits, best rank first, capped at 100. A dictionary still
   /// building, never built, or unreadable contributes nothing.
+  ///
+  /// The per-dictionary queries run concurrently ([Future.wait]): with the
+  /// store's reader pool they execute on separate isolates in parallel
+  /// instead of queueing N slow queries behind each other. A newer search
+  /// supersedes an older one still in flight (see [_searchGeneration]).
   Future<List<FullTextHit>> _searchReady(
     Future<List<FullTextHit>> Function(
       FullTextIndexStore store,
@@ -390,6 +418,7 @@ class FullTextSearchService extends ChangeNotifier {
     )
     run,
   ) async {
+    final generation = ++_searchGeneration;
     await _reconcileOnce();
     final FullTextIndexStore store;
     try {
@@ -398,40 +427,62 @@ class FullTextSearchService extends ChangeNotifier {
       // An unreadable cache store means no results, not a crash.
       return const [];
     }
-    final hits = <FullTextHit>[];
+    final perDictionary = <Future<List<FullTextHit>>>[];
     for (final dictionary in dictionaries()) {
       if (stateFor(dictionary.id).status != FullTextIndexStatus.ready) {
         continue;
       }
-      try {
-        hits.addAll(await run(store, dictionary.id));
-      } catch (e) {
-        // One unreadable index must not break search across the rest.
-        // But a query that fails because the tables do not match the
-        // query — a stale index whose shape predates the columns the
-        // query needs — is index corruption, not a bad query: user
-        // input only ever reaches MATCH expressions, never a column or
-        // table position, so "no such column/table" and "column index
-        // out of range" can only come from our SQL against the wrong
-        // tables. Mark it failed so the full-text page offers a retry
-        // instead of silently returning nothing. Anything else (a
-        // locked database, an I/O error) leaves the state alone and
-        // retries on the next search.
-        if (_isIndexShapeError(e)) {
-          _states[dictionary.id] = const FullTextIndexState(
-            status: FullTextIndexStatus.failed,
-          );
-          try {
-            await store.markFailed(dictionary.id);
-          } catch (_) {}
-          notifyListeners();
-        }
-      }
+      perDictionary.add(_searchOne(store, dictionary.id, run));
     }
+    final results = await Future.wait(perDictionary);
+    if (generation != _searchGeneration) {
+      // A newer search started while this one was running: its hits are
+      // stale — the caller only ever shows the newest query.
+      return const [];
+    }
+    final hits = results.expand((list) => list).toList();
     // bm25 ranks are per-table estimates, so cross-dictionary ordering is
     // approximate — good enough for a merged list.
     hits.sort((a, b) => a.rank.compareTo(b.rank));
     return hits.take(100).toList(growable: false);
+  }
+
+  /// One dictionary's query, with the per-dictionary failure handling the
+  /// old serial loop used to do inline: one unreadable index must not
+  /// break search across the rest.
+  Future<List<FullTextHit>> _searchOne(
+    FullTextIndexStore store,
+    int dictionaryId,
+    Future<List<FullTextHit>> Function(
+      FullTextIndexStore store,
+      int dictionaryId,
+    )
+    run,
+  ) async {
+    try {
+      return await run(store, dictionaryId);
+    } catch (e) {
+      // But a query that fails because the tables do not match the
+      // query — a stale index whose shape predates the columns the
+      // query needs — is index corruption, not a bad query: user
+      // input only ever reaches MATCH expressions, never a column or
+      // table position, so "no such column/table" and "column index
+      // out of range" can only come from our SQL against the wrong
+      // tables. Mark it failed so the full-text page offers a retry
+      // instead of silently returning nothing. Anything else (a
+      // locked database, an I/O error) leaves the state alone and
+      // retries on the next search.
+      if (_isIndexShapeError(e)) {
+        _states[dictionaryId] = const FullTextIndexState(
+          status: FullTextIndexStatus.failed,
+        );
+        try {
+          await store.markFailed(dictionaryId);
+        } catch (_) {}
+        notifyListeners();
+      }
+      return const [];
+    }
   }
 
   /// Drops a dictionary's index entirely, e.g. when it is removed.
