@@ -1320,20 +1320,12 @@ gboolean InAppWebView::OnFirstFrameWatchdog(gpointer user_data) {
       (getenv("WEBKIT_DISABLE_DMABUF_RENDERER") != nullptr ? "1" : "0") +
       ". A blank WebView with a live DOM looks exactly like this.";
   if (mode == RenderingMode::kHardwareEgl) {
-    // The hardware path is the one that has not been verified on every GPU, so
-    // name the exact recovery step instead of leaving the reader to guess.
+    // Name the exact recovery step instead of leaving the reader to guess.
+    // This is diagnostic only: a watchdog cannot tell "the GPU failed" from
+    // "the dictionary is still loading", so it must not change any setting.
     message +=
         " The hardware EGL path is not working on this GPU; start again with "
         "CIYUE_RENDER_MODE=software to switch to the software renderer.";
-    // Only remember the failure when the view was actually on screen. A WebView
-    // that was created but never shown produces no frames for a legitimate
-    // reason, and recording that would demote a healthy GPU for a week.
-    if (self->isVisible()) {
-      RecordRenderingFailure();
-      message += " A fallback was recorded: the next start will use software rendering.";
-    } else {
-      message += " The view was not visible, so no fallback was recorded.";
-    }
   }
   errorLog(message);
   return G_SOURCE_REMOVE;

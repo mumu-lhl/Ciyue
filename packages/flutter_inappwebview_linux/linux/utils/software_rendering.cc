@@ -6,12 +6,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <ctime>
-#include <filesystem>
 #include <glob.h>
 #include <mutex>
 #include <string>
-#include <system_error>
 #include <unistd.h>
 
 #include "log.h"
@@ -176,29 +173,6 @@ bool HasAccessibleDrmNode() {
 
 namespace {
 
-// Where the "hardware produced no frame" marker lives. Kept beside the
-// application data so it survives across runs, and next to the same directory
-// the Dart side uses for shared_preferences.
-std::string RenderingFallbackMarkerPath() {
-  const char* xdg_data_home = getenv("XDG_DATA_HOME");
-  std::string base;
-  if (xdg_data_home != nullptr && xdg_data_home[0] != '\0') {
-    base = xdg_data_home;
-  } else {
-    const char* home = getenv("HOME");
-    if (home == nullptr || home[0] == '\0') {
-      return {};
-    }
-    base = std::string(home) + "/.local/share";
-  }
-  return base + "/org.eu.mumulhl.ciyue/rendering-fallback";
-}
-
-// A week. Long enough to survive a few restarts, short enough that a single
-// slow start (large dictionary, cold page load) cannot pin the process to
-// software indefinitely.
-constexpr long long kRenderingFallbackMaxAgeSeconds = 7LL * 24 * 60 * 60;
-
 RenderingMode DetectRenderingMode() {
   // Explicit escape hatch: try the hardware EGL zero-copy path and skip every
   // heuristic below.
@@ -206,8 +180,6 @@ RenderingMode DetectRenderingMode() {
   if (skip_check != nullptr &&
       (strcmp(skip_check, "1") == 0 || strcasecmp(skip_check, "true") == 0)) {
     debugLog("SKIP_DMABUF_CHECK set, forcing hardware EGL rendering");
-    // Forcing hardware is also the way back from a recorded failure.
-    ClearRenderingFailure();
     return RenderingMode::kHardwareEgl;
   }
 
@@ -221,10 +193,10 @@ RenderingMode DetectRenderingMode() {
     return RenderingMode::kSoftwareShm;
   }
 
-  // The launcher sets this when no DRM device is accessible. The WebProcess
-  // will export SHM frames, so the host has to use the pixel-buffer texture.
-  // Honouring it here is what keeps the launcher and the plugin from
-  // disagreeing about the mode.
+  // If another component already disabled WebKit's DMA-BUF renderer, the
+  // WebProcess will export SHM frames, so the host has to use the pixel-buffer
+  // texture. The plugin owns the only DRM probe; this merely respects an
+  // external request instead of second-guessing it.
   if (getenv("WEBKIT_DISABLE_DMABUF_RENDERER") != nullptr) {
     debugLog("WEBKIT_DISABLE_DMABUF_RENDERER already set, using SHM rendering");
     return RenderingMode::kSoftwareShm;
@@ -236,14 +208,6 @@ RenderingMode DetectRenderingMode() {
   if (already_sw != nullptr &&
       (strcmp(already_sw, "1") == 0 || strcasecmp(already_sw, "true") == 0)) {
     debugLog("LIBGL_ALWAYS_SOFTWARE was set by the user; using SHM rendering");
-    return RenderingMode::kSoftwareShm;
-  }
-
-  // A recent failure means the heuristic guessed wrong on this machine. Check
-  // it before the driver whitelist: that whitelist is exactly the guess that
-  // failed. The marker expires, so this cannot pin the process forever.
-  if (HasRecentRenderingFailure()) {
-    debugLog("Recent hardware rendering failure recorded, using SHM rendering");
     return RenderingMode::kSoftwareShm;
   }
 
@@ -305,65 +269,6 @@ void ApplyRenderingModeEnvironment(RenderingMode mode) {
 }
 
 }  // namespace
-
-bool HasRecentRenderingFailure() {
-  const std::string path = RenderingFallbackMarkerPath();
-  if (path.empty()) {
-    return false;
-  }
-
-  FILE* file = fopen(path.c_str(), "r");
-  if (file == nullptr) {
-    return false;
-  }
-  long long recorded_at = 0;
-  const bool parsed = fscanf(file, "%lld", &recorded_at) == 1;
-  fclose(file);
-  if (!parsed || recorded_at <= 0) {
-    return false;
-  }
-
-  const long long now = static_cast<long long>(time(nullptr));
-  if (now - recorded_at > kRenderingFallbackMaxAgeSeconds) {
-    debugLog("Rendering fallback marker expired, trying hardware again");
-    unlink(path.c_str());
-    return false;
-  }
-  return true;
-}
-
-void ClearRenderingFailure() {
-  const std::string path = RenderingFallbackMarkerPath();
-  if (!path.empty()) {
-    unlink(path.c_str());
-  }
-}
-
-void RecordRenderingFailure() {
-  const std::string path = RenderingFallbackMarkerPath();
-  if (path.empty()) {
-    return;
-  }
-
-  // The application data directory may not exist yet on a first run.
-  const std::string directory = path.substr(0, path.rfind('/'));
-  std::error_code error;
-  std::filesystem::create_directories(directory, error);
-  if (error) {
-    debugLog("Could not create the rendering fallback directory: " + error.message());
-    return;
-  }
-
-  FILE* file = fopen(path.c_str(), "w");
-  if (file == nullptr) {
-    debugLog("Could not write the rendering fallback marker");
-    return;
-  }
-  fprintf(file, "%lld\n", static_cast<long long>(time(nullptr)));
-  fclose(file);
-
-  infoLog("Hardware rendering produced no frame; the next start will use software");
-}
 
 RenderingMode ResolveRenderingMode() {
   static std::once_flag once;

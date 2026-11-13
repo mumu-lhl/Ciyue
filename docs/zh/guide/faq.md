@@ -43,8 +43,6 @@ CIYUE_RENDER_MODE=software ciyue
 
 其他取值：`auto`（默认，自动选择）、`hardware`（强制硬件加速）。底层的 `FLUTTER_INAPPWEBVIEW_SKIP_DMABUF_CHECK=1` 和 `FLUTTER_INAPPWEBVIEW_LINUX_DISABLE_GL=1` 优先级更高，会覆盖 `CIYUE_RENDER_MODE`。
 
-硬件模式下如果 WebView 启动 5 秒内没有收到任何画面，词悦会记下这次失败，**下次启动自动改用软件渲染**，不必手动设变量。这条记录 7 天后过期，会再试一次硬件；想立刻重试，用 `CIYUE_RENDER_MODE=hardware ciyue`，它会清掉记录。不可见的 WebView 不会被记成失败，所以查词页没打开时不会误降级。
-
 如果软件渲染下仍然空白，就不是渲染方式的问题。用 `ciyue -l` 复现一次，再到 [GitHub](https://github.com/mumu-lhl/Ciyue/issues) 反馈：日志里的 `rendering mode=` 和 `no frame within 5s` 两行能直接指出是哪一层没有收到帧。
 
 ## 同一目录里的 MDX 和 StarDict 词典只出现一个？
