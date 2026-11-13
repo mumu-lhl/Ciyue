@@ -576,16 +576,22 @@ class DictionaryLookup {
 
   /// Phrasal verbs a phrase might be hiding, for the "not found" page.
   ///
-  /// `picked the phone up` is stored as `pick up`; `rufe dich an` as `anrufen`.
-  /// Two-word input is not handled here — `picked up` already resolves through
-  /// the stems the normal lookup asks for, so only longer phrases arrive.
+  /// `picked the phone up` is stored as `pick up`; `sehe an` as `ansehen`.
+  /// Two-word input is in scope: the normal stems lookup keeps the space
+  /// (`sehen an`), so only this pass can join the halves the way a German
+  /// dictionary files them. English `picked up` usually resolves before this
+  /// page is shown, and is one more harmless candidate when it does not.
   ///
   /// Cheap like [wordSplitsFor]: one `stems()` call per word, then a single
   /// probe batch. The readings are filtered by the dictionaries themselves, so
   /// no particle list has to be maintained.
   Future<List<String>> phraseSuggestionsFor(String word) async {
     final tokens = phraseTokens(word);
-    if (tokens.length < 3) return const [];
+    // The same bounds as [phraseCandidates], before the stems calls, so a
+    // pasted paragraph costs nothing.
+    if (tokens.length < minPhraseWords || tokens.length > maxPhraseWords) {
+      return const [];
+    }
 
     final activeDictionaries = dictionaries();
     if (activeDictionaries.isEmpty) return const [];

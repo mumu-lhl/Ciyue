@@ -62,8 +62,9 @@ const _maxCandidateLength = 200;
 /// a two-word pair has to be let in.
 ///
 /// Lowering this to two is what admits that case, and it is also what made
-/// `picked up` start reaching this pass for English.
-const _minPhraseWords = 2;
+/// `picked up` start reaching this pass for English. Callers share this bound
+/// so a two-word input is not turned away again one layer up.
+const minPhraseWords = 2;
 
 /// The words of [phrase], with surrounding punctuation removed.
 ///
@@ -94,7 +95,7 @@ List<String> phraseCandidates(
   List<String> tokens, {
   required List<String> Function(String token) stemsOf,
 }) {
-  if (tokens.length < _minPhraseWords || tokens.length > maxPhraseWords) {
+  if (tokens.length < minPhraseWords || tokens.length > maxPhraseWords) {
     return const [];
   }
 
