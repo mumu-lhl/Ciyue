@@ -39,7 +39,7 @@ jobs:
     uses: ./.github/workflows/android-build.yml
     secrets: inherit
     with:
-      flutter_version: 3.47.8
+      flutter_version: 3.50.0
       workflow_profile: nightly
       include_metadata_defines: true
       build_mode: release_common
@@ -54,7 +54,7 @@ jobs:
     uses: ./.github/workflows/android-build.yml
     secrets: inherit
     with:
-      flutter_version: 3.47.8
+      flutter_version: 3.50.0
       workflow_profile: nightly
       include_metadata_defines: true
       build_mode: release_full
@@ -68,7 +68,7 @@ jobs:
     if: needs.check-activity.outputs.should_run == 'true'
     uses: ./.github/workflows/windows-build.yml
     with:
-      flutter_version: 3.47.8
+      flutter_version: 3.50.0
       workflow_profile: nightly
       artifact_name: Windows
       enable_build_cache: true
@@ -79,7 +79,7 @@ jobs:
     if: needs.check-activity.outputs.should_run == 'true'
     uses: ./.github/workflows/linux-build.yml
     with:
-      flutter_version: 3.47.8
+      flutter_version: 3.50.0
       workflow_profile: nightly
       artifact_name: Linux
       package_release_artifacts: true
@@ -89,7 +89,7 @@ jobs:
     if: needs.check-activity.outputs.should_run == 'true'
     uses: ./.github/workflows/macos-build.yml
     with:
-      flutter_version: 3.47.8
+      flutter_version: 3.50.0
       workflow_profile: nightly
       include_metadata_defines: true
       artifact_name: macOS
