@@ -121,13 +121,40 @@ void main() {
     expect(dict.description, contains("A small sample encyclopedia"));
   });
 
+  test("resolveExactKey resolves exact match and case variations", () async {
+    expect(await dict.resolveExactKey("Apple"), "Apple");
+    expect(await dict.resolveExactKey("apple"), "Apple");
+    // A redirect resolves to the headword as stored, not the target's:
+    // resolveKeys reads titles in memory now (entryTitleAt) instead of
+    // fetching the dirent, so it cannot follow the redirect — the read
+    // still lands on the target article (see the test below).
+    expect(await dict.resolveExactKey("fruit"), "fruit");
+    expect(await dict.resolveExactKey("Nonexistent"), isNull);
+  });
+
   test(
-    "resolveExactKey resolves exact match, case variations, and redirects",
+    "resolveKeys resolves in memory and reads still follow redirects",
     () async {
-      expect(await dict.resolveExactKey("Apple"), "Apple");
-      expect(await dict.resolveExactKey("apple"), "Apple");
-      expect(await dict.resolveExactKey("fruit"), "Apple");
-      expect(await dict.resolveExactKey("Nonexistent"), isNull);
+      final resolved = await dict.resolveKeys([
+        "Apple",
+        "apple",
+        "fruit",
+        "Nonexistent",
+      ]);
+      expect(resolved, {"Apple": "Apple", "apple": "Apple", "fruit": "fruit"});
+
+      // Handing the redirect title back as the resolved key still reads the
+      // target article: lookup follows the redirect chain.
+      final entries = await dict.readExactEntries(
+        ["fruit"],
+        resolvedKeys: {"fruit": "fruit"},
+      );
+      expect(entries, hasLength(1));
+      expect(entries.first.headword, "Apple");
+
+      // A non-article entry matched by path still resolves through its
+      // dirent: the stylesheet resource has no article title.
+      expect(await dict.resolveExactKey("style"), "style");
     },
   );
 
@@ -143,7 +170,7 @@ void main() {
           expect(await mixed.resolveExactKey("Apple"), "Apple");
           expect(await mixed.resolveExactKey("Banana"), "Banana");
           expect(await mixed.resolveExactKey("apple"), "Apple");
-          expect(await mixed.resolveExactKey("fruit"), "Apple");
+          expect(await mixed.resolveExactKey("fruit"), "fruit");
           expect(await mixed.resolveExactKey("Nonexistent"), isNull);
         } finally {
           await mixed.close();
@@ -180,6 +207,34 @@ void main() {
     // ZIM pages keep their own doctype instead of being forced into
     // standards mode like MDict and StarDict fragments.
     expect(html, isNot(startsWith("<!DOCTYPE")));
+  });
+
+  test("readExactEntries reads each distinct article once", () async {
+    final entries = await dict.readExactEntries(["Apple", "apple", "APPLE"]);
+
+    expect(entries, hasLength(1));
+    expect(entries.first.headword, "Apple");
+    expect(entries.first.content, contains("A delicious"));
+  });
+
+  test(
+    "readExactEntries keeps a redirect and its target to one entry",
+    () async {
+      final entries = await dict.readExactEntries(["fruit", "Apple"]);
+
+      expect(entries, hasLength(1));
+      expect(entries.first.headword, "Apple");
+    },
+  );
+
+  test("readExactEntries honours already-resolved keys", () async {
+    final entries = await dict.readExactEntries(
+      ["apple"],
+      resolvedKeys: {"apple": "Apple"},
+    );
+
+    expect(entries, hasLength(1));
+    expect(entries.first.headword, "Apple");
   });
 
   test("rewrites ZIM article links into gdlookup entry links", () async {

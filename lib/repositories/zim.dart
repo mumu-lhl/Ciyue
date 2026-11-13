@@ -238,9 +238,23 @@ class Zim extends BaseLoadedDictionary {
         // resolveIndex returns an ENTRY index (into the archive's path
         // pointers), while wordAt indexes the ARTICLE list — the two only
         // coincide when no non-article entry sorts before the article, so
-        // never feed one to the other. The fetched entry carries its title.
+        // never feed one to the other. entryTitleAt resolves the entry
+        // index to its title purely in memory, without the dirent disk
+        // read getEntry used to pay per candidate spelling.
+        //
+        // The title is the headword as stored: a redirect resolves to its
+        // own title, not the target's — the read still follows the redirect
+        // (readExactEntries looks the spelling up, which follows redirect
+        // chains), so the article shown is unchanged.
         final index = reader.resolveIndex(candidate);
         if (index != null) {
+          final title = reader.entryTitleAt(index);
+          if (title != null) {
+            resolved[word] = title;
+            break;
+          }
+          // A non-article entry (a resource or metadata entry) matched by
+          // path: fall back to the dirent read, as before.
           final entry = await reader.getEntry(index);
           if (entry.isRedirect) {
             final target = await reader.lookup(candidate);
@@ -375,27 +389,53 @@ class Zim extends BaseLoadedDictionary {
 
   @override
   Future<List<DictionaryEntryData>> readExactEntries(
-    Iterable<String> words,
-  ) async {
+    Iterable<String> words, {
+    Map<String, String>? resolvedKeys,
+  }) async {
     // A dictionary stuck in initialization must not pin the lookup (and the
     // page's spinner) forever; the caller treats the timeout as "no entries".
     await waitForLoading().timeout(const Duration(seconds: 30));
-    final entries = <DictionaryEntryData>[];
-    final seenHeadwords = <String>{};
 
+    // Resolve every candidate to its entry index first: reader.resolveIndex
+    // is a pure in-memory map probe, so this costs no disk read — resolveKeys
+    // likewise resolves titles in memory now (entryTitleAt), except for a
+    // non-article entry matched by path, which still needs its dirent.
+    // entry is the title the lookup already found; resolve it back to its
+    // index the same way. Candidates folding to the same index
+    // (`word`/`Word`/`WORD`) are read once, in first-seen order.
+    final targetsByIndex = <int, String>{};
     for (final word in words) {
-      final results = await reader.lookup(word);
-      if (results.isEmpty) continue;
-      final entry = results.first;
-      if (seenHeadwords.add(entry.title)) {
-        final content = await _rewriteArticleLinks(await entry.readText());
-        entries.add(
-          DictionaryEntryData(headword: entry.title, content: content),
-        );
-      }
+      final spelling = resolvedKeys?[word] ?? word;
+      var index = reader.resolveIndex(spelling);
+      index ??= spelling == word ? null : reader.resolveIndex(word);
+      if (index == null) continue;
+      targetsByIndex.putIfAbsent(index, () => spelling);
     }
 
+    // Reads are queued on the reader's file lock, so Future.wait only
+    // overlaps the waits — it cannot interleave two reads on the shared
+    // handle.
+    final read = await Future.wait(targetsByIndex.values.map(_readSingleEntry));
+    // A redirect and its target still land on one entry: both reads return
+    // the target title, so dedup by title after the read, as before.
+    final entries = <DictionaryEntryData>[];
+    final seenHeadwords = <String>{};
+    for (final entry in read) {
+      if (entry != null && seenHeadwords.add(entry.headword)) {
+        entries.add(entry);
+      }
+    }
     return entries;
+  }
+
+  /// Reads one article looked up under [spelling], following redirects the
+  /// same way [readExactEntries] did before.
+  Future<DictionaryEntryData?> _readSingleEntry(String spelling) async {
+    final results = await reader.lookup(spelling);
+    if (results.isEmpty) return null;
+    final entry = results.first;
+    final content = await _rewriteArticleLinks(await entry.readText());
+    return DictionaryEntryData(headword: entry.title, content: content);
   }
 
   /// Reads a binary resource (image, font, audio, stylesheet) by path.

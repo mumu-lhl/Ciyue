@@ -13,6 +13,7 @@ import "package:ciyue/utils.dart";
 import "package:dict_reader/dict_reader.dart";
 import "package:html_unescape/html_unescape_small.dart";
 import "package:path/path.dart";
+import "package:path_provider/path_provider.dart";
 
 /// A StarDict dictionary, implementing [LoadedDictionary] on top of
 /// [BaseLoadedDictionary]. [path] is the base path shared by the `.ifo`,
@@ -52,9 +53,23 @@ class Stardict extends BaseLoadedDictionary {
 
   Future<void> add() async {
     _ensureReader();
-    await reader.init();
+    // The title comes from the `.ifo` alone, so the database row (and the
+    // id the cache file is named after) can exist before the full index
+    // parse runs — the same ordering `Zim.add` uses.
+    await reader.initMetadata();
     setDefaultTitle();
-    await dictionaryListDao.add(path, title, type: DictionaryType.stardict);
+    id = await dictionaryListDao.add(
+      path,
+      title,
+      type: DictionaryType.stardict,
+    );
+    try {
+      await _initReaderWithCache();
+    } catch (_) {
+      await dictionaryListDao.remove(path);
+      rethrow;
+    }
+    entriesTotal = reader.wordCount;
     isLoading = false;
   }
 
@@ -85,10 +100,52 @@ class Stardict extends BaseLoadedDictionary {
   @override
   Future<void> init() => initialization ??= _initialize();
 
+  Future<File?> _cacheFile() async {
+    try {
+      final dictId = id;
+      final cacheDir = await getApplicationCacheDirectory();
+      return File(join(cacheDir.path, "dict_reader_${dictId}_stardict.cidx"));
+    } catch (e) {
+      // A silent null here hides the real reason a cache never appears.
+      talker.warning("No StarDict .cidx cache path for $path: $e");
+      return null;
+    }
+  }
+
+  /// Initialises the reader from the cached SDIX index when one exists and
+  /// still matches the `.idx`/`.syn` files, and writes the cache after a
+  /// full parse otherwise — the same shape as `Zim._initReaderWithCache`.
+  /// A stale or invalid cache falls back to a full parse; the import in
+  /// dict_reader validates the snapshot before mutating any reader state.
+  Future<void> _initReaderWithCache() async {
+    final cache = await _cacheFile();
+    if (cache != null && await cache.exists()) {
+      try {
+        final bytes = await cache.readAsBytes();
+        await reader.importCidx(bytes);
+        return;
+      } catch (e) {
+        talker.warning("Stale or invalid StarDict .cidx cache for $path: $e");
+      }
+    }
+
+    await reader.init();
+    if (cache != null) {
+      // Write the snapshot before returning: exporting after init is what
+      // makes the next cold start skip the `.idx` re-parse.
+      try {
+        final cidxBytes = await reader.exportCidx();
+        await cache.writeAsBytes(cidxBytes, flush: true);
+      } catch (e, st) {
+        talker.error("Failed to write StarDict .cidx cache for $path", e, st);
+      }
+    }
+  }
+
   Future<void> _initialize() async {
     try {
       _ensureReader();
-      await reader.init();
+      await _initReaderWithCache();
       setDefaultTitle();
       entriesTotal = reader.wordCount;
       // The stylesheet can sit next to the dictionary or inside res/ and
@@ -120,6 +177,13 @@ class Stardict extends BaseLoadedDictionary {
 
   @override
   Future<void> onRemove() async {
+    try {
+      final cache = await _cacheFile();
+      if (cache != null && await cache.exists()) {
+        await cache.delete();
+      }
+    } catch (_) {}
+
     if (Platform.isAndroid && !isFullFlavor()) {
       for (final extension in [".ifo", ".idx", ".dict", ".dict.dz", ".syn"]) {
         final file = File("$path$extension");
@@ -159,19 +223,31 @@ class Stardict extends BaseLoadedDictionary {
 
   @override
   Future<List<DictionaryEntryData>> readExactEntries(
-    Iterable<String> words,
-  ) async {
-    final entries = <DictionaryEntryData>[];
+    Iterable<String> words, {
+    Map<String, String>? resolvedKeys,
+  }) async {
+    // Resolve every candidate to its headword first — reusing the exact keys
+    // the caller already computed — then dedup by headword in first-seen
+    // order and read each distinct headword once, in parallel. Candidates
+    // that fold to one headword (`word`/`Word`/`WORD`) used to be read in
+    // full and dropped after; different headwords (`abend`/`Abend`) are
+    // still each read.
+    final headwords = <String>[];
     final seenHeadwords = <String>{};
-
     for (final word in words) {
-      final entry = await _readEntry(word);
-      if (entry != null && seenHeadwords.add(entry.headword)) {
-        entries.add(entry);
-      }
+      final headword = resolvedKeys?[word] ?? await resolveExactKey(word);
+      if (headword == null) continue;
+      if (seenHeadwords.add(headword)) headwords.add(headword);
     }
-
-    return entries;
+    // Reads are queued on the reader's file lock, so Future.wait only
+    // overlaps the waits — it cannot interleave two reads on the shared
+    // handle.
+    final entries = await Future.wait(
+      headwords.map(
+        (headword) => _readEntry(headword, resolvedHeadword: headword),
+      ),
+    );
+    return entries.whereType<DictionaryEntryData>().toList(growable: false);
   }
 
   final Map<String, List<StarDictField>> _structuredFieldsCache = {};
@@ -246,14 +322,17 @@ class Stardict extends BaseLoadedDictionary {
     return null;
   }
 
-  Future<DictionaryEntryData?> _readEntry(String word) async {
+  Future<DictionaryEntryData?> _readEntry(
+    String word, {
+    String? resolvedHeadword,
+  }) async {
     await waitForLoading();
     // Resolve the spelling the dictionary actually holds first. `reader.lookup`
     // only normalises NFC and lower-cases, so a full-width query (`ＮＨＫ`)
     // would miss a half-width headword (`NHK`); [resolveExactKey] runs the
     // width/case variants and is what bridges the two. It returns the stored
     // headword (also for synonyms), which is the key to read.
-    final headword = await resolveExactKey(word);
+    final headword = resolvedHeadword ?? await resolveExactKey(word);
     if (headword == null) {
       return null;
     }
@@ -270,12 +349,13 @@ class Stardict extends BaseLoadedDictionary {
     _cacheStructuredFields(displayable.first.headword, [
       for (final entry in displayable) ...entry.fields,
     ]);
-    final content = displayable
-        .map((entry) => stardictEntryToHtml(entry.fields))
-        .join();
-    return DictionaryEntryData(
+    // The HTML is only read by the WebView; native rendering uses the
+    // structured fields cached above. Build it lazily so a native-only
+    // entry never pays for the XML-to-HTML conversion.
+    return DictionaryEntryData.lazy(
       headword: displayable.first.headword,
-      content: content,
+      buildContent: () =>
+          displayable.map((entry) => stardictEntryToHtml(entry.fields)).join(),
     );
   }
 

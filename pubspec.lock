@@ -421,8 +421,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: e6854b1980cd2fd3083a2717faf7c6fd66bd2f5b
-      resolved-ref: e6854b1980cd2fd3083a2717faf7c6fd66bd2f5b
+      ref: fe708386580bc6ca9158fb2ccea435e603e274dc
+      resolved-ref: fe708386580bc6ca9158fb2ccea435e603e274dc
       url: "https://github.com/mumu-lhl/dict_reader.git"
     source: git
     version: "1.6.1"
@@ -1334,7 +1334,7 @@ packages:
     source: hosted
     version: "2.2.2"
   path_provider_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: path_provider_platform_interface
       sha256: "484838772624c3a4b94f1e44a3e19897fee738f2d5c4ce448443b0417f7c9dda"
