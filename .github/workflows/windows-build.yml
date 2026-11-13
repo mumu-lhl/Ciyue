@@ -242,8 +242,25 @@ jobs:
 
       - name: Build exe
         if: ${{ inputs.package_release_artifacts }}
+        shell: pwsh
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" inno_setup.iss
+          # The installer version comes from pubspec.yaml. The +build suffix is
+          # Flutter's build number, so it is not part of the app version.
+          $versionMatch = Select-String -Path pubspec.yaml -Pattern '^version:\s*([^\s+]+)(?:\+\d+)?\s*$' |
+            Select-Object -First 1
+          if (-not $versionMatch) {
+            throw "Could not read the app version from pubspec.yaml"
+          }
+          $appVersion = $versionMatch.Matches[0].Groups[1].Value
+          if ($appVersion -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
+            throw "Unexpected version format in pubspec.yaml: '$appVersion'"
+          }
+
+          Write-Host "Building installer for Ciyue $appVersion"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$appVersion" inno_setup.iss
+          if ($LASTEXITCODE -ne 0) {
+            throw "ISCC.exe failed with exit code $LASTEXITCODE"
+          }
 
       - name: Upload release artifacts
         if: ${{ inputs.package_release_artifacts }}
