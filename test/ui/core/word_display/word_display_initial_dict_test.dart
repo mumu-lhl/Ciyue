@@ -248,4 +248,66 @@ void main() {
     );
     expect(tabControllers.last.initialIndex, equals(2));
   });
+
+  testWidgets(
+    "pushed entry page keeps selectedWord in step with the URL word",
+    (tester) async {
+      settings.aiExplainWord = false;
+
+      late BuildContext currentContext;
+      final testRouter = GoRouter(
+        initialLocation: "/word/apple",
+        routes: [
+          GoRoute(
+            path: "/word/:word",
+            builder: (context, state) {
+              currentContext = context;
+              final word = state.pathParameters["word"]!;
+              return WordDisplay(word: word, syncSelectionOnOpen: true);
+            },
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            validDictIdsProvider.overrideWith((ref, word) async => dictIds),
+            dictionaryLookupProvider.overrideWith(
+              (ref, word) async =>
+                  const DictionaryLookupResult(entriesByDictionary: {}),
+            ),
+            wordContentProvider.overrideWith(
+              (ref, params) async => "<div>content</div>",
+            ),
+            openRecordsRepositoryProvider.overrideWithValue(
+              _FakeOpenRecordsRepository(),
+            ),
+          ],
+          child: MaterialApp.router(
+            routerConfig: testRouter,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WordDisplay)),
+      );
+      // Opening a word syncs the shared selection to it.
+      expect(container.read(homeModelProvider).selectedWord, equals("apple"));
+
+      // A plain navigation (a history tap, a dictionary link) reaches the page
+      // without updating selectedWord itself. The page must sync it to the new
+      // URL word, otherwise it keeps showing the previous word — the regression
+      // on large-screen portrait tablets.
+      currentContext.push("/word/banana");
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(container.read(homeModelProvider).selectedWord, equals("banana"));
+    },
+  );
 }

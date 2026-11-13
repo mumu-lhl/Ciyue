@@ -3,6 +3,7 @@ import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart";
 import "package:ciyue/ui/pages/main/home/body.dart";
+import "package:ciyue/ui/pages/main/home/search.dart";
 import "package:ciyue/ui/pages/main/home/more_button.dart";
 import "package:ciyue/ui/pages/main/home_top_nav_bar.dart";
 import "package:ciyue/utils.dart";
@@ -261,6 +262,16 @@ void main() {
       await pumpAppBar(tester, const Size(800, 1280));
       expect(find.byType(GroupSelectorButton), findsOneWidget);
       expect(find.byType(MoreButton), findsOneWidget);
+    });
+
+    testWidgets("large portrait tablet still shows the home search bar", (
+      tester,
+    ) async {
+      // A portrait tablet is wide enough to count as a large screen but keeps
+      // the compact layout (useDesktopLayout also requires landscape). Its
+      // search box must live in the app bar, not the split view.
+      await pumpAppBar(tester, const Size(800, 1280));
+      expect(find.byType(HomeSearchBar), findsOneWidget);
     });
   });
 

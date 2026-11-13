@@ -82,7 +82,11 @@ final router = GoRouter(
           );
         }
 
-        return WordDisplay(word: word, initialDictId: initialDictId);
+        return WordDisplay(
+          word: word,
+          initialDictId: initialDictId,
+          syncSelectionOnOpen: true,
+        );
       },
     ),
     GoRoute(

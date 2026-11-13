@@ -55,8 +55,11 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
       final isDesktop = MediaQuery.sizeOf(context).width >= 600.0;
       // In the split view the word tab bar owns the group switcher and the
       // home options. Compact layouts have no tab bar and keep both here.
+      // A portrait large-screen tablet counts as "desktop" by width but keeps
+      // the compact layout (useDesktopLayout also requires landscape), so the
+      // search box must follow the same layout decision the body uses.
       final inSplitView = useDesktopLayout(context);
-      final searchBar = (settings.searchBarInAppBar && !isDesktop)
+      final searchBar = (settings.searchBarInAppBar && !inSplitView)
           ? const HomeSearchBar()
           : null;
 
