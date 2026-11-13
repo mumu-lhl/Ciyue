@@ -1,6 +1,7 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:ciyue/utils.dart";
@@ -364,7 +365,9 @@ class _DesktopWordTabBar extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(8),
                             onTap: () => homeModel.switchToTab(index),
                             child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 150),
+                              duration: motionDuration(
+                                const Duration(milliseconds: 150),
+                              ),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                               ),

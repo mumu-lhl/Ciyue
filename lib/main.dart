@@ -9,10 +9,12 @@ import "package:ciyue/core/localization_delegates.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/command_line.dart";
 import "package:ciyue/services/command_line_actions.dart";
+import "package:ciyue/services/hardware_keys.dart";
 import "package:ciyue/services/macos_command_line.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/single_instance.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/floating_window_shell.dart";
 import "package:ciyue/utils.dart";
 import "package:drift/drift.dart" as drift;
@@ -358,6 +360,12 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
 
       return ThemeData(
         colorScheme: effectiveScheme,
+        // The e-ink mode removes motion instead of restyling: no ripple, and
+        // every route shows its page immediately rather than sliding in.
+        splashFactory: settings.eInkMode ? NoSplash.splashFactory : null,
+        pageTransitionsTheme: settings.eInkMode
+            ? noAnimationPageTransitions
+            : null,
         cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -436,13 +444,27 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
         debugShowCheckedModeBanner: false,
+        // A theme flip is a full repaint on an e-ink panel; applying it
+        // instantly keeps the ghosting to a single frame.
+        themeAnimationDuration: settings.eInkMode
+            ? Duration.zero
+            : const Duration(milliseconds: 200),
         builder: (BuildContext context, Widget? child) {
+          // Widgets that honour the accessibility flag (page turn animations,
+          // scrollbars, some implicit animations) also stop animating.
+          final content = settings.eInkMode
+              ? MediaQuery(
+                  data: MediaQuery.of(context)
+                      .copyWith(disableAnimations: true),
+                  child: child ?? const SizedBox.shrink(),
+                )
+              : child;
           // Some dependencies still use package:flutter/material.dart.
           // Keep their legacy ThemeData and MaterialLocalizations working
           // while they are migrated to package:material_ui.
           // ignore: deprecated_member_use
           return MaterialUiCompatibilityBridge(
-            child: smartDialogBuilder(context, child),
+            child: smartDialogBuilder(context, content),
           );
         },
       ),
@@ -463,6 +485,16 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addObserver(this);
     refreshAll = refresh;
+
+    // E-ink readers page with their own keys; the Android side reports them
+    // through this handler. Until an entry asks for the keys they stay the
+    // system's, so the volume rocker keeps working as a volume rocker.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      HardwareKeyPaging.start(
+        ProviderScope.containerOf(context, listen: false),
+      );
+    });
   }
 
   @override

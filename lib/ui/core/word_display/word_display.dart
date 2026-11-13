@@ -7,12 +7,14 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/expansion_display.dart";
 import "package:ciyue/ui/core/word_display/missing_word_suggestions.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
+import "package:ciyue/ui/core/word_display/paging_buttons.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
@@ -298,11 +300,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               final searchBar = _buildSearchBar(settings);
               return Scaffold(
                 appBar: buildAppBar(context, false, title: searchBar),
-                bottomNavigationBar:
-                    widget.bottomNavigationBar ??
-                    ((!settings.searchBarInAppBar && searchBar != null)
-                        ? BottomAppBar(child: searchBar)
-                        : null),
+                bottomNavigationBar: buildEntryBottomBar(
+                  eInkMode: settings.eInkMode,
+                  existing: widget.bottomNavigationBar,
+                  searchBar: !settings.searchBarInAppBar ? searchBar : null,
+                ),
                 body: Center(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(24),
@@ -348,11 +350,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   title: searchBar,
                   showAIButtons: settings.aiExplainWord,
                 ),
-                bottomNavigationBar:
-                    widget.bottomNavigationBar ??
-                    ((!settings.searchBarInAppBar && searchBar != null)
-                        ? BottomAppBar(child: searchBar)
-                        : null),
+                bottomNavigationBar: buildEntryBottomBar(
+                  eInkMode: settings.eInkMode,
+                  existing: widget.bottomNavigationBar,
+                  searchBar: !settings.searchBarInAppBar ? searchBar : null,
+                ),
                 floatingActionButton: isDesktopScreen
                     ? null
                     : Button(
@@ -512,11 +514,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
 
             return Scaffold(
               appBar: buildAppBar(context, false, title: searchBar),
-              bottomNavigationBar:
-                  widget.bottomNavigationBar ??
-                  ((!settings.searchBarInAppBar && searchBar != null)
-                      ? BottomAppBar(child: searchBar)
-                      : null),
+              bottomNavigationBar: buildEntryBottomBar(
+                eInkMode: settings.eInkMode,
+                existing: widget.bottomNavigationBar,
+                searchBar: !settings.searchBarInAppBar ? searchBar : null,
+              ),
               body: firstLoadedDictId != -1
                   ? _buildWebView(firstLoadedDictId)
                   : Center(
@@ -527,7 +529,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                           children: [
                             const SizedBox(
                               width: 200,
-                              child: LinearProgressIndicator(),
+                              child: EInkAwareProgressBar(),
                             ),
                             if (dictManager.dicts.values.any(
                               (dict) => dict.isLoading,
@@ -550,11 +552,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             final searchBar = _buildSearchBar(settings);
             return Scaffold(
               appBar: buildAppBar(context, false, title: searchBar),
-              bottomNavigationBar:
-                  widget.bottomNavigationBar ??
-                  ((!settings.searchBarInAppBar && searchBar != null)
-                      ? BottomAppBar(child: searchBar)
-                      : null),
+              bottomNavigationBar: buildEntryBottomBar(
+                eInkMode: settings.eInkMode,
+                existing: widget.bottomNavigationBar,
+                searchBar: !settings.searchBarInAppBar ? searchBar : null,
+              ),
               body: Center(
                 child: Text(
                   AppLocalizations.of(context)!.errorDetails(err.toString()),

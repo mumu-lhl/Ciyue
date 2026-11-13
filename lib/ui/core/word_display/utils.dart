@@ -8,6 +8,7 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/services/floating_window.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/stardict_native_view.dart";
@@ -263,7 +264,7 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(width: 200, child: LinearProgressIndicator()),
+                const SizedBox(width: 200, child: EInkAwareProgressBar()),
                 if (initializing && l10n != null) ...[
                   const SizedBox(height: 16),
                   Text(

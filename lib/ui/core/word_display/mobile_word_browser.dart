@@ -1,6 +1,7 @@
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/search_bar.dart";
+import "package:ciyue/ui/core/word_display/paging_buttons.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:material_ui/material_ui.dart";
@@ -248,6 +249,9 @@ class MobileWordBottomBar extends ConsumerWidget {
     final locale = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final eInkMode = ref.watch(
+      settingsProvider.select((settings) => settings.eInkMode),
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -263,112 +267,131 @@ class MobileWordBottomBar extends ConsumerWidget {
         top: false,
         child: SizedBox(
           height: 54,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                tooltip: locale.back,
-                icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: homeModel.canGoBack
-                    ? () => homeModel.goBack()
-                    : null,
-              ),
-              IconButton(
-                tooltip: locale.forward,
-                icon: const Icon(Icons.arrow_forward_rounded),
-                onPressed: homeModel.canGoForward
-                    ? () => homeModel.goForward()
-                    : null,
-              ),
-              IconButton(
-                tooltip: locale.newTab,
-                icon: const Icon(Icons.add_rounded),
-                onPressed: () => homeModel.newTab(),
-              ),
-              Tooltip(
-                message: locale.tabs,
-                child: InkWell(
-                  onTap: () => homeModel.toggleTabOverview(),
-                  borderRadius: BorderRadius.circular(7),
-                  child: Container(
-                    width: 26,
-                    height: 26,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: colorScheme.onSurfaceVariant,
-                        width: 1.8,
+          // Seven buttons on a narrow phone would not fit at the default
+          // size; the e-ink mode shrinks them a little so they all stay
+          // reachable. Every other mode keeps the default sizes.
+          child: IconButtonTheme(
+            data: IconButtonThemeData(
+              style: eInkMode
+                  ? IconButton.styleFrom(
+                      minimumSize: const Size(36, 36),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    )
+                  : null,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  tooltip: locale.back,
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  onPressed: homeModel.canGoBack
+                      ? () => homeModel.goBack()
+                      : null,
+                ),
+                IconButton(
+                  tooltip: locale.forward,
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  onPressed: homeModel.canGoForward
+                      ? () => homeModel.goForward()
+                      : null,
+                ),
+                // The e-ink buttons sit next to the history arrows: they page
+                // the entry the same way, only vertically.
+                if (eInkMode) ...[
+                  const PagingButton(screens: -1, compact: true),
+                  const PagingButton(screens: 1, compact: true),
+                ],
+                IconButton(
+                  tooltip: locale.newTab,
+                  icon: const Icon(Icons.add_rounded),
+                  onPressed: () => homeModel.newTab(),
+                ),
+                Tooltip(
+                  message: locale.tabs,
+                  child: InkWell(
+                    onTap: () => homeModel.toggleTabOverview(),
+                    borderRadius: BorderRadius.circular(7),
+                    child: Container(
+                      width: 26,
+                      height: 26,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: colorScheme.onSurfaceVariant,
+                          width: 1.8,
+                        ),
+                        borderRadius: BorderRadius.circular(7),
                       ),
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                    child: Text(
-                      "${homeModel.tabs.length}",
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurfaceVariant,
-                        fontSize: 12,
+                      child: Text(
+                        "${homeModel.tabs.length}",
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurfaceVariant,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              PopupMenuButton<String>(
-                tooltip: locale.more,
-                icon: const Icon(Icons.more_vert_rounded),
-                onSelected: (value) {
-                  switch (value) {
-                    case "close_tab":
-                      homeModel.closeTab(homeModel.activeTabIndex);
-                      if (homeModel.tabs.isEmpty && context.canPop()) {
-                        context.pop();
-                      }
-                      break;
-                    case "close_other_tabs":
-                      homeModel.closeOtherTabs(homeModel.activeTabIndex);
-                      break;
-                    case "close_all_tabs":
-                      homeModel.closeAllTabs();
-                      if (context.canPop()) {
-                        context.pop();
-                      }
-                      break;
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: "close_tab",
-                    child: Row(
-                      children: [
-                        const Icon(Icons.close_rounded, size: 18),
-                        const SizedBox(width: 8),
-                        Text(locale.closeTab),
-                      ],
-                    ),
-                  ),
-                  if (homeModel.tabs.length > 1)
+                PopupMenuButton<String>(
+                  tooltip: locale.more,
+                  icon: const Icon(Icons.more_vert_rounded),
+                  onSelected: (value) {
+                    switch (value) {
+                      case "close_tab":
+                        homeModel.closeTab(homeModel.activeTabIndex);
+                        if (homeModel.tabs.isEmpty && context.canPop()) {
+                          context.pop();
+                        }
+                        break;
+                      case "close_other_tabs":
+                        homeModel.closeOtherTabs(homeModel.activeTabIndex);
+                        break;
+                      case "close_all_tabs":
+                        homeModel.closeAllTabs();
+                        if (context.canPop()) {
+                          context.pop();
+                        }
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
                     PopupMenuItem(
-                      value: "close_other_tabs",
+                      value: "close_tab",
                       child: Row(
                         children: [
-                          const Icon(Icons.tab_unselected_rounded, size: 18),
+                          const Icon(Icons.close_rounded, size: 18),
                           const SizedBox(width: 8),
-                          Text(locale.closeOtherTabs),
+                          Text(locale.closeTab),
                         ],
                       ),
                     ),
-                  PopupMenuItem(
-                    value: "close_all_tabs",
-                    child: Row(
-                      children: [
-                        const Icon(Icons.clear_all_rounded, size: 18),
-                        const SizedBox(width: 8),
-                        Text(locale.closeAllTabs),
-                      ],
+                    if (homeModel.tabs.length > 1)
+                      PopupMenuItem(
+                        value: "close_other_tabs",
+                        child: Row(
+                          children: [
+                            const Icon(Icons.tab_unselected_rounded, size: 18),
+                            const SizedBox(width: 8),
+                            Text(locale.closeOtherTabs),
+                          ],
+                        ),
+                      ),
+                    PopupMenuItem(
+                      value: "close_all_tabs",
+                      child: Row(
+                        children: [
+                          const Icon(Icons.clear_all_rounded, size: 18),
+                          const SizedBox(width: 8),
+                          Text(locale.closeAllTabs),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,6 +1,7 @@
 import "dart:math" as math;
 
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -25,7 +26,12 @@ class _AudioWaveformIconState extends State<AudioWaveformIcon>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 750),
-    )..repeat();
+    );
+    // An e-ink panel cannot show a 750 ms loop: the bars would smear over
+    // each other. The icon keeps its shape and simply stays still.
+    if (!eInkMotionless) {
+      _controller.repeat();
+    }
   }
 
   @override
@@ -38,6 +44,15 @@ class _AudioWaveformIconState extends State<AudioWaveformIcon>
   Widget build(BuildContext context) {
     final effectiveColor =
         widget.color ?? Theme.of(context).colorScheme.primary;
+
+    if (eInkMotionless) {
+      return RepaintBoundary(
+        child: CustomPaint(
+          size: Size(widget.size, widget.size),
+          painter: _WaveformPainter(progress: 0.0, color: effectiveColor),
+        ),
+      );
+    }
 
     return RepaintBoundary(
       child: AnimatedBuilder(
@@ -130,7 +145,7 @@ class _PulsingFabState extends State<PulsingFab>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    if (widget.isPulsing) {
+    if (widget.isPulsing && !eInkMotionless) {
       _controller.repeat();
     }
   }
@@ -139,7 +154,7 @@ class _PulsingFabState extends State<PulsingFab>
   void didUpdateWidget(covariant PulsingFab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isPulsing != oldWidget.isPulsing) {
-      if (widget.isPulsing) {
+      if (widget.isPulsing && !eInkMotionless) {
         _controller.repeat();
       } else {
         _controller.reset();
@@ -155,7 +170,9 @@ class _PulsingFabState extends State<PulsingFab>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isPulsing) {
+    // A repeating ripple is exactly the kind of continuous repaint an e-ink
+    // panel cannot clear; the caller's child is shown on its own instead.
+    if (!widget.isPulsing || eInkMotionless) {
       return widget.child;
     }
 
@@ -224,11 +241,11 @@ class FloatingAudioIndicator extends ConsumerWidget {
     return IgnorePointer(
       ignoring: !isPlaying,
       child: AnimatedSlide(
-        duration: const Duration(milliseconds: 280),
+        duration: motionDuration(const Duration(milliseconds: 280)),
         curve: Curves.easeOutCubic,
         offset: isPlaying ? Offset.zero : const Offset(0, 1.4),
         child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 220),
+          duration: motionDuration(const Duration(milliseconds: 220)),
           curve: Curves.easeInOut,
           opacity: isPlaying ? 1.0 : 0.0,
           child: Center(

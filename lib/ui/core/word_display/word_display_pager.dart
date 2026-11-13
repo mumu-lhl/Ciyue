@@ -1,4 +1,5 @@
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:flutter/services.dart";
@@ -50,6 +51,10 @@ class _WordDisplayPagerState extends ConsumerState<WordDisplayPager> {
       return;
     }
     if (_currentIndex > 0) {
+      if (eInkMotionless) {
+        _pageController.jumpToPage(_currentIndex - 1);
+        return;
+      }
       _pageController.previousPage(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,
@@ -62,6 +67,10 @@ class _WordDisplayPagerState extends ConsumerState<WordDisplayPager> {
       return;
     }
     if (_currentIndex < widget.words.length - 1) {
+      if (eInkMotionless) {
+        _pageController.jumpToPage(_currentIndex + 1);
+        return;
+      }
       _pageController.nextPage(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,

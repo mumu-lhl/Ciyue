@@ -18,6 +18,18 @@ void main() {
     expect(theme.source, contains("var dark = false"));
   });
 
+  test("the paging script is injected and starts inert", () {
+    final scripts = dictionaryUserScripts();
+    final paging = scripts.firstWhere(
+      (script) => script.source.contains("window.ciyuePageBy"),
+    );
+    // Injected from the start so the mode can be switched on while the entry
+    // is already open; it does nothing until `ciyueSetPaging(true)`.
+    expect(paging.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
+    expect(paging.source, contains("window.ciyuePagingEnabled = false"));
+    expect(paging.source, contains("window.ciyueSetPaging = function"));
+  });
+
   test("theme script hands MediaWiki skins the app theme", () {
     final scripts = dictionaryUserScripts(isDarkTheme: true);
     final theme = scripts.firstWhere((s) => s.source.contains("ciyue-dark"));

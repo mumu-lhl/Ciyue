@@ -2,6 +2,7 @@ import "package:ciyue/repositories/chat_scenarios.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/tts.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/pages/chat/chat_image_viewer.dart";
 import "package:ciyue/ui/pages/chat/chat_sessions_page.dart";
 import "package:ciyue/utils.dart";
@@ -51,6 +52,13 @@ class _ChatPageState extends State<ChatPage> {
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
+        // This runs on every streamed token, so a 200 ms tween restarts for
+        // the whole answer. An e-ink panel shows the jump as a single frame
+        // instead of a smear.
+        if (eInkMotionless) {
+          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+          return;
+        }
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 200),
@@ -564,7 +572,8 @@ class _ChatPageState extends State<ChatPage> {
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator(
+                                    child: EInkAwareSpinner(
+                                      size: 20,
                                       strokeWidth: 2,
                                     ),
                                   )
@@ -604,7 +613,12 @@ class _TypingIndicatorState extends State<_TypingIndicator>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
-    )..repeat();
+    );
+    // Without the loop the dots stay at the frame the controller starts on,
+    // which reads as a static "…" on an e-ink panel.
+    if (!eInkMotionless) {
+      _controller.repeat();
+    }
   }
 
   @override

@@ -70,8 +70,8 @@ void main() {
 
     // Resource normalisation + link normalisation + app theme marker + the
     // content zoom + the key bridge + the right click word selection + the
-    // selection highlight; Dark Reader stays off.
-    expect(scripts, hasLength(7));
+    // selection highlight + the inert paging script; Dark Reader stays off.
+    expect(scripts, hasLength(8));
     expect(
       scripts.every((script) => !script.source.contains("DarkReader.enable")),
       isTrue,
@@ -82,7 +82,7 @@ void main() {
     final script = dictionaryUserScripts(
       enableDarkReader: true,
       darkReaderSource: "window.DarkReader = { enable: function() {} };",
-    ).last;
+    ).lastWhere((script) => script.source.contains("darkReader.enable"));
 
     expect(script.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_END);
     expect(script.source, contains("darkReader.enable({"));
@@ -145,10 +145,13 @@ void main() {
   });
 
   test("custom dictionary styles are injected at document end", () {
-    final script = dictionaryUserScripts(
-      customCss: "body { color: red; }",
-      background: const Color(0xFFF5F0E6),
-    ).last;
+    final script =
+        dictionaryUserScripts(
+          customCss: "body { color: red; }",
+          background: const Color(0xFFF5F0E6),
+        ).lastWhere(
+          (script) => script.source.contains("ciyue-custom-dictionary-css"),
+        );
 
     expect(script.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_END);
     expect(script.source, contains("#f5f0e6"));

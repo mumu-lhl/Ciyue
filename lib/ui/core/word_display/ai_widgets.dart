@@ -1,5 +1,6 @@
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/word_display/ai_explanation_view.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
@@ -43,7 +44,7 @@ class _AIExplainViewState extends ConsumerState<AIExplainView> {
   Widget build(BuildContext context) {
     final model = ref.watch(aiExplanationModelProvider(widget.word));
     if (model.isLoading || model.explanation == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: EInkAwareSpinner());
     }
     return Center(
       child: Container(

@@ -11,6 +11,7 @@ import "appearance/dictionary_dark_reader_switch.dart";
 import "appearance/dictionary_custom_css.dart";
 import "appearance/dictionary_switch_style_selector.dart";
 import "appearance/drawer_icon_switch.dart";
+import "appearance/e_ink_mode_switch.dart";
 import "appearance/language_selector.dart";
 import "appearance/more_options_button_switch.dart";
 import "appearance/search_pane_switch.dart";
@@ -43,6 +44,7 @@ class AppearanceSettingsPage extends StatelessWidget {
                 children: [
                   const LanguageSelector(),
                   const ThemeSelector(),
+                  const EInkModeSwitch(),
                   const ThemeColorSettingsSection(),
                   const DictionaryBackgroundColor(),
                   if (Platform.isWindows || Platform.isLinux)

@@ -9,14 +9,17 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/word_display/content_scale_script.dart";
 import "package:ciyue/ui/core/word_display/desktop_context_menu_actions.dart";
 import "package:ciyue/ui/core/word_display/desktop_context_menu_script.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
+import "package:ciyue/ui/core/word_display/entry_pager.dart";
 import "package:ciyue/ui/core/word_display/gesture_actions.dart";
 import "package:ciyue/ui/core/word_display/gesture_script.dart";
 import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
+import "package:ciyue/ui/core/word_display/paging_script.dart";
 import "package:ciyue/ui/core/word_display/resource_url_script.dart";
 import "package:ciyue/ui/core/word_display/selection_style_script.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
@@ -276,6 +279,13 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
         source: customCssScript,
         injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
       ),
+    // Inert until the e-ink mode calls `ciyueSetPaging(true)`, but present
+    // from the start: the mode can be switched on while the entry is already
+    // open, and rebuilding the WebView to add a script would blank it.
+    UserScript(
+      source: pagingScript(),
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
   ]);
 }
 
@@ -425,6 +435,47 @@ void _applyDictionaryTheme(
   );
 }
 
+/// Registers the pager of an entry WebView and the handler its script reports
+/// the boundary state through.
+///
+/// The expansion layout is skipped by the caller: there the WebView is as tall
+/// as its content and the page is scrolled by the outer Flutter container.
+void _registerEntryPager({
+  required Object owner,
+  required BuildContext context,
+  required int Function() dictId,
+  required WebViewEntryPager pager,
+  required InAppWebViewController controller,
+}) {
+  registerEntryPager(
+    owner,
+    dictId: dictId,
+    isCurrent: () => ModalRoute.of(context)?.isCurrent ?? false,
+    pager: pager,
+  );
+  _attachEntryPagerHandler(controller, pager);
+}
+
+/// Wires a (possibly new) controller to [pager] and pushes the current mode.
+///
+/// The controller is replaced whenever the platform view is rebuilt, while
+/// the pager stays: the handler has to be re-added on every controller.
+void _attachEntryPagerHandler(
+  InAppWebViewController controller,
+  WebViewEntryPager pager,
+) {
+  controller.addJavaScriptHandler(
+    handlerName: "ciyuePageState",
+    callback: (args) {
+      if (args.isNotEmpty && args[0] is String) {
+        pager.updateFromPayload(args[0] as String);
+      }
+      return null;
+    },
+  );
+  unawaited(pager.syncPagingSetting());
+}
+
 class WebviewAndroid extends ConsumerStatefulWidget {
   final String word;
   final String content;
@@ -452,8 +503,13 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
   String _selectedText = "";
   String _contextWord = "";
 
+  /// The pager of this entry, when it is the tab layout's scrolling WebView.
+  WebViewEntryPager? _entryPager;
+
   @override
   void dispose() {
+    unregisterEntryPager(this);
+    _entryPager?.dispose();
     entryFocusTargets.remove(this);
     super.dispose();
   }
@@ -515,6 +571,16 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
     ) {
       if (previous == next) return;
       _applyContentScale(_webViewController, next);
+    });
+    // Switching the mode while an entry is open must not rebuild the WebView,
+    // so the page is told about the change instead.
+    ref.listen<bool>(settingsProvider.select((s) => s.eInkMode), (
+      previous,
+      next,
+    ) {
+      if (previous == next) return;
+      final pager = _entryPager;
+      if (pager != null) unawaited(pager.syncPagingSetting());
     });
     final dictManager = ref.watch(dictManagerProvider);
     final height =
@@ -653,6 +719,8 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
       ),
       onLoadStop: (controller, url) async {
         _applyDictionaryTheme(controller, isDarkTheme: !isLightTheme);
+        final pager = _entryPager;
+        if (pager != null) unawaited(pager.syncPagingSetting());
         await _applyPendingAnchor(
           controller,
           ref,
@@ -703,6 +771,17 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
           isCurrent: () => ModalRoute.of(context)?.isCurrent ?? false,
           focus: () => unawaited(controller.requestFocus()),
         );
+        if (!widget.isExpansion) {
+          final pager = WebViewEntryPager(() => _webViewController);
+          _entryPager = pager;
+          _registerEntryPager(
+            owner: this,
+            context: context,
+            dictId: () => widget.dictId,
+            pager: pager,
+            controller: controller,
+          );
+        }
       },
       onPageCommitVisible: (controller, url) async {
         // A reload starts a fresh document, which drops the inline zoom the
@@ -783,7 +862,7 @@ class WebviewDisplayDescription extends ConsumerWidget {
         future: dict.waitForLoading(),
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: EInkAwareSpinner());
           }
           if (snapshot.hasError) {
             return Center(
@@ -808,7 +887,7 @@ class WebviewDisplayDescription extends ConsumerWidget {
             body: _descriptionView(snapshot.data!),
           );
         } else {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: EInkAwareSpinner());
         }
       },
     );
@@ -918,6 +997,22 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   /// WebView2 never sees a chorded right press; see [WindowsRockerEdgeDetector].
   final _windowsRockerEdge = WindowsRockerEdgeDetector();
 
+  /// The pager of this entry, when it is the tab layout's scrolling WebView.
+  WebViewEntryPager? _entryPager;
+
+  /// Registers this entry's pager, reusing it across controller rebuilds.
+  void _ensureEntryPager(InAppWebViewController controller) {
+    if (widget.isExpansion) return;
+    final pager = _entryPager ??= WebViewEntryPager(() => _desktopController);
+    registerEntryPager(
+      this,
+      dictId: () => widget.dictId,
+      isCurrent: () => ModalRoute.of(context)?.isCurrent ?? false,
+      pager: pager,
+    );
+    _attachEntryPagerHandler(controller, pager);
+  }
+
   void _updateWindowsButtonEdge(int buttons) {
     if (!_windowsRockerEdge.update(buttons)) return;
     final controller = _desktopController;
@@ -947,6 +1042,8 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
 
   @override
   void dispose() {
+    unregisterEntryPager(this);
+    _entryPager?.dispose();
     entryFocusTargets.remove(this);
     super.dispose();
   }
@@ -1072,6 +1169,16 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
       if (previous == next) return;
       _applyContentScale(_desktopController, next);
     });
+    // Switching the mode while an entry is open must not rebuild the WebView,
+    // so the page is told about the change instead.
+    ref.listen<bool>(settingsProvider.select((s) => s.eInkMode), (
+      previous,
+      next,
+    ) {
+      if (previous == next) return;
+      final pager = _entryPager;
+      if (pager != null) unawaited(pager.syncPagingSetting());
+    });
     final darkReaderSetting = ref.watch(dictionaryDarkReaderProvider);
     // A group edit removes dictionaries before the old WebView is torn down,
     // so the id can be gone for a frame. Fall back to the loading state
@@ -1101,7 +1208,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
             MediaQuery.of(context).platformBrightness == Brightness.light;
 
     if (port == 0) {
-      webview = const Center(child: CircularProgressIndicator());
+      webview = const Center(child: EInkAwareSpinner());
     } else {
       final url = "http://127.0.0.1:$port/";
 
@@ -1211,6 +1318,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                 isCurrent: () => ModalRoute.of(context)?.isCurrent ?? false,
                 focus: () => unawaited(controller.requestFocus()),
               );
+              _ensureEntryPager(controller);
               await _scheduleDesktopContentLoad(controller);
             },
             onPageCommitVisible: (controller, url) async {
@@ -1268,7 +1376,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
             future: _loadDarkReaderSource(),
             builder: (context, snapshot) {
               if (!snapshot.hasData && !snapshot.hasError) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: EInkAwareSpinner());
               }
               return buildDesktopWebView(snapshot.data ?? "");
             },
@@ -1428,6 +1536,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                     isCurrent: () => ModalRoute.of(context)?.isCurrent ?? false,
                     focus: () => unawaited(controller.requestFocus()),
                   );
+                  _ensureEntryPager(controller);
                 },
                 onPageCommitVisible: (controller, url) async {
                   // A reload starts a fresh document, which drops the inline
@@ -1436,7 +1545,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                 },
               );
             }
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: EInkAwareSpinner());
           },
         );
       }

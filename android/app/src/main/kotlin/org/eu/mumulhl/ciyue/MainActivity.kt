@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
@@ -154,6 +155,33 @@ class MainActivity : FlutterActivity() {
                 override fun onSetSecureFlag(secure: Boolean) = setSecureFlag(secure)
             }
         }
+    }
+
+    /**
+     * Takes the paging keys for the app while the e-ink mode is on.
+     *
+     * The volume rocker and the page keys of an e-ink device are dispatched
+     * here before the engine sees them, and a WebView holding the focus would
+     * swallow them anyway. When Dart has not asked for the keys, they are
+     * handed back unchanged so the volume keeps working as a volume key.
+     */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (::configurator.isInitialized && configurator.pagingEnabled) {
+            val direction = when (event.keyCode) {
+                KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_PAGE_UP -> -1
+                KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_PAGE_DOWN -> 1
+                else -> 0
+            }
+            if (direction != 0) {
+                // Repeats are forwarded on purpose: holding the key must keep
+                // stepping through the entry.
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    configurator.page(direction)
+                }
+                return true
+            }
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     override fun onDestroy() {

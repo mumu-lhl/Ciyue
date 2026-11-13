@@ -26,6 +26,17 @@ class EngineConfigurator(context: Context) {
     private val mainHandler = Handler(Looper.getMainLooper())
     private val ioExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     var methodChannel: MethodChannel? = null
+    private var hardwareKeysChannel: MethodChannel? = null
+
+    /**
+     * Whether the entry on screen is in e-ink mode and can be paged with the
+     * device keys. Dart owns the flag; the activity only reads it before it
+     * decides to keep a key for itself.
+     */
+    @Volatile
+    var pagingEnabled = false
+        private set
+
     private var pendingProcessText: ProcessTextRequest? = null
 
     // Held while the directory-tree picker launched by
@@ -147,6 +158,30 @@ class EngineConfigurator(context: Context) {
                 }
             }
         }
+
+        // The volume and page keys are dispatched by the activity before the
+        // engine sees them, so the e-ink paging cannot go through Flutter's
+        // keyboard handling; this channel carries the state and the pages.
+        hardwareKeysChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "org.eu.mumulhl.ciyue/hardware_keys"
+        ).apply {
+            setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "setPagingEnabled" -> {
+                        pagingEnabled = call.arguments == true
+                        result.success(0)
+                    }
+
+                    else -> result.notImplemented()
+                }
+            }
+        }
+    }
+
+    /** Asks Dart to page the entry on screen by one screen. */
+    fun page(direction: Int) {
+        hardwareKeysChannel?.invokeMethod("page", direction)
     }
 
     private fun writeFile(directory: String, filename: String, content: String) {
@@ -401,6 +436,9 @@ class EngineConfigurator(context: Context) {
         ioExecutor.shutdownNow()
         methodChannel?.setMethodCallHandler(null)
         methodChannel = null
+        hardwareKeysChannel?.setMethodCallHandler(null)
+        hardwareKeysChannel = null
+        pagingEnabled = false
         callback = null
     }
 

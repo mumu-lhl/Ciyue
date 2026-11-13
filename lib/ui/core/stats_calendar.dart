@@ -1,4 +1,5 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/viewModels/stats_view_model.dart";
 import "package:material_ui/material_ui.dart" as flutter_material;
 import "package:material_ui/material_ui.dart";
@@ -14,7 +15,7 @@ class StatsCalendar extends StatelessWidget {
       listenable: viewModel,
       builder: (context, child) {
         if (viewModel.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: EInkAwareSpinner());
         }
 
         Widget? dayBuilder(context, day, focusedDay) {
@@ -24,7 +25,7 @@ class StatsCalendar extends StatelessWidget {
             final opacity = (wordCount / viewModel.maxItemsInFocusedMonth)
                 .clamp(0.1, 1.0);
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
+              duration: motionDuration(const Duration(milliseconds: 300)),
               decoration: BoxDecoration(
                 color: color.withAlpha((255 * opacity).toInt()),
                 shape: BoxShape.circle,

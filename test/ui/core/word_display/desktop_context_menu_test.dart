@@ -49,7 +49,7 @@ void main() {
   group("dictionaryUserScripts desktop menu", () {
     test("keeps the word script by default", () {
       final scripts = dictionaryUserScripts();
-      expect(scripts, hasLength(7));
+      expect(scripts, hasLength(8));
       expect(
         scripts.any((s) => s.source.contains("'DesktopContextMenu'")),
         isFalse,
@@ -59,7 +59,7 @@ void main() {
 
     test("swaps in the app menu script only when asked", () {
       final scripts = dictionaryUserScripts(desktopContextMenu: true);
-      expect(scripts, hasLength(7));
+      expect(scripts, hasLength(8));
       expect(
         scripts.any((s) => s.source.contains("'DesktopContextMenu'")),
         isTrue,
@@ -72,7 +72,7 @@ void main() {
         isDesktop: true,
         desktopContextMenu: true,
       );
-      expect(scripts, hasLength(8));
+      expect(scripts, hasLength(9));
       expect(scripts.any((s) => s.source.contains("'Gesture'")), isTrue);
       expect(
         scripts.any((s) => s.source.contains("'DesktopContextMenu'")),
@@ -82,7 +82,7 @@ void main() {
 
     test("macOS keeps the gesture and word scripts unchanged", () {
       final scripts = dictionaryUserScripts(isDesktop: true);
-      expect(scripts, hasLength(8));
+      expect(scripts, hasLength(9));
       expect(scripts.any((s) => s.source.contains("'Gesture'")), isTrue);
       expect(scripts.any((s) => s.source.contains("'ContextWord'")), isTrue);
       expect(
