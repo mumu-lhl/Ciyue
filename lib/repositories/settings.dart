@@ -146,6 +146,12 @@ class Settings extends ChangeNotifier {
   late bool enableWritingCheckHistory;
 
   late bool launchAtStartup;
+
+  /// Whether the user enabled the desktop-wide hotkey (Ctrl+Shift+M) that
+  /// minimizes or restores the main window. Off by default: the app must not
+  /// grab a system-wide key unless the user asks for it.
+  late bool enableGlobalHotkey;
+
   late int flashcardDailyNewLimit;
 
   late bool enableWebServer;
@@ -154,6 +160,7 @@ class Settings extends ChangeNotifier {
 
   Settings() {
     launchAtStartup = prefs.getBool("launchAtStartup") ?? false;
+    enableGlobalHotkey = prefs.getBool("enableGlobalHotkey") ?? false;
     flashcardDailyNewLimit = prefs.getInt("flashcardDailyNewLimit") ?? 20;
     enableWebServer = prefs.getBool("enableWebServer") ?? false;
     webServerPort = prefs.getInt("webServerPort") ?? 47117;
@@ -695,6 +702,12 @@ class Settings extends ChangeNotifier {
   Future<void> setLaunchAtStartup(bool value) async {
     launchAtStartup = value;
     await prefs.setBool("launchAtStartup", value);
+    notifyListeners();
+  }
+
+  Future<void> setEnableGlobalHotkey(bool value) async {
+    enableGlobalHotkey = value;
+    await prefs.setBool("enableGlobalHotkey", value);
     notifyListeners();
   }
 

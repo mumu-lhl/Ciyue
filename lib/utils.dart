@@ -85,3 +85,20 @@ bool isDesktop() {
 bool isMobile() {
   return Platform.isAndroid || Platform.isIOS;
 }
+
+/// Whether this Linux session runs on Wayland rather than X11.
+///
+/// `XDG_SESSION_TYPE` is the authoritative signal; `WAYLAND_DISPLAY` is a
+/// fallback for sessions that do not set the former. A non-Linux platform is
+/// never Wayland.
+bool isWaylandSession() {
+  if (!Platform.isLinux) return false;
+
+  final sessionType = Platform.environment["XDG_SESSION_TYPE"];
+  if (sessionType != null && sessionType.isNotEmpty) {
+    return sessionType.toLowerCase() == "wayland";
+  }
+
+  final waylandDisplay = Platform.environment["WAYLAND_DISPLAY"];
+  return waylandDisplay != null && waylandDisplay.isNotEmpty;
+}
