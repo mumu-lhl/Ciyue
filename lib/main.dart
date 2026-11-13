@@ -22,7 +22,7 @@ import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
-import "package:window_manager/window_manager.dart";
+import "package:nativeapi/nativeapi.dart" as nativeapi;
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -233,7 +233,10 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
     if (brightness == _appliedWindowBrightness) return;
     _appliedWindowBrightness = brightness;
     try {
-      await windowManager.setBrightness(brightness);
+      nativeapi.Application.instance.setBrightness(switch (brightness) {
+        Brightness.light => nativeapi.Brightness.light,
+        Brightness.dark => nativeapi.Brightness.dark,
+      });
     } catch (error) {
       talker.warning("Failed to sync window brightness: $error");
     }

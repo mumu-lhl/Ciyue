@@ -1,4 +1,4 @@
-import "package:flutter/cupertino.dart";
+import "package:cupertino_ui/cupertino_ui.dart";
 import "package:material_ui/material_ui.dart";
 
 /// Flutter's own localizations do not cover every language the app ships.

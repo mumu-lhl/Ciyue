@@ -4,7 +4,7 @@ import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
 import "package:ciyue/ui/core/word_display/webview_widgets.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 

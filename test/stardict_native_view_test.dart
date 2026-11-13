@@ -3,7 +3,7 @@ import "dart:typed_data";
 
 import "package:ciyue/ui/core/word_display/stardict_native_view.dart";
 import "package:dict_reader/dict_reader.dart";
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 import "package:flutter_test/flutter_test.dart";
 
 /// A 1x1 transparent PNG.

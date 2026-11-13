@@ -142,8 +142,9 @@ Future<void> initTrayMenu() async {
     }
     showWindowItem.addListener((event) {
       if (event is tray.MenuItemClickedEvent) {
-        windowManager.show();
-        windowManager.focus();
+        final window = WindowManager.instance.getCurrent();
+        window?.show();
+        window?.focus();
       }
     });
 
@@ -396,34 +397,31 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
       await hotKeyManager.register(
         hotKey,
         keyDownHandler: (hotKey) async {
-          final isVisible = await windowManager.isVisible();
-          if (isVisible) {
-            final isMinimized = await windowManager.isMinimized();
-            if (isMinimized) {
-              windowManager.restore();
-              windowManager.focus();
+          final window = WindowManager.instance.getCurrent();
+          if (window == null) return;
+          if (window.isVisible) {
+            if (window.isMinimized) {
+              window.restore();
+              window.focus();
             } else {
-              windowManager.minimize();
+              window.minimize();
             }
           } else {
-            windowManager.show();
-            windowManager.focus();
+            window.show();
+            window.focus();
           }
         },
       );
 
-      await windowManager.ensureInitialized();
-
-      WindowOptions windowOptions = WindowOptions(
-        size: Size(800, 600),
-        center: true,
-        backgroundColor: Colors.transparent,
-        skipTaskbar: false,
-      );
-      windowManager.waitUntilReadyToShow(windowOptions, () async {
-        await windowManager.show();
-        await windowManager.focus();
-      });
+      final window = WindowManager.instance.getCurrent();
+      if (window != null) {
+        window.setSize(const Size(800, 600).toNative(), false);
+        window.backgroundColor = Colors.transparent.toNative();
+        window.isVisibleInTaskbar = true;
+        window.center();
+        window.show();
+        window.focus();
+      }
     }
 
     if (settings.enableWebServer) {

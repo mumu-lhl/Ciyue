@@ -1,6 +1,6 @@
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/stats_view_model.dart";
-import "package:flutter/material.dart" as flutter_material;
+import "package:material_ui/material_ui.dart" as flutter_material;
 import "package:material_ui/material_ui.dart";
 import "package:table_calendar/table_calendar.dart";
 

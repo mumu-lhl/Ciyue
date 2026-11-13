@@ -8,10 +8,8 @@ list(APPEND FLUTTER_PLUGIN_LIST
   dynamic_color
   file_selector_linux
   flutter_inappwebview_linux
-  screen_retriever_linux
   simple_secure_storage_linux
   url_launcher_linux
-  window_manager
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

@@ -127,8 +127,9 @@ Future<void> _switchToGroup(ProviderContainer container, String name) async {
 
 Future<void> _resetWindowState() async {
   try {
-    await windowManager.setSize(_initialWindowSize);
-    await windowManager.center();
+    final window = WindowManager.instance.getCurrent();
+    window?.setSize(_initialWindowSize.toNative(), false);
+    window?.center();
   } catch (error, stackTrace) {
     talker.error("Failed to reset the window state", error, stackTrace);
   }
@@ -136,8 +137,9 @@ Future<void> _resetWindowState() async {
 
 Future<void> _bringToFront() async {
   try {
-    await windowManager.show();
-    await windowManager.focus();
+    final window = WindowManager.instance.getCurrent();
+    window?.show();
+    window?.focus();
   } catch (error, stackTrace) {
     talker.error("Failed to bring the window to the front", error, stackTrace);
   }

@@ -63,7 +63,7 @@ dependencies:
   home_widget: ^0.10.0
   file_selector: ^1.1.0
   html_unescape: ^2.0.0
-  flutter_local_notifications: ^22.3.3
+  flutter_local_notifications: ^23.0.2
   dio: ^5.11.1
   genkit: ^1.0.1
   genkit_google_genai: ^1.0.1
@@ -84,18 +84,16 @@ dependencies:
   device_info_plus: ^12.4.0
   table_calendar: ^3.3.0
   launch_at_startup: ^0.5.1
-  tray_manager: ^0.8.0
-  window_manager: ^0.5.2
-  hotkey_manager:
-    git:
-      path: packages/hotkey_manager
-      url: https://github.com/leanflutter/hotkey_manager.git
-      ref: 5a409ace861bafe89c47700c9f6341eebdfd0043
+  tray_manager: ^0.9.0
+  window_manager: ^0.7.0
+  hotkey_manager: ^0.4.0
   fuzzy: ^0.5.2
   fsrs: ^2.0.1
   flutter_riverpod: ^3.4.3
   riverpod: ^3.4.3
   material_ui: ^1.9.0
+  cupertino_ui: ^1.1.6
+  nativeapi: ^0.6.0
   simple_secure_storage: ^0.4.3
   dartssh2: ^4.1.0
   s3_client: ^1.0.0
