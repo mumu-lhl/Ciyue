@@ -298,10 +298,7 @@ void main() {
         tester.element(find.byType(WordDisplay)),
       );
       // Opening a word syncs the shared selection to it.
-      expect(
-        container.read(homeModelProvider).selectedWord,
-        equals("apple"),
-      );
+      expect(container.read(homeModelProvider).selectedWord, equals("apple"));
 
       // A plain navigation (a history tap, a dictionary link) reaches the page
       // without updating selectedWord itself. The page must sync it to the new
@@ -310,10 +307,7 @@ void main() {
       currentContext.push("/word/banana");
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      expect(
-        container.read(homeModelProvider).selectedWord,
-        equals("banana"),
-      );
+      expect(container.read(homeModelProvider).selectedWord, equals("banana"));
     },
   );
 }
