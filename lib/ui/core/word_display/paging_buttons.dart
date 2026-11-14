@@ -4,10 +4,11 @@ import "package:material_ui/material_ui.dart";
 
 /// One "previous / next screen" button.
 ///
-/// It carries no state of its own: the active pager is shared through
-/// [activeEntryPager], and each pager reports its boundaries through
-/// [EntryPager.bounds], so both the mobile bottom bar and the desktop toolbar
-/// grey the button out at the start or the end of the entry.
+/// It carries no state of its own: the pager it drives reports its boundaries
+/// through [EntryPager.bounds], so the button greys itself out at the start or
+/// the end of whatever it pages. Without an explicit [pager] it talks to the
+/// entry on screen; the history list passes its own so the same widget can
+/// page a second scrollable.
 class PagingButton extends StatelessWidget {
   /// Negative pages up, positive pages down.
   final int screens;
@@ -15,14 +16,14 @@ class PagingButton extends StatelessWidget {
   /// The compact size used inside the mobile bottom bar.
   final bool compact;
 
-  /// Whether the button also spells out its direction.
-  final bool showLabel;
+  /// The list to page. Null means the entry on screen.
+  final EntryPager? pager;
 
   const PagingButton({
     super.key,
     required this.screens,
     this.compact = false,
-    this.showLabel = false,
+    this.pager,
   });
 
   /// The key the tests (and the mobile bar) use to find a button.
@@ -31,119 +32,51 @@ class PagingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final target = pager;
+    if (target != null) return _buildFor(context, target);
+
     return ValueListenableBuilder<EntryPager?>(
       valueListenable: activeEntryPager,
-      builder: (context, pager, child) {
-        if (pager == null) {
-          return _buildButton(context, disabled: true);
+      builder: (context, active, child) {
+        if (active == null) {
+          return _buildButton(context, disabled: true, onPage: null);
         }
-        return ValueListenableBuilder<PageBounds>(
-          valueListenable: pager.bounds,
-          builder: (context, bounds, child) {
-            return _buildButton(
-              context,
-              disabled: screens < 0 ? bounds.atStart : bounds.atEnd,
-            );
-          },
+        return _buildFor(context, active);
+      },
+    );
+  }
+
+  Widget _buildFor(BuildContext context, EntryPager target) {
+    return ValueListenableBuilder<PageBounds>(
+      valueListenable: target.bounds,
+      builder: (context, bounds, child) {
+        final disabled = screens < 0 ? bounds.atStart : bounds.atEnd;
+        return _buildButton(
+          context,
+          disabled: disabled,
+          onPage: () => target.pageBy(screens),
         );
       },
     );
   }
 
-  Widget _buildButton(BuildContext context, {required bool disabled}) {
+  Widget _buildButton(
+    BuildContext context, {
+    required bool disabled,
+    required VoidCallback? onPage,
+  }) {
     final locale = AppLocalizations.of(context)!;
-    final label = screens < 0 ? locale.previousScreen : locale.nextScreen;
-    final icon = Icon(
-      screens < 0
-          ? Icons.keyboard_arrow_up_rounded
-          : Icons.keyboard_arrow_down_rounded,
-      size: compact ? 20 : 24,
-    );
-    final onPressed = disabled ? null : () => pageActiveEntry(screens);
-
-    if (!showLabel) {
-      return IconButton(
-        key: keyFor(screens),
-        tooltip: label,
-        icon: icon,
-        visualDensity: compact ? VisualDensity.compact : null,
-        onPressed: onPressed,
-      );
-    }
-
-    return TextButton.icon(
+    return IconButton(
       key: keyFor(screens),
-      onPressed: onPressed,
-      icon: icon,
-      label: Text(label),
+      tooltip: screens < 0 ? locale.previousScreen : locale.nextScreen,
+      icon: Icon(
+        screens < 0
+            ? Icons.keyboard_arrow_up_rounded
+            : Icons.keyboard_arrow_down_rounded,
+        size: compact ? 20 : 24,
+      ),
+      visualDensity: compact ? VisualDensity.compact : null,
+      onPressed: disabled ? null : onPage,
     );
   }
-}
-
-/// The full-width paging bar shown under an entry that has no bottom bar of
-/// its own (the desktop layouts).
-///
-/// It draws no shadow and no ripple: on an e-ink panel both only add
-/// ghosting. The bar hides itself while no entry pager is on screen.
-class EInkPageBar extends StatelessWidget {
-  const EInkPageBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<EntryPager?>(
-      valueListenable: activeEntryPager,
-      builder: (context, pager, child) {
-        if (pager == null) return const SizedBox.shrink();
-        final theme = Theme.of(context);
-        return Material(
-          color: theme.colorScheme.surfaceContainer,
-          child: SafeArea(
-            top: false,
-            child: Container(
-              height: 56,
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(
-                      alpha: 0.35,
-                    ),
-                    width: 0.8,
-                  ),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  Expanded(child: PagingButton(screens: -1, showLabel: true)),
-                  Expanded(child: PagingButton(screens: 1, showLabel: true)),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// Builds the bottom bar of an entry page.
-///
-/// The caller may already pass a bottom bar (the mobile browser passes the
-/// Chrome-style bar, which carries the paging buttons itself); that bar is
-/// returned unchanged so the buttons never appear twice. Otherwise the e-ink
-/// bar is stacked above the bottom search box, and a screen with neither
-/// keeps no bottom bar at all.
-Widget? buildEntryBottomBar({
-  required bool eInkMode,
-  required Widget? existing,
-  required Widget? searchBar,
-}) {
-  if (existing != null) return existing;
-  final bottomSearchBar = searchBar == null
-      ? null
-      : BottomAppBar(child: searchBar);
-  if (!eInkMode) return bottomSearchBar;
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [const EInkPageBar(), ?bottomSearchBar],
-  );
 }

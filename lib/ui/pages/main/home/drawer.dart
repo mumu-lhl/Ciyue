@@ -14,10 +14,48 @@ class HomeDrawer extends StatelessWidget {
   }
 }
 
+/// Shows the dictionary groups without the drawer's slide animation.
+///
+/// `Scaffold` animates its drawer for a fixed 246 ms and offers no way to
+/// shorten it; an e-ink panel keeps every frame of that slide on screen. The
+/// same list is shown in a dialog whose transition has zero length instead.
+Future<void> showGroupDrawer(BuildContext context) {
+  return showGeneralDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: AppLocalizations.of(context)!.dictionaryGroups,
+    transitionDuration: Duration.zero,
+    pageBuilder: (dialogContext, _, _) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: SizedBox(
+          width: 320,
+          height: double.infinity,
+          child: Material(
+            color: Theme.of(dialogContext).colorScheme.surface,
+            child: SafeArea(
+              child: HomeDrawerList(
+                isDrawer: true,
+                onClose: () => Navigator.of(dialogContext).pop(),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 class HomeDrawerList extends ConsumerWidget {
   final bool isDrawer;
 
-  const HomeDrawerList({super.key, this.isDrawer = false});
+  /// Closes the surface the list is shown in.
+  ///
+  /// A [Drawer] is closed through the router; [showGroupDrawer] shows the same
+  /// list in a dialog and pops that instead.
+  final VoidCallback? onClose;
+
+  const HomeDrawerList({super.key, this.isDrawer = false, this.onClose});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -102,7 +140,7 @@ class HomeDrawerList extends ConsumerWidget {
                       ? null
                       : () async {
                           if (isDrawer) {
-                            context.pop();
+                            (onClose ?? () => context.pop())();
                           }
                           if (group.id != groupId) {
                             await ref

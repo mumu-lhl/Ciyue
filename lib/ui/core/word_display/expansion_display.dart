@@ -249,36 +249,44 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
             icon: const Icon(Icons.copy),
             onPressed: () => app_utils.addToClipboard(context, widget.word),
           ),
+          // Far right of the bar, matching the tab layout's entry page.
+          if (settings.eInkMode && isDesktopScreen) ...[
+            const PagingButton(screens: -1),
+            const PagingButton(screens: 1),
+          ],
         ],
       ),
-      bottomNavigationBar: buildEntryBottomBar(
-        eInkMode: settings.eInkMode,
-        existing: widget.bottomNavigationBar,
-        searchBar: !settings.searchBarInAppBar ? searchBar : null,
-      ),
+      bottomNavigationBar:
+          widget.bottomNavigationBar ??
+          ((!settings.searchBarInAppBar && searchBar != null)
+              ? BottomAppBar(child: searchBar)
+              : null),
       floatingActionButton: isDesktopScreen
           ? null
           : Button(word: widget.word, showAIButtons: isAIExplainTabSelected),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            controller: _scrollController,
-            child: ExpansionPanelList(
-              expansionCallback: (int index, bool isExpanded) {
-                setState(() {
-                  _isExpanded[index] = isExpanded;
-                });
-              },
-              children: panels,
+      body: SafeArea(
+        top: false,
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              controller: _scrollController,
+              child: ExpansionPanelList(
+                expansionCallback: (int index, bool isExpanded) {
+                  setState(() {
+                    _isExpanded[index] = isExpanded;
+                  });
+                },
+                children: panels,
+              ),
             ),
-          ),
-          const Positioned(
-            left: 16,
-            right: 16,
-            bottom: 16,
-            child: FloatingAudioIndicator(),
-          ),
-        ],
+            const Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: FloatingAudioIndicator(),
+            ),
+          ],
+        ),
       ),
     );
   }

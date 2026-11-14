@@ -296,12 +296,6 @@ class MobileWordBottomBar extends ConsumerWidget {
                       ? () => homeModel.goForward()
                       : null,
                 ),
-                // The e-ink buttons sit next to the history arrows: they page
-                // the entry the same way, only vertically.
-                if (eInkMode) ...[
-                  const PagingButton(screens: -1, compact: true),
-                  const PagingButton(screens: 1, compact: true),
-                ],
                 IconButton(
                   tooltip: locale.newTab,
                   icon: const Icon(Icons.add_rounded),
@@ -390,6 +384,12 @@ class MobileWordBottomBar extends ConsumerWidget {
                     ),
                   ],
                 ),
+                // The e-ink paging buttons sit at the far right of the bar,
+                // matching the entry app bar on wide screens.
+                if (eInkMode) ...[
+                  const PagingButton(screens: -1, compact: true),
+                  const PagingButton(screens: 1, compact: true),
+                ],
               ],
             ),
           ),

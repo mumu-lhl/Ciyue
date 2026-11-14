@@ -4,6 +4,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:flutter/animation.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -18,6 +19,9 @@ Future<void> showPronunciationSettingsSheet(BuildContext context, String word) {
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: true,
+    // The slide-up would leave a smear on an e-ink panel, so the sheet is
+    // simply there in that mode.
+    sheetAnimationStyle: settings.eInkMode ? AnimationStyle.noAnimation : null,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),

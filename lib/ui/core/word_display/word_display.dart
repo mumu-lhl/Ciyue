@@ -300,11 +300,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               final searchBar = _buildSearchBar(settings);
               return Scaffold(
                 appBar: buildAppBar(context, false, title: searchBar),
-                bottomNavigationBar: buildEntryBottomBar(
-                  eInkMode: settings.eInkMode,
-                  existing: widget.bottomNavigationBar,
-                  searchBar: !settings.searchBarInAppBar ? searchBar : null,
-                ),
+                bottomNavigationBar:
+                    widget.bottomNavigationBar ??
+                    ((!settings.searchBarInAppBar && searchBar != null)
+                        ? BottomAppBar(child: searchBar)
+                        : null),
                 body: Center(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(24),
@@ -350,29 +350,32 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   title: searchBar,
                   showAIButtons: settings.aiExplainWord,
                 ),
-                bottomNavigationBar: buildEntryBottomBar(
-                  eInkMode: settings.eInkMode,
-                  existing: widget.bottomNavigationBar,
-                  searchBar: !settings.searchBarInAppBar ? searchBar : null,
-                ),
+                bottomNavigationBar:
+                    widget.bottomNavigationBar ??
+                    ((!settings.searchBarInAppBar && searchBar != null)
+                        ? BottomAppBar(child: searchBar)
+                        : null),
                 floatingActionButton: isDesktopScreen
                     ? null
                     : Button(
                         word: _word,
                         showAIButtons: settings.aiExplainWord,
                       ),
-                body: Stack(
-                  children: [
-                    settings.aiExplainWord
-                        ? AIExplainView(word: _word)
-                        : _buildWebView(validDictIds[0]),
-                    const Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: 16,
-                      child: FloatingAudioIndicator(),
-                    ),
-                  ],
+                body: SafeArea(
+                  top: false,
+                  child: Stack(
+                    children: [
+                      settings.aiExplainWord
+                          ? AIExplainView(word: _word)
+                          : _buildWebView(validDictIds[0]),
+                      const Positioned(
+                        left: 16,
+                        right: 16,
+                        bottom: 16,
+                        child: FloatingAudioIndicator(),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }
@@ -399,6 +402,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                 ),
                 initialIndex: initialTabIndex,
                 length: dictsLength,
+                // An e-ink panel turns the slide into ghosting, so the
+                // dictionary tabs are swapped in a single frame.
+                animationDuration: settings.eInkMode ? Duration.zero : null,
                 child: Builder(
                   builder: (context) {
                     final tabController = DefaultTabController.of(context);
@@ -445,37 +451,40 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                                   word: _word,
                                   showAIButtons: isAIExplainTabSelected,
                                 ),
-                          body: Stack(
-                            children: [
-                              Column(
-                                children: [
-                                  Expanded(
-                                    child: buildTabView(
-                                      context,
-                                      validDictIds: validDictIds,
+                          body: SafeArea(
+                            top: false,
+                            child: Stack(
+                              children: [
+                                Column(
+                                  children: [
+                                    Expanded(
+                                      child: buildTabView(
+                                        context,
+                                        validDictIds: validDictIds,
+                                      ),
                                     ),
-                                  ),
-                                  if (settings.tabBarPosition ==
-                                          TabBarPosition.bottom &&
-                                      showTab)
-                                    buildTabBar(context, validDictIds),
-                                  if (!settings.searchBarInAppBar &&
-                                      searchBar != null)
-                                    searchBar,
-                                ],
-                              ),
-                              Positioned(
-                                left: 16,
-                                right: 16,
-                                bottom:
-                                    (settings.tabBarPosition ==
+                                    if (settings.tabBarPosition ==
                                             TabBarPosition.bottom &&
                                         showTab)
-                                    ? 64
-                                    : 16,
-                                child: const FloatingAudioIndicator(),
-                              ),
-                            ],
+                                      buildTabBar(context, validDictIds),
+                                    if (!settings.searchBarInAppBar &&
+                                        searchBar != null)
+                                      searchBar,
+                                  ],
+                                ),
+                                Positioned(
+                                  left: 16,
+                                  right: 16,
+                                  bottom:
+                                      (settings.tabBarPosition ==
+                                              TabBarPosition.bottom &&
+                                          showTab)
+                                      ? 64
+                                      : 16,
+                                  child: const FloatingAudioIndicator(),
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -514,11 +523,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
 
             return Scaffold(
               appBar: buildAppBar(context, false, title: searchBar),
-              bottomNavigationBar: buildEntryBottomBar(
-                eInkMode: settings.eInkMode,
-                existing: widget.bottomNavigationBar,
-                searchBar: !settings.searchBarInAppBar ? searchBar : null,
-              ),
+              bottomNavigationBar:
+                  widget.bottomNavigationBar ??
+                  ((!settings.searchBarInAppBar && searchBar != null)
+                      ? BottomAppBar(child: searchBar)
+                      : null),
               body: firstLoadedDictId != -1
                   ? _buildWebView(firstLoadedDictId)
                   : Center(
@@ -552,11 +561,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             final searchBar = _buildSearchBar(settings);
             return Scaffold(
               appBar: buildAppBar(context, false, title: searchBar),
-              bottomNavigationBar: buildEntryBottomBar(
-                eInkMode: settings.eInkMode,
-                existing: widget.bottomNavigationBar,
-                searchBar: !settings.searchBarInAppBar ? searchBar : null,
-              ),
+              bottomNavigationBar:
+                  widget.bottomNavigationBar ??
+                  ((!settings.searchBarInAppBar && searchBar != null)
+                      ? BottomAppBar(child: searchBar)
+                      : null),
               body: Center(
                 child: Text(
                   AppLocalizations.of(context)!.errorDetails(err.toString()),
@@ -672,6 +681,12 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           icon: const Icon(Icons.copy),
           onPressed: () => app_utils.addToClipboard(context, _word),
         ),
+        // E-ink readers page the entry with the same keys. The buttons live at
+        // the far right of the bar so they keep one position across words.
+        if (settings.eInkMode && isDesktopScreen) ...[
+          const PagingButton(screens: -1),
+          const PagingButton(screens: 1),
+        ],
       ],
       bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
           ? buildTabBar(context, validDictIds)
