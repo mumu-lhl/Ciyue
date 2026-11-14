@@ -1,6 +1,15 @@
+; The installer version is injected by the build from pubspec.yaml (see
+; .github/workflows/windows-build.yml). Never hard-code it here: a stale
+; AppVersion ends up in the uninstall registry and in upgrade checks.
+; For a manual build, parse the version from pubspec.yaml and pass it with
+; ISCC.exe /DMyAppVersion=<version>.
+#ifndef MyAppVersion
+  #error MyAppVersion is undefined. Pass the app version from pubspec.yaml via ISCC.exe /DMyAppVersion=<version>
+#endif
+
 [Setup]
 AppName=Ciyue
-AppVersion=2.0.0
+AppVersion={#MyAppVersion}
 AppPublisher=Mumulhl
 DefaultDirName={autopf}\Ciyue
 DefaultGroupName=Ciyue
