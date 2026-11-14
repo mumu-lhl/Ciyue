@@ -29,7 +29,12 @@ enum FloatingWindowMode {
   };
 }
 
-/// Size of the centred card as a fraction of the window.
+/// Size of the popup as a fraction of the window.
+///
+/// In the transparent card mode this is the actual card size. In the
+/// half-screen reader mode (ColorDict geometry) it is an upper bound: the
+/// Android side caps the reader's requested popup at this size so a reader
+/// asking for a full-width popup cannot cover more than the user picked.
 class FloatingWindowPanelFraction {
   const FloatingWindowPanelFraction({
     required this.width,
@@ -132,7 +137,7 @@ class FloatingWindowPreferences {
       return FloatingWindowPanelFraction.defaultFraction;
     }
     return FloatingWindowPanelFraction(
-      width: width.clamp(0.5, 1.0),
+      width: width.clamp(0.4, 1.0),
       height: height.clamp(0.4, 1.0),
     );
   }

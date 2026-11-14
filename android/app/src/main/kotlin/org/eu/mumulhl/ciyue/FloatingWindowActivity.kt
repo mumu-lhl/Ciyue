@@ -103,10 +103,20 @@ class FloatingWindowActivity : FlutterActivity() {
         )
 
         val (displayWidth, displayHeight) = displaySize()
-        val height = (geometry.height ?: (displayHeight * 0.5f).toInt())
-            .coerceAtMost(displayHeight)
-        val width = geometry.width?.coerceAtMost(displayWidth)
-            ?: WindowManager.LayoutParams.MATCH_PARENT
+
+        // The reader proposes a popup; the user's panel fraction is an upper
+        // bound so a reader that requests a full-width popup cannot cover more
+        // than the preferred size (issue #857). A smaller reader request is
+        // kept as-is. A missing width means the reader wanted the full width,
+        // which is also capped here.
+        val cap = FloatingWindowSettings.readPanelFraction(this)
+        val maxWidth = (displayWidth * cap.width).toInt()
+        val maxHeight = (displayHeight * cap.height).toInt()
+
+        val readerWidth = geometry.width ?: displayWidth
+        val readerHeight = geometry.height ?: (displayHeight * 0.5f).toInt()
+        val width = readerWidth.coerceAtMost(maxWidth).coerceAtMost(displayWidth)
+        val height = readerHeight.coerceAtMost(maxHeight).coerceAtMost(displayHeight)
         window.setLayout(width, height)
         window.setGravity(geometry.gravity or Gravity.START)
 

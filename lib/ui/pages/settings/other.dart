@@ -81,7 +81,7 @@ class _FloatingWindowState extends State<FloatingWindow> {
             icon: Icons.width_full,
             title: locale.floatingWindowCardWidth,
             value: _fraction.width,
-            min: 0.5,
+            min: 0.4,
             max: 1.0,
             onChanged: (value) =>
                 setState(() => _fraction = _fraction.copyWith(width: value)),
@@ -98,6 +98,15 @@ class _FloatingWindowState extends State<FloatingWindow> {
                 setState(() => _fraction = _fraction.copyWith(height: value)),
             onChangeEnd: (value) =>
                 _setFraction(_fraction.copyWith(height: value)),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            child: Text(
+              locale.floatingWindowCardSizeHint,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
         ],
       ],
