@@ -33,10 +33,18 @@ const _digitKeys = <LogicalKeyboardKey>[
 /// this table. An Android WebView holds the native focus and never lets
 /// Flutter see the keys, so the bridge has to reach the same actions by
 /// itself instead of relying on [CallbackShortcuts].
+///
+/// Esc is the exception: a physical key belongs to [SearchEscapeCloser]'s
+/// global handler, which owns the focus hand-off. Binding it in the focus
+/// tree too runs the hand-off twice — on a page without a WebView the tree
+/// is alive, so both handlers fire and the second closes the search view the
+/// first one just opened. Only the bridge, standing in for keys the WebView
+/// swallowed, needs its own Esc binding.
 Map<SingleActivator, VoidCallback> homeShortcutBindings(
   WidgetRef ref,
   BuildContext context, {
   bool forGlobalHandler = false,
+  bool forBridge = false,
 }) {
   final homeModel = ref.read(homeModelProvider);
   final history = ref.read(historyModelProvider).history;
@@ -90,10 +98,10 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
         homeModel.goBack,
     const SingleActivator(LogicalKeyboardKey.arrowRight, alt: true):
         homeModel.goForward,
-    // Esc has SearchEscapeCloser's own global handler, and the bare page keys
-    // belong to the WebView and to text fields. None of them may be consumed
-    // by the global handler.
-    if (!forGlobalHandler)
+    // Esc is only replayed here for a WebView that swallowed the key; see the
+    // note on [homeShortcutBindings]. The bare page keys belong to the WebView
+    // and to text fields, so the global handler leaves them alone.
+    if (forBridge)
       const SingleActivator(LogicalKeyboardKey.escape): () =>
           _toggleSearchFocus(ref),
     if (!forGlobalHandler)
@@ -246,14 +254,24 @@ void _focusNode(FocusNode node, {bool selectAll = false}) {
       FocusManager.instance.primaryFocus?.unfocus();
       node.requestFocus();
     }
+    talker.info(
+      "focusNode frame: attached=${node.context != null} "
+      "hasFocus=${node.hasFocus}",
+    );
     if (selectAll) {
       // The focus node only gets a context once the field is focused, so the
       // selection has to wait for the next frame as well.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         selectAllTextInField(node);
       });
+      WidgetsBinding.instance.scheduleFrame();
     }
   });
+  // A key press on an idle page schedules no frame of its own, and a
+  // post-frame callback only runs when a frame is actually drawn. Without
+  // this, Esc could leave the focus where it was until something else
+  // rebuilt the window.
+  WidgetsBinding.instance.scheduleFrame();
 }
 
 void _focusNodeAndSelectAll(FocusNode node) {

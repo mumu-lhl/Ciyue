@@ -391,10 +391,17 @@ void _registerKeyBridgeHandler(
 }
 
 /// Replays a shortcut the WebView swallowed through the home page's table.
+///
+/// `forBridge` keeps Esc in this table alone: a physical key is already
+/// handled by [SearchEscapeCloser], and a second binding in the focus tree
+/// would close the search view the first handler just opened.
 void _dispatchShortcut(WidgetRef ref, BuildContext context, String payload) {
   final activator = bridgeShortcutActivator(payload);
   if (activator == null) return;
-  shortcutDispatcher.dispatch(homeShortcutBindings(ref, context), activator);
+  shortcutDispatcher.dispatch(
+    homeShortcutBindings(ref, context, forBridge: true),
+    activator,
+  );
 }
 
 /// Pushes the entry zoom into a page that is already open.

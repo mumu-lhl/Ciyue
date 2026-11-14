@@ -9,6 +9,7 @@ import "package:ciyue/services/full_text_index_store.dart";
 import "package:ciyue/services/full_text_search_service.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/lookup_keys.dart";
+import "package:ciyue/services/phrase_lookup.dart" show maxPhraseWords;
 import "package:ciyue/services/word_split.dart";
 import "package:test/test.dart";
 
@@ -481,7 +482,28 @@ void main() {
       expect(await lookup.phraseSuggestionsFor("rufe dich an"), ["anrufen"]);
     });
 
-    test("leaves two-word phrases to the normal lookup", () async {
+    test("reads a two-word German separable verb", () async {
+      // `sehe an` stems to `sehen an`, but the headword is `ansehen`: the
+      // normal lookup never drops the space, so this pass has to join them.
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {"ansehen": "ansehen content"},
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          stemsByWord: const {
+            "sehe": ["sehen"],
+          },
+        ),
+        enabled: true,
+      );
+
+      expect(await lookup.phraseSuggestionsFor("sehe an"), ["ansehen"]);
+    });
+
+    test("reads a two-word English phrasal verb", () async {
       final dictionary = FakeDictionarySource(
         id: 1,
         entries: {"pick up": "pick up content"},
@@ -497,7 +519,20 @@ void main() {
         enabled: true,
       );
 
-      expect(await lookup.phraseSuggestionsFor("picked up"), isEmpty);
+      expect(await lookup.phraseSuggestionsFor("picked up"), ["pick up"]);
+    });
+
+    test("a pasted paragraph costs no stem calls", () async {
+      final morphology = FakeMorphology(stemsResult: const []);
+      final lookup = makeLookup(
+        dictionary: FakeDictionarySource(id: 1, entries: const {}),
+        morphology: morphology,
+        enabled: true,
+      );
+
+      final paragraph = List.filled(maxPhraseWords + 1, "word").join(" ");
+      expect(await lookup.phraseSuggestionsFor(paragraph), isEmpty);
+      expect(morphology.stemCalls, 0);
     });
 
     test("splitting ignores a phrase", () async {
