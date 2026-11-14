@@ -1,5 +1,6 @@
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:material_ui/material_ui.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 
@@ -86,7 +87,7 @@ class _AIMarkdownState extends State<AIMarkdown> {
             ),
           );
         }
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: EInkAwareSpinner());
       },
     );
   }

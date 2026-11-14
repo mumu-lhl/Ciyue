@@ -58,6 +58,10 @@ class Settings extends ChangeNotifier {
   late ThemeMode themeMode;
   late bool enableDynamicColor;
   late bool pureBlackDarkMode;
+
+  /// Whether the app runs in e-ink mode: no motion anywhere, and the entry
+  /// pages are paged by a screen at a time instead of being scrolled.
+  late bool eInkMode;
   late Color themeSeedColor;
   late String dictionaryCustomCss;
   late Color? dictionaryBackgroundColor;
@@ -178,6 +182,7 @@ class Settings extends ChangeNotifier {
     language = prefs.getString("language") ?? "system";
     enableDynamicColor = prefs.getBool("enableDynamicColor") ?? true;
     pureBlackDarkMode = prefs.getBool("pureBlackDarkMode") ?? false;
+    eInkMode = prefs.getBool("eInkMode") ?? false;
     final int? themeSeedColorValue = prefs.getInt("themeSeedColor");
     themeSeedColor = Color(themeSeedColorValue ?? Colors.blue.toARGB32());
     dictionaryCustomCss = prefs.getString("dictionaryCustomCss") ?? "";
@@ -423,6 +428,12 @@ class Settings extends ChangeNotifier {
   Future<void> setPureBlackDarkMode(bool value) async {
     pureBlackDarkMode = value;
     await prefs.setBool("pureBlackDarkMode", value);
+    notifyListeners();
+  }
+
+  Future<void> setEInkMode(bool value) async {
+    eInkMode = value;
+    await prefs.setBool("eInkMode", value);
     notifyListeners();
   }
 

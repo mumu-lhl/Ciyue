@@ -1,4 +1,5 @@
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/ui/core/word_display/entry_pager.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_tts/flutter_tts.dart";
@@ -32,9 +33,8 @@ TabController? dictTabController;
 // Pages the entry in the expansion layout.
 //
 // The expansion layout's scroll controller lives in the entry page, while
-// the shortcut that pages it sits in the home page, so the entry hands the
-// action over.
-void Function(String key)? expansionPageHandler;
+// the shortcut that pages it sits in the home page, so the entry registers
+// its pager with the registry in entry_pager.dart instead.
 
 // The search box the reader last put the cursor in.
 FocusNode? activeSearchFocusNode;
@@ -59,7 +59,19 @@ final Map<
 >
 entryFocusTargets = {};
 
-int? activeEntryDictId;
+int? _activeEntryDictId;
+
+/// The dictionary the entry on screen is showing.
+///
+/// The paging registry needs to know when this changes: the neighbouring
+/// dictionary tabs stay alive, so the pager the buttons must talk to is the
+/// one of the dictionary that is actually visible.
+int? get activeEntryDictId => _activeEntryDictId;
+set activeEntryDictId(int? value) {
+  if (_activeEntryDictId == value) return;
+  _activeEntryDictId = value;
+  setActiveEntryDict(value);
+}
 
 // Gives the focus back to the entry the reader is looking at.
 //

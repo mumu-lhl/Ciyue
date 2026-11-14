@@ -76,13 +76,13 @@ void main() {
   group("dictionaryUserScripts", () {
     test("leaves the gesture script out by default", () {
       final scripts = dictionaryUserScripts();
-      expect(scripts, hasLength(7));
+      expect(scripts, hasLength(8));
       expect(scripts.any((s) => s.source.contains("'Gesture'")), isFalse);
     });
 
     test("injects the gesture script on the desktop", () {
       final scripts = dictionaryUserScripts(isDesktop: true);
-      expect(scripts, hasLength(8));
+      expect(scripts, hasLength(9));
       expect(scripts.any((s) => s.source.contains("'Gesture'")), isTrue);
     });
   });

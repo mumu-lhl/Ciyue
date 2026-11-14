@@ -5,6 +5,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/backup.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/tags_list.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
@@ -225,7 +226,7 @@ class _ButtonState extends ConsumerState<Button> {
           foregroundColor: colorScheme.primary,
           backgroundColor: colorScheme.primaryContainer,
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
+            duration: motionDuration(const Duration(milliseconds: 200)),
             child: isPlaying
                 ? AudioWaveformIcon(
                     key: const ValueKey("playing"),

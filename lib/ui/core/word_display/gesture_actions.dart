@@ -3,6 +3,7 @@ import "dart:convert";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
@@ -92,7 +93,11 @@ bool _stepDictionaryTab(int direction) {
   );
   if (index == null) return false;
   try {
-    controller.animateTo(index);
+    if (eInkMotionless) {
+      controller.index = index;
+    } else {
+      controller.animateTo(index);
+    }
   } catch (_) {
     // The tab bar was torn down between the check and the call.
     return false;

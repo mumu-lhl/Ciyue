@@ -7,6 +7,7 @@ import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 
+import "drawer.dart";
 import "more_button.dart";
 import "search.dart";
 
@@ -72,7 +73,11 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 builder: (context) => IconButton(
                   icon: const Icon(Icons.collections_bookmark_outlined),
                   tooltip: AppLocalizations.of(context)!.dictionaryGroups,
-                  onPressed: () => Scaffold.of(context).openDrawer(),
+                  // The e-ink mode shows the same list in a zero-length
+                  // overlay: the drawer's slide would leave a smear.
+                  onPressed: () => settings.eInkMode
+                      ? showGroupDrawer(context)
+                      : Scaffold.of(context).openDrawer(),
                 ),
               )
             : null,

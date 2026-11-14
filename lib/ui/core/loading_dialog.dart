@@ -1,3 +1,4 @@
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:material_ui/material_ui.dart";
 
 bool _loadingDialogVisible = false;
@@ -59,7 +60,7 @@ class LoadingDialogContentState extends State<_LoadingDialogContent> {
             borderRadius: BorderRadius.all(Radius.circular(24.0)),
           ),
           padding: EdgeInsets.all(24.0),
-          child: CircularProgressIndicator(),
+          child: const EInkAwareSpinner(),
         ),
         if (currentText != null)
           Padding(

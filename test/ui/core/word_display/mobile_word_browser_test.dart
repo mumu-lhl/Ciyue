@@ -6,6 +6,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/dictionary_lookup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/mobile_word_browser.dart";
+import "package:ciyue/ui/core/word_display/paging_buttons.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
@@ -153,6 +154,43 @@ void main() {
       expect(find.text("1"), findsOneWidget);
     },
   );
+
+  testWidgets("e-ink mode adds the two paging buttons without overflowing", (
+    tester,
+  ) async {
+    usePhoneSurface(tester);
+    settings.eInkMode = true;
+    addTearDown(() {
+      settings.eInkMode = false;
+      settings.refresh();
+    });
+
+    final homeModel = HomeModel();
+    await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.byType(PagingButton), findsNWidgets(2));
+    // A 390dp phone has to hold seven buttons; a RenderFlex overflow would
+    // surface here instead of on the device.
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets("the paging buttons stay out of the way when the mode is off", (
+    tester,
+  ) async {
+    usePhoneSurface(tester);
+    final homeModel = HomeModel();
+    await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.byType(PagingButton), findsNothing);
+    expect(
+      find.widgetWithIcon(IconButton, Icons.arrow_back_rounded),
+      findsOneWidget,
+    );
+  });
 
   testWidgets("navigating in current tab enables back and forward", (
     tester,

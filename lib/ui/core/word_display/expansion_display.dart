@@ -8,7 +8,9 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
+import "package:ciyue/ui/core/word_display/entry_pager.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
+import "package:ciyue/ui/core/word_display/paging_buttons.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
 import "package:ciyue/utils.dart" as app_utils;
@@ -47,6 +49,12 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
   late final bool _ownsController;
   final ScrollController _scrollController = ScrollController();
 
+  /// The expansion layout scrolls in Flutter rather than in a WebView, so its
+  /// pager wraps this controller and is registered for the keys and buttons.
+  late final ScrollControllerEntryPager _pager = ScrollControllerEntryPager(
+    _scrollController,
+  );
+
   Widget? _buildSearchBar(Settings settings) {
     return buildTitle(
       widget.word,
@@ -70,35 +78,13 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
 
   @override
   void dispose() {
-    if (identical(expansionPageHandler, _pageBy)) {
-      expansionPageHandler = null;
-    }
+    clearExpansionEntryPager(_pager);
+    _pager.dispose();
     _scrollController.dispose();
     if (_ownsController) {
       _searchController.dispose();
     }
     super.dispose();
-  }
-
-  /// Pages the entry by one screen.
-  ///
-  /// In the expansion layout the WebView is as tall as its content and has
-  /// nothing of its own to scroll, so PageUp/PageDown have to move the outer
-  /// scroll container instead.
-  void _pageBy(String key) {
-    if (!_scrollController.hasClients) return;
-    final position = _scrollController.position;
-    final direction = key == "PageUp" ? -1.0 : 1.0;
-    final target =
-        (position.pixels + direction * position.viewportDimension * 0.9).clamp(
-          position.minScrollExtent,
-          position.maxScrollExtent,
-        );
-    _scrollController.animateTo(
-      target,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
-    );
   }
 
   @override
@@ -108,9 +94,9 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     _searchController = widget.searchController ?? SearchController();
     _panelIds = _getPanelIds(settings.aiExplainWord, widget.validDictIds);
     _isExpanded = List<bool>.filled(_panelIds.length, true);
-    // The shortcut that pages the entry lives in the home page, outside the
-    // entry, so the scroll controller is handed over to it.
-    expansionPageHandler = _pageBy;
+    // The keys and the paging buttons live outside the entry, so the pager
+    // wrapping this page's scroll controller is handed to the registry.
+    setExpansionEntryPager(_pager);
   }
 
   List<Object> _getPanelIds(bool includeAI, List<int> validDictIds) => [
@@ -263,6 +249,11 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
             icon: const Icon(Icons.copy),
             onPressed: () => app_utils.addToClipboard(context, widget.word),
           ),
+          // Far right of the bar, matching the tab layout's entry page.
+          if (settings.eInkMode && isDesktopScreen) ...[
+            const PagingButton(screens: -1),
+            const PagingButton(screens: 1),
+          ],
         ],
       ),
       bottomNavigationBar:
@@ -273,26 +264,29 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
       floatingActionButton: isDesktopScreen
           ? null
           : Button(word: widget.word, showAIButtons: isAIExplainTabSelected),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            controller: _scrollController,
-            child: ExpansionPanelList(
-              expansionCallback: (int index, bool isExpanded) {
-                setState(() {
-                  _isExpanded[index] = isExpanded;
-                });
-              },
-              children: panels,
+      body: SafeArea(
+        top: false,
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              controller: _scrollController,
+              child: ExpansionPanelList(
+                expansionCallback: (int index, bool isExpanded) {
+                  setState(() {
+                    _isExpanded[index] = isExpanded;
+                  });
+                },
+                children: panels,
+              ),
             ),
-          ),
-          const Positioned(
-            left: 16,
-            right: 16,
-            bottom: 16,
-            child: FloatingAudioIndicator(),
-          ),
-        ],
+            const Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: FloatingAudioIndicator(),
+            ),
+          ],
+        ),
       ),
     );
   }

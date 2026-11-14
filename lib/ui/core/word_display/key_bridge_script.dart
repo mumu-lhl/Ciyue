@@ -106,10 +106,13 @@ String keyBridgeScript() {
     // The plain PageUp/PageDown keys are the WebView's own scrolling keys.
     // They are forwarded so that the expansion layout can page the entry,
     // but the WebView keeps them: in the tab layout it is the one that
-    // scrolls, and taking the keys away would freeze the entry.
-    var keepsWebViewScroll =
+    // scrolls, and taking the keys away would freeze the entry. Once the
+    // e-ink mode is on the app pages the entry itself, so the key is taken
+    // over instead of being left to the WebView as well.
+    var plainPageKey =
       !e.ctrlKey && !e.altKey && !e.metaKey &&
       (e.code === 'PageUp' || e.code === 'PageDown');
+    var keepsWebViewScroll = plainPageKey && !window.ciyuePagingEnabled;
     if (!keepsWebViewScroll) {
       e.preventDefault();
     }

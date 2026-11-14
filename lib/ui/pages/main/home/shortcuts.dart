@@ -4,9 +4,11 @@ import "dart:convert";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/content_scale_script.dart";
+import "package:ciyue/ui/core/word_display/entry_pager.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:flutter/services.dart";
@@ -412,6 +414,12 @@ void _animateToDictTab(int index) {
   final tabController = dictTabController;
   if (tabController == null) return;
   try {
+    // An e-ink panel would show the whole swipe as ghosting, so the tab is
+    // switched in a single frame instead.
+    if (eInkMotionless) {
+      tabController.index = index;
+      return;
+    }
     tabController.animateTo(index);
   } catch (_) {
     // The tab bar was torn down between the check and the call.
@@ -452,17 +460,20 @@ void _switchToGroup(WidgetRef ref, int position) {
   unawaited(ref.read(dictManagerModelProvider).switchToGroupAt(position));
 }
 
-/// Pages the entry in the expansion layout.
+/// Pages the entry by one screen.
 ///
-/// There the WebView is as tall as its content and has nothing of its own
-/// to scroll, so the outer scroll container has to do it. In the tab layout
-/// the WebView scrolls on its own and the keys are left to it.
+/// In the expansion layout the WebView is as tall as its content and has
+/// nothing of its own to scroll, so the outer scroll container has to do it.
+/// In the tab layout the WebView scrolls on its own: it is left to do that
+/// until the e-ink mode takes the key over, and then the pager of the page
+/// moves it a screen at a time instead.
 void _pageEntry(WidgetRef ref, String key) {
   final settings = ref.read(settingsProvider);
-  if (settings.dictionarySwitchStyle != DictionarySwitchStyle.expansion) {
+  if (!settings.eInkMode &&
+      settings.dictionarySwitchStyle != DictionarySwitchStyle.expansion) {
     return;
   }
-  expansionPageHandler?.call(key);
+  unawaited(pageActiveEntry(key == "PageUp" ? -1 : 1));
 }
 
 /// The activator a key bridge message names, or null when the code is not

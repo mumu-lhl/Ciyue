@@ -7,12 +7,14 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/expansion_display.dart";
 import "package:ciyue/ui/core/word_display/missing_word_suggestions.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
+import "package:ciyue/ui/core/word_display/paging_buttons.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
@@ -359,18 +361,21 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                         word: _word,
                         showAIButtons: settings.aiExplainWord,
                       ),
-                body: Stack(
-                  children: [
-                    settings.aiExplainWord
-                        ? AIExplainView(word: _word)
-                        : _buildWebView(validDictIds[0]),
-                    const Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: 16,
-                      child: FloatingAudioIndicator(),
-                    ),
-                  ],
+                body: SafeArea(
+                  top: false,
+                  child: Stack(
+                    children: [
+                      settings.aiExplainWord
+                          ? AIExplainView(word: _word)
+                          : _buildWebView(validDictIds[0]),
+                      const Positioned(
+                        left: 16,
+                        right: 16,
+                        bottom: 16,
+                        child: FloatingAudioIndicator(),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }
@@ -397,6 +402,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                 ),
                 initialIndex: initialTabIndex,
                 length: dictsLength,
+                // An e-ink panel turns the slide into ghosting, so the
+                // dictionary tabs are swapped in a single frame.
+                animationDuration: settings.eInkMode ? Duration.zero : null,
                 child: Builder(
                   builder: (context) {
                     final tabController = DefaultTabController.of(context);
@@ -443,37 +451,40 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                                   word: _word,
                                   showAIButtons: isAIExplainTabSelected,
                                 ),
-                          body: Stack(
-                            children: [
-                              Column(
-                                children: [
-                                  Expanded(
-                                    child: buildTabView(
-                                      context,
-                                      validDictIds: validDictIds,
+                          body: SafeArea(
+                            top: false,
+                            child: Stack(
+                              children: [
+                                Column(
+                                  children: [
+                                    Expanded(
+                                      child: buildTabView(
+                                        context,
+                                        validDictIds: validDictIds,
+                                      ),
                                     ),
-                                  ),
-                                  if (settings.tabBarPosition ==
-                                          TabBarPosition.bottom &&
-                                      showTab)
-                                    buildTabBar(context, validDictIds),
-                                  if (!settings.searchBarInAppBar &&
-                                      searchBar != null)
-                                    searchBar,
-                                ],
-                              ),
-                              Positioned(
-                                left: 16,
-                                right: 16,
-                                bottom:
-                                    (settings.tabBarPosition ==
+                                    if (settings.tabBarPosition ==
                                             TabBarPosition.bottom &&
                                         showTab)
-                                    ? 64
-                                    : 16,
-                                child: const FloatingAudioIndicator(),
-                              ),
-                            ],
+                                      buildTabBar(context, validDictIds),
+                                    if (!settings.searchBarInAppBar &&
+                                        searchBar != null)
+                                      searchBar,
+                                  ],
+                                ),
+                                Positioned(
+                                  left: 16,
+                                  right: 16,
+                                  bottom:
+                                      (settings.tabBarPosition ==
+                                              TabBarPosition.bottom &&
+                                          showTab)
+                                      ? 64
+                                      : 16,
+                                  child: const FloatingAudioIndicator(),
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -527,7 +538,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                           children: [
                             const SizedBox(
                               width: 200,
-                              child: LinearProgressIndicator(),
+                              child: EInkAwareProgressBar(),
                             ),
                             if (dictManager.dicts.values.any(
                               (dict) => dict.isLoading,
@@ -670,6 +681,12 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           icon: const Icon(Icons.copy),
           onPressed: () => app_utils.addToClipboard(context, _word),
         ),
+        // E-ink readers page the entry with the same keys. The buttons live at
+        // the far right of the bar so they keep one position across words.
+        if (settings.eInkMode && isDesktopScreen) ...[
+          const PagingButton(screens: -1),
+          const PagingButton(screens: 1),
+        ],
       ],
       bottom: (showTab && settings.tabBarPosition == TabBarPosition.top)
           ? buildTabBar(context, validDictIds)

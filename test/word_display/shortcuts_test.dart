@@ -38,6 +38,14 @@ void main() {
       expect(script, contains("['PageDown', false, true, false, false]"));
     });
 
+    test("takes the plain page keys over only in the e-ink mode", () {
+      final script = keyBridgeScript();
+      // Without the mode the WebView keeps PageUp/PageDown and scrolls
+      // itself, which is what the tab layout relies on.
+      expect(script, contains("plainPageKey"));
+      expect(script, contains("!window.ciyuePagingEnabled"));
+    });
+
     test("forwards Alt+Arrow for history only", () {
       final script = keyBridgeScript();
       expect(script, contains("['ArrowUp', false, true, false, false]"));

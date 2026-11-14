@@ -1,3 +1,4 @@
+import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/models/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -7,6 +8,8 @@ import "package:ciyue/viewModels/audio.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:material_ui/material_ui.dart";
+import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
+import "package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart";
 
 class FakeAudioModelForButton extends AudioModel {
   bool fakePlaying = false;
@@ -48,6 +51,13 @@ class FakeAudioModelForButton extends AudioModel {
 }
 
 void main() {
+  setUpAll(() async {
+    // The button reads the e-ink setting, which needs the preferences.
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+    await initPrefs();
+  });
+
   testWidgets(
     "Read loudly button toggles from volume_up to AudioWaveformIcon when playing",
     (tester) async {

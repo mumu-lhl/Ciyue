@@ -423,6 +423,7 @@ const preferencesAllowList = <String>{
   "themeMode",
   "enableDynamicColor",
   "pureBlackDarkMode",
+  "eInkMode",
   "themeSeedColor",
   "dictionaryCustomCss",
   "dictionaryBackgroundColor",
