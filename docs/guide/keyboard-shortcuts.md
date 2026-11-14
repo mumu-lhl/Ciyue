@@ -119,6 +119,15 @@ Only the entry is scaled, the rest of the window keeps its size. The level is re
 | `Space` | Show the answer | Flashcards |
 | `1` … `4` | Rate the card | Flashcards |
 
+## Global hotkey
+
+The desktop build can bind `Ctrl`+`Shift`+`M` under **Settings → Other → Global Shortcut**: it minimizes the window while it is in front, and restores and focuses it when it is minimized or hidden.
+
+The switch is off by default, so Ciyue never grabs a system-wide key on its own. It is only available on Windows, macOS and Linux X11 sessions:
+
+- On **Wayland** the compositor does not let an app read whether it is minimized, nor restore its own minimized window, so the switch is greyed out and unavailable. Use the desktop's own shortcut instead: in KDE, for example, bind a key to a window rule or to *Activate Window* and let KWin do the minimizing and restoring.
+- If another program already owns the key, Ciyue reports the failed registration and leaves the switch off.
+
 ## Mouse gestures
 
 Two mouse gestures switch tabs while reading an entry. **Settings → Other** lets each gesture be assigned its own action: off, switch dictionary tabs, or switch word tabs.

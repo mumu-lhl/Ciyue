@@ -2,8 +2,10 @@ import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/global_hotkey.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/startup.dart";
+import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/services/floating_window_preferences.dart";
 import "package:ciyue/ui/core/badges.dart";
@@ -174,7 +176,10 @@ class OtherSettingsPage extends StatelessWidget {
             children: [
               SettingsGroupCard(
                 children: [
-                  if (isDesktop()) const LaunchAtStartupSwitch(),
+                  if (isDesktop()) ...[
+                    const LaunchAtStartupSwitch(),
+                    const EnableGlobalHotkeySwitch(),
+                  ],
                   if (Platform.isAndroid) ...[
                     const SecureScreenSwitch(),
                     const NotificationSwitch(),
@@ -289,6 +294,52 @@ class _LaunchAtStartupSwitchState extends State<LaunchAtStartupSwitch> {
         setState(() {});
       },
       secondary: const Icon(Icons.computer),
+    );
+  }
+}
+
+class EnableGlobalHotkeySwitch extends StatefulWidget {
+  const EnableGlobalHotkeySwitch({super.key});
+
+  @override
+  State<EnableGlobalHotkeySwitch> createState() =>
+      _EnableGlobalHotkeySwitchState();
+}
+
+class _EnableGlobalHotkeySwitchState extends State<EnableGlobalHotkeySwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+    final supported = GlobalHotkeyService.isSupported;
+
+    return SwitchListTile(
+      title: Text(locale.enableGlobalHotkey),
+      subtitle: Text(
+        supported
+            ? locale.enableGlobalHotkeyDescription
+            : locale.enableGlobalHotkeyWaylandUnsupported,
+      ),
+      value: supported && settings.enableGlobalHotkey,
+      onChanged: supported
+          ? (value) async {
+              final applied = await GlobalHotkeyService.apply(value);
+              if (!applied) {
+                // Another program already owns the key: leave the saved value
+                // alone so the switch stays where it was, and say why.
+                if (context.mounted) {
+                  await ToastService.show(
+                    locale.globalHotkeyRegisterFailed,
+                    context,
+                    type: ToastType.error,
+                  );
+                }
+                return;
+              }
+              await settings.setEnableGlobalHotkey(value);
+              if (mounted) setState(() {});
+            }
+          : null,
+      secondary: const Icon(Icons.keyboard),
     );
   }
 }

@@ -6,6 +6,7 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/cloud_sync/configuration.dart";
+import "package:ciyue/services/global_hotkey.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/changelog.dart";
 import "package:ciyue/services/platform.dart";
@@ -20,7 +21,6 @@ import "package:flutter_inappwebview/flutter_inappwebview.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
 import "package:flutter_tts/flutter_tts.dart";
-import "package:hotkey_manager/hotkey_manager.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:path_provider/path_provider.dart";
 import "package:ciyue/core/providers.dart";
@@ -387,31 +387,12 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
     if (isDesktop()) {
       StartupService.init();
 
-      await hotKeyManager.unregisterAll();
-
-      final hotKey = HotKey(
-        key: PhysicalKeyboardKey.keyM,
-        modifiers: [HotKeyModifier.control, HotKeyModifier.shift],
-        scope: HotKeyScope.system,
-      );
-      await hotKeyManager.register(
-        hotKey,
-        keyDownHandler: (hotKey) async {
-          final window = WindowManager.instance.getCurrent();
-          if (window == null) return;
-          if (window.isVisible) {
-            if (window.isMinimized) {
-              window.restore();
-              window.focus();
-            } else {
-              window.minimize();
-            }
-          } else {
-            window.show();
-            window.focus();
-          }
-        },
-      );
+      // The app-wide hotkey is opt-in and off by default; the switch lives in
+      // Settings → Other. Wayland sessions cannot read their own minimized
+      // state or restore a minimized window, and the GlobalShortcuts portal
+      // makes KDE ask for approval on every launch, so [GlobalHotkeyService]
+      // skips those sessions and leaves the key to the desktop environment.
+      await GlobalHotkeyService.apply(settings.enableGlobalHotkey);
 
       final window = WindowManager.instance.getCurrent();
       if (window != null) {
@@ -526,6 +507,7 @@ const preferencesAllowList = <String>{
   "enableWritingCheckHistory",
   "autoFocusSearch",
   "launchAtStartup",
+  "enableGlobalHotkey",
   "flashcardDailyNewLimit",
   "enableWebServer",
   "webServerPort",
