@@ -162,7 +162,10 @@ class _HomeState extends ConsumerState<Home> {
               : null,
           // The e-ink mode opens the group list through showGroupDrawer
           // instead, which does not slide the panel across the screen.
-          drawer: _currentIndex == 0 && !historyModel.isSelecting && !settings.eInkMode
+          drawer:
+              _currentIndex == 0 &&
+                  !historyModel.isSelecting &&
+                  !settings.eInkMode
               ? const HomeDrawer()
               : null,
           // Top row: destinations live in the app bar and the page gets the
