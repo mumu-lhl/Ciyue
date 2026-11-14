@@ -308,6 +308,8 @@
   "@floatingWindowCardWidth": {},
   "floatingWindowCardHeight": "卡片高度",
   "@floatingWindowCardHeight": {},
+  "floatingWindowCardSizeHint": "在阅读器自带弹窗尺寸时，也会作为上限对其封顶。",
+  "@floatingWindowCardSizeHint": {},
   "loading": "加载中...",
   "@loading": {},
   "dictionaryIndexing": "正在建立词典索引，首次打开较大的 ZIM 可能需要几分钟。",

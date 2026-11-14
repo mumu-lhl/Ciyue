@@ -518,6 +518,8 @@
   "@floatingWindowCardWidth": {},
   "floatingWindowCardHeight": "Card height",
   "@floatingWindowCardHeight": {},
+  "floatingWindowCardSizeHint": "Also caps the popup when a reader sends its own window geometry.",
+  "@floatingWindowCardSizeHint": {},
   "loading": "Loading...",
   "@loading": {},
   "dictionaryIndexing": "Building the dictionary index. The first open of a large ZIM can take several minutes.",

@@ -19,6 +19,9 @@ object FloatingWindowSettings {
 
     const val EXTRA_MODE = "extra_floating_window_mode"
 
+    /** Shared with the Dart settings page (floating_window_panel_fraction). */
+    const val PANEL_FRACTION_FILE = "floating_window_panel_fraction"
+
     /** Used when the reader sends a height but no gravity. */
     const val DEFAULT_GRAVITY = Gravity.BOTTOM
 
@@ -55,6 +58,34 @@ object FloatingWindowSettings {
     }
 
     fun isEnabled(context: Context): Boolean = mode(context) != Mode.OFF
+
+    /**
+     * Max popup size as a fraction of the screen, shared with the Dart
+     * settings page.
+     *
+     * Used in two ways: in the transparent card mode it is the actual card
+     * size, and in the half-screen reader mode it caps the geometry the
+     * reader asks for, so a reader requesting a full-width popup stays within
+     * the size the user picked. A smaller reader request is kept as-is.
+     */
+    data class PanelFraction(val width: Float, val height: Float) {
+        companion object {
+            val DEFAULT = PanelFraction(0.85f, 0.55f)
+        }
+    }
+
+    fun readPanelFraction(context: Context): PanelFraction {
+        val raw = read(context, PANEL_FRACTION_FILE) ?: return PanelFraction.DEFAULT
+        val parts = raw.split("x")
+        if (parts.size != 2) return PanelFraction.DEFAULT
+        val width = parts[0].toFloatOrNull()
+        val height = parts[1].toFloatOrNull()
+        if (width == null || height == null) return PanelFraction.DEFAULT
+        return PanelFraction(
+            width.coerceIn(0.4f, 1.0f),
+            height.coerceIn(0.4f, 1.0f),
+        )
+    }
 }
 
 /**
