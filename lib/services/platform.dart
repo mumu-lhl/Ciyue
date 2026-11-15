@@ -86,11 +86,18 @@ class DictionaryDirectoryPick {
 /// Everything is re-read, including the few values this window can change on
 /// its own (the dictionary group, the voice). That is safe because every setter
 /// writes to the store before it notifies, so the reload reads back exactly the
-/// value the window just chose.
+/// value the window just chose. The list behind the group switcher comes from
+/// the database rather than from the preferences, so it is refreshed separately.
 Future<void> _refreshSettingsForLookup() async {
   try {
     final secureScreen = settings.secureScreen;
     await settings.reloadFromPrefs();
+
+    // The group *list* is a snapshot as well, and this window has no group
+    // management page: a group created, renamed or reordered in the main app
+    // never reached its switcher. The current group is left alone — the
+    // switcher in this window owns it.
+    dictManager.groups = await dictGroupDao.getAllGroups();
 
     // The theme, the locale and the e-ink page transitions are read by the
     // MaterialApp above the router, which looks at the singleton rather than
