@@ -32,6 +32,7 @@ $ just icon              # Generate app icons
 $ flutter build android
 $ flutter build windows
 $ flutter build linux
+$ flutter build macos
 ```
 
 ### Running

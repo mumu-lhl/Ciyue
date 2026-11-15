@@ -5,7 +5,7 @@
 **Ciyue** is a comprehensive dictionary application built with **Flutter**. It is designed to support **MDX/MDD** dictionary formats and offers a modern user experience with **Material You** design.
 
 ### Key Features
-*   **Multi-Platform:** Android, Windows, Linux.
+*   **Multi-Platform:** Android, Windows, Linux, macOS.
 *   **Dictionary Support:** MDX/MDD formats, multi-dictionary search.
 *   **AI Integration:** AI-powered translation (OpenAI, Gemini, DeepSeek, etc.) and word explanation.
 *   **Tools:** Text-to-speech (TTS), word book (bookmarks), history.
@@ -30,6 +30,7 @@
     *   **Linux:** `libgtk-3-dev`, `libx11-dev`, `libxi-dev`, `libgstreamer1.0-dev`, `libsecret-1-dev` (secure cloud credentials), etc. Runtime cloud credential storage also requires an active Secret Service/keyring.
     *   **Android:** Android SDK, Java 21 (for build).
     *   **Windows:** Visual Studio with C++ workload.
+    *   **macOS:** Xcode and its command-line tools; built apps require macOS 12 (Monterey) or later.
 
 ### Common Commands (via `just`)
 The project uses `justfile` to manage common development tasks.
@@ -51,8 +52,10 @@ The project uses `justfile` to manage common development tasks.
 *   **Android:** `flutter build apk --flavor full-dev`
 *   **Windows:** `flutter build windows`
 *   **Linux:** `flutter build linux`
+*   **macOS:** `flutter build macos --release` (`.github/workflows/macos-build.yml` packages the `.app` into a DMG/ZIP)
 
 > **Note:** CI builds use `--dart-define` flags to inject build info (Hash, Timestamp, Dev mode).
+> **macOS note:** Releases are ad-hoc signed DMGs distributed outside the Mac App Store. `macos/Runner/Release.entitlements` deliberately declares no App Sandbox so the app can read user-selected dictionary folders and run its local web server; Gatekeeper may require `xattr -cr /Applications/Ciyue.app`.
 
 ## Development Conventions
 
