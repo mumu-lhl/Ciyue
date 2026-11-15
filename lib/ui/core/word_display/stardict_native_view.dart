@@ -36,8 +36,8 @@ class StardictEntryListView extends StatelessWidget {
   /// When null, images are read from `res/` files only, as before.
   final Future<Uint8List?> Function(String file)? resourceResolver;
 
-  /// Zooms the entry. Every size in the native renderer is derived from one
-  /// base size, so scaling that one scales the whole entry.
+  /// Zooms the entry: the body text, the XDXF headword and the embedded
+  /// images are all multiplied by it.
   final double scale;
 
   const StardictEntryListView({
@@ -142,8 +142,8 @@ class _Renderer {
   final int dictId;
   final Future<Uint8List?> Function(String file)? resourceResolver;
 
-  /// Zooms the entry. Every size below is derived from one base size, so
-  /// scaling that one scales the whole entry.
+  /// Zooms the entry. The body text and the headword both take it, and they
+  /// are the base every inline size is derived from.
   final double scale;
 
   _Renderer({
@@ -163,6 +163,26 @@ class _Renderer {
 
   TextStyle get _variant =>
       _body.copyWith(color: _theme.colorScheme.onSurfaceVariant);
+
+  /// The XDXF headword.
+  ///
+  /// It comes from a different theme style than the body, so it has to take
+  /// [scale] on its own: left at the theme size it would end up smaller than
+  /// the definition once the entry is zoomed in.
+  TextStyle get _headword {
+    final base = _theme.textTheme.titleMedium ?? const TextStyle();
+    return base.copyWith(
+      fontWeight: FontWeight.w700,
+      fontSize: scale == 1.0 ? base.fontSize : (base.fontSize ?? 16) * scale,
+    );
+  }
+
+  /// The cap on an embedded picture.
+  ///
+  /// It follows [scale] as well: an image frozen at its old size while the
+  /// text around it grows reads as a broken entry rather than a zoomed one.
+  BoxConstraints get _imageConstraints =>
+      BoxConstraints(maxHeight: 260 * scale, maxWidth: 320 * scale);
 
   Widget paragraph(String text) => SelectableText(text, style: _body);
 
@@ -194,12 +214,7 @@ class _Renderer {
           case "k":
             flush();
             widgets.add(
-              SelectableText(
-                node.innerText.trim(),
-                style: _theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              SelectableText(node.innerText.trim(), style: _headword),
             );
             continue;
           case "def":
@@ -357,7 +372,7 @@ class _Renderer {
       return WidgetSpan(
         alignment: PlaceholderAlignment.middle,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 260, maxWidth: 320),
+          constraints: _imageConstraints,
           child: FutureBuilder<Uint8List?>(
             future: resolver(file),
             builder: (context, snapshot) {
@@ -379,7 +394,7 @@ class _Renderer {
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 260, maxWidth: 320),
+        constraints: _imageConstraints,
         child: Image.file(
           File(candidate),
           fit: BoxFit.contain,

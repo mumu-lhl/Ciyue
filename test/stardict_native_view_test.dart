@@ -16,6 +16,7 @@ void main() {
     WidgetTester tester,
     List<StardictNativeEntry> entries, {
     Future<Uint8List?> Function(String file)? resourceResolver,
+    double scale = 1.0,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -26,6 +27,7 @@ void main() {
             dictId: 1,
             isExpansion: true,
             resourceResolver: resourceResolver,
+            scale: scale,
           ),
         ),
       ),
@@ -145,6 +147,55 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(Image), findsNothing);
+  });
+
+  testWidgets("the entry zoom reaches the headword and the image cap", (
+    tester,
+  ) async {
+    Future<void> pump(double scale) => pumpEntries(
+      tester,
+      [
+        StardictNativeEntry(
+          headword: "pic",
+          fields: [
+            StarDictField(
+              "x",
+              text: "<xdxf><k>pic</k><def><rref>pic.png</rref></def></xdxf>",
+            ),
+          ],
+        ),
+      ],
+      resourceResolver: (file) async => file == "pic.png" ? _tinyPng : null,
+      scale: scale,
+    );
+
+    double headwordSize() => tester
+        .widgetList<SelectableText>(find.byType(SelectableText))
+        .firstWhere((widget) => widget.data == "pic")
+        .style!
+        .fontSize!;
+
+    BoxConstraints imageConstraints() => tester
+        .widget<ConstrainedBox>(
+          find
+              .ancestor(
+                of: find.byType(Image),
+                matching: find.byType(ConstrainedBox),
+              )
+              .first,
+        )
+        .constraints;
+
+    await pump(1.0);
+    await tester.pumpAndSettle();
+    final baseSize = headwordSize();
+
+    await pump(2.0);
+    await tester.pumpAndSettle();
+
+    expect(headwordSize(), baseSize * 2);
+    expect(imageConstraints().maxWidth, 320 * 2);
+    expect(imageConstraints().maxHeight, 260 * 2);
   });
 
   testWidgets("a missing loose image degrades without crashing", (
