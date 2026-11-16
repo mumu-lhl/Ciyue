@@ -29,7 +29,11 @@ class _BottomSearchBarState extends ConsumerState<BottomSearchBar> {
       return const SizedBox.shrink();
     }
 
-    if (!settings.searchBarInAppBar || settings.aiExplainWord) {
+    // The bottom bar is the search box only when the AppBar does not
+    // already carry it. AI word explanation must not force it on: with
+    // the bar in the AppBar, turning AI on would otherwise show a second
+    // search bar at the bottom of the home page.
+    if (!settings.searchBarInAppBar) {
       final isEmpty = ref.watch(
         dictManagerModelProvider.select((model) => model.isEmpty),
       );
@@ -50,8 +54,13 @@ class _BottomSearchBarState extends ConsumerState<BottomSearchBar> {
   Future<void> _waitForLoading() async {
     while (dictManager.isLoading) {
       await Future.delayed(const Duration(milliseconds: 40));
+      // The bar can be disposed while dictionaries are still loading
+      // (e.g. a test tearing the tree down, or the layout switching
+      // between mobile and split view): stop the poll instead of calling
+      // setState() on a disposed state.
+      if (!mounted) return;
     }
-
+    if (!mounted) return;
     setState(() {
       _isLoading = false;
     });

@@ -1,6 +1,7 @@
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/main/home/body.dart";
@@ -151,6 +152,51 @@ void main() {
 
       expect(find.byType(BottomSearchBar), findsOneWidget);
       expect(find.byType(HomeSearchBar), findsNothing);
+    });
+
+    testWidgets("AI explain does not add a second search bar at the bottom", (
+      tester,
+    ) async {
+      // Regression: BottomSearchBar used to show whenever AI word
+      // explanation was on, even with the search bar already in the
+      // AppBar — the home page then had two search bars.
+      dictManager.markLoaded();
+      settings.searchBarInAppBar = true;
+      settings.aiExplainWord = true;
+      addTearDown(() {
+        settings.aiExplainWord = false;
+      });
+
+      await pumpHomeBody(
+        tester,
+        surfaceSize: const Size(800, 1280),
+        homeModel: HomeModel(),
+      );
+
+      expect(find.byType(BottomSearchBar), findsOneWidget);
+      expect(find.byType(HomeSearchBar), findsNothing);
+    });
+
+    testWidgets("bottom search bar still shows when the AppBar has none", (
+      tester,
+    ) async {
+      // The AI path still needs a way to type: with the bar out of the
+      // AppBar, the bottom bar is the only search box.
+      dictManager.markLoaded();
+      settings.searchBarInAppBar = false;
+      settings.aiExplainWord = true;
+      addTearDown(() {
+        settings.searchBarInAppBar = true;
+        settings.aiExplainWord = false;
+      });
+
+      await pumpHomeBody(
+        tester,
+        surfaceSize: const Size(800, 1280),
+        homeModel: HomeModel(),
+      );
+
+      expect(find.byType(HomeSearchBar), findsOneWidget);
     });
 
     testWidgets("landscape tablet shows the split view with the search pane", (
