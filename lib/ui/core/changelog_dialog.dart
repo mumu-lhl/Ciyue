@@ -60,7 +60,10 @@ class ChangelogDialog extends ConsumerWidget {
                   ? null
                   : Text(sections[i].date!),
               initiallyExpanded: i == 0,
-              tilePadding: EdgeInsets.zero,
+              // The header text (version + date) sits flush against the
+              // tap ripple's top edge with zero padding; give it
+              // breathing room above and below.
+              tilePadding: const EdgeInsets.symmetric(vertical: 4),
               childrenPadding: const EdgeInsets.only(bottom: 12),
               children: [
                 Align(
