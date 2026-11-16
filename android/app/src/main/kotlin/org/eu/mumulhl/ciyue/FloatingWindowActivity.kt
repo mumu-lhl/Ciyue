@@ -62,6 +62,14 @@ class FloatingWindowActivity : FlutterActivity() {
         )
     }
 
+    /**
+     * The area this window may occupy, in pixels.
+     *
+     * `maximumWindowMetrics` describes the area a task may use, so a split
+     * screen or a free-form task reports the task rather than the whole
+     * display. The popup is both sized and offset inside that area, which is
+     * what keeps the clamp in [applyWindowLayout] meaningful.
+     */
     @Suppress("DEPRECATION")
     private fun displaySize(): Pair<Int, Int> {
         val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -114,15 +122,37 @@ class FloatingWindowActivity : FlutterActivity() {
         val maxHeight = (displayHeight * cap.height).toInt()
 
         val readerWidth = geometry.width ?: displayWidth
-        val readerHeight = geometry.height ?: (displayHeight * 0.5f).toInt()
         val width = readerWidth.coerceAtMost(maxWidth).coerceAtMost(displayWidth)
-        val height = readerHeight.coerceAtMost(maxHeight).coerceAtMost(displayHeight)
-        window.setLayout(width, height)
-        window.setGravity(geometry.gravity or Gravity.START)
 
+        // The reader's height is the room between the selected word and that
+        // edge of the display, so it doubles as the band the popup may use. A
+        // reader that sends no height, or no geometry at all, gets half the
+        // screen, which is what it used to get.
+        val bandHeight = (geometry.height ?: (displayHeight / 2))
+            .coerceIn(1, displayHeight)
+        val bandTop =
+            if (geometry.gravity == Gravity.TOP) 0 else displayHeight - bandHeight
+        val height = bandHeight.coerceAtMost(maxHeight)
+
+        // Aligning inside that band is what keeps the popup off the selected
+        // word: the reader already chose the free side, so only the edge facing
+        // the word can touch it. The reader's margins are deliberately unused;
+        // ColorDict readers send a fixed few-pixel inset (Moon+ Reader sends 4
+        // on every side), so they carry no position information.
+        val position = FloatingWindowSettings.readPosition(this)
+        val left = ((displayWidth - width) * ((position.dx + 1f) / 2f)).toInt()
+        val top = bandTop + ((bandHeight - height) * ((position.dy + 1f) / 2f)).toInt()
+
+        window.setLayout(width, height)
+        window.setGravity(Gravity.TOP or Gravity.START)
+
+        // Offsets are measured inside the area this window may occupy, which is
+        // what [displaySize] reports, so the clamp is enough to keep an
+        // oversized reader request or a free-form task from pushing the popup
+        // off the screen.
         val layoutParams = window.attributes
-        layoutParams.x = geometry.marginLeft - geometry.marginRight
-        layoutParams.y = geometry.marginTop - geometry.marginBottom
+        layoutParams.x = left.coerceIn(0, (displayWidth - width).coerceAtLeast(0))
+        layoutParams.y = top.coerceIn(0, (displayHeight - height).coerceAtLeast(0))
         window.attributes = layoutParams
     }
 

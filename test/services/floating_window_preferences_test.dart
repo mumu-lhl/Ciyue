@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:ciyue/services/floating_window_preferences.dart";
 import "package:flutter_test/flutter_test.dart";
+import "package:material_ui/material_ui.dart";
 
 void main() {
   late Directory directory;
@@ -107,5 +108,45 @@ void main() {
     final fraction = await store().readPanelFraction();
     expect(fraction.width, FloatingWindowPanelFraction.defaultFraction.width);
     expect(fraction.height, FloatingWindowPanelFraction.defaultFraction.height);
+  });
+
+  test("defaults to the centre position", () async {
+    expect(await store().readPosition(), FloatingWindowPosition.center);
+  });
+
+  test("remembers the selected position", () async {
+    await store().writePosition(FloatingWindowPosition.bottomRight);
+
+    expect(await store().readPosition(), FloatingWindowPosition.bottomRight);
+  });
+
+  test("falls back to the centre for an unknown position", () async {
+    await File("${directory.path}/$floatingWindowPositionFileName")
+        .writeAsString("somewhere-else");
+
+    expect(await store().readPosition(), FloatingWindowPosition.center);
+  });
+
+  test("parses every value the settings page can write", () {
+    for (final position in FloatingWindowPosition.values) {
+      expect(FloatingWindowPosition.parse(position.value), position);
+    }
+    expect(FloatingWindowPosition.parse(null), FloatingWindowPosition.center);
+    expect(FloatingWindowPosition.parse(""), FloatingWindowPosition.center);
+  });
+
+  test("each position anchors where its name says", () {
+    expect(FloatingWindowPosition.topLeft.alignment, const Alignment(-1, -1));
+    expect(FloatingWindowPosition.topCenter.alignment, const Alignment(0, -1));
+    expect(FloatingWindowPosition.topRight.alignment, const Alignment(1, -1));
+    expect(FloatingWindowPosition.centerLeft.alignment, const Alignment(-1, 0));
+    expect(FloatingWindowPosition.center.alignment, Alignment.center);
+    expect(FloatingWindowPosition.centerRight.alignment, const Alignment(1, 0));
+    expect(FloatingWindowPosition.bottomLeft.alignment, const Alignment(-1, 1));
+    expect(
+      FloatingWindowPosition.bottomCenter.alignment,
+      const Alignment(0, 1),
+    );
+    expect(FloatingWindowPosition.bottomRight.alignment, const Alignment(1, 1));
   });
 }

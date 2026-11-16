@@ -25,22 +25,25 @@ class FloatingWindowShell extends StatelessWidget {
           onTap: () => unawaited(dismissFloatingWindow()),
           child: const SizedBox.expand(),
         ),
-        Align(
-          alignment: Alignment.center,
-          child: ValueListenableBuilder<FloatingWindowPanelFraction>(
-            valueListenable: floatingWindowPanelFraction,
-            builder: (context, fraction, _) => LayoutBuilder(
-              builder: (context, constraints) {
-                final size = floatingWindowPanelSize(
-                  constraints,
-                  fraction: fraction,
-                );
-                return SizedBox(
-                  width: size.width,
-                  height: size.height,
-                  child: child,
-                );
-              },
+        ValueListenableBuilder<FloatingWindowPosition>(
+          valueListenable: floatingWindowPosition,
+          builder: (context, position, _) => Align(
+            alignment: position.alignment,
+            child: ValueListenableBuilder<FloatingWindowPanelFraction>(
+              valueListenable: floatingWindowPanelFraction,
+              builder: (context, fraction, _) => LayoutBuilder(
+                builder: (context, constraints) {
+                  final size = floatingWindowPanelSize(
+                    constraints,
+                    fraction: fraction,
+                  );
+                  return SizedBox(
+                    width: size.width,
+                    height: size.height,
+                    child: child,
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -86,6 +89,16 @@ Size floatingWindowPanelSize(
 Future<void> reloadFloatingWindowPanelFraction() async {
   final preferences = FloatingWindowPreferences();
   floatingWindowPanelFraction.value = await preferences.readPanelFraction();
+}
+
+/// Reloads the popup position from disk and notifies the panel.
+///
+/// Same reason as [reloadFloatingWindowPanelFraction]: the settings page writes
+/// the file from the main isolate, so the floating engine reads it again on
+/// every lookup.
+Future<void> reloadFloatingWindowPosition() async {
+  final preferences = FloatingWindowPreferences();
+  floatingWindowPosition.value = await preferences.readPosition();
 }
 
 /// Wraps the dictionary view for the Android floating window.

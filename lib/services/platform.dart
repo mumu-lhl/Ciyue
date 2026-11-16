@@ -179,9 +179,12 @@ class PlatformMethod {
 
           try {
             // The settings page runs in the main isolate; pick up a card-size
-            // change before showing the next lookup.
-            floatingWindowPanelFraction.value =
-                await FloatingWindowPreferences().readPanelFraction();
+            // or position change before showing the next lookup.
+            final floatingPreferences = FloatingWindowPreferences();
+            floatingWindowPanelFraction.value = await floatingPreferences
+                .readPanelFraction();
+            floatingWindowPosition.value = await floatingPreferences
+                .readPosition();
             if (runningInFloatingWindow) {
               await _refreshSettingsForLookup();
             }

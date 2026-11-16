@@ -29,6 +29,43 @@ enum FloatingWindowMode {
   };
 }
 
+/// Where the popup sits inside the space it has to work with.
+///
+/// The space is the whole window for the transparent card, and the free band a
+/// reader left on one side of the selected word for a ColorDict popup. Aligning
+/// inside that band is what keeps the "avoid the word" behaviour: the band is
+/// already on the opposite side, so only picking the edge next to the word can
+/// cover it.
+enum FloatingWindowPosition {
+  topLeft("top_left", -1, -1),
+  topCenter("top_center", 0, -1),
+  topRight("top_right", 1, -1),
+  centerLeft("center_left", -1, 0),
+  center("center", 0, 0),
+  centerRight("center_right", 1, 0),
+  bottomLeft("bottom_left", -1, 1),
+  bottomCenter("bottom_center", 0, 1),
+  bottomRight("bottom_right", 1, 1);
+
+  const FloatingWindowPosition(this.value, this.dx, this.dy);
+
+  /// Stored form, shared with FloatingWindowSettings.kt.
+  final String value;
+
+  /// Horizontal and vertical anchor: -1 is the start/top edge, 1 the end/bottom
+  /// edge, 0 the centre of the available space.
+  final double dx;
+  final double dy;
+
+  /// The same position as a [Alignment], used by the transparent card.
+  Alignment get alignment => Alignment(dx, dy);
+
+  static FloatingWindowPosition parse(String? value) => values.firstWhere(
+    (position) => position.value == value,
+    orElse: () => center,
+  );
+}
+
 /// Size of the popup as a fraction of the window.
 ///
 /// In the transparent card mode this is the actual card size. In the
@@ -75,11 +112,19 @@ final ValueNotifier<FloatingWindowMode> floatingWindowMode = ValueNotifier(
 final ValueNotifier<FloatingWindowPanelFraction> floatingWindowPanelFraction =
     ValueNotifier(FloatingWindowPanelFraction.defaultFraction);
 
+/// Where the popup sits in the space it has to work with.
+///
+/// Like the card size, the settings page writes it to a file and the floating
+/// engine reads that file again, because the two run in separate isolates.
+final ValueNotifier<FloatingWindowPosition> floatingWindowPosition =
+    ValueNotifier(FloatingWindowPosition.center);
+
 /// File names shared with FloatingWindowSettings.kt, which reads them before
 /// the Flutter engine exists.
 const floatingWindowModeFileName = "floating_window_mode";
 const floatingWindowLegacyDisabledFileName = "disable_floating_window";
 const floatingWindowPanelFractionFileName = "floating_window_panel_fraction";
+const floatingWindowPositionFileName = "floating_window_position";
 
 class FloatingWindowPreferences {
   FloatingWindowPreferences({Future<Directory> Function()? directory})
@@ -145,5 +190,20 @@ class FloatingWindowPreferences {
   Future<void> writePanelFraction(FloatingWindowPanelFraction fraction) async {
     await (await _file(floatingWindowPanelFractionFileName))
         .writeAsString("${fraction.width}x${fraction.height}");
+  }
+
+  /// Reads the popup position, falling back to the centre for a missing or
+  /// unrecognised file.
+  Future<FloatingWindowPosition> readPosition() async {
+    final file = await _file(floatingWindowPositionFileName);
+    if (!await file.exists()) {
+      return FloatingWindowPosition.center;
+    }
+    return FloatingWindowPosition.parse((await file.readAsString()).trim());
+  }
+
+  Future<void> writePosition(FloatingWindowPosition position) async {
+    await (await _file(floatingWindowPositionFileName))
+        .writeAsString(position.value);
   }
 }

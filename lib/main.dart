@@ -193,6 +193,7 @@ void floatingWindow(List<String> args) async {
       searchWordFromProcessText = args.first.trim();
     }
     await reloadFloatingWindowPanelFraction();
+    await reloadFloatingWindowPosition();
     navigateToProcessText(searchWordFromProcessText);
 
     runApp(const ProviderScope(child: Ciyue()));
