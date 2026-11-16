@@ -33,6 +33,81 @@ String _searchModeLabel(AppLocalizations l10n, SearchMode mode) =>
       SearchMode.fullText => l10n.searchModeFullText,
     };
 
+/// The search bar's mode button: tap cycles to the next mode, long-press
+/// opens a menu to pick a mode directly.
+class _SearchModeButton extends StatelessWidget {
+  const _SearchModeButton({
+    required this.mode,
+    required this.onCycle,
+    required this.onSelect,
+  });
+
+  final SearchMode mode;
+  final VoidCallback onCycle;
+  final ValueChanged<SearchMode> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    // The Tooltip must wrap the GestureDetector, not sit inside the
+    // IconButton: IconButton's own tooltip registers a long-press
+    // recognizer deeper in the hit-test path, so it wins the gesture
+    // arena and this menu would never open. Out here the tooltip still
+    // shows on hover and provides the semantics label, while the
+    // GestureDetector's long-press is hit first and wins.
+    return Tooltip(
+      message: l10n.searchModeTooltip(_searchModeLabel(l10n, mode)),
+      child: GestureDetector(
+        onLongPress: () => _showModeMenu(context, l10n),
+        child: IconButton(
+          icon: Icon(_searchModeIcon(mode)),
+          onPressed: onCycle,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showModeMenu(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    final box = context.findRenderObject() as RenderBox?;
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (box == null || overlay == null) return;
+    final position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        box.localToGlobal(Offset.zero, ancestor: overlay),
+        box.localToGlobal(box.size.bottomRight(Offset.zero), ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+    final selected = await showMenu<SearchMode>(
+      context: context,
+      position: position,
+      items: [
+        for (final m in SearchMode.values)
+          PopupMenuItem<SearchMode>(
+            value: m,
+            child: Row(
+              children: [
+                Icon(_searchModeIcon(m)),
+                const SizedBox(width: 12),
+                Expanded(child: Text(_searchModeLabel(l10n, m))),
+                if (m == mode)
+                  Icon(
+                    Icons.check,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+              ],
+            ),
+          ),
+      ],
+    );
+    if (selected != null && selected != mode) onSelect(selected);
+  }
+}
+
 /// Selects the whole text in the field that owns [focusNode].
 ///
 /// The search bar renders its own text editing controller, and the
@@ -255,6 +330,17 @@ class _WordSearchBarWithSuggestionsState
     _refreshSuggestionsView();
   }
 
+  /// Selects [mode] directly (long-press menu) and refreshes the open
+  /// suggestion view, like [_cycleSearchMode] does for cycling.
+  Future<void> _selectSearchMode(
+    SearchController controller,
+    SearchMode mode,
+  ) async {
+    if (mode == settings.searchMode) return;
+    await settings.setSearchMode(mode);
+    _refreshSuggestionsView();
+  }
+
   /// Starts index builds for dictionaries that have none, for the modes
   /// that need the index. A failed build is not retried here: the
   /// full-text page owns the retry button.
@@ -457,15 +543,14 @@ class _WordSearchBarWithSuggestionsState
               leading: const Icon(Icons.search),
               // The bar is 42px high and ~500 wide, so there is no room
               // for a dropdown: one small button cycles prefix -> suffix
-              // -> multi-word -> full text. Submitting still opens the
-              // exact headword in every mode.
+              // -> multi-word -> full text on tap, and a long-press opens
+              // the mode list to pick one directly. Submitting still opens
+              // the exact headword in every mode.
               trailing: [
-                IconButton(
-                  icon: Icon(_searchModeIcon(searchMode)),
-                  tooltip: AppLocalizations.of(context)!.searchModeTooltip(
-                    _searchModeLabel(AppLocalizations.of(context)!, searchMode),
-                  ),
-                  onPressed: () => _cycleSearchMode(controller),
+                _SearchModeButton(
+                  mode: searchMode,
+                  onCycle: () => _cycleSearchMode(controller),
+                  onSelect: (mode) => _selectSearchMode(controller, mode),
                 ),
               ],
             );
@@ -492,14 +577,15 @@ class _WordSearchBarWithSuggestionsState
                 }
               },
             ),
-            IconButton(
-              icon: Icon(_searchModeIcon(searchMode)),
-              tooltip: AppLocalizations.of(context)!.searchModeTooltip(
-                _searchModeLabel(AppLocalizations.of(context)!, searchMode),
-              ),
-              onPressed: () {
+            _SearchModeButton(
+              mode: searchMode,
+              onCycle: () {
                 final ctrl = _effectiveController;
                 if (ctrl != null) _cycleSearchMode(ctrl);
+              },
+              onSelect: (mode) {
+                final ctrl = _effectiveController;
+                if (ctrl != null) _selectSearchMode(ctrl, mode);
               },
             ),
           ],

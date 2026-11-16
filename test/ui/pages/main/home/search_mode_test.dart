@@ -233,6 +233,34 @@ void main() {
       expect(prefs.getString("searchMode"), "prefix");
     });
 
+    testWidgets("long-press opens the mode list and picks a mode directly", (
+      tester,
+    ) async {
+      final controller = SearchController();
+      addTearDown(controller.dispose);
+      final router = buildRouter(controller);
+      addTearDown(router.dispose);
+
+      await pumpBar(tester, controller: controller, router: router);
+
+      expect(find.byTooltip("Search mode: Prefix"), findsOneWidget);
+
+      await tester.longPress(find.byTooltip("Search mode: Prefix"));
+      await tester.pumpAndSettle();
+
+      // All four modes are listed, with the current one checked.
+      expect(find.text("Prefix"), findsOneWidget);
+      expect(find.text("Suffix"), findsOneWidget);
+      expect(find.text("Multi-word"), findsOneWidget);
+      expect(find.text("Full text"), findsOneWidget);
+      expect(find.byIcon(Icons.check), findsOneWidget);
+
+      await tester.tap(find.text("Full text"));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip("Search mode: Full text"), findsOneWidget);
+      expect(prefs.getString("searchMode"), "fullText");
+    });
+
     testWidgets("full-text mode shows definition hits in the bar", (
       tester,
     ) async {
