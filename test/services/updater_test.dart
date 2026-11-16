@@ -56,5 +56,28 @@ void main() {
         isTrue,
       );
     });
+
+    test("up to date when the installed hash is a shorter prefix", () {
+      // Regression: the APK bakes the hash from a shallow clone (7
+      // chars) while the release body is written from a full clone (8
+      // chars), so the same commit compares unequal under `!=`.
+      expect(
+        Updater.nightlyUpdateAvailable(
+          installedCommit: "7fe8882",
+          releaseBody: body,
+        ),
+        isFalse,
+      );
+    });
+
+    test("up to date when the body hash is a shorter prefix", () {
+      expect(
+        Updater.nightlyUpdateAvailable(
+          installedCommit: "7fe88820",
+          releaseBody: body.replaceAll("7fe88820", "7fe8882"),
+        ),
+        isFalse,
+      );
+    });
   });
 }

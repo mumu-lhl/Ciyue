@@ -200,6 +200,11 @@ class Updater {
   /// by nightly.yml), and nightly CI bakes the same short hash into the
   /// build (`--dart-define=GIT_COMMIT_HASH=...`). Builds without a baked
   /// hash (older nightlies, local builds) report an update, as before.
+  ///
+  /// git's `--short` length depends on how much of the repo the clone
+  /// holds, so the baked hash (shallow checkout in the build job) and the
+  /// body's hash (full checkout in the release job) can differ in length
+  /// for the same commit. Compare by prefix, not by exact equality.
   static bool nightlyUpdateAvailable({
     required String installedCommit,
     required String releaseBody,
@@ -210,7 +215,11 @@ class Updater {
     if (installedCommit.isEmpty || latestCommit == null) {
       return true;
     }
-    return installedCommit != latestCommit;
+    // Same commit, different abbreviation lengths (7 chars baked from a
+    // shallow clone vs 8 in the body from a full clone): one is a prefix
+    // of the other.
+    return !latestCommit.startsWith(installedCommit) &&
+        !installedCommit.startsWith(latestCommit);
   }
 
   static bool _isUpdateAvailable(

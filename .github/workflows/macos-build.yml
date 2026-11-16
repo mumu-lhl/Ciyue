@@ -51,7 +51,7 @@ jobs:
             extra_args+=("--dart-define=DEV=true")
           fi
           if [[ "${{ inputs.include_metadata_defines }}" == "true" ]]; then
-            hash=$(git rev-parse --short HEAD)
+            hash=$(git rev-parse --short=7 HEAD)
             timestamp=$(date +%s)
             extra_args+=("--dart-define=GIT_COMMIT_HASH=$hash" "--dart-define=BUILD_TIMESTAMP=$timestamp")
           fi

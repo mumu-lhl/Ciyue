@@ -129,7 +129,7 @@ jobs:
           cat <<EOF >> $GITHUB_OUTPUT
           body<<DELIMITER
           Latest commit: $(git log -1 --pretty=%s)
-          Commit hash: $(git rev-parse --short HEAD)
+          Commit hash: $(git rev-parse --short=7 HEAD)
           Build date: $(date -u +'%Y-%m-%dT%H:%M:%SZ')
           DELIMITER
           EOF

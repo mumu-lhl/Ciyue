@@ -115,7 +115,7 @@ jobs:
           # append them, the dev branch builds its own EXTRA_ARGS.
           METADATA_ARGS=""
           if [[ "${{ inputs.include_metadata_defines }}" == "true" ]]; then
-            METADATA_ARGS="--dart-define=GIT_COMMIT_HASH=$(git rev-parse --short HEAD) --dart-define=BUILD_TIMESTAMP=$(date +%s)"
+            METADATA_ARGS="--dart-define=GIT_COMMIT_HASH=$(git rev-parse --short=7 HEAD) --dart-define=BUILD_TIMESTAMP=$(date +%s)"
           fi
           case "${{ inputs.build_mode }}" in
             ci_full_dev)
@@ -124,7 +124,7 @@ jobs:
                 EXTRA_ARGS="$EXTRA_ARGS --dart-define=DEV=true"
               fi
               if [[ "${{ inputs.include_metadata_defines }}" == "true" ]]; then
-                EXTRA_ARGS="$EXTRA_ARGS --dart-define=GIT_COMMIT_HASH=$(git rev-parse --short HEAD) --dart-define=BUILD_TIMESTAMP=$(date +%s)"
+                EXTRA_ARGS="$EXTRA_ARGS --dart-define=GIT_COMMIT_HASH=$(git rev-parse --short=7 HEAD) --dart-define=BUILD_TIMESTAMP=$(date +%s)"
               fi
               flutter build apk --flavor full-dev $EXTRA_ARGS
               ;;
