@@ -179,8 +179,10 @@ class _Renderer {
 
   /// The cap on an embedded picture.
   ///
-  /// It follows [scale] as well: an image frozen at its old size while the
-  /// text around it grows reads as a broken entry rather than a zoomed one.
+  /// The cap follows [scale], and the image is laid out `scale` times larger on
+  /// top of that, so a picture grows with the text it sits in. A picture that
+  /// is already wider than the entry pane stays bound to the pane: the layout
+  /// has no horizontal scrolling, so growing past it would only hide content.
   BoxConstraints get _imageConstraints =>
       BoxConstraints(maxHeight: 260 * scale, maxWidth: 320 * scale);
 
@@ -381,6 +383,9 @@ class _Renderer {
               return Image.memory(
                 data,
                 fit: BoxFit.contain,
+                // Divide by the zoom so the picture is laid out `scale` times
+                // larger, the way the web view's CSS zoom enlarges it.
+                scale: 1 / scale,
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),
               );
             },
@@ -398,6 +403,7 @@ class _Renderer {
         child: Image.file(
           File(candidate),
           fit: BoxFit.contain,
+          scale: 1 / scale,
           errorBuilder: (_, _, _) => const SizedBox.shrink(),
         ),
       ),

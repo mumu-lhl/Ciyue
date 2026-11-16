@@ -196,6 +196,11 @@ void main() {
     expect(headwordSize(), baseSize * 2);
     expect(imageConstraints().maxWidth, 320 * 2);
     expect(imageConstraints().maxHeight, 260 * 2);
+    // The picture is laid out twice as large, not merely allowed to grow: a
+    // small image that the cap never limited has to grow as well.
+    final provider = tester.widget<Image>(find.byType(Image)).image;
+    expect(provider, isA<MemoryImage>());
+    expect((provider as MemoryImage).scale, 0.5);
   });
 
   testWidgets("a missing loose image degrades without crashing", (
