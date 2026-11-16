@@ -40,6 +40,31 @@ jobs:
         with:
           submodules: recursive
 
+      # The jni plugin resolves jvm.lib through CMake's FindJNI, which reads
+      # JAVA_HOME. Pin the JDK instead of taking whatever the runner image
+      # ships: the image's copy changes between image releases, and the cached
+      # CMake configuration would keep pointing at the old path.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Detect JDK version
+        id: jdk
+        shell: pwsh
+        run: |
+          # FindJNI records the absolute path of jvm.lib in CMakeCache.txt, so
+          # the build cache is keyed on the JDK as well. Without that a new JDK
+          # release reuses a cache that links against a path which no longer
+          # exists (LNK1181: cannot open input file '...\lib\jvm.lib').
+          $line = (& "$env:JAVA_HOME\bin\java.exe" -version 2>&1 | Select-Object -First 1).ToString()
+          $version = ($line -split '"')[1]
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw "Could not read the JDK version from: $line"
+          }
+          Write-Host "Using JDK $version at $env:JAVA_HOME"
+          "version=$version" >> $env:GITHUB_OUTPUT
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ inputs.flutter_version }}
@@ -83,9 +108,9 @@ jobs:
           path: |
             .dart_tool
             build
-          key: ${{ runner.os }}-build-${{ steps.windows-toolchain.outputs.version }}-${{ hashFiles('**/pubspec.lock') }}
+          key: ${{ runner.os }}-build-${{ steps.windows-toolchain.outputs.version }}-${{ steps.jdk.outputs.version }}-${{ hashFiles('**/pubspec.lock') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ steps.windows-toolchain.outputs.version }}-
+            ${{ runner.os }}-build-${{ steps.windows-toolchain.outputs.version }}-${{ steps.jdk.outputs.version }}-
 
       - name: Clean stale Windows CMake cache
         if: ${{ inputs.enable_build_cache }}
