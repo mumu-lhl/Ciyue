@@ -27,6 +27,7 @@ class _FloatingWindowState extends State<FloatingWindow> {
   bool _enabled = true;
   FloatingWindowPanelFraction _fraction =
       FloatingWindowPanelFraction.defaultFraction;
+  FloatingWindowPosition _position = FloatingWindowPosition.center;
 
   @override
   void initState() {
@@ -37,10 +38,12 @@ class _FloatingWindowState extends State<FloatingWindow> {
   Future<void> _load() async {
     final mode = await _preferences.readMode();
     final fraction = await _preferences.readPanelFraction();
+    final position = await _preferences.readPosition();
     if (!mounted) return;
     setState(() {
       _enabled = mode != FloatingWindowMode.off;
       _fraction = fraction;
+      _position = position;
     });
   }
 
@@ -56,6 +59,12 @@ class _FloatingWindowState extends State<FloatingWindow> {
     floatingWindowPanelFraction.value = fraction;
     setState(() => _fraction = fraction);
     await _preferences.writePanelFraction(fraction);
+  }
+
+  Future<void> _setPosition(FloatingWindowPosition position) async {
+    floatingWindowPosition.value = position;
+    setState(() => _position = position);
+    await _preferences.writePosition(position);
   }
 
   @override
@@ -110,9 +119,94 @@ class _FloatingWindowState extends State<FloatingWindow> {
               ),
             ),
           ),
+          Divider(
+            height: 1,
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+          _PopupPositionTile(position: _position, onSelected: _setPosition),
         ],
       ],
     );
+  }
+}
+
+/// Popup position row: shows the current direction and opens a nine-way menu.
+///
+/// The whole row is the tap target, so the menu is anchored to the row instead
+/// of to a trailing [PopupMenuButton], which would only respond on its own
+/// icon.
+class _PopupPositionTile extends StatelessWidget {
+  const _PopupPositionTile({required this.position, required this.onSelected});
+
+  final FloatingWindowPosition position;
+  final ValueChanged<FloatingWindowPosition> onSelected;
+
+  static String label(
+    AppLocalizations locale,
+    FloatingWindowPosition position,
+  ) => switch (position) {
+    FloatingWindowPosition.topLeft => locale.floatingWindowPositionTopLeft,
+    FloatingWindowPosition.topCenter => locale.floatingWindowPositionTopCenter,
+    FloatingWindowPosition.topRight => locale.floatingWindowPositionTopRight,
+    FloatingWindowPosition.centerLeft =>
+      locale.floatingWindowPositionCenterLeft,
+    FloatingWindowPosition.center => locale.floatingWindowPositionCenter,
+    FloatingWindowPosition.centerRight =>
+      locale.floatingWindowPositionCenterRight,
+    FloatingWindowPosition.bottomLeft =>
+      locale.floatingWindowPositionBottomLeft,
+    FloatingWindowPosition.bottomCenter =>
+      locale.floatingWindowPositionBottomCenter,
+    FloatingWindowPosition.bottomRight =>
+      locale.floatingWindowPositionBottomRight,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context)!;
+    return ListTile(
+      leading: const Icon(Icons.open_with),
+      title: Text(locale.floatingWindowPosition),
+      subtitle: Text(locale.floatingWindowPositionHint),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label(locale, position)),
+          const Icon(Icons.arrow_drop_down),
+        ],
+      ),
+      onTap: () => _showMenu(context, locale),
+    );
+  }
+
+  Future<void> _showMenu(BuildContext context, AppLocalizations locale) async {
+    final row = context.findRenderObject() as RenderBox?;
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (row == null || overlay == null) return;
+
+    final selected = await showMenu<FloatingWindowPosition>(
+      context: context,
+      position: RelativeRect.fromRect(
+        Rect.fromPoints(
+          row.localToGlobal(Offset.zero, ancestor: overlay),
+          row.localToGlobal(
+            row.size.bottomRight(Offset.zero),
+            ancestor: overlay,
+          ),
+        ),
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        for (final option in FloatingWindowPosition.values)
+          CheckedPopupMenuItem(
+            value: option,
+            checked: option == position,
+            child: Text(label(locale, option)),
+          ),
+      ],
+    );
+    if (selected != null) onSelected(selected);
   }
 }
 

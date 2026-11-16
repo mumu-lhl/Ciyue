@@ -22,6 +22,9 @@ object FloatingWindowSettings {
     /** Shared with the Dart settings page (floating_window_panel_fraction). */
     const val PANEL_FRACTION_FILE = "floating_window_panel_fraction"
 
+    /** Shared with the Dart settings page (floating_window_position). */
+    const val POSITION_FILE = "floating_window_position"
+
     /** Used when the reader sends a height but no gravity. */
     const val DEFAULT_GRAVITY = Gravity.BOTTOM
 
@@ -33,6 +36,31 @@ object FloatingWindowSettings {
         companion object {
             fun parse(value: String?): Mode =
                 values().firstOrNull { it.value == value } ?: TRANSPARENT
+        }
+    }
+
+    /**
+     * Where the popup sits inside the space it has to work with.
+     *
+     * The space is the free band the reader left on one side of the selected
+     * word: [dx]/[dy] are -1 for the start/top edge, 1 for the end/bottom edge
+     * and 0 for the centre of that band. Mirrors FloatingWindowPosition in
+     * lib/services/floating_window_preferences.dart.
+     */
+    enum class Position(val value: String, val dx: Float, val dy: Float) {
+        TOP_LEFT("top_left", -1f, -1f),
+        TOP_CENTER("top_center", 0f, -1f),
+        TOP_RIGHT("top_right", 1f, -1f),
+        CENTER_LEFT("center_left", -1f, 0f),
+        CENTER("center", 0f, 0f),
+        CENTER_RIGHT("center_right", 1f, 0f),
+        BOTTOM_LEFT("bottom_left", -1f, 1f),
+        BOTTOM_CENTER("bottom_center", 0f, 1f),
+        BOTTOM_RIGHT("bottom_right", 1f, 1f);
+
+        companion object {
+            fun parse(value: String?): Position =
+                values().firstOrNull { it.value == value } ?: CENTER
         }
     }
 
@@ -86,6 +114,10 @@ object FloatingWindowSettings {
             height.coerceIn(0.4f, 1.0f),
         )
     }
+
+    /** Read before the engine exists, so the window is placed on first layout. */
+    fun readPosition(context: Context): Position =
+        Position.parse(read(context, POSITION_FILE))
 }
 
 /**

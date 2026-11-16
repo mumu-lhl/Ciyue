@@ -25,22 +25,25 @@ class FloatingWindowShell extends StatelessWidget {
           onTap: () => unawaited(dismissFloatingWindow()),
           child: const SizedBox.expand(),
         ),
-        Align(
-          alignment: Alignment.center,
-          child: ValueListenableBuilder<FloatingWindowPanelFraction>(
-            valueListenable: floatingWindowPanelFraction,
-            builder: (context, fraction, _) => LayoutBuilder(
-              builder: (context, constraints) {
-                final size = floatingWindowPanelSize(
-                  constraints,
-                  fraction: fraction,
-                );
-                return SizedBox(
-                  width: size.width,
-                  height: size.height,
-                  child: child,
-                );
-              },
+        ValueListenableBuilder<FloatingWindowPosition>(
+          valueListenable: floatingWindowPosition,
+          builder: (context, position, _) => Align(
+            alignment: position.alignment,
+            child: ValueListenableBuilder<FloatingWindowPanelFraction>(
+              valueListenable: floatingWindowPanelFraction,
+              builder: (context, fraction, _) => LayoutBuilder(
+                builder: (context, constraints) {
+                  final size = floatingWindowPanelSize(
+                    constraints,
+                    fraction: fraction,
+                  );
+                  return SizedBox(
+                    width: size.width,
+                    height: size.height,
+                    child: child,
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -77,15 +80,6 @@ Size floatingWindowPanelSize(
         .clamp(math.min(minPanelHeight, maxHeight), maxHeight)
         .toDouble(),
   );
-}
-
-/// Reloads the card size from disk and notifies the panel.
-///
-/// The settings page writes the file from the main isolate; the floating
-/// engine is a separate isolate, so it reads the file again on every lookup.
-Future<void> reloadFloatingWindowPanelFraction() async {
-  final preferences = FloatingWindowPreferences();
-  floatingWindowPanelFraction.value = await preferences.readPanelFraction();
 }
 
 /// Wraps the dictionary view for the Android floating window.

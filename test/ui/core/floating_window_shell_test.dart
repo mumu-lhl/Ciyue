@@ -165,4 +165,90 @@ void main() {
     expect(size.width, closeTo(870.4, 0.001));
     expect(size.height, closeTo(330.0, 0.001));
   });
+
+  Future<Rect> measureCardAt(
+    WidgetTester tester,
+    Size window,
+    FloatingWindowPosition position,
+  ) async {
+    floatingWindowPosition.value = position;
+    addTearDown(() {
+      floatingWindowPosition.value = FloatingWindowPosition.center;
+    });
+
+    tester.view.physicalSize = window;
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FloatingWindowShell(
+          child: const SizedBox.expand(key: panelChildKey),
+        ),
+      ),
+    );
+    return tester.getRect(find.byKey(panelChildKey));
+  }
+
+  /// Sub-pixel slack: the alignment multiplies fractions of the slot.
+  Matcher matchesRect(Rect expected) => predicate<Rect>(
+    (actual) =>
+        (actual.left - expected.left).abs() < 0.001 &&
+        (actual.top - expected.top).abs() < 0.001 &&
+        (actual.width - expected.width).abs() < 0.001 &&
+        (actual.height - expected.height).abs() < 0.001,
+    "a card at $expected",
+  );
+
+  testWidgets("the card is centred by default", (tester) async {
+    // 0.85 x 0.55 of 400x800 is 340x440, leaving 60 and 360 pixels of slack.
+    final rect = await measureCardAt(
+      tester,
+      const Size(400, 800),
+      FloatingWindowPosition.center,
+    );
+
+    expect(rect, matchesRect(const Rect.fromLTWH(30, 180, 340, 440)));
+  });
+
+  testWidgets("a corner position pins the card to that corner", (tester) async {
+    const window = Size(400, 800);
+
+    expect(
+      await measureCardAt(tester, window, FloatingWindowPosition.topLeft),
+      matchesRect(const Rect.fromLTWH(0, 0, 340, 440)),
+    );
+    expect(
+      await measureCardAt(tester, window, FloatingWindowPosition.topRight),
+      matchesRect(const Rect.fromLTWH(60, 0, 340, 440)),
+    );
+    expect(
+      await measureCardAt(tester, window, FloatingWindowPosition.bottomRight),
+      matchesRect(const Rect.fromLTWH(60, 360, 340, 440)),
+    );
+    expect(
+      await measureCardAt(tester, window, FloatingWindowPosition.bottomLeft),
+      matchesRect(const Rect.fromLTWH(0, 360, 340, 440)),
+    );
+  });
+
+  testWidgets("an edge position centres the card on the other axis", (
+    tester,
+  ) async {
+    const window = Size(400, 800);
+
+    expect(
+      await measureCardAt(tester, window, FloatingWindowPosition.topCenter),
+      matchesRect(const Rect.fromLTWH(30, 0, 340, 440)),
+    );
+    expect(
+      await measureCardAt(tester, window, FloatingWindowPosition.centerLeft),
+      matchesRect(const Rect.fromLTWH(0, 180, 340, 440)),
+    );
+    expect(
+      await measureCardAt(tester, window, FloatingWindowPosition.centerRight),
+      matchesRect(const Rect.fromLTWH(60, 180, 340, 440)),
+    );
+  });
 }
