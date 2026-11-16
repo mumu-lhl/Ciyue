@@ -63,7 +63,9 @@ Then look up words from KOReader via the dictionary action.
 
 ## How do I use the floating window with Moon+ Reader?
 
-Enable **Settings → Other → Floating Window** in Ciyue. The window style follows the reader automatically: when the reader sends the position of the selected word (the ColorDict protocol), Ciyue opens a half-screen window on the opposite half of the screen so the word stays visible; without that information it shows the centred card instead. Turning the switch off makes lookups open the main Ciyue window.
+Enable **Settings → Other → Floating Window** in Ciyue. The window style follows the reader automatically: when the reader sends the position of the selected word (the ColorDict protocol), Ciyue opens a half-screen window on the opposite side of the word so it stays visible; without that information it shows the card instead. Turning the switch off makes lookups open the main Ciyue window.
+
+**Popup position** in the same section places the window inside the space it has, in nine slots from top left to bottom right. For the card that space is the whole window; for the half-screen window it is the free area the reader left on one side of the selected word, so the popup does not cover the word unless you pick the slot facing it. The default is the centre. **Card width** and **Card height** set the card size and also cap the half-screen window.
 
 To look words up from Moon+ Reader:
 
