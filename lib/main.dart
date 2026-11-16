@@ -15,6 +15,7 @@ import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/single_instance.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/e_ink.dart";
+import "package:ciyue/services/floating_window_preferences.dart";
 import "package:ciyue/ui/core/floating_window_shell.dart";
 import "package:ciyue/utils.dart";
 import "package:drift/drift.dart" as drift;
@@ -192,8 +193,7 @@ void floatingWindow(List<String> args) async {
     if (searchWordFromProcessText.isEmpty && args.isNotEmpty) {
       searchWordFromProcessText = args.first.trim();
     }
-    await reloadFloatingWindowPanelFraction();
-    await reloadFloatingWindowPosition();
+    await reloadFloatingWindowConfig();
     navigateToProcessText(searchWordFromProcessText);
 
     runApp(const ProviderScope(child: Ciyue()));

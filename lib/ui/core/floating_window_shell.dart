@@ -82,25 +82,6 @@ Size floatingWindowPanelSize(
   );
 }
 
-/// Reloads the card size from disk and notifies the panel.
-///
-/// The settings page writes the file from the main isolate; the floating
-/// engine is a separate isolate, so it reads the file again on every lookup.
-Future<void> reloadFloatingWindowPanelFraction() async {
-  final preferences = FloatingWindowPreferences();
-  floatingWindowPanelFraction.value = await preferences.readPanelFraction();
-}
-
-/// Reloads the popup position from disk and notifies the panel.
-///
-/// Same reason as [reloadFloatingWindowPanelFraction]: the settings page writes
-/// the file from the main isolate, so the floating engine reads it again on
-/// every lookup.
-Future<void> reloadFloatingWindowPosition() async {
-  final preferences = FloatingWindowPreferences();
-  floatingWindowPosition.value = await preferences.readPosition();
-}
-
 /// Wraps the dictionary view for the Android floating window.
 ///
 /// Only the transparent mode needs the dismiss target around the card. The

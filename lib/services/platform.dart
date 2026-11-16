@@ -180,11 +180,7 @@ class PlatformMethod {
           try {
             // The settings page runs in the main isolate; pick up a card-size
             // or position change before showing the next lookup.
-            final floatingPreferences = FloatingWindowPreferences();
-            floatingWindowPanelFraction.value = await floatingPreferences
-                .readPanelFraction();
-            floatingWindowPosition.value = await floatingPreferences
-                .readPosition();
+            await reloadFloatingWindowConfig();
             if (runningInFloatingWindow) {
               await _refreshSettingsForLookup();
             }
@@ -336,6 +332,10 @@ class PlatformMethod {
       }
 
       final request = _ProcessTextRequest.fromPlatform(pending);
+
+      // A cold start must not depend on the entrypoint having reloaded the
+      // configuration already: the pending request is consumed from here.
+      await reloadFloatingWindowConfig();
       navigateToProcessText(
         request.text,
         requestId: request.id,

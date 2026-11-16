@@ -207,3 +207,15 @@ class FloatingWindowPreferences {
         .writeAsString(position.value);
   }
 }
+
+/// Reloads every value the floating window keeps in a file and notifies the UI.
+///
+/// The settings page runs in the main isolate, so neither the card size nor the
+/// position can be pushed into a warm floating engine: each entry point that
+/// shows a lookup reads the files again. Keeping that in one function is what
+/// stops a new value from being picked up by only some of those paths.
+Future<void> reloadFloatingWindowConfig() async {
+  final preferences = FloatingWindowPreferences();
+  floatingWindowPanelFraction.value = await preferences.readPanelFraction();
+  floatingWindowPosition.value = await preferences.readPosition();
+}
