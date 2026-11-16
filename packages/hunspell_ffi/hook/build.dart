@@ -13,15 +13,24 @@ void main(List<String> args) async {
       return;
     }
 
+    // Sources are compiled from the pinned hunspell submodule, except
+    // src/hunspell.cxx, which is a vendored copy: Ciyue patches its stem
+    // path to return every "st:" field, not just the first (see #729).
+    // src/hashmgr.cxx used to be vendored the same way, but upstream now
+    // preserves homonyms with different descriptions itself, so it comes
+    // straight from the submodule. hunspelltrace.cxx is new in upstream
+    // 1.7.6: affentry/affixmgr/hunspell call its trace_*() helpers, so
+    // leaving it out fails the link.
     final sources = [
       "src/hunspell_bridge.cc",
-      "src/hashmgr.cxx",
       "src/hunspell.cxx",
       for (final file in [
         "affentry.cxx",
         "affixmgr.cxx",
         "csutil.cxx",
         "filemgr.cxx",
+        "hashmgr.cxx",
+        "hunspelltrace.cxx",
         "hunzip.cxx",
         "phonet.cxx",
         "replist.cxx",
