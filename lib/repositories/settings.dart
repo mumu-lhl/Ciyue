@@ -163,6 +163,14 @@ class Settings extends ChangeNotifier {
   late bool webServerAllowLan;
 
   Settings() {
+    _readFromPrefs();
+  }
+
+  /// Fills every field from [prefs].
+  ///
+  /// Shared by the constructor and [reloadFromPrefs], so a reload cannot drift
+  /// away from the initial read as fields are added.
+  void _readFromPrefs() {
     launchAtStartup = prefs.getBool("launchAtStartup") ?? false;
     enableGlobalHotkey = prefs.getBool("enableGlobalHotkey") ?? false;
     flashcardDailyNewLimit = prefs.getInt("flashcardDailyNewLimit") ?? 20;
@@ -348,6 +356,27 @@ class Settings extends ChangeNotifier {
       case "system" || null:
         themeMode = ThemeMode.system;
     }
+  }
+
+  /// Re-reads every field from the preference store.
+  ///
+  /// Each isolate keeps its own [Settings] and its own [prefs] cache, and a
+  /// listener cannot cross isolates. The Android floating window therefore
+  /// runs on the values its engine read when it started — and that engine is
+  /// kept alive for the lifetime of the process — so a change made in the
+  /// settings page never reached it. Reloading before showing an entry is how
+  /// that window follows the settings page without paying a cold start.
+  ///
+  /// Neither this nor [prefs]'s cache may be trusted while a scale preview is
+  /// in flight: [previewContentScale] deliberately avoids the store, so a
+  /// reload in the middle of a drag would snap the page back.
+  ///
+  /// Every setter writes to the store before it notifies, so reloading cannot
+  /// undo a change this isolate just made: it reads the same value back.
+  Future<void> reloadFromPrefs() async {
+    await prefs.reloadCache();
+    _readFromPrefs();
+    notifyListeners();
   }
 
   String get aiAPIUrl {

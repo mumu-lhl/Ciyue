@@ -75,6 +75,50 @@ class DictionaryDirectoryPick {
   bool get cancelled => path == null && !unresolvable;
 }
 
+/// Brings this engine's `settings` up to date before a lookup is shown.
+///
+/// The floating window is a second isolate whose engine lives as long as the
+/// process, so its copy of the preferences was taken when the engine started
+/// and the settings page cannot notify it: listeners do not cross isolates.
+/// Without this, a change made there — the entry zoom, the e-ink switch, the
+/// theme — never reached an already warm window.
+///
+/// Everything is re-read, including the few values this window can change on
+/// its own (the dictionary group, the voice). That is safe because every setter
+/// writes to the store before it notifies, so the reload reads back exactly the
+/// value the window just chose. The list behind the group switcher comes from
+/// the database rather than from the preferences, so it is refreshed separately.
+Future<void> _refreshSettingsForLookup() async {
+  try {
+    final secureScreen = settings.secureScreen;
+    await settings.reloadFromPrefs();
+
+    // The group *list* is a snapshot as well, and this window has no group
+    // management page: a group created, renamed or reordered in the main app
+    // never reached its switcher. The current group is left alone — the
+    // switcher in this window owns it.
+    dictManager.groups = await dictGroupDao.getAllGroups();
+
+    // The theme, the locale and the e-ink page transitions are read by the
+    // MaterialApp above the router, which looks at the singleton rather than
+    // watching the provider.
+    refreshAll();
+
+    if (settings.secureScreen != secureScreen) {
+      // The flag belongs to the native window, not to the settings object.
+      await PlatformMethod.setSecureFlag(settings.secureScreen);
+    }
+  } catch (error, stackTrace) {
+    // A lookup must not be lost to a failed settings read. The window then
+    // keeps the values its engine started with, which is what it used to do.
+    talker.error(
+      "Failed to refresh settings for the lookup",
+      error,
+      stackTrace,
+    );
+  }
+}
+
 int? _lastNavigatedProcessTextRequestId;
 
 void navigateToProcessText(
@@ -138,6 +182,9 @@ class PlatformMethod {
             // change before showing the next lookup.
             floatingWindowPanelFraction.value =
                 await FloatingWindowPreferences().readPanelFraction();
+            if (runningInFloatingWindow) {
+              await _refreshSettingsForLookup();
+            }
             navigateToProcessText(
               request.text,
               requestId: request.id,

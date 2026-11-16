@@ -6,9 +6,13 @@ import "package:dict_reader/dict_reader.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_test/flutter_test.dart";
 
-/// A 1x1 transparent PNG.
-final _tinyPng = base64Decode(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAwMCAO+ip1sAAAAASUVORK5CYII=",
+/// A 20x10 two-tone PNG.
+///
+/// Smaller than any cap, so its rendered size can only change when the zoom is
+/// applied to the picture itself.
+final _testPng = base64Decode(
+  "iVBORw0KGgoAAAANSUhEUgAAABQAAAAKCAIAAAA7N+mxAAAAH0lEQVR42mOQs1mAjL6uEkFG"
+  "+GUZRqJmklSjyY5EzQAFgwukVtaujgAAAABJRU5ErkJggg==",
 );
 
 void main() {
@@ -16,6 +20,7 @@ void main() {
     WidgetTester tester,
     List<StardictNativeEntry> entries, {
     Future<Uint8List?> Function(String file)? resourceResolver,
+    double scale = 1.0,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -26,10 +31,29 @@ void main() {
             dictId: 1,
             isExpansion: true,
             resourceResolver: resourceResolver,
+            scale: scale,
           ),
         ),
       ),
     );
+  }
+
+  /// Decodes the picture, if any, so it has a size to assert on.
+  ///
+  /// Widget tests do not decode images on their own: the [Image] stays 0x0
+  /// until its provider is resolved for real, which silently turns every size
+  /// assertion into "0 == 0".
+  Future<void> settleImage(WidgetTester tester) async {
+    // The picture arrives through a FutureBuilder, so let that future land
+    // before looking for the widget.
+    await tester.pumpAndSettle();
+    final finder = find.byType(Image);
+    if (finder.evaluate().isEmpty) return;
+    final provider = tester.widget<Image>(finder).image;
+    await tester.runAsync(
+      () => precacheImage(provider, tester.element(finder)),
+    );
+    await tester.pumpAndSettle();
   }
 
   testWidgets("renders an XDXF article natively", (tester) async {
@@ -122,9 +146,40 @@ void main() {
           ),
         ],
       ),
-    ], resourceResolver: (file) async => file == "pic.png" ? _tinyPng : null);
-    await tester.pumpAndSettle();
+    ], resourceResolver: (file) async => file == "pic.png" ? _testPng : null);
+    await settleImage(tester);
 
+    expect(find.byType(Image), findsOneWidget);
+    expect(tester.getSize(find.byType(Image)), const Size(20, 10));
+  });
+
+  testWidgets("keeps the picture read across rebuilds", (tester) async {
+    var reads = 0;
+    Future<Uint8List?> resolver(String file) async {
+      reads++;
+      return file == "pic.png" ? _testPng : null;
+    }
+
+    final entry = StardictNativeEntry(
+      headword: "pic",
+      fields: [
+        StarDictField(
+          "x",
+          text: "<xdxf><k>pic</k><def><rref>pic.png</rref></def></xdxf>",
+        ),
+      ],
+    );
+
+    await pumpEntries(tester, [entry], resourceResolver: resolver);
+    await settleImage(tester);
+    expect(reads, 1);
+
+    // A zoom step rebuilds the entry. Reading the file again would send the
+    // FutureBuilder back to waiting and blank the picture for a frame.
+    await pumpEntries(tester, [entry], resourceResolver: resolver, scale: 1.5);
+    await settleImage(tester);
+
+    expect(reads, 1);
     expect(find.byType(Image), findsOneWidget);
   });
 
@@ -145,6 +200,63 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(Image), findsNothing);
+  });
+
+  testWidgets("the entry zoom reaches the headword and the image cap", (
+    tester,
+  ) async {
+    Future<void> pump(double scale) async {
+      await pumpEntries(
+        tester,
+        [
+          StardictNativeEntry(
+            headword: "pic",
+            fields: [
+              StarDictField(
+                "x",
+                text: "<xdxf><k>pic</k><def><rref>pic.png</rref></def></xdxf>",
+              ),
+            ],
+          ),
+        ],
+        resourceResolver: (file) async => file == "pic.png" ? _testPng : null,
+        scale: scale,
+      );
+      await settleImage(tester);
+    }
+
+    double headwordSize() => tester
+        .widgetList<SelectableText>(find.byType(SelectableText))
+        .firstWhere((widget) => widget.data == "pic")
+        .style!
+        .fontSize!;
+
+    BoxConstraints imageConstraints() => tester
+        .widget<ConstrainedBox>(
+          find
+              .ancestor(
+                of: find.byType(Image),
+                matching: find.byType(ConstrainedBox),
+              )
+              .first,
+        )
+        .constraints;
+
+    await pump(1.0);
+    final baseSize = headwordSize();
+
+    await pump(2.0);
+
+    expect(headwordSize(), baseSize * 2);
+    expect(imageConstraints().maxWidth, 320 * 2);
+    expect(imageConstraints().maxHeight, 260 * 2);
+    // The picture is laid out twice as large rather than merely allowed to
+    // grow: this one is smaller than any cap, so raising the cap alone would
+    // leave it at its natural size.
+    expect(tester.getSize(find.byType(Image)), const Size(40, 20));
+    final provider = tester.widget<Image>(find.byType(Image)).image;
+    expect(provider, isA<MemoryImage>());
+    expect((provider as MemoryImage).scale, 0.5);
   });
 
   testWidgets("a missing loose image degrades without crashing", (

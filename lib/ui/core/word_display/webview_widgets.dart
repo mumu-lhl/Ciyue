@@ -824,14 +824,6 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
           );
         }
 
-        // A reload starts a fresh document, which drops the inline zoom the
-        // scale script set on the old one. Apply it again so the zoom
-        // survives looking up another word.
-        controller.evaluateJavascript(
-          source:
-              "window.ciyueSetZoom && window.ciyueSetZoom(${settings.contentScale.toStringAsFixed(3)})",
-        );
-
         final loadedDict = dictManager.dicts[widget.dictId];
         if (loadedDict is Mdict && loadedDict.fontName != null) {
           await controller.evaluateJavascript(

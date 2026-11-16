@@ -11,7 +11,18 @@ late final Color? accentColor;
 final AppDatabase mainDatabase = appDatabase();
 late final PackageInfo packageInfo;
 late final SharedPreferencesWithCache prefs;
-late final VoidCallback refreshAll;
+
+/// Rebuilds the app shell so the settings that live in `MaterialApp` itself —
+/// theme, locale, the e-ink page transitions — take effect.
+///
+/// The shell installs the real callback when it mounts. A lookup can arrive
+/// before that: the floating engine installs its method-channel handler ahead
+/// of `runApp` and immediately consumes a pending request. Dropping the call
+/// is right there, because the shell has not read any of these values yet.
+VoidCallback refreshAll = _noopRefresh;
+
+void _noopRefresh() {}
+
 late final FlutterTts flutterTts;
 String searchWordFromProcessText = "";
 
