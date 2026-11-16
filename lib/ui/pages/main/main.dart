@@ -6,6 +6,7 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/floating_window.dart";
+import "package:ciyue/ui/core/sliding_indexed_stack.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart";
 import "package:ciyue/ui/pages/main/home/drawer.dart";
 import "package:ciyue/ui/pages/main/home/scaffold.dart";
@@ -46,12 +47,12 @@ class _HomeState extends ConsumerState<Home> {
   bool? _navStyleOverride;
   DateTime? _lastPressedAt;
 
-  // Using FocusScope for each page within the IndexedStack.
+  // Using FocusScope for each page within the SlidingIndexedStack.
   // Why?
-  // IndexedStack keeps all child pages' states (including their FocusNodes) alive, even when invisible.
-  // When returning from a pushed route (popping back to a page within the IndexedStack),
+  // The sliding stack keeps all child pages' states (including their FocusNodes) alive, even when invisible.
+  // When returning from a pushed route (popping back to a page within the SlidingIndexedStack),
   // Flutter's focus restoration logic might incorrectly grant focus to a FocusNode
-  // on an *inactive* (but still existing in the tree) page within the IndexedStack.
+  // on an *inactive* (but still existing in the tree) page within the SlidingIndexedStack.
   // Wrapping each page in its own FocusScope creates distinct focus boundaries.
   // Setting canRequestFocus to false on inactive pages ensures that focus restoration
   // cannot reach into invisible pages, preventing the IME from popping up unexpectedly.
@@ -172,7 +173,7 @@ class _HomeState extends ConsumerState<Home> {
           // full width. Rail: it spans the full height, with the home app bar
           // as the first row of the content column to its right.
           body: useTopNav
-              ? IndexedStack(index: _currentIndex, children: _pages)
+              ? SlidingIndexedStack(index: _currentIndex, children: _pages)
               : ratio > 1.0
               ? Row(
                   children: [
@@ -207,7 +208,7 @@ class _HomeState extends ConsumerState<Home> {
                               (!dictManager.isEmpty || settings.aiExplainWord))
                             const HomeAppBar(),
                           Expanded(
-                            child: IndexedStack(
+                            child: SlidingIndexedStack(
                               index: _currentIndex,
                               children: _pages,
                             ),
@@ -217,7 +218,7 @@ class _HomeState extends ConsumerState<Home> {
                     ),
                   ],
                 )
-              : IndexedStack(index: _currentIndex, children: _pages),
+              : SlidingIndexedStack(index: _currentIndex, children: _pages),
           bottomNavigationBar: ratio <= 1.0
               ? NavigationBar(
                   onDestinationSelected: (int index) {
