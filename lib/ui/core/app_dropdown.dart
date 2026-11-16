@@ -303,7 +303,10 @@ class _MenuCard<T> extends StatelessWidget {
       color: colors.surfaceContainerHigh,
       elevation: 6,
       shadowColor: Colors.black.withValues(alpha: 0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colors.outlineVariant),
+      ),
       clipBehavior: Clip.antiAlias,
       child: SingleChildScrollView(
         child: Padding(
