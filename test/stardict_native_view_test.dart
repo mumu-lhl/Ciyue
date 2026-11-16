@@ -153,6 +153,36 @@ void main() {
     expect(tester.getSize(find.byType(Image)), const Size(20, 10));
   });
 
+  testWidgets("keeps the picture read across rebuilds", (tester) async {
+    var reads = 0;
+    Future<Uint8List?> resolver(String file) async {
+      reads++;
+      return file == "pic.png" ? _testPng : null;
+    }
+
+    final entry = StardictNativeEntry(
+      headword: "pic",
+      fields: [
+        StarDictField(
+          "x",
+          text: "<xdxf><k>pic</k><def><rref>pic.png</rref></def></xdxf>",
+        ),
+      ],
+    );
+
+    await pumpEntries(tester, [entry], resourceResolver: resolver);
+    await settleImage(tester);
+    expect(reads, 1);
+
+    // A zoom step rebuilds the entry. Reading the file again would send the
+    // FutureBuilder back to waiting and blank the picture for a frame.
+    await pumpEntries(tester, [entry], resourceResolver: resolver, scale: 1.5);
+    await settleImage(tester);
+
+    expect(reads, 1);
+    expect(find.byType(Image), findsOneWidget);
+  });
+
   testWidgets("renders nothing for an unresolvable resource image", (
     tester,
   ) async {

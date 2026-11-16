@@ -81,7 +81,7 @@ class StardictEntryListView extends StatelessWidget {
   }
 }
 
-class _EntryBlock extends StatelessWidget {
+class _EntryBlock extends StatefulWidget {
   final StardictNativeEntry entry;
   final String resourceDirectory;
   final int dictId;
@@ -97,16 +97,44 @@ class _EntryBlock extends StatelessWidget {
   });
 
   @override
+  State<_EntryBlock> createState() => _EntryBlockState();
+}
+
+class _EntryBlockState extends State<_EntryBlock> {
+  /// Resource reads keyed by file name.
+  ///
+  /// The entry is rebuilt on every theme flip, zoom step or settings
+  /// notification, and a fresh future would send its `FutureBuilder` back to
+  /// `waiting`: the picture would blank out (taking its layout slot with it)
+  /// while the file is read again. Handing out the same future keeps the
+  /// picture in place.
+  final Map<String, Future<Uint8List?>> _resources = {};
+
+  Future<Uint8List?>? _resolveResource(String file) {
+    final resolver = widget.resourceResolver;
+    if (resolver == null) return null;
+    return _resources.putIfAbsent(file, () => resolver(file));
+  }
+
+  @override
+  void didUpdateWidget(_EntryBlock oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The resolver and the resource directory belong to one dictionary, so the
+    // cached reads cannot be carried over to another one.
+    if (oldWidget.dictId != widget.dictId) _resources.clear();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final renderer = _Renderer(
       context: context,
-      resourceDirectory: resourceDirectory,
-      dictId: dictId,
-      resourceResolver: resourceResolver,
-      scale: scale,
+      resourceDirectory: widget.resourceDirectory,
+      dictId: widget.dictId,
+      resolveResource: _resolveResource,
+      scale: widget.scale,
     );
     final blocks = <Widget>[];
-    for (final field in entry.fields) {
+    for (final field in widget.entry.fields) {
       final text = field.text;
       if (text == null) continue; // Binary fields are not displayable.
       switch (field.type) {
@@ -140,7 +168,11 @@ class _Renderer {
   final BuildContext context;
   final String resourceDirectory;
   final int dictId;
-  final Future<Uint8List?> Function(String file)? resourceResolver;
+
+  /// Resolves a resource file to its bytes, memoized by the entry block so a
+  /// rebuild does not start the read over. Null when the dictionary has no
+  /// resolver and the loose `res/` directory is used instead.
+  final Future<Uint8List?>? Function(String file)? resolveResource;
 
   /// Zooms the entry. The body text and the headword both take it, and they
   /// are the base every inline size is derived from.
@@ -150,7 +182,7 @@ class _Renderer {
     required this.context,
     required this.resourceDirectory,
     required this.dictId,
-    this.resourceResolver,
+    this.resolveResource,
     this.scale = 1.0,
   });
 
@@ -369,14 +401,15 @@ class _Renderer {
     ).hasMatch(file)) {
       return null;
     }
-    final resolver = resourceResolver;
-    if (resolver != null) {
+    final resolve = resolveResource;
+    final future = resolve?.call(file);
+    if (future != null) {
       return WidgetSpan(
         alignment: PlaceholderAlignment.middle,
         child: ConstrainedBox(
           constraints: _imageConstraints,
           child: FutureBuilder<Uint8List?>(
-            future: resolver(file),
+            future: future,
             builder: (context, snapshot) {
               final data = snapshot.data;
               if (data == null) return const SizedBox.shrink();
@@ -386,6 +419,10 @@ class _Renderer {
                 // Divide by the zoom so the picture is laid out `scale` times
                 // larger, the way the web view's CSS zoom enlarges it.
                 scale: 1 / scale,
+                // A zoom step swaps the provider (its scale is part of the
+                // image key), so keeping the old frame avoids a blank picture
+                // while the new one decodes.
+                gaplessPlayback: true,
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),
               );
             },
@@ -404,6 +441,7 @@ class _Renderer {
           File(candidate),
           fit: BoxFit.contain,
           scale: 1 / scale,
+          gaplessPlayback: true,
           errorBuilder: (_, _, _) => const SizedBox.shrink(),
         ),
       ),
