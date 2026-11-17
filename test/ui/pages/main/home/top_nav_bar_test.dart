@@ -170,6 +170,25 @@ void main() {
       expect(find.text("Translate"), findsNothing);
       expect(find.byTooltip("Translate"), findsOneWidget);
     });
+
+    testWidgets("keeps the navigation row below the system status bar", (
+      tester,
+    ) async {
+      const topPadding = 48.0;
+      tester.view.padding = const FakeViewPadding(top: topPadding);
+      addTearDown(tester.view.resetPadding);
+
+      await pumpBar(tester, size: const Size(1280, 800), onSelected: (_) {});
+
+      expect(
+        tester.getTopLeft(find.byTooltip("AI Chat")).dy,
+        greaterThanOrEqualTo(topPadding),
+      );
+      expect(
+        tester.getSize(find.byType(HomeTopNavBar)).height,
+        kToolbarHeight + topPadding,
+      );
+    });
   });
 
   group("navigation style toggle", () {
