@@ -4,44 +4,44 @@ This page documents the implementation behind [Word-form lookup](../guide/word-f
 
 ## Ciyue's Hunspell build
 
-Ciyue compiles Hunspell **1.7.3** with two local patches, both about stems:
+Ciyue compiles Hunspell **1.7.6** with one local patch, in `hunspell.cxx`:
+`stem()` returns every `st:` field of an analysis record, not just the first.
+Upstream takes only the first field, so a stock build reports fewer stems for
+the same files — GoldenDict and a distro `hunspell` use whatever library the
+system provides.
 
-- `hashmgr.cxx` — a second entry for the same word is only discarded when it has
-  no flags **and** the same description. Upstream drops it whenever neither entry
-  carries a flag, so two flagless `st:` lines for one spelling lose the second
-  one ([hunspell#1171](https://github.com/hunspell/hunspell/issues/1171)).
-- `hunspell.cxx` — `stem()` returns every `st:` field of an analysis record, not
-  just the first.
-
-The pin stays at 1.7.3 because those two files are replaced wholesale. Nothing in
-Ciyue depends on the CLI-only CJK fix that later releases (1.7.6) carry: word-form
-lookup never runs `hunspell -m`, and that bug lived in the tool's output path, not
-in `analyze()` or `stem()`.
-
-Together they let one spelling be listed several times, which is how Japanese
-homonyms and Chinese variant characters are declared:
+The patch is what lets one spelling be listed several times, which is how
+Japanese homonyms and Chinese variant characters are declared:
 
 ```text
 たい積 st:体積
 たい積 st:堆積
 ```
 
-Stock Hunspell 1.7.3 and later keeps only the first line; older builds keep both.
-GoldenDict and a distro `hunspell` use whatever library the system provides, so
-on 1.7.3+ they report fewer stems for the same files.
+The other half of this used to be a second patch, in `hashmgr.cxx`: a second
+entry for the same word was only discarded when it had no flags **and** the
+same description. Upstream dropped it whenever neither entry carried a flag,
+so two flagless `st:` lines for one spelling lost the second one
+([hunspell#1171](https://github.com/hunspell/hunspell/issues/1171)). Upstream
+has since fixed that itself — two entries now count as duplicates only when
+both are flagless **and** describe the word the same way, and anything else is
+kept as a homonym — so Ciyue no longer carries the patch: `hashmgr.cxx` comes
+straight from upstream, and the vendored copy is gone. The hook also compiles
+the new upstream `hunspelltrace.cxx`, which the 1.7.6 sources include — the
+link fails without it.
 
-The workaround for a stock build is to give the duplicates a flag the `.aff`
-never defines:
+Tables padded for the old behaviour still work unchanged. Giving the
+duplicates a flag the `.aff` never defines —
 
 ```text
 たい積/X st:体積
 たい積/X st:堆積
 ```
 
-`alen != 0` sends the entry down the `next_homonym` branch instead of the
-duplicate check, and since no affix rule uses `X`, no extra word forms appear.
-Dictionaries padded this way work unchanged in Ciyue — the undefined flag is
-simply carried along — so there is no reason to strip it.
+— used to send the entries down the homonym branch instead of the duplicate
+check, and since no affix rule uses `X`, no extra word forms appear. The
+padding is no longer needed for new tables, and the undefined flag is simply
+carried along in Ciyue, so there is no reason to strip it from existing ones.
 
 ## Chinese: simplified, traditional and variant characters
 
@@ -78,9 +78,10 @@ hash table from a spelling to its variants, which is all this needs.
 
 Both directions have to be listed. `闲 st:閒` only turns `闲` into `閒`; without
 `閒 st:闲` the reverse query (`閒适` → `闲适`) finds nothing. `闲` also needs two
-lines, which is only safe because of the patch described in
-[Ciyue's Hunspell build](#ciyues-hunspell-build) — a stock build would keep
-`闲 st:閒` and drop `闲 st:閑`.
+lines, which only works because of the patch described in
+[Ciyue's Hunspell build](#ciyues-hunspell-build): Ciyue's build returns every
+`st:` field, while a stock build returns only the first, so `閑` would never
+come back.
 
 Single-character lines are also what makes mixed spellings work — the table never
 has to contain them, because the combinations are built at query time:
@@ -184,9 +185,11 @@ Two CLI traps are worth knowing:
 - **Old builds dropped CJK text.** `hunspell -m` from older releases reported
   `しかった st:しかる` for `美味しかった`; that was the output layer, not the
   dictionary. 1.7.6 returns `st:美味しい`, the same as the library API.
-- **Every build from 1.7.3 on drops duplicate `st:` lines** that share a word
-  and carry no flags (issue #1171). Ciyue's bundled Hunspell does not, so a
-  distro build can report fewer stems than Ciyue for the same files.
+- **A stock build reports fewer stems for the same files.** Upstream 1.7.6
+  keeps both `st:` lines in the table, but `stem()` still takes only the first
+  `st:` field of an analysis record, so only the first stem comes back.
+  Ciyue's bundled Hunspell returns every `st:` field — see
+  [Ciyue's Hunspell build](#ciyues-hunspell-build).
 
 To see what Ciyue itself gets, call `stem()` — the function behind word-form
 lookup — instead of the CLI.

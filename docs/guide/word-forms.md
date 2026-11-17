@@ -92,10 +92,9 @@ explicitly with `st:`. See the German set above.
 
 **One spelling, two `st:` lines, and only one lemma comes back.** If a `.dic`
 lists the same word twice with different `st:` and neither line carries a flag,
-stock Hunspell 1.7.3 and later keeps only the first entry; Ciyue's patched build
-keeps both — see [Ciyue's Hunspell build](../internals/word-forms#ciyues-hunspell-build). Giving the
-duplicates a flag the `.aff` never defines (`たい積/X st:堆積`) restores them in
-either build.
+a stock build returns only the first: its `stem()` takes the first `st:` field
+of an analysis record, while Ciyue's patched build returns both — see
+[Ciyue's Hunspell build](../internals/word-forms#ciyues-hunspell-build).
 
 ## See also
 
