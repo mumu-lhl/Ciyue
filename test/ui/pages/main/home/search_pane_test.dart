@@ -28,10 +28,12 @@ void main() {
   });
 
   setUp(() async {
-    // Every test starts with the pane shown; the Settings singleton is
-    // shared across tests in this file.
+    // Every test starts with the pane shown at its default width; the
+    // Settings singleton is shared across tests in this file.
     await prefs.setBool("showSearchPane", true);
     settings.showSearchPane = true;
+    await prefs.setDouble("searchPaneWidth", 360);
+    settings.searchPaneWidth = 360;
   });
 
   Future<void> pumpHomeBody(
@@ -126,6 +128,100 @@ void main() {
 
       await prefs.setBool("showSearchPane", true);
       expect(Settings().showSearchPane, isTrue);
+    });
+  });
+
+  group("search pane resize", () {
+    Finder divider() => find.bySemanticsLabel("Hide Search Pane");
+
+    testWidgets("dragging the divider resizes and persists the width", (
+      tester,
+    ) async {
+      await pumpHomeBody(
+        tester,
+        surfaceSize: const Size(1280, 800),
+        homeModel: HomeModel(),
+      );
+      expect(tester.getTopLeft(divider()).dx, 360);
+
+      await tester.drag(divider(), const Offset(100, 0));
+      await tester.pumpAndSettle();
+
+      final x = tester.getTopLeft(divider()).dx;
+      // tester.drag spends the first 20px on touch slop, so only check that
+      // the pane grew and that the UI and persisted value agree.
+      expect(x, greaterThan(360));
+      expect(settings.searchPaneWidth, x);
+      expect(prefs.getDouble("searchPaneWidth"), x);
+    });
+
+    testWidgets("several small drags add up instead of springing back", (
+      tester,
+    ) async {
+      await pumpHomeBody(
+        tester,
+        surfaceSize: const Size(1280, 800),
+        homeModel: HomeModel(),
+      );
+
+      final center = tester.getCenter(divider());
+      final gesture = await tester.startGesture(center);
+      // Move in small steps with a frame between them, like a real pointer.
+      for (var i = 0; i < 5; i++) {
+        await gesture.moveBy(const Offset(20, 0));
+        await tester.pump();
+      }
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      // 100px of movement minus the 20px consumed by touch slop.
+      final x = tester.getTopLeft(divider()).dx;
+      expect(x, closeTo(440, 2));
+      expect(settings.searchPaneWidth, x);
+    });
+
+    testWidgets("the drag leaves room for both panes", (tester) async {
+      await pumpHomeBody(
+        tester,
+        surfaceSize: const Size(1280, 800),
+        homeModel: HomeModel(),
+      );
+
+      await tester.drag(divider(), const Offset(-1000, 0));
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(divider()).dx, 240);
+
+      await tester.drag(divider(), const Offset(2000, 0));
+      await tester.pumpAndSettle();
+      // 1280 - 320 (right pane) - 12 (divider) = 948.
+      expect(tester.getTopLeft(divider()).dx, 948);
+    });
+
+    testWidgets("a stored width is restored on the next build", (tester) async {
+      await prefs.setDouble("searchPaneWidth", 300);
+      settings.searchPaneWidth = 300;
+      await pumpHomeBody(
+        tester,
+        surfaceSize: const Size(1280, 800),
+        homeModel: HomeModel(),
+      );
+      expect(tester.getTopLeft(divider()).dx, 300);
+    });
+
+    testWidgets("the divider handle collapses the pane", (tester) async {
+      await pumpHomeBody(
+        tester,
+        surfaceSize: const Size(1280, 800),
+        homeModel: HomeModel(),
+      );
+      expect(find.byType(HomeSearchBar), findsOneWidget);
+
+      await tester.tap(divider());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HomeSearchBar), findsNothing);
+      expect(settings.showSearchPane, isFalse);
+      expect(prefs.getBool("showSearchPane"), isFalse);
     });
   });
 

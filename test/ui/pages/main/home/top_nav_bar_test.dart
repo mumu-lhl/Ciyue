@@ -1,4 +1,5 @@
 import "package:ciyue/core/app_initialization.dart";
+import "package:ciyue/core/localization_delegates.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart";
@@ -6,6 +7,7 @@ import "package:ciyue/ui/pages/main/home/body.dart";
 import "package:ciyue/ui/pages/main/home/search.dart";
 import "package:ciyue/ui/pages/main/home/more_button.dart";
 import "package:ciyue/ui/pages/main/home_top_nav_bar.dart";
+import "package:ciyue/ui/pages/main/main.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -217,6 +219,51 @@ void main() {
       await tester.tap(find.byTooltip("Switch to side navigation"));
       await tester.pumpAndSettle();
       expect(toggled, 1);
+    });
+  });
+
+  group("extended navigation rail width", () {
+    Future<NavigationRail> pumpRail(WidgetTester tester, Locale locale) async {
+      // 800x500: landscape enough to extend the rail, but below the 900px
+      // threshold that replaces it with the top navigation row.
+      await setSurface(tester, const Size(800, 500));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            historyModelProvider.overrideWith((ref) => _TestHistoryModel()),
+            dictManagerModelProvider.overrideWith((ref) => DictManagerModel()),
+          ],
+          child: MaterialApp(
+            locale: locale,
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              ...GlobalMaterialLocalizations.delegates,
+              const FallbackMaterialLocalizationsDelegate(),
+              const FallbackCupertinoLocalizationsDelegate(),
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const Home(),
+          ),
+        ),
+      );
+      // Home keeps polling widgets alive, so pumpAndSettle never settles.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+      return tester.widget<NavigationRail>(find.byType(NavigationRail));
+    }
+
+    testWidgets("short labels shrink the rail below the old 256px default", (
+      tester,
+    ) async {
+      final rail = await pumpRail(tester, const Locale("zh"));
+      expect(rail.minExtendedWidth, lessThan(256));
+      expect(rail.minExtendedWidth, greaterThanOrEqualTo(200));
+    });
+
+    testWidgets("long labels stay within the old fixed width", (tester) async {
+      final rail = await pumpRail(tester, const Locale("de"));
+      expect(rail.minExtendedWidth, lessThanOrEqualTo(256));
+      expect(rail.minExtendedWidth, greaterThanOrEqualTo(200));
     });
   });
 
