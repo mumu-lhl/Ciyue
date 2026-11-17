@@ -179,6 +179,7 @@ class _HomeState extends ConsumerState<Home> {
                   children: [
                     NavigationRail(
                       extended: ratio > 1.5,
+                      minExtendedWidth: _railExtendedWidth(context),
                       labelType: ratio > 1.5
                           ? NavigationRailLabelType.none
                           : NavigationRailLabelType.all,
@@ -265,6 +266,32 @@ class _HomeState extends ConsumerState<Home> {
       (const Icon(Icons.book), AppLocalizations.of(context)!.wordBook),
       (const Icon(Icons.settings), AppLocalizations.of(context)!.settings),
     ];
+  }
+
+  /// The extended rail defaults to a fixed 256px, which leaves a large empty
+  /// gap next to short labels (e.g. two-character Chinese). Size it from the
+  /// longest translated label instead, keeping the old width as the cap so
+  /// longer locales are no worse than before.
+  double _railExtendedWidth(BuildContext context) {
+    const double iconWidth = 24;
+    const double gap = 12;
+    const double horizontalPadding = 16;
+    const double slack = 16;
+    final textTheme = Theme.of(context).textTheme;
+    final direction = Directionality.of(context);
+    var labelWidth = 0.0;
+    for (final destination in buildCommonDestinations()) {
+      final painter = TextPainter(
+        text: TextSpan(text: destination.$2, style: textTheme.labelMedium),
+        textDirection: direction,
+        maxLines: 1,
+      )..layout();
+      if (painter.width > labelWidth) {
+        labelWidth = painter.width;
+      }
+    }
+    final ideal = iconWidth + gap + horizontalPadding + labelWidth + slack;
+    return ideal.clamp(200.0, 256.0).toDouble();
   }
 
   /// The navigation bar does not limit the number of lines of a label, so a

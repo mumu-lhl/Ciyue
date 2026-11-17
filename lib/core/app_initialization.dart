@@ -434,6 +434,7 @@ const preferencesAllowList = <String>{
   "searchBarInAppBar",
   "showSidebarIcon",
   "showSearchPane",
+  "searchPaneWidth",
   "searchMode",
   "dictionariesDirectory",
   "exportPath",

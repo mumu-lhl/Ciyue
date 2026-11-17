@@ -71,6 +71,7 @@ class Settings extends ChangeNotifier {
   late TabBarPosition tabBarPosition;
   late bool showSidebarIcon;
   late bool showSearchPane;
+  late double searchPaneWidth;
   late bool showMoreOptionsButton;
   late bool showSearchBarInWordDisplay;
   late DictionarySwitchStyle dictionarySwitchStyle;
@@ -203,6 +204,7 @@ class Settings extends ChangeNotifier {
     searchBarInAppBar = prefs.getBool("searchBarInAppBar") ?? true;
     showSidebarIcon = prefs.getBool("showSidebarIcon") ?? true;
     showSearchPane = prefs.getBool("showSearchPane") ?? true;
+    searchPaneWidth = prefs.getDouble("searchPaneWidth") ?? 360;
     showMoreOptionsButton = prefs.getBool("showMoreOptionsButton") ?? true;
     showSearchBarInWordDisplay =
         prefs.getBool("showSearchBarInWordDisplay") ?? true;
@@ -491,6 +493,12 @@ class Settings extends ChangeNotifier {
   Future<void> setShowSearchPane(bool value) async {
     showSearchPane = value;
     await prefs.setBool("showSearchPane", value);
+    notifyListeners();
+  }
+
+  Future<void> setSearchPaneWidth(double value) async {
+    searchPaneWidth = value;
+    await prefs.setDouble("searchPaneWidth", value);
     notifyListeners();
   }
 

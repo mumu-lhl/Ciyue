@@ -55,11 +55,100 @@ class HomeBody extends ConsumerWidget {
   }
 }
 
-class _DesktopHomeSplitView extends ConsumerWidget {
+class _DesktopHomeSplitView extends ConsumerStatefulWidget {
   const _DesktopHomeSplitView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DesktopHomeSplitView> createState() =>
+      _DesktopHomeSplitViewState();
+}
+
+class _DesktopHomeSplitViewState extends ConsumerState<_DesktopHomeSplitView> {
+  static const double minPaneWidth = 240;
+  static const double minRightWidth = 320;
+  static const double dividerWidth = 12;
+
+  late double _paneWidth;
+  double _dragStartWidth = 0;
+  double _dragStartX = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _paneWidth = ref.read(settingsProvider).searchPaneWidth;
+  }
+
+  Widget _buildDivider(
+    BuildContext context,
+    double currentWidth,
+    double maxPaneWidth,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    // A Semantics label instead of a Tooltip: the tab bar already owns the
+    // visible tooltip for this action, and a second one would make the button
+    // ambiguous for tooltip-based tests and mouse users alike.
+    return Semantics(
+      label: AppLocalizations.of(context)!.hideSearchPane,
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          ref.read(settingsProvider).setShowSearchPane(false);
+        },
+        onHorizontalDragStart: (details) {
+          _dragStartWidth = currentWidth;
+          _dragStartX = details.globalPosition.dx;
+        },
+        onHorizontalDragUpdate: (details) {
+          // delta is only the movement since the previous event. Accumulating
+          // it against a fixed start width makes the pane spring back; use the
+          // total distance from the drag's first position instead.
+          final next =
+              _dragStartWidth + details.globalPosition.dx - _dragStartX;
+          final clamped = next < minPaneWidth
+              ? minPaneWidth
+              : next > maxPaneWidth
+              ? maxPaneWidth
+              : next;
+          if (clamped != _paneWidth) {
+            setState(() => _paneWidth = clamped);
+          }
+        },
+        onHorizontalDragEnd: (_) {
+          ref.read(settingsProvider).setSearchPaneWidth(_paneWidth);
+        },
+        child: MouseRegion(
+          cursor: SystemMouseCursors.resizeColumn,
+          child: SizedBox(
+            width: dividerWidth,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                const VerticalDivider(thickness: 1, width: dividerWidth),
+                Container(
+                  width: dividerWidth,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: colorScheme.outlineVariant),
+                  ),
+                  child: Icon(
+                    Icons.keyboard_double_arrow_left,
+                    size: 12,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Subscribe narrowly: rebuilding the whole split view (and the WordDisplay
     // inside it) on every history write or tab mutation is expensive.
     // Imperative calls below use ref.read so they don't subscribe.
@@ -98,95 +187,111 @@ class _DesktopHomeSplitView extends ConsumerWidget {
     return HomeShortcuts(
       child: Focus(
         autofocus: true,
-        child: Row(
-          children: [
-            if (showSearchPane) ...[
-              SizedBox(
-                width: 360,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                      child: HomeSearchBar(
-                        // The pane's own title search box owns the common
-                        // "look up here" path. This pane can be collapsed, so
-                        // its search box opens the word in a new tab instead.
-                        onWordSelected: homeModel.openWordInNewTab,
-                      ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final available =
+                constraints.maxWidth - minRightWidth - dividerWidth;
+            final maxPaneWidth = available < minPaneWidth
+                ? minPaneWidth
+                : available;
+            final paneWidth = _paneWidth < minPaneWidth
+                ? minPaneWidth
+                : _paneWidth > maxPaneWidth
+                ? maxPaneWidth
+                : _paneWidth;
+            return Row(
+              children: [
+                if (showSearchPane) ...[
+                  SizedBox(
+                    width: paneWidth,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                          child: HomeSearchBar(
+                            // The pane's own title search box owns the common
+                            // "look up here" path. This pane can be collapsed, so
+                            // its search box opens the word in a new tab instead.
+                            onWordSelected: homeModel.openWordInNewTab,
+                          ),
+                        ),
+                        const ActionButtons(),
+                        const HistoryLabel(),
+                        HistoryList(
+                          selectedWord: selectedWord,
+                          onWordSelected: (word) {
+                            homeModel.selectedWord = word;
+                          },
+                          onWordTertiarySelected: (word) {
+                            homeModel.openWordInNewTab(word);
+                          },
+                        ),
+                      ],
                     ),
-                    const ActionButtons(),
-                    const HistoryLabel(),
-                    HistoryList(
-                      selectedWord: selectedWord,
-                      onWordSelected: (word) {
-                        homeModel.selectedWord = word;
-                      },
-                      onWordTertiarySelected: (word) {
-                        homeModel.openWordInNewTab(word);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const VerticalDivider(thickness: 1, width: 1),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Keep the tab bar even with no tabs: it hosts the new-tab
-                  // button and, in the split view, the home-wide controls.
-                  const _DesktopWordTabBar(),
-                  Expanded(
-                    child: selectedWord != null && selectedWord.isNotEmpty
-                        ? DesktopWordDisplayPane(word: selectedWord)
-                        : (!historyEmpty && tabsEmpty
-                              ? DesktopWordDisplayPane(word: firstHistoryWord!)
-                              : Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.search_rounded,
-                                        size: 56,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .outlineVariant,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        AppLocalizations.of(context)!
-                                            .startToSearch,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurfaceVariant,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      SizedBox(
-                                        width: 320,
-                                        child: WordSearchBarWithSuggestions(
-                                          word: "",
-                                          isHome: true,
-                                          autoFocus: true,
-                                          onWordSelected: (word) {
-                                            homeModel.selectedWord = word;
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )),
                   ),
+                  _buildDivider(context, paneWidth, maxPaneWidth),
                 ],
-              ),
-            ),
-          ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Keep the tab bar even with no tabs: it hosts the new-tab
+                      // button and, in the split view, the home-wide controls.
+                      const _DesktopWordTabBar(),
+                      Expanded(
+                        child: selectedWord != null && selectedWord.isNotEmpty
+                            ? DesktopWordDisplayPane(word: selectedWord)
+                            : (!historyEmpty && tabsEmpty
+                                  ? DesktopWordDisplayPane(
+                                      word: firstHistoryWord!,
+                                    )
+                                  : Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.search_rounded,
+                                            size: 56,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .outlineVariant,
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            AppLocalizations.of(context)!
+                                                .startToSearch,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium
+                                                ?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          SizedBox(
+                                            width: 320,
+                                            child: WordSearchBarWithSuggestions(
+                                              word: "",
+                                              isHome: true,
+                                              autoFocus: true,
+                                              onWordSelected: (word) {
+                                                homeModel.selectedWord = word;
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
