@@ -14,5 +14,11 @@ Welcome to the Ciyue documentation. Start here to install the app, add dictionar
 - [Command Line & ciyue://](./command-line) — look words up from a terminal or a link, and reuse the running window.
 - [Keyboard Shortcuts](./keyboard-shortcuts) — desktop keys for lookup, word tabs, dictionary groups, and zoom, in the GoldenDict-ng and EBWin tradition.
 - [Dictionary Links](./dictionary-links) — the `entry://` and `bword://` forms an entry can use, and how to reach a headword that contains `#`.
-  - [Link Schemes (Deep Dive)](./dictionary-link-schemes) — how GoldenDict-ng, MDict and Babylon treat each scheme, and where Ciyue goes further.
 - [FAQ](./faq) — answers to common questions.
+
+## Internals
+
+How Ciyue works under the hood — for dictionary makers and contributors.
+
+- [Dictionary Link Schemes](../internals/dictionary-link-schemes) — how GoldenDict-ng, MDict and Babylon treat each scheme, and where Ciyue goes further.
+- [How Word-Form Lookup Works](../internals/word-forms) — the patched Hunspell build, the Chinese variant-character table, NFC normalisation, and testing a dictionary directly.

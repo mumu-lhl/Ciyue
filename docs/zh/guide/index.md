@@ -14,5 +14,11 @@
 - [命令行与 ciyue://](./command-line) —— 从终端或链接直接查词，重复启动复用已运行窗口。
 - [键盘快捷键](./keyboard-shortcuts) —— 沿用 GoldenDict-ng 与 EBWin 习惯的桌面端快捷键，覆盖查词、标签、分组与缩放。
 - [词条内链接](./dictionary-links) —— 词条可用的 `entry://`、`bword://` 写法，以及词条名含 `#` 时如何转义。
-  - [链接 Scheme 原理](./dictionary-link-schemes) —— GoldenDict-ng、MDict、Babylon 各自如何处理每种 scheme，词悦在何处更进一步。
 - [常见问题](./faq) —— 常见问题的解答。
+
+## 实现与原理
+
+词悦内部如何工作——写给词典制作者与贡献者。
+
+- [词典链接 Scheme 原理](../internals/dictionary-link-schemes) —— GoldenDict-ng、MDict、Babylon 各自如何处理每种 scheme，词悦在何处更进一步。
+- [词形还原的实现](../internals/word-forms) —— 词悦内置的 Hunspell 补丁、中文异体字表的设计、NFC 归一化，以及直接测试词典。

@@ -21,6 +21,7 @@ export default defineConfig({
         nav: [
           { text: 'Home', link: '/' },
           { text: 'Guide', link: '/guide/' },
+          { text: 'Internals', link: '/internals/' },
           { text: 'FAQ', link: '/guide/faq' }
         ],
         sidebar: [
@@ -39,8 +40,15 @@ export default defineConfig({
               { text: 'Command Line & ciyue://', link: '/guide/command-line' },
               { text: 'Keyboard Shortcuts', link: '/guide/keyboard-shortcuts' },
               { text: 'Dictionary Links', link: '/guide/dictionary-links' },
-              { text: 'Link Schemes (Deep Dive)', link: '/guide/dictionary-link-schemes' },
               { text: 'FAQ', link: '/guide/faq' },
+            ]
+          },
+          {
+            text: 'Internals',
+            items: [
+              { text: 'Overview', link: '/internals/' },
+              { text: 'Dictionary Link Schemes', link: '/internals/dictionary-link-schemes' },
+              { text: 'How Word-Form Lookup Works', link: '/internals/word-forms' },
             ]
           }
         ],
@@ -60,6 +68,7 @@ export default defineConfig({
         nav: [
           { text: '首页', link: '/zh/' },
           { text: '指南', link: '/zh/guide/' },
+          { text: '实现与原理', link: '/zh/internals/' },
           { text: '常见问题', link: '/zh/guide/faq' }
         ],
         sidebar: [
@@ -78,8 +87,15 @@ export default defineConfig({
               { text: '命令行与 ciyue://', link: '/zh/guide/command-line' },
               { text: '键盘快捷键', link: '/zh/guide/keyboard-shortcuts' },
               { text: '词条内链接', link: '/zh/guide/dictionary-links' },
-              { text: '链接 Scheme 原理', link: '/zh/guide/dictionary-link-schemes' },
               { text: '常见问题', link: '/zh/guide/faq' },
+            ]
+          },
+          {
+            text: '实现与原理',
+            items: [
+              { text: '总览', link: '/zh/internals/' },
+              { text: '词典链接 Scheme 原理', link: '/zh/internals/dictionary-link-schemes' },
+              { text: '词形还原的实现', link: '/zh/internals/word-forms' },
             ]
           }
         ],

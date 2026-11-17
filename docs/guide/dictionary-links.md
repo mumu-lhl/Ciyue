@@ -54,4 +54,4 @@ are played from the dictionary's `.mdd`, or from a StarDict `res/` resource.
 
 For the reasoning behind these rules — how GoldenDict-ng, MDict and Babylon
 treat each scheme, why `gdlookup://localhost` exists, and where Ciyue goes
-further — see [Dictionary Link Schemes: A Deep Dive](./dictionary-link-schemes).
+further — see [Dictionary Link Schemes: A Deep Dive](../internals/dictionary-link-schemes).

@@ -117,7 +117,7 @@ void _hunspellWorker(SendPort sendPort) {
 
   List<String> doStems(String word) {
     // Hunspell compares bytes against the `.dic`, and those files are written
-    // in composed form (NFC) — see docs/guide/word-forms.md. A query that
+    // in composed form (NFC) — see docs/internals/word-forms.md. A query that
     // arrived decomposed would silently find nothing, so normalise once here,
     // for every caller, rather than asking each of them to remember.
     final trimmed = normalizeKey(word).trim();
