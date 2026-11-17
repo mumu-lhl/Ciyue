@@ -33,39 +33,49 @@ class HomeTopNavBar extends StatelessWidget implements PreferredSizeWidget {
     // window keeps the icons and relies on their tooltips instead.
     final showLabels = MediaQuery.sizeOf(context).width >= 900;
 
-    return Container(
-      height: preferredSize.height,
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+    // The app opts out of the global top SafeArea and Android draws edge to
+    // edge, so this custom app bar has to keep its own row below the status
+    // bar. Scaffold already reserves MediaQuery.padding.top on top of
+    // preferredSize; consuming it here fills exactly that reserved space.
+    return SafeArea(
+      top: true,
+      bottom: false,
+      left: false,
+      right: false,
+      child: Container(
+        height: preferredSize.height,
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          border: Border(
+            bottom: BorderSide(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+            ),
           ),
         ),
-      ),
-      child: Row(
-        children: [
-          if (onToggleNavStyle != null)
+        child: Row(
+          children: [
+            if (onToggleNavStyle != null)
+              IconButton(
+                tooltip: l10n.switchToSideNavigation,
+                icon: const Icon(Icons.swap_horiz),
+                onPressed: onToggleNavStyle,
+              )
+            else
+              const SizedBox(width: 8),
+            for (var index = 0; index < destinations.length; index++)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: _buildDestination(context, index, showLabels),
+              ),
+            const Spacer(),
             IconButton(
-              tooltip: l10n.switchToSideNavigation,
-              icon: const Icon(Icons.swap_horiz),
-              onPressed: onToggleNavStyle,
-            )
-          else
-            const SizedBox(width: 8),
-          for (var index = 0; index < destinations.length; index++)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: _buildDestination(context, index, showLabels),
+              tooltip: l10n.aiChat,
+              icon: const Icon(Icons.chat_bubble_outline),
+              onPressed: () => context.push("/chat"),
             ),
-          const Spacer(),
-          IconButton(
-            tooltip: l10n.aiChat,
-            icon: const Icon(Icons.chat_bubble_outline),
-            onPressed: () => context.push("/chat"),
-          ),
-          const SizedBox(width: 8),
-        ],
+            const SizedBox(width: 8),
+          ],
+        ),
       ),
     );
   }
