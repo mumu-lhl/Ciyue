@@ -517,6 +517,9 @@ class InAppWebView {
   ::wpe_fdo_egl_exported_image* exported_image_ = nullptr;
   // Currently displayed/bound EGL image in Flutter texture.
   ::wpe_fdo_egl_exported_image* displayed_image_ = nullptr;
+  // Image displayed one frame ago. Kept alive one extra present so the GPU has
+  // certainly finished sampling it before WPE is allowed to reuse the buffer.
+  ::wpe_fdo_egl_exported_image* grace_image_ = nullptr;
   // Retired images waiting to be released back to WPE on the main loop.
   std::vector<::wpe_fdo_egl_exported_image*> retired_images_;
   guint release_idle_source_id_ = 0;

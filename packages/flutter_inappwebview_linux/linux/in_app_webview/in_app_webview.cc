@@ -555,6 +555,11 @@ InAppWebView::~InAppWebView() {
                                                                               displayed_image_);
         displayed_image_ = nullptr;
       }
+      if (grace_image_ != nullptr && grace_image_ != displayed_image_) {
+        ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
+                                                                              grace_image_);
+        grace_image_ = nullptr;
+      }
       if (exported_image_ != nullptr && exported_image_ != displayed_image_) {
         ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
                                                                               exported_image_);
@@ -1405,7 +1410,8 @@ void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
   ::wpe_fdo_egl_exported_image* skipped_image = nullptr;
   {
     std::lock_guard<std::mutex> lock(exported_image_mutex_);
-    if (exported_image_ != nullptr && exported_image_ != displayed_image_) {
+    if (exported_image_ != nullptr && exported_image_ != displayed_image_ &&
+        exported_image_ != grace_image_) {
       skipped_image = exported_image_;
       retired_images_.push_back(skipped_image);
     }
@@ -4049,19 +4055,26 @@ void InAppWebView::NotifyFrameAvailable() {
 
 void InAppWebView::OnFramePresented(void* egl_image) {
 #ifdef HAVE_WPE_BACKEND_LEGACY
-  ::wpe_fdo_egl_exported_image* image_to_retire = nullptr;
+  // The legacy exportable tracks the presented frame through exported_image_,
+  // so the image the texture bound is only informational here.
+  (void)egl_image;
   {
     std::lock_guard<std::mutex> lock(exported_image_mutex_);
     if (is_disposing_.load()) {
       return;
     }
-    // Now that Flutter has bound exported_image_ into the GL texture,
-    // the previous displayed_image_ is no longer being sampled by Flutter.
-    // It can now be safely retired and released back to WPE.
-    if (displayed_image_ != nullptr && displayed_image_ != exported_image_) {
-      image_to_retire = displayed_image_;
-      retired_images_.push_back(image_to_retire);
+    // Keep the image that was on screen until the *next* present. populate()
+    // is not proof that the GPU finished sampling it: with Impeller the draw
+    // can still be in flight, and WPE then renders the next frame into the
+    // buffer Flutter is reading (the scroll tearing). One extra present gives
+    // the compositor a full frame of slack.
+    if (grace_image_ != nullptr && grace_image_ != displayed_image_ &&
+        grace_image_ != exported_image_) {
+      retired_images_.push_back(grace_image_);
     }
+    grace_image_ = (displayed_image_ != nullptr && displayed_image_ != exported_image_)
+        ? displayed_image_
+        : nullptr;
     displayed_image_ = exported_image_;
     pending_frame_complete_ = true;
   }
