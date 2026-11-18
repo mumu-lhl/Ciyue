@@ -1,0 +1,1 @@
+Diccionario compatible con MDX, StarDict y ZIM

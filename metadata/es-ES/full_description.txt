@@ -1,0 +1,17 @@
+Ciyue es una app de diccionarios compatible con diccionarios MDX/MDD, StarDict y ZIM.
+
+Funciones:
+
+* Compatible con diccionarios MDX/MDD, StarDict y ZIM
+* Búsqueda en varios diccionarios a la vez
+* Búsqueda de texto completo en el contenido de los diccionarios
+* Traducción con varias fuentes, incluidos servicios gratuitos y proveedores de IA (OpenAI, Gemini, DeepSeek y más)
+* Chat con IA con instrucciones personalizadas
+* Explicaciones estructuradas de palabras con IA
+* Vocabulario y lista de errores con cuestionarios de repaso
+* Tarjetas con repetición espaciada FSRS
+* Comprobación de escritura con IA
+* Lectura en voz alta con paquetes de pronunciación, pronunciación en línea (Wiktionary, Forvo) y síntesis de voz
+* Sincronización en la nube de la configuración, el vocabulario y el historial (WebDAV, S3, SFTP)
+* Ventana flotante para buscar palabras en cualquier lugar
+* Diseño Material You
