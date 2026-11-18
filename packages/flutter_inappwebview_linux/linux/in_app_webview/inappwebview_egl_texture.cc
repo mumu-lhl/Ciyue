@@ -3,6 +3,7 @@
 #include <epoxy/egl.h>
 #include <epoxy/gl.h>
 
+#include "../utils/frame_trace.h"
 #include "../utils/gl_context.h"
 #include "../utils/log.h"
 #include "in_app_webview.h"
@@ -233,6 +234,8 @@ static gboolean inappwebview_egl_texture_populate(FlTextureGL* texture, uint32_t
 
       void* bound_image = self->current_egl_image;
       flutter_inappwebview_plugin::WebViewType* webview = self->webview;
+
+      flutter_inappwebview_plugin::frameTraceBind(bound_image, self->width, self->height);
 
       g_mutex_unlock(&self->mutex);
 
