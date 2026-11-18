@@ -67,6 +67,7 @@
 #include "../flutter_inappwebview_linux_plugin_private.h"
 #include "../plugin_instance.h"
 #include "../utils/flutter.h"
+#include "../utils/frame_trace.h"
 #include "../utils/gl_context.h"
 #include "../utils/log.h"
 #include "../utils/software_rendering.h"
@@ -1373,6 +1374,18 @@ void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
 
   // Get the EGL image from the exported image
   EGLImageKHR egl_image = wpe_fdo_egl_exported_image_get_egl_image(image);
+
+  frameTraceExport(image, egl_image, img_width, img_height);
+  if (frameTraceEnabled()) {
+    // Handing back the image the texture is sampling means the buffer was
+    // returned too early: the next frame is painted into pixels the compositor
+    // is still reading. This is what scroll tearing looks like from the inside.
+    std::lock_guard<std::mutex> lock(exported_image_mutex_);
+    if (displayed_image_ != nullptr && displayed_image_ == image) {
+      frameTraceAnomaly("re-exported the image bound to the texture", image, displayed_image_,
+                        exported_image_);
+    }
+  }
 
   // Only do pixel readback if:
   // 1. skip_pixel_readback_ is false (not using zero-copy mode)
@@ -4055,13 +4068,22 @@ void InAppWebView::NotifyFrameAvailable() {
 
 void InAppWebView::OnFramePresented(void* egl_image) {
 #ifdef HAVE_WPE_BACKEND_LEGACY
-  // The legacy exportable tracks the presented frame through exported_image_,
-  // so the image the texture bound is only informational here.
-  (void)egl_image;
   {
     std::lock_guard<std::mutex> lock(exported_image_mutex_);
     if (is_disposing_.load()) {
       return;
+    }
+    frameTracePresent(egl_image, exported_image_, displayed_image_);
+    if (frameTraceEnabled() && egl_image != nullptr && exported_image_ != nullptr) {
+      // The raster thread presents whatever it bound; if that is not the newest
+      // export, the bookkeeping is a frame behind and a buffer can be retired
+      // while it is still the one being sampled.
+      void* expected =
+          ::wpe_fdo_egl_exported_image_get_egl_image(exported_image_);
+      if (expected != egl_image) {
+        frameTraceAnomaly("presented image is not the newest export", egl_image, expected,
+                          exported_image_);
+      }
     }
     // Keep the image that was on screen until the *next* present. populate()
     // is not proof that the GPU finished sampling it: with Impeller the draw
@@ -4134,6 +4156,11 @@ void InAppWebView::ReleaseRetiredImages() {
     }
     if (need_frame_complete) {
       wpe_view_backend_exportable_fdo_dispatch_frame_complete(exportable_);
+    }
+    if (frameTraceEnabled()) {
+      std::vector<const void*> released(to_release.begin(), to_release.end());
+      frameTraceRelease(to_release.size(), need_frame_complete, released.data(),
+                        released.size());
     }
   }
 }
