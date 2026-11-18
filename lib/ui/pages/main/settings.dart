@@ -1,5 +1,3 @@
-import "dart:io";
-
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/flashcards/settings.dart";
 import "package:ciyue/ui/pages/settings/about.dart";
@@ -329,12 +327,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: Icons.bar_chart,
         title: locale?.wordbookStats ?? "Stats",
       ),
-      if (Platform.isAndroid && !isFullFlavor())
-        _SettingsItem(
-          section: _SettingsSection.manageStorage,
-          icon: Icons.sd_storage,
-          title: locale?.manageStorage ?? "Manage Storage",
-        ),
+      _SettingsItem(
+        section: _SettingsSection.manageStorage,
+        icon: Icons.sd_storage,
+        title: locale?.manageStorage ?? "Manage Storage",
+      ),
       _SettingsItem(
         section: _SettingsSection.update,
         icon: Icons.system_update,
@@ -470,8 +467,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const ManageDictionariesPageListTile(),
                     const AiSettingsPageListTile(),
                     const AudioSettingsPageListTile(),
-                    if (Platform.isAndroid && !isFullFlavor())
-                      const ManageStorageListTile(),
+                    const ManageStorageListTile(),
                   ],
                 ),
                 buildGroup(

@@ -33,6 +33,7 @@ import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:go_router/go_router.dart";
 import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/ui/pages/settings/file_manager.dart";
 import "package:ciyue/ui/pages/settings/storage_management.dart";
 import "package:ciyue/ui/pages/flashcards/settings.dart";
 import "package:ciyue/ui/pages/flashcards/study_page.dart";
@@ -186,6 +187,10 @@ final router = GoRouter(
     GoRoute(
       path: "/settings/storage_management",
       builder: (context, state) => const StorageManagementPage(),
+    ),
+    GoRoute(
+      path: "/settings/storage_management/file_manager",
+      builder: (context, state) => const FileManagerPage(),
     ),
     GoRoute(
       path: "/properties",

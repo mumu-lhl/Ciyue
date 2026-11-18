@@ -68,6 +68,13 @@ class FullTextSearchService extends ChangeNotifier {
   /// newer query runs on another, so it no longer delays the new one.
   int _searchGeneration = 0;
 
+  /// Monotonic id of the latest [clearAllIndexes] call. A build that
+  /// started before a clear must not write into the store the clear just
+  /// closed and deleted: it bails out instead (see [_ensureBuilt]), so
+  /// the cleared index stays not-built instead of reporting ready while
+  /// its file is gone, or failed because its writes hit a closed store.
+  int _indexGeneration = 0;
+
   FullTextSearchService({
     required this.dictionaries,
     required Future<Set<int>> Function() knownIds,
@@ -211,8 +218,14 @@ class FullTextSearchService extends ChangeNotifier {
     await _reconcileOnce();
     final FullTextIndexStore store;
     final bool rebuild;
+    // Captured against the store actually acquired below: a build that
+    // got the fresh store after a clear carries the new generation and
+    // proceeds, while one holding the pre-clear store bails out instead
+    // of writing into the deleted file.
+    var generation = -1;
     try {
       store = await _storeInstance();
+      generation = _indexGeneration;
       final fingerprint = await fingerprintFor(
         dictionary.type,
         dictionary.path,
@@ -225,6 +238,7 @@ class FullTextSearchService extends ChangeNotifier {
         // keeps its build button for when the file comes back.
         return;
       }
+      if (generation != _indexGeneration) return;
       rebuild = await store.ensureDictionary(dictionary.id, fingerprint);
     } catch (_) {
       // No usable store to record the failure in; keep it in memory so
@@ -263,6 +277,9 @@ class FullTextSearchService extends ChangeNotifier {
           startOrdinal: resumeFrom,
         ),
         onBatch: (rows, indexed, total) async {
+          // A clear that landed after this build started deletes the
+          // store this batch would go into; skip the write.
+          if (generation != _indexGeneration) return;
           // Batches arrive in order; each write is awaited before the next
           // batch is consumed so progress never runs ahead of storage.
           await store.insertBatch(dictionary.id, rows, indexed);
@@ -274,6 +291,7 @@ class FullTextSearchService extends ChangeNotifier {
           notifyListeners();
         },
         onTotal: (total) async {
+          if (generation != _indexGeneration) return;
           await store.setTotal(dictionary.id, total);
           final current = _states[dictionary.id];
           _states[dictionary.id] = FullTextIndexState(
@@ -285,7 +303,14 @@ class FullTextSearchService extends ChangeNotifier {
         },
         cancelToken: cancelToken,
       );
-      if (cancelToken.isCancelled) {
+      if (generation != _indexGeneration) {
+        // The indexes were cleared while this build ran; its partial
+        // output went away with the deleted file, so report not built
+        // instead of marking the deleted tables ready.
+        _states[dictionary.id] = const FullTextIndexState(
+          status: FullTextIndexStatus.notBuilt,
+        );
+      } else if (cancelToken.isCancelled) {
         // Keep the partial index: the next build resumes from it.
         final meta = await store.meta(dictionary.id);
         _states[dictionary.id] = FullTextIndexState(
@@ -303,14 +328,23 @@ class FullTextSearchService extends ChangeNotifier {
         );
       }
     } catch (_) {
-      // markFailed itself may fail when the store is broken; the
-      // in-memory state is what the page reads, so never let this throw.
-      try {
-        await store.markFailed(dictionary.id);
-      } catch (_) {}
-      _states[dictionary.id] = const FullTextIndexState(
-        status: FullTextIndexStatus.failed,
-      );
+      // A clear that landed mid-build is not a failure of this index:
+      // the file is simply gone, so report not built and let the next
+      // search rebuild it.
+      if (generation != _indexGeneration) {
+        _states[dictionary.id] = const FullTextIndexState(
+          status: FullTextIndexStatus.notBuilt,
+        );
+      } else {
+        // markFailed itself may fail when the store is broken; the
+        // in-memory state is what the page reads, so never let this throw.
+        try {
+          await store.markFailed(dictionary.id);
+        } catch (_) {}
+        _states[dictionary.id] = const FullTextIndexState(
+          status: FullTextIndexStatus.failed,
+        );
+      }
     } finally {
       _cancelTokens.remove(dictionary.id);
       notifyListeners();
@@ -490,6 +524,50 @@ class FullTextSearchService extends ChangeNotifier {
     final store = await _storeInstance();
     await store.dropDictionary(dictionaryId);
     _states.remove(dictionaryId);
+    notifyListeners();
+  }
+
+  /// Deletes every dictionary's index and closes the store, so the next
+  /// search rebuilds from scratch. Used by the storage management page.
+  /// The store must be closed before the file is deleted: deleting a file
+  /// an open connection still points at would leave the service reading
+  /// the deleted inode until restart. A store open already in flight is
+  /// awaited first, so it cannot reopen the file after the delete.
+  Future<void> clearAllIndexes() async {
+    // Builds that started before this clear see the new generation and
+    // bail out instead of writing into the deleted store.
+    _indexGeneration++;
+    for (final id in _builds.keys.toList()) {
+      cancelBuild(id);
+    }
+    for (final build in _builds.values.toList()) {
+      try {
+        await build;
+      } catch (_) {}
+    }
+    final pendingOpen = _storeFuture;
+    _storeFuture = null;
+    var store = _store;
+    _store = null;
+    if (pendingOpen != null) {
+      try {
+        store = await pendingOpen;
+      } catch (_) {
+        store = null;
+      }
+    }
+    await store?.close();
+    final dir = await _databaseDirectory();
+    for (final suffix in ["", "-wal", "-shm"]) {
+      final file = File(p.join(dir, "full_text_search.db$suffix"));
+      if (await file.exists()) {
+        try {
+          await file.delete();
+        } catch (_) {}
+      }
+    }
+    _states.clear();
+    _reconciled = false;
     notifyListeners();
   }
 
