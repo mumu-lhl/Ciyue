@@ -1364,7 +1364,17 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
               _applyContentScale(controller, settings.contentScale);
             },
             onRenderProcessGone: (controller, detail) async {
+              if (!mounted || !identical(controller, _desktopController)) {
+                return;
+              }
               talker.warning("InAppWebView render process gone, reloading...");
+              // WPE FDO is still destroying the dead WebProcess's Wayland
+              // client when this signal fires. Reloading inline re-enters the
+              // compositor mid-teardown; yield once so it can finish.
+              await Future<void>.delayed(Duration.zero);
+              if (!mounted || !identical(controller, _desktopController)) {
+                return;
+              }
               await controller.reload();
             },
           );

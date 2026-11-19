@@ -544,29 +544,32 @@ InAppWebView::~InAppWebView() {
 
   {
     std::lock_guard<std::mutex> lock(exported_image_mutex_);
-    if (exportable_ != nullptr) {
+    // Images exported by a crashed WebProcess belong to a Wayland client WPE
+    // FDO has already torn down. Releasing them here walks freed resources.
+    if (exportable_ != nullptr && !web_process_crashed_.load()) {
       for (auto* img : retired_images_) {
         if (img != nullptr) {
           ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_, img);
         }
       }
-      retired_images_.clear();
       if (displayed_image_ != nullptr) {
         ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
                                                                               displayed_image_);
-        displayed_image_ = nullptr;
       }
       if (grace_image_ != nullptr && grace_image_ != displayed_image_) {
         ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
                                                                               grace_image_);
-        grace_image_ = nullptr;
       }
       if (exported_image_ != nullptr && exported_image_ != displayed_image_) {
         ::wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image(exportable_,
                                                                               exported_image_);
-        exported_image_ = nullptr;
       }
     }
+    retired_images_.clear();
+    displayed_image_ = nullptr;
+    grace_image_ = nullptr;
+    exported_image_ = nullptr;
+    pending_frame_complete_ = false;
     exportable_ = nullptr;
     wpe_backend_ = nullptr;
   }
@@ -1345,6 +1348,11 @@ void InAppWebView::OnExportDmaBuf(::wpe_fdo_egl_exported_image* image) {
     }
     return;
   }
+
+  // A new export can only come from a WebProcess that is alive. The stale
+  // images from the previous, crashed process were dropped without touching
+  // its dead Wayland client, so normal bookkeeping is safe again.
+  web_process_crashed_.store(false);
 
   if (!received_first_frame_.exchange(true)) {
     infoLog("InAppWebView: first frame via DMA-BUF");
@@ -3962,7 +3970,7 @@ void* InAppWebView::GetCurrentEglImage(uint32_t* out_width, uint32_t* out_height
   // Protect exported_image_ access - OnExportDmaBuf may be called from WPE's thread
   std::lock_guard<std::mutex> lock(exported_image_mutex_);
   
-  if (is_disposing_.load() || exported_image_ == nullptr) {
+  if (is_disposing_.load() || web_process_crashed_.load() || exported_image_ == nullptr) {
     if (out_width)
       *out_width = 0;
     if (out_height)
@@ -4070,7 +4078,7 @@ void InAppWebView::OnFramePresented(void* egl_image) {
 #ifdef HAVE_WPE_BACKEND_LEGACY
   {
     std::lock_guard<std::mutex> lock(exported_image_mutex_);
-    if (is_disposing_.load()) {
+    if (is_disposing_.load() || web_process_crashed_.load()) {
       return;
     }
     frameTracePresent(egl_image, exported_image_, displayed_image_);
@@ -4121,7 +4129,7 @@ void InAppWebView::OnFramePresented(void* egl_image) {
 
 #ifdef HAVE_WPE_BACKEND_LEGACY
 void InAppWebView::ScheduleReleaseImages() {
-  if (is_disposing_.load() || exportable_ == nullptr) {
+  if (is_disposing_.load() || web_process_crashed_.load() || exportable_ == nullptr) {
     return;
   }
   if (release_idle_source_id_ == 0) {
@@ -4143,6 +4151,9 @@ void InAppWebView::ReleaseRetiredImages() {
   bool need_frame_complete = false;
   {
     std::lock_guard<std::mutex> lock(exported_image_mutex_);
+    if (is_disposing_.load() || web_process_crashed_.load()) {
+      return;
+    }
     to_release.swap(retired_images_);
     need_frame_complete = pending_frame_complete_;
     pending_frame_complete_ = false;
@@ -7151,21 +7162,31 @@ void InAppWebView::OnWebProcessTerminated(WebKitWebView* web_view,
             self->id_, reason_str, didCrash ? "true" : "false");
 
 #ifdef HAVE_WPE_BACKEND_LEGACY
-  // IMPORTANT: When WebProcess crashes (especially from "Failed to bind wl_compositor"),
-  // the WPE FDO connection is broken. We should NOT call any WPE FDO functions here
-  // as they may cause additional errors or hangs. Simply null out the pointer.
+  // All exported images belong to the WebProcess that just died. WPE FDO
+  // destroys that Wayland client (and the wl_buffer resources behind the
+  // images) on this same main loop. Calling dispatch_release_exported_image()
+  // or dispatch_frame_complete() for any of them afterwards walks freed
+  // resources and crashes in wl_client_destroy()/wl_list_remove().
   //
-  // The exported_image_ was being used by the crashed WebProcess, and its underlying
-  // Wayland resources are now invalid. Calling wpe_view_backend_exportable_fdo_egl_dispatch_release_exported_image
-  // on a broken connection can cause further issues.
+  // Drop every reference instead, without touching WPE FDO. The first frame
+  // from a replacement WebProcess re-enables normal bookkeeping.
   {
     std::lock_guard<std::mutex> lock(self->exported_image_mutex_);
-    if (self->exported_image_ != nullptr) {
-      g_message("InAppWebView[%ld]: Nulling stale EGL image %p after WebProcess termination (not releasing via WPE FDO)",
-                self->id_, (void*)self->exported_image_);
-      // Don't call WPE FDO release - the connection is broken
-      self->exported_image_ = nullptr;
+    if (self->release_idle_source_id_ != 0) {
+      g_source_remove(self->release_idle_source_id_);
+      self->release_idle_source_id_ = 0;
     }
+    if (self->exported_image_ != nullptr || self->displayed_image_ != nullptr ||
+        self->grace_image_ != nullptr) {
+      g_message("InAppWebView[%ld]: dropping stale EGL images after WebProcess termination (no WPE FDO release)",
+                self->id_);
+    }
+    self->retired_images_.clear();
+    self->exported_image_ = nullptr;
+    self->displayed_image_ = nullptr;
+    self->grace_image_ = nullptr;
+    self->pending_frame_complete_ = false;
+    self->web_process_crashed_.store(true);
   }
 #endif  // HAVE_WPE_BACKEND_LEGACY
 
