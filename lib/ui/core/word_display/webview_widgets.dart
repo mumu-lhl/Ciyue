@@ -16,6 +16,7 @@ import "package:ciyue/ui/core/word_display/desktop_context_menu_script.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
 import "package:ciyue/ui/core/word_display/entry_pager.dart";
+import "package:ciyue/ui/core/word_display/font_fallback_script.dart";
 import "package:ciyue/ui/core/word_display/gesture_actions.dart";
 import "package:ciyue/ui/core/word_display/gesture_script.dart";
 import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
@@ -238,6 +239,10 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
     ),
     UserScript(
       source: themeScript,
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
+    UserScript(
+      source: fontFallbackScript(),
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
     UserScript(

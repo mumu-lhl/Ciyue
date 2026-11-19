@@ -15,6 +15,7 @@ import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/single_instance.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/e_ink.dart";
+import "package:ciyue/ui/core/font_fallback.dart";
 import "package:ciyue/services/floating_window_preferences.dart";
 import "package:ciyue/ui/core/floating_window_shell.dart";
 import "package:ciyue/utils.dart";
@@ -359,7 +360,7 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
           ? _applyPureBlackDarkScheme(resolvedScheme)
           : resolvedScheme;
 
-      return ThemeData(
+      final theme = ThemeData(
         colorScheme: effectiveScheme,
         // The e-ink mode removes motion instead of restyling: no ripple, and
         // every route shows its page immediately rather than sliding in.
@@ -423,6 +424,12 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
           ),
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         ),
+      );
+
+      // On Linux the default CJK font is matched first and has no IPA glyphs;
+      // Flutter then draws tofu instead of trying another family per glyph.
+      return theme.copyWith(
+        textTheme: theme.textTheme.apply(fontFamilyFallback: ipaFontFallbacks),
       );
     }
 
