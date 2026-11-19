@@ -4,6 +4,7 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/dictionary_files.dart";
 import "package:ciyue/repositories/hunspell.dart";
@@ -11,12 +12,114 @@ import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
+import "package:ciyue/ui/pages/settings/personal_dictionary/personal_dictionary_io.dart";
 import "package:ciyue/utils.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:material_ui/material_ui.dart";
 import "package:path/path.dart";
 import "package:url_launcher/url_launcher.dart";
+
+/// Shows the name dialog for a new personal dictionary, or for renaming
+/// [dictionary] when given. An empty name is rejected with an error toast
+/// and the dialog stays open. On success the dictionary list refreshes and
+/// a toast confirms the change.
+Future<void> showPersonalDictionaryNameDialog(
+  BuildContext context,
+  DictionaryListData? dictionary,
+) async {
+  final l10n = AppLocalizations.of(context)!;
+  final isRename = dictionary != null;
+  final controller = TextEditingController(text: dictionary?.title ?? "");
+
+  Future<void> submit(BuildContext dialogContext, String value) async {
+    final name = value.trim();
+    if (name.isEmpty) {
+      ToastService.show(
+        l10n.personalDictionaryNameEmpty,
+        dialogContext,
+        type: ToastType.error,
+      );
+      return;
+    }
+
+    final container = ProviderScope.containerOf(dialogContext, listen: false);
+    final service = container.read(personalDictionaryServiceProvider);
+    try {
+      if (isRename) {
+        await service.renameDictionary(dictionary.id, name);
+      } else {
+        final id = await service.createDictionary(name);
+        // A new dictionary is useless until it is loaded: the lookup only
+        // sees dictionaries in the manager, and the group only keeps the
+        // ids written back to it. This is the enable path a file
+        // dictionary takes when its checkbox is ticked.
+        final model = container.read(dictManagerModelProvider);
+        await model.add(id, "personal:$id");
+        await model.updateDictIds();
+      }
+    } catch (e, stackTrace) {
+      talker.error(
+        "Failed to ${isRename ? "rename" : "create"} personal dictionary",
+        e,
+        stackTrace,
+      );
+      if (dialogContext.mounted) {
+        ToastService.show(e.toString(), dialogContext, type: ToastType.error);
+      }
+      return;
+    }
+
+    container.read(manageDictionariesModelProvider).update();
+    if (dialogContext.mounted) {
+      ToastService.show(
+        isRename
+            ? l10n.personalDictionaryRenamed
+            : l10n.personalDictionaryCreated,
+        dialogContext,
+      );
+      Navigator.of(dialogContext).pop();
+    }
+  }
+
+  await showDialog(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(
+        isRename ? l10n.personalDictionaryRename : l10n.personalDictionaryNew,
+      ),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        decoration: InputDecoration(labelText: l10n.personalDictionaryName),
+        onSubmitted: (value) => submit(dialogContext, value),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: Text(l10n.close),
+        ),
+        FilledButton(
+          onPressed: () => submit(dialogContext, controller.text),
+          child: Text(l10n.confirm),
+        ),
+      ],
+    ),
+  );
+}
+
+class NewPersonalDictionaryButton extends StatelessWidget {
+  const NewPersonalDictionaryButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: AppLocalizations.of(context)!.personalDictionaryNew,
+      icon: const Icon(Icons.post_add_rounded),
+      onPressed: () => showPersonalDictionaryNameDialog(context, null),
+    );
+  }
+}
 
 Future<void> addGroup(String value, BuildContext context) async {
   final trimmed = value.trim();
@@ -254,8 +357,29 @@ class DictionaryCard extends ConsumerStatefulWidget {
 class _DictionaryCardState extends ConsumerState<DictionaryCard> {
   bool _isToggling = false;
 
+  /// Entry count for personal dictionaries, fetched once per card.
+  Future<int>? _personalEntryCount;
+
   DictionaryListData get dictionary => widget.dictionary;
   int get index => widget.index;
+
+  @override
+  void initState() {
+    super.initState();
+    if (DictionaryType.isPersonal(dictionary.type)) {
+      _personalEntryCount = ref
+          .read(personalDictionaryServiceProvider)
+          .entryCount(dictionary.id);
+    }
+  }
+
+  void _refreshPersonalEntryCount() {
+    setState(() {
+      _personalEntryCount = ref
+          .read(personalDictionaryServiceProvider)
+          .entryCount(dictionary.id);
+    });
+  }
 
   Future<bool> _checkAndDeleteDictionary(
     BuildContext context,
@@ -620,11 +744,419 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
     );
   }
 
+  void _openPersonalEntries(BuildContext context, String title) {
+    context.push(
+      "/settings/personal_dictionary/${dictionary.id}",
+      extra: {"title": title},
+    );
+  }
+
+  void _showPersonalActionsSheet(
+    BuildContext context,
+    WidgetRef ref,
+    String title,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    Widget buildItem({
+      required IconData icon,
+      required String label,
+      required VoidCallback onTap,
+      Color? iconColor,
+      Color? textColor,
+    }) {
+      return ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        leading: Icon(icon, color: iconColor ?? theme.colorScheme.primary),
+        title: Text(
+          label,
+          style: TextStyle(fontWeight: FontWeight.w500, color: textColor),
+        ),
+        trailing: const Icon(Icons.chevron_right_rounded, size: 18),
+        onTap: onTap,
+      );
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (BuildContext sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 12.0,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.outlineVariant.withValues(
+                          alpha: 0.6,
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.edit_note_rounded,
+                            color: theme.colorScheme.onPrimaryContainer,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              FutureBuilder<int>(
+                                future: _personalEntryCount,
+                                builder: (context, snapshot) {
+                                  final count = snapshot.data;
+                                  return Text(
+                                    count == null
+                                        ? ""
+                                        : l10n.personalDictionaryEntryCount(
+                                            count,
+                                          ),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  const SizedBox(height: 6),
+                  buildItem(
+                    icon: Icons.list_alt_rounded,
+                    label: l10n.personalDictionaryEditEntries,
+                    onTap: () {
+                      sheetContext.pop();
+                      _openPersonalEntries(context, title);
+                    },
+                  ),
+                  buildItem(
+                    icon: Icons.file_download_outlined,
+                    label: l10n.personalDictionaryImportDsl,
+                    onTap: () {
+                      sheetContext.pop();
+                      importPersonalDictionaryDsl(
+                        context,
+                        ref.read(personalDictionaryServiceProvider),
+                        dictionary.id,
+                      ).then((_) {
+                        if (mounted) _refreshPersonalEntryCount();
+                      });
+                    },
+                  ),
+                  buildItem(
+                    icon: Icons.file_upload_outlined,
+                    label: l10n.personalDictionaryExportDsl,
+                    onTap: () {
+                      sheetContext.pop();
+                      exportPersonalDictionaryDsl(
+                        context,
+                        ref.read(personalDictionaryServiceProvider),
+                        dictionary.id,
+                        title,
+                      );
+                    },
+                  ),
+                  buildItem(
+                    icon: Icons.title_rounded,
+                    label: l10n.personalDictionaryRename,
+                    onTap: () {
+                      sheetContext.pop();
+                      showPersonalDictionaryNameDialog(context, dictionary);
+                    },
+                  ),
+                  buildItem(
+                    icon: Icons.delete_outline_rounded,
+                    label: l10n.personalDictionaryDelete,
+                    iconColor: theme.colorScheme.error,
+                    textColor: theme.colorScheme.error,
+                    onTap: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (confirmContext) => AlertDialog(
+                          title: Text(l10n.personalDictionaryDelete),
+                          content: Text(title),
+                          actions: [
+                            TextButton(
+                              onPressed: () =>
+                                  Navigator.of(confirmContext).pop(false),
+                              child: Text(l10n.close),
+                            ),
+                            FilledButton(
+                              onPressed: () =>
+                                  Navigator.of(confirmContext).pop(true),
+                              child: Text(l10n.confirm),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true) return;
+
+                      try {
+                        await ref
+                            .read(personalDictionaryServiceProvider)
+                            .deleteDictionary(dictionary.id);
+                      } catch (e, stackTrace) {
+                        talker.error(
+                          "Failed to delete personal dictionary "
+                          "${dictionary.id}",
+                          e,
+                          stackTrace,
+                        );
+                        if (context.mounted) {
+                          ToastService.show(
+                            e.toString(),
+                            context,
+                            type: ToastType.error,
+                          );
+                        }
+                        return;
+                      }
+
+                      // The manager still holds the loaded instance after
+                      // the rows are gone: close it first, mirroring the
+                      // file-dictionary delete, or lookups keep asking a
+                      // dictionary whose data no longer exists.
+                      if (dictManager.contain(dictionary.id)) {
+                        final model = ref.read(dictManagerModelProvider);
+                        await model.close(dictionary.id);
+                        dictManager.dictIds = [
+                          for (final dict in dictManager.dicts.values) dict.id,
+                        ];
+                        model.checkIsEmpty();
+                      }
+
+                      await dictGroupDao.removeDictIdFromAllGroups(
+                        dictionary.id,
+                      );
+
+                      if (sheetContext.mounted) {
+                        ref.read(manageDictionariesModelProvider).update();
+                        sheetContext.pop();
+                      }
+                      if (context.mounted) {
+                        ToastService.show(
+                          l10n.personalDictionaryDeleted,
+                          context,
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPersonalCard(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    AppLocalizations l10n,
+  ) {
+    // A personal dictionary's path is the `personal:<id>` sentinel, never
+    // a file name, so it is only a fallback when no title was stored.
+    final title = dictionary.title != null && dictionary.title != ""
+        ? dictionary.title!
+        : dictionary.path;
+
+    return Card(
+      key: ValueKey(dictionary.id),
+      elevation: 0,
+      clipBehavior: Clip.antiAlias,
+      color: colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: () => _openPersonalEntries(context, title),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6.0,
+                    vertical: 6.0,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primaryContainer.withValues(
+                            alpha: 0.8,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.edit_note_rounded,
+                          size: 18,
+                          color: colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              title,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            FutureBuilder<int>(
+                              future: _personalEntryCount,
+                              builder: (context, snapshot) {
+                                final count = snapshot.data;
+                                return Text(
+                                  count == null
+                                      ? ""
+                                      : l10n.personalDictionaryEntryCount(
+                                          count,
+                                        ),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant
+                                        .withValues(alpha: 0.7),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Checkbox(
+              value: dictManager.contain(dictionary.id),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              onChanged: _isToggling
+                  ? null
+                  : (bool? value) async {
+                      if (_isToggling) return;
+                      setState(() => _isToggling = true);
+                      try {
+                        if (!context.mounted) return;
+                        final model = ref.read(dictManagerModelProvider);
+                        if (value == true) {
+                          await model.add(dictionary.id, dictionary.path);
+                        } else {
+                          await model.close(dictionary.id);
+                        }
+                        model.checkIsEmpty();
+                        await model.updateDictIds();
+                      } catch (e, stackTrace) {
+                        // Enabling a corrupted dictionary throws; without a
+                        // catch the checkbox silently snaps back with no
+                        // feedback to the user.
+                        talker.error(
+                          "Failed to toggle dictionary ${dictionary.id}",
+                          e,
+                          stackTrace,
+                        );
+                        if (context.mounted) {
+                          ToastService.show(
+                            e.toString(),
+                            context,
+                            type: ToastType.error,
+                          );
+                        }
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isToggling = false);
+                        }
+                      }
+                    },
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_vert_rounded, size: 20),
+              color: colorScheme.onSurfaceVariant,
+              tooltip: l10n.more,
+              onPressed: () => _showPersonalActionsSheet(context, ref, title),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
+
+    // Personal dictionaries have no files to reorder: they get
+    // their own card with an entry count and personal actions instead.
+    // Enabling one loads it into the manager like a file dictionary.
+    if (DictionaryType.isPersonal(dictionary.type)) {
+      return _buildPersonalCard(context, theme, colorScheme, l10n);
+    }
 
     final String title;
     if (dictionary.title != null && dictionary.title != "") {
@@ -1439,6 +1971,7 @@ class ManageDictionariesPageState extends State<ManageDictionariesPage> {
             onPressed: () => context.push("/full-text-index-overview"),
           ),
           const AddButton(),
+          const NewPersonalDictionaryButton(),
         ],
       ),
       body: Center(

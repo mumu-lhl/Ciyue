@@ -28,6 +28,24 @@
 ///   to the index side, next to the existing NFC lookup key.
 library;
 
+import "package:dict_reader/dict_reader.dart" show normalizeKey;
+
+/// The stored key for a personal-dictionary headword, used for both exact
+/// and prefix lookup.
+///
+/// `normalizeKey` alone is NFC (see `dict_reader/src/normalize.dart`): it
+/// folds `e` + U+0301 to `é`, but `Apple` and `apple` would still be two
+/// different headwords. Personal dictionaries are user-authored, so the
+/// lookup must also be case-insensitive — append `toLowerCase()`.
+///
+/// The same function runs at write time (when headwords are stored) and at
+/// query time (exact, prefix and batch resolution), so a headword is always
+/// found regardless of the casing or composition form it was typed in.
+/// The original spelling is kept in `headword` for display; only the
+/// `normalizedHeadword` column is folded.
+String normalizePersonalHeadword(String headword) =>
+    normalizeKey(headword).toLowerCase();
+
 /// Case spellings of [word], most faithful first: as typed, lower case,
 /// title case (word by word) and upper case.
 ///

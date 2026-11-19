@@ -163,6 +163,12 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
     return result?.title;
   }
 
+  Future<DictionaryListData?> getById(int id) {
+    return (select(
+      dictionaryList,
+    )..where((t) => t.id.isValue(id))).getSingleOrNull();
+  }
+
   Future<String?> getFontPath(int id) async {
     return (await ((select(
       dictionaryList,
@@ -189,6 +195,16 @@ class DictionaryListDao extends DatabaseAccessor<AppDatabase>
     return (update(dictionaryList)..where((t) => t.id.isValue(id))).write(
       DictionaryListCompanion(title: Value(alias)),
     );
+  }
+
+  Future<int> updatePath(int id, String path) {
+    return (update(dictionaryList)..where((t) => t.id.isValue(id))).write(
+      DictionaryListCompanion(path: Value(path)),
+    );
+  }
+
+  Future<int> removeById(int id) {
+    return (delete(dictionaryList)..where((t) => t.id.isValue(id))).go();
   }
 
   Future<int> updateFont(int id, String? fontPath) {
@@ -1205,5 +1221,192 @@ class QuizMistakeDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> clearMistakes() {
     return delete(quizMistakes).go();
+  }
+}
+
+@DriftAccessor(tables: [PersonalArticles, PersonalHeadwords])
+class PersonalDictionaryDao extends DatabaseAccessor<AppDatabase>
+    with _$PersonalDictionaryDaoMixin {
+  PersonalDictionaryDao(super.attachedDatabase);
+
+  /// Escapes LIKE wildcards in a user-supplied prefix so `%` and `_` match
+  /// themselves instead of any run of characters.
+  static String _escapeLike(String value) => value
+      .replaceAll(r"\", r"\\")
+      .replaceAll("%", r"\%")
+      .replaceAll("_", r"\_");
+
+  Future<int> insertArticle(PersonalArticlesCompanion article) {
+    return into(personalArticles).insert(article);
+  }
+
+  Future<void> insertHeadwords(
+    List<PersonalHeadwordsCompanion> headwords,
+  ) async {
+    await batch((batch) {
+      // 4 variables per row: stay under SQLite's variable limit.
+      for (final chunk in _chunks(headwords, 999 ~/ 4)) {
+        batch.insertAll(personalHeadwords, chunk);
+      }
+    });
+  }
+
+  Future<PersonalArticle?> getArticle(int articleId) {
+    return (select(
+      personalArticles,
+    )..where((t) => t.id.isValue(articleId))).getSingleOrNull();
+  }
+
+  Future<List<PersonalArticle>> articlesForDictionary(int dictionaryId) {
+    return (select(personalArticles)
+          ..where((t) => t.dictionaryId.isValue(dictionaryId))
+          ..orderBy([(t) => OrderingTerm(expression: t.id)]))
+        .get();
+  }
+
+  /// Headwords of one dictionary, in display order. With [normalizedPrefix]
+  /// set, only headwords whose normalized form starts with the prefix.
+  Future<List<PersonalHeadword>> headwordsForDictionary(
+    int dictionaryId, {
+    String? normalizedPrefix,
+  }) {
+    final query = select(personalHeadwords)
+      ..where((t) => t.dictionaryId.isValue(dictionaryId))
+      ..orderBy([
+        (t) => OrderingTerm(expression: t.headword),
+        (t) => OrderingTerm(expression: t.id),
+      ]);
+    if (normalizedPrefix != null) {
+      query.where(
+        (t) => t.normalizedHeadword.like(
+          "${_escapeLike(normalizedPrefix)}%",
+          escapeChar: r"\",
+        ),
+      );
+    }
+    return query.get();
+  }
+
+  Future<List<PersonalHeadword>> headwordsForArticle(int articleId) {
+    return (select(personalHeadwords)
+          ..where((t) => t.articleId.isValue(articleId))
+          ..orderBy([(t) => OrderingTerm(expression: t.headword)]))
+        .get();
+  }
+
+  Future<List<PersonalHeadword>> headwordsForArticles(
+    Iterable<int> articleIds,
+  ) async {
+    final ids = articleIds.toList();
+    if (ids.isEmpty) return [];
+    final rows = <PersonalHeadword>[];
+    for (final chunk in _chunks(ids, 500)) {
+      rows.addAll(
+        await (select(
+          personalHeadwords,
+        )..where((t) => t.articleId.isIn(chunk))).get(),
+      );
+    }
+    return rows;
+  }
+
+  /// The stored headword rows for [normalizedHeadwords] in one dictionary,
+  /// keyed by normalized form. At most one row per normalized form: the
+  /// unique index on (dictionaryId, normalizedHeadword) forbids aliases
+  /// that fold together.
+  Future<Map<String, PersonalHeadword>> resolveHeadwords(
+    int dictionaryId,
+    Iterable<String> normalizedHeadwords,
+  ) async {
+    final wanted = normalizedHeadwords.toSet().toList();
+    if (wanted.isEmpty) return {};
+    final rows = <PersonalHeadword>[];
+    for (final chunk in _chunks(wanted, 500)) {
+      rows.addAll(
+        await (select(personalHeadwords)..where(
+              (t) =>
+                  t.dictionaryId.isValue(dictionaryId) &
+                  t.normalizedHeadword.isIn(chunk),
+            ))
+            .get(),
+      );
+    }
+    return {for (final row in rows) row.normalizedHeadword: row};
+  }
+
+  /// Headwords whose normalized form starts with [normalizedPrefix], in
+  /// display order, for prefix search.
+  Future<List<PersonalHeadword>> searchHeadwords(
+    int dictionaryId,
+    String normalizedPrefix, {
+    int limit = 30,
+  }) {
+    return (select(personalHeadwords)
+          ..where(
+            (t) =>
+                t.dictionaryId.isValue(dictionaryId) &
+                t.normalizedHeadword.like(
+                  "${_escapeLike(normalizedPrefix)}%",
+                  escapeChar: r"\",
+                ),
+          )
+          ..orderBy([
+            (t) => OrderingTerm(expression: t.headword),
+            (t) => OrderingTerm(expression: t.id),
+          ])
+          ..limit(limit))
+        .get();
+  }
+
+  Future<int> countHeadwords(int dictionaryId) async {
+    final count = personalHeadwords.id.count();
+    final row =
+        await (selectOnly(personalHeadwords)
+              ..addColumns([count])
+              ..where(personalHeadwords.dictionaryId.isValue(dictionaryId)))
+            .getSingle();
+    return row.read(count) ?? 0;
+  }
+
+  Future<int> updateArticle(int articleId, PersonalArticlesCompanion article) {
+    return (update(
+      personalArticles,
+    )..where((t) => t.id.isValue(articleId))).write(article);
+  }
+
+  /// Replaces an article's headwords with [headwords] in one transaction,
+  /// so a failed insert cannot leave the article headword-less.
+  Future<void> replaceHeadwords(
+    int articleId,
+    List<PersonalHeadwordsCompanion> headwords,
+  ) {
+    return transaction(() async {
+      await (delete(
+        personalHeadwords,
+      )..where((t) => t.articleId.isValue(articleId))).go();
+      await insertHeadwords(headwords);
+    });
+  }
+
+  Future<void> deleteArticle(int articleId) {
+    return transaction(() async {
+      await (delete(
+        personalHeadwords,
+      )..where((t) => t.articleId.isValue(articleId))).go();
+      await (delete(
+        personalArticles,
+      )..where((t) => t.id.isValue(articleId))).go();
+    });
+  }
+
+  Future<void> deleteDictionaryData(int dictionaryId) {
+    return transaction(() async {
+      await (delete(
+        personalHeadwords,
+      )..where((t) => t.dictionaryId.isValue(dictionaryId))).go();
+      await (delete(
+        personalArticles,
+      )..where((t) => t.dictionaryId.isValue(dictionaryId))).go();
+    });
   }
 }

@@ -11,6 +11,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/dictionary_lookup.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
 import "package:ciyue/services/full_text_search_service.dart";
+import "package:ciyue/services/personal_dictionary_service.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/dictionary.dart";
@@ -75,6 +76,10 @@ final openRecordsRepositoryProvider = Provider<OpenRecordsRepository>(
 
 final writingCheckHistoryDaoProvider = Provider<WritingCheckHistoryDao>(
   (ref) => WritingCheckHistoryDao(mainDatabase),
+);
+
+final personalDictionaryServiceProvider = Provider<PersonalDictionaryService>(
+  (ref) => PersonalDictionaryService(mainDatabase),
 );
 
 final translateHistoryDaoProvider = Provider<TranslateHistoryDao>(

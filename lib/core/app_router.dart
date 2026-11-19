@@ -22,6 +22,8 @@ import "package:ciyue/ui/pages/settings/manage_dictionaries/full_text_index_over
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/properties.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/settings_dictionary.dart";
+import "package:ciyue/ui/pages/settings/personal_dictionary/personal_dictionary_entries_page.dart";
+import "package:ciyue/ui/pages/settings/personal_dictionary/personal_dictionary_entry_editor_page.dart";
 import "package:ciyue/ui/pages/settings/other.dart";
 import "package:ciyue/ui/pages/settings/privacy_policy.dart";
 import "package:ciyue/ui/pages/settings/terms_of_service.dart";
@@ -125,6 +127,32 @@ final router = GoRouter(
     GoRoute(
       path: "/settings/dictionaries",
       builder: (context, state) => const ManageDictionariesPage(),
+    ),
+    GoRoute(
+      path: "/settings/personal_dictionary/:dictionaryId",
+      builder: (context, state) {
+        final extra = state.extra;
+        final title = extra is Map<String, dynamic>
+            ? extra["title"] as String?
+            : null;
+        return PersonalDictionaryEntriesPage(
+          dictionaryId: int.parse(state.pathParameters["dictionaryId"]!),
+          title: title,
+        );
+      },
+    ),
+    GoRoute(
+      path: "/settings/personal_dictionary/:dictionaryId/entry/new",
+      builder: (context, state) => PersonalDictionaryEntryEditorPage(
+        dictionaryId: int.parse(state.pathParameters["dictionaryId"]!),
+      ),
+    ),
+    GoRoute(
+      path: "/settings/personal_dictionary/:dictionaryId/entry/:articleId",
+      builder: (context, state) => PersonalDictionaryEntryEditorPage(
+        dictionaryId: int.parse(state.pathParameters["dictionaryId"]!),
+        articleId: int.parse(state.pathParameters["articleId"]!),
+      ),
     ),
     GoRoute(
       path: "/settings/ai_settings",

@@ -8,6 +8,7 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary_import_failure.dart";
+import "package:ciyue/repositories/personal_dictionary.dart";
 import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/repositories/zim.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -51,6 +52,7 @@ LoadedDictionary createLoadedDictionary({
 }) {
   if (DictionaryType.isZim(type)) return Zim(path: path);
   if (DictionaryType.isStardict(type)) return Stardict(path: path);
+  if (DictionaryType.isPersonal(type)) return PersonalDictionary(path: path);
   return Mdict(path: path);
 }
 

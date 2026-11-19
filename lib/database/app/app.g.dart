@@ -18,7 +18,7 @@ class $DictionaryListTable extends DictionaryList
         'title',
         aliasedName,
         true,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: false,
       );
   static const drift.VerificationMeta _fontPathMeta =
@@ -29,7 +29,7 @@ class $DictionaryListTable extends DictionaryList
         'font_path',
         aliasedName,
         true,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: false,
       );
   static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
@@ -41,7 +41,7 @@ class $DictionaryListTable extends DictionaryList
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -55,7 +55,7 @@ class $DictionaryListTable extends DictionaryList
     'order',
     aliasedName,
     true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
   );
   static const drift.VerificationMeta _pathMeta = const drift.VerificationMeta(
@@ -66,7 +66,7 @@ class $DictionaryListTable extends DictionaryList
     'path',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _typeMeta = const drift.VerificationMeta(
@@ -77,7 +77,7 @@ class $DictionaryListTable extends DictionaryList
     'type',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const drift.Constant(0),
   );
@@ -147,27 +147,27 @@ class $DictionaryListTable extends DictionaryList
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictionaryListData(
       title: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}title'],
       ),
       fontPath: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}font_path'],
       ),
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       order: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}order'],
       ),
       path: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}path'],
       )!,
       type: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}type'],
       )!,
     );
@@ -423,7 +423,7 @@ class $HunspellSourceTable extends HunspellSource
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -437,7 +437,7 @@ class $HunspellSourceTable extends HunspellSource
     'name',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _affPathMeta =
@@ -448,7 +448,7 @@ class $HunspellSourceTable extends HunspellSource
         'aff_path',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _dicPathMeta =
@@ -459,7 +459,7 @@ class $HunspellSourceTable extends HunspellSource
         'dic_path',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _languageMeta =
@@ -470,7 +470,7 @@ class $HunspellSourceTable extends HunspellSource
         'language',
         aliasedName,
         true,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: false,
       );
   static const drift.VerificationMeta _enabledMeta =
@@ -480,7 +480,7 @@ class $HunspellSourceTable extends HunspellSource
     'enabled',
     aliasedName,
     false,
-    type: DriftSqlType.bool,
+    type: drift.DriftSqlType.bool,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'CHECK ("enabled" IN (0, 1))',
@@ -495,7 +495,7 @@ class $HunspellSourceTable extends HunspellSource
     'order',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const drift.Constant(0),
   );
@@ -507,7 +507,7 @@ class $HunspellSourceTable extends HunspellSource
         'two_pass_lookup',
         aliasedName,
         false,
-        type: DriftSqlType.bool,
+        type: drift.DriftSqlType.bool,
         requiredDuringInsert: false,
         defaultConstraints: GeneratedColumn.constraintIsAlways(
           'CHECK ("two_pass_lookup" IN (0, 1))',
@@ -601,35 +601,35 @@ class $HunspellSourceTable extends HunspellSource
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return HunspellSourceData(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
       affPath: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}aff_path'],
       )!,
       dicPath: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}dic_path'],
       )!,
       language: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}language'],
       ),
       enabled: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
+        drift.DriftSqlType.bool,
         data['${effectivePrefix}enabled'],
       )!,
       order: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}order'],
       )!,
       twoPassLookup: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
+        drift.DriftSqlType.bool,
         data['${effectivePrefix}two_pass_lookup'],
       )!,
     );
@@ -933,7 +933,7 @@ class $WordbookTable extends Wordbook
         'created_at',
         aliasedName,
         false,
-        type: DriftSqlType.dateTime,
+        type: drift.DriftSqlType.dateTime,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _tagMeta = const drift.VerificationMeta(
@@ -944,7 +944,7 @@ class $WordbookTable extends Wordbook
     'tag',
     aliasedName,
     true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
   );
   static const drift.VerificationMeta _wordMeta = const drift.VerificationMeta(
@@ -955,7 +955,7 @@ class $WordbookTable extends Wordbook
     'word',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   @override
@@ -1004,15 +1004,15 @@ class $WordbookTable extends Wordbook
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WordbookData(
       createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
+        drift.DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
       tag: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}tag'],
       ),
       word: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}word'],
       )!,
     );
@@ -1201,7 +1201,7 @@ class $WordbookTagsTable extends WordbookTags
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -1215,7 +1215,7 @@ class $WordbookTagsTable extends WordbookTags
     'tag',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
@@ -1254,11 +1254,11 @@ class $WordbookTagsTable extends WordbookTags
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WordbookTag(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       tag: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}tag'],
       )!,
     );
@@ -1397,7 +1397,7 @@ class $HistoryTable extends History
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -1411,7 +1411,7 @@ class $HistoryTable extends History
     'word',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   @override
@@ -1449,11 +1449,11 @@ class $HistoryTable extends History
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return HistoryData(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       word: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}word'],
       )!,
     );
@@ -1588,7 +1588,7 @@ class $DictGroupTable extends DictGroup
         'dict_ids',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
@@ -1600,7 +1600,7 @@ class $DictGroupTable extends DictGroup
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -1614,7 +1614,7 @@ class $DictGroupTable extends DictGroup
     'name',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
@@ -1626,7 +1626,7 @@ class $DictGroupTable extends DictGroup
     'order',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const drift.Constant(0),
   );
@@ -1679,19 +1679,19 @@ class $DictGroupTable extends DictGroup
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictGroupData(
       dictIds: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}dict_ids'],
       )!,
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
       order: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}order'],
       )!,
     );
@@ -1891,7 +1891,7 @@ class $MddAudioListTable extends MddAudioList
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -1905,7 +1905,7 @@ class $MddAudioListTable extends MddAudioList
     'path',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _titleMeta = const drift.VerificationMeta(
@@ -1917,7 +1917,7 @@ class $MddAudioListTable extends MddAudioList
         'title',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _orderMeta = const drift.VerificationMeta(
@@ -1928,7 +1928,7 @@ class $MddAudioListTable extends MddAudioList
     'order',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: true,
   );
   @override
@@ -1982,19 +1982,19 @@ class $MddAudioListTable extends MddAudioList
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return MddAudioListData(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       path: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}path'],
       )!,
       title: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}title'],
       )!,
       order: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}order'],
       )!,
     );
@@ -2194,7 +2194,7 @@ class $MddAudioResourceTable extends MddAudioResource
         'block_offset',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _compressedSizeMeta =
@@ -2205,7 +2205,7 @@ class $MddAudioResourceTable extends MddAudioResource
         'compressed_size',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _endOffsetMeta =
@@ -2215,7 +2215,7 @@ class $MddAudioResourceTable extends MddAudioResource
     'end_offset',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _keyMeta = const drift.VerificationMeta(
@@ -2226,7 +2226,7 @@ class $MddAudioResourceTable extends MddAudioResource
     'key',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _mddAudioListIdMeta =
@@ -2237,7 +2237,7 @@ class $MddAudioResourceTable extends MddAudioResource
         'mdd_audio_list_id',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _startOffsetMeta =
@@ -2248,7 +2248,7 @@ class $MddAudioResourceTable extends MddAudioResource
         'start_offset',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
       );
   @override
@@ -2342,27 +2342,27 @@ class $MddAudioResourceTable extends MddAudioResource
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return MddAudioResourceData(
       blockOffset: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}block_offset'],
       )!,
       compressedSize: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}compressed_size'],
       )!,
       endOffset: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}end_offset'],
       )!,
       key: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}key'],
       )!,
       mddAudioListId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}mdd_audio_list_id'],
       )!,
       startOffset: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}start_offset'],
       )!,
     );
@@ -2636,7 +2636,7 @@ class $AiExplanationsTable extends AiExplanations
     'word',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
@@ -2648,7 +2648,7 @@ class $AiExplanationsTable extends AiExplanations
         'explanation',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   @override
@@ -2694,11 +2694,11 @@ class $AiExplanationsTable extends AiExplanations
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return AiExplanation(
       word: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}word'],
       )!,
       explanation: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}explanation'],
       )!,
     );
@@ -2861,7 +2861,7 @@ class $WritingCheckHistoryTable extends WritingCheckHistory
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -2875,7 +2875,7 @@ class $WritingCheckHistoryTable extends WritingCheckHistory
         'input_text',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _outputTextMeta =
@@ -2886,7 +2886,7 @@ class $WritingCheckHistoryTable extends WritingCheckHistory
         'output_text',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _createdAtMeta =
@@ -2897,7 +2897,7 @@ class $WritingCheckHistoryTable extends WritingCheckHistory
         'created_at',
         aliasedName,
         false,
-        type: DriftSqlType.dateTime,
+        type: drift.DriftSqlType.dateTime,
         requiredDuringInsert: true,
       );
   @override
@@ -2959,19 +2959,19 @@ class $WritingCheckHistoryTable extends WritingCheckHistory
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WritingCheckHistoryData(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       inputText: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}input_text'],
       )!,
       outputText: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}output_text'],
       )!,
       createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
+        drift.DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
     );
@@ -3175,7 +3175,7 @@ class $TranslateHistoryTable extends TranslateHistory
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -3189,7 +3189,7 @@ class $TranslateHistoryTable extends TranslateHistory
         'input_text',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _createdAtMeta =
@@ -3200,7 +3200,7 @@ class $TranslateHistoryTable extends TranslateHistory
         'created_at',
         aliasedName,
         false,
-        type: DriftSqlType.dateTime,
+        type: drift.DriftSqlType.dateTime,
         requiredDuringInsert: true,
       );
   @override
@@ -3246,15 +3246,15 @@ class $TranslateHistoryTable extends TranslateHistory
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TranslateHistoryData(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       inputText: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}input_text'],
       )!,
       createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
+        drift.DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
     );
@@ -3433,7 +3433,7 @@ class $OpenRecordsTable extends OpenRecords
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -3447,7 +3447,7 @@ class $OpenRecordsTable extends OpenRecords
     'word',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _createdAtMeta =
@@ -3458,7 +3458,7 @@ class $OpenRecordsTable extends OpenRecords
         'created_at',
         aliasedName,
         false,
-        type: DriftSqlType.dateTime,
+        type: drift.DriftSqlType.dateTime,
         requiredDuringInsert: true,
       );
   @override
@@ -3504,15 +3504,15 @@ class $OpenRecordsTable extends OpenRecords
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return OpenRecord(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       word: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}word'],
       )!,
       createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
+        drift.DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
     );
@@ -3686,7 +3686,7 @@ class $FlashcardsTable extends Flashcards
     'word',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _stateMeta = const drift.VerificationMeta(
@@ -3697,7 +3697,7 @@ class $FlashcardsTable extends Flashcards
     'state',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _stepMeta = const drift.VerificationMeta(
@@ -3708,7 +3708,7 @@ class $FlashcardsTable extends Flashcards
     'step',
     aliasedName,
     true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
   );
   static const drift.VerificationMeta _stabilityMeta =
@@ -3719,7 +3719,7 @@ class $FlashcardsTable extends Flashcards
         'stability',
         aliasedName,
         true,
-        type: DriftSqlType.double,
+        type: drift.DriftSqlType.double,
         requiredDuringInsert: false,
       );
   static const drift.VerificationMeta _difficultyMeta =
@@ -3730,7 +3730,7 @@ class $FlashcardsTable extends Flashcards
         'difficulty',
         aliasedName,
         true,
-        type: DriftSqlType.double,
+        type: drift.DriftSqlType.double,
         requiredDuringInsert: false,
       );
   static const drift.VerificationMeta _dueMeta = const drift.VerificationMeta(
@@ -3742,7 +3742,7 @@ class $FlashcardsTable extends Flashcards
         'due',
         aliasedName,
         false,
-        type: DriftSqlType.dateTime,
+        type: drift.DriftSqlType.dateTime,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _lastReviewMeta =
@@ -3753,7 +3753,7 @@ class $FlashcardsTable extends Flashcards
         'last_review',
         aliasedName,
         true,
-        type: DriftSqlType.dateTime,
+        type: drift.DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
   static const drift.VerificationMeta _introducedAtMeta =
@@ -3764,7 +3764,7 @@ class $FlashcardsTable extends Flashcards
         'introduced_at',
         aliasedName,
         false,
-        type: DriftSqlType.dateTime,
+        type: drift.DriftSqlType.dateTime,
         requiredDuringInsert: true,
       );
   @override
@@ -3859,35 +3859,35 @@ class $FlashcardsTable extends Flashcards
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Flashcard(
       word: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}word'],
       )!,
       state: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}state'],
       )!,
       step: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}step'],
       ),
       stability: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
+        drift.DriftSqlType.double,
         data['${effectivePrefix}stability'],
       ),
       difficulty: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
+        drift.DriftSqlType.double,
         data['${effectivePrefix}difficulty'],
       ),
       due: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
+        drift.DriftSqlType.dateTime,
         data['${effectivePrefix}due'],
       )!,
       lastReview: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
+        drift.DriftSqlType.dateTime,
         data['${effectivePrefix}last_review'],
       ),
       introducedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
+        drift.DriftSqlType.dateTime,
         data['${effectivePrefix}introduced_at'],
       )!,
     );
@@ -4218,7 +4218,7 @@ class $FlashcardReviewLogsTable extends FlashcardReviewLogs
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -4232,7 +4232,7 @@ class $FlashcardReviewLogsTable extends FlashcardReviewLogs
     'word',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _ratingMeta =
@@ -4242,7 +4242,7 @@ class $FlashcardReviewLogsTable extends FlashcardReviewLogs
     'rating',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _reviewedAtMeta =
@@ -4253,7 +4253,7 @@ class $FlashcardReviewLogsTable extends FlashcardReviewLogs
         'reviewed_at',
         aliasedName,
         false,
-        type: DriftSqlType.dateTime,
+        type: drift.DriftSqlType.dateTime,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _durationMsMeta =
@@ -4263,7 +4263,7 @@ class $FlashcardReviewLogsTable extends FlashcardReviewLogs
     'duration_ms',
     aliasedName,
     true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
   );
   @override
@@ -4329,23 +4329,23 @@ class $FlashcardReviewLogsTable extends FlashcardReviewLogs
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return FlashcardReviewLog(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       word: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}word'],
       )!,
       rating: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}rating'],
       )!,
       reviewedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
+        drift.DriftSqlType.dateTime,
         data['${effectivePrefix}reviewed_at'],
       )!,
       durationMs: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}duration_ms'],
       ),
     );
@@ -4577,7 +4577,7 @@ class $QuizMistakesTable extends QuizMistakes
     aliasedName,
     false,
     hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
@@ -4591,7 +4591,7 @@ class $QuizMistakesTable extends QuizMistakes
     'word',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _questionTypeMeta =
@@ -4602,7 +4602,7 @@ class $QuizMistakesTable extends QuizMistakes
         'question_type',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _questionMeta =
@@ -4613,7 +4613,7 @@ class $QuizMistakesTable extends QuizMistakes
         'question',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _correctAnswerMeta =
@@ -4624,7 +4624,7 @@ class $QuizMistakesTable extends QuizMistakes
         'correct_answer',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _userAnswerMeta =
@@ -4635,7 +4635,7 @@ class $QuizMistakesTable extends QuizMistakes
         'user_answer',
         aliasedName,
         true,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: false,
       );
   static const drift.VerificationMeta _optionsMeta =
@@ -4646,7 +4646,7 @@ class $QuizMistakesTable extends QuizMistakes
         'options',
         aliasedName,
         true,
-        type: DriftSqlType.string,
+        type: drift.DriftSqlType.string,
         requiredDuringInsert: false,
       );
   static const drift.VerificationMeta _createdAtMeta =
@@ -4657,7 +4657,7 @@ class $QuizMistakesTable extends QuizMistakes
         'created_at',
         aliasedName,
         false,
-        type: DriftSqlType.dateTime,
+        type: drift.DriftSqlType.dateTime,
         requiredDuringInsert: true,
       );
   @override
@@ -4754,35 +4754,35 @@ class $QuizMistakesTable extends QuizMistakes
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return QuizMistake(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       word: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}word'],
       )!,
       questionType: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}question_type'],
       )!,
       question: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}question'],
       )!,
       correctAnswer: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}correct_answer'],
       )!,
       userAnswer: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}user_answer'],
       ),
       options: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}options'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
+        drift.DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
     );
@@ -5081,6 +5081,785 @@ class QuizMistakesCompanion extends drift.UpdateCompanion<QuizMistake> {
   }
 }
 
+class $PersonalArticlesTable extends PersonalArticles
+    with drift.TableInfo<$PersonalArticlesTable, PersonalArticle> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PersonalArticlesTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
+    'id',
+  );
+  @override
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: drift.DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const drift.VerificationMeta _dictionaryIdMeta =
+      const drift.VerificationMeta('dictionaryId');
+  @override
+  late final drift.GeneratedColumn<int> dictionaryId =
+      drift.GeneratedColumn<int>(
+        'dictionary_id',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _bodyMeta = const drift.VerificationMeta(
+    'body',
+  );
+  @override
+  late final drift.GeneratedColumn<String> body = drift.GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    false,
+    type: drift.DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const drift.VerificationMeta _createdAtMeta =
+      const drift.VerificationMeta('createdAt');
+  @override
+  late final drift.GeneratedColumn<DateTime> createdAt =
+      drift.GeneratedColumn<DateTime>(
+        'created_at',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _updatedAtMeta =
+      const drift.VerificationMeta('updatedAt');
+  @override
+  late final drift.GeneratedColumn<DateTime> updatedAt =
+      drift.GeneratedColumn<DateTime>(
+        'updated_at',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _sourceMeta =
+      const drift.VerificationMeta('source');
+  @override
+  late final drift.GeneratedColumn<String> source =
+      drift.GeneratedColumn<String>(
+        'source',
+        aliasedName,
+        true,
+        type: drift.DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  @override
+  List<drift.GeneratedColumn> get $columns => [
+    id,
+    dictionaryId,
+    body,
+    createdAt,
+    updatedAt,
+    source,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'personal_articles';
+  @override
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<PersonalArticle> instance, {
+    bool isInserting = false,
+  }) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('dictionary_id')) {
+      context.handle(
+        _dictionaryIdMeta,
+        dictionaryId.isAcceptableOrUnknown(
+          data['dictionary_id']!,
+          _dictionaryIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dictionaryIdMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bodyMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
+  @override
+  PersonalArticle map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PersonalArticle(
+      id: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      dictionaryId: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.int,
+        data['${effectivePrefix}dictionary_id'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      ),
+    );
+  }
+
+  @override
+  $PersonalArticlesTable createAlias(String alias) {
+    return $PersonalArticlesTable(attachedDatabase, alias);
+  }
+}
+
+class PersonalArticle extends drift.DataClass
+    implements drift.Insertable<PersonalArticle> {
+  final int id;
+  final int dictionaryId;
+  final String body;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String? source;
+  const PersonalArticle({
+    required this.id,
+    required this.dictionaryId,
+    required this.body,
+    required this.createdAt,
+    required this.updatedAt,
+    this.source,
+  });
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['dictionary_id'] = drift.Variable<int>(dictionaryId);
+    map['body'] = drift.Variable<String>(body);
+    map['created_at'] = drift.Variable<DateTime>(createdAt);
+    map['updated_at'] = drift.Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || source != null) {
+      map['source'] = drift.Variable<String>(source);
+    }
+    return map;
+  }
+
+  PersonalArticlesCompanion toCompanion(bool nullToAbsent) {
+    return PersonalArticlesCompanion(
+      id: drift.Value(id),
+      dictionaryId: drift.Value(dictionaryId),
+      body: drift.Value(body),
+      createdAt: drift.Value(createdAt),
+      updatedAt: drift.Value(updatedAt),
+      source: source == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(source),
+    );
+  }
+
+  factory PersonalArticle.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return PersonalArticle(
+      id: serializer.fromJson<int>(json['id']),
+      dictionaryId: serializer.fromJson<int>(json['dictionaryId']),
+      body: serializer.fromJson<String>(json['body']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      source: serializer.fromJson<String?>(json['source']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'dictionaryId': serializer.toJson<int>(dictionaryId),
+      'body': serializer.toJson<String>(body),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'source': serializer.toJson<String?>(source),
+    };
+  }
+
+  PersonalArticle copyWith({
+    int? id,
+    int? dictionaryId,
+    String? body,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    drift.Value<String?> source = const drift.Value.absent(),
+  }) => PersonalArticle(
+    id: id ?? this.id,
+    dictionaryId: dictionaryId ?? this.dictionaryId,
+    body: body ?? this.body,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    source: source.present ? source.value : this.source,
+  );
+  PersonalArticle copyWithCompanion(PersonalArticlesCompanion data) {
+    return PersonalArticle(
+      id: data.id.present ? data.id.value : this.id,
+      dictionaryId: data.dictionaryId.present
+          ? data.dictionaryId.value
+          : this.dictionaryId,
+      body: data.body.present ? data.body.value : this.body,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      source: data.source.present ? data.source.value : this.source,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonalArticle(')
+          ..write('id: $id, ')
+          ..write('dictionaryId: $dictionaryId, ')
+          ..write('body: $body, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('source: $source')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, dictionaryId, body, createdAt, updatedAt, source);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PersonalArticle &&
+          other.id == this.id &&
+          other.dictionaryId == this.dictionaryId &&
+          other.body == this.body &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.source == this.source);
+}
+
+class PersonalArticlesCompanion extends drift.UpdateCompanion<PersonalArticle> {
+  final drift.Value<int> id;
+  final drift.Value<int> dictionaryId;
+  final drift.Value<String> body;
+  final drift.Value<DateTime> createdAt;
+  final drift.Value<DateTime> updatedAt;
+  final drift.Value<String?> source;
+  const PersonalArticlesCompanion({
+    this.id = const drift.Value.absent(),
+    this.dictionaryId = const drift.Value.absent(),
+    this.body = const drift.Value.absent(),
+    this.createdAt = const drift.Value.absent(),
+    this.updatedAt = const drift.Value.absent(),
+    this.source = const drift.Value.absent(),
+  });
+  PersonalArticlesCompanion.insert({
+    this.id = const drift.Value.absent(),
+    required int dictionaryId,
+    required String body,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.source = const drift.Value.absent(),
+  }) : dictionaryId = drift.Value(dictionaryId),
+       body = drift.Value(body),
+       createdAt = drift.Value(createdAt),
+       updatedAt = drift.Value(updatedAt);
+  static drift.Insertable<PersonalArticle> custom({
+    drift.Expression<int>? id,
+    drift.Expression<int>? dictionaryId,
+    drift.Expression<String>? body,
+    drift.Expression<DateTime>? createdAt,
+    drift.Expression<DateTime>? updatedAt,
+    drift.Expression<String>? source,
+  }) {
+    return drift.RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (dictionaryId != null) 'dictionary_id': dictionaryId,
+      if (body != null) 'body': body,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (source != null) 'source': source,
+    });
+  }
+
+  PersonalArticlesCompanion copyWith({
+    drift.Value<int>? id,
+    drift.Value<int>? dictionaryId,
+    drift.Value<String>? body,
+    drift.Value<DateTime>? createdAt,
+    drift.Value<DateTime>? updatedAt,
+    drift.Value<String?>? source,
+  }) {
+    return PersonalArticlesCompanion(
+      id: id ?? this.id,
+      dictionaryId: dictionaryId ?? this.dictionaryId,
+      body: body ?? this.body,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      source: source ?? this.source,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (id.present) {
+      map['id'] = drift.Variable<int>(id.value);
+    }
+    if (dictionaryId.present) {
+      map['dictionary_id'] = drift.Variable<int>(dictionaryId.value);
+    }
+    if (body.present) {
+      map['body'] = drift.Variable<String>(body.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = drift.Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = drift.Variable<DateTime>(updatedAt.value);
+    }
+    if (source.present) {
+      map['source'] = drift.Variable<String>(source.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonalArticlesCompanion(')
+          ..write('id: $id, ')
+          ..write('dictionaryId: $dictionaryId, ')
+          ..write('body: $body, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('source: $source')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PersonalHeadwordsTable extends PersonalHeadwords
+    with drift.TableInfo<$PersonalHeadwordsTable, PersonalHeadword> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PersonalHeadwordsTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
+    'id',
+  );
+  @override
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: drift.DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const drift.VerificationMeta _dictionaryIdMeta =
+      const drift.VerificationMeta('dictionaryId');
+  @override
+  late final drift.GeneratedColumn<int> dictionaryId =
+      drift.GeneratedColumn<int>(
+        'dictionary_id',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _articleIdMeta =
+      const drift.VerificationMeta('articleId');
+  @override
+  late final drift.GeneratedColumn<int> articleId = drift.GeneratedColumn<int>(
+    'article_id',
+    aliasedName,
+    false,
+    type: drift.DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const drift.VerificationMeta _headwordMeta =
+      const drift.VerificationMeta('headword');
+  @override
+  late final drift.GeneratedColumn<String> headword =
+      drift.GeneratedColumn<String>(
+        'headword',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _normalizedHeadwordMeta =
+      const drift.VerificationMeta('normalizedHeadword');
+  @override
+  late final drift.GeneratedColumn<String> normalizedHeadword =
+      drift.GeneratedColumn<String>(
+        'normalized_headword',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  @override
+  List<drift.GeneratedColumn> get $columns => [
+    id,
+    dictionaryId,
+    articleId,
+    headword,
+    normalizedHeadword,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'personal_headwords';
+  @override
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<PersonalHeadword> instance, {
+    bool isInserting = false,
+  }) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('dictionary_id')) {
+      context.handle(
+        _dictionaryIdMeta,
+        dictionaryId.isAcceptableOrUnknown(
+          data['dictionary_id']!,
+          _dictionaryIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dictionaryIdMeta);
+    }
+    if (data.containsKey('article_id')) {
+      context.handle(
+        _articleIdMeta,
+        articleId.isAcceptableOrUnknown(data['article_id']!, _articleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_articleIdMeta);
+    }
+    if (data.containsKey('headword')) {
+      context.handle(
+        _headwordMeta,
+        headword.isAcceptableOrUnknown(data['headword']!, _headwordMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_headwordMeta);
+    }
+    if (data.containsKey('normalized_headword')) {
+      context.handle(
+        _normalizedHeadwordMeta,
+        normalizedHeadword.isAcceptableOrUnknown(
+          data['normalized_headword']!,
+          _normalizedHeadwordMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_normalizedHeadwordMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
+  @override
+  PersonalHeadword map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PersonalHeadword(
+      id: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      dictionaryId: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.int,
+        data['${effectivePrefix}dictionary_id'],
+      )!,
+      articleId: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.int,
+        data['${effectivePrefix}article_id'],
+      )!,
+      headword: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}headword'],
+      )!,
+      normalizedHeadword: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}normalized_headword'],
+      )!,
+    );
+  }
+
+  @override
+  $PersonalHeadwordsTable createAlias(String alias) {
+    return $PersonalHeadwordsTable(attachedDatabase, alias);
+  }
+}
+
+class PersonalHeadword extends drift.DataClass
+    implements drift.Insertable<PersonalHeadword> {
+  final int id;
+  final int dictionaryId;
+  final int articleId;
+  final String headword;
+  final String normalizedHeadword;
+  const PersonalHeadword({
+    required this.id,
+    required this.dictionaryId,
+    required this.articleId,
+    required this.headword,
+    required this.normalizedHeadword,
+  });
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['dictionary_id'] = drift.Variable<int>(dictionaryId);
+    map['article_id'] = drift.Variable<int>(articleId);
+    map['headword'] = drift.Variable<String>(headword);
+    map['normalized_headword'] = drift.Variable<String>(normalizedHeadword);
+    return map;
+  }
+
+  PersonalHeadwordsCompanion toCompanion(bool nullToAbsent) {
+    return PersonalHeadwordsCompanion(
+      id: drift.Value(id),
+      dictionaryId: drift.Value(dictionaryId),
+      articleId: drift.Value(articleId),
+      headword: drift.Value(headword),
+      normalizedHeadword: drift.Value(normalizedHeadword),
+    );
+  }
+
+  factory PersonalHeadword.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return PersonalHeadword(
+      id: serializer.fromJson<int>(json['id']),
+      dictionaryId: serializer.fromJson<int>(json['dictionaryId']),
+      articleId: serializer.fromJson<int>(json['articleId']),
+      headword: serializer.fromJson<String>(json['headword']),
+      normalizedHeadword: serializer.fromJson<String>(
+        json['normalizedHeadword'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'dictionaryId': serializer.toJson<int>(dictionaryId),
+      'articleId': serializer.toJson<int>(articleId),
+      'headword': serializer.toJson<String>(headword),
+      'normalizedHeadword': serializer.toJson<String>(normalizedHeadword),
+    };
+  }
+
+  PersonalHeadword copyWith({
+    int? id,
+    int? dictionaryId,
+    int? articleId,
+    String? headword,
+    String? normalizedHeadword,
+  }) => PersonalHeadword(
+    id: id ?? this.id,
+    dictionaryId: dictionaryId ?? this.dictionaryId,
+    articleId: articleId ?? this.articleId,
+    headword: headword ?? this.headword,
+    normalizedHeadword: normalizedHeadword ?? this.normalizedHeadword,
+  );
+  PersonalHeadword copyWithCompanion(PersonalHeadwordsCompanion data) {
+    return PersonalHeadword(
+      id: data.id.present ? data.id.value : this.id,
+      dictionaryId: data.dictionaryId.present
+          ? data.dictionaryId.value
+          : this.dictionaryId,
+      articleId: data.articleId.present ? data.articleId.value : this.articleId,
+      headword: data.headword.present ? data.headword.value : this.headword,
+      normalizedHeadword: data.normalizedHeadword.present
+          ? data.normalizedHeadword.value
+          : this.normalizedHeadword,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonalHeadword(')
+          ..write('id: $id, ')
+          ..write('dictionaryId: $dictionaryId, ')
+          ..write('articleId: $articleId, ')
+          ..write('headword: $headword, ')
+          ..write('normalizedHeadword: $normalizedHeadword')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, dictionaryId, articleId, headword, normalizedHeadword);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PersonalHeadword &&
+          other.id == this.id &&
+          other.dictionaryId == this.dictionaryId &&
+          other.articleId == this.articleId &&
+          other.headword == this.headword &&
+          other.normalizedHeadword == this.normalizedHeadword);
+}
+
+class PersonalHeadwordsCompanion
+    extends drift.UpdateCompanion<PersonalHeadword> {
+  final drift.Value<int> id;
+  final drift.Value<int> dictionaryId;
+  final drift.Value<int> articleId;
+  final drift.Value<String> headword;
+  final drift.Value<String> normalizedHeadword;
+  const PersonalHeadwordsCompanion({
+    this.id = const drift.Value.absent(),
+    this.dictionaryId = const drift.Value.absent(),
+    this.articleId = const drift.Value.absent(),
+    this.headword = const drift.Value.absent(),
+    this.normalizedHeadword = const drift.Value.absent(),
+  });
+  PersonalHeadwordsCompanion.insert({
+    this.id = const drift.Value.absent(),
+    required int dictionaryId,
+    required int articleId,
+    required String headword,
+    required String normalizedHeadword,
+  }) : dictionaryId = drift.Value(dictionaryId),
+       articleId = drift.Value(articleId),
+       headword = drift.Value(headword),
+       normalizedHeadword = drift.Value(normalizedHeadword);
+  static drift.Insertable<PersonalHeadword> custom({
+    drift.Expression<int>? id,
+    drift.Expression<int>? dictionaryId,
+    drift.Expression<int>? articleId,
+    drift.Expression<String>? headword,
+    drift.Expression<String>? normalizedHeadword,
+  }) {
+    return drift.RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (dictionaryId != null) 'dictionary_id': dictionaryId,
+      if (articleId != null) 'article_id': articleId,
+      if (headword != null) 'headword': headword,
+      if (normalizedHeadword != null) 'normalized_headword': normalizedHeadword,
+    });
+  }
+
+  PersonalHeadwordsCompanion copyWith({
+    drift.Value<int>? id,
+    drift.Value<int>? dictionaryId,
+    drift.Value<int>? articleId,
+    drift.Value<String>? headword,
+    drift.Value<String>? normalizedHeadword,
+  }) {
+    return PersonalHeadwordsCompanion(
+      id: id ?? this.id,
+      dictionaryId: dictionaryId ?? this.dictionaryId,
+      articleId: articleId ?? this.articleId,
+      headword: headword ?? this.headword,
+      normalizedHeadword: normalizedHeadword ?? this.normalizedHeadword,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (id.present) {
+      map['id'] = drift.Variable<int>(id.value);
+    }
+    if (dictionaryId.present) {
+      map['dictionary_id'] = drift.Variable<int>(dictionaryId.value);
+    }
+    if (articleId.present) {
+      map['article_id'] = drift.Variable<int>(articleId.value);
+    }
+    if (headword.present) {
+      map['headword'] = drift.Variable<String>(headword.value);
+    }
+    if (normalizedHeadword.present) {
+      map['normalized_headword'] = drift.Variable<String>(
+        normalizedHeadword.value,
+      );
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonalHeadwordsCompanion(')
+          ..write('id: $id, ')
+          ..write('dictionaryId: $dictionaryId, ')
+          ..write('articleId: $articleId, ')
+          ..write('headword: $headword, ')
+          ..write('normalizedHeadword: $normalizedHeadword')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5105,6 +5884,11 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final $FlashcardReviewLogsTable flashcardReviewLogs =
       $FlashcardReviewLogsTable(this);
   late final $QuizMistakesTable quizMistakes = $QuizMistakesTable(this);
+  late final $PersonalArticlesTable personalArticles = $PersonalArticlesTable(
+    this,
+  );
+  late final $PersonalHeadwordsTable personalHeadwords =
+      $PersonalHeadwordsTable(this);
   late final drift.Index idxDictionaryListPath = drift.Index(
     'idx_dictionary_list_path',
     'CREATE INDEX idx_dictionary_list_path ON dictionary_list (path)',
@@ -5161,6 +5945,14 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     'idx_quiz_mistakes_word',
     'CREATE INDEX idx_quiz_mistakes_word ON quiz_mistakes (word)',
   );
+  late final drift.Index idxPersonalHeadwordsDictNormalized = drift.Index(
+    'idx_personal_headwords_dict_normalized',
+    'CREATE UNIQUE INDEX idx_personal_headwords_dict_normalized ON personal_headwords (dictionary_id, normalized_headword)',
+  );
+  late final drift.Index idxPersonalHeadwordsArticle = drift.Index(
+    'idx_personal_headwords_article',
+    'CREATE INDEX idx_personal_headwords_article ON personal_headwords (article_id)',
+  );
   late final DictionaryListDao dictionaryListDao = DictionaryListDao(
     this as AppDatabase,
   );
@@ -5194,6 +5986,8 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final QuizMistakeDao quizMistakeDao = QuizMistakeDao(
     this as AppDatabase,
   );
+  late final PersonalDictionaryDao personalDictionaryDao =
+      PersonalDictionaryDao(this as AppDatabase);
   @override
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
@@ -5214,6 +6008,8 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     flashcards,
     flashcardReviewLogs,
     quizMistakes,
+    personalArticles,
+    personalHeadwords,
     idxDictionaryListPath,
     idxWordbook,
     idxWordbookCreatedAt,
@@ -5228,6 +6024,8 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     idxFlashcardReviewLogsWord,
     idxFlashcardReviewLogsReviewedAt,
     idxQuizMistakesWord,
+    idxPersonalHeadwordsDictNormalized,
+    idxPersonalHeadwordsArticle,
   ];
 }
 
@@ -8272,6 +9070,461 @@ typedef $$QuizMistakesTableProcessedTableManager =
       QuizMistake,
       drift.PrefetchHooks Function()
     >;
+typedef $$PersonalArticlesTableCreateCompanionBuilder =
+    PersonalArticlesCompanion Function({
+      drift.Value<int> id,
+      required int dictionaryId,
+      required String body,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      drift.Value<String?> source,
+    });
+typedef $$PersonalArticlesTableUpdateCompanionBuilder =
+    PersonalArticlesCompanion Function({
+      drift.Value<int> id,
+      drift.Value<int> dictionaryId,
+      drift.Value<String> body,
+      drift.Value<DateTime> createdAt,
+      drift.Value<DateTime> updatedAt,
+      drift.Value<String?> source,
+    });
+
+class $$PersonalArticlesTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $PersonalArticlesTable> {
+  $$PersonalArticlesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<int> get dictionaryId => $composableBuilder(
+    column: $table.dictionaryId,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+}
+
+class $$PersonalArticlesTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $PersonalArticlesTable> {
+  $$PersonalArticlesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<int> get dictionaryId => $composableBuilder(
+    column: $table.dictionaryId,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+}
+
+class $$PersonalArticlesTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $PersonalArticlesTable> {
+  $$PersonalArticlesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get dictionaryId => $composableBuilder(
+    column: $table.dictionaryId,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  drift.GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  drift.GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+}
+
+class $$PersonalArticlesTableTableManager
+    extends
+        drift.RootTableManager<
+          _$AppDatabase,
+          $PersonalArticlesTable,
+          PersonalArticle,
+          $$PersonalArticlesTableFilterComposer,
+          $$PersonalArticlesTableOrderingComposer,
+          $$PersonalArticlesTableAnnotationComposer,
+          $$PersonalArticlesTableCreateCompanionBuilder,
+          $$PersonalArticlesTableUpdateCompanionBuilder,
+          (
+            PersonalArticle,
+            drift.BaseReferences<
+              _$AppDatabase,
+              $PersonalArticlesTable,
+              PersonalArticle
+            >,
+          ),
+          PersonalArticle,
+          drift.PrefetchHooks Function()
+        > {
+  $$PersonalArticlesTableTableManager(
+    _$AppDatabase db,
+    $PersonalArticlesTable table,
+  ) : super(
+        drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PersonalArticlesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PersonalArticlesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PersonalArticlesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                drift.Value<int> id = const drift.Value.absent(),
+                drift.Value<int> dictionaryId = const drift.Value.absent(),
+                drift.Value<String> body = const drift.Value.absent(),
+                drift.Value<DateTime> createdAt = const drift.Value.absent(),
+                drift.Value<DateTime> updatedAt = const drift.Value.absent(),
+                drift.Value<String?> source = const drift.Value.absent(),
+              }) => PersonalArticlesCompanion(
+                id: id,
+                dictionaryId: dictionaryId,
+                body: body,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                source: source,
+              ),
+          createCompanionCallback:
+              ({
+                drift.Value<int> id = const drift.Value.absent(),
+                required int dictionaryId,
+                required String body,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                drift.Value<String?> source = const drift.Value.absent(),
+              }) => PersonalArticlesCompanion.insert(
+                id: id,
+                dictionaryId: dictionaryId,
+                body: body,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                source: source,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PersonalArticlesTable, PersonalArticle>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $PersonalArticlesTable,
+                    PersonalArticle
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PersonalArticlesTableProcessedTableManager =
+    drift.ProcessedTableManager<
+      _$AppDatabase,
+      $PersonalArticlesTable,
+      PersonalArticle,
+      $$PersonalArticlesTableFilterComposer,
+      $$PersonalArticlesTableOrderingComposer,
+      $$PersonalArticlesTableAnnotationComposer,
+      $$PersonalArticlesTableCreateCompanionBuilder,
+      $$PersonalArticlesTableUpdateCompanionBuilder,
+      (
+        PersonalArticle,
+        drift.BaseReferences<
+          _$AppDatabase,
+          $PersonalArticlesTable,
+          PersonalArticle
+        >,
+      ),
+      PersonalArticle,
+      drift.PrefetchHooks Function()
+    >;
+typedef $$PersonalHeadwordsTableCreateCompanionBuilder =
+    PersonalHeadwordsCompanion Function({
+      drift.Value<int> id,
+      required int dictionaryId,
+      required int articleId,
+      required String headword,
+      required String normalizedHeadword,
+    });
+typedef $$PersonalHeadwordsTableUpdateCompanionBuilder =
+    PersonalHeadwordsCompanion Function({
+      drift.Value<int> id,
+      drift.Value<int> dictionaryId,
+      drift.Value<int> articleId,
+      drift.Value<String> headword,
+      drift.Value<String> normalizedHeadword,
+    });
+
+class $$PersonalHeadwordsTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $PersonalHeadwordsTable> {
+  $$PersonalHeadwordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<int> get dictionaryId => $composableBuilder(
+    column: $table.dictionaryId,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<int> get articleId => $composableBuilder(
+    column: $table.articleId,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get headword => $composableBuilder(
+    column: $table.headword,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get normalizedHeadword => $composableBuilder(
+    column: $table.normalizedHeadword,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+}
+
+class $$PersonalHeadwordsTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $PersonalHeadwordsTable> {
+  $$PersonalHeadwordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<int> get dictionaryId => $composableBuilder(
+    column: $table.dictionaryId,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<int> get articleId => $composableBuilder(
+    column: $table.articleId,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get headword => $composableBuilder(
+    column: $table.headword,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get normalizedHeadword => $composableBuilder(
+    column: $table.normalizedHeadword,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+}
+
+class $$PersonalHeadwordsTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $PersonalHeadwordsTable> {
+  $$PersonalHeadwordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get dictionaryId => $composableBuilder(
+    column: $table.dictionaryId,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<int> get articleId =>
+      $composableBuilder(column: $table.articleId, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get headword =>
+      $composableBuilder(column: $table.headword, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get normalizedHeadword => $composableBuilder(
+    column: $table.normalizedHeadword,
+    builder: (column) => column,
+  );
+}
+
+class $$PersonalHeadwordsTableTableManager
+    extends
+        drift.RootTableManager<
+          _$AppDatabase,
+          $PersonalHeadwordsTable,
+          PersonalHeadword,
+          $$PersonalHeadwordsTableFilterComposer,
+          $$PersonalHeadwordsTableOrderingComposer,
+          $$PersonalHeadwordsTableAnnotationComposer,
+          $$PersonalHeadwordsTableCreateCompanionBuilder,
+          $$PersonalHeadwordsTableUpdateCompanionBuilder,
+          (
+            PersonalHeadword,
+            drift.BaseReferences<
+              _$AppDatabase,
+              $PersonalHeadwordsTable,
+              PersonalHeadword
+            >,
+          ),
+          PersonalHeadword,
+          drift.PrefetchHooks Function()
+        > {
+  $$PersonalHeadwordsTableTableManager(
+    _$AppDatabase db,
+    $PersonalHeadwordsTable table,
+  ) : super(
+        drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PersonalHeadwordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PersonalHeadwordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PersonalHeadwordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                drift.Value<int> id = const drift.Value.absent(),
+                drift.Value<int> dictionaryId = const drift.Value.absent(),
+                drift.Value<int> articleId = const drift.Value.absent(),
+                drift.Value<String> headword = const drift.Value.absent(),
+                drift.Value<String> normalizedHeadword =
+                    const drift.Value.absent(),
+              }) => PersonalHeadwordsCompanion(
+                id: id,
+                dictionaryId: dictionaryId,
+                articleId: articleId,
+                headword: headword,
+                normalizedHeadword: normalizedHeadword,
+              ),
+          createCompanionCallback:
+              ({
+                drift.Value<int> id = const drift.Value.absent(),
+                required int dictionaryId,
+                required int articleId,
+                required String headword,
+                required String normalizedHeadword,
+              }) => PersonalHeadwordsCompanion.insert(
+                id: id,
+                dictionaryId: dictionaryId,
+                articleId: articleId,
+                headword: headword,
+                normalizedHeadword: normalizedHeadword,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PersonalHeadwordsTable, PersonalHeadword>(table),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $PersonalHeadwordsTable,
+                    PersonalHeadword
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PersonalHeadwordsTableProcessedTableManager =
+    drift.ProcessedTableManager<
+      _$AppDatabase,
+      $PersonalHeadwordsTable,
+      PersonalHeadword,
+      $$PersonalHeadwordsTableFilterComposer,
+      $$PersonalHeadwordsTableOrderingComposer,
+      $$PersonalHeadwordsTableAnnotationComposer,
+      $$PersonalHeadwordsTableCreateCompanionBuilder,
+      $$PersonalHeadwordsTableUpdateCompanionBuilder,
+      (
+        PersonalHeadword,
+        drift.BaseReferences<
+          _$AppDatabase,
+          $PersonalHeadwordsTable,
+          PersonalHeadword
+        >,
+      ),
+      PersonalHeadword,
+      drift.PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -8306,4 +9559,8 @@ class $AppDatabaseManager {
       $$FlashcardReviewLogsTableTableManager(_db, _db.flashcardReviewLogs);
   $$QuizMistakesTableTableManager get quizMistakes =>
       $$QuizMistakesTableTableManager(_db, _db.quizMistakes);
+  $$PersonalArticlesTableTableManager get personalArticles =>
+      $$PersonalArticlesTableTableManager(_db, _db.personalArticles);
+  $$PersonalHeadwordsTableTableManager get personalHeadwords =>
+      $$PersonalHeadwordsTableTableManager(_db, _db.personalHeadwords);
 }

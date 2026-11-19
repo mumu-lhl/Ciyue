@@ -437,4 +437,68 @@ void main() {
     expect(await first, isEmpty);
     expect((await second).map((h) => h.headword), ["苹果"]);
   });
+
+  group("personal dictionaries", () {
+    late FakeDictionary personal;
+    late FullTextSearchService personalService;
+
+    setUp(() {
+      personal = FakeDictionary(
+        id: 7,
+        type: DictionaryType.personal,
+        path: "personal:7",
+      );
+      personalService = FullTextSearchService(
+        dictionaries: () => [personal],
+        knownIds: () async => {7},
+        databaseDirectory: () async => dir.path,
+        runner: fakeRunner,
+      );
+      addTearDown(personalService.dispose);
+    });
+
+    test("fingerprintFor returns empty for the personal type", () async {
+      // The MDX file exists for this base path, so only the explicit
+      // personal skip — not a missing file — can produce "" here.
+      expect(
+        await FullTextSearchService.fingerprintFor(
+          DictionaryType.personal,
+          "${dir.path}/dict",
+        ),
+        "",
+      );
+      // And the sentinel itself is never treated as a base path.
+      expect(
+        await FullTextSearchService.fingerprintFor(
+          DictionaryType.personal,
+          "personal:7",
+        ),
+        "",
+      );
+    });
+
+    test("ensureBuilt is a no-op and never reports failed", () async {
+      await personalService.ensureBuilt(personal);
+
+      expect(buildCalls, 0);
+      expect(personalService.stateFor(7).status, FullTextIndexStatus.notBuilt);
+    });
+
+    test("indexStatus ignores personal dictionaries", () async {
+      // A personal dictionary has no index and never will; it must not
+      // drag the aggregate status to notBuilt.
+      expect(await personalService.indexStatus(), FullTextIndexStatus.ready);
+    });
+
+    test("dropDictionary and indexSizeBytes are safe no-ops", () async {
+      await personalService.dropDictionary(7);
+      expect(personalService.stateFor(7).status, FullTextIndexStatus.notBuilt);
+      expect(await personalService.indexSizeBytes(7), 0);
+    });
+
+    test("a personal dictionary contributes no search hits", () async {
+      await personalService.ensureBuilt(personal);
+      expect(await personalService.search("apple"), isEmpty);
+    });
+  });
 }

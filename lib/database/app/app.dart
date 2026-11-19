@@ -34,6 +34,8 @@ AppDatabase appDatabase() {
     Flashcards,
     FlashcardReviewLogs,
     QuizMistakes,
+    PersonalArticles,
+    PersonalHeadwords,
   ],
   daos: [
     DictionaryListDao,
@@ -50,6 +52,7 @@ AppDatabase appDatabase() {
     OpenRecordsDao,
     FlashcardDao,
     QuizMistakeDao,
+    PersonalDictionaryDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -185,10 +188,16 @@ class AppDatabase extends _$AppDatabase {
           // to keep them in creation order, with the default group on top.
           await m.addColumn(schema.dictGroup, schema.dictGroup.order);
         },
+        from25To26: (m, schema) async {
+          await m.create(schema.personalArticles);
+          await m.create(schema.personalHeadwords);
+          await m.createIndex(schema.idxPersonalHeadwordsDictNormalized);
+          await m.createIndex(schema.idxPersonalHeadwordsArticle);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 26;
 }

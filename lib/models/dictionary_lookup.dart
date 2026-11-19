@@ -41,8 +41,14 @@ abstract final class DictionaryType {
   static const int stardict = 2;
   static const int zim = 3;
 
+  /// A user-authored dictionary whose entries live in the app database
+  /// (see `PersonalArticles` / `PersonalHeadwords`); its
+  /// `DictionaryList.path` is the sentinel `personal:<id>`, never a file.
+  static const int personal = 4;
+
   static bool isStardict(int type) => type == stardict;
   static bool isZim(int type) => type == zim;
+  static bool isPersonal(int type) => type == personal;
 }
 
 /// A dictionary loaded by the dictionary manager, regardless of its file

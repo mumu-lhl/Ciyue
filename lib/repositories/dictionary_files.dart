@@ -12,9 +12,16 @@ import "package:path/path.dart";
 /// dictionary look broken, and switching one on in the settings deleted its
 /// registration (#766).
 ///
+/// A personal dictionary has no files at all, so nothing can be missing:
+/// without the early return below, the MDX fallback would report
+/// `personal:<id>.mdx` as missing and the manage page would delete the
+/// registration when the dictionary is switched on — the same shape as
+/// #766 was for StarDict.
+///
 /// Returns the bare file name, which is what the message shows; null means the
 /// dictionary can be opened.
 Future<String?> missingDictionaryFile(String path, int type) async {
+  if (DictionaryType.isPersonal(type)) return null;
   final required = DictionaryType.isZim(type)
       ? const [
           [".zim"],

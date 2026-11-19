@@ -4851,6 +4851,432 @@ class Shape27 extends i0.VersionedTable {
       columnsByName['order']! as i1.GeneratedColumn<int>;
 }
 
+final class Schema26 extends i0.VersionedSchema {
+  Schema26({required super.database}) : super(version: 26);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    dictionaryList,
+    hunspellSource,
+    wordbook,
+    wordbookTags,
+    history,
+    dictGroup,
+    mddAudioList,
+    mddAudioResource,
+    aiExplanations,
+    writingCheckHistory,
+    translateHistory,
+    openRecords,
+    flashcards,
+    flashcardReviewLogs,
+    quizMistakes,
+    personalArticles,
+    personalHeadwords,
+    idxDictionaryListPath,
+    idxWordbook,
+    idxWordbookCreatedAt,
+    idxWordbookWordTag,
+    idxWordbookTags,
+    idxHistoryWord,
+    idxMddAudioResource,
+    idxAiExplanations,
+    idxTranslateHistoryInputText,
+    idxOpenRecords,
+    idxFlashcardsDue,
+    idxFlashcardReviewLogsWord,
+    idxFlashcardReviewLogsReviewedAt,
+    idxQuizMistakesWord,
+    idxPersonalHeadwordsDictNormalized,
+    idxPersonalHeadwordsArticle,
+  ];
+  late final Shape15 dictionaryList = Shape15(
+    source: i0.VersionedTable(
+      entityName: 'dictionary_list',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_27,
+        _column_28,
+        _column_29,
+        _column_30,
+        _column_31,
+        _column_32,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape24 hunspellSource = Shape24(
+    source: i0.VersionedTable(
+      entityName: 'hunspell_source',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_29,
+        _column_61,
+        _column_62,
+        _column_63,
+        _column_64,
+        _column_65,
+        _column_66,
+        _column_67,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape17 wordbook = Shape17(
+    source: i0.VersionedTable(
+      entityName: 'wordbook',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_33, _column_34, _column_35],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape3 wordbookTags = Shape3(
+    source: i0.VersionedTable(
+      entityName: 'wordbook_tags',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_36],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape4 history = Shape4(
+    source: i0.VersionedTable(
+      entityName: 'history',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_35],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape27 dictGroup = Shape27(
+    source: i0.VersionedTable(
+      entityName: 'dict_group',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_37, _column_29, _column_38, _column_66],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape8 mddAudioList = Shape8(
+    source: i0.VersionedTable(
+      entityName: 'mdd_audio_list',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_31, _column_39, _column_40],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape9 mddAudioResource = Shape9(
+    source: i0.VersionedTable(
+      entityName: 'mdd_audio_resource',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_41,
+        _column_42,
+        _column_43,
+        _column_44,
+        _column_45,
+        _column_46,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape10 aiExplanations = Shape10(
+    source: i0.VersionedTable(
+      entityName: 'ai_explanations',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_47, _column_48],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape18 writingCheckHistory = Shape18(
+    source: i0.VersionedTable(
+      entityName: 'writing_check_history',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_49, _column_50, _column_33],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape19 translateHistory = Shape19(
+    source: i0.VersionedTable(
+      entityName: 'translate_history',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_49, _column_33],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape20 openRecords = Shape20(
+    source: i0.VersionedTable(
+      entityName: 'open_records',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_35, _column_33],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape21 flashcards = Shape21(
+    source: i0.VersionedTable(
+      entityName: 'flashcards',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(word)'],
+      columns: [
+        _column_35,
+        _column_51,
+        _column_52,
+        _column_53,
+        _column_54,
+        _column_55,
+        _column_56,
+        _column_57,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape22 flashcardReviewLogs = Shape22(
+    source: i0.VersionedTable(
+      entityName: 'flashcard_review_logs',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_35, _column_58, _column_59, _column_60],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape26 quizMistakes = Shape26(
+    source: i0.VersionedTable(
+      entityName: 'quiz_mistakes',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_29,
+        _column_35,
+        _column_68,
+        _column_69,
+        _column_70,
+        _column_71,
+        _column_72,
+        _column_33,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape28 personalArticles = Shape28(
+    source: i0.VersionedTable(
+      entityName: 'personal_articles',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_29,
+        _column_73,
+        _column_74,
+        _column_33,
+        _column_75,
+        _column_76,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape29 personalHeadwords = Shape29(
+    source: i0.VersionedTable(
+      entityName: 'personal_headwords',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_29, _column_73, _column_77, _column_78, _column_79],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Index idxDictionaryListPath = i1.Index(
+    'idx_dictionary_list_path',
+    'CREATE INDEX idx_dictionary_list_path ON dictionary_list (path)',
+  );
+  final i1.Index idxWordbook = i1.Index(
+    'idx_wordbook',
+    'CREATE INDEX idx_wordbook ON wordbook (word, created_at)',
+  );
+  final i1.Index idxWordbookCreatedAt = i1.Index(
+    'idx_wordbook_created_at',
+    'CREATE INDEX idx_wordbook_created_at ON wordbook (created_at)',
+  );
+  final i1.Index idxWordbookWordTag = i1.Index(
+    'idx_wordbook_word_tag',
+    'CREATE UNIQUE INDEX idx_wordbook_word_tag ON wordbook (word, tag)',
+  );
+  final i1.Index idxWordbookTags = i1.Index(
+    'idx_wordbook_tags',
+    'CREATE INDEX idx_wordbook_tags ON wordbook_tags (tag)',
+  );
+  final i1.Index idxHistoryWord = i1.Index(
+    'idx_history_word',
+    'CREATE INDEX idx_history_word ON history (word)',
+  );
+  final i1.Index idxMddAudioResource = i1.Index(
+    'idx_mdd_audio_resource',
+    'CREATE INDEX idx_mdd_audio_resource ON mdd_audio_resource ("key", mdd_audio_list_id)',
+  );
+  final i1.Index idxAiExplanations = i1.Index(
+    'idx_ai_explanations',
+    'CREATE INDEX idx_ai_explanations ON ai_explanations (word)',
+  );
+  final i1.Index idxTranslateHistoryInputText = i1.Index(
+    'idx_translate_history_input_text',
+    'CREATE UNIQUE INDEX idx_translate_history_input_text ON translate_history (input_text)',
+  );
+  final i1.Index idxOpenRecords = i1.Index(
+    'idx_open_records',
+    'CREATE INDEX idx_open_records ON open_records (word, created_at)',
+  );
+  final i1.Index idxFlashcardsDue = i1.Index(
+    'idx_flashcards_due',
+    'CREATE INDEX idx_flashcards_due ON flashcards (due)',
+  );
+  final i1.Index idxFlashcardReviewLogsWord = i1.Index(
+    'idx_flashcard_review_logs_word',
+    'CREATE INDEX idx_flashcard_review_logs_word ON flashcard_review_logs (word)',
+  );
+  final i1.Index idxFlashcardReviewLogsReviewedAt = i1.Index(
+    'idx_flashcard_review_logs_reviewed_at',
+    'CREATE INDEX idx_flashcard_review_logs_reviewed_at ON flashcard_review_logs (reviewed_at)',
+  );
+  final i1.Index idxQuizMistakesWord = i1.Index(
+    'idx_quiz_mistakes_word',
+    'CREATE INDEX idx_quiz_mistakes_word ON quiz_mistakes (word)',
+  );
+  final i1.Index idxPersonalHeadwordsDictNormalized = i1.Index(
+    'idx_personal_headwords_dict_normalized',
+    'CREATE UNIQUE INDEX idx_personal_headwords_dict_normalized ON personal_headwords (dictionary_id, normalized_headword)',
+  );
+  final i1.Index idxPersonalHeadwordsArticle = i1.Index(
+    'idx_personal_headwords_article',
+    'CREATE INDEX idx_personal_headwords_article ON personal_headwords (article_id)',
+  );
+}
+
+class Shape28 extends i0.VersionedTable {
+  Shape28({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get dictionaryId =>
+      columnsByName['dictionary_id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get body =>
+      columnsByName['body']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get createdAt =>
+      columnsByName['created_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get updatedAt =>
+      columnsByName['updated_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get source =>
+      columnsByName['source']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<int> _column_73(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'dictionary_id',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_74(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'body',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_75(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'updated_at',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_76(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'source',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NULL',
+    );
+
+class Shape29 extends i0.VersionedTable {
+  Shape29({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get dictionaryId =>
+      columnsByName['dictionary_id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get articleId =>
+      columnsByName['article_id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get headword =>
+      columnsByName['headword']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get normalizedHeadword =>
+      columnsByName['normalized_headword']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<int> _column_77(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'article_id',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_78(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'headword',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_79(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'normalized_headword',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
@@ -4876,6 +5302,7 @@ i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema23 schema) from22To23,
   required Future<void> Function(i1.Migrator m, Schema24 schema) from23To24,
   required Future<void> Function(i1.Migrator m, Schema25 schema) from24To25,
+  required Future<void> Function(i1.Migrator m, Schema26 schema) from25To26,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -4999,6 +5426,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from24To25(migrator, schema);
         return 25;
+      case 25:
+        final schema = Schema26(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from25To26(migrator, schema);
+        return 26;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -5030,6 +5462,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema23 schema) from22To23,
   required Future<void> Function(i1.Migrator m, Schema24 schema) from23To24,
   required Future<void> Function(i1.Migrator m, Schema25 schema) from24To25,
+  required Future<void> Function(i1.Migrator m, Schema26 schema) from25To26,
 }) => i0.VersionedSchema.stepByStepHelper(
   step: migrationSteps(
     from1To2: from1To2,
@@ -5056,5 +5489,6 @@ i1.OnUpgrade stepByStep({
     from22To23: from22To23,
     from23To24: from23To24,
     from24To25: from24To25,
+    from25To26: from25To26,
   ),
 );

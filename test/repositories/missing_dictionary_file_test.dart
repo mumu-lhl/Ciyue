@@ -103,5 +103,14 @@ void main() {
         "sample.ifo",
       );
     });
+
+    test("a personal dictionary has no files to miss", () async {
+      // Without this, the MDX fallback reports `personal:<id>.mdx` as
+      // missing and the manage page deletes the registration on toggle.
+      expect(
+        await missingDictionaryFile("personal:7", DictionaryType.personal),
+        isNull,
+      );
+    });
   });
 }

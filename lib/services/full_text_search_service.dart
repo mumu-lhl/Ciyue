@@ -143,7 +143,11 @@ class FullTextSearchService extends ChangeNotifier {
           // scope — the auto-build entries cover them when the group
           // becomes current.
           final dictionary = byId[entry.dictionaryId];
-          if (dictionary != null) {
+          // Personal dictionaries have no files and no index: a stale
+          // meta row for one must never be downgraded to notBuilt or
+          // failed here — there is nothing to rebuild from.
+          if (dictionary != null &&
+              !DictionaryType.isPersonal(dictionary.type)) {
             try {
               final fingerprint = await fingerprintFor(
                 dictionary.type,
@@ -180,6 +184,10 @@ class FullTextSearchService extends ChangeNotifier {
   /// one stored with the old tables, so the index rebuilds instead of
   /// serving stale tables that the new queries cannot use.
   static Future<String> fingerprintFor(int type, String basePath) async {
+    // Personal dictionaries have no files: the sentinel `personal:<id>`
+    // is not a base path, so never let a future file-layout change read
+    // `personal:<id>.mdx` (or any other spelling) as a dictionary file.
+    if (DictionaryType.isPersonal(type)) return "";
     final candidates = <String>[];
     if (DictionaryType.isStardict(type)) {
       candidates.addAll([
@@ -205,7 +213,14 @@ class FullTextSearchService extends ChangeNotifier {
 
   /// Makes sure [dictionary]'s index exists and is current, building it in
   /// the background when needed. Concurrent callers share one build.
+  ///
+  /// Personal dictionaries have no files and v1 has no definition
+  /// full-text search, so there is nothing to build and no failure to
+  /// report: this is a no-op for them, and the state stays notBuilt.
   Future<void> ensureBuilt(LoadedDictionary dictionary) {
+    if (DictionaryType.isPersonal(dictionary.type)) {
+      return Future.value();
+    }
     final existing = _builds[dictionary.id];
     if (existing != null) return existing;
     final build = _ensureBuilt(dictionary);
@@ -377,6 +392,13 @@ class FullTextSearchService extends ChangeNotifier {
     await _reconcileOnce();
     var status = FullTextIndexStatus.ready;
     for (final dictionary in dictionaries()) {
+      // Personal dictionaries have no files and no index; they must not
+      // drag the aggregate status to notBuilt (or failed), which would
+      // make the search bar claim an index is missing for them.
+      if (dictionary is LoadedDictionary &&
+          DictionaryType.isPersonal(dictionary.type)) {
+        continue;
+      }
       switch (stateFor(dictionary.id).status) {
         case FullTextIndexStatus.building:
           return FullTextIndexStatus.building;
@@ -520,6 +542,9 @@ class FullTextSearchService extends ChangeNotifier {
   }
 
   /// Drops a dictionary's index entirely, e.g. when it is removed.
+  ///
+  /// Safe for personal dictionaries: they never have index rows, so the
+  /// store drops nothing and only the in-memory state is cleared.
   Future<void> dropDictionary(int dictionaryId) async {
     final store = await _storeInstance();
     await store.dropDictionary(dictionaryId);
@@ -573,6 +598,9 @@ class FullTextSearchService extends ChangeNotifier {
 
   /// On-disk size of one dictionary's index in bytes, 0 when it has none.
   /// Never throws: the settings UI reads it on page open.
+  ///
+  /// Personal dictionaries have no index, so this returns 0 for them (the
+  /// store sums per-dictionary tables that never exist for a personal id).
   Future<int> indexSizeBytes(int dictionaryId) async {
     try {
       final store = await _storeInstance();

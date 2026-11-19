@@ -148,3 +148,39 @@ class QuizMistakes extends Table {
   TextColumn get options => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 }
+
+/// One user-authored article in a personal dictionary (schema v26).
+///
+/// [body] is the Markdown source, converted to HTML at read time; [source]
+/// records where the article came from when it was imported (e.g. a DSL
+/// file name), and is null for hand-written entries.
+class PersonalArticles extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get dictionaryId => integer()();
+  TextColumn get body => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  TextColumn get source => text().nullable()();
+}
+
+/// One headword filing an article of a personal dictionary (schema v26).
+///
+/// Several headwords (aliases) may share one [articleId]. [headword] keeps
+/// the spelling the user typed for display; [normalizedHeadword] is the
+/// NFC + lower-cased form ([normalizePersonalHeadword]) used for exact and
+/// prefix lookup, so the same word in another case or composition form
+/// still resolves. [dictionaryId] is denormalized so a lookup never has to
+/// join back to the article first.
+@TableIndex(
+  name: "idx_personal_headwords_dict_normalized",
+  columns: {#dictionaryId, #normalizedHeadword},
+  unique: true,
+)
+@TableIndex(name: "idx_personal_headwords_article", columns: {#articleId})
+class PersonalHeadwords extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get dictionaryId => integer()();
+  IntColumn get articleId => integer()();
+  TextColumn get headword => text()();
+  TextColumn get normalizedHeadword => text()();
+}
