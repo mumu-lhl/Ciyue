@@ -5,7 +5,9 @@
 /// mouse up. This script builds selections from `caretRangeFromPoint` itself:
 ///
 /// * left drag extends from the press point to the current point;
-/// * a 450 ms left/touch press-and-hold selects the word under the pointer;
+/// * a 400 ms left/touch press-and-hold selects the word under the pointer;
+/// * after a touch long press, dragging extends that selection and lifting the
+///   finger opens the app's context menu with the final selected text;
 /// * double-click and long-press selections are restored if the engine clears
 ///   them on release.
 ///
@@ -28,7 +30,23 @@ String textSelectionScript() {
   var longPressSelected = false;
   var mouseLongPressTimer = 0;
   var touchStart = null;
+  var touchLast = null;
+  var touchAnchor = null;
+  var touchLongPressFired = false;
   var touchLongPressTimer = 0;
+
+  function postMenu(x, y) {
+    var selection = window.getSelection();
+    var word = selection ? selection.toString().trim() : '';
+    if (!word) return;
+    if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+      window.flutter_inappwebview.callHandler(
+        'ciyueKey',
+        'DesktopContextMenu',
+        JSON.stringify({ x: x, y: y, word: word })
+      );
+    }
+  }
 
   function rangeAt(x, y) {
     return document.caretRangeFromPoint
@@ -133,24 +151,45 @@ String textSelectionScript() {
     if (e.touches.length !== 1) return;
     var touch = e.touches[0];
     touchStart = { x: touch.clientX, y: touch.clientY };
+    touchLast = touchStart;
+    touchAnchor = null;
+    touchLongPressFired = false;
     clearTimeout(touchLongPressTimer);
     touchLongPressTimer = setTimeout(function () {
-      if (touchStart) selectWordAt(touchStart.x, touchStart.y);
-    }, 450);
+      if (!touchStart) return;
+      touchAnchor = rangeAt(touchStart.x, touchStart.y);
+      selectWordAt(touchStart.x, touchStart.y);
+      touchLongPressFired = true;
+    }, 400);
   }, true);
 
   document.addEventListener('touchmove', function (e) {
     if (!touchStart || e.touches.length !== 1) return;
     var touch = e.touches[0];
-    if (Math.abs(touch.clientX - touchStart.x) +
-            Math.abs(touch.clientY - touchStart.y) > 8) {
-      clearTimeout(touchLongPressTimer);
+    touchLast = { x: touch.clientX, y: touch.clientY };
+    if (!touchLongPressFired) {
+      if (Math.abs(touch.clientX - touchStart.x) +
+              Math.abs(touch.clientY - touchStart.y) > 8) {
+        clearTimeout(touchLongPressTimer);
+      }
+      return;
     }
+    // The gesture recognizer has already claimed this touch sequence, so a
+    // move after the long press adjusts the selected range.
+    var current = rangeAt(touch.clientX, touch.clientY);
+    if (current && touchAnchor) selectFrom(touchAnchor, current);
   }, true);
 
   function endTouch() {
     clearTimeout(touchLongPressTimer);
+    if (touchLongPressFired && touchLast) {
+      // Wait until the finger is up so the menu uses the final selection.
+      postMenu(touchLast.x, touchLast.y);
+    }
     touchStart = null;
+    touchLast = null;
+    touchAnchor = null;
+    touchLongPressFired = false;
   }
 
   document.addEventListener('touchend', endTouch, true);
