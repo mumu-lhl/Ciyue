@@ -279,6 +279,21 @@ class CustomPlatformViewController
     });
   }
 
+  /// Drives the JS touch-selection hooks without sending more touch events to
+  /// WPE, so adjusting a long-press selection cannot scroll the entry.
+  Future<void> _touchSelection(String action, double x, double y) async {
+    if (_isDisposed) {
+      return;
+    }
+    assert(value.isInitialized);
+    return _methodChannel.invokeMethod('touchSelection', <String, dynamic>{
+      'action': action,
+      'x': x,
+      'y': y,
+    });
+  }
+
+
   /// Sets the horizontal and vertical scroll delta.
   Future<void> _setScrollDelta(double dx, double dy) async {
     if (_isDisposed) {
@@ -397,6 +412,14 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
   static const _doubleClickDistance = 5.0;
 
   final _activeTouchPoints = <int, Offset>{};
+
+  // Once a touch long press selects a word, stop feeding WPE move events so
+  // WPE cannot scroll the entry while the selection is being adjusted.
+  Timer? _touchSelectionTimer;
+  bool _touchSelecting = false;
+  int? _touchSelectionPointer;
+  Offset? _touchStartPoint;
+  static const _touchSelectionDelay = Duration(milliseconds: 400);
 
   /// Recognizers that keep the WebView in Flutter's gesture arena. A texture
   /// view has no platform-view render object to do this for us, so the
@@ -591,6 +614,21 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                   _pointerKind = ev.kind;
                   if (ev.kind == PointerDeviceKind.touch) {
                     _activeTouchPoints[ev.pointer] = ev.localPosition;
+                    _touchSelectionTimer?.cancel();
+                    _touchSelectionPointer = ev.pointer;
+                    _touchStartPoint = ev.localPosition;
+                    _touchSelecting = false;
+                    _touchSelectionTimer = Timer(_touchSelectionDelay, () {
+                      if (!mounted || _touchStartPoint == null) return;
+                      _touchSelecting = true;
+                      unawaited(
+                        _controller._touchSelection(
+                          "start",
+                          _touchStartPoint!.dx,
+                          _touchStartPoint!.dy,
+                        ),
+                      );
+                    });
                     _sendTouchEvent(
                       0,
                       ev.pointer,
@@ -651,8 +689,31 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                 onPointerUp: (ev) {
                   _pointerKind = ev.kind;
                   if (ev.kind == PointerDeviceKind.touch) {
-                    _activeTouchPoints[ev.pointer] = ev.localPosition;
-                    _sendTouchEvent(1, ev.pointer, ev.localPosition); // 1 = up
+                    // Handle touch event
+                    _touchSelectionTimer?.cancel();
+                    if (_touchSelecting &&
+                        ev.pointer == _touchSelectionPointer) {
+                      unawaited(
+                        _controller._touchSelection(
+                          "end",
+                          ev.localPosition.dx,
+                          ev.localPosition.dy,
+                        ),
+                      );
+                      // Cancel instead of UP so WPE does not synthesize a tap
+                      // after a selection-only gesture.
+                      _sendTouchEvent(3, ev.pointer, ev.localPosition);
+                      _touchSelecting = false;
+                      _touchSelectionPointer = null;
+                      _touchStartPoint = null;
+                    } else {
+                      _activeTouchPoints[ev.pointer] = ev.localPosition;
+                      _sendTouchEvent(
+                        1,
+                        ev.pointer,
+                        ev.localPosition,
+                      ); // 1 = up
+                    }
                     _activeTouchPoints.remove(ev.pointer);
                     return;
                   }
@@ -678,6 +739,21 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                 onPointerCancel: (ev) {
                   _pointerKind = ev.kind;
                   if (ev.kind == PointerDeviceKind.touch) {
+                    // Handle touch cancel
+                    _touchSelectionTimer?.cancel();
+                    if (_touchSelecting &&
+                        ev.pointer == _touchSelectionPointer) {
+                      unawaited(
+                        _controller._touchSelection(
+                          "end",
+                          ev.localPosition.dx,
+                          ev.localPosition.dy,
+                        ),
+                      );
+                      _touchSelecting = false;
+                      _touchSelectionPointer = null;
+                      _touchStartPoint = null;
+                    }
                     _activeTouchPoints.remove(ev.pointer);
                     _sendTouchEvent(
                       3,
@@ -701,6 +777,25 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                   _pointerKind = ev.kind;
                   if (ev.kind == PointerDeviceKind.touch) {
                     _activeTouchPoints[ev.pointer] = ev.localPosition;
+                    if (_touchSelecting &&
+                        ev.pointer == _touchSelectionPointer) {
+                      // No touch event to WPE: adjusting the selection must
+                      // not scroll the entry.
+                      unawaited(
+                        _controller._touchSelection(
+                          "move",
+                          ev.localPosition.dx,
+                          ev.localPosition.dy,
+                        ),
+                      );
+                      return;
+                    }
+                    if (ev.pointer == _touchSelectionPointer &&
+                        _touchStartPoint != null &&
+                        (ev.localPosition - _touchStartPoint!).distance > 8) {
+                      // A quick swipe belongs to the pager, not selection.
+                      _touchSelectionTimer?.cancel();
+                    }
                     _sendTouchEvent(
                       2,
                       ev.pointer,
@@ -842,6 +937,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
 
   @override
   void dispose() {
+    _touchSelectionTimer?.cancel();
     // If a drag was in progress when the widget is disposed (e.g. word changed
     // mid-drag with WebView retention), the native button state would be stuck.
     // Send a synthetic CANCEL to clear it, bypassing the _isDisposed check.

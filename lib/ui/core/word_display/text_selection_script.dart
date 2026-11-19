@@ -30,10 +30,8 @@ String textSelectionScript() {
   var longPressSelected = false;
   var mouseLongPressTimer = 0;
   var touchStart = null;
-  var touchLast = null;
   var touchAnchor = null;
   var touchLongPressFired = false;
-  var touchLongPressTimer = 0;
 
   function postMenu(x, y) {
     var selection = window.getSelection();
@@ -147,56 +145,32 @@ String textSelectionScript() {
     anchor = null;
   });
 
+  // The long-press timer lives in Dart: once it fires, Dart stops forwarding
+  // touch moves to WPE so the entry cannot scroll, and sends coordinates here
+  // instead. These hooks are the only selection path after that point.
+  window.ciyueTouchSelection = function (x, y) {
+    touchAnchor = rangeAt(x, y);
+    selectWordAt(x, y);
+    touchLongPressFired = true;
+  };
+
+  window.ciyueTouchSelectionMove = function (x, y) {
+    if (!touchLongPressFired || !touchAnchor) return;
+    var current = rangeAt(x, y);
+    if (current) selectFrom(touchAnchor, current);
+  };
+
+  window.ciyueTouchSelectionEnd = function (x, y) {
+    if (touchLongPressFired) postMenu(x, y);
+    touchStart = null;
+    touchAnchor = null;
+    touchLongPressFired = false;
+  };
+
   document.addEventListener('touchstart', function (e) {
     if (e.touches.length !== 1) return;
-    var touch = e.touches[0];
-    touchStart = { x: touch.clientX, y: touch.clientY };
-    touchLast = touchStart;
-    touchAnchor = null;
-    touchLongPressFired = false;
-    clearTimeout(touchLongPressTimer);
-    touchLongPressTimer = setTimeout(function () {
-      if (!touchStart) return;
-      touchAnchor = rangeAt(touchStart.x, touchStart.y);
-      selectWordAt(touchStart.x, touchStart.y);
-      touchLongPressFired = true;
-    }, 400);
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   }, true);
-
-  document.addEventListener('touchmove', function (e) {
-    if (!touchStart || e.touches.length !== 1) return;
-    var touch = e.touches[0];
-    touchLast = { x: touch.clientX, y: touch.clientY };
-    if (!touchLongPressFired) {
-      if (Math.abs(touch.clientX - touchStart.x) +
-              Math.abs(touch.clientY - touchStart.y) > 8) {
-        clearTimeout(touchLongPressTimer);
-      }
-      return;
-    }
-    // The gesture recognizer has already claimed this touch sequence, so a
-    // move after the long press adjusts the selected range. Suppress the
-    // engine's own scrolling while doing so, otherwise the page slides out
-    // from under the finger and the selection is hard to control.
-    e.preventDefault();
-    var current = rangeAt(touch.clientX, touch.clientY);
-    if (current && touchAnchor) selectFrom(touchAnchor, current);
-  }, { capture: true, passive: false });
-
-  function endTouch() {
-    clearTimeout(touchLongPressTimer);
-    if (touchLongPressFired && touchLast) {
-      // Wait until the finger is up so the menu uses the final selection.
-      postMenu(touchLast.x, touchLast.y);
-    }
-    touchStart = null;
-    touchLast = null;
-    touchAnchor = null;
-    touchLongPressFired = false;
-  }
-
-  document.addEventListener('touchend', endTouch, true);
-  document.addEventListener('touchcancel', endTouch, true);
 
   document.addEventListener('contextmenu', function (e) {
     if (e.button === 0) selectWordAt(e.clientX, e.clientY);
