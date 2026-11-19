@@ -1,0 +1,7 @@
+* Storage management page with per-category sizes
+* E-ink mode with screen paging
+* Floating window position and size settings on Android
+* Resizable search pane and navigation slide animation
+* Phonetic characters render correctly
+* StarDict and ZIM performance improvements
+* Nightly update checks and tablet navigation fixes

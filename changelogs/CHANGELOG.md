@@ -1,4 +1,42 @@
 ---
+## [2.3.0](https://github.com/mumu-lhl/Ciyue/compare/v2.2.0..v2.3.0) - 2026-11-19
+
+### Features
+
+- **Storage management** - total usage with a per-category breakdown (dictionaries, full-text index, caches, database, audio packs, chat images); caches can be cleared individually or all at once, and the old file manager stays as a subpage on Android
+- **E-ink mode** - a motionless e-ink mode with screen paging, including history paging
+- **Floating window on Android** - the floating window position and card size are now configurable, its style is picked automatically, popups are capped at the card size, and lookup popups are landscape-aware
+- **Resizable search pane** - the split-view search pane can now be resized by dragging its edge
+- **Navigation slide animation** - pages now slide horizontally when switching navigation destinations
+- **Search-mode long-press** - long-press the search-mode button to switch between prefix, suffix, multi-word, and full-text search
+- **Phonetic font fallback** - phonetic characters such as ə and ɪ now render correctly instead of showing as tofu boxes
+- **Global hotkey opt-in** - the Ctrl+Shift+M global hotkey is now opt-in in settings
+- **StarDict and ZIM performance** - faster cold start, per-keystroke suggestions, and full-text search, with a binary index for StarDict dictionaries
+- **Mouse gestures on Android** - mouse gestures are now forwarded to the WebView, with middle-button back
+- **Dictionary entries in standards mode** - MDict and StarDict entries now render in standards mode
+- **ZIM index progress** - index builds now show the dictionary name and entry count, and the entry spinner explains what it is waiting for
+- **Linux software fallback** - after a hardware rendering failure, the next start falls back to software rendering
+- **Translations** - the Spanish translation is complete, and Sardinian is added via Weblate
+
+### Bug Fixes
+
+- **(updater)** nightly update checks now compare commit hashes, so the nightly channel no longer wrongly reports an update
+- **(tablet)** the top navigation bar no longer overlaps the status bar on tablets
+- **(search bar)** the AI-explain search bar no longer duplicates the main search bar
+- **(dropdown)** dropdown menus now have a visible outline
+- **(stardict)** entry images now scale with the entry zoom and stay visible while an entry rebuilds
+- **(shortcuts)** Esc now hands focus back correctly on the not-found page
+- **(word forms)** two-word phrases now reach verb suggestions
+- **(macOS)** the app builds again after the window_manager migration
+- **(windows)** the installer now reports the correct version
+- **(large screens)** the selected word stays in sync on the entry page, and the home search bar shows on large portrait tablets
+- **(word page)** dictionary tabs stay in sync with the tab controller
+- **(linux)** fixed WebView crashes after the WebProcess dies, and frames going stale
+- **(zim)** index building is more robust: the entry count shows early, imports no longer lose the index, and a removed dictionary no longer breaks the entry view
+- **(floating window)** the dictionary list and settings now refresh before each lookup
+
+---
+
 ## [2.2.0](https://github.com/mumu-lhl/Ciyue/compare/v2.1.0..v2.2.0) - 2026-11-11
 
 ### Features

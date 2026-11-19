@@ -3,7 +3,114 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
-## [2.2.0](https://github.com/mumu-lhl/Ciyue/compare/v2.1.0..2.2.0) - 2026-11-11
+## [2.3.0](https://github.com/mumu-lhl/Ciyue/compare/v2.2.0..v2.3.0) - 2026-11-19
+
+### Bug Fixes
+
+- **(android)** landscape-aware and reader-positioned lookup popup - ([f9cb73b](https://github.com/mumu-lhl/Ciyue/commit/f9cb73b83b5ba2f4d6528c72103f513eab4b6e4c)) - YX
+- **(android)** refresh settings before each floating-window lookup - ([a933258](https://github.com/mumu-lhl/Ciyue/commit/a933258a2ca1d278ec40fcb13ad5cd040393fa60)) - YX
+- **(android)** refresh the dictionary group list for the floating window - ([4a36965](https://github.com/mumu-lhl/Ciyue/commit/4a369657371eb5f3ece7176cd4ee17cd9ca608a4)) - YX
+- **(description)** use the desktop WebView and tolerate a removed dictionary - ([608dcbd](https://github.com/mumu-lhl/Ciyue/commit/608dcbd0a45bd15c19d54f65e5d69803b65ef3c7)) - YX
+- **(hunspell)** let two-word phrases reach verb suggestions - ([70d2314](https://github.com/mumu-lhl/Ciyue/commit/70d231490ff03db44aba2a31ff4dbf6adaf4f237)) - yx
+- **(linux)** derive the WebView frame transport from a single render mode - ([2c45c51](https://github.com/mumu-lhl/Ciyue/commit/2c45c517f8befedf5ba78c15302f166513d0b80a)) - YX
+- **(linux)** keep a single DRM probe in the plugin - ([e574fc2](https://github.com/mumu-lhl/Ciyue/commit/e574fc2c53f31205d800e6a13c6eab35575628f0)) - YX
+- **(linux-webview)** keep a DMA-BUF alive one extra present - ([2757558](https://github.com/mumu-lhl/Ciyue/commit/2757558d9b62a5f0ff9c8f80cb2ee76c8bd7f80e)) - YX
+- **(linux-webview)** drop stale frames after WebProcess crash - ([3c2db4a](https://github.com/mumu-lhl/Ciyue/commit/3c2db4a35dd44a4bbc585c720f35be51cb26d8bb)) - yx
+- **(macos)** drop window_manager Swift import removed in 0.6.0 - ([b474b7d](https://github.com/mumu-lhl/Ciyue/commit/b474b7dade20175492539380b14a1025e7dd0ac5)) - Mumulhl
+- **(shortcuts)** restore Esc focus hand-off on the not-found page - ([203d4c8](https://github.com/mumu-lhl/Ciyue/commit/203d4c8458d1d5327f452ad7e89ef054c457cccc)) - yx
+- **(stardict)** scale the XDXF headword and the image cap with the entry zoom - ([cb038dc](https://github.com/mumu-lhl/Ciyue/commit/cb038dc9243d4f1b3695bab0a74348c87b50f283)) - YX
+- **(stardict)** magnify embedded images with the entry zoom - ([8eb2321](https://github.com/mumu-lhl/Ciyue/commit/8eb2321b2fefdcb3545c3c1d89e75df69d173e86)) - YX
+- **(stardict)** keep the entry picture while a rebuild or a zoom lands - ([f198387](https://github.com/mumu-lhl/Ciyue/commit/f19838735c59d61b6081f023de1ba222f9ba174d)) - YX
+- **(ui)** add vertical padding to changelog version headers - ([859c914](https://github.com/mumu-lhl/Ciyue/commit/859c91459a2518acf2a66ae5d4e2a206edda1d07)) - Mumulhl
+- **(ui)** don't show a second search bar when AI explain is on - ([51201c3](https://github.com/mumu-lhl/Ciyue/commit/51201c35ab0ffa5815e4eefe51db8d127e048e1e)) - Mumulhl
+- **(ui)** keep top navigation clear of status bar on tablets - ([22c4c1a](https://github.com/mumu-lhl/Ciyue/commit/22c4c1a15d1e8406a8faf2479ff46b20c39a65e0)) - YX
+- **(updater)** nightly channel compares commit hash, not tag - ([cadb817](https://github.com/mumu-lhl/Ciyue/commit/cadb817f296e1bb7a5c1c56a526f01b55a55d8a0)) - Mumulhl
+- **(updater)** tolerate nightly commit-hash length differences - ([81db654](https://github.com/mumu-lhl/Ciyue/commit/81db65465cd7ee44653b59a265abe4e1bd124ae6)) - Mumulhl
+- **(windows)** derive installer version from pubspec.yaml - ([eb40996](https://github.com/mumu-lhl/Ciyue/commit/eb4099676780178ca031c804039aa297607f7504)) - yx
+- **(word-display)** keep TabBar tabs in sync with the tab controller - ([7889b7e](https://github.com/mumu-lhl/Ciyue/commit/7889b7e43bc8512470cb96735cc4ef72e8c045cc)) - YX
+- **(zim)** persist the index snapshot before the import closes the reader - ([dab0fa7](https://github.com/mumu-lhl/Ciyue/commit/dab0fa78f2ccf944ec98218e2547a1dbc07b9e98)) - YX
+- **(zim)** register the dictionary before naming its index cache - ([26c4e34](https://github.com/mumu-lhl/Ciyue/commit/26c4e34fc383a8f8cd93e8043e00a455ac7d7f1e)) - YX
+- **(zim)** report the archive entry count before the index is built - ([90f5f9e](https://github.com/mumu-lhl/Ciyue/commit/90f5f9eef17f7e78fe55326abc460d7ae4a5dd23)) - YX
+- show home search bar on large portrait tablets - ([1d6797f](https://github.com/mumu-lhl/Ciyue/commit/1d6797f71d716be96719904013ea95c840ed4012)) - YX
+- sync selected word on large-screen entry page - ([bd7bd35](https://github.com/mumu-lhl/Ciyue/commit/bd7bd350d9e9933b7ef0a111eb1aebb04d981ee4)) - YX
+- remove an unnecessary import - ([bb4b34a](https://github.com/mumu-lhl/Ciyue/commit/bb4b34a941dae8548d1e3414e84ecd7338ada38c)) - Mumulhl
+
+### Documentation
+
+- refresh README and store descriptions - ([cc44a72](https://github.com/mumu-lhl/Ciyue/commit/cc44a723f351963e39fc676a928c2c7156c05cec)) - Mumulhl
+- describe middle-button rocker and Android support in gesture docs - ([823ec29](https://github.com/mumu-lhl/Ciyue/commit/823ec2906c83e910adf0857fdf22bf2c0809d4be)) - YX
+- sync keyboard-shortcuts help (en) with the updated Chinese text - ([cde34fa](https://github.com/mumu-lhl/Ciyue/commit/cde34faed1878f11d90037c87e86ff9e9e827f7a)) - YX
+- include macOS in platform and build documentation - ([27b2c22](https://github.com/mumu-lhl/Ciyue/commit/27b2c223f96d06e14586352ffdf0ba415972bdb3)) - YX
+- document the floating window position setting - ([ab437de](https://github.com/mumu-lhl/Ciyue/commit/ab437defc5e2280097e36b2c41d2b017ed37e53a)) - YX
+- split the guide into user guide and internals - ([c0a6ae4](https://github.com/mumu-lhl/Ciyue/commit/c0a6ae4bec6efa46d433ff7559c8ed8d42dba466)) - Mumulhl
+- remove guide/dictionary-link-schemes.md (moved to internals/) - ([2268b88](https://github.com/mumu-lhl/Ciyue/commit/2268b887397c46c3d3730ca4a0208d423adfa8a2)) - Mumulhl
+- remove zh/guide/dictionary-link-schemes.md (moved to internals/) - ([41feae3](https://github.com/mumu-lhl/Ciyue/commit/41feae37783dab2358ddd67cd53fc9176bb80b4c)) - Mumulhl
+- update word-form lookup internals for hunspell 1.7.6 - ([c7e86f6](https://github.com/mumu-lhl/Ciyue/commit/c7e86f64403f3ca3ec21d192fe692a66e2e2316d)) - Mumulhl
+
+### Features
+
+- **(android)** pick the floating window style automatically - ([7521131](https://github.com/mumu-lhl/Ciyue/commit/75211318c2ae4e9aec2b53b95a52aaa560303040)) - YX
+- **(android)** let users size the floating window card - ([36f1f90](https://github.com/mumu-lhl/Ciyue/commit/36f1f90787b4e09223a1af642c3e1840a29d8294)) - YX
+- **(android)** forward mouse gestures to WebView and add middle-button back - ([ea7975a](https://github.com/mumu-lhl/Ciyue/commit/ea7975a9e437c120437c1e86f2d97e75ff0cca67)) - YX
+- **(android)** cap reader popups at the configured card size - ([f4cd16a](https://github.com/mumu-lhl/Ciyue/commit/f4cd16a845f692cecb7351891677987a68653033)) - yx
+- **(android)** let the floating window position be configured - ([c81933e](https://github.com/mumu-lhl/Ciyue/commit/c81933e1d77f0806b08ddaec7b40e6eabfada7a7)) - YX
+- **(dictionaries)** render MDict and StarDict entries in standards mode - ([cd45773](https://github.com/mumu-lhl/Ciyue/commit/cd4577351cdfdf416e519f9a841e07ff74ea724d)) - YX
+- **(eink)** add an e-ink mode with screen paging - ([190d946](https://github.com/mumu-lhl/Ciyue/commit/190d94627c8622c88d4f6b6db79671ba2f5758e7)) - yx
+- **(eink)** finish the motionless surfaces and add history paging - ([a2e757e](https://github.com/mumu-lhl/Ciyue/commit/a2e757e1bcb2989f5ef15e29d5532c6b5da247bb)) - yx
+- **(l10n)** complete the Spanish translation - ([7fe6f85](https://github.com/mumu-lhl/Ciyue/commit/7fe6f85865e59621dabb4b69e1a0d86faf6278e3)) - Pedro Flores
+- **(linux)** fall back to software on the next start after a hardware failure - ([2d77978](https://github.com/mumu-lhl/Ciyue/commit/2d779788f83fdb8de24f0b8b9902a180caeb75eb)) - YX
+- **(linux-webview)** add opt-in tracing for the DMA-BUF frame path - ([d7a9861](https://github.com/mumu-lhl/Ciyue/commit/d7a9861e0fdd8285831a717fb141d13fdd65dbf7)) - YX
+- **(settings)** make the Ctrl+Shift+M global hotkey opt-in - ([685c2ad](https://github.com/mumu-lhl/Ciyue/commit/685c2ad721febd5e1b4dc21dee72b897dd25eb81)) - yx
+- **(settings)** Telegram-style storage management page - ([d662199](https://github.com/mumu-lhl/Ciyue/commit/d6621992516664829e5a681eb4b3c7c12a896627)) - Mumulhl
+- **(translation)** translated using Weblate (Sardinian) - ([3319c33](https://github.com/mumu-lhl/Ciyue/commit/3319c339aa7df9cbf8b971c9fa52c0bf1afcee49)) - Ajeje Brazorf
+- **(ui)** explain what the entry spinner is waiting for - ([0172244](https://github.com/mumu-lhl/Ciyue/commit/01722445b6c90438818ff434d1fc4b8e76a81735)) - YX
+- **(ui)** name the dictionary and entry count while its ZIM index builds - ([15db443](https://github.com/mumu-lhl/Ciyue/commit/15db443eec8f4520748f2ee4ee5f8cff7486b1b5)) - YX
+- **(ui)** slide pages horizontally when switching navigation destinations - ([98b79d1](https://github.com/mumu-lhl/Ciyue/commit/98b79d1a461aff43317ebeb50b2f6b8a57373e00)) - Mumulhl
+- **(ui)** switch search mode by long-pressing the mode button - ([1a9a6f7](https://github.com/mumu-lhl/Ciyue/commit/1a9a6f780838dde723f983d773f82e493c45b4d9)) - Mumulhl
+- **(ui)** make the split-view search pane resizable - ([2e28609](https://github.com/mumu-lhl/Ciyue/commit/2e28609e690278bc038c39da5d63f5b0c0eb4bdf)) - YX
+- **(ui)** add font fallback for phonetic characters - ([0778aec](https://github.com/mumu-lhl/Ciyue/commit/0778aec16e411c4ec7aaeff23ce329637210c1ef)) - yx
+
+### Miscellaneous Chores
+
+- **(deps)** upgrade all packages to latest on Flutter 3.50, migrate window_manager to native API - ([51e6df5](https://github.com/mumu-lhl/Ciyue/commit/51e6df5c5118c2671339f1b536d59cfdb590c0f7)) - Mumulhl
+- **(deps)** upgrade hunspell 1.7.3 to 1.7.6 - ([55d5a64](https://github.com/mumu-lhl/Ciyue/commit/55d5a6486ec52100aea52e3fe21fc1b76e95626c)) - Mumulhl
+- update flutter version to 3.50.0 - ([fa81d35](https://github.com/mumu-lhl/Ciyue/commit/fa81d35d64dda3b5c865361c74f39e69a7f337df)) - Mumulhl
+- remove stale StorageManagementViewModel after rename to FileManagerViewModel - ([01f3bd8](https://github.com/mumu-lhl/Ciyue/commit/01f3bd8bdeecd69e0478e62316b2f6adb21d8e1f)) - Mumulhl
+
+### Performance
+
+- **(stardict/zim)** pin dict_reader fe70838, wire StarDict .cidx, use entryTitleAt - ([b4a2476](https://github.com/mumu-lhl/Ciyue/commit/b4a2476c3a9c9e38f4d224b503e2749917297bf4)) - Mumulhl
+- **(stardict/zim)** app-side P0+P1 batch from perf review - ([25987f9](https://github.com/mumu-lhl/Ciyue/commit/25987f9838f49b50f593fe5a238f72bf966864ca)) - Mumulhl
+
+### Refactoring
+
+- **(android)** apply the entry zoom once per page commit - ([79a1e72](https://github.com/mumu-lhl/Ciyue/commit/79a1e727dff418fc2436afe93d2d9282f20ead52)) - YX
+- **(android)** reload the floating window config through one function - ([27ee141](https://github.com/mumu-lhl/Ciyue/commit/27ee1418bd1bcaa4a8d919386d2a102e9daca867)) - YX
+
+### Revert
+
+- **(linux)** drop the automatic rendering fallback - ([09d385e](https://github.com/mumu-lhl/Ciyue/commit/09d385ea4c85d7fa8265bf74383974d1172d73f2)) - YX
+
+### Style
+
+- **(ui)** outline the dropdown menu card - ([03f6fec](https://github.com/mumu-lhl/Ciyue/commit/03f6fec2b3fff392352ed6940ef74f9327b67b22)) - Mumulhl
+- apply dart format to word_display initial dict test - ([a3b49bc](https://github.com/mumu-lhl/Ciyue/commit/a3b49bcc1e92d425218d3844425e46a48f6997b1)) - YX
+- format - ([4714b75](https://github.com/mumu-lhl/Ciyue/commit/4714b754ae8098d866397692e734c386f3a68494)) - Mumulhl
+
+### Tests
+
+- **(android)** align gesture script assertions with the direction-aware rocker - ([f5b1a0c](https://github.com/mumu-lhl/Ciyue/commit/f5b1a0c9efef546f4f72d3e4392e75ae246cf078)) - YX
+- **(stardict)** pin the rendered image size across the entry zoom - ([123038d](https://github.com/mumu-lhl/Ciyue/commit/123038d55afbd81b40e2a2bd72920bd570cc95d6)) - YX
+- update user script counts for font fallback - ([53360a1](https://github.com/mumu-lhl/Ciyue/commit/53360a1ff88ff936868a2b9dd57bebb62ede188f)) - yx
+
+### Ci
+
+- **(flatpak)** build without runtime update that fails with EXDEV - ([5d10b66](https://github.com/mumu-lhl/Ciyue/commit/5d10b66b062220d77a1bb953d30d026ae8785858)) - yx
+- **(windows)** pin the JDK and key the build cache on it - ([7088e49](https://github.com/mumu-lhl/Ciyue/commit/7088e497b7e3b216d10e6b9e36fdd1f5e7d97f4e)) - YX
+- rerun build jobs after Actions artifact outage - ([37b609f](https://github.com/mumu-lhl/Ciyue/commit/37b609f2f2322df8a61f3208071b378361aa2355)) - YX
+
+---
+## [2.2.0](https://github.com/mumu-lhl/Ciyue/compare/v2.1.0..v2.2.0) - 2026-11-11
 
 ### Bug Fixes
 
