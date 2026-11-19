@@ -1,17 +1,16 @@
-/// Mouse text-selection fallback for the Linux/Windows WebViews.
+/// Desktop text-selection fallback for the Linux/Windows WebViews.
 ///
-/// WPE on KDE does not always turn pointer motion into a DOM selection, and it
-/// can drop the word selection made by a double click on mouse up. This script
-/// builds mouse selections from `caretRangeFromPoint` itself:
+/// WPE on KDE does not always turn pointer motion or a press-and-hold into a
+/// DOM selection, and it can drop the word selection made by a double click on
+/// mouse up. This script builds selections from `caretRangeFromPoint` itself:
 ///
 /// * left drag extends from the press point to the current point;
-/// * a 400 ms left press-and-hold selects the word under the pointer;
+/// * a 450 ms left/touch press-and-hold selects the word under the pointer;
 /// * double-click and long-press selections are restored if the engine clears
 ///   them on release.
 ///
 /// It never cancels an event, so the engine's own selection and the app's
-/// context-menu/rocker handlers keep working. Touch input is deliberately left
-/// to the engine and to [DictionarySelectionGestureRecognizer].
+/// context-menu/rocker handlers keep working.
 String textSelectionScript() {
   return """
 (function () {
@@ -28,6 +27,8 @@ String textSelectionScript() {
   var lastPressDetail = 0;
   var longPressSelected = false;
   var mouseLongPressTimer = 0;
+  var touchStart = null;
+  var touchLongPressTimer = 0;
 
   function rangeAt(x, y) {
     return document.caretRangeFromPoint
@@ -84,7 +85,7 @@ String textSelectionScript() {
       if (!mouseStart) return;
       selectWordAt(mouseStart.x, mouseStart.y);
       longPressSelected = true;
-    }, 400);
+    }, 450);
   }, true);
 
   document.addEventListener('mousemove', function (e) {
@@ -127,6 +128,37 @@ String textSelectionScript() {
     dragging = false;
     anchor = null;
   });
+
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    var touch = e.touches[0];
+    touchStart = { x: touch.clientX, y: touch.clientY };
+    clearTimeout(touchLongPressTimer);
+    touchLongPressTimer = setTimeout(function () {
+      if (touchStart) selectWordAt(touchStart.x, touchStart.y);
+    }, 450);
+  }, true);
+
+  document.addEventListener('touchmove', function (e) {
+    if (!touchStart || e.touches.length !== 1) return;
+    var touch = e.touches[0];
+    if (Math.abs(touch.clientX - touchStart.x) +
+            Math.abs(touch.clientY - touchStart.y) > 8) {
+      clearTimeout(touchLongPressTimer);
+    }
+  }, true);
+
+  function endTouch() {
+    clearTimeout(touchLongPressTimer);
+    touchStart = null;
+  }
+
+  document.addEventListener('touchend', endTouch, true);
+  document.addEventListener('touchcancel', endTouch, true);
+
+  document.addEventListener('contextmenu', function (e) {
+    if (e.button === 0) selectWordAt(e.clientX, e.clientY);
+  }, true);
 })();
 """;
 }

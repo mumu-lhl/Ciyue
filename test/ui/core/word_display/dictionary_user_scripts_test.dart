@@ -42,12 +42,12 @@ void main() {
         UserScriptInjectionTime.AT_DOCUMENT_START,
       );
       expect(selection.source, contains("document.caretRangeFromPoint"));
-      expect(selection.source, contains("e.button !== 0"));
+      expect(selection.source, contains("e.button === 0"));
+      expect(selection.source, contains("touchLongPressTimer"));
       expect(
         selection.source,
         contains("window.__ciyueTextSelectionInstalled"),
       );
-      expect(selection.source, isNot(contains("ciyueTouchSelection")));
 
       final withoutMenu = dictionaryUserScripts();
       expect(
