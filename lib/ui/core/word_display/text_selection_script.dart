@@ -175,10 +175,13 @@ String textSelectionScript() {
       return;
     }
     // The gesture recognizer has already claimed this touch sequence, so a
-    // move after the long press adjusts the selected range.
+    // move after the long press adjusts the selected range. Suppress the
+    // engine's own scrolling while doing so, otherwise the page slides out
+    // from under the finger and the selection is hard to control.
+    e.preventDefault();
     var current = rangeAt(touch.clientX, touch.clientY);
     if (current && touchAnchor) selectFrom(touchAnchor, current);
-  }, true);
+  }, { capture: true, passive: false });
 
   function endTouch() {
     clearTimeout(touchLongPressTimer);

@@ -49,6 +49,7 @@ void main() {
         selection.source,
         contains("window.__ciyueTextSelectionInstalled"),
       );
+      expect(selection.source, contains("passive: false"));
       expect(selection.source, contains("'DesktopContextMenu'"));
 
       final withoutMenu = dictionaryUserScripts();
