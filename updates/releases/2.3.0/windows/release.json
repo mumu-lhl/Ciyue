@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 3,
+  "packageId": "ciyue",
+  "appName": "Ciyue",
+  "version": "2.3.0",
+  "buildNumber": 109,
+  "platform": "windows",
+  "channel": "stable",
+  "artifact": {
+    "kind": "zip",
+    "url": "https://github.com/mumu-lhl/Ciyue/releases/download/v2.3.0/Ciyue-2.3.0-windows.zip",
+    "sha256": "8b3680d26ad2e5ccc8e726a8f8f28e087b2e848344c9c9c1cf24c34bd4884eac",
+    "length": 26379440
+  },
+  "install": {
+    "strategy": "wholeDirectoryReplace"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKeyId": "release-f3d56da10d0866ff2cff4c65",
+    "value": "id49gmpRxkes5CyzeZR/yEzsc9E8h/Qpo2/neJt+GJ/l5tWfZTsGvI76/DnbeCZTAtZCQWqWj5IQw4RYpByrCw=="
+  },
+  "minimumUpdaterVersion": "2.0.0",
+  "generatedAt": "2026-11-19T16:44:35.682117Z"
+}
