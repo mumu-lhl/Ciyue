@@ -18,6 +18,17 @@ void main() {
     expect(theme.source, contains("var dark = false"));
   });
 
+  test("font fallback is injected at document start", () {
+    final scripts = dictionaryUserScripts();
+    final fallback = scripts.firstWhere(
+      (script) => script.source.contains("var fallback ="),
+    );
+    expect(fallback.injectionTime, UserScriptInjectionTime.AT_DOCUMENT_START);
+    expect(fallback.source, contains("DejaVu Sans"));
+    expect(fallback.source, contains("Noto Sans"));
+    expect(fallback.source, contains("getPropertyValue(\"font-family\")"));
+  });
+
   test("the paging script is injected and starts inert", () {
     final scripts = dictionaryUserScripts();
     final paging = scripts.firstWhere(
