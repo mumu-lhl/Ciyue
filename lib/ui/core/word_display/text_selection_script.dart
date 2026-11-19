@@ -5,7 +5,7 @@
 /// mouse up. This script builds selections from `caretRangeFromPoint` itself:
 ///
 /// * left drag extends from the press point to the current point;
-/// * a 400 ms left/touch press-and-hold selects the word under the pointer;
+/// * a 450 ms left/touch press-and-hold selects the word under the pointer;
 /// * after a touch long press, dragging extends that selection and lifting the
 ///   finger opens the app's context menu with the final selected text;
 /// * double-click and long-press selections are restored if the engine clears

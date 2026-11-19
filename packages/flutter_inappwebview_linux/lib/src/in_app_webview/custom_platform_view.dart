@@ -600,7 +600,11 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                   // Claim this pointer sequence before an enclosing PageView
                   // can win the drag and cancel WebView input.
                   for (final recognizer in _gestureRecognizers) {
-                    recognizer.addPointer(ev);
+                    // A recognizer from a previous pointer sequence can reject
+                    // a new one; that must not abort pointer setup.
+                    try {
+                      recognizer.addPointer(ev);
+                    } catch (_) {}
                   }
 
                   final needsFocus = !_focusNode.hasFocus;
