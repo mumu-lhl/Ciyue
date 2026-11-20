@@ -4,16 +4,9 @@
 
 **Ciyue** is a comprehensive dictionary application built with **Flutter**. It is designed to support **MDX/MDD** dictionary formats and offers a modern user experience with **Material You** design.
 
-### Key Features
-*   **Multi-Platform:** Android, Windows, Linux, macOS.
-*   **Dictionary Support:** MDX/MDD formats, multi-dictionary search.
-*   **AI Integration:** AI-powered translation (OpenAI, Gemini, DeepSeek, etc.) and word explanation.
-*   **Tools:** Text-to-speech (TTS), word book (bookmarks), history.
-*   **Theming:** Dynamic colors (Material You) and dark mode support.
-
 ### Architecture & Tech Stack
 *   **Framework:** Flutter (Dart).
-*   **State Management:** `provider`.
+*   **State Management:** `flutter_riverpod`.
 *   **Database:** `drift` (SQLite abstraction) with migration support.
 *   **Navigation:** `go_router`.
 *   **Networking:** `dio` with `talker_dio_logger` for logging.
@@ -24,7 +17,7 @@
 ## Building and Running
 
 ### Prerequisites
-*   **Flutter SDK:** Flutter `>=3.47.0` and Dart `>=3.13.0` (CI uses `3.47.5`).
+*   **Flutter SDK:** the version pinned in `.github/workflows/flutter.yml`.
 *   **Just:** Command runner for simplified scripts.
 *   **Platform Requirements:**
     *   **Linux:** `libgtk-3-dev`, `libx11-dev`, `libxi-dev`, `libgstreamer1.0-dev`, `libsecret-1-dev` (secure cloud credentials), etc. Runtime cloud credential storage also requires an active Secret Service/keyring.
