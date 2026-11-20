@@ -128,9 +128,6 @@ dependencies {
     implementation("androidx.documentfile:documentfile:1.1.0")
 }
 
-// Keep versionCodes stable across Flutter upgrades: recent Flutter versions
-// apply their own ABI offsets before application onVariants callbacks.
-// Read the original build number instead of output.versionCode.
 val abiCodes = mapOf(
     "x86_64" to 1,
     "armeabi-v7a" to 2,
