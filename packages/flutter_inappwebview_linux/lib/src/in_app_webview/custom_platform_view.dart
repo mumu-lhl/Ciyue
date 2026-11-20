@@ -279,14 +279,7 @@ class CustomPlatformViewController
     });
   }
 
-  Future<void> _clearSelection() async {
-    if (_isDisposed) {
-      return;
-    }
-    assert(value.isInitialized);
-    return _methodChannel.invokeMethod('clearSelection');
-  }
-
+  /// Sets the horizontal and vertical scroll delta.
   Future<void> _setScrollDelta(double dx, double dy) async {
     if (_isDisposed) {
       return;
@@ -395,12 +388,6 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
   final _controller = CustomPlatformViewController();
   final _focusNode = FocusNode();
 
-  /// Set while the focus is taken back from the widget that owns it.
-  ///
-  /// The takeover happens on purpose, so the selection the reader made must
-  /// not be thrown away with it.
-  bool _restoringFocus = false;
-
   StreamSubscription? _cursorSubscription;
 
   DateTime? _lastClickTime;
@@ -484,14 +471,14 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
       onFocusChange: (focused) {
         if (!focused) {
           _downButtons.clear();
-          // The takeover is not a real focus loss: clearing the selection
-          // here would throw away the word the reader just picked.
-          if (!_restoringFocus && _controller.value.isInitialized) {
-            unawaited(_controller._clearSelection());
-          }
+          // Opening the app's context menu takes Flutter focus away from this
+          // node. Unfocusing WPE and clearing its selection at that point
+          // re-enters the compositor and has been terminating the WebProcess;
+          // keyboard routing is owned by this node anyway, so keep WPE as is.
+          return;
         }
         if (_controller.value.isInitialized) {
-          unawaited(_controller._setFocused(focused));
+          unawaited(_controller._setFocused(true));
         }
       },
       onKeyEvent: _handleKeyEvent,
@@ -558,14 +545,10 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (identical(FocusManager.instance.primaryFocus, _focusNode)) return;
-      _restoringFocus = true;
       _focusNode.unfocus();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _focusNode.requestFocus();
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _restoringFocus = false;
-        });
       });
     });
   }
