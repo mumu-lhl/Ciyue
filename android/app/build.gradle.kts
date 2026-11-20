@@ -128,18 +128,22 @@ dependencies {
     implementation("androidx.documentfile:documentfile:1.1.0")
 }
 
-val abiCodes = mapOf("x86_64" to -3, "armeabi-v7a" to 1, "arm64-v8a" to 1, "universal" to 4)
+// Keep versionCodes stable across Flutter upgrades: recent Flutter versions
+// apply their own ABI offsets before application onVariants callbacks.
+// Read the original build number instead of output.versionCode.
+val abiCodes = mapOf(
+    "x86_64" to 1,
+    "armeabi-v7a" to 2,
+    "arm64-v8a" to 3,
+    "universal" to 4,
+)
 
 androidComponents {
     onVariants { variant ->
-
         variant.outputs.forEach { output ->
-            val name = output.filters.find { it.filterType == ABI }?.identifier
-
-            val baseAbiCode = abiCodes[name ?: "universal"]
-            if (baseAbiCode != null) {
-                output.versionCode.set(output.versionCode.get() * 10000 + baseAbiCode * 1000)
-            }
+            val abi = output.filters.find { it.filterType == ABI }?.identifier ?: "universal"
+            val abiCode = abiCodes[abi] ?: error("Unsupported APK ABI: $abi")
+            output.versionCode.set(flutter.versionCode * 10000 + abiCode * 1000)
         }
     }
 }
