@@ -146,8 +146,6 @@ jobs:
               ;;
           esac
 
-      # Assert the versionCode encoded in each APK, not merely the Gradle DSL
-      # value. Flutter has changed ABI offsets in the past (see issue #884).
       - name: Validate release APK version codes
         if: ${{ inputs.build_mode == 'release_common' || inputs.build_mode == 'release_full' }}
         shell: bash
