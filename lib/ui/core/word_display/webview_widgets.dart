@@ -1046,16 +1046,25 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   void _handleDesktopContextMenu(String payload) {
     final request = parseDesktopContextMenu(payload);
     if (request == null || request.word.isEmpty) return;
-    final anchorContext = _webViewAnchorKey.currentContext;
-    if (anchorContext == null) return;
+    // The caller is a WebKit script-message handler. Push the route only after
+    // that handler has returned: showing it inline changes Flutter focus while
+    // WebKit is still inside the message callback, and WPE then terminates the
+    // WebProcess.
     unawaited(
-      showDesktopContextMenu(
-        context: context,
-        anchorContext: anchorContext,
-        ref: ref,
-        dictId: widget.dictId,
-        request: request,
-      ),
+      Future<void>.delayed(Duration.zero, () {
+        if (!mounted || !context.mounted) return;
+        final anchorContext = _webViewAnchorKey.currentContext;
+        if (anchorContext == null || !anchorContext.mounted) return;
+        unawaited(
+          showDesktopContextMenu(
+            context: context,
+            anchorContext: anchorContext,
+            ref: ref,
+            dictId: widget.dictId,
+            request: request,
+          ),
+        );
+      }),
     );
   }
 
