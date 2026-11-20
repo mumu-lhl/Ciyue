@@ -153,7 +153,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          build_number="$(sed -nE 's/^version: [^+]+\\+([0-9]+).*/\\1/p' pubspec.yaml)"
+          build_number="$(sed -nE 's/^version: [^+]+\+([0-9]+).*/\1/p' pubspec.yaml)"
           if [[ ! "$build_number" =~ ^[0-9]+$ ]]; then
             echo "Cannot determine pubspec build number" >&2
             exit 1
@@ -180,7 +180,7 @@ jobs:
             fi
 
             expected=$((10#$build_number * 10000 + suffix * 1000))
-            actual="$("$aapt" dump badging "$apk" | sed -nE "s/.*versionCode='([0-9]+)'.*/\\1/p" | head -n 1)"
+            actual="$("$aapt" dump badging "$apk" | sed -nE "s/.*versionCode='([0-9]+)'.*/\1/p" | head -n 1)"
             echo "$apk: expected=$expected actual=$actual"
             if [[ "$actual" != "$expected" ]]; then
               echo "Unexpected versionCode in $apk" >&2
