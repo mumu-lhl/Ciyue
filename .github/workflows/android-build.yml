@@ -146,6 +146,46 @@ jobs:
               ;;
           esac
 
+      - name: Validate release APK version codes
+        if: ${{ inputs.build_mode == 'release_common' || inputs.build_mode == 'release_full' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          build_number="$(sed -nE 's/^version: [^+]+\+([0-9]+).*/\1/p' pubspec.yaml)"
+          if [[ ! "$build_number" =~ ^[0-9]+$ ]]; then
+            echo "Cannot determine pubspec build number" >&2
+            exit 1
+          fi
+
+          build_tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
+          aapt="$build_tools/aapt"
+          if [[ ! -x "$aapt" ]]; then
+            echo "Android aapt not found: $aapt" >&2
+            exit 1
+          fi
+
+          flavor=common
+          if [[ "${{ inputs.build_mode }}" == 'release_full' ]]; then
+            flavor=full
+          fi
+
+          for entry in 'universal:4' 'x86_64:1' 'armeabi-v7a:2' 'arm64-v8a:3'; do
+            abi="${entry%%:*}"
+            suffix="${entry##*:}"
+            apk="build/app/outputs/flutter-apk/app-${abi}-${flavor}-release.apk"
+            if [[ "$abi" == 'universal' ]]; then
+              apk="build/app/outputs/flutter-apk/app-${flavor}-release.apk"
+            fi
+
+            expected=$((10#$build_number * 10000 + suffix * 1000))
+            actual="$("$aapt" dump badging "$apk" | sed -nE "s/.*versionCode='([0-9]+)'.*/\1/p" | head -n 1)"
+            echo "$apk: expected=$expected actual=$actual"
+            if [[ "$actual" != "$expected" ]]; then
+              echo "Unexpected versionCode in $apk" >&2
+              exit 1
+            fi
+          done
+
       - name: Rename common APKs
         if: ${{ inputs.build_mode == 'release_common' }}
         run: |
