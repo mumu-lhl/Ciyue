@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:convert";
 import "dart:io";
 
@@ -94,14 +95,14 @@ void handleOpenWordNavigation(
       } else {
         homeModel.selectedWord = word;
       }
-      container.read(openRecordsRepositoryProvider).add(word);
+      unawaited(container.read(openRecordsRepositoryProvider).add(word));
       container.read(historyModelProvider).addHistory(word);
     } catch (_) {}
   } else {
     try {
       final container = ProviderScope.containerOf(navContext, listen: false);
       final homeModel = container.read(homeModelProvider);
-      container.read(openRecordsRepositoryProvider).add(word);
+      unawaited(container.read(openRecordsRepositoryProvider).add(word));
       container.read(historyModelProvider).addHistory(word);
       if (newTab) {
         homeModel.openWordInNewTab(word, dictId: dictId);
@@ -112,7 +113,7 @@ void handleOpenWordNavigation(
 
     if (!isAlreadyInWordRoute && context.mounted) {
       final query = dictId != null ? "?dictId=$dictId" : "";
-      context.push("/word/${Uri.encodeComponent(word)}$query");
+      unawaited(context.push("/word/${Uri.encodeComponent(word)}$query"));
     }
   }
 }

@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
@@ -239,7 +241,7 @@ void main() {
     );
     expect(tabControllers.last.initialIndex, equals(0));
 
-    currentContext.push("/word/banana?dictId=30");
+    unawaited(currentContext.push("/word/banana?dictId=30"));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
@@ -304,7 +306,7 @@ void main() {
       // without updating selectedWord itself. The page must sync it to the new
       // URL word, otherwise it keeps showing the previous word — the regression
       // on large-screen portrait tablets.
-      currentContext.push("/word/banana");
+      unawaited(currentContext.push("/word/banana"));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(container.read(homeModelProvider).selectedWord, equals("banana"));

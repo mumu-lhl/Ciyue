@@ -69,7 +69,7 @@ class _Emitter {
 
   /// Called after a batch is sent; resolves when the main isolate has
   /// written it (see [runFullTextIndexBuild]). The builder parks here
-  /// instead of queueing batches ahead of the writer: backpressure (P1-8)
+  /// instead of queueing batches ahead of the writer: backpressure
   /// is one batch in flight, so a slow disk cannot pile up unread bodies
   /// in memory.
   final Future<void> Function() _waitForAck;
@@ -98,7 +98,7 @@ class _Emitter {
   /// instead of re-reading and re-stripping everything it already has).
   ///
   /// Callers check this BEFORE doing a dictionary lookup or stripping any
-  /// body (P1-5). A row whose stripped body turns out empty is counted
+  /// body. A row whose stripped body turns out empty is counted
   /// here but never emitted (see [addBody]); its row id stays unused,
   /// which a resumed build reproduces because it counts the same way.
   bool needsBody(String headword) {
@@ -114,7 +114,7 @@ class _Emitter {
   /// Tokenization happens here, in the builder isolate: a batch leaves
   /// with all three tokenized columns attached, so the main isolate only
   /// issues the write and never runs [tokenizeForIndex] over megabytes of
-  /// body text (P0-6).
+  /// body text.
   Future<void> addBody(String headword, String rawBody) async {
     var body = stripHtmlToText(rawBody);
     if (body.isEmpty) return;
@@ -163,7 +163,7 @@ Future<void> _buildMdx(String basePath, _Emitter emitter, SendPort port) async {
       if (emitter.cancelled) break;
       try {
         // The resume check runs before the strip: a skipped row pays
-        // neither the strip nor the tokenization (P1-5).
+        // neither the strip nor the tokenization.
         if (!emitter.needsBody(record.keyText)) continue;
         await emitter.addBody(record.keyText, record.data);
       } catch (_) {
@@ -189,7 +189,7 @@ Future<void> _buildStardict(
       if (emitter.cancelled) break;
       final word = reader.wordAt(i);
       // The resume check runs before the lookup: a skipped row pays no
-      // disk read at all (P1-5).
+      // disk read at all.
       if (!emitter.needsBody(word)) continue;
       try {
         final entries = await reader.lookup(word);
@@ -225,15 +225,14 @@ Future<void> _buildZim(String basePath, _Emitter emitter, SendPort port) async {
     // title for the marks). A Set<int> of loop positions cannot do this:
     // positions are unique, titles are not.
     //
-    // Iteration stays in dirent order, exactly as before this change:
-    // row ids are assigned in that order, so a build started by the
-    // previous release resumes at the same row. (Sorting the iteration
-    // itself would remap row ids and silently skip entries a resumed
-    // build assumes are already stored.)
+    // Iteration stays in dirent order: row ids are assigned in that order,
+    // so a build started by the previous release resumes at the same row.
+    // (Sorting the iteration itself would remap row ids and silently skip
+    // entries a resumed build assumes are already stored.)
     final order = List<int>.generate(reader.wordCount, (i) => i)
       ..sort((a, b) => reader.wordAt(a).compareTo(reader.wordAt(b)));
     // The sort is stable, so the first of a run of equal titles is the
-    // earliest dirent occurrence — the same one the old Set<String> kept.
+    // earliest dirent occurrence.
     final isDuplicate = List<bool>.filled(reader.wordCount, false);
     for (var k = 1; k < order.length; k++) {
       if (reader.wordAt(order[k]) == reader.wordAt(order[k - 1])) {
@@ -245,7 +244,7 @@ Future<void> _buildZim(String basePath, _Emitter emitter, SendPort port) async {
       if (isDuplicate[i]) continue;
       final title = reader.wordAt(i);
       // The resume check runs before the lookup: a skipped row pays no
-      // disk read at all (P1-5).
+      // disk read at all.
       if (!emitter.needsBody(title)) continue;
       try {
         final entries = await reader.lookup(title);
@@ -330,7 +329,7 @@ Future<void> fullTextIndexBuilderEntry(List<Object?> args) async {
 /// Runs one build in a background isolate, streaming batches to [onBatch].
 /// Each batch is awaited before the next is consumed, so writes stay in
 /// order — and the isolate itself waits for an ack after sending each
-/// batch, so at most one batch is in flight (backpressure, P1-8). Throws
+/// batch, so at most one batch is in flight (backpressure). Throws
 /// when the isolate reports an error or exits unfinished.
 Future<void> runFullTextIndexBuild(
   FullTextBuildRequest request, {

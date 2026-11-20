@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/services/tts.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/quiz_view_model.dart";
@@ -21,7 +23,7 @@ class _QuizPageState extends State<QuizPage> {
   void initState() {
     super.initState();
     _viewModel = QuizViewModel();
-    _viewModel.startQuiz();
+    unawaited(_viewModel.startQuiz());
   }
 
   @override

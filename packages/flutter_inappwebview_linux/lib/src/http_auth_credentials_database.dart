@@ -3,22 +3,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
 
-/// Object specifying creation parameters for creating a [LinuxHttpAuthCredentialDatabase].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformHttpAuthCredentialDatabaseCreationParams] for
 /// more information.
 @immutable
 class LinuxHttpAuthCredentialDatabaseCreationParams
     extends PlatformHttpAuthCredentialDatabaseCreationParams {
-  /// Creates a new [LinuxHttpAuthCredentialDatabaseCreationParams] instance.
   const LinuxHttpAuthCredentialDatabaseCreationParams(
     // This parameter prevents breaking changes later.
     // ignore: avoid_unused_constructor_parameters
     PlatformHttpAuthCredentialDatabaseCreationParams params,
   ) : super();
 
-  /// Creates a [LinuxHttpAuthCredentialDatabaseCreationParams] instance based on [PlatformHttpAuthCredentialDatabaseCreationParams].
   factory LinuxHttpAuthCredentialDatabaseCreationParams.fromPlatformHttpAuthCredentialDatabaseCreationParams(
     PlatformHttpAuthCredentialDatabaseCreationParams params,
   ) {
@@ -41,7 +37,6 @@ class LinuxHttpAuthCredentialDatabase
     'com.pichillilorenzo/flutter_inappwebview_credential_database',
   );
 
-  /// Creates a new [LinuxHttpAuthCredentialDatabase].
   LinuxHttpAuthCredentialDatabase(
     PlatformHttpAuthCredentialDatabaseCreationParams params,
   ) : super.implementation(
@@ -54,7 +49,6 @@ class LinuxHttpAuthCredentialDatabase
 
   static LinuxHttpAuthCredentialDatabase? _instance;
 
-  /// Gets the database shared instance.
   static LinuxHttpAuthCredentialDatabase instance() {
     return (_instance != null) ? _instance! : _init();
   }
@@ -174,7 +168,5 @@ class LinuxHttpAuthCredentialDatabase
 
   /// Disposes of any resources used by this database.
   /// Nothing to dispose - native side manages its own lifecycle.
-  void dispose() {
-    // Nothing to dispose
-  }
+  void dispose() {}
 }

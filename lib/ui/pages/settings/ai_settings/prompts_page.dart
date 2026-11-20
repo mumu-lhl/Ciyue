@@ -33,10 +33,6 @@ String promptHelper(AppLocalizations locale, AiPromptDefinition definition) {
   };
 }
 
-/// Overview of all customizable prompts: which ones were changed
-/// from their defaults, a preview of each, and one-tap access to
-/// the full-screen editor. Replaces the six inline editors that
-/// used to be stacked inside AI Settings.
 class AiPromptsPage extends ConsumerWidget {
   const AiPromptsPage({super.key});
 

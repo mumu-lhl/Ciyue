@@ -228,10 +228,7 @@ class Stardict extends BaseLoadedDictionary {
   }) async {
     // Resolve every candidate to its headword first — reusing the exact keys
     // the caller already computed — then dedup by headword in first-seen
-    // order and read each distinct headword once, in parallel. Candidates
-    // that fold to one headword (`word`/`Word`/`WORD`) used to be read in
-    // full and dropped after; different headwords (`abend`/`Abend`) are
-    // still each read.
+    // order and read each distinct headword once, in parallel.
     final headwords = <String>[];
     final seenHeadwords = <String>{};
     for (final word in words) {

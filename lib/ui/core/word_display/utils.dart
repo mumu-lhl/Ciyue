@@ -113,8 +113,6 @@ class _WordContentViewState extends ConsumerState<_WordContentView> {
     if (widget.dictId != oldWidget.dictId) _lastLinuxContent = null;
   }
 
-  /// Identifies the dictionary instance behind this entry view.
-  ///
   /// The instance decides the local server port. Disabling a dictionary and
   /// enabling it again reuses the id and can hand back the very same HTML, so
   /// content equality would keep the old WebView — one whose server is gone —

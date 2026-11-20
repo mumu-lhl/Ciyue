@@ -77,7 +77,6 @@ void main() {
     expect(find.textContaining("a fruit"), findsOneWidget);
     expect(find.textContaining("I eat an apple."), findsOneWidget);
     expect(find.textContaining("我吃一个苹果。"), findsOneWidget);
-    // Cross-references render as tappable text.
     expect(find.text("banana"), findsOneWidget);
     expect(
       find.ancestor(

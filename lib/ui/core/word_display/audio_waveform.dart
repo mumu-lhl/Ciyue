@@ -5,7 +5,6 @@ import "package:ciyue/ui/core/e_ink.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 
-/// A compact animated icon rendering bouncing equalizer waveform bars.
 class AudioWaveformIcon extends StatefulWidget {
   final Color? color;
   final double size;
@@ -117,7 +116,6 @@ class _WaveformPainter extends CustomPainter {
   }
 }
 
-/// Wraps a widget (such as a FloatingActionButton) with an animated pulsing ripple ring.
 class PulsingFab extends StatefulWidget {
   final Widget child;
   final bool isPulsing;
@@ -224,8 +222,6 @@ class _PulseRingPainter extends CustomPainter {
   }
 }
 
-/// A floating audio status pill that slides in when audio is playing and displays
-/// animated waveform feedback, the word/audio label, and a stop button.
 class FloatingAudioIndicator extends ConsumerWidget {
   const FloatingAudioIndicator({super.key});
 

@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/services/changelog.dart";
 import "package:ciyue/ui/core/changelog_dialog.dart";
@@ -21,7 +23,7 @@ class AboutViewModel extends ChangeNotifier {
   static const qqGroupNumber = "1057888678";
 
   void launchUri(String uri) {
-    launchUrl(Uri.parse(uri));
+    unawaited(launchUrl(Uri.parse(uri)));
   }
 
   void copyToClipboard(BuildContext context, String text) {
@@ -29,11 +31,11 @@ class AboutViewModel extends ChangeNotifier {
   }
 
   void openTermsOfService(BuildContext context) {
-    context.push("/settings/terms_of_service");
+    unawaited(context.push("/settings/terms_of_service"));
   }
 
   void openPrivacyPolicy(BuildContext context) {
-    context.push("/settings/privacy_policy");
+    unawaited(context.push("/settings/privacy_policy"));
   }
 
   Future<void> showChangelog(BuildContext context) async {

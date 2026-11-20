@@ -14,7 +14,6 @@ class FallbackMaterialLocalizationsDelegate
     this.languageCodes = const {"sc", "got"},
   ]);
 
-  /// The languages that Flutter does not translate itself.
   final Set<String> languageCodes;
 
   @override

@@ -174,7 +174,6 @@ void main() {
       await gesture.up();
       await tester.pumpAndSettle();
 
-      // 100px of movement minus the 20px consumed by touch slop.
       final x = tester.getTopLeft(divider()).dx;
       expect(x, closeTo(440, 2));
       expect(settings.searchPaneWidth, x);
@@ -193,7 +192,6 @@ void main() {
 
       await tester.drag(divider(), const Offset(2000, 0));
       await tester.pumpAndSettle();
-      // 1280 - 320 (right pane) - 12 (divider) = 948.
       expect(tester.getTopLeft(divider()).dx, 948);
     });
 

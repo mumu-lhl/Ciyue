@@ -8,8 +8,6 @@ import "package:material_ui/material_ui.dart";
 import "package:path/path.dart" as p;
 import "package:xml/xml.dart";
 
-/// One StarDict entry prepared for native rendering: the headword plus the
-/// structured fields the reader decoded for it.
 class StardictNativeEntry {
   final String headword;
   final List<StarDictField> fields;
@@ -33,7 +31,7 @@ class StardictEntryListView extends StatelessWidget {
 
   /// Resolves a resource file name (as referenced by an entry) to its
   /// bytes, consulting the `res/` directory and any `res.zip` archive.
-  /// When null, images are read from `res/` files only, as before.
+  /// When null, images are read from `res/` files only.
   final Future<Uint8List?> Function(String file)? resourceResolver;
 
   /// Zooms the entry: the body text, the XDXF headword and the embedded
@@ -101,8 +99,6 @@ class _EntryBlock extends StatefulWidget {
 }
 
 class _EntryBlockState extends State<_EntryBlock> {
-  /// Resource reads keyed by file name.
-  ///
   /// The entry is rebuilt on every theme flip, zoom step or settings
   /// notification, and a fresh future would send its `FutureBuilder` back to
   /// `waiting`: the picture would blank out (taking its layout slot with it)
@@ -145,7 +141,6 @@ class _EntryBlockState extends State<_EntryBlock> {
         case "t":
           blocks.add(renderer.phonetic("[$text]"));
         default:
-          // m, l, y and the other text types render as plain paragraphs.
           blocks.add(renderer.paragraph(text));
       }
     }
@@ -162,8 +157,7 @@ class _EntryBlockState extends State<_EntryBlock> {
   }
 }
 
-/// Builds the widgets and spans for one entry. Holds the build context so
-/// the recursive XDXF/Pango walkers can resolve theme styles.
+/// Holds the build context so the recursive XDXF/Pango walkers can resolve theme styles.
 class _Renderer {
   final BuildContext context;
   final String resourceDirectory;
@@ -174,8 +168,8 @@ class _Renderer {
   /// resolver and the loose `res/` directory is used instead.
   final Future<Uint8List?>? Function(String file)? resolveResource;
 
-  /// Zooms the entry. The body text and the headword both take it, and they
-  /// are the base every inline size is derived from.
+  /// The body text and the headword both take it, and they are the base every
+  /// inline size is derived from.
   final double scale;
 
   _Renderer({
@@ -196,8 +190,6 @@ class _Renderer {
   TextStyle get _variant =>
       _body.copyWith(color: _theme.colorScheme.onSurfaceVariant);
 
-  /// The XDXF headword.
-  ///
   /// It comes from a different theme style than the body, so it has to take
   /// [scale] on its own: left at the theme size it would end up smaller than
   /// the definition once the entry is zoomed in.
@@ -209,8 +201,6 @@ class _Renderer {
     );
   }
 
-  /// The cap on an embedded picture.
-  ///
   /// The cap follows [scale], and the image is laid out `scale` times larger on
   /// top of that, so a picture grows with the text it sits in. A picture that
   /// is already wider than the entry pane stays bound to the pane: the layout
@@ -230,9 +220,6 @@ class _Renderer {
     return _xdxfBlockWidgets(root.children);
   }
 
-  /// Block-level walk: inline runs become rich-text paragraphs; block
-  /// elements (headword, definition, example, see-also) become their own
-  /// widgets.
   List<Widget> _xdxfBlockWidgets(List<XmlNode> nodes) {
     final widgets = <Widget>[];
     var spans = <InlineSpan>[];

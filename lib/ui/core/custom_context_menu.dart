@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/services/audio.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -27,10 +29,10 @@ class LookupMenuItem extends ContextMenuButtonItem {
               if (currentRoute.startsWith("/word/")) {
                 context.go(target);
               } else {
-                context.push(target);
+                unawaited(context.push(target));
               }
             } catch (_) {
-              context.push(target);
+              unawaited(context.push(target));
             }
           }
           ContextMenuController.removeAny();

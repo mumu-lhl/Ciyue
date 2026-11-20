@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/writing_check_settings_view_model.dart";
 import "package:material_ui/material_ui.dart";
@@ -42,7 +44,7 @@ class _WritingCheckSettingsPageState extends State<WritingCheckSettingsPage> {
                     title: Text(l10n.enableWritingCheckHistory),
                     value: _viewModel.enableHistory,
                     onChanged: (value) {
-                      _viewModel.setEnableHistory(value);
+                      unawaited(_viewModel.setEnableHistory(value));
                     },
                   ),
                 ],

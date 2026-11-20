@@ -2,8 +2,6 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
 
-/// What the "not found" page offers instead of a dead end.
-///
 /// Four groups, each with a quiet heading: the headwords a phrase may be
 /// hiding, readings of the query as several headwords (`Anime + Cover`,
 /// `倾奇 + 者`), the hiragana spelling of a katakana word's long vowels

@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:convert";
 import "dart:math" as math;
 import "dart:ui" as ui;
@@ -175,7 +176,7 @@ class QuizViewModel extends ChangeNotifier {
         apikey:
             settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
       ) {
-    _loadMistakeCount();
+    unawaited(_loadMistakeCount());
   }
 
   Future<void> _loadMistakeCount() async {
@@ -270,7 +271,7 @@ class QuizViewModel extends ChangeNotifier {
 
     // Questions rebuilt locally from stored mistake rows (review
     // mode). Only words that can't be rebuilt go to the AI.
-    var localQuestions = <QuizQuestion>[];
+    final localQuestions = <QuizQuestion>[];
     try {
       List<String> quizWords;
       if (reviewOnly) {
@@ -380,7 +381,9 @@ class QuizViewModel extends ChangeNotifier {
       _score++;
       // A correct answer clears the word from the mistake book in
       // both modes — it has been mastered either way.
-      _mistakeDao.removeMistake(q.word).then((_) => _loadMistakeCount());
+      unawaited(
+        _mistakeDao.removeMistake(q.word).then((_) => _loadMistakeCount()),
+      );
     } else {
       _recordMistake(q, userAnswer: q.options[index]);
     }
@@ -395,7 +398,9 @@ class QuizViewModel extends ChangeNotifier {
     final correct = answer.trim().toLowerCase() == q.word.trim().toLowerCase();
     if (correct) {
       _score++;
-      _mistakeDao.removeMistake(q.word).then((_) => _loadMistakeCount());
+      unawaited(
+        _mistakeDao.removeMistake(q.word).then((_) => _loadMistakeCount()),
+      );
     } else {
       _recordMistake(q, userAnswer: answer.trim());
     }
@@ -404,19 +409,21 @@ class QuizViewModel extends ChangeNotifier {
   }
 
   void _recordMistake(QuizQuestion q, {String? userAnswer}) {
-    _mistakeDao
-        .addMistake(
-          word: q.word,
-          questionType: q.type,
-          question: q.question,
-          correctAnswer: q.correctAnswer,
-          userAnswer: userAnswer,
-          // Persist the options so review can rebuild this exact
-          // question offline (spelling needs none).
-          options: q.type == QuizQuestionType.spelling ? null : q.options,
-        )
-        .then((_) => _loadMistakeCount())
-        .catchError((_) {});
+    unawaited(
+      _mistakeDao
+          .addMistake(
+            word: q.word,
+            questionType: q.type,
+            question: q.question,
+            correctAnswer: q.correctAnswer,
+            userAnswer: userAnswer,
+            // Persist the options so review can rebuild this exact
+            // question offline (spelling needs none).
+            options: q.type == QuizQuestionType.spelling ? null : q.options,
+          )
+          .then((_) => _loadMistakeCount())
+          .catchError((_) {}),
+    );
   }
 
   void nextQuestion() {
@@ -439,6 +446,6 @@ class QuizViewModel extends ChangeNotifier {
   }
 
   void restart() {
-    _startQuiz(reviewOnly: _reviewMode);
+    unawaited(_startQuiz(reviewOnly: _reviewMode));
   }
 }

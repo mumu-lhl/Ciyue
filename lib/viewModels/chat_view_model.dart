@@ -370,8 +370,8 @@ class ChatViewModel extends ChangeNotifier {
                 .toList(),
           },
       ];
-      prefs.setString(_sessionsKey, json.encode(data));
-      prefs.setString(_activeSessionKey, _active.id);
+      unawaited(prefs.setString(_sessionsKey, json.encode(data)));
+      unawaited(prefs.setString(_activeSessionKey, _active.id));
     } catch (_) {}
   }
 
@@ -463,7 +463,7 @@ class ChatViewModel extends ChangeNotifier {
     _activate(_createSession(scenarioId: scenario.id));
     _persistSessions();
     _notify();
-    _sendScenarioOpener();
+    unawaited(_sendScenarioOpener());
   }
 
   String _buildScenarioSystemPrompt() {

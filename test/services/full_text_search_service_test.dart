@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:io";
 
 import "package:ciyue/models/dictionary_lookup.dart";
@@ -317,7 +318,7 @@ void main() {
 
   test("rebuildDictionary cancels an in-flight build first", () async {
     pauseForCancel = true;
-    service.ensureBuilt(dictionary);
+    unawaited(service.ensureBuilt(dictionary));
     // Same wall-time wait as the cancelBuildsExcept test below: opening
     // the store is slow under full-suite load.
     final deadline = DateTime.now().add(const Duration(seconds: 30));

@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:io";
 
 import "package:flutter/foundation.dart";
@@ -19,7 +20,7 @@ class FileManagerViewModel extends ChangeNotifier {
   bool get isAtBaseDirectory => _currentDirectory?.path == _baseDirectory?.path;
 
   FileManagerViewModel() {
-    _initializeDirectory();
+    unawaited(_initializeDirectory());
   }
 
   Future<void> _initializeDirectory() async {
@@ -76,7 +77,7 @@ class FileManagerViewModel extends ChangeNotifier {
 
   void navigateToDirectory(Directory directory) {
     _currentDirectory = directory;
-    _loadEntities();
+    unawaited(_loadEntities());
   }
 
   void navigateBack() {
@@ -84,7 +85,7 @@ class FileManagerViewModel extends ChangeNotifier {
         _baseDirectory != null &&
         _currentDirectory!.path != _baseDirectory!.path) {
       _currentDirectory = _currentDirectory!.parent;
-      _loadEntities();
+      unawaited(_loadEntities());
     }
   }
 

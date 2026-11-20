@@ -92,10 +92,8 @@ class Win32Window {
 
   bool quit_on_close_ = false;
 
-  // window handle for top level window.
   HWND window_handle_ = nullptr;
 
-  // window handle for hosted content.
   HWND child_content_ = nullptr;
 };
 

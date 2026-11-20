@@ -25,7 +25,6 @@ void main() {
   testWidgets("landscape windows get a wider, lower panel", (tester) async {
     final size = await measurePanel(tester, const Size(1280, 800));
 
-    // 0.85 of the width and 0.55 of the height: no pixel cap any more.
     expect(size.width, closeTo(1088.0, 0.001));
     expect(size.height, closeTo(440.0, 0.001));
     expect(size.height, lessThan(size.width));
@@ -202,7 +201,6 @@ void main() {
   );
 
   testWidgets("the card is centred by default", (tester) async {
-    // 0.85 x 0.55 of 400x800 is 340x440, leaving 60 and 360 pixels of slack.
     final rect = await measureCardAt(
       tester,
       const Size(400, 800),

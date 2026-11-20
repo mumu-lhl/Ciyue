@@ -65,9 +65,7 @@ class TtsHelper {
   /// Remove markdown syntax that would sound bad when spoken.
   static String stripMarkdown(String text) {
     var result = text;
-    // Code blocks.
     result = result.replaceAll(RegExp(r"```[\s\S]*?```"), " ");
-    // Inline code, images, links: keep the inner text.
     result = result.replaceAllMapped(
       RegExp(r"`([^`]*)`"),
       (m) => m.group(1) ?? "",
@@ -80,7 +78,6 @@ class TtsHelper {
       RegExp(r"\[([^\]]*)\]\([^)]*\)"),
       (m) => m.group(1) ?? "",
     );
-    // Headings, bold, italic, strikethrough.
     result = result.replaceAll(RegExp(r"^#{1,6}\s*", multiLine: true), "");
     for (final pattern in [
       RegExp(r"\*\*([^*]*)\*\*"),
@@ -91,12 +88,10 @@ class TtsHelper {
     ]) {
       result = result.replaceAllMapped(pattern, (m) => m.group(1) ?? "");
     }
-    // Lists and quotes and horizontal rules.
     result = result.replaceAll(RegExp(r"^[\s]*[-*+]\s+", multiLine: true), "");
     result = result.replaceAll(RegExp(r"^[\s]*\d+\.\s+", multiLine: true), "");
     result = result.replaceAll(RegExp(r"^>\s*", multiLine: true), "");
     result = result.replaceAll(RegExp(r"^[-*_]{3,}\s*$", multiLine: true), "");
-    // Collapse whitespace.
     result = result.replaceAll(RegExp(r"[ \t]+"), " ");
     result = result.replaceAll(RegExp(r" ?\n ?"), "\n");
     result = result.replaceAll(RegExp(r"\n{3,}"), "\n\n");

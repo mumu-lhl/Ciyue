@@ -162,13 +162,13 @@ class WebServerService {
     request.response.statusCode = statusCode;
     request.response.headers.contentType = ContentType.json;
     request.response.write(jsonEncode(data));
-    request.response.close();
+    unawaited(request.response.close());
   }
 
   void _sendMethodNotAllowed(HttpRequest request) {
     request.response.statusCode = HttpStatus.methodNotAllowed;
     request.response.write("Method Not Allowed");
-    request.response.close();
+    unawaited(request.response.close());
   }
 
   Future<void> _handleDarkReaderAsset(HttpRequest request) async {

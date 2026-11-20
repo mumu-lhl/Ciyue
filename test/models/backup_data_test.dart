@@ -8,7 +8,6 @@ void main() {
   group("BackupData", () {
     test("toJson and fromJson should work correctly", () {
       final now = DateTime.now();
-      // Assuming WordbookData matches Wordbook table structure
       final words = [WordbookData(createdAt: now, tag: 1, word: "test")];
       final tags = [const WordbookTag(id: 1, tag: "tag1")];
       final history = ["history1", "history2"];
@@ -68,19 +67,14 @@ void main() {
       expect(decoded["flashcards"].length, 1);
       expect(decoded["flashcardReviewLogs"].length, 1);
 
-      // Verify word data
       final wordJson = decoded["wordbookWords"][0];
       expect(wordJson["word"], "test");
       expect(wordJson["tag"], 1);
-      // Drift usually serializes DateTime as millisecondsSinceEpoch or string depending on config.
-      // We'll rely on fromJson to check consistency.
 
       final importedData = BackupData.fromJson(decoded);
       expect(importedData.version, 1);
       expect(importedData.wordbookWords.first.word, "test");
       expect(importedData.wordbookWords.first.tag, 1);
-      // Compare dates with tolerance or exact depending on precision loss
-      // drift default JSON for DateTime is unix timestamp (int) or string
       expect(
         importedData.wordbookWords.first.createdAt.millisecondsSinceEpoch,
         now.millisecondsSinceEpoch,

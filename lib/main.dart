@@ -520,7 +520,7 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
   void refresh() {
     setState(() {});
     if (isDesktop()) {
-      initTrayMenu();
+      unawaited(initTrayMenu());
     }
   }
 }

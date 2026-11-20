@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
@@ -41,7 +43,7 @@ class _WordDisplayPagerState extends ConsumerState<WordDisplayPager> {
       final word = widget.words[index];
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        ref.read(openRecordsRepositoryProvider).add(word);
+        unawaited(ref.read(openRecordsRepositoryProvider).add(word));
       });
     }
   }

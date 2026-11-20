@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
@@ -41,7 +43,7 @@ class AISettingsViewModel with ChangeNotifier {
     if (ModelProviderManager.modelProviders[_provider] == null) {
       _provider = ModelProviderManager.modelProviders.values.first.name;
       settings.aiProvider = _provider;
-      prefs.setString("aiProvider", _provider);
+      unawaited(prefs.setString("aiProvider", _provider));
     }
 
     final config = settings.getAiProviderConfig(_provider);
@@ -66,10 +68,12 @@ class AISettingsViewModel with ChangeNotifier {
   AIPrompts get aiPrompts => _aiPrompts;
 
   void _saveAiProviderConfig() {
-    settings.saveAiProviderConfig(
-      _provider,
-      modelController.text,
-      apiKeyController.text,
+    unawaited(
+      settings.saveAiProviderConfig(
+        _provider,
+        modelController.text,
+        apiKeyController.text,
+      ),
     );
     notifyListeners();
   }
@@ -77,7 +81,7 @@ class AISettingsViewModel with ChangeNotifier {
   void setProvider(String newProvider) {
     _provider = newProvider;
     settings.aiProvider = newProvider;
-    prefs.setString("aiProvider", newProvider);
+    unawaited(prefs.setString("aiProvider", newProvider));
 
     final config = settings.getAiProviderConfig(_provider);
     modelController.text = config["model"] ?? "";
@@ -111,7 +115,7 @@ class AISettingsViewModel with ChangeNotifier {
 
   void setExplainWord(bool value) {
     settings.aiExplainWord = value;
-    prefs.setBool("aiExplainWord", value);
+    unawaited(prefs.setBool("aiExplainWord", value));
     _homeModel.update();
     notifyListeners();
   }
@@ -120,13 +124,13 @@ class AISettingsViewModel with ChangeNotifier {
 
   void setExplainStructured(bool value) {
     settings.aiExplainStructured = value;
-    prefs.setBool("aiExplainStructured", value);
+    unawaited(prefs.setBool("aiExplainStructured", value));
     notifyListeners();
   }
 
   void setAiAPIUrl(String apiUrl) {
     if (apiUrlController.text != apiUrl) apiUrlController.text = apiUrl;
-    settings.setAiAPIUrl(apiUrl);
+    unawaited(settings.setAiAPIUrl(apiUrl));
     notifyListeners();
   }
 

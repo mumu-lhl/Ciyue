@@ -255,7 +255,7 @@ class _StorageManagementPageState extends ConsumerState<StorageManagementPage> {
     if (confirmed && context.mounted) {
       await _viewModel.clearCategory(usage.kind);
       if (context.mounted) {
-        ToastService.show(locale.storageCleared, context);
+        await ToastService.show(locale.storageCleared, context);
       }
     }
   }
@@ -269,7 +269,7 @@ class _StorageManagementPageState extends ConsumerState<StorageManagementPage> {
     if (confirmed && context.mounted) {
       await _viewModel.clearAllCache();
       if (context.mounted) {
-        ToastService.show(locale.storageCleared, context);
+        await ToastService.show(locale.storageCleared, context);
       }
     }
   }

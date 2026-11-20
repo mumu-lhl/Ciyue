@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/services/flashcard_scheduler.dart";
@@ -48,22 +50,22 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
             },
             const SingleActivator(LogicalKeyboardKey.digit1): () {
               if (state.answerVisible) {
-                _rate(FlashcardRating.again);
+                unawaited(_rate(FlashcardRating.again));
               }
             },
             const SingleActivator(LogicalKeyboardKey.digit2): () {
               if (state.answerVisible) {
-                _rate(FlashcardRating.hard);
+                unawaited(_rate(FlashcardRating.hard));
               }
             },
             const SingleActivator(LogicalKeyboardKey.digit3): () {
               if (state.answerVisible) {
-                _rate(FlashcardRating.good);
+                unawaited(_rate(FlashcardRating.good));
               }
             },
             const SingleActivator(LogicalKeyboardKey.digit4): () {
               if (state.answerVisible) {
-                _rate(FlashcardRating.easy);
+                unawaited(_rate(FlashcardRating.easy));
               }
             },
           },
@@ -167,7 +169,7 @@ class _FlashcardStudyPageState extends ConsumerState<FlashcardStudyPage> {
           icon: const Icon(Icons.volume_up),
           onPressed: () {
             if (ttsDisabledByCommandLine) return;
-            flutterTts.speak(word);
+            unawaited(flutterTts.speak(word));
           },
         ),
       ],

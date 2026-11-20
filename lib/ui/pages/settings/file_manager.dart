@@ -60,7 +60,7 @@ class _FileManagerPageState extends State<FileManagerPage> {
     if (confirm && context.mounted) {
       final success = await _viewModel.deleteEntity(entity);
       if (!success && _viewModel.errorMessage != null && context.mounted) {
-        ToastService.show(
+        await ToastService.show(
           _viewModel.errorMessage!,
           context,
           type: ToastType.error,

@@ -375,7 +375,11 @@ class _WordSearchBarWithSuggestionsState
   void _openFullTextPage(SearchController controller, String query) {
     if (!mounted) return;
     controller.closeView(query);
-    context.push("/full-text-search?query=${Uri.encodeQueryComponent(query)}");
+    unawaited(
+      context.push(
+        "/full-text-search?query=${Uri.encodeQueryComponent(query)}",
+      ),
+    );
   }
 
   void _openWord(SearchController controller, String word) {
@@ -421,7 +425,7 @@ class _WordSearchBarWithSuggestionsState
         // route would rebuild the page that owns this search box. Only a
         // lookup made from the home page has to open a page.
         if (!location.startsWith("/word/")) {
-          context.push(target);
+          unawaited(context.push(target));
         }
       });
     }
@@ -581,11 +585,11 @@ class _WordSearchBarWithSuggestionsState
               mode: searchMode,
               onCycle: () {
                 final ctrl = _effectiveController;
-                if (ctrl != null) _cycleSearchMode(ctrl);
+                if (ctrl != null) unawaited(_cycleSearchMode(ctrl));
               },
               onSelect: (mode) {
                 final ctrl = _effectiveController;
-                if (ctrl != null) _selectSearchMode(ctrl, mode);
+                if (ctrl != null) unawaited(_selectSearchMode(ctrl, mode));
               },
             ),
           ],

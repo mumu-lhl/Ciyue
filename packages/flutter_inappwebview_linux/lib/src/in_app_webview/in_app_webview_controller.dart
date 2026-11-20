@@ -15,21 +15,17 @@ import '../web_message/web_message_listener.dart';
 import '../web_storage/web_storage.dart';
 import '_static_channel.dart';
 
-/// Object specifying creation parameters for creating a [LinuxInAppWebViewController].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformInAppWebViewControllerCreationParams] for
 /// more information.
 @immutable
 class LinuxInAppWebViewControllerCreationParams
     extends PlatformInAppWebViewControllerCreationParams {
-  /// Creates a new [LinuxInAppWebViewControllerCreationParams] instance.
   const LinuxInAppWebViewControllerCreationParams({
     required super.id,
     super.webviewParams,
   });
 
-  /// Creates a [LinuxInAppWebViewControllerCreationParams] instance based on [PlatformInAppWebViewControllerCreationParams].
   factory LinuxInAppWebViewControllerCreationParams.fromPlatformInAppWebViewControllerCreationParams(
     PlatformInAppWebViewControllerCreationParams params,
   ) {
@@ -48,7 +44,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
     with ChannelController {
   static final MethodChannel _staticChannel = IN_APP_WEBVIEW_STATIC_CHANNEL;
 
-  // List of properties to be saved and restored for keep alive feature
   Map<String, Function> _javaScriptHandlersMap = HashMap<String, Function>();
   Map<UserScriptInjectionTime, List<UserScript>> _userScripts = {
     UserScriptInjectionTime.AT_DOCUMENT_START: <UserScript>[],
@@ -59,7 +54,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
   Set<LinuxWebMessageChannel> _webMessageChannels = Set();
   Map<String, ScriptHtmlTagAttributes> _injectedScriptsFromURL = {};
 
-  // static map that contains the properties to be saved and restored for keep alive feature
   static final Map<InAppWebViewKeepAlive, InAppWebViewControllerKeepAliveProps?>
   _keepAliveMap = {};
 
@@ -164,7 +158,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
       if (keepAlive != null) {
         InAppWebViewControllerKeepAliveProps? props = _keepAliveMap[keepAlive];
         if (props == null) {
-          // save controller properties to restore it later
           _keepAliveMap[keepAlive] = InAppWebViewControllerKeepAliveProps(
             injectedScriptsFromURL: _injectedScriptsFromURL,
             javaScriptHandlersMap: _javaScriptHandlersMap,
@@ -172,7 +165,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
             webMessageListenerObjNames: _webMessageListenerObjNames,
           );
         } else {
-          // restore controller properties
           _injectedScriptsFromURL = props.injectedScriptsFromURL;
           _javaScriptHandlersMap = props.javaScriptHandlersMap;
           _userScripts = props.userScripts;
@@ -693,12 +685,8 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
       case "onReceivedIcon":
         if ((webviewParams != null && webviewParams!.onReceivedIcon != null) ||
             _inAppBrowserEventHandler != null) {
-          // For now, we just have the URL, not the actual icon data
-          // This could be enhanced to download the favicon
           String? faviconUrl = call.arguments["url"];
           if (faviconUrl != null) {
-            // Create a placeholder Uint8List since we don't have the actual icon
-            // The favicon URL could be used to download the icon if needed
             if (webviewParams != null && webviewParams!.onReceivedIcon != null)
               webviewParams!.onReceivedIcon!(
                 _controllerFromPlatform,
@@ -760,7 +748,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
             action: null,
           );
 
-          // Check if this matches any custom menu items
           for (var menuItem in contextMenu.menuItems) {
             if (menuItem.id == id) {
               menuItemClicked = menuItem;
@@ -959,7 +946,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
         String handlerName = call.arguments["handlerName"];
         Map<String, dynamic> handlerDataMap = call.arguments["data"]
             .cast<String, dynamic>();
-        // decode args to json
         handlerDataMap["args"] = jsonDecode(handlerDataMap["args"]);
         final handlerData = JavaScriptHandlerFunctionData.fromMap(
           handlerDataMap,
@@ -1121,10 +1107,8 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
             Map<String, dynamic> arguments = handlerData.args[0]
                 .cast<String, dynamic>();
             String jsObjectName = arguments["jsObjectName"];
-            // Find the corresponding web message listener
             for (var listener in _webMessageListeners) {
               if (listener.params.jsObjectName == jsObjectName) {
-                // Forward to the listener's channel
                 Map<String, dynamic>? messageMap = arguments["message"]
                     ?.cast<String, dynamic>();
                 WebMessage? message = messageMap != null
@@ -1132,7 +1116,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
                     : null;
                 String? sourceOrigin = arguments["sourceOrigin"];
                 bool isMainFrame = arguments["isMainFrame"] ?? true;
-                // Call the listener's onPostMessage callback via channel
                 listener.channel?.invokeMethod("onPostMessage", {
                   "message": message?.toMap(),
                   "sourceOrigin": sourceOrigin,
@@ -1147,7 +1130,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
                 .cast<String, dynamic>();
             String webMessageChannelId = arguments["webMessageChannelId"];
             int index = arguments["index"];
-            // Find the channel and forward the message
             for (var webMessageChannel in _webMessageChannels) {
               if (webMessageChannel.id == webMessageChannelId) {
                 Map<String, dynamic>? messageMap = arguments["message"]
@@ -1166,7 +1148,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
         }
 
         if (_javaScriptHandlersMap.containsKey(handlerName)) {
-          // convert result to json
           try {
             var jsHandlerResult = null;
             if (_javaScriptHandlersMap[handlerName]
@@ -1697,8 +1678,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
     _userScripts[UserScriptInjectionTime.AT_DOCUMENT_END]?.clear();
   }
 
-  /// Returns all user scripts that have been added.
-  /// This is a Linux-specific method for accessing the user scripts cache.
   Future<List<UserScript>> getUserScripts() async {
     List<UserScript> result = [];
     result.addAll(
@@ -1779,8 +1758,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
     return url != null ? WebUri(url) : null;
   }
 
-  /// Sets the zoom level of the WebView.
-  /// This is a Linux-specific method that directly sets the zoom level.
   /// For cross-platform code, use [zoomBy] instead.
   Future<void> setZoomScale({
     required double zoomScale,
@@ -2018,7 +1995,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
       }
     }
 
-    // try to get /favicon.ico
     try {
       HttpClient client = HttpClient();
       var faviconUrl =
@@ -2036,7 +2012,6 @@ class LinuxInAppWebViewController extends PlatformInAppWebViewController
       );
     }
 
-    // try to get the manifest file
     HttpClientRequest? manifestRequest;
     HttpClientResponse? manifestResponse;
     bool manifestFound = false;

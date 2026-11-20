@@ -2,10 +2,6 @@ import "package:ciyue/models/ai_explanation_data.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:material_ui/material_ui.dart";
 
-/// Renders a structured AI word explanation with the app theme —
-/// phonetic and part of speech up top, then numbered meanings,
-/// example sentences with translations, and synonym/antonym chips —
-/// instead of a markdown document.
 class AiExplanationView extends StatelessWidget {
   const AiExplanationView({super.key, required this.data});
 

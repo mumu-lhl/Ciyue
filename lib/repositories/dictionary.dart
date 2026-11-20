@@ -1108,13 +1108,12 @@ class Mdict implements LoadedDictionary {
           try {
             request.response
               ..headers.contentType = ContentType.html
-              ..write(content)
-              ..close();
+              ..write(content);
+            await request.response.close();
             return;
           } catch (e) {
-            request.response
-              ..statusCode = HttpStatus.notFound
-              ..close();
+            request.response.statusCode = HttpStatus.notFound;
+            await request.response.close();
             return;
           }
         } else if (request.method == "GET" && request.uri.path != "/") {
@@ -1125,17 +1124,16 @@ class Mdict implements LoadedDictionary {
           final filename = Uri.decodeComponent(request.uri.path.substring(1));
           final resource = await _readResourceDesktop(filename);
           if (resource == null) {
-            request.response
-              ..statusCode = HttpStatus.notFound
-              ..close();
+            request.response.statusCode = HttpStatus.notFound;
+            await request.response.close();
             return;
           }
           request.response
             ..headers.contentType = ContentType.parse(
               resourceContentType(filename, resource),
             )
-            ..add(resource)
-            ..close();
+            ..add(resource);
+          await request.response.close();
           return;
         }
       });
@@ -1158,7 +1156,7 @@ Future<void> selectMdx(
       context.pop();
     }
     if (context.mounted) {
-      ToastService.show(
+      await ToastService.show(
         AppLocalizations.of(context)!.noDictionariesFound,
         context,
         type: ToastType.info,
@@ -1232,7 +1230,7 @@ Future<void> selectStardict(
       context.pop();
     }
     if (context.mounted) {
-      ToastService.show(
+      await ToastService.show(
         AppLocalizations.of(context)!.noDictionariesFound,
         context,
         type: ToastType.info,
@@ -1299,7 +1297,7 @@ Future<void> selectZim(
       context.pop();
     }
     if (context.mounted) {
-      ToastService.show(
+      await ToastService.show(
         AppLocalizations.of(context)!.noDictionariesFound,
         context,
         type: ToastType.info,

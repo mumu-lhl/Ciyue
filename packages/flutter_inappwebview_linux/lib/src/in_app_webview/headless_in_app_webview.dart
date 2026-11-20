@@ -7,15 +7,12 @@ import '../find_interaction/find_interaction_controller.dart';
 import '../webview_environment/webview_environment.dart';
 import 'in_app_webview_controller.dart';
 
-/// Object specifying creation parameters for creating a [LinuxHeadlessInAppWebView].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformHeadlessInAppWebViewCreationParams] for
 /// more information.
 @immutable
 class LinuxHeadlessInAppWebViewCreationParams
     extends PlatformHeadlessInAppWebViewCreationParams {
-  /// Creates a new [LinuxHeadlessInAppWebViewCreationParams] instance.
   LinuxHeadlessInAppWebViewCreationParams({
     super.controllerFromPlatform,
     super.initialSize,
@@ -132,7 +129,6 @@ class LinuxHeadlessInAppWebViewCreationParams
     this.findInteractionController,
   });
 
-  /// Creates a [LinuxHeadlessInAppWebViewCreationParams] instance based on [PlatformHeadlessInAppWebViewCreationParams].
   LinuxHeadlessInAppWebViewCreationParams.fromPlatformHeadlessInAppWebViewCreationParams(
     PlatformHeadlessInAppWebViewCreationParams params,
   ) : this(
@@ -267,7 +263,6 @@ class LinuxHeadlessInAppWebView extends PlatformHeadlessInAppWebView
 
   LinuxInAppWebViewController? _webViewController;
 
-  /// Constructs a [LinuxHeadlessInAppWebView].
   LinuxHeadlessInAppWebView(PlatformHeadlessInAppWebViewCreationParams params)
     : super.implementation(
         params is LinuxHeadlessInAppWebViewCreationParams
@@ -301,7 +296,6 @@ class LinuxHeadlessInAppWebView extends PlatformHeadlessInAppWebView
     _controllerFromPlatform =
         params.controllerFromPlatform?.call(_webViewController!) ??
         _webViewController!;
-    // Initialize the find interaction controller with the same ID
     _linuxParams.findInteractionController?.init(id);
     channel = MethodChannel(
       'com.pichillilorenzo/flutter_headless_inappwebview_$id',

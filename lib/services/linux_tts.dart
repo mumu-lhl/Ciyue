@@ -1134,10 +1134,10 @@ class LinuxTtsService {
   /// magic. (espeak-ng `--stdout` output starts with `RIFF`.)
   bool _isWav(Uint8List bytes) {
     return bytes.length >= 4 &&
-        bytes[0] == 0x52 && // R
-        bytes[1] == 0x49 && // I
-        bytes[2] == 0x46 && // F
-        bytes[3] == 0x46; // F
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46;
   }
 }
 

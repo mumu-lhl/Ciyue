@@ -236,7 +236,6 @@ class CloudSyncEngine {
           .toList();
       if (heads.length <= 1) continue;
 
-      // Deterministic Last-Write-Wins (LWW)
       heads.sort((a, b) {
         final timeOrder = b.modifiedAt.compareTo(a.modifiedAt);
         if (timeOrder != 0) return timeOrder;

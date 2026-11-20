@@ -11,7 +11,6 @@ class AiTranslateSettingsViewModel extends ChangeNotifier {
   late final TextEditingController yandexApiKeyController;
   late final TextEditingController yandexFolderIdController;
 
-  /// Source ids in display order; enabled set.
   List<String> sourceOrder = TranslationSourcesConfig.loadOrder();
   Set<String> enabledSources = TranslationSourcesConfig.loadEnabled().toSet();
 

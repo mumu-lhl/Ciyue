@@ -49,9 +49,11 @@ final wordbookModelProvider = ChangeNotifierProvider<WordbookModel>(
   (ref) => WordbookModel(),
 );
 
-final audioModelProvider = ChangeNotifierProvider<AudioModel>(
-  (ref) => AudioModel()..init(),
-);
+final audioModelProvider = ChangeNotifierProvider<AudioModel>((ref) {
+  final model = AudioModel();
+  unawaited(model.init());
+  return model;
+});
 
 final manageDictionariesModelProvider =
     ChangeNotifierProvider<ManageDictionariesModel>(

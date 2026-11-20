@@ -14,7 +14,6 @@ void main() {
   });
 
   test("ModelProviderManager has updated default models for all providers", () {
-    // OpenAI has latest 2026 models (GPT-6, GPT-5.6, GPT-5, o3, etc.) and no legacy 3.5/4
     final openaiModels = ModelProviderManager.getModels("openai");
     expect(openaiModels.any((m) => m.originName == "gpt-6-astra"), isTrue);
     expect(openaiModels.any((m) => m.originName == "gpt-6-sol"), isTrue);
@@ -30,7 +29,6 @@ void main() {
     expect(openaiModels.any((m) => m.originName == "gpt-3.5-turbo"), isFalse);
     expect(openaiModels.any((m) => m.originName == "gpt-4-turbo"), isFalse);
 
-    // Gemini has latest 3.8, 3.5, 2.5, and 2.0 models
     final geminiModels = ModelProviderManager.getModels("gemini");
     expect(geminiModels.any((m) => m.originName == "gemini-3.8-flash"), isTrue);
     expect(geminiModels.any((m) => m.originName == "gemini-3.5-flash"), isTrue);
@@ -38,7 +36,6 @@ void main() {
     expect(geminiModels.any((m) => m.originName == "gemini-2.5-flash"), isTrue);
     expect(geminiModels.any((m) => m.originName == "gemini-2.0-flash"), isTrue);
 
-    // DeepSeek has V4.1 Flash, V4 Pro, V3, and R1
     final deepseekModels = ModelProviderManager.getModels("deepseek");
     expect(deepseekModels.any((m) => m.originName == "deepseek-flash"), isTrue);
     expect(
@@ -51,7 +48,6 @@ void main() {
       isTrue,
     );
 
-    // Anthropic has Claude 5, Claude 4, and 3.7
     final anthropicModels = ModelProviderManager.getModels("anthropic");
     expect(
       anthropicModels.any((m) => m.originName == "claude-opus-5-5"),
@@ -74,20 +70,17 @@ void main() {
       isTrue,
     );
 
-    // xAI has Grok 4.7, Grok 4, and Grok 3
     final xaiModels = ModelProviderManager.getModels("xai");
     expect(xaiModels.any((m) => m.originName == "grok-4.7"), isTrue);
     expect(xaiModels.any((m) => m.originName == "grok-4"), isTrue);
     expect(xaiModels.any((m) => m.originName == "grok-3"), isTrue);
 
-    // Zhipu has GLM-5.3, GLM-5.2, GLM-4 Plus, and GLM-Z1
     final zhipuModels = ModelProviderManager.getModels("zhipu");
     expect(zhipuModels.any((m) => m.originName == "glm-5.3"), isTrue);
     expect(zhipuModels.any((m) => m.originName == "glm-5.2"), isTrue);
     expect(zhipuModels.any((m) => m.originName == "glm-4-plus"), isTrue);
     expect(zhipuModels.any((m) => m.originName == "glm-z1-air"), isTrue);
 
-    // OpenRouter has populated models
     final openrouterModels = ModelProviderManager.getModels("openrouter");
     expect(openrouterModels.isNotEmpty, isTrue);
     expect(
@@ -95,11 +88,9 @@ void main() {
       isTrue,
     );
 
-    // SiliconFlow has populated models
     final siliconflowModels = ModelProviderManager.getModels("siliconflow");
     expect(siliconflowModels.isNotEmpty, isTrue);
 
-    // Ollama has populated models
     final ollamaModels = ModelProviderManager.getModels("ollama");
     expect(ollamaModels.isNotEmpty, isTrue);
   });

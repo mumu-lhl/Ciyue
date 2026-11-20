@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/e_ink.dart";
@@ -20,9 +22,11 @@ class _AIExplainViewState extends ConsumerState<AIExplainView> {
   void _requestExplanation() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      ref
-          .read(aiExplanationModelProvider(widget.word))
-          .getExplanation(widget.word);
+      unawaited(
+        ref
+            .read(aiExplanationModelProvider(widget.word))
+            .getExplanation(widget.word),
+      );
     });
   }
 
@@ -78,7 +82,9 @@ class RefreshAIExplainButton extends ConsumerWidget {
       backgroundColor: colorScheme.primaryContainer,
       child: const Icon(Icons.refresh),
       onPressed: () {
-        ref.read(aiExplanationModelProvider(word)).refreshExplanation(word);
+        unawaited(
+          ref.read(aiExplanationModelProvider(word)).refreshExplanation(word),
+        );
       },
     );
   }
@@ -105,13 +111,15 @@ class EditAIExplainButton extends ConsumerWidget {
       backgroundColor: colorScheme.primaryContainer,
       child: const Icon(Icons.edit),
       onPressed: () {
-        context.push(
-          "/edit_ai_explanation",
-          extra: {
-            "word": word,
-            "initialExplanation": initialExplanation,
-            "aiExplanationModel": ref.read(aiExplanationModelProvider(word)),
-          },
+        unawaited(
+          context.push(
+            "/edit_ai_explanation",
+            extra: {
+              "word": word,
+              "initialExplanation": initialExplanation,
+              "aiExplanationModel": ref.read(aiExplanationModelProvider(word)),
+            },
+          ),
         );
       },
     );

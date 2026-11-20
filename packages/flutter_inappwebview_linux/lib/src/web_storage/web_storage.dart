@@ -4,19 +4,15 @@ import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_pla
 
 import '../in_app_webview/in_app_webview_controller.dart';
 
-/// Object specifying creation parameters for creating a [LinuxWebStorage].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformWebStorageCreationParams] for
 /// more information.
 class LinuxWebStorageCreationParams extends PlatformWebStorageCreationParams {
-  /// Creates a new [LinuxWebStorageCreationParams] instance.
   LinuxWebStorageCreationParams({
     required super.localStorage,
     required super.sessionStorage,
   });
 
-  /// Creates a [LinuxWebStorageCreationParams] instance based on [PlatformWebStorageCreationParams].
   factory LinuxWebStorageCreationParams.fromPlatformWebStorageCreationParams(
     // Recommended placeholder to prevent being broken by platform interface.
     // ignore: avoid_unused_constructor_parameters
@@ -31,7 +27,6 @@ class LinuxWebStorageCreationParams extends PlatformWebStorageCreationParams {
 
 ///{@macro flutter_inappwebview_platform_interface.PlatformWebStorage}
 class LinuxWebStorage extends PlatformWebStorage {
-  /// Constructs a [LinuxWebStorage].
   LinuxWebStorage(PlatformWebStorageCreationParams params)
     : super.implementation(
         params is LinuxWebStorageCreationParams
@@ -54,19 +49,15 @@ class LinuxWebStorage extends PlatformWebStorage {
   }
 }
 
-/// Object specifying creation parameters for creating a [LinuxStorage].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformStorageCreationParams] for
 /// more information.
 class LinuxStorageCreationParams extends PlatformStorageCreationParams {
-  /// Creates a new [LinuxStorageCreationParams] instance.
   LinuxStorageCreationParams({
     required super.controller,
     required super.webStorageType,
   });
 
-  /// Creates a [LinuxStorageCreationParams] instance based on [PlatformStorageCreationParams].
   factory LinuxStorageCreationParams.fromPlatformStorageCreationParams(
     // Recommended placeholder to prevent being broken by platform interface.
     // ignore: avoid_unused_constructor_parameters
@@ -199,17 +190,13 @@ abstract mixin class LinuxStorage implements PlatformStorage {
   }
 }
 
-/// Object specifying creation parameters for creating a [LinuxLocalStorage].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformLocalStorageCreationParams] for
 /// more information.
 class LinuxLocalStorageCreationParams
     extends PlatformLocalStorageCreationParams {
-  /// Creates a new [LinuxLocalStorageCreationParams] instance.
   LinuxLocalStorageCreationParams(super.params);
 
-  /// Creates a [LinuxLocalStorageCreationParams] instance based on [PlatformLocalStorageCreationParams].
   factory LinuxLocalStorageCreationParams.fromPlatformLocalStorageCreationParams(
     // Recommended placeholder to prevent being broken by platform interface.
     // ignore: avoid_unused_constructor_parameters
@@ -221,7 +208,6 @@ class LinuxLocalStorageCreationParams
 
 ///{@macro flutter_inappwebview_platform_interface.PlatformLocalStorage}
 class LinuxLocalStorage extends PlatformLocalStorage with LinuxStorage {
-  /// Constructs a [LinuxLocalStorage].
   LinuxLocalStorage(PlatformLocalStorageCreationParams params)
     : super.implementation(
         params is LinuxLocalStorageCreationParams
@@ -231,7 +217,6 @@ class LinuxLocalStorage extends PlatformLocalStorage with LinuxStorage {
               ),
       );
 
-  /// Default storage
   factory LinuxLocalStorage.defaultStorage({
     required PlatformInAppWebViewController? controller,
   }) {
@@ -252,17 +237,13 @@ class LinuxLocalStorage extends PlatformLocalStorage with LinuxStorage {
       params.controller as LinuxInAppWebViewController?;
 }
 
-/// Object specifying creation parameters for creating a [LinuxSessionStorage].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformSessionStorageCreationParams] for
 /// more information.
 class LinuxSessionStorageCreationParams
     extends PlatformSessionStorageCreationParams {
-  /// Creates a new [LinuxSessionStorageCreationParams] instance.
   LinuxSessionStorageCreationParams(super.params);
 
-  /// Creates a [LinuxSessionStorageCreationParams] instance based on [PlatformSessionStorageCreationParams].
   factory LinuxSessionStorageCreationParams.fromPlatformSessionStorageCreationParams(
     // Recommended placeholder to prevent being broken by platform interface.
     // ignore: avoid_unused_constructor_parameters
@@ -274,7 +255,6 @@ class LinuxSessionStorageCreationParams
 
 ///{@macro flutter_inappwebview_platform_interface.PlatformSessionStorage}
 class LinuxSessionStorage extends PlatformSessionStorage with LinuxStorage {
-  /// Constructs a [LinuxSessionStorage].
   LinuxSessionStorage(PlatformSessionStorageCreationParams params)
     : super.implementation(
         params is LinuxSessionStorageCreationParams
@@ -284,7 +264,6 @@ class LinuxSessionStorage extends PlatformSessionStorage with LinuxStorage {
               ),
       );
 
-  /// Default storage
   factory LinuxSessionStorage.defaultStorage({
     required PlatformInAppWebViewController? controller,
   }) {

@@ -326,7 +326,6 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
     // Insert oldest first so ids ascend with recency (matches ORDER BY id
     // DESC used by getAllHistory).
     final ordered = newestFirst.reversed.toList();
-    // Delete in chunks to stay under SQLite's variable limit.
     for (final chunk in _chunks(ordered, 500)) {
       await (delete(history)..where((t) => t.word.isIn(chunk))).go();
     }
@@ -697,14 +696,12 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
   /// to limit the candidate set instead of pulling the full table.
   /// Falls back to full table only if the pre-filter returns too few.
   Future<List<WordbookData>> searchWordsForFuzzy(String query) async {
-    // Try substring match first (fast, indexed).
     var candidates =
         await (select(wordbook)
               ..where((t) => t.word.like("%$query%"))
               ..limit(200))
             .get();
     if (candidates.length < 50) {
-      // Too few substring matches; fall back to full table for fuzzy.
       candidates = await getAllWords();
     }
     return candidates;
@@ -766,7 +763,6 @@ class WordbookDao extends DatabaseAccessor<AppDatabase>
 
   Future<Set<String>> wordsExist(Iterable<String> words) async {
     final result = <String>{};
-    // Chunk the IN list to stay under SQLite's variable limit.
     for (final chunk in _chunks([
       for (final word in words) normalizeKey(word),
     ], 500)) {

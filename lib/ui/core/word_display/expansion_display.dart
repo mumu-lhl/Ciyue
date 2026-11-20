@@ -94,8 +94,6 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     _searchController = widget.searchController ?? SearchController();
     _panelIds = _getPanelIds(settings.aiExplainWord, widget.validDictIds);
     _isExpanded = List<bool>.filled(_panelIds.length, true);
-    // The keys and the paging buttons live outside the entry, so the pager
-    // wrapping this page's scroll controller is handed to the registry.
     setExpansionEntryPager(_pager);
   }
 

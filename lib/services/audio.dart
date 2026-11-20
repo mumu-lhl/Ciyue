@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:io";
 import "dart:typed_data";
 
@@ -50,7 +51,7 @@ Future<bool> playSound(
     await player.setSourceBytes(audio, mimeType: mimeType);
     await player.resume();
     player.onPlayerComplete.listen((event) {
-      player.release();
+      unawaited(player.release());
     });
     return true;
   } catch (e) {
@@ -113,7 +114,7 @@ Future<void> playSoundOfWord(
         await player.resume();
 
         player.onPlayerComplete.listen((event) {
-          player.release();
+          unawaited(player.release());
         });
 
         return;
@@ -132,7 +133,7 @@ Future<void> playSoundOfWord(
     await player.setSourceBytes(hit.data, mimeType: lookupMimeType(hit.key));
     await player.resume();
     player.onPlayerComplete.listen((event) {
-      player.release();
+      unawaited(player.release());
     });
     return;
   }

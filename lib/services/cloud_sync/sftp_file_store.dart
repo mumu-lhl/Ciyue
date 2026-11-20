@@ -96,7 +96,7 @@ class SftpCloudFileStore implements CloudFileStore {
       }
       return _SftpConnection(client: client, sftp: sftp, basePath: basePath);
     } catch (_) {
-      client.close();
+      await client.close();
       rethrow;
     }
   }
@@ -338,7 +338,7 @@ class SftpCloudFileStore implements CloudFileStore {
     try {
       final connection = await future;
       await connection.sftp.close();
-      connection.client.close();
+      await connection.client.close();
     } catch (_) {
       // A failed initial connection has already been torn down.
     }

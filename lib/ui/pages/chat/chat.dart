@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/repositories/chat_scenarios.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
@@ -315,9 +317,9 @@ class _ChatPageState extends State<ChatPage> {
 
   void _send(ChatViewModel model) {
     if (_imageMode) {
-      model.generateImage();
+      unawaited(model.generateImage());
     } else {
-      model.sendMessage();
+      unawaited(model.sendMessage());
     }
   }
 
@@ -341,7 +343,7 @@ class _ChatPageState extends State<ChatPage> {
               title: Text(locale.fromGallery),
               onTap: () {
                 Navigator.pop(context);
-                _pickImage(model, ImageSource.gallery);
+                unawaited(_pickImage(model, ImageSource.gallery));
               },
             ),
             if (Platform.isAndroid || Platform.isIOS)
@@ -350,7 +352,7 @@ class _ChatPageState extends State<ChatPage> {
                 title: Text(locale.takePhoto),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickImage(model, ImageSource.camera);
+                  unawaited(_pickImage(model, ImageSource.camera));
                 },
               ),
           ],
@@ -795,7 +797,9 @@ class ChatBubble extends StatelessWidget {
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.copy),
                       onPressed: () {
-                        Clipboard.setData(ClipboardData(text: message));
+                        unawaited(
+                          Clipboard.setData(ClipboardData(text: message)),
+                        );
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(AppLocalizations.of(context)!.copied),
@@ -852,11 +856,13 @@ class _VocabularyDialogState extends State<_VocabularyDialog> {
   @override
   void initState() {
     super.initState();
-    widget.onExtract(widget.message).then((words) {
-      if (mounted) {
-        setState(() => _words = words);
-      }
-    });
+    unawaited(
+      widget.onExtract(widget.message).then((words) {
+        if (mounted) {
+          setState(() => _words = words);
+        }
+      }),
+    );
   }
 
   @override
@@ -1050,9 +1056,9 @@ class _ScenarioManagerDialog extends StatelessWidget {
               final desc = descController.text.trim();
               if (title.isNotEmpty && desc.isNotEmpty) {
                 if (existing == null) {
-                  manager.addScenario(title, desc);
+                  unawaited(manager.addScenario(title, desc));
                 } else {
-                  manager.updateScenario(existing.id, title, desc);
+                  unawaited(manager.updateScenario(existing.id, title, desc));
                 }
                 Navigator.pop(context);
               }

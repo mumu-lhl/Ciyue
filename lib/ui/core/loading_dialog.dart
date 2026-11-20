@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/ui/core/e_ink.dart";
 import "package:material_ui/material_ui.dart";
 
@@ -10,15 +12,17 @@ void showLoadingDialog(BuildContext context, {String? text}) {
     content: _LoadingDialogContent(text: text),
   );
 
-  showDialog(
-    barrierDismissible: false,
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  ).whenComplete(() {
-    _loadingDialogVisible = false;
-  });
+  unawaited(
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    ).whenComplete(() {
+      _loadingDialogVisible = false;
+    }),
+  );
 }
 
 void closeLoadingDialog(BuildContext context) {

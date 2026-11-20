@@ -17,13 +17,10 @@ import 'webview_environment/webview_environment.dart';
 
 /// Implementation of [InAppWebViewPlatform] using WPE WebKit.
 class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
-  /// Registers this class as the default instance of [InAppWebViewPlatform].
   static void registerWith() {
     InAppWebViewPlatform.instance = LinuxInAppWebViewPlatform();
   }
 
-  /// Creates a new [LinuxInAppWebViewController].
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [InAppWebViewController] in `flutter_inappwebview` instead.
   @override
@@ -33,8 +30,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxInAppWebViewController(params);
   }
 
-  /// Creates a new empty [LinuxInAppWebViewController] to access static methods.
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [InAppWebViewController] in `flutter_inappwebview` instead.
   @override
@@ -42,8 +37,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxInAppWebViewController.static();
   }
 
-  /// Creates a new [LinuxInAppWebViewWidget].
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [InAppWebView] in `flutter_inappwebview` instead.
   @override
@@ -53,8 +46,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxInAppWebViewWidget(params);
   }
 
-  /// Creates a new empty [LinuxInAppWebViewWidget] to access static methods.
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [InAppWebView] in `flutter_inappwebview` instead.
   @override
@@ -62,13 +53,11 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxInAppWebViewWidget.static();
   }
 
-  /// Creates a new empty [PlatformCookieManager] to access static methods.
   @override
   PlatformCookieManager createPlatformCookieManagerStatic() {
     return LinuxCookieManager.static();
   }
 
-  /// Creates a new [LinuxCookieManager].
   @override
   LinuxCookieManager createPlatformCookieManager(
     PlatformCookieManagerCreationParams params,
@@ -76,13 +65,11 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxCookieManager(params);
   }
 
-  /// Creates a new empty [PlatformWebViewEnvironment] to access static methods.
   @override
   PlatformWebViewEnvironment createPlatformWebViewEnvironmentStatic() {
     return LinuxWebViewEnvironment.static();
   }
 
-  /// Creates a new [LinuxWebViewEnvironment].
   @override
   LinuxWebViewEnvironment createPlatformWebViewEnvironment(
     PlatformWebViewEnvironmentCreationParams params,
@@ -97,13 +84,11 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
   // exception.                                                               //
   // ************************************************************************ //
 
-  /// Creates a new empty [PlatformChromeSafariBrowser] to access static methods.
   @override
   PlatformChromeSafariBrowser createPlatformChromeSafariBrowserStatic() {
     return _PlatformChromeSafariBrowser.static();
   }
 
-  /// Creates a new [LinuxHttpAuthCredentialDatabase].
   @override
   LinuxHttpAuthCredentialDatabase createPlatformHttpAuthCredentialDatabase(
     PlatformHttpAuthCredentialDatabaseCreationParams params,
@@ -111,20 +96,17 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxHttpAuthCredentialDatabase(params);
   }
 
-  /// Creates a new empty [LinuxHttpAuthCredentialDatabase] to access static methods.
   @override
   LinuxHttpAuthCredentialDatabase
   createPlatformHttpAuthCredentialDatabaseStatic() {
     return LinuxHttpAuthCredentialDatabase.static();
   }
 
-  /// Creates a new empty [LinuxInAppBrowser] to access static methods.
   @override
   LinuxInAppBrowser createPlatformInAppBrowserStatic() {
     return LinuxInAppBrowser.static();
   }
 
-  /// Creates a new [LinuxInAppBrowser].
   @override
   LinuxInAppBrowser createPlatformInAppBrowser(
     PlatformInAppBrowserCreationParams params,
@@ -132,13 +114,11 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxInAppBrowser(params);
   }
 
-  /// Creates a new empty [PlatformHeadlessInAppWebView] to access static methods.
   @override
   PlatformHeadlessInAppWebView createPlatformHeadlessInAppWebViewStatic() {
     return LinuxHeadlessInAppWebView.static();
   }
 
-  /// Creates a new [LinuxHeadlessInAppWebView].
   @override
   LinuxHeadlessInAppWebView createPlatformHeadlessInAppWebView(
     PlatformHeadlessInAppWebViewCreationParams params,
@@ -146,19 +126,16 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxHeadlessInAppWebView(params);
   }
 
-  /// Creates a new empty [PlatformProcessGlobalConfig] to access static methods.
   @override
   PlatformProcessGlobalConfig createPlatformProcessGlobalConfigStatic() {
     return _PlatformProcessGlobalConfig.static();
   }
 
-  /// Creates a new empty [PlatformProxyController] to access static methods.
   @override
   PlatformProxyController createPlatformProxyControllerStatic() {
     return LinuxProxyController.static();
   }
 
-  /// Creates a new [LinuxProxyController].
   @override
   LinuxProxyController createPlatformProxyController(
     PlatformProxyControllerCreationParams params,
@@ -166,27 +143,23 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxProxyController(params);
   }
 
-  /// Creates a new empty [PlatformServiceWorkerController] to access static methods.
   @override
   PlatformServiceWorkerController
   createPlatformServiceWorkerControllerStatic() {
     return _PlatformServiceWorkerController.static();
   }
 
-  /// Creates a new empty [PlatformTracingController] to access static methods.
   @override
   PlatformTracingController createPlatformTracingControllerStatic() {
     return _PlatformTracingController.static();
   }
 
-  /// Creates a new empty [PlatformFindInteractionController] to access static methods.
   @override
   PlatformFindInteractionController
   createPlatformFindInteractionControllerStatic() {
     return LinuxFindInteractionController.static();
   }
 
-  /// Creates a new [LinuxFindInteractionController].
   @override
   LinuxFindInteractionController createPlatformFindInteractionController(
     PlatformFindInteractionControllerCreationParams params,
@@ -194,40 +167,34 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxFindInteractionController(params);
   }
 
-  /// Creates a new empty [PlatformPrintJobController] to access static methods.
   @override
   PlatformPrintJobController createPlatformPrintJobControllerStatic() {
     return _PlatformPrintJobController.static();
   }
 
-  /// Creates a new empty [PlatformPullToRefreshController] to access static methods.
   @override
   PlatformPullToRefreshController
   createPlatformPullToRefreshControllerStatic() {
     return _PlatformPullToRefreshController.static();
   }
 
-  /// Creates a new empty [PlatformWebAuthenticationSession] to access static methods.
   @override
   PlatformWebAuthenticationSession
   createPlatformWebAuthenticationSessionStatic() {
     return _PlatformWebAuthenticationSession.static();
   }
 
-  /// Creates a new empty [PlatformWebNotificationController] to access static methods.
   @override
   PlatformWebNotificationController
   createPlatformWebNotificationControllerStatic() {
     return _PlatformWebNotificationController.static();
   }
 
-  /// Creates a new empty [LinuxWebMessageChannel] to access static methods.
   @override
   LinuxWebMessageChannel createPlatformWebMessageChannelStatic() {
     return LinuxWebMessageChannel.static();
   }
 
-  /// Creates a new [LinuxWebMessageChannel].
   @override
   LinuxWebMessageChannel createPlatformWebMessageChannel(
     PlatformWebMessageChannelCreationParams params,
@@ -235,7 +202,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxWebMessageChannel(params);
   }
 
-  /// Creates a new [LinuxWebMessagePort].
   @override
   LinuxWebMessagePort createPlatformWebMessagePort(
     PlatformWebMessagePortCreationParams params,
@@ -243,13 +209,11 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxWebMessagePort(params);
   }
 
-  /// Creates a new empty [PlatformWebMessageListener] to access static methods.
   @override
   PlatformWebMessageListener createPlatformWebMessageListenerStatic() {
     return LinuxWebMessageListener.static();
   }
 
-  /// Creates a new [LinuxWebMessageListener].
   @override
   LinuxWebMessageListener createPlatformWebMessageListener(
     PlatformWebMessageListenerCreationParams params,
@@ -257,8 +221,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxWebMessageListener(params);
   }
 
-  /// Creates a new [LinuxWebStorage].
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [WebStorage] in `flutter_inappwebview` instead.
   @override
@@ -268,8 +230,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxWebStorage(params);
   }
 
-  /// Creates a new empty [LinuxWebStorage] to access static methods.
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [WebStorage] in `flutter_inappwebview` instead.
   @override
@@ -282,8 +242,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     );
   }
 
-  /// Creates a new [LinuxLocalStorage].
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [LocalStorage] in `flutter_inappwebview` instead.
   @override
@@ -293,8 +251,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxLocalStorage(params);
   }
 
-  /// Creates a new empty [LinuxLocalStorage] to access static methods.
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [LocalStorage] in `flutter_inappwebview` instead.
   @override
@@ -302,8 +258,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxLocalStorage.defaultStorage(controller: null);
   }
 
-  /// Creates a new [LinuxSessionStorage].
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [SessionStorage] in `flutter_inappwebview` instead.
   @override
@@ -313,8 +267,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxSessionStorage(params);
   }
 
-  /// Creates a new empty [LinuxSessionStorage] to access static methods.
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [SessionStorage] in `flutter_inappwebview` instead.
   @override
@@ -322,13 +274,11 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxSessionStorage.defaultStorage(controller: null);
   }
 
-  /// Creates a new empty [PlatformWebStorageManager] to access static methods.
   @override
   PlatformWebStorageManager createPlatformWebStorageManagerStatic() {
     return LinuxWebStorageManager.static();
   }
 
-  /// Creates a new [LinuxWebStorageManager].
   @override
   LinuxWebStorageManager createPlatformWebStorageManager(
     PlatformWebStorageManagerCreationParams params,
@@ -336,33 +286,27 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return LinuxWebStorageManager(params);
   }
 
-  /// Creates a new empty [PlatformAssetsPathHandler] to access static methods.
   @override
   PlatformAssetsPathHandler createPlatformAssetsPathHandlerStatic() {
     return _PlatformAssetsPathHandler.static();
   }
 
-  /// Creates a new empty [PlatformResourcesPathHandler] to access static methods.
   @override
   PlatformResourcesPathHandler createPlatformResourcesPathHandlerStatic() {
     return _PlatformResourcesPathHandler.static();
   }
 
-  /// Creates a new empty [PlatformInternalStoragePathHandler] to access static methods.
   @override
   PlatformInternalStoragePathHandler
   createPlatformInternalStoragePathHandlerStatic() {
     return _PlatformInternalStoragePathHandler.static();
   }
 
-  /// Creates a new empty [PlatformCustomPathHandler] to access static methods.
   @override
   PlatformCustomPathHandler createPlatformCustomPathHandlerStatic() {
     return _PlatformCustomPathHandler.static();
   }
 
-  /// Creates a new [DefaultInAppLocalhostServer].
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [InAppLocalhostServer] in `flutter_inappwebview` instead.
   @override
@@ -372,8 +316,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return DefaultInAppLocalhostServer(params);
   }
 
-  /// Creates a new empty [DefaultInAppLocalhostServer] to access static methods.
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [InAppLocalhostServer] in `flutter_inappwebview` instead.
   @override
@@ -381,8 +323,6 @@ class LinuxInAppWebViewPlatform extends InAppWebViewPlatform {
     return DefaultInAppLocalhostServer.static();
   }
 
-  /// Creates a new empty [PlatformWebViewFeature] to access static methods.
-  ///
   /// This function should only be called by the app-facing package.
   /// Look at using [WebViewFeature] in `flutter_inappwebview` instead
   @override

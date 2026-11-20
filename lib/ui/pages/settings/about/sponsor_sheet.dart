@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
 import "package:material_ui/material_ui.dart";
@@ -168,9 +170,11 @@ class _SponsorLinkCard extends StatelessWidget {
             Expanded(
               child: FilledButton.icon(
                 onPressed: () {
-                  launchUrl(
-                    Uri.parse(uri),
-                    mode: LaunchMode.externalApplication,
+                  unawaited(
+                    launchUrl(
+                      Uri.parse(uri),
+                      mode: LaunchMode.externalApplication,
+                    ),
                   );
                 },
                 icon: const Icon(Icons.open_in_new),

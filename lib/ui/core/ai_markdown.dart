@@ -31,7 +31,6 @@ class _AIMarkdownState extends State<AIMarkdown> {
     _requestStream = _streamText(widget.prompt);
   }
 
-  /// Accumulate chunks so the markdown renders progressively.
   /// Calls [onResult] once with the full text when the stream closes.
   Stream<String> _streamText(String prompt) async* {
     final buffer = StringBuffer();

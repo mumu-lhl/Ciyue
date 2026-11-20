@@ -2,22 +2,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
 
-/// Object specifying creation parameters for creating a [LinuxWebMessageListener].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformWebMessageListenerCreationParams] for
 /// more information.
 @immutable
 class LinuxWebMessageListenerCreationParams
     extends PlatformWebMessageListenerCreationParams {
-  /// Creates a new [LinuxWebMessageListenerCreationParams] instance.
   const LinuxWebMessageListenerCreationParams({
     required this.allowedOriginRules,
     required super.jsObjectName,
     super.onPostMessage,
   });
 
-  /// Creates a [LinuxWebMessageListenerCreationParams] instance based on [PlatformWebMessageListenerCreationParams].
   factory LinuxWebMessageListenerCreationParams.fromPlatformWebMessageListenerCreationParams(
     PlatformWebMessageListenerCreationParams params,
   ) {
@@ -40,7 +36,6 @@ class LinuxWebMessageListenerCreationParams
 ///{@macro flutter_inappwebview_platform_interface.PlatformWebMessageListener}
 class LinuxWebMessageListener extends PlatformWebMessageListener
     with ChannelController {
-  /// Constructs a [LinuxWebMessageListener].
   LinuxWebMessageListener(PlatformWebMessageListenerCreationParams params)
     : super.implementation(
         params is LinuxWebMessageListenerCreationParams
@@ -72,7 +67,6 @@ class LinuxWebMessageListener extends PlatformWebMessageListener
     return _staticValue;
   }
 
-  ///Message Listener ID used internally.
   final String _id = IdGenerator.generate();
 
   LinuxJavaScriptReplyProxy? _replyProxy;
@@ -134,20 +128,16 @@ class LinuxWebMessageListener extends PlatformWebMessageListener
   }
 }
 
-/// Object specifying creation parameters for creating a [LinuxJavaScriptReplyProxy].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformJavaScriptReplyProxyCreationParams] for
 /// more information.
 @immutable
 class LinuxJavaScriptReplyProxyCreationParams
     extends PlatformJavaScriptReplyProxyCreationParams {
-  /// Creates a new [LinuxJavaScriptReplyProxyCreationParams] instance.
   const LinuxJavaScriptReplyProxyCreationParams({
     required super.webMessageListener,
   });
 
-  /// Creates a [LinuxJavaScriptReplyProxyCreationParams] instance based on [PlatformJavaScriptReplyProxyCreationParams].
   factory LinuxJavaScriptReplyProxyCreationParams.fromPlatformJavaScriptReplyProxyCreationParams(
     PlatformJavaScriptReplyProxyCreationParams params,
   ) {
@@ -159,7 +149,6 @@ class LinuxJavaScriptReplyProxyCreationParams
 
 ///{@macro flutter_inappwebview_platform_interface.JavaScriptReplyProxy}
 class LinuxJavaScriptReplyProxy extends PlatformJavaScriptReplyProxy {
-  /// Constructs a [LinuxWebMessageListener].
   LinuxJavaScriptReplyProxy(PlatformJavaScriptReplyProxyCreationParams params)
     : super.implementation(
         params is LinuxJavaScriptReplyProxyCreationParams

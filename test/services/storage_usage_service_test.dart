@@ -46,22 +46,17 @@ void main() {
     ]) {
       await dir.create(recursive: true);
     }
-    // Full-text index: db + wal + shm.
     await _writeFile(p.join(cacheDir.path, "full_text_search.db"), 100);
     await _writeFile(p.join(cacheDir.path, "full_text_search.db-wal"), 10);
     await _writeFile(p.join(cacheDir.path, "full_text_search.db-shm"), 5);
-    // Dictionary index cache files.
     await _writeFile(p.join(cacheDir.path, "dict_reader_1_mdx.cidx"), 200);
     await _writeFile(p.join(cacheDir.path, "dict_reader_2_stardict.cidx"), 50);
-    // Pronunciation cache.
     await _writeFile(
       p.join(cacheDir.path, "online_pronunciation", "a.mp3"),
       1000,
     );
-    // Uncategorized cache entries.
     await _writeFile(p.join(cacheDir.path, "some_other.bin"), 40);
     await _writeFile(p.join(cacheDir.path, "webview_data", "x"), 60);
-    // Audio packs and chat images.
     await _writeFile(p.join(supportDir.path, "audios", "pack.mp3"), 500);
     await _writeFile(p.join(documentsDir.path, "chat_images", "img.jpg"), 80);
     // Main database: sqlite + wal (no shm file on disk).
@@ -70,7 +65,6 @@ void main() {
       p.join(databaseDir.path, "dictionary_list.sqlite-wal"),
       30,
     );
-    // Dictionaries.
     await _writeFile(p.join(dictionariesDir.path, "dict.mdx"), 300);
   });
 
@@ -157,7 +151,6 @@ void main() {
       final usages = await noDocuments.measure();
       final byKind = {for (final u in usages) u.kind: u};
       expect(byKind[StorageCategoryKind.chatImages]!.bytes, 0);
-      // The other categories are still measured.
       expect(byKind[StorageCategoryKind.fullTextIndex]!.bytes, 115);
       expect(byKind[StorageCategoryKind.dictionaries]!.bytes, 300);
     });
@@ -192,7 +185,6 @@ void main() {
       );
       final usages = await s.measure();
       expect(bytesOf(usages, StorageCategoryKind.dictionaryIndexCache), 0);
-      // Everything else is untouched.
       expect(bytesOf(usages, StorageCategoryKind.fullTextIndex), 115);
       expect(bytesOf(usages, StorageCategoryKind.pronunciationCache), 1000);
       expect(bytesOf(usages, StorageCategoryKind.otherCache), 100);

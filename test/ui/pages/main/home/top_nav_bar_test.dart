@@ -318,7 +318,6 @@ void main() {
       await pumpAppBar(tester, const Size(800, 600));
       expect(find.byType(GroupSelectorButton), findsNothing);
       expect(find.byType(MoreButton), findsNothing);
-      // The general chat entry stays in the top row.
       expect(find.byTooltip("AI Chat"), findsOneWidget);
     });
 

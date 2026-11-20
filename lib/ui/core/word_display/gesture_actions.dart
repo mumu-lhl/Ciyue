@@ -52,7 +52,6 @@ MouseGestureAction resolveGestureAction(
   return configured;
 }
 
-/// Runs the action the reader assigned to a gesture in the appearance settings.
 void handleGesture(WidgetRef ref, String payload) {
   final gesture = parseGesture(payload);
   if (gesture == null) return;
@@ -80,8 +79,7 @@ void handleGesture(WidgetRef ref, String payload) {
   }
 }
 
-/// Steps through the dictionary tab bar, wrapping at either end. The
-/// controller only exists in the tab layout, which [resolveGestureAction]
+/// The controller only exists in the tab layout, which [resolveGestureAction]
 /// already accounts for.
 bool _stepDictionaryTab(int direction) {
   final controller = dictTabController;

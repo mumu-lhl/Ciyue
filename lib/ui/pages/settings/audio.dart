@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
@@ -102,7 +103,7 @@ class PronunciationModeSelector extends StatelessWidget {
           ],
           onChanged: (mode) {
             if (mode != null) {
-              settings.setPronunciationMode(mode);
+              unawaited(settings.setPronunciationMode(mode));
             }
           },
         ),
@@ -166,7 +167,7 @@ class AudioList extends ConsumerWidget {
                       }
                     }
                   } else {
-                    PlatformMethod.openAudioDirectory();
+                    await PlatformMethod.openAudioDirectory();
                   }
                 } else {
                   await selectMddOnDesktop(context);
@@ -376,7 +377,7 @@ class _OnlinePronunciationSettingsState
   void initState() {
     super.initState();
     _forvoApiKeyFocusNode.addListener(_onForvoApiKeyFocusChanged);
-    _loadForvoApiKey();
+    unawaited(_loadForvoApiKey());
   }
 
   @override
@@ -412,7 +413,7 @@ class _OnlinePronunciationSettingsState
         _suppressForvoApiKeyChanged = false;
         return;
       }
-      _saveForvoApiKey();
+      unawaited(_saveForvoApiKey());
       return;
     }
     if (_hasStoredForvoApiKey && !_forvoApiKeyDirty) {
@@ -465,7 +466,7 @@ class _OnlinePronunciationSettingsState
           title: Text(localizations.onlinePronunciationWiktionary),
           value: settings.wiktionaryPronunciationEnabled,
           onChanged: (value) {
-            settings.setWiktionaryPronunciationEnabled(value);
+            unawaited(settings.setWiktionaryPronunciationEnabled(value));
           },
         ),
         _languageDropdown(
@@ -473,7 +474,7 @@ class _OnlinePronunciationSettingsState
           enabled: settings.wiktionaryPronunciationEnabled,
           value: settings.wiktionaryPronunciationLanguage,
           onChanged: (language) {
-            settings.setWiktionaryPronunciationLanguage(language);
+            unawaited(settings.setWiktionaryPronunciationLanguage(language));
           },
         ),
         const SizedBox(height: 16),
@@ -482,7 +483,7 @@ class _OnlinePronunciationSettingsState
           title: Text(localizations.onlinePronunciationForvo),
           value: settings.forvoPronunciationEnabled,
           onChanged: (value) {
-            settings.setForvoPronunciationEnabled(value);
+            unawaited(settings.setForvoPronunciationEnabled(value));
           },
         ),
         _languageDropdown(
@@ -490,7 +491,7 @@ class _OnlinePronunciationSettingsState
           enabled: settings.forvoPronunciationEnabled,
           value: settings.forvoPronunciationLanguage,
           onChanged: (language) {
-            settings.setForvoPronunciationLanguage(language);
+            unawaited(settings.setForvoPronunciationLanguage(language));
           },
         ),
         const SizedBox(height: 12),
@@ -516,7 +517,7 @@ class _OnlinePronunciationSettingsState
             _forvoApiKeyDirty = true;
           },
           onSubmitted: (_) {
-            _saveForvoApiKey();
+            unawaited(_saveForvoApiKey());
             _forvoApiKeyFocusNode.unfocus();
           },
         ),
@@ -610,8 +611,8 @@ class TTSEngines extends StatelessWidget {
           ],
           onChanged: (String? ttsEngine) async {
             if (ttsEngine != null) {
-              settings.setTTSEngine(ttsEngine);
-              flutterTts.setEngine(ttsEngine);
+              await settings.setTTSEngine(ttsEngine);
+              await flutterTts.setEngine(ttsEngine);
             }
           },
         ),
@@ -650,7 +651,7 @@ class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
   @override
   void initState() {
     super.initState();
-    _load();
+    unawaited(_load());
   }
 
   Future<void> _load() async {
@@ -814,7 +815,7 @@ class TTSLanguages extends ConsumerWidget {
             );
           },
           onReorderItem: (oldIndex, newIndex) {
-            _reorder(oldIndex, newIndex);
+            unawaited(_reorder(oldIndex, newIndex));
           },
         ),
         Align(

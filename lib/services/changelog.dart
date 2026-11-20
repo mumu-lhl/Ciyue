@@ -56,9 +56,7 @@ class ChangelogService {
     for (final path in changelogCandidatePaths(locale)) {
       try {
         return await rootBundle.loadString(path);
-      } catch (_) {
-        // Try the next, less specific candidate.
-      }
+      } catch (_) {}
     }
     return "";
   }

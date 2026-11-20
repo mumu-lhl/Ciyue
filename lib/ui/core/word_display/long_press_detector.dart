@@ -25,10 +25,8 @@ class LongPressDetector extends StatefulWidget {
     required this.child,
   });
 
-  /// Called when a new press starts, before a long press is possible.
   final VoidCallback onPressStart;
 
-  /// Called when the child is held down for [timeout].
   final VoidCallback onLongPress;
 
   final Duration timeout;

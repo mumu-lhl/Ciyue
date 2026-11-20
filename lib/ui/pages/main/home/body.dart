@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -93,7 +95,7 @@ class _DesktopHomeSplitViewState extends ConsumerState<_DesktopHomeSplitView> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
-          ref.read(settingsProvider).setShowSearchPane(false);
+          unawaited(ref.read(settingsProvider).setShowSearchPane(false));
         },
         onHorizontalDragStart: (details) {
           _dragStartWidth = currentWidth;
@@ -115,7 +117,7 @@ class _DesktopHomeSplitViewState extends ConsumerState<_DesktopHomeSplitView> {
           }
         },
         onHorizontalDragEnd: (_) {
-          ref.read(settingsProvider).setSearchPaneWidth(_paneWidth);
+          unawaited(ref.read(settingsProvider).setSearchPaneWidth(_paneWidth));
         },
         child: MouseRegion(
           cursor: SystemMouseCursors.resizeColumn,
@@ -313,51 +315,53 @@ class _DesktopWordTabBar extends ConsumerWidget {
       Offset.zero & MediaQuery.sizeOf(context),
     );
 
-    showMenu<String>(
-      context: context,
-      position: position,
-      items: [
-        PopupMenuItem(
-          value: "close",
-          child: Row(
-            children: [
-              const Icon(Icons.close, size: 18),
-              const SizedBox(width: 8),
-              Text(l10n.closeTab),
-            ],
-          ),
-        ),
-        if (homeModel.tabs.length > 1)
+    unawaited(
+      showMenu<String>(
+        context: context,
+        position: position,
+        items: [
           PopupMenuItem(
-            value: "closeOthers",
+            value: "close",
             child: Row(
               children: [
-                const Icon(Icons.clear_all, size: 18),
+                const Icon(Icons.close, size: 18),
                 const SizedBox(width: 8),
-                Text(l10n.closeOtherTabs),
+                Text(l10n.closeTab),
               ],
             ),
           ),
-        PopupMenuItem(
-          value: "closeAll",
-          child: Row(
-            children: [
-              const Icon(Icons.cancel_outlined, size: 18),
-              const SizedBox(width: 8),
-              Text(l10n.closeAllTabs),
-            ],
+          if (homeModel.tabs.length > 1)
+            PopupMenuItem(
+              value: "closeOthers",
+              child: Row(
+                children: [
+                  const Icon(Icons.clear_all, size: 18),
+                  const SizedBox(width: 8),
+                  Text(l10n.closeOtherTabs),
+                ],
+              ),
+            ),
+          PopupMenuItem(
+            value: "closeAll",
+            child: Row(
+              children: [
+                const Icon(Icons.cancel_outlined, size: 18),
+                const SizedBox(width: 8),
+                Text(l10n.closeAllTabs),
+              ],
+            ),
           ),
-        ),
-      ],
-    ).then((value) {
-      if (value == "close") {
-        homeModel.closeTab(index);
-      } else if (value == "closeOthers") {
-        homeModel.closeOtherTabs(index);
-      } else if (value == "closeAll") {
-        homeModel.closeAllTabs();
-      }
-    });
+        ],
+      ).then((value) {
+        if (value == "close") {
+          homeModel.closeTab(index);
+        } else if (value == "closeOthers") {
+          homeModel.closeOtherTabs(index);
+        } else if (value == "closeAll") {
+          homeModel.closeAllTabs();
+        }
+      }),
+    );
   }
 
   @override
@@ -412,7 +416,9 @@ class _DesktopWordTabBar extends ConsumerWidget {
             tooltip: showSearchPane ? l10n.hideSearchPane : l10n.showSearchPane,
             splashRadius: 16,
             onPressed: () {
-              ref.read(settingsProvider).setShowSearchPane(!showSearchPane);
+              unawaited(
+                ref.read(settingsProvider).setShowSearchPane(!showSearchPane),
+              );
             },
           ),
           Expanded(

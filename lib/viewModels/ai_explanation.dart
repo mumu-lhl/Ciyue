@@ -72,7 +72,6 @@ class AIExplanationModel extends ChangeNotifier {
   }
 
   Future<void> getExplanation(String word) async {
-    // Cancel any in-flight stream from a previous word.
     _streamController?.cancel();
     _isLoading = true;
     _explanation = null;
@@ -125,7 +124,6 @@ class AIExplanationModel extends ChangeNotifier {
         cancel: controller.token,
       )) {
         if (!_mounted) return;
-        // Ignore chunks from a cancelled (superseded) stream.
         if (controller.isCancelled) return;
         buffer.write(chunk);
         // Structured responses are partial JSON while streaming and

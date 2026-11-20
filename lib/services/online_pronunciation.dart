@@ -1097,7 +1097,7 @@ class OnlinePronunciationCoordinator {
         final bytes = await future;
         if (bytes != null) return bytes;
       } finally {
-        _inFlight.remove(key);
+        final _ = _inFlight.remove(key);
       }
     }
     return null;

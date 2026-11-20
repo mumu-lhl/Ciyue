@@ -18,7 +18,6 @@ void main() {
       expect(model.activeTabIndex, 0);
       expect(model.selectedWord, "apple");
 
-      // Changing selectedWord replaces the active tab when no duplicate exists
       model.selectedWord = "banana";
       expect(model.tabs, ["banana"]);
       expect(model.activeTabIndex, 0);
@@ -34,7 +33,6 @@ void main() {
       expect(model.activeTabIndex, 1);
       expect(model.selectedWord, "banana");
 
-      // Opening existing word switches to it without duplicating
       model.openWordInNewTab("apple");
       expect(model.tabs, ["apple", "banana"]);
       expect(model.activeTabIndex, 0);
@@ -179,7 +177,6 @@ void main() {
       expect(model.selectedWord, "banana");
       expect(model.canGoForward, isTrue);
 
-      // Navigate to a new word 'date', truncating 'cherry'
       model.navigateInCurrentTab("date");
       expect(model.selectedWord, "date");
       expect(model.canGoBack, isTrue);

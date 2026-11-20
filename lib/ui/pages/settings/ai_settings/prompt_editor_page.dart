@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -43,7 +45,7 @@ class _PromptEditorPageState extends ConsumerState<PromptEditorPage> {
   }
 
   void _onChanged(String value) {
-    ref.read(aiPromptsProvider).setPrompt(_definition, value);
+    unawaited(ref.read(aiPromptsProvider).setPrompt(_definition, value));
     setState(() {});
   }
 

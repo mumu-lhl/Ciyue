@@ -3,22 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
 import 'web_message_port.dart';
 
-/// Object specifying creation parameters for creating a [LinuxWebMessageChannel].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformWebMessageChannelCreationParams] for
 /// more information.
 @immutable
 class LinuxWebMessageChannelCreationParams
     extends PlatformWebMessageChannelCreationParams {
-  /// Creates a new [LinuxWebMessageChannelCreationParams] instance.
   const LinuxWebMessageChannelCreationParams({
     required super.id,
     required super.port1,
     required super.port2,
   });
 
-  /// Creates a [LinuxWebMessageChannelCreationParams] instance based on [PlatformWebMessageChannelCreationParams].
   factory LinuxWebMessageChannelCreationParams.fromPlatformWebMessageChannelCreationParams(
     // Recommended placeholder to prevent being broken by platform interface.
     // ignore: avoid_unused_constructor_parameters
@@ -40,7 +36,6 @@ class LinuxWebMessageChannelCreationParams
 ///{@macro flutter_inappwebview_platform_interface.PlatformWebMessageChannel}
 class LinuxWebMessageChannel extends PlatformWebMessageChannel
     with ChannelController {
-  /// Constructs a [LinuxWebMessageChannel].
   LinuxWebMessageChannel(PlatformWebMessageChannelCreationParams params)
     : super.implementation(
         params is LinuxWebMessageChannelCreationParams

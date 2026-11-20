@@ -72,7 +72,7 @@ class Export extends StatelessWidget {
           builder: (context) => const ExportOptionsDialog(),
         );
         if (options != null) {
-          Backup.export(
+          await Backup.export(
             false,
             wordbook: options.wordbook,
             searchHistory: options.searchHistory,

@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
@@ -32,7 +33,7 @@ class _FloatingWindowState extends State<FloatingWindow> {
   @override
   void initState() {
     super.initState();
-    _load();
+    unawaited(_load());
   }
 
   Future<void> _load() async {
@@ -327,7 +328,7 @@ class _NotificationSwitchState extends State<NotificationSwitch> {
               AndroidFlutterLocalNotificationsPlugin
             >()
             ?.requestNotificationsPermission();
-        PlatformMethod.createPersistentNotification(value);
+        await PlatformMethod.createPersistentNotification(value);
       },
       secondary: const Icon(Icons.notifications),
     );
@@ -342,7 +343,7 @@ class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
       title: Text(locale!.secureScreen),
       value: settings.secureScreen,
       onChanged: (value) async {
-        PlatformMethod.setSecureFlag(value);
+        await PlatformMethod.setSecureFlag(value);
         await prefs.setBool("secureScreen", value);
         setState(() {
           settings.secureScreen = value;

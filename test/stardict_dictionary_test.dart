@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:convert";
 import "dart:io";
 import "dart:typed_data";
@@ -29,7 +30,7 @@ Future<Directory> _installFakeCacheDir() async {
   PathProviderPlatform.instance = _FakePathProviderPlatform(cacheDir);
   addTearDown(() {
     PathProviderPlatform.instance = previous;
-    cacheDir.delete(recursive: true);
+    unawaited(cacheDir.delete(recursive: true));
   });
   return cacheDir;
 }

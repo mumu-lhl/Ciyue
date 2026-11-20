@@ -48,7 +48,6 @@ const kUsbHidToEvdev = <int, int>{
   0xe4: 97, 0xe5: 54, 0xe6: 100, 0xe7: 126,
 };
 
-/// Convert USB HID usage code to X11 keycode.
 /// X11 keycode = evdev scancode + 8
 int usbHidToX11Keycode(int usbHid) {
   final evdev = kUsbHidToEvdev[usbHid] ?? 0;
@@ -58,22 +57,18 @@ int usbHidToX11Keycode(int usbHid) {
 /// X11 keysym values for special keys.
 /// For printable characters, the Unicode code point IS the keysym.
 int getX11Keysym(LogicalKeyboardKey key, String? character) {
-  // For printable characters, use Unicode code point directly
   if (character != null && character.isNotEmpty) {
     final codeUnit = character.codeUnitAt(0);
     if (codeUnit >= 0x20 && codeUnit < 0x7f) {
       return codeUnit; // ASCII printable -> Unicode keysym
     }
-    // Extended Latin and other Unicode characters (keysym = Unicode codepoint)
     if (codeUnit >= 0x00a0 && codeUnit <= 0xffff) {
       return codeUnit;
     }
   }
 
-  // Special keys use X11 keysym constants
   final keyId = key.keyId;
 
-  // Check explicit mapping first
   final mapped = _specialKeyToKeysym[keyId];
   if (mapped != null) {
     return mapped;
@@ -85,11 +80,9 @@ int getX11Keysym(LogicalKeyboardKey key, String? character) {
     return 0xffbe + (keyId - LogicalKeyboardKey.f1.keyId);
   }
 
-  // Try keyLabel for printable characters that weren't caught above
   final label = key.keyLabel;
   if (label.length == 1) {
     final codeUnit = label.codeUnitAt(0);
-    // ASCII printable or extended Latin
     if ((codeUnit >= 0x20 && codeUnit < 0x7f) ||
         (codeUnit >= 0x00a0 && codeUnit <= 0xffff)) {
       return codeUnit;

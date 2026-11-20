@@ -91,7 +91,7 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
         selectPreviousHistory,
     const SingleActivator(LogicalKeyboardKey.keyR, control: true): () {
       if (activeWord != null && activeWord.isNotEmpty) {
-        playWordPronunciation(context, activeWord);
+        unawaited(playWordPronunciation(context, activeWord));
       }
     },
     // Browser-like history navigation. The plain arrows belong to the entry

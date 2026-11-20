@@ -93,7 +93,6 @@ String gestureScript({bool bitmaskFallback = true}) {
         sendRocker(1);
       }
     } else if (e.button === 1) {
-      // Middle button rocks the other way (back).
       if (leftDown) {
         e.preventDefault();
         e.stopPropagation();

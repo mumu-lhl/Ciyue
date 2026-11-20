@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/services/tts.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -269,8 +271,10 @@ class _SourceResultCard extends StatelessWidget {
                     tooltip: locale.copy,
                     icon: const Icon(Icons.copy_outlined),
                     onPressed: () {
-                      Clipboard.setData(
-                        ClipboardData(text: entry.result!.text),
+                      unawaited(
+                        Clipboard.setData(
+                          ClipboardData(text: entry.result!.text),
+                        ),
                       );
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -342,7 +346,7 @@ class _SourceResultCard extends StatelessWidget {
                       label: Text(alt),
                       visualDensity: VisualDensity.compact,
                       onPressed: () {
-                        Clipboard.setData(ClipboardData(text: alt));
+                        unawaited(Clipboard.setData(ClipboardData(text: alt)));
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(AppLocalizations.of(context)!.copied),
@@ -627,7 +631,7 @@ class _DesktopTranslateView extends StatelessWidget {
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
           if (viewModel.inputController.text.isNotEmpty) {
-            viewModel.translateText(context);
+            unawaited(viewModel.translateText(context));
           }
         },
       },

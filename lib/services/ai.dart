@@ -975,7 +975,7 @@ class ModelProviderManager {
         }
         url = "https://apihub.agnes-ai.com/v1/models";
       case "openai_compatible":
-        var base = (customApiUrl != null && customApiUrl.isNotEmpty)
+        final base = (customApiUrl != null && customApiUrl.isNotEmpty)
             ? customApiUrl
             : settings.aiAPIUrl;
         if (base.endsWith("/chat/completions")) {

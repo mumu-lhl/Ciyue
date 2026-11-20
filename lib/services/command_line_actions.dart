@@ -18,6 +18,8 @@ const _initialWindowSize = Size(800, 600);
 
 StreamSubscription<dynamic>? _logSubscription;
 
+IOSink? _logSink;
+
 /// Appends the global talker stream to `ciyue.log` in the application support
 /// directory.
 ///
@@ -30,7 +32,7 @@ Future<void> enableFileLogging() async {
   final directory = await getApplicationSupportDirectory();
   await directory.create(recursive: true);
   final file = File("${directory.path}/ciyue.log");
-  final sink = file.openWrite(mode: FileMode.append);
+  _logSink = file.openWrite(mode: FileMode.append);
   _logSubscription = talker.stream.listen((data) {
     // `TalkerData.toString()` is the default object string; use the formatted
     // message and strip the ANSI colours meant for the console.
@@ -38,9 +40,20 @@ Future<void> enableFileLogging() async {
       RegExp(r"\x1B\[[0-9;]*m"),
       "",
     );
-    sink.writeln(line);
+    _logSink!.writeln(line);
   });
   talker.info("Logging to file: ${file.path}");
+}
+
+/// Stops file logging and closes the log sink.
+///
+/// The sink stays open for the life of the process otherwise; call this
+/// when logging to file is no longer needed (e.g. tests that enabled it).
+Future<void> disableFileLogging() async {
+  await _logSubscription?.cancel();
+  _logSubscription = null;
+  await _logSink?.close();
+  _logSink = null;
 }
 
 /// Builds the help text shown for `--help` and for parse errors.

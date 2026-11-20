@@ -1,17 +1,13 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
 
-/// Object specifying creation parameters for creating a [LinuxCookieManager].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformCookieManagerCreationParams] for
 /// more information.
 class LinuxCookieManagerCreationParams
     extends PlatformCookieManagerCreationParams {
-  /// Creates a new [LinuxCookieManagerCreationParams] instance.
   const LinuxCookieManagerCreationParams();
 
-  /// Creates a [LinuxCookieManagerCreationParams] instance based on [PlatformCookieManagerCreationParams].
   factory LinuxCookieManagerCreationParams.fromPlatformCookieManagerCreationParams(
     PlatformCookieManagerCreationParams params,
   ) {
@@ -25,7 +21,6 @@ class LinuxCookieManager extends PlatformCookieManager {
     'com.pichillilorenzo/flutter_inappwebview_cookiemanager',
   );
 
-  /// Constructs a [LinuxCookieManager].
   LinuxCookieManager(PlatformCookieManagerCreationParams params)
     : super.implementation(
         params is LinuxCookieManagerCreationParams
@@ -39,10 +34,8 @@ class LinuxCookieManager extends PlatformCookieManager {
     const LinuxCookieManagerCreationParams(),
   );
 
-  /// The [LinuxCookieManager] singleton instance.
   static LinuxCookieManager instance() => _instance;
 
-  /// Creates and returns a new [LinuxCookieManager] for static methods.
   factory LinuxCookieManager.static() => _instance;
 
   @override

@@ -62,11 +62,8 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   final SearchController _searchController = SearchController();
   List<int>? _lastValidDictIds;
 
-  /// The dictionary set version [_lastValidDictIds] belongs to.
   int? _lastDictSetVersion;
 
-  /// The word on screen.
-  ///
   /// A pushed entry page follows the tab's current word, so a lookup swaps the
   /// entry in place instead of replacing the route. Replacing it rebuilds the
   /// page the title search box lives in, and the search anchor that submitted
@@ -75,8 +72,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   /// the word from its parent, which already follows the selection.
   late String _word;
 
-  /// The tab bar's controller while the tab layout is on screen. Kept so
-  /// that [dispose] can tell whether the shared one is still ours.
+  /// Kept so that [dispose] can tell whether the shared one is still ours.
   TabController? _tabController;
   VoidCallback? _tabListener;
 
@@ -138,8 +134,6 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     );
   }
 
-  /// Records which dictionary the tab bar is showing.
-  ///
   /// The neighbouring tabs stay alive, so "the last WebView created" is not
   /// the one on screen; Esc has to hand the focus to the visible one.
   void _syncActiveEntry(
@@ -619,7 +613,6 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         // word page has no tab bar and needs its own switcher.
         if (settings.showSidebarIcon && widget.showBackButton)
           GroupSelectorButton(compact: !isDesktopScreen),
-        // Desktop back/forward (mobile has these in the bottom bar).
         if (isDesktopScreen && homeModel != null) ...[
           IconButton(
             tooltip: locale.back,
@@ -694,8 +687,6 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     );
   }
 
-  /// Steps the word history of the tab and shows the word it landed on.
-  ///
   /// The page renders [_word], which follows the tab's selection, so moving
   /// the index is enough: the entry swaps itself in place.
   void _stepThroughHistory({required bool back}) {

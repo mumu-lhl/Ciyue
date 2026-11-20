@@ -54,7 +54,6 @@ void main() {
       expect(deeplOfficialSourceLang("auto"), "");
       expect(deeplOfficialSourceLang("zh"), "ZH-HANS");
       expect(deeplOfficialSourceLang("zh_TW"), "ZH-HANT");
-      // The Free source keeps plain ZH (with regionalVariant instead).
       expect(deeplTargetLang("zh"), "ZH");
     });
 
@@ -137,7 +136,6 @@ void main() {
 
     test("default order groups free, then AI, then key sources", () {
       final order = TranslationSourcesConfig.loadOrder();
-      // Free sources (zero configuration) come first, in order.
       expect(order.sublist(0, 7), [
         "google",
         "microsoft",
@@ -147,9 +145,7 @@ void main() {
         "volcengine",
         "yandexFree",
       ]);
-      // Then the AI provider sources.
       expect(order.sublist(7, 19).every((id) => id.startsWith("ai:")), isTrue);
-      // Key-based sources and DeepLX come last.
       expect(order.sublist(19), [
         "deeplx",
         "deepl",
@@ -249,7 +245,6 @@ void main() {
       for (final s in aiSources) {
         expect(s.requiresConfig, isTrue, reason: s.id);
       }
-      // Non-AI sources are not flagged as AI.
       expect(translationSourceById("google")!.isAi, isFalse);
     });
 

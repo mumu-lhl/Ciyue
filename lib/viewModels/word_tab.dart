@@ -62,7 +62,6 @@ class WordTab {
       return;
     }
 
-    // If current entry is blank (e.g. from new empty tab), overwrite it
     if (_history.length == 1 && _history[0].word.isEmpty) {
       _history[0] = WordTabEntry(word: trimmed, dictId: dictId);
       _historyIndex = 0;

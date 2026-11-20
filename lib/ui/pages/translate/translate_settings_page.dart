@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/services/translation_sources.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/app_dropdown.dart";
@@ -63,7 +65,7 @@ class _AiTranslateSettingsPageState extends State<AiTranslateSettingsPage> {
                       ],
                       onChanged: (bool? newValue) {
                         if (newValue != null) {
-                          viewModel.setRichOutput(newValue);
+                          unawaited(viewModel.setRichOutput(newValue));
                         }
                       },
                     ),

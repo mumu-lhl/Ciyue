@@ -307,7 +307,6 @@ void main() {
         basePath: zimPath.replaceAll(RegExp(r"\.zim$"), ""),
       ),
     );
-    // Reader order, not title-sorted order: Banana first, then Apple once.
     expect(rows.map((r) => (r.rowid, r.headword, r.body)).toList(), [
       (1, "Banana", "A yellow fruit"),
       (2, "Apple", "A fruit"),
@@ -350,7 +349,6 @@ void main() {
               commandPort = map["port"] as SendPort;
             case "batch":
               batchArrivals.add(DateTime.now());
-              // Fire-and-forget: the ack goes out 100ms after arrival.
               Future.delayed(const Duration(milliseconds: 100), () {
                 commandPort?.send({"kind": "ack"});
               });
@@ -400,7 +398,6 @@ void main() {
       cancelToken: token,
       onFirstBatch: (_, _) => token.cancel(),
     );
-    // The first batch of 2 rows was delivered before cancellation.
     expect(partial.map((r) => r.headword), ["one", "two"]);
 
     final rest = await collectBuild(

@@ -1,7 +1,5 @@
 import "package:flutter/gestures.dart";
 
-/// Detects the right-button edge of a chorded mouse press on Windows.
-///
 /// Flutter never sends a second `PointerDownEvent` while another button is
 /// held: the new button shows up only in the `buttons` bitmask of a later
 /// pointer event. The Windows WebView plugin forwards pointer moves as cursor

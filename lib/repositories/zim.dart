@@ -92,9 +92,7 @@ class Zim extends BaseLoadedDictionary {
   Future<void> add() async {
     _ensureReader();
     // The cache file is named after the dictionary id, so the database row
-    // has to exist before the index snapshot is written. Registering last
-    // made _cacheFile() read the still-uninitialized late id and silently
-    // skip the cache entirely on import.
+    // has to exist before the index snapshot is written.
     await reader.initMetadata();
     setDefaultTitle();
     id = await dictionaryListDao.add(path, title, type: DictionaryType.zim);
@@ -446,8 +444,7 @@ class Zim extends BaseLoadedDictionary {
   }
 
   /// ZIM dirents declare their MIME type. A file-name guess cannot recover it
-  /// for articles whose path has no extension (`C/1世纪`), which is why the
-  /// local server used to answer those with `application/octet-stream`.
+  /// for articles whose path has no extension (`C/1世纪`).
   @override
   Future<String?> resourceMimeType(String filename) async {
     await waitForLoading();

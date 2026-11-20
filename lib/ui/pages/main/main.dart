@@ -128,14 +128,16 @@ class _HomeState extends ConsumerState<Home> {
         if (_lastPressedAt == null ||
             now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
           _lastPressedAt = now;
-          ToastService.show(
-            AppLocalizations.of(context)!.pressAgainToExit,
-            context,
-            type: ToastType.info,
+          unawaited(
+            ToastService.show(
+              AppLocalizations.of(context)!.pressAgainToExit,
+              context,
+              type: ToastType.info,
+            ),
           );
           return;
         }
-        SystemNavigator.pop();
+        unawaited(SystemNavigator.pop());
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -341,7 +343,9 @@ class _HomeState extends ConsumerState<Home> {
     };
 
     if (Platform.isAndroid) {
-      HomeWidget.initiallyLaunchedFromHomeWidget().then(_handleWidgetClick);
+      unawaited(
+        HomeWidget.initiallyLaunchedFromHomeWidget().then(_handleWidgetClick),
+      );
       _widgetClickSubscription = HomeWidget.widgetClicked.listen(
         _handleWidgetClick,
       );
@@ -350,7 +354,7 @@ class _HomeState extends ConsumerState<Home> {
 
   @override
   void dispose() {
-    _widgetClickSubscription?.cancel();
+    unawaited(_widgetClickSubscription?.cancel());
     super.dispose();
   }
 }

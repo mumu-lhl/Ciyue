@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
@@ -365,7 +367,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      rootContext.push("/word/apple");
+      unawaited(rootContext.push("/word/apple"));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 

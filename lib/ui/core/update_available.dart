@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/models/updater/updater.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -28,7 +30,7 @@ class UpdateAvailable extends StatelessWidget {
                 ? "https://github.com/mumu-lhl/Ciyue/releases/tag/nightly"
                 : "https://github.com/mumu-lhl/Ciyue/releases/latest";
             if (await canLaunchUrl(Uri.parse(url))) {
-              launchUrl(Uri.parse(url));
+              unawaited(launchUrl(Uri.parse(url)));
             }
             if (context.mounted) context.pop();
           },

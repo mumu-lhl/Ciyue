@@ -8,7 +8,6 @@ class WordListContext {
   const WordListContext({required this.words, required this.initialIndex});
 }
 
-/// Pager navigation information passed to [WordDisplay] when rendered inside a pager.
 class WordPagerInfo {
   final int currentIndex;
   final int totalCount;

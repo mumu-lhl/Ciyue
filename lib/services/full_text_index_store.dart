@@ -12,8 +12,6 @@ import "package:drift/native.dart";
 /// without that, a suffix query would throw "no such column", which the
 /// service swallows per dictionary and suffix mode would come back
 /// silently empty for everyone who already had an index.
-///
-/// v2 adds the `headword_rev` column (suffix search).
 const int fullTextIndexSchemaVersion = 2;
 
 /// One indexed entry: the row id is the entry's ordinal in the dictionary's
@@ -177,10 +175,9 @@ class FullTextIndexStore {
       ),
     );
     // `createInBackground` is lazy: nothing opens the file until the first
-    // statement. Force the open here, as the old direct `NativeDatabase`
-    // constructor plus its `PRAGMA synchronous` did, so the setup above
-    // (WAL, auto_vacuum) has run before this returns and a second
-    // connection reads the persisted pragmas instead of fresh defaults.
+    // statement. Force the open here, so the setup above (WAL, auto_vacuum)
+    // has run before this returns and a second connection reads the
+    // persisted pragmas instead of fresh defaults.
     await store._db.customStatement("PRAGMA synchronous = NORMAL");
     return store;
   }
@@ -299,11 +296,9 @@ class FullTextIndexStore {
   /// [indexed] (the highest row id stored so far).
   ///
   /// One multi-value INSERT per table per chunk instead of two drift calls
-  /// per row: a 500-row batch used to be 1000 round-trips to the database,
-  /// now it is 2 (plus the meta update). The rows are written with their
-  /// explicit row ids into the content table first and then into the FTS5
-  /// table, so `content_rowid` stays consistent exactly as with the old
-  /// row-by-row writes; the tests compare both spellings.
+  /// per row. The rows are written with their explicit row ids into the
+  /// content table first and then into the FTS5 table, so `content_rowid`
+  /// stays consistent; the tests compare both spellings.
   ///
   /// Tokenization itself runs in the builder isolate for build batches
   /// (see [FullTextIndexRow]): the tokenized columns travel with the row

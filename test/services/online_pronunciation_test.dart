@@ -205,7 +205,6 @@ void main() {
         ),
         "3/37/",
       );
-      // A lower-case input must hash to the same canonical segment.
       expect(
         WiktionaryPronunciationSource.commonsHashPrefix(
           "nl-konijnenverblijven.ogg",
@@ -216,7 +215,6 @@ void main() {
         WiktionaryPronunciationSource.commonsHashPrefix("en-us-house-noun.ogg"),
         "5/55/",
       );
-      // Raw spaced form hashes to 7/78/; the underscored form to b/b5/.
       expect(
         WiktionaryPronunciationSource.commonsHashPrefix(
           "LL-Q1860 (eng)-Nattes à chat-apple.wav",
@@ -306,7 +304,6 @@ void main() {
         WiktionaryPronunciationSource.extractAudioFilename(twoSections, "en"),
         "En-house.ogg",
       );
-      // A language with no section on the page has no audio here.
       expect(
         WiktionaryPronunciationSource.extractAudioFilename(twoSections, "fr"),
         isNull,
@@ -345,7 +342,6 @@ void main() {
         WiktionaryPronunciationSource.extractAudioFilename(wikitext, "de"),
         "De-Wort.ogg",
       );
-      // Only a wrong-language template: no in-language audio.
       const onlyWrong = """
 ==German==
 {{audio|fr|Fr-mot.ogg}}
@@ -443,7 +439,6 @@ A surname.
       expect(parseUri.queryParameters["action"], "parse");
       expect(parseUri.queryParameters["page"], "apple");
       expect(parseUri.queryParameters["prop"], "wikitext");
-      // Descriptive User-Agent, no user email.
       expect(
         http.headersList[0]?["User-Agent"],
         WiktionaryPronunciationSource.userAgent,
@@ -793,11 +788,9 @@ A surname.
       expect(source.keyMarkedInvalid, isTrue);
       expect(http.uris, hasLength(1));
 
-      // Same key: no further request.
       expect(await source.fetchAudio("apple", "en"), isNull);
       expect(http.uris, hasLength(1));
 
-      // A different key resets the flag and is tried.
       currentKey = "key-two";
       expect(await source.fetchAudio("apple", "en"), isNull);
       expect(http.uris, hasLength(2));
@@ -845,7 +838,6 @@ A surname.
 
   group("OnlinePronunciationCache", () {
     test("md5 filename has no extension and uses the pipe-joined key", () {
-      // md5("wiktionary|en|apple") = 21524b8f1890dcc88e728d14eda494f7
       expect(
         OnlinePronunciationCache.cacheFilename("wiktionary", "en", "apple"),
         "21524b8f1890dcc88e728d14eda494f7",

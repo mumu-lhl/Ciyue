@@ -312,7 +312,7 @@ class PlatformMethod {
         case "getDirectory":
           final directory = call.arguments as String;
           settings.exportDirectory = directory;
-          prefs.setString("exportDirectory", directory);
+          await prefs.setString("exportDirectory", directory);
           // Notify listeners since this bypasses a setter.
           settings.refresh();
           break;
@@ -439,7 +439,7 @@ class PlatformMethod {
       final mdxHandled =
           paths.isNotEmpty || (ifoPaths.isEmpty && zimPaths.isEmpty);
       if (mdxHandled) {
-        selectMdx(
+        await selectMdx(
           navigatorKey.currentContext!,
           paths,
           closeLoadingWhenEmpty: true,

@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
@@ -84,7 +85,7 @@ class _EnableState extends State<Enable> {
       value: settings.autoExport,
       onChanged: (bool value) {
         settings.autoExport = value;
-        prefs.setBool("autoExport", value);
+        unawaited(prefs.setBool("autoExport", value));
         setState(() {});
       },
     );
@@ -102,7 +103,7 @@ class _ExportDirectoryState extends State<ExportDirectory> {
       leading: Icon(Icons.folder),
       trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () async {
-        PlatformMethod.getDirectory();
+        await PlatformMethod.getDirectory();
       },
     );
   }
@@ -121,7 +122,7 @@ class _ExportPathState extends State<ExportPath> {
         if (path != null) {
           setState(() {
             settings.exportPath = path.path;
-            prefs.setString("exportPath", path.path);
+            unawaited(prefs.setString("exportPath", path.path));
           });
         }
       },
@@ -166,7 +167,7 @@ class _FileNameState extends State<FileName> {
         if (fileName != null) {
           setState(() {
             settings.exportFileName = fileName;
-            prefs.setString("exportFileName", fileName);
+            unawaited(prefs.setString("exportFileName", fileName));
           });
         }
       },

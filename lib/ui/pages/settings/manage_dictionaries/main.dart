@@ -29,7 +29,7 @@ Future<void> addGroup(String value, BuildContext context) async {
 
   if (alreadyExists) {
     if (context.mounted) {
-      ToastService.show(
+      await ToastService.show(
         AppLocalizations.of(context)!.groupNameAlreadyExists,
         context,
         type: ToastType.info,
@@ -46,7 +46,7 @@ Future<void> addGroup(String value, BuildContext context) async {
       // Only a UNIQUE violation means the name is taken. Anything else is a
       // storage failure and used to be reported as "name already exists",
       // which sent the user looking for a group that was never there.
-      ToastService.show(
+      await ToastService.show(
         e.toString().contains("UNIQUE constraint failed")
             ? AppLocalizations.of(context)!.groupNameAlreadyExists
             : AppLocalizations.of(context)!.groupAddFailed,
@@ -94,7 +94,7 @@ Future<void> importDictionariesFromFiles(BuildContext context) async {
         // non-full-flavor path). Do not save the pref or run the direct
         // scan below; the fallback's inputDirectory handler saves the
         // picked URI itself, as it does for the non-full flavor.
-        PlatformMethod.openDirectory();
+        await PlatformMethod.openDirectory();
         return;
       }
 
@@ -136,11 +136,11 @@ Future<void> importDictionariesFromFiles(BuildContext context) async {
       return;
     }
 
-    PlatformMethod.openDirectory();
+    await PlatformMethod.openDirectory();
     return;
   }
 
-  importDictionaryFilesOnDesktop(context);
+  await importDictionaryFilesOnDesktop(context);
 }
 
 void showRecommendedDialog(BuildContext context) {
@@ -267,7 +267,7 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
     );
     if (missing != null) {
       if (context.mounted) {
-        ToastService.show(
+        await ToastService.show(
           AppLocalizations.of(context)!.dictionaryFileMissing(missing),
           context,
           type: ToastType.error,
@@ -506,7 +506,7 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                       }
                       if (!sheetContext.mounted) return;
                       sheetContext.pop();
-                      context.push("/description/${dictionary.id}");
+                      await context.push("/description/${dictionary.id}");
                     },
                   ),
                   buildItem(
@@ -519,7 +519,7 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                       }
                       if (!sheetContext.mounted) return;
                       sheetContext.pop();
-                      context.push(
+                      await context.push(
                         "/properties",
                         extra: {"path": dictionary.path, "id": dictionary.id},
                       );
@@ -535,7 +535,9 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                       }
                       if (!sheetContext.mounted) return;
                       sheetContext.pop();
-                      context.push("/settings/dictionary/${dictionary.id}");
+                      await context.push(
+                        "/settings/dictionary/${dictionary.id}",
+                      );
                     },
                   ),
                   buildItem(
@@ -819,7 +821,7 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                           stackTrace,
                         );
                         if (context.mounted) {
-                          ToastService.show(
+                          await ToastService.show(
                             e.toString(),
                             context,
                             type: ToastType.error,
@@ -951,9 +953,11 @@ class _GroupTile extends ConsumerWidget {
                   final targetGroupId = group.id;
                   context.pop();
                   if (targetGroupId != dictManager.groupId) {
-                    ref
-                        .read(dictManagerModelProvider)
-                        .setCurrentGroup(targetGroupId);
+                    unawaited(
+                      ref
+                          .read(dictManagerModelProvider)
+                          .setCurrentGroup(targetGroupId),
+                    );
                   }
                 },
                 child: Padding(
@@ -1049,7 +1053,9 @@ class GroupDialog extends ConsumerWidget {
           shrinkWrap: true,
           buildDefaultDragHandles: false,
           onReorderItem: (oldIndex, newIndex) {
-            ref.read(dictManagerModelProvider).moveGroup(oldIndex, newIndex);
+            unawaited(
+              ref.read(dictManagerModelProvider).moveGroup(oldIndex, newIndex),
+            );
           },
           children: [
             for (int i = 0; i < dictManager.groups.length; i++)
@@ -1368,7 +1374,7 @@ class ManageDictionariesBody extends ConsumerWidget {
                                 .read(manageDictionariesModelProvider)
                                 .updateWithList(dicts);
 
-                            () async {
+                            unawaited(() async {
                               await dictionaryListDao.updateOrder(dicts);
 
                               if (context.mounted) {
@@ -1377,7 +1383,7 @@ class ManageDictionariesBody extends ConsumerWidget {
                                 );
                                 await model.updateDictIds();
                               }
-                            }();
+                            }());
                           },
                           children: [
                             for (int i = 0; i < dicts.length; i++)
@@ -1476,7 +1482,7 @@ class UpdateButton extends StatelessWidget {
       tooltip: AppLocalizations.of(context)!.refresh,
       icon: const Icon(Icons.refresh_rounded),
       onPressed: () {
-        PlatformMethod.updateDictionaries();
+        unawaited(PlatformMethod.updateDictionaries());
       },
     );
   }

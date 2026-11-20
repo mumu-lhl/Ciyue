@@ -1,8 +1,5 @@
 import "package:material_ui/material_ui.dart";
 
-/// A Material 3 grouped card for settings rows, matching the settings hub.
-///
-/// Rows are separated by hairline dividers aligned with the row titles.
 class SettingsGroupCard extends StatelessWidget {
   const SettingsGroupCard({super.key, required this.children});
 
@@ -37,9 +34,7 @@ class SettingsGroupCard extends StatelessWidget {
   }
 }
 
-/// A padded Material 3 card for a single settings control, such as a text
-/// field or a selection chip. Pair it with a [SettingsSectionLabel] or a
-/// [TitleText] above it.
+/// Pair it with a [SettingsSectionLabel] or a [TitleText] above it.
 class SettingsFieldCard extends StatelessWidget {
   const SettingsFieldCard({super.key, required this.child});
 
@@ -62,8 +57,6 @@ class SettingsFieldCard extends StatelessWidget {
   }
 }
 
-/// A small section label placed above a [SettingsGroupCard], matching the
-/// settings hub's group headers.
 class SettingsSectionLabel extends StatelessWidget {
   const SettingsSectionLabel(this.text, {super.key});
 

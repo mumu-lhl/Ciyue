@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/services/updater.dart";
@@ -56,7 +58,7 @@ class _AutoUpdateSwitchState extends State<AutoUpdateSwitch> {
       title: Text(locale!.autoUpdate),
       value: settings.autoUpdate,
       onChanged: (value) {
-        settings.setAutoUpdate(value);
+        unawaited(settings.setAutoUpdate(value));
         setState(() {});
       },
       secondary: const Icon(Icons.autorenew),
@@ -128,7 +130,7 @@ class CheckForUpdates extends StatelessWidget {
           return;
         }
 
-        ToastService.show(
+        await ToastService.show(
           AppLocalizations.of(context)!.checkingForUpdates,
           context,
           type: ToastType.waiting,
@@ -137,7 +139,7 @@ class CheckForUpdates extends StatelessWidget {
         final update = await Updater.check();
         if (!update.success) {
           if (context.mounted) {
-            ToastService.show(
+            await ToastService.show(
               AppLocalizations.of(context)!.updateCheckFailed,
               context,
             );
@@ -152,7 +154,7 @@ class CheckForUpdates extends StatelessWidget {
           }
         } else {
           if (context.mounted) {
-            ToastService.show(
+            await ToastService.show(
               AppLocalizations.of(context)!.noUpdateAvailable,
               context,
             );

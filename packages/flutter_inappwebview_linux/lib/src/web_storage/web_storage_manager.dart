@@ -1,17 +1,13 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
 
-/// Object specifying creation parameters for creating a [LinuxWebStorageManager].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformWebStorageManagerCreationParams] for
 /// more information.
 class LinuxWebStorageManagerCreationParams
     extends PlatformWebStorageManagerCreationParams {
-  /// Creates a new [LinuxWebStorageManagerCreationParams] instance.
   const LinuxWebStorageManagerCreationParams();
 
-  /// Creates a [LinuxWebStorageManagerCreationParams] instance based on [PlatformWebStorageManagerCreationParams].
   factory LinuxWebStorageManagerCreationParams.fromPlatformWebStorageManagerCreationParams(
     PlatformWebStorageManagerCreationParams params,
   ) {
@@ -28,7 +24,6 @@ class LinuxWebStorageManager extends PlatformWebStorageManager {
     'com.pichillilorenzo/flutter_inappwebview_webstoragemanager',
   );
 
-  /// Constructs a [LinuxWebStorageManager].
   LinuxWebStorageManager(PlatformWebStorageManagerCreationParams params)
     : super.implementation(
         params is LinuxWebStorageManagerCreationParams
@@ -42,13 +37,10 @@ class LinuxWebStorageManager extends PlatformWebStorageManager {
     const LinuxWebStorageManagerCreationParams(),
   );
 
-  /// The [LinuxWebStorageManager] singleton instance.
   static LinuxWebStorageManager instance() => _instance;
 
-  /// Creates and returns a new [LinuxWebStorageManager] for static methods.
   factory LinuxWebStorageManager.static() => _instance;
 
-  /// Maps WebsiteDataType to WPE WebKit data type strings.
   static String _toWpeDataType(WebsiteDataType type) {
     if (type == WebsiteDataType.WKWebsiteDataTypeDiskCache) {
       return 'WEBKIT_WEBSITE_DATA_DISK_CACHE';
@@ -75,11 +67,9 @@ class LinuxWebStorageManager extends PlatformWebStorageManager {
       // WebSQL is deprecated, map to local storage
       return 'WEBKIT_WEBSITE_DATA_LOCAL_STORAGE';
     }
-    // Default fallback
     return 'WEBKIT_WEBSITE_DATA_LOCAL_STORAGE';
   }
 
-  /// Maps WPE WebKit data type string to WebsiteDataType.
   static WebsiteDataType? _fromWpeDataType(String wpeType) {
     if (wpeType == 'WEBKIT_WEBSITE_DATA_DISK_CACHE') {
       return WebsiteDataType.WKWebsiteDataTypeDiskCache;
@@ -172,7 +162,6 @@ class LinuxWebStorageManager extends PlatformWebStorageManager {
         .map((type) => _toWpeDataType(type))
         .toList();
 
-    // Convert DateTime to Unix timestamp (seconds since epoch)
     final int timestamp = date.millisecondsSinceEpoch ~/ 1000;
 
     await _channel.invokeMethod('removeDataModifiedSince', {

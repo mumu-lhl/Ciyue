@@ -169,10 +169,9 @@ class TcpSsipTransport implements SsipTransport {
 
   @override
   Future<void> connect(Duration timeout) async {
-    final socket = await Socket.connect("127.0.0.1", 6560, timeout: timeout);
-    _socket = socket;
+    _socket = await Socket.connect("127.0.0.1", 6560, timeout: timeout);
     _open = true;
-    _subscription = socket.listen(
+    _subscription = _socket!.listen(
       _onData,
       onError: (_) => _onClosed(),
       onDone: _onClosed,
@@ -232,7 +231,7 @@ class TcpSsipTransport implements SsipTransport {
     _open = false;
     await _subscription?.cancel();
     _subscription = null;
-    _socket?.destroy();
+    await _socket?.close();
     _socket = null;
     _onClosed();
   }

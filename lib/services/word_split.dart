@@ -42,9 +42,8 @@ const _linkers = ["en", "er", "es", "e", "n", "s"];
 /// miles beyond it.
 ///
 /// The headroom costs little. The candidate set grows with the square of the
-/// length, a few thousand probes here against a few hundred at the old bound,
-/// and each probe is one binary search in an index already in memory, spent
-/// only by whoever actually reaches for a word this long.
+/// length, and each probe is one binary search in an index already in memory,
+/// spent only by whoever actually reaches for a word this long.
 const maxSplitLength = 64;
 
 /// Shortest input worth splitting: two parts need at least two characters.

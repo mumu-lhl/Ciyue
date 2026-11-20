@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/settings.dart";
@@ -39,7 +41,7 @@ class WordbookModel extends ChangeNotifier {
   }
 
   WordbookModel() {
-    loadTotalWordCount();
+    unawaited(loadTotalWordCount());
   }
 
   void toggleFuzzySearch() {
@@ -66,7 +68,7 @@ class WordbookModel extends ChangeNotifier {
       }
     }
 
-    Future.microtask(() => notifyListeners());
+    unawaited(Future.microtask(() => notifyListeners()));
   }
 
   Future<void> add(String word, {int? tag}) async {
@@ -169,7 +171,7 @@ class WordbookModel extends ChangeNotifier {
 
   void updateWordList() {
     allWords = _loadWords();
-    loadTotalWordCount();
+    unawaited(loadTotalWordCount());
   }
 
   Future<void> showDeleteConfirmationDialog(BuildContext context) async {

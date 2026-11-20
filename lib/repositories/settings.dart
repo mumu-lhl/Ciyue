@@ -318,7 +318,7 @@ class Settings extends ChangeNotifier {
     forvoPronunciationLanguage =
         prefs.getString("forvoPronunciationLanguage") ?? "";
 
-    var aiProviderConfigsString = prefs.getString("aiProviderConfigs");
+    final aiProviderConfigsString = prefs.getString("aiProviderConfigs");
     if (aiProviderConfigsString != null) {
       aiProviderConfigs =
           Map.castFrom<dynamic, dynamic, String, Map<String, dynamic>>(

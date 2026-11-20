@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:material_ui/material_ui.dart";
 
 abstract class HistoryViewModel<T> extends ChangeNotifier {
@@ -15,7 +17,7 @@ abstract class HistoryViewModel<T> extends ChangeNotifier {
   bool get isSelecting => _selectedIds.isNotEmpty;
 
   HistoryViewModel() {
-    loadHistory();
+    unawaited(loadHistory());
   }
 
   @protected

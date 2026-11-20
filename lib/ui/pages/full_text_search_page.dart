@@ -59,7 +59,7 @@ class _FullTextSearchPageState extends ConsumerState<FullTextSearchPage> {
   void _onQueryChanged() {
     _debounce?.cancel();
     _debounce = Timer(_searchDebounce, () {
-      if (mounted) _runSearch();
+      if (mounted) unawaited(_runSearch());
     });
   }
 
@@ -148,7 +148,7 @@ class _FullTextSearchPageState extends ConsumerState<FullTextSearchPage> {
         .join(",");
     if ("$query|$readyIds" == _lastSearchKey) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _runSearch();
+      if (mounted) unawaited(_runSearch());
     });
   }
 
@@ -207,7 +207,7 @@ class _FullTextSearchPageState extends ConsumerState<FullTextSearchPage> {
             trailing: TextButton(
               onPressed: () {
                 _autoStarted.add(dictionary.id);
-                service.ensureBuilt(dictionary);
+                unawaited(service.ensureBuilt(dictionary));
               },
               child: Text(l10n.buildFullTextIndex),
             ),
@@ -250,9 +250,11 @@ class _FullTextSearchPageState extends ConsumerState<FullTextSearchPage> {
               title: Text(hit.headword),
               subtitle: _SnippetText(marked: hit.snippet),
               onTap: () {
-                context.push(
-                  "/word/${Uri.encodeComponent(hit.headword)}"
-                  "?dictId=${hit.dictionaryId}",
+                unawaited(
+                  context.push(
+                    "/word/${Uri.encodeComponent(hit.headword)}"
+                    "?dictId=${hit.dictionaryId}",
+                  ),
                 );
               },
             ),

@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/viewModels/ai_explanation.dart";
 import "package:material_ui/material_ui.dart";
 import "package:go_router/go_router.dart";
@@ -61,9 +63,11 @@ class _AIExplanationEditPageState extends State<AIExplanationEditPage> {
                 SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: () {
-                    widget.aiExplanationModel.updateExplanation(
-                      widget.word,
-                      _controller.text,
+                    unawaited(
+                      widget.aiExplanationModel.updateExplanation(
+                        widget.word,
+                        _controller.text,
+                      ),
                     );
                     context.pop();
                   },

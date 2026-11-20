@@ -190,7 +190,6 @@ void main() {
 
       verify(mockWordbookModel.addAllWords(any)).called(1);
       verify(mockWordbookTagsDao.addAllTags(any)).called(1);
-      // History should be imported oldest-first in a single batch call.
       verify(mockHistoryDao.addAllHistory(["history2", "history1"])).called(1);
       verify(mockWritingCheckHistoryDao.addAllHistory(any)).called(1);
       verify(mockTranslateHistoryDao.addAllHistory(any)).called(1);

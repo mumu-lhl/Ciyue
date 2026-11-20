@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
@@ -64,7 +65,7 @@ class _CloudSyncSettingsPageState extends ConsumerState<CloudSyncSettingsPage> {
             secretStorage: const SimpleSecureCloudSecretStorage(),
           ),
         );
-    _loadConfiguration();
+    unawaited(_loadConfiguration());
   }
 
   @override

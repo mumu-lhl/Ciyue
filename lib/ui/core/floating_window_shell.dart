@@ -52,13 +52,11 @@ class FloatingWindowShell extends StatelessWidget {
   }
 }
 
-/// Smallest card the panel may shrink to. Without it a small percentage in a
+/// Without it a small percentage in a
 /// narrow free-form window would make the dictionary text unreadable.
 const minPanelWidth = 280.0;
 const minPanelHeight = 240.0;
 
-/// Panel geometry for [FloatingWindowShell].
-///
 /// [fraction] is the user's card size: width and height as a fraction of the
 /// window, so the window itself is the only upper bound - a full 100% simply
 /// covers the whole screen and is still dismissible with back. The readable
@@ -82,8 +80,6 @@ Size floatingWindowPanelSize(
   );
 }
 
-/// Wraps the dictionary view for the Android floating window.
-///
 /// Only the transparent mode needs the dismiss target around the card. The
 /// half-screen mode fills its whole (opaque) window instead, so that no
 /// transparent pixels are left for a multi-window compositor to paint black.

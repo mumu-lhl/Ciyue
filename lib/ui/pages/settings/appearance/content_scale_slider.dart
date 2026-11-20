@@ -5,8 +5,6 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 
-/// Lets the user zoom the dictionary entry content without a keyboard.
-///
 /// The same setting is reachable with `Ctrl`+=, `Ctrl`+- and `Ctrl`+0.
 class ContentScaleSlider extends ConsumerWidget {
   const ContentScaleSlider({super.key});

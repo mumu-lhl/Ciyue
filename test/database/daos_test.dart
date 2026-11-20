@@ -40,11 +40,9 @@ void main() {
     });
 
     test("addAllWords should avoid duplicates based on word and tag", () async {
-      // 1. Insert an initial record
       await wordbookDao.addWord("apple", tag: 1);
 
       final now = DateTime.now();
-      // 2. Prepare import data
       final newWords = [
         // Duplicate: same word and tag (should be skipped)
         WordbookData(word: "apple", tag: 1, createdAt: now),
@@ -54,10 +52,8 @@ void main() {
         WordbookData(word: "banana", tag: 1, createdAt: now),
       ];
 
-      // 3. Perform batch add
       await wordbookDao.addAllWords(newWords);
 
-      // 4. Verify results
       final allWords = await wordbookDao.getAllWords();
 
       expect(allWords.length, 3);
@@ -86,11 +82,9 @@ void main() {
 
   group("TranslateHistoryDao", () {
     test("addAllHistory should avoid duplicates based on inputText", () async {
-      // 1. Insert an initial record
       await translateHistoryDao.addHistory("hello");
 
       final now = DateTime.now();
-      // 2. Prepare import data
       final newHistory = [
         // Duplicate: same inputText (should be skipped)
         TranslateHistoryData(id: 100, inputText: "hello", createdAt: now),
@@ -98,10 +92,8 @@ void main() {
         TranslateHistoryData(id: 101, inputText: "world", createdAt: now),
       ];
 
-      // 3. Perform batch add
       await translateHistoryDao.addAllHistory(newHistory);
 
-      // 4. Verify results
       final allHistory = await translateHistoryDao.getAllHistory();
 
       expect(allHistory.length, 2);
@@ -116,7 +108,6 @@ void main() {
     test("addAllHistory should avoid duplicates based on content matches", () async {
       final now = DateTime.fromMillisecondsSinceEpoch(1000000);
 
-      // 1. Insert an initial record directly to set specific fields
       await database
           .into(database.writingCheckHistory)
           .insert(
@@ -127,7 +118,6 @@ void main() {
             ),
           );
 
-      // 2. Prepare import data
       final newHistory = [
         // Duplicate: Exact match on input, output, and time (should be skipped)
         WritingCheckHistoryData(
@@ -152,10 +142,8 @@ void main() {
         ),
       ];
 
-      // 3. Perform batch add
       await writingCheckHistoryDao.addAllHistory(newHistory);
 
-      // 4. Verify results
       final allHistory = await writingCheckHistoryDao.getAllHistory();
 
       expect(allHistory.length, 3);

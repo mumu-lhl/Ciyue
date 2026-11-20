@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
@@ -18,7 +20,7 @@ class _BottomSearchBarState extends ConsumerState<BottomSearchBar> {
   @override
   void initState() {
     super.initState();
-    _waitForLoading();
+    unawaited(_waitForLoading());
   }
 
   @override

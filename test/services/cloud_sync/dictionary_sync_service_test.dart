@@ -435,7 +435,6 @@ void main() {
       selectedPackageIds: {packageId},
       dictionaryStorageDirectory: secondStorage,
     );
-    // The nested path has to come back out of the package too.
     expect(
       await File("${secondStorage.path}/$packageId/res/sub/1.png").exists(),
       isTrue,
@@ -460,7 +459,6 @@ void main() {
         remoteFolderExists: false,
       );
 
-      // The dictionary is still offered; only the folder is left behind.
       expect(preview.items, hasLength(1));
       final packageId = preview.items.single.packageId;
       await service.transferSelected(

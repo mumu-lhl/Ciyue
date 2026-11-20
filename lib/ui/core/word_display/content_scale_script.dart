@@ -10,8 +10,6 @@ void resetContentScale(Settings settings) {
   unawaited(settings.setContentScale(1.0));
 }
 
-/// Applies a zoom key that the entry's key bridge handed over.
-///
 /// The engine zooms the page on its own for these keys, which scrolls the
 /// entry sideways, so they are caught before it gets to them.
 void applyZoomKey(Settings settings, String key) {
@@ -29,8 +27,6 @@ void applyZoomKey(Settings settings, String key) {
   }
 }
 
-/// Applies the entry zoom level to the page.
-///
 /// `zoom` is used rather than `transform: scale()` because it takes part in
 /// layout: text and images grow together and the content still fits the
 /// viewport instead of overflowing it. The value goes onto the root element

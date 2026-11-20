@@ -5,8 +5,6 @@ import "package:flutter/foundation.dart";
 import "package:flutter/widgets.dart";
 import "package:flutter_inappwebview/flutter_inappwebview.dart";
 
-/// Where the entry on screen currently sits between its start and its end.
-///
 /// The paging buttons grey themselves out from this: paging up at the start
 /// or down at the end would do nothing but repaint the panel.
 @immutable
@@ -30,8 +28,6 @@ class PageBounds {
   String toString() => "PageBounds(atStart: $atStart, atEnd: $atEnd)";
 }
 
-/// Pages the entry on screen a screen at a time.
-///
 /// The tab layout scrolls inside a WebView, which Dart cannot read or move,
 /// while the expansion layout scrolls a Flutter [ScrollController]. Both
 /// hide that difference behind this interface so the keys and the buttons
@@ -59,7 +55,6 @@ final Map<Object, EntryPagerTarget> _entryPagers = {};
 /// The pager of the expansion layout, which has no per-dictionary WebView.
 EntryPager? _expansionPager;
 
-/// The dictionary the tab layout is showing, if any.
 int? _activeDictId;
 
 /// The pager the keys and the buttons should talk to. Null when no entry is
@@ -84,14 +79,11 @@ void unregisterEntryPager(Object owner) {
   }
 }
 
-/// Registers (or clears, with null) the expansion layout's own pager.
 void setExpansionEntryPager(EntryPager? pager) {
   _expansionPager = pager;
   _recomputeActivePager();
 }
 
-/// Clears the expansion pager only if it is still [pager].
-///
 /// Two entry pages can overlap while one is being replaced; the one that is
 /// going away must not clear the pager of the one that is taking over.
 void clearExpansionEntryPager(EntryPager pager) {
@@ -99,7 +91,6 @@ void clearExpansionEntryPager(EntryPager pager) {
   setExpansionEntryPager(null);
 }
 
-/// Tells the registry which dictionary the tab layout is showing.
 void setActiveEntryDict(int? dictId) {
   if (_activeDictId == dictId) return;
   _activeDictId = dictId;
@@ -131,8 +122,6 @@ void _recomputeActivePager() {
   }
 }
 
-/// The single entry point for the keys, the hardware buttons and the toolbar.
-///
 /// Returns whether anything moved: at the start or the end of an entry this
 /// is false, and the caller stays quiet instead of forcing a repaint.
 Future<bool> pageActiveEntry(int screens) async {
@@ -141,7 +130,6 @@ Future<bool> pageActiveEntry(int screens) async {
   return pager.pageBy(screens);
 }
 
-/// Pages an entry that scrolls in Flutter (the expansion layout).
 class ScrollControllerEntryPager implements EntryPager {
   final ScrollController controller;
   final ValueNotifier<PageBounds> _bounds = ValueNotifier(PageBounds.unknown);
@@ -198,8 +186,6 @@ class ScrollControllerEntryPager implements EntryPager {
   }
 }
 
-/// Pages an entry rendered inside a WebView (the tab layout).
-///
 /// The scroll position lives in the page, so both directions and the
 /// boundary state come from `pagingScript`, which is injected into every
 /// entry and stays inert until the e-ink mode is switched on.
@@ -229,7 +215,6 @@ class WebViewEntryPager implements EntryPager {
     }
   }
 
-  /// Feeds the state the page reported through the `ciyuePageState` handler.
   void updateFromPayload(String payload) {
     final decoded = _decodePayload(payload);
     if (decoded == null) return;
@@ -239,8 +224,6 @@ class WebViewEntryPager implements EntryPager {
     );
   }
 
-  /// Pushes the current mode into the page and asks for its boundary state.
-  ///
   /// Runs when the document finishes loading and whenever the setting
   /// changes, so an entry that is already open follows the switch without
   /// being rebuilt.

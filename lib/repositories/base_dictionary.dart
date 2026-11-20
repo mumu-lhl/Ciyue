@@ -201,13 +201,12 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
           try {
             request.response
               ..headers.contentType = ContentType.html
-              ..write(content)
-              ..close();
+              ..write(content);
+            await request.response.close();
             return;
           } catch (_) {
-            request.response
-              ..statusCode = HttpStatus.notFound
-              ..close();
+            request.response.statusCode = HttpStatus.notFound;
+            await request.response.close();
             return;
           }
         } else if (request.method == "GET" && request.uri.path != "/") {
@@ -233,15 +232,14 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
               if (data != null) {
                 request.response
                   ..headers.contentType = ContentType.parse(mime)
-                  ..add(data)
-                  ..close();
+                  ..add(data);
+                await request.response.close();
                 return;
               }
             } catch (_) {}
           }
-          request.response
-            ..statusCode = HttpStatus.notFound
-            ..close();
+          request.response.statusCode = HttpStatus.notFound;
+          await request.response.close();
           return;
         }
       });

@@ -132,7 +132,6 @@ class Updater {
         if (channel == UpdateChannel.stable) {
           latestRelease = response.data;
         } else if (channel == UpdateChannel.preview) {
-          // Beta/Alpha: prereleases excluding nightly builds.
           latestRelease = (response.data as List).firstWhere(
             (r) =>
                 !(r["prerelease"] == true &&
@@ -142,7 +141,6 @@ class Updater {
             orElse: () => null,
           );
         } else {
-          // Nightly: only nightly builds.
           latestRelease = (response.data as List).firstWhere(
             (r) =>
                 (r["name"] as String? ?? "").toLowerCase().contains("nightly"),
@@ -187,8 +185,7 @@ class Updater {
 
   /// The version shown for a release tag. Stable/preview tags carry a 'v'
   /// prefix (v2.2.0); the rolling nightly tag is literally "nightly", so
-  /// only strip a leading 'v' — cutting the first character unconditionally
-  /// turned it into "ightly".
+  /// only strip a leading 'v'.
   static String displayVersion(String tag) =>
       tag.startsWith("v") ? tag.substring(1) : tag;
 

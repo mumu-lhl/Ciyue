@@ -85,7 +85,6 @@ String keyBridgeScript() {
     var tag = target && target.tagName ? target.tagName.toLowerCase() : '';
     var inInput = tag === 'input' || tag === 'textarea' || (target && target.isContentEditable);
 
-    // Enter belongs to the input the user is typing in.
     if (e.key === 'Enter') {
       if (inInput) return;
       var selection = window.getSelection();

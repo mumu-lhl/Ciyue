@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/dictionary.dart";
@@ -51,7 +53,7 @@ class DictManagerModel extends ChangeNotifier {
   bool checkIsEmpty() {
     if (dictManager.isEmpty != _lastKnownIsEmpty) {
       _lastKnownIsEmpty = dictManager.isEmpty;
-      Future.microtask(() => notifyListeners());
+      unawaited(Future.microtask(() => notifyListeners()));
       return true;
     } else {
       return false;

@@ -34,15 +34,11 @@ bool ttsDisabledByCommandLine = false;
 // engine rather than the whole Android process.
 bool runningInFloatingWindow = false;
 
-// The controller of the dictionary tab bar.
-//
 // The shortcut that switches dictionaries lives in the home page, outside
 // the entry, so it needs a way to reach the tab bar's controller. The entry
 // sets it while the tab layout is on screen and clears it when it leaves.
 TabController? dictTabController;
 
-// Pages the entry in the expansion layout.
-//
 // The expansion layout's scroll controller lives in the entry page, while
 // the shortcut that pages it sits in the home page, so the entry registers
 // its pager with the registry in entry_pager.dart instead.
@@ -51,8 +47,6 @@ TabController? dictTabController;
 FocusNode? activeSearchFocusNode;
 SearchController? activeSearchController;
 
-// Whether a suggestion view is on screen.
-//
 // `SearchController.isOpen` cannot answer this while the view is opening, so
 // Esc used to need two presses: the first one missed the open view and moved
 // the focus into the box instead. The view reports itself here.
@@ -72,8 +66,6 @@ entryFocusTargets = {};
 
 int? _activeEntryDictId;
 
-/// The dictionary the entry on screen is showing.
-///
 /// The paging registry needs to know when this changes: the neighbouring
 /// dictionary tabs stay alive, so the pager the buttons must talk to is the
 /// one of the dictionary that is actually visible.
@@ -84,8 +76,6 @@ set activeEntryDictId(int? value) {
   setActiveEntryDict(value);
 }
 
-// Gives the focus back to the entry the reader is looking at.
-//
 // The TabBarView keeps the neighbouring dictionary pages alive, so simply
 // asking the last created WebView would hand the focus to an off-screen tab.
 // The tab controller records which dictionary is on screen, and this picks its
@@ -129,7 +119,6 @@ List<dynamic> ttsEngines = [];
 final List<dynamic> ttsLanguages = [];
 String? windowsWebview2Directory;
 
-// Daos
 final dictGroupDao = DictGroupDao(mainDatabase);
 final dictionaryListDao = DictionaryListDao(mainDatabase);
 final hunspellSourceDao = HunspellSourceDao(mainDatabase);

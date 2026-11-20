@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/models/audio.dart";
@@ -18,7 +20,7 @@ import "package:go_router/go_router.dart";
 Future<void> autoExportWordbook() async {
   if (settings.autoExport &&
       (settings.exportDirectory != null || settings.exportPath != null)) {
-    Backup.export(true);
+    await Backup.export(true);
   }
 }
 
@@ -215,7 +217,7 @@ class _ButtonState extends ConsumerState<Button> {
       onPressStart: () => _longPressHandled = false,
       onLongPress: () {
         _longPressHandled = true;
-        showPronunciationSettingsSheet(context, word);
+        unawaited(showPronunciationSettingsSheet(context, word));
       },
       child: PulsingFab(
         isPulsing: isPlaying,
@@ -242,7 +244,7 @@ class _ButtonState extends ConsumerState<Button> {
               _longPressHandled = false;
               return;
             }
-            playWordPronunciation(context, word);
+            unawaited(playWordPronunciation(context, word));
           },
         ),
       ),
@@ -372,7 +374,7 @@ class _WordPronounceIconButtonState
       onPressStart: () => _longPressHandled = false,
       onLongPress: () {
         _longPressHandled = true;
-        showPronunciationSettingsSheet(context, widget.word);
+        unawaited(showPronunciationSettingsSheet(context, widget.word));
       },
       child: IconButton(
         tooltip: locale.readLoudly,
@@ -390,7 +392,7 @@ class _WordPronounceIconButtonState
             _longPressHandled = false;
             return;
           }
-          playWordPronunciation(context, widget.word);
+          unawaited(playWordPronunciation(context, widget.word));
         },
       ),
     );
@@ -408,7 +410,9 @@ class RefreshAIExplainIconButton extends ConsumerWidget {
       tooltip: AppLocalizations.of(context)!.update,
       icon: const Icon(Icons.refresh),
       onPressed: () {
-        ref.read(aiExplanationModelProvider(word)).refreshExplanation(word);
+        unawaited(
+          ref.read(aiExplanationModelProvider(word)).refreshExplanation(word),
+        );
       },
     );
   }
@@ -426,13 +430,15 @@ class EditAIExplainIconButton extends ConsumerWidget {
       icon: const Icon(Icons.edit),
       onPressed: () {
         final model = ref.read(aiExplanationModelProvider(word));
-        context.push(
-          "/edit_ai_explanation",
-          extra: {
-            "word": word,
-            "initialExplanation": model.explanation ?? "",
-            "aiExplanationModel": model,
-          },
+        unawaited(
+          context.push(
+            "/edit_ai_explanation",
+            extra: {
+              "word": word,
+              "initialExplanation": model.explanation ?? "",
+              "aiExplanationModel": model,
+            },
+          ),
         );
       },
     );

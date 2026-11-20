@@ -7,8 +7,6 @@ import '../webview_environment/webview_environment.dart';
 import 'in_app_webview_controller.dart';
 import 'custom_platform_view.dart';
 
-/// Object specifying creation parameters for creating a [PlatformInAppWebViewWidget].
-///
 /// Platform specific implementations can add additional fields by extending
 /// this class.
 class LinuxInAppWebViewWidgetCreationParams
@@ -100,8 +98,6 @@ class LinuxInAppWebViewWidgetCreationParams
     super.findInteractionController,
   });
 
-  /// Constructs a [LinuxInAppWebViewWidgetCreationParams] using a
-  /// [PlatformInAppWebViewWidgetCreationParams].
   LinuxInAppWebViewWidgetCreationParams.fromPlatformInAppWebViewWidgetCreationParams(
     PlatformInAppWebViewWidgetCreationParams params,
   ) : this(
@@ -200,8 +196,6 @@ class LinuxInAppWebViewWidgetCreationParams
 
 ///{@macro flutter_inappwebview_platform_interface.PlatformInAppWebViewWidget}
 class LinuxInAppWebViewWidget extends PlatformInAppWebViewWidget {
-  /// Constructs a [LinuxInAppWebViewWidget].
-  ///
   ///{@macro flutter_inappwebview_platform_interface.PlatformInAppWebViewWidget}
   LinuxInAppWebViewWidget(PlatformInAppWebViewWidgetCreationParams params)
     : super.implementation(
@@ -240,7 +234,6 @@ class LinuxInAppWebViewWidget extends PlatformInAppWebViewWidget {
         params.keepAlive != null) {
       final headlessId = params.headlessWebView?.id;
       if (headlessId != null) {
-        // force keep alive id to match headless webview id
         params.keepAlive?.id = headlessId;
       }
     }
@@ -279,7 +272,6 @@ class LinuxInAppWebViewWidget extends PlatformInAppWebViewWidget {
       ),
     );
 
-    // Initialize the find interaction controller with the same view ID
     if (_linuxParams.findInteractionController != null) {
       var findInteractionController =
           _linuxParams.findInteractionController
@@ -364,7 +356,6 @@ class LinuxInAppWebViewWidget extends PlatformInAppWebViewWidget {
 
   @override
   T controllerFromPlatform<T>(PlatformInAppWebViewController controller) {
-    // unused
     throw UnimplementedError();
   }
 }

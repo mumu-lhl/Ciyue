@@ -167,13 +167,13 @@ void _hunspellWorker(SendPort sendPort) {
       reloadInProgress = true;
       // Don't await: keep serving queries with the old dictionaries
       // while the new ones load.
-      doReload(message.sources).then((result) {
+      final _ = doReload(message.sources).then((result) {
         message.replyPort.send(result);
         // Process pending reload if one arrived during this reload.
         final pending = pendingReload;
         pendingReload = null;
         if (pending != null) {
-          doReload(pending.sources).then((pendingResult) {
+          final _ = doReload(pending.sources).then((pendingResult) {
             reloadInProgress = false;
             pending.replyPort.send(pendingResult);
           });

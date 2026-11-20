@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/search_bar.dart";
@@ -133,7 +135,7 @@ class MobileNewTabPage extends ConsumerWidget {
     final normalized = word.trim();
     if (normalized.isEmpty) return;
     homeModel.selectedWord = normalized;
-    ref.read(openRecordsRepositoryProvider).add(normalized);
+    unawaited(ref.read(openRecordsRepositoryProvider).add(normalized));
     ref.read(historyModelProvider).addHistory(normalized);
   }
 
@@ -224,7 +226,11 @@ class MobileNewTabPage extends ConsumerWidget {
                         deleteIcon: const Icon(Icons.close_rounded, size: 16),
                         deleteButtonTooltipMessage: locale.delete,
                         onDeleted: () {
-                          ref.read(historyModelProvider).deleteHistory(item.id);
+                          unawaited(
+                            ref
+                                .read(historyModelProvider)
+                                .deleteHistory(item.id),
+                          );
                         },
                       ),
                   ],

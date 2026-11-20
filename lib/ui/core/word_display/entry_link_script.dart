@@ -108,8 +108,8 @@ function _encodedWord(word) {
   return out;
 }
 
-// The canonical href for a parsed link. An empty word with an anchor means
-// "scroll the entry on screen", which never becomes a navigation.
+// An empty word with an anchor means "scroll the entry on screen", which never
+// becomes a navigation.
 function _targetHref(link) {
   var encoded = _encodedWord(link.word);
   if (!encoded) return '';
@@ -187,8 +187,7 @@ document.addEventListener('click', function (event) {
   const href = anchor.getAttribute('href');
   if (!href) return;
 
-  // A pronunciation link plays its referenced audio resource. On the bridge
-  // path (Windows) it is handled directly via callHandler; elsewhere the
+  // On the bridge path (Windows) it is handled directly via callHandler; elsewhere the
   // sound:// navigation is left to proceed so shouldOverrideUrlLoading can
   // intercept it.
   const rawSound = _extractSoundFromHref(href);

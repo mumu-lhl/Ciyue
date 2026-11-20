@@ -2,8 +2,6 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/entry_pager.dart";
 import "package:material_ui/material_ui.dart";
 
-/// One "previous / next screen" button.
-///
 /// It carries no state of its own: the pager it drives reports its boundaries
 /// through [EntryPager.bounds], so the button greys itself out at the start or
 /// the end of whatever it pages. Without an explicit [pager] it talks to the

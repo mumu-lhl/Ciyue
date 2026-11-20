@@ -491,7 +491,6 @@ void main() {
       final result = await service.speak("hi", language: "en");
 
       expect(result.success, isFalse);
-      // One reconnect attempt.
       expect(factory.created, hasLength(2));
     });
 

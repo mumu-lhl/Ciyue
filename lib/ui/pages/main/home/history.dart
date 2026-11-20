@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
@@ -122,7 +124,7 @@ class _HistoryListState extends ConsumerState<HistoryList> {
                     false;
 
                 if (confirm) {
-                  model.deleteHistory(item.id);
+                  await model.deleteHistory(item.id);
                 }
                 return confirm;
               }
@@ -242,7 +244,9 @@ class _HistoryListState extends ConsumerState<HistoryList> {
                   } else if (widget.onWordSelected != null) {
                     widget.onWordSelected!(item.word);
                   } else {
-                    context.push("/word/${Uri.encodeComponent(item.word)}");
+                    unawaited(
+                      context.push("/word/${Uri.encodeComponent(item.word)}"),
+                    );
                   }
                 },
                 onLongPress: () {

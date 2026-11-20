@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/utils.dart";
@@ -123,7 +125,7 @@ class _MultiSelectActions extends ConsumerWidget {
           onPressed: isSelectedWordsEmpty
               ? null
               : () {
-                  model.showDeleteConfirmationDialog(context);
+                  unawaited(model.showDeleteConfirmationDialog(context));
                 },
         ),
       ],

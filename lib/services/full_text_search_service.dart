@@ -210,7 +210,7 @@ class FullTextSearchService extends ChangeNotifier {
     if (existing != null) return existing;
     final build = _ensureBuilt(dictionary);
     _builds[dictionary.id] = build;
-    build.whenComplete(() => _builds.remove(dictionary.id));
+    unawaited(build.whenComplete(() => _builds.remove(dictionary.id)));
     return build;
   }
 

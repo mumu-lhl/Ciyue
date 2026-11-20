@@ -3,10 +3,6 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/viewModels/chat_view_model.dart";
 import "package:material_ui/material_ui.dart";
 
-/// The list of chat sessions: switch between conversations, start
-/// a new one, or delete old ones. Before this page existed the app
-/// kept exactly one conversation, which could only be resumed or
-/// wiped entirely.
 class ChatSessionsPage extends StatelessWidget {
   const ChatSessionsPage({super.key, required this.viewModel});
 

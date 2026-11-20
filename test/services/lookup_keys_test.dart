@@ -42,15 +42,12 @@ void main() {
 
   group("lookupVariants crosses case with width", () {
     test("typed full-width lowercase reaches half-width upper", () {
-      // ｎｈｋ -> {ｎｈｋ, ＮＨＫ, nhk, NHK, Nhk}.
       final variants = lookupVariants("ｎｈｋ");
       expect(variants, containsAll(["ｎｈｋ", "ＮＨＫ", "nhk", "NHK", "Nhk"]));
-      // Original as typed stays first.
       expect(variants.first, "ｎｈｋ");
     });
 
     test("typed half-width upper reaches full-width lower", () {
-      // NHK -> {NHK, nhk, Nhk, ＮＨＫ, ｎｈｋ}.
       final variants = lookupVariants("NHK");
       expect(variants, containsAll(["NHK", "nhk", "Nhk", "ＮＨＫ", "ｎｈｋ"]));
       expect(variants.first, "NHK");
@@ -75,7 +72,6 @@ void main() {
     });
 
     test("the cache is bounded and evicts the oldest entry", () {
-      // 512 entries fit; the 513th build evicts the oldest one.
       const probe = "evictProbeWord";
       final first = lookupVariants(probe);
       for (var i = 0; i < 512; i++) {

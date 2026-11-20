@@ -113,7 +113,6 @@ void main() {
       await tester.pump();
       expect(controller.text, "");
 
-      // Rebuild occurs (simulating async dictionary loading completion or parent rebuild)
       await tester.pumpWidget(buildHost(word: "apple"));
       await tester.pump();
 

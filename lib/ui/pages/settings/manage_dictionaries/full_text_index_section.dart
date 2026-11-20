@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
@@ -48,7 +50,7 @@ class _FullTextIndexSectionState extends ConsumerState<FullTextIndexSection> {
   @override
   void initState() {
     super.initState();
-    _resolveDictionary();
+    unawaited(_resolveDictionary());
   }
 
   Future<void> _resolveDictionary() async {

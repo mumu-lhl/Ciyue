@@ -2,20 +2,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
 
-/// Object specifying creation parameters for creating a [LinuxFindInteractionController].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformFindInteractionControllerCreationParams] for
 /// more information.
 @immutable
 class LinuxFindInteractionControllerCreationParams
     extends PlatformFindInteractionControllerCreationParams {
-  /// Creates a new [LinuxFindInteractionControllerCreationParams] instance.
   const LinuxFindInteractionControllerCreationParams({
     super.onFindResultReceived,
   });
 
-  /// Creates a [LinuxFindInteractionControllerCreationParams] instance based on [PlatformFindInteractionControllerCreationParams].
   factory LinuxFindInteractionControllerCreationParams.fromPlatformFindInteractionControllerCreationParams(
     PlatformFindInteractionControllerCreationParams params,
   ) {
@@ -25,10 +21,8 @@ class LinuxFindInteractionControllerCreationParams
   }
 }
 
-/// Implementation of [PlatformFindInteractionController] for Linux.
 class LinuxFindInteractionController extends PlatformFindInteractionController
     with ChannelController {
-  /// Creates a new [LinuxFindInteractionController].
   LinuxFindInteractionController(
     PlatformFindInteractionControllerCreationParams params,
   ) : super.implementation(

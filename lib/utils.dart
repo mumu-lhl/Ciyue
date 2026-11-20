@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:io";
 
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -10,8 +11,8 @@ import "package:permission_handler/permission_handler.dart";
 import "services/toast.dart";
 
 void addToClipboard(BuildContext context, String text) {
-  Clipboard.setData(ClipboardData(text: text));
-  ToastService.show(AppLocalizations.of(context)!.copied, context);
+  unawaited(Clipboard.setData(ClipboardData(text: text)));
+  unawaited(ToastService.show(AppLocalizations.of(context)!.copied, context));
 }
 
 Future<Directory> databaseDirectory() {
@@ -65,7 +66,7 @@ Future<bool> requestManageExternalStorage(BuildContext context) async {
   }
 
   if (context.mounted) {
-    ToastService.show(
+    await ToastService.show(
       AppLocalizations.of(context)!.permissionDenied,
       context,
       type: ToastType.error,

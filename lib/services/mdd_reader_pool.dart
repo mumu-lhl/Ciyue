@@ -16,7 +16,7 @@ Future<DictReader> mddReaderFor(String path) async {
     return await future;
   } catch (_) {
     if (identical(_mddReaders[path], future)) {
-      _mddReaders.remove(path);
+      final _ = _mddReaders.remove(path);
     }
     rethrow;
   }

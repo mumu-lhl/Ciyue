@@ -35,10 +35,8 @@ class AppDropdown<T> extends StatelessWidget {
   /// control. This mirrors the stock DropdownButton's `ValueChanged<T?>`.
   final ValueChanged<T?>? onChanged;
 
-  /// Small label rendered inside the field, like a text field's label.
   final String? label;
 
-  /// Optional leading icon inside the field.
   final Widget? prefixIcon;
 
   /// Compact borderless pill (for ListTile trailing slots).

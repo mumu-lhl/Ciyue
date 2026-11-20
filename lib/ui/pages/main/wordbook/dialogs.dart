@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
@@ -26,7 +28,7 @@ class _SearchWordDialogState extends ConsumerState<SearchWordDialog> {
     super.initState();
     _model = ref.read(wordbookModelProvider);
     _searchController.addListener(() {
-      _model.search(_searchController.text);
+      unawaited(_model.search(_searchController.text));
     });
   }
 
@@ -64,7 +66,7 @@ class _SearchWordDialogState extends ConsumerState<SearchWordDialog> {
               value: _model.fuzzySearch,
               onChanged: (value) {
                 _model.toggleFuzzySearch();
-                _model.search(_searchController.text);
+                unawaited(_model.search(_searchController.text));
                 setState(() {});
               },
             ),
@@ -85,11 +87,13 @@ class _SearchWordDialogState extends ConsumerState<SearchWordDialog> {
                         title: Text(word),
                         onTap: () {
                           Navigator.of(context).pop();
-                          context.push(
-                            "/word/${Uri.encodeComponent(word)}",
-                            extra: WordListContext(
-                              words: List<String>.from(model.searchResults),
-                              initialIndex: index,
+                          unawaited(
+                            context.push(
+                              "/word/${Uri.encodeComponent(word)}",
+                              extra: WordListContext(
+                                words: List<String>.from(model.searchResults),
+                                initialIndex: index,
+                              ),
                             ),
                           );
                         },
@@ -291,7 +295,7 @@ class _TagListDialogState extends ConsumerState<TagListDialog> {
                       await model.removeTag(tag.id);
                       if (context.mounted) {
                         Navigator.of(context).pop();
-                        model.showTagsListDialog(context);
+                        await model.showTagsListDialog(context);
                       }
                     },
                   ),

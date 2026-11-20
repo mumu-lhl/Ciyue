@@ -59,7 +59,6 @@ void main() {
       );
 
       final mistakes = await dao.getMistakes();
-      // No duplicate rows; apple moved to the front.
       expect(mistakes.length, 2);
       expect(mistakes.first.word, "apple");
       expect(mistakes.first.questionType, QuizQuestionType.cloze);
@@ -99,7 +98,6 @@ void main() {
         question: "q",
         correctAnswer: "a",
       );
-      // Same word in a different case must not create a second row.
       await dao.addMistake(
         word: "apple",
         questionType: QuizQuestionType.choice,
@@ -108,7 +106,6 @@ void main() {
       );
       expect(await dao.getMistakeCount(), 1);
 
-      // Removal works regardless of the casing the AI produced.
       await dao.removeMistake("APPLE");
       expect(await dao.getMistakeCount(), 0);
     });
@@ -141,7 +138,6 @@ void main() {
       final row = (await dao.getMistakes()).single;
       expect(quizQuestionFromMistake(row), isNull);
 
-      // Spelling rows rebuild fine without options.
       await dao.addMistake(
         word: "banana",
         questionType: QuizQuestionType.spelling,

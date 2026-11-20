@@ -9,14 +9,11 @@ import '../find_interaction/find_interaction_controller.dart';
 import '../in_app_webview/in_app_webview_controller.dart';
 import '../webview_environment/webview_environment.dart';
 
-/// Object specifying creation parameters for creating a [LinuxInAppBrowser].
-///
 /// When adding additional fields make sure they can be null or have a default
 /// value to avoid breaking changes. See [PlatformInAppBrowserCreationParams] for
 /// more information.
 class LinuxInAppBrowserCreationParams
     extends PlatformInAppBrowserCreationParams {
-  /// Creates a new [LinuxInAppBrowserCreationParams] instance.
   LinuxInAppBrowserCreationParams({
     super.contextMenu,
     super.pullToRefreshController,
@@ -26,7 +23,6 @@ class LinuxInAppBrowserCreationParams
     this.webViewEnvironment,
   });
 
-  /// Creates a [LinuxInAppBrowserCreationParams] instance based on [PlatformInAppBrowserCreationParams].
   factory LinuxInAppBrowserCreationParams.fromPlatformInAppBrowserCreationParams(
     // Recommended placeholder to prevent being broken by platform interface.
     // ignore: avoid_unused_constructor_parameters
@@ -55,7 +51,6 @@ class LinuxInAppBrowser extends PlatformInAppBrowser with ChannelController {
   @override
   final String id = IdGenerator.generate();
 
-  /// Constructs a [LinuxInAppBrowser].
   LinuxInAppBrowser(PlatformInAppBrowserCreationParams params)
     : super.implementation(
         params is LinuxInAppBrowserCreationParams

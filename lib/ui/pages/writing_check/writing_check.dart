@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -45,7 +47,7 @@ class WritingCheckPage extends ConsumerWidget {
               tooltip: AppLocalizations.of(context)!.settings,
               icon: const Icon(Icons.settings),
               onPressed: () {
-                context.push("/writing_check/settings");
+                unawaited(context.push("/writing_check/settings"));
               },
             ),
           ],
@@ -96,7 +98,7 @@ class WritingCheckPage extends ConsumerWidget {
                             AIMarkdown(
                               prompt: viewModel.prompt!,
                               onResult: (outputText) {
-                                viewModel.saveResult(outputText);
+                                unawaited(viewModel.saveResult(outputText));
                               },
                             ),
                           if (viewModel.outputText != null)
@@ -200,7 +202,7 @@ class _DesktopWritingCheckView extends ConsumerWidget {
                         AIMarkdown(
                           prompt: viewModel.prompt!,
                           onResult: (outputText) {
-                            viewModel.saveResult(outputText);
+                            unawaited(viewModel.saveResult(outputText));
                           },
                         ),
                       if (viewModel.outputText != null)

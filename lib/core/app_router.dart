@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/ui/pages/chat/chat.dart";
 import "package:ciyue/ui/pages/quiz/quiz_page.dart";
@@ -66,10 +68,12 @@ final router = GoRouter(
           );
         }
 
-        ProviderScope.containerOf(
-          navigatorKey.currentContext!,
-          listen: false,
-        ).read(openRecordsRepositoryProvider).add(word!);
+        unawaited(
+          ProviderScope.containerOf(
+            navigatorKey.currentContext!,
+            listen: false,
+          ).read(openRecordsRepositoryProvider).add(word!),
+        );
 
         final dictIdParam = state.uri.queryParameters["dictId"];
         final initialDictId = dictIdParam != null

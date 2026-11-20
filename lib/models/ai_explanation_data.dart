@@ -1,7 +1,5 @@
 import "dart:convert";
 
-/// One example sentence from a structured AI explanation, with its
-/// translation when the model provided one.
 class AiExample {
   const AiExample({required this.sentence, this.translation});
 
@@ -74,9 +72,6 @@ class AiExplanationData {
     return data.isEmpty ? null : data;
   }
 
-  /// Finds the outermost JSON object in [text]: strips a markdown
-  /// fence if present, then takes the span from the first "{" to the
-  /// last "}".
   static String? _extractJsonObject(String text) {
     var candidate = text.trim();
     final fence = RegExp(r"```(?:json)?\s*([\s\S]*?)```").firstMatch(candidate);

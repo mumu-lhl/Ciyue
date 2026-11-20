@@ -123,9 +123,7 @@ void main() {
       expect(controller.position.pixels, closeTo(viewport * 0.9, 0.5));
       expect(pager.bounds.value.atStart, isFalse);
 
-      while (await pager.pageBy(1)) {
-        // Page down until the pager says it cannot move any further.
-      }
+      while (await pager.pageBy(1)) {}
       expect(pager.bounds.value.atEnd, isTrue);
       expect(await pager.pageBy(1), isFalse);
 

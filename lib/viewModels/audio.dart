@@ -409,12 +409,12 @@ class AudioModel extends ChangeNotifier {
   void _onPlaybackComplete() {
     _safetyTimer?.cancel();
     _safetyTimer = null;
-    _playerCompleteSub?.cancel();
+    unawaited(_playerCompleteSub?.cancel());
     _playerCompleteSub = null;
-    _playerStateSub?.cancel();
+    unawaited(_playerStateSub?.cancel());
     _playerStateSub = null;
 
-    _activePlayer?.release();
+    unawaited(_activePlayer?.release());
     _activePlayer = null;
 
     if (_isPlaying || _playingWord != null) {
@@ -449,11 +449,11 @@ class AudioModel extends ChangeNotifier {
       }
     }
 
-    mddAudioListDao.remove(id);
+    await mddAudioListDao.remove(id);
     mddAudioList.removeWhere((element) => element.id == id);
     mddAudioCounts.remove(id);
 
-    mddAudioResourceDao.remove(id);
+    await mddAudioResourceDao.remove(id);
 
     mddAudioListState++;
     notifyListeners();
@@ -472,15 +472,15 @@ class AudioModel extends ChangeNotifier {
     mddAudioList.insert(newIndex, item);
     mddAudioListState++;
     notifyListeners();
-    updateMddAudioOrder();
+    unawaited(updateMddAudioOrder());
   }
 
   @override
   void dispose() {
     _safetyTimer?.cancel();
-    _playerCompleteSub?.cancel();
-    _playerStateSub?.cancel();
-    _activePlayer?.dispose();
+    unawaited(_playerCompleteSub?.cancel());
+    unawaited(_playerStateSub?.cancel());
+    unawaited(_activePlayer?.dispose());
     if (_instance == this) {
       _instance = null;
     }

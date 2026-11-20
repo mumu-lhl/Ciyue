@@ -2,17 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
 
-/// Object specifying creation parameters for creating a [LinuxWebViewEnvironment].
-///
 /// Platform specific implementations can add additional fields by extending
 /// this class.
 @immutable
 class LinuxWebViewEnvironmentCreationParams
     extends PlatformWebViewEnvironmentCreationParams {
-  /// Creates a new [LinuxWebViewEnvironmentCreationParams] instance.
   const LinuxWebViewEnvironmentCreationParams({super.settings});
 
-  /// Creates a [LinuxWebViewEnvironmentCreationParams] instance based on [PlatformWebViewEnvironmentCreationParams].
   factory LinuxWebViewEnvironmentCreationParams.fromPlatformWebViewEnvironmentCreationParams(
     // Recommended placeholder to prevent being broken by platform interface.
     // ignore: avoid_unused_constructor_parameters
@@ -31,7 +27,6 @@ class LinuxWebViewEnvironmentCreationParams
 ///- Linux
 class LinuxWebViewEnvironment extends PlatformWebViewEnvironment
     with ChannelController {
-  /// Static method channel for WebViewEnvironment operations.
   static final MethodChannel _staticChannel = MethodChannel(
     'com.pichillilorenzo/flutter_webview_environment',
   );
@@ -39,7 +34,6 @@ class LinuxWebViewEnvironment extends PlatformWebViewEnvironment
   @override
   final String id = IdGenerator.generate();
 
-  /// Creates a new [LinuxWebViewEnvironment].
   LinuxWebViewEnvironment(PlatformWebViewEnvironmentCreationParams params)
     : super.implementation(
         params is LinuxWebViewEnvironmentCreationParams

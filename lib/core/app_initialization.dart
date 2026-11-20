@@ -157,7 +157,7 @@ Future<void> initTrayMenu() async {
     }
     exitAppItem.addListener((event) {
       if (event is tray.MenuItemClickedEvent) {
-        SystemNavigator.pop();
+        unawaited(SystemNavigator.pop());
       }
     });
 
@@ -278,8 +278,8 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
 
   flutterTts = FlutterTts();
 
-  wordbookTagsDao.loadTagsOrder();
-  wordbookTagsDao.existTag();
+  await wordbookTagsDao.loadTagsOrder();
+  await wordbookTagsDao.existTag();
 
   if (Platform.isAndroid) {
     PlatformMethod.initHandler();
@@ -290,9 +290,9 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
     // channel and the last engine would otherwise steal callbacks from the
     // main engine.
     if (!isFloatingWindow) {
-      PlatformMethod.initNotifications();
+      await PlatformMethod.initNotifications();
       if (settings.notification) {
-        PlatformMethod.createPersistentNotification(true);
+        await PlatformMethod.createPersistentNotification(true);
       }
     }
   }
@@ -315,7 +315,7 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
       packageInfo = await PackageInfo.fromPlatform();
 
       if (settings.autoUpdate) {
-        Updater.autoUpdate();
+        await Updater.autoUpdate();
       }
 
       if (await ChangelogService.shouldShowChangelog(locale)) {
@@ -337,7 +337,7 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
 
   talker.info("Ciyue spent ${stopWatch.elapsedMilliseconds} ms initializing.");
 
-  Future.microtask(() async {
+  final _ = Future.microtask(() async {
     if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
       // Add a delay to avoid ConcurrentModificationException in onInit on Android
       // and other potential early initialization issues on other platforms.
@@ -385,7 +385,7 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
     }
 
     if (isDesktop()) {
-      StartupService.init();
+      await StartupService.init();
 
       // The app-wide hotkey is opt-in and off by default; the switch lives in
       // Settings → Other. Wayland sessions cannot read their own minimized

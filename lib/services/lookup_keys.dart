@@ -97,7 +97,6 @@ List<String> widthVariants(String word) {
 String _mapWidth(String value) {
   return String.fromCharCodes(
     value.runes.map((rune) {
-      // ASCII full-width -> ASCII, and ASCII -> ASCII full-width.
       if (rune >= 0xFF01 && rune <= 0xFF5E) return rune - 0xFEE0;
       if (rune >= 0x21 && rune <= 0x7E) return rune + 0xFEE0;
       // Space and half-width CJK marks / corner brackets <-> their

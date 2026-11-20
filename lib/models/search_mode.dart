@@ -6,7 +6,7 @@
 /// which reads `prefs` — at import time, breaking plain unit tests that
 /// never initialise preferences.
 enum SearchMode {
-  /// Headwords starting with the query (the historical behaviour).
+  /// Headwords starting with the query.
   prefix,
 
   /// Headwords ending with the query, served by the reversed-headword

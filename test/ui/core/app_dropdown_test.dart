@@ -34,13 +34,11 @@ void main() {
   testWidgets("opens the menu and marks the selected item", (tester) async {
     await pumpDropdown(tester, value: "b", onChanged: (_) {});
 
-    // The button shows the selected value before opening.
     expect(find.text("Beta"), findsOneWidget);
 
     await tester.tap(find.byType(AppDropdown<String>));
     await tester.pumpAndSettle();
 
-    // All items are visible; the selected row carries the check.
     expect(find.text("Alpha"), findsOneWidget);
     expect(find.text("Gamma"), findsOneWidget);
     expect(find.text("Beta"), findsNWidgets(2));

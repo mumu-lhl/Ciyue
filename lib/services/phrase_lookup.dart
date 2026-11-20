@@ -31,8 +31,7 @@ library;
 /// des Klassengegensatzes der Klassen überhaupt, und damit seine eigene
 /// Herrschaft als Klasse auf.“
 ///
-/// With `hebt` and `auf` themselves that is 21 tokens, well past the 12 this
-/// once allowed, hence 24.
+/// With `hebt` and `auf` themselves that is 21 tokens, hence 24.
 const maxPhraseWords = 24;
 
 /// Longest candidate worth probing, in characters.
@@ -44,8 +43,7 @@ const maxPhraseWords = 24;
 ///
 /// Room has to be left for compounds. German stacks them freely, and
 /// `Grundstücksverkehrsgenehmigungszuständigkeit` runs to 44 characters on
-/// its own — past the 40 this once allowed — before a separable particle is
-/// even joined to it. Set far higher than any headword needs, though: turning
+/// its own, before a separable particle is even joined to it. Set far higher than any headword needs, though: turning
 /// one away costs a real entry while admitting it costs one probe, and what
 /// this is really guarding against is a pasted run of characters, whose length
 /// nothing else bounds.

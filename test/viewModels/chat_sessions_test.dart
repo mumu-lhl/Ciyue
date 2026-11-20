@@ -136,7 +136,6 @@ void main() {
         ]),
       );
       final vm = ChatViewModel();
-      // Most recently updated session is active by default.
       expect(vm.activeSessionId, "b");
       expect(vm.messages.single.text, "second conversation");
 
@@ -145,12 +144,10 @@ void main() {
       expect(vm.messages.single.text, "first conversation");
       expect(prefs.getString("chatActiveSessionId"), "a");
 
-      // Deleting a non-active session keeps the current one.
       vm.deleteSession("b");
       expect(vm.sessions.length, 1);
       expect(vm.activeSessionId, "a");
 
-      // Deleting the active session falls back to a fresh one.
       vm.deleteSession("a");
       expect(vm.sessions.length, 1);
       expect(vm.activeSessionId, isNot("a"));
@@ -214,7 +211,6 @@ void main() {
         expect(vm.aiConfigured, isFalse);
         vm.textController.text = "hello";
         await vm.sendMessage();
-        // Nothing was sent and the typed text is preserved.
         expect(vm.messages, isEmpty);
         expect(vm.textController.text, "hello");
         vm.dispose();
@@ -251,7 +247,6 @@ void main() {
       final restored = ChatMessage.fromJson(message.toJson());
       expect(restored.text, "look");
       expect(restored.imagePaths, ["/tmp/a.jpg", "/tmp/b.png"]);
-      // Pre-image messages have no imagePaths key at all.
       final legacy = ChatMessage.fromJson({"text": "hi", "isUser": false});
       expect(legacy.imagePaths, isEmpty);
       expect(const ChatMessage(text: "x", isUser: true).toJson(), {
@@ -371,9 +366,7 @@ void main() {
       settings.aiProvider = "agnes";
       final vm = ChatViewModel();
       expect(vm.imageGenerationSupported, isTrue);
-      // Falls back to the provider's first known image model.
       expect(vm.currentImageModel, "agnes-image-2.1-flash");
-      // No API key saved: generation is blocked, nothing is sent.
       vm.textController.text = "draw a cat";
       await vm.generateImage();
       expect(vm.messages, isEmpty);

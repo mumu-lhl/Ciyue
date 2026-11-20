@@ -229,11 +229,9 @@ void main() {
     expect(find.text("Chat images"), findsOneWidget);
     expect(find.text("300 B"), findsOneWidget);
 
-    // Rebuild/download hints on the rebuildable rows.
     expect(find.text("Rebuilds automatically"), findsNWidgets(2));
     expect(find.text("Downloads again when needed"), findsOneWidget);
 
-    // The clear-all button is enabled while cache remains.
     final clearAll = tester.widget<FilledButton>(
       find.widgetWithText(FilledButton, "Clear all cache"),
     );
@@ -331,7 +329,6 @@ void main() {
         findsOneWidget,
       );
     }
-    // The non-clearable rows are untouched.
     expect(find.text("500 B"), findsOneWidget);
     expect(find.text("4.0 KB"), findsOneWidget);
     final clearAll = tester.widget<FilledButton>(

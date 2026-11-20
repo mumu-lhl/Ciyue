@@ -78,7 +78,6 @@ String desktopContextMenuScript() {
 """;
 }
 
-/// The pointer position (WebView CSS pixels) and the word it selected.
 class DesktopContextMenuRequest {
   final double x;
   final double y;

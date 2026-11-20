@@ -30,14 +30,14 @@ class DictionaryBackgroundColor extends ConsumerWidget {
   const DictionaryBackgroundColor({super.key});
 
   static const _presetColors = <Color>[
-    Color(0xFFFFFFFF), // Clean white
-    Color(0xFFFAF7F0), // Soft ivory
-    Color(0xFFF3EBDD), // Book paper
-    Color(0xFFF1F5EE), // Pale sage
-    Color(0xFFF0F4F8), // Mist blue
-    Color(0xFFF5F1F7), // Soft lilac
-    Color(0xFFF7F1EF), // Warm blush
-    Color(0xFF292A2D), // Charcoal
+    Color(0xFFFFFFFF),
+    Color(0xFFFAF7F0),
+    Color(0xFFF3EBDD),
+    Color(0xFFF1F5EE),
+    Color(0xFFF0F4F8),
+    Color(0xFFF5F1F7),
+    Color(0xFFF7F1EF),
+    Color(0xFF292A2D),
   ];
 
   Future<void> _chooseColor(

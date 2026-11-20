@@ -25,7 +25,6 @@ const resourceUrlScript = r"""
     if (!value) return null;
     var raw = String(value).trim();
     if (!raw) return null;
-    // Protocol-relative and every scheme except `file:` are other resources.
     if (/^\/\//.test(raw)) return null;
     if (ANY_SCHEME.test(raw) && !FILE_PREFIX.test(raw)) return null;
 

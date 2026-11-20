@@ -7,8 +7,6 @@ import "package:material_ui/material_ui.dart";
 import "package:flutter/services.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
-/// Draws the Windows/Linux right-click menu at the pointer.
-///
 /// [anchorContext] belongs to the WebView: the script reports CSS pixels
 /// relative to it, which have to be turned into overlay coordinates before
 /// `showMenu` can place the menu under the cursor.

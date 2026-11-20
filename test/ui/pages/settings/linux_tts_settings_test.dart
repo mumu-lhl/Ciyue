@@ -118,7 +118,6 @@ void main() {
     );
     expect(find.text("Default voice"), findsOneWidget);
 
-    // Picking a voice persists the voice id.
     await tester.tap(find.byType(AppDropdown<String?>));
     await tester.pumpAndSettle();
     await tester.tap(find.text("English_(America) (en-us)").last);

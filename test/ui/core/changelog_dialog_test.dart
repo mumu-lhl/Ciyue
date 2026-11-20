@@ -70,8 +70,6 @@ void main() {
       find.textContaining("Multi-source translation", findRichText: true),
       findsWidgets,
     );
-    // The old version is collapsed by default; expand it and the entry
-    // shows without its commit hash / author tail.
     await tester.tap(find.text("1.23.2"));
     await tester.pumpAndSettle();
     expect(

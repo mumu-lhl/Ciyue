@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/services/storage_usage.dart";
 import "package:flutter/foundation.dart";
 
@@ -8,7 +10,7 @@ class StorageUsageViewModel extends ChangeNotifier {
     StorageUsageService? service,
     this.onClearFullTextIndex,
   }) : _service = service ?? StorageUsageService() {
-    refresh();
+    unawaited(refresh());
   }
 
   final StorageUsageService _service;

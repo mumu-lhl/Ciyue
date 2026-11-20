@@ -75,7 +75,6 @@ void main() {
     await store.markComplete(3, 1);
     expect(await store.ensureDictionary(3, "fp"), isFalse);
 
-    // A changed fingerprint rebuilds from scratch.
     expect(await store.ensureDictionary(3, "fp2"), isTrue);
     expect((await store.meta(3))!.indexed, 0);
     expect(await store.searchOne(3, '"a"'), isEmpty);
@@ -99,7 +98,6 @@ void main() {
     await store.insertBatch(4, const [
       FullTextIndexRow(rowid: 1, headword: "a", body: "b"),
     ], 1);
-    // State stays 'building': the next ensure keeps the partial tables.
     expect(await store.ensureDictionary(4, "fp"), isTrue);
     expect((await store.meta(4))!.indexed, 1);
     expect((await store.searchOne(4, '"a"')).map((h) => h.headword), ["a"]);
@@ -558,7 +556,6 @@ void main() {
             return stopwatch.elapsedMilliseconds;
           }
 
-          // Warm the reader connections before timing.
           await fileStore.searchOne(1, '"the"');
           final t1 = await timed(1);
           final t2 = await timed(2);

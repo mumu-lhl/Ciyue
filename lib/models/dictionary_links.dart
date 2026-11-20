@@ -57,14 +57,12 @@ EntryLinkTarget parseEntryLink(String raw) {
       continue;
     }
 
-    // A doubled hash is one escaped literal hash.
     if (index + 1 < raw.length && raw[index + 1] == "#") {
       word.write("#");
       index += 2;
       continue;
     }
 
-    // A lone hash starts the anchor; everything after it is the target.
     final anchor = raw.substring(index + 1);
     return EntryLinkTarget(
       word: word.toString(),

@@ -425,9 +425,11 @@ void _dispatchShortcut(WidgetRef ref, BuildContext context, String payload) {
 /// an entry is on screen has to be applied to that page directly.
 void _applyContentScale(InAppWebViewController? controller, double scale) {
   if (controller == null) return;
-  controller.evaluateJavascript(
-    source:
-        "window.ciyueSetZoom && window.ciyueSetZoom(${scale.toStringAsFixed(3)})",
+  unawaited(
+    controller.evaluateJavascript(
+      source:
+          "window.ciyueSetZoom && window.ciyueSetZoom(${scale.toStringAsFixed(3)})",
+    ),
   );
 }
 
@@ -442,8 +444,10 @@ void _applyDictionaryTheme(
   required bool isDarkTheme,
 }) {
   if (controller == null) return;
-  controller.evaluateJavascript(
-    source: dictionaryThemeScript(isDarkTheme: isDarkTheme),
+  unawaited(
+    controller.evaluateJavascript(
+      source: dictionaryThemeScript(isDarkTheme: isDarkTheme),
+    ),
   );
 }
 
@@ -533,15 +537,17 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
     // Without this, the WebView keeps showing the previous word's content
     // (initialData is only used at creation time).
     if (widget.content != oldWidget.content && _webViewController != null) {
-      _webViewController!.loadData(
-        // A reload has to be normalised like the initial load. Without this,
-        // `sound://` and `bword://` links lose their rewriting every time the
-        // word changes, and an entry shown on the second lookup stops playing
-        // its audio while the same entry played fine right after startup.
-        data: normalizeDictionaryUrls(widget.content),
-        mimeType: "text/html",
-        encoding: "utf-8",
-        baseUrl: WebUri("http://ciyue.internal/"),
+      unawaited(
+        _webViewController!.loadData(
+          // A reload has to be normalised like the initial load. Without this,
+          // `sound://` and `bword://` links lose their rewriting every time the
+          // word changes, and an entry shown on the second lookup stops playing
+          // its audio while the same entry played fine right after startup.
+          data: normalizeDictionaryUrls(widget.content),
+          mimeType: "text/html",
+          encoding: "utf-8",
+          baseUrl: WebUri("http://ciyue.internal/"),
+        ),
       );
       return;
     }
@@ -645,7 +651,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
             title: locale.copy,
             action: () async {
               await _webViewController!.clearFocus();
-              Clipboard.setData(ClipboardData(text: _selectedText));
+              unawaited(Clipboard.setData(ClipboardData(text: _selectedText)));
             },
           ),
           ContextMenuItem(
@@ -762,7 +768,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
           controller.addJavaScriptHandler(
             handlerName: "WebViewHeight",
             callback: (args) {
-              double newHeight = args[0].toDouble();
+              final double newHeight = args[0].toDouble();
               ref
                   .read(webviewHeightsProvider.notifier)
                   .setHeight(widget.word, widget.dictId, newHeight);
@@ -805,8 +811,9 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
         // zero JS cost once the content settles (images/fonts loading late
         // still trigger an update via these observers).
         if (widget.isExpansion) {
-          controller.evaluateJavascript(
-            source: """
+          unawaited(
+            controller.evaluateJavascript(
+              source: """
 (function() {
   if (!document.body) return;
   var lastHeight = 0;
@@ -826,6 +833,7 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
   reportHeight();
 })();
 """,
+            ),
           );
         }
 
@@ -1301,7 +1309,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                 controller.addJavaScriptHandler(
                   handlerName: "WebViewHeight",
                   callback: (args) {
-                    double newHeight = (args[0] as num).toDouble();
+                    final double newHeight = (args[0] as num).toDouble();
                     ref
                         .read(webviewHeightsProvider.notifier)
                         .setHeight(widget.word, dictId, newHeight);
@@ -1330,8 +1338,9 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
               // sized to its content (like Android). This avoids nested scrolling
               // (WebView internal scroll + Flutter outer scroll fighting).
               if (widget.isExpansion) {
-                controller.evaluateJavascript(
-                  source: """
+                unawaited(
+                  controller.evaluateJavascript(
+                    source: """
 (function() {
   if (!document.body) return;
   var lastHeight = 0;
@@ -1362,6 +1371,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
   reportHeight();
 })();
 """,
+                  ),
                 );
               }
               // A reload starts a fresh document, which drops the inline zoom

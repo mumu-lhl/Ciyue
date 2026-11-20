@@ -7,8 +7,6 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
 
-/// Opens the pronunciation settings sheet from the word page.
-///
 /// Long-pressing the speaker button brings the controls that are usually
 /// buried in Settings next to the word being looked up: the TTS voice, the
 /// audio pack order and the online pronunciation sources.

@@ -157,7 +157,6 @@ void main() {
     await service(firstDatabase, "device-a", firstState).sync();
     await service(secondDatabase, "device-b", secondState).sync();
 
-    // Device A reviews apple
     await firstDatabase.flashcardDao.putCard(
       word: "apple",
       state: 2,
@@ -167,7 +166,6 @@ void main() {
     );
     await service(firstDatabase, "device-a", firstState).sync();
 
-    // Device B concurrently reviews apple later
     await secondDatabase.flashcardDao.putCard(
       word: "apple",
       state: 3,
@@ -181,11 +179,9 @@ void main() {
       secondState,
     ).sync();
 
-    // Device B auto-resolves the conflict and saves state
     expect(outcomeB.conflicts, isEmpty);
     expect((await secondDatabase.flashcardDao.getAllCards()).single.state, 3);
 
-    // Device A syncs and converges to Device B's newer review
     final outcomeA = await service(
       firstDatabase,
       "device-a",

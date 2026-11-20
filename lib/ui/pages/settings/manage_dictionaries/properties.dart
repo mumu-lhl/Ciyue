@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/full_text_index_section.dart";
 import "package:ciyue/viewModels/dictionary_properties_view_model.dart";
@@ -24,8 +26,8 @@ class _PropertiesDictionaryPageState extends State<PropertiesDictionaryPage> {
   @override
   void initState() {
     super.initState();
-    _model = DictionaryPropertiesViewModel()
-      ..fetchProperties(widget.path, widget.id);
+    _model = DictionaryPropertiesViewModel();
+    unawaited(_model.fetchProperties(widget.path, widget.id));
   }
 
   @override

@@ -248,7 +248,6 @@ void main() {
       await tester.longPress(find.byTooltip("Search mode: Prefix"));
       await tester.pumpAndSettle();
 
-      // All four modes are listed, with the current one checked.
       expect(find.text("Prefix"), findsOneWidget);
       expect(find.text("Suffix"), findsOneWidget);
       expect(find.text("Multi-word"), findsOneWidget);
@@ -319,7 +318,6 @@ void main() {
       expect(find.text("中华人民共和国"), findsNothing);
       expect(find.text("美国"), findsNothing);
 
-      // Tapping a hit opens the exact headword, like any other suggestion.
       await tester.tap(find.text("中华民国"));
       await tester.pumpAndSettle();
       expect(find.text("opened:中华民国"), findsOneWidget);

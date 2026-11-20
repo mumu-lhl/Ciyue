@@ -308,7 +308,7 @@ class _WordListTile extends ConsumerWidget {
             if (context.mounted) {
               final words = allWords.map((e) => e.word).toList();
               final index = allWords.indexOf(data);
-              context.push(
+              await context.push(
                 "/word/${Uri.encodeComponent(data.word)}",
                 extra: WordListContext(
                   words: words,

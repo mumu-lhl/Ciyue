@@ -2,8 +2,6 @@ import "dart:io";
 
 import "package:material_ui/material_ui.dart";
 
-/// Full-screen viewer for an image in a chat message, with
-/// pinch-zoom via [InteractiveViewer].
 class ChatImageViewerPage extends StatelessWidget {
   const ChatImageViewerPage({super.key, required this.path});
 

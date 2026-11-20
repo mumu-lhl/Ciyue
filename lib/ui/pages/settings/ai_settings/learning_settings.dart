@@ -98,7 +98,6 @@ class _LearningSettingsState extends ConsumerState<LearningSettings> {
                         if (selected) {
                           _questionTypes.add(type);
                         } else {
-                          // Keep at least one type enabled.
                           if (_questionTypes.length > 1) {
                             _questionTypes.remove(type);
                           }

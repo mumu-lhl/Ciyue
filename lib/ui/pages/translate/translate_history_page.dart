@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/history_page.dart";
@@ -96,7 +98,7 @@ class _HistoryListItem extends StatelessWidget {
             : IconButton(
                 icon: const Icon(Icons.delete_outline),
                 onPressed: () {
-                  viewModel.deleteHistory(item.id);
+                  unawaited(viewModel.deleteHistory(item.id));
                 },
               ),
       ),
