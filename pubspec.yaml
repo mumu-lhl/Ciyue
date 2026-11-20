@@ -17,7 +17,10 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 
-version: 2.3.0+109
+# Android build number deliberately jumps to 4110 after the Flutter 3.50 ABI
+# versionCode regression in v2.3.0. Do not reset it: existing users may have
+# versionCodes as high as 41087000 (x86_64).
+version: 2.3.1+4110
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
