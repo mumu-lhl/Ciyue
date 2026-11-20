@@ -697,6 +697,7 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                     _touchSelectionTimer?.cancel();
                     if (_touchSelecting &&
                         ev.pointer == _touchSelectionPointer) {
+                      _activeTouchPoints[ev.pointer] = ev.localPosition;
                       unawaited(
                         _controller._touchSelection(
                           "end",
@@ -704,9 +705,10 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                           ev.localPosition.dy,
                         ),
                       );
-                      // Cancel instead of UP so WPE does not synthesize a tap
-                      // after a selection-only gesture.
-                      _sendTouchEvent(3, ev.pointer, ev.localPosition);
+                      // End with a normal UP. A synthetic CANCEL at this point
+                      // made WPE terminate the WebProcess; the JS side swallows
+                      // the click it produces instead.
+                      _sendTouchEvent(1, ev.pointer, ev.localPosition);
                       _touchSelecting = false;
                       _touchSelectionPointer = null;
                       _touchStartPoint = null;

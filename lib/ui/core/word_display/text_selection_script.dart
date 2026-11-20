@@ -32,6 +32,7 @@ String textSelectionScript() {
   var touchStart = null;
   var touchAnchor = null;
   var touchLongPressFired = false;
+  var suppressClick = false;
 
   function postMenu(x, y) {
     var selection = window.getSelection();
@@ -161,7 +162,12 @@ String textSelectionScript() {
   };
 
   window.ciyueTouchSelectionEnd = function (x, y) {
-    if (touchLongPressFired) postMenu(x, y);
+    if (touchLongPressFired) {
+      // The touch still ends with a normal UP (a synthetic cancel event made
+      // WPE terminate the WebProcess), so swallow the click it produces.
+      suppressClick = true;
+      postMenu(x, y);
+    }
     touchStart = null;
     touchAnchor = null;
     touchLongPressFired = false;
@@ -170,10 +176,18 @@ String textSelectionScript() {
   document.addEventListener('touchstart', function (e) {
     if (e.touches.length !== 1) return;
     touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    suppressClick = false;
   }, true);
 
   document.addEventListener('contextmenu', function (e) {
     if (e.button === 0) selectWordAt(e.clientX, e.clientY);
+  }, true);
+
+  document.addEventListener('click', function (e) {
+    if (!suppressClick) return;
+    suppressClick = false;
+    e.preventDefault();
+    e.stopPropagation();
   }, true);
 })();
 """;
