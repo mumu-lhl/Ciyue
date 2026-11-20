@@ -50,8 +50,12 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
   @override
   late String title;
 
+  // Not final: close() resets the cached futures so a later init() runs
+  // the metadata load again, and that load assigns the type a second
+  // time (P1-6). A `late final` would throw on the re-init, exactly like
+  // the `entriesTotal` case below.
   @override
-  late final int type;
+  late int type;
 
   // Metadata-only and full initialization can both run for the same
   // dictionary, so this is assigned more than once; `late final` would throw
@@ -83,6 +87,21 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
   Future<void>? _closeFuture;
   Object? initializationError;
 
+  /// True once [close] has started. An initialization still in flight must
+  /// see this before it reaches [startDesktopServer], or it would bind a
+  /// server after the close that nobody ever closes again (P1-4).
+  bool _closed = false;
+
+  /// Counts close/init cycles. [startDesktopServer] refuses to bind when
+  /// the generation it was started under no longer matches, so a stale
+  /// initialization cannot resurrect a server after a close or a restart.
+  int _generation = 0;
+
+  /// Test-only hook: replaces the loopback bind in [startDesktopServer]
+  /// so a bind failure can be simulated without occupying ports (P1-17).
+  Future<HttpServer> Function(InternetAddress address, int port)?
+  bindServerForTest;
+
   @override
   bool get isReady =>
       initialization != null && !isLoading && initializationError == null;
@@ -112,31 +131,61 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
   }
 
   Future<void> _closeInternal({bool waitForLoading = true}) async {
-    // Only wait when loading was actually started: for a dictionary that was
-    // never initialized, both futures are null and isLoading is still its
-    // initial true, so waitForLoading() would await a completer nothing ever
-    // completes. The pre-refactor close awaited initialization only when
-    // non-null; keep that behavior.
-    if (waitForLoading &&
-        (initialization != null || metadataInitialization != null)) {
-      try {
-        await this.waitForLoading();
-      } catch (_) {}
-    }
-
-    if (_serverInitialized) {
-      try {
-        await server?.close(force: true);
-      } catch (e) {
-        talker.error("Error closing HTTP server on port $port: $e");
-      } finally {
-        server = null;
-        _serverInitialized = false;
-        port = 0;
+    // Mark closed synchronously, before any await: an initialization
+    // still in flight must see this before it reaches
+    // [startDesktopServer], or it would bind a server after this close
+    // that nobody ever closes again. The generation bump invalidates
+    // that initialization even if it already passed the check once.
+    _closed = true;
+    _generation++;
+    try {
+      // Only wait when loading was actually started: for a dictionary that was
+      // never initialized, both futures are null and isLoading is still its
+      // initial true, so waitForLoading() would await a completer nothing ever
+      // completes. The pre-refactor close awaited initialization only when
+      // non-null; keep that behavior.
+      if (waitForLoading &&
+          (initialization != null || metadataInitialization != null)) {
+        try {
+          await this.waitForLoading();
+        } catch (_) {}
       }
-    }
 
-    await onClose();
+      if (_serverInitialized) {
+        try {
+          await server?.close(force: true);
+        } catch (e) {
+          talker.error("Error closing HTTP server on port $port: $e");
+        } finally {
+          server = null;
+          _serverInitialized = false;
+          port = 0;
+        }
+      }
+
+      await onClose();
+    } finally {
+      // Let a later init() start over instead of returning the stale
+      // futures of a closed dictionary (P1-6): a re-initialized
+      // dictionary must run its metadata load and bind a fresh server.
+      // [_closeFuture] stays memoized, so a second close() while no new
+      // init has started returns the same future instead of running
+      // [onClose] a second time.
+      initialization = null;
+      metadataInitialization = null;
+      initializationError = null;
+    }
+  }
+
+  /// Starts a new initialization cycle, e.g. after [close] reset the
+  /// cached futures. Clears the closed flag and the memoized close
+  /// future, and returns the generation the new cycle must pass to
+  /// [startDesktopServer] so a close in the meantime invalidates it.
+  /// Subclass [_initialize] methods call this as their first statement.
+  int beginInitialization() {
+    _closed = false;
+    _closeFuture = null;
+    return ++_generation;
   }
 
   /// Hook for subclasses to release reader resources.
@@ -183,12 +232,38 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
   Future<void> onRemove() async {}
 
   /// Serves entry HTML and static assets to the WebView on Desktop.
+  ///
+  /// [generation] is the value [beginInitialization] returned for the
+  /// initialization cycle calling this: when a [close] (or a newer init)
+  /// has bumped the generation since, binding is refused instead of
+  /// leaking a server nobody will close. A bind failure is logged and
+  /// rethrown so the caller's `_initialize` records it in
+  /// [initializationError] and [isReady] turns false, instead of the
+  /// dictionary silently reporting ready with [port] still 0.
   Future<void> startDesktopServer({
     Future<Uint8List?> Function(String filename)? onReadResource,
     Future<Stream<List<int>>?> Function(String filename)? onReadResourceStream,
+    int? generation,
   }) async {
+    if (_closed || (generation != null && generation != _generation)) {
+      throw StateError(
+        "Dictionary $path is closed; refusing to start a desktop server",
+      );
+    }
     try {
-      server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      server =
+          await (bindServerForTest?.call(InternetAddress.loopbackIPv4, 0) ??
+              HttpServer.bind(InternetAddress.loopbackIPv4, 0));
+      if (_closed || (generation != null && generation != _generation)) {
+        // Bound while a close landed: shut it down at once, nobody else
+        // will.
+        await server?.close(force: true);
+        server = null;
+        port = 0;
+        throw StateError(
+          "Dictionary $path was closed while starting its desktop server",
+        );
+      }
       _serverInitialized = true;
       port = server!.port;
       talker.info("HTTP server started on port $port");
@@ -243,10 +318,24 @@ abstract class BaseLoadedDictionary implements LoadedDictionary {
           return;
         }
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (_serverInitialized) {
-        await server?.close(force: true);
+        try {
+          await server?.close(force: true);
+        } catch (_) {}
       }
+      server = null;
+      _serverInitialized = false;
+      port = 0;
+      // A failed bind used to be swallowed here, so the dictionary kept
+      // reporting isReady with port 0 and the word page rendered a blank
+      // body with no diagnosis. Log it and let the caller record it.
+      talker.error(
+        "Failed to start desktop server for $path: $e",
+        e,
+        stackTrace,
+      );
+      rethrow;
     }
   }
 }

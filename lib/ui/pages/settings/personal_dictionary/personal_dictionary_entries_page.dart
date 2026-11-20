@@ -10,6 +10,53 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:material_ui/material_ui.dart";
 
+/// Shown when a personal dictionary route names a dictionary that does not
+/// exist (bad id in the link, or deleted since): a plain message with a way
+/// back, instead of an empty list that only fails at save time.
+class PersonalDictionaryNotFoundPage extends StatelessWidget {
+  const PersonalDictionaryNotFoundPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.personalDictionaryEntries)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                size: 40,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                l10n.personalDictionaryNotFound,
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go("/settings/dictionaries");
+                  }
+                },
+                child: Text(l10n.close),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class PersonalDictionaryEntriesPage extends ConsumerStatefulWidget {
   const PersonalDictionaryEntriesPage({
     super.key,
@@ -39,11 +86,24 @@ class _PersonalDictionaryEntriesPageState
 
   Future<List<PersonalEntry>>? _entriesFuture;
   String _query = "";
+  bool _notFound = false;
 
   @override
   void initState() {
     super.initState();
     _service = widget.service ?? ref.read(personalDictionaryServiceProvider);
+    _checkDictionary();
+  }
+
+  /// A deep link can point at a dictionary that no longer exists; that is
+  /// a not-found page, not an empty entry list that only fails at save.
+  Future<void> _checkDictionary() async {
+    final exists = await _service.dictionaryExists(widget.dictionaryId);
+    if (!mounted) return;
+    if (!exists) {
+      setState(() => _notFound = true);
+      return;
+    }
     _reload();
   }
 
@@ -93,7 +153,15 @@ class _PersonalDictionaryEntriesPageState
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.delete),
-        content: Text(entry.headwords.join(", ")),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.personalDictionaryDeleteEntryConfirm),
+            const SizedBox(height: 8),
+            Text(entry.headwords.join(", ")),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -117,7 +185,11 @@ class _PersonalDictionaryEntriesPageState
         stackTrace,
       );
       if (mounted) {
-        ToastService.show(e.toString(), context, type: ToastType.error);
+        ToastService.show(
+          l10n.personalDictionaryOperationFailed,
+          context,
+          type: ToastType.error,
+        );
       }
       return;
     }
@@ -132,6 +204,8 @@ class _PersonalDictionaryEntriesPageState
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final title = widget.title ?? l10n.personalDictionaryEntries;
+
+    if (_notFound) return const PersonalDictionaryNotFoundPage();
 
     return Scaffold(
       appBar: AppBar(

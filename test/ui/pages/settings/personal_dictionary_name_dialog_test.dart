@@ -2,6 +2,8 @@ import "dart:typed_data";
 
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
+import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/personal_dictionary.dart";
 import "package:ciyue/services/personal_dictionary_service.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
@@ -17,6 +19,7 @@ import "package:material_ui/material_ui.dart";
 class SpyDictManagerModel extends DictManagerModel {
   final added = <({int id, String path})>[];
   var updateDictIdsCalls = 0;
+  var updateCalls = 0;
 
   @override
   Future<void> add(int id, String path) async {
@@ -26,6 +29,12 @@ class SpyDictManagerModel extends DictManagerModel {
   @override
   Future<void> updateDictIds() async {
     updateDictIdsCalls++;
+  }
+
+  @override
+  void update() {
+    updateCalls++;
+    super.update();
   }
 }
 
@@ -41,11 +50,31 @@ class SpyManageDictionariesModel extends ManageDictionariesModel {
 /// Fake service: only create/rename matter to the name dialog; the rest
 /// is never called from it.
 class FakePersonalDictionaryService implements PersonalDictionaryService {
+  FakePersonalDictionaryService({Set<String> existingNames = const {}})
+    : existingNames = Set.of(existingNames);
+
+  final Set<String> existingNames;
   final createdNames = <String>[];
   final renamed = <({int id, String name})>[];
 
   @override
   AppDatabase get db => throw UnimplementedError("Fake has no database");
+
+  @override
+  Future<bool> dictionaryExists(int id) async => true;
+
+  @override
+  Future<bool> dictionaryNameExists(String name, {int? exceptId}) async =>
+      existingNames.any(
+        (existing) => existing.toLowerCase() == name.trim().toLowerCase(),
+      );
+
+  @override
+  Future<String?> findConflictingHeadword(
+    int dictionaryId,
+    List<String> headwords, {
+    int? exceptArticleId,
+  }) async => null;
 
   @override
   Future<int> createDictionary(String name) async {
@@ -112,8 +141,9 @@ void main() {
   Future<void> pumpDialog(
     WidgetTester tester, {
     DictionaryListData? dictionary,
+    Set<String> existingNames = const {},
   }) async {
-    fake = FakePersonalDictionaryService();
+    fake = FakePersonalDictionaryService(existingNames: existingNames);
     dictModel = SpyDictManagerModel();
     manageModel = SpyManageDictionariesModel();
     await tester.pumpWidget(
@@ -169,13 +199,18 @@ void main() {
     expect(find.text("New personal dictionary"), findsNothing);
   });
 
-  testWidgets("renaming does not reload the dictionary", (tester) async {
+  testWidgets("renaming syncs the loaded dictionary title", (tester) async {
     const existing = DictionaryListData(
       id: 7,
       path: "personal:7",
       title: "Old",
       type: 4,
     );
+    // The dictionary is loaded in the manager, so its in-memory title is
+    // what the word page tabs show.
+    final loaded = PersonalDictionary(path: "personal:7")..title = "Old";
+    dictManager.dicts[7] = loaded;
+    addTearDown(() => dictManager.dicts.remove(7));
     await pumpDialog(tester, dictionary: existing);
 
     expect(find.text("Rename"), findsOneWidget);
@@ -183,10 +218,75 @@ void main() {
     await confirmName(tester, "New Name");
 
     expect(fake.renamed, [(id: 7, name: "New Name")]);
+    // The loaded dictionary's title follows the rename at once, and the
+    // manager notifies so the word page tabs rebuild with the new name.
+    expect(loaded.title, "New Name");
+    expect(dictModel.updateCalls, 1);
     expect(dictModel.added, isEmpty);
     expect(dictModel.updateDictIdsCalls, 0);
     expect(manageModel.updateCalls, 1);
     expect(find.text("Rename"), findsNothing);
+  });
+
+  testWidgets("a duplicate name is rejected inline and the dialog stays open", (
+    tester,
+  ) async {
+    await pumpDialog(tester, existingNames: {"My Words"});
+
+    await tester.enterText(find.byType(TextField), "my words");
+    await tester.tap(find.text("Confirm"));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 3));
+
+    expect(fake.createdNames, isEmpty);
+    expect(dictModel.added, isEmpty);
+    expect(
+      find.text("A personal dictionary with this name already exists"),
+      findsOneWidget,
+    );
+    expect(find.text("New personal dictionary"), findsOneWidget);
+  });
+
+  testWidgets("a name over the length limit is rejected inline", (
+    tester,
+  ) async {
+    await pumpDialog(tester);
+
+    await tester.enterText(find.byType(TextField), "a" * 101);
+    await tester.tap(find.text("Confirm"));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 3));
+
+    expect(fake.createdNames, isEmpty);
+    expect(
+      find.text("Dictionary name must be at most 100 characters"),
+      findsOneWidget,
+    );
+    expect(find.text("New personal dictionary"), findsOneWidget);
+  });
+
+  testWidgets("renaming to a duplicate name is rejected inline", (
+    tester,
+  ) async {
+    const existing = DictionaryListData(
+      id: 7,
+      path: "personal:7",
+      title: "Old",
+      type: 4,
+    );
+    await pumpDialog(tester, dictionary: existing, existingNames: {"Taken"});
+
+    await tester.enterText(find.byType(TextField), "taken");
+    await tester.tap(find.text("Confirm"));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 3));
+
+    expect(fake.renamed, isEmpty);
+    expect(
+      find.text("A personal dictionary with this name already exists"),
+      findsOneWidget,
+    );
+    expect(find.text("Rename"), findsOneWidget);
   });
 
   testWidgets("an empty name is rejected and the dialog stays open", (

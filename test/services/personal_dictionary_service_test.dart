@@ -6,6 +6,8 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/services/personal_dictionary_service.dart";
+import "package:ciyue/src/generated/i18n/app_localizations_en.dart";
+import "package:ciyue/src/generated/i18n/app_localizations_zh.dart";
 import "package:drift/native.dart";
 import "package:flutter_test/flutter_test.dart";
 
@@ -34,6 +36,43 @@ void main() {
     test("rejects a blank name", () async {
       await expectLater(service.createDictionary("   "), throwsArgumentError);
     });
+
+    test("rejects a duplicate name, case-insensitively", () async {
+      await service.createDictionary("My Words");
+
+      await expectLater(service.createDictionary("my words"), throwsStateError);
+      await expectLater(service.createDictionary("MY WORDS"), throwsStateError);
+    });
+
+    test("rejects a name over the length limit", () async {
+      final tooLong = "a" * (personalDictionaryNameMaxLength + 1);
+      await expectLater(service.createDictionary(tooLong), throwsArgumentError);
+      expect(
+        await service.createDictionary("a" * personalDictionaryNameMaxLength),
+        isNotNull,
+      );
+    });
+
+    test("dictionaryExists only matches personal dictionaries", () async {
+      final id = await service.createDictionary("Words");
+      final fileId = await dictionaryListDao.add("/tmp/not-personal", "MDict");
+
+      expect(await service.dictionaryExists(id), isTrue);
+      expect(await service.dictionaryExists(fileId), isFalse);
+      expect(await service.dictionaryExists(999999), isFalse);
+    });
+
+    test("dictionaryNameExists matches case-insensitively", () async {
+      final id = await service.createDictionary("My Words");
+      await service.createDictionary("Other");
+
+      expect(await service.dictionaryNameExists("my words"), isTrue);
+      expect(await service.dictionaryNameExists("missing"), isFalse);
+      expect(
+        await service.dictionaryNameExists("My Words", exceptId: id),
+        isFalse,
+      );
+    });
   });
 
   group("renameDictionary and deleteDictionary", () {
@@ -43,6 +82,39 @@ void main() {
       await service.renameDictionary(id, "New");
 
       expect(await dictionaryListDao.getTitle(id), "New");
+    });
+
+    test("rename to its own name is allowed", () async {
+      final id = await service.createDictionary("Old");
+
+      await service.renameDictionary(id, "old");
+
+      expect(await dictionaryListDao.getTitle(id), "old");
+    });
+
+    test("rename rejects a duplicate name, case-insensitively", () async {
+      final first = await service.createDictionary("First");
+      final second = await service.createDictionary("Second");
+
+      await expectLater(
+        service.renameDictionary(second, "first"),
+        throwsStateError,
+      );
+      expect(await dictionaryListDao.getTitle(first), "First");
+      expect(await dictionaryListDao.getTitle(second), "Second");
+    });
+
+    test("rename rejects a name over the length limit", () async {
+      final id = await service.createDictionary("Old");
+
+      await expectLater(
+        service.renameDictionary(
+          id,
+          "a" * (personalDictionaryNameMaxLength + 1),
+        ),
+        throwsArgumentError,
+      );
+      expect(await dictionaryListDao.getTitle(id), "Old");
     });
 
     test("deleteDictionary removes articles, headwords and the row", () async {
@@ -104,7 +176,8 @@ void main() {
       expect(entries, hasLength(1));
       expect(entries.single.headwords, ["color", "colour"]);
       expect(entries.single.body, "v2");
-      expect(await service.entryCount(id), 2);
+      // One article with two aliases counts as one entry, not two.
+      expect(await service.entryCount(id), 1);
     });
 
     test("updateEntry can rename headwords", () async {
@@ -243,6 +316,38 @@ void main() {
         ["émile"],
       );
     });
+
+    test("findConflictingHeadword reports a taken headword", () async {
+      final id = await service.createDictionary("Words");
+      await service.createEntry(id, headwords: ["apple"], body: "a fruit");
+      await service.createEntry(id, headwords: ["banana"], body: "yellow");
+
+      expect(await service.findConflictingHeadword(id, ["Apple"]), "apple");
+      expect(await service.findConflictingHeadword(id, ["cherry"]), isNull);
+    });
+
+    test("findConflictingHeadword ignores the article being edited", () async {
+      final id = await service.createDictionary("Words");
+      final articleId = await service.createEntry(
+        id,
+        headwords: ["apple"],
+        body: "a fruit",
+      );
+      await service.createEntry(id, headwords: ["banana"], body: "yellow");
+
+      expect(
+        await service.findConflictingHeadword(id, [
+          "apple",
+        ], exceptArticleId: articleId),
+        isNull,
+      );
+      expect(
+        await service.findConflictingHeadword(id, [
+          "banana",
+        ], exceptArticleId: articleId),
+        "banana",
+      );
+    });
   });
 
   group("DSL export and import", () {
@@ -299,8 +404,7 @@ void main() {
       // The exported body carries DSL tags ([b], [i], [m1]); importing it
       // back warns once that they stay plain text.
       expect(result.warnings, [
-        "DSL tags such as [b] are stored as plain text; "
-            "formatting is not applied.",
+        const PersonalDslWarning(PersonalDslWarningKind.tags),
       ]);
       final entries = await service.listEntries(target);
       expect(entries.map((e) => e.headwords.single), ["apple", "banana"]);
@@ -325,7 +429,12 @@ void main() {
         final result = await service.importDsl(id, dsl);
 
         expect(result.imported, 2);
-        expect(result.warnings, hasLength(4));
+        expect(result.warnings.map((w) => w.kind).toSet(), {
+          PersonalDslWarningKind.tags,
+          PersonalDslWarningKind.tilde,
+          PersonalDslWarningKind.parentheses,
+          PersonalDslWarningKind.doubleBraces,
+        });
         expect(
           (await service.listEntries(id)).first.body,
           "[b]bold[/b] and ~tilde~ (note) {{meta}}",
@@ -343,7 +452,9 @@ void main() {
       );
 
       expect(result.imported, 1);
-      expect(result.warnings, hasLength(1));
+      expect(result.warnings, [
+        const PersonalDslWarning(PersonalDslWarningKind.duplicate, "apple"),
+      ]);
       expect((await service.listEntries(id)).map((e) => e.headwords.single), [
         "apple",
         "banana",
@@ -354,12 +465,145 @@ void main() {
     test("importDsl rejects a body line without a headword", () async {
       final id = await service.createDictionary("Words");
 
-      await expectLater(
-        service.importDsl(id, "\tbody without headword\n"),
-        throwsFormatException,
+      // An orphan body line is skipped with a warning instead of voiding
+      // the whole file (P1-11): the valid entry still imports.
+      final result = await service.importDsl(
+        id,
+        "\tbody without headword\napple\n\tred fruit\n",
       );
-      expect(await service.entryCount(id), 0);
+
+      expect(result.imported, 1);
+      expect(result.warnings, [
+        const PersonalDslWarning(PersonalDslWarningKind.orphanBodyLines, "", 1),
+      ]);
+      expect((await service.listEntries(id)).single.headwords, ["apple"]);
     });
+
+    test("import warnings render as localised messages", () {
+      final l10n = AppLocalizationsEn();
+      expect(
+        const PersonalDslWarning(PersonalDslWarningKind.tags).message(l10n),
+        "DSL tags such as [b] are stored as plain text; "
+        "formatting is not applied.",
+      );
+      expect(
+        const PersonalDslWarning(
+          PersonalDslWarningKind.noBody,
+          "apple",
+        ).message(l10n),
+        "Skipped entry “apple”: it has no body.",
+      );
+      expect(
+        const PersonalDslWarning(
+          PersonalDslWarningKind.duplicate,
+          "apple",
+        ).message(l10n),
+        "Skipped entry “apple”: the headword already exists in this dictionary.",
+      );
+      expect(
+        const PersonalDslWarning(
+          PersonalDslWarningKind.orphanBodyLines,
+          "",
+          2,
+        ).message(l10n),
+        "Skipped 2 body lines without a headword.",
+      );
+      expect(
+        const PersonalDslWarning(
+          PersonalDslWarningKind.invalidEntry,
+          "apple",
+        ).message(l10n),
+        "Skipped entry “apple”: it could not be saved.",
+      );
+      // The Chinese rendering carries the same headwords, not raw English.
+      final zh = AppLocalizationsZh();
+      expect(
+        const PersonalDslWarning(
+          PersonalDslWarningKind.noBody,
+          "apple",
+        ).message(zh),
+        contains("apple"),
+      );
+      expect(
+        const PersonalDslWarning(
+          PersonalDslWarningKind.noBody,
+          "apple",
+        ).message(zh),
+        isNot(contains("Skipped entry")),
+      );
+    });
+
+    test("importDsl skips DSL metadata and comment lines", () async {
+      final id = await service.createDictionary("Words");
+
+      final result = await service.importDsl(
+        id,
+        "#NAME \"Test\"\n"
+        "#INDEX_LANGUAGE \"English\"\n"
+        "#SOURCE \"https://example.com\"\n"
+        "# a comment\n"
+        "apple\n"
+        "\tred fruit\n",
+      );
+
+      expect(result.imported, 1);
+      expect(result.warnings, isEmpty);
+      expect((await service.listEntries(id)).single.headwords, ["apple"]);
+    });
+
+    test(
+      "importDsl keeps a Markdown heading inside the indented body",
+      () async {
+        final id = await service.createDictionary("Words");
+
+        final result = await service.importDsl(
+          id,
+          "apple\n\t# Title\n\ttext\n",
+        );
+
+        expect(result.imported, 1);
+        expect((await service.listEntries(id)).single.body, "# Title\ntext");
+      },
+    );
+
+    test("importDsl keeps blank lines inside an article body", () async {
+      final id = await service.createDictionary("Words");
+
+      final result = await service.importDsl(
+        id,
+        "apple\n\tpara1\n\n\tpara2\nbanana\n\tyellow\n",
+      );
+
+      expect(result.imported, 2);
+      final entries = await service.listEntries(id);
+      expect(entries.first.body, "para1\n\npara2");
+      expect(entries.last.body, "yellow");
+    });
+
+    test(
+      "importDsl skips an entry with no usable headword and keeps going",
+      () async {
+        final id = await service.createDictionary("Words");
+        // A headword line of only a non-breaking space trims to empty, so
+        // createEntry rejects it with an ArgumentError.
+        final result = await service.importDsl(
+          id,
+          "apple\n\tred\n\u00A0\n\tbody\nbanana\n\tyellow\n",
+        );
+
+        expect(result.imported, 2);
+        expect(result.warnings, [
+          const PersonalDslWarning(
+            PersonalDslWarningKind.invalidEntry,
+            "<empty headword>",
+          ),
+        ]);
+        expect((await service.listEntries(id)).map((e) => e.headwords.single), [
+          "apple",
+          "banana",
+        ]);
+      },
+    );
 
     test("importDslBytes decodes UTF-16LE with a BOM", () async {
       final id = await service.createDictionary("Words");
@@ -414,6 +658,70 @@ void main() {
       final result = await service.importDslBytes(id, bytes, "dict.dsl");
 
       expect(result.imported, 1);
+    });
+
+    test("importDslBytes sniffs UTF-16LE without a BOM", () async {
+      final id = await service.createDictionary("Words");
+      const dsl = "apple\n\tred fruit\nbanana\n\tyellow fruit\n";
+      final bytes = _utf16Bytes(dsl, littleEndian: true, withBom: false);
+
+      final result = await service.importDslBytes(id, bytes, "dict.dsl");
+
+      expect(result.imported, 2);
+      expect((await service.listEntries(id)).map((e) => e.headwords.single), [
+        "apple",
+        "banana",
+      ]);
+    });
+
+    test("importDslBytes sniffs UTF-16BE without a BOM", () async {
+      final id = await service.createDictionary("Words");
+      const dsl = "apple\n\tred fruit\n";
+      final bytes = _utf16Bytes(dsl, littleEndian: false, withBom: false);
+
+      final result = await service.importDslBytes(id, bytes, "dict.dsl");
+
+      expect(result.imported, 1);
+      expect((await service.listEntries(id)).single.body, "red fruit");
+    });
+
+    test("exportDsl keeps nested emphasis intact", () async {
+      final id = await service.createDictionary("Words");
+      await service.createEntry(
+        id,
+        headwords: ["apple"],
+        body: "**bold *and italic* text**",
+      );
+
+      expect(
+        await service.exportDsl(id),
+        "apple\n\t[b]bold [i]and italic[/i] text[/b]\n",
+      );
+    });
+
+    test("exportDsl keeps autolinks and strips other HTML tags", () async {
+      final id = await service.createDictionary("Words");
+      await service.createEntry(
+        id,
+        headwords: ["apple"],
+        body: "see <https://example.com> and <b>html bold</b>",
+      );
+
+      expect(
+        await service.exportDsl(id),
+        "apple\n\tsee https://example.com and html bold\n",
+      );
+    });
+
+    test("exportDsl keeps links whose target contains parentheses", () async {
+      final id = await service.createDictionary("Words");
+      await service.createEntry(
+        id,
+        headwords: ["apple"],
+        body: "[wiki](https://en.wikipedia.org/wiki/Tea_(meal)) end",
+      );
+
+      expect(await service.exportDsl(id), "apple\n\twiki end\n");
     });
   });
 }

@@ -31,6 +31,20 @@ class FakePersonalDictionaryService implements PersonalDictionaryService {
   AppDatabase get db => throw UnimplementedError("Fake has no database");
 
   @override
+  Future<bool> dictionaryExists(int id) async => _entries.containsKey(id);
+
+  @override
+  Future<bool> dictionaryNameExists(String name, {int? exceptId}) async =>
+      false;
+
+  @override
+  Future<String?> findConflictingHeadword(
+    int dictionaryId,
+    List<String> headwords, {
+    int? exceptArticleId,
+  }) async => null;
+
+  @override
   Future<int> createDictionary(String name) async => 1;
 
   @override
@@ -151,7 +165,7 @@ void main() {
     });
   });
 
-  Future<void> pumpPage(WidgetTester tester) async {
+  Future<void> pumpPage(WidgetTester tester, {int dictionaryId = 1}) async {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -160,7 +174,7 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           locale: const Locale("en"),
           home: PersonalDictionaryEntriesPage(
-            dictionaryId: 1,
+            dictionaryId: dictionaryId,
             title: "My words",
             service: fake,
           ),
@@ -331,5 +345,28 @@ void main() {
     expect(find.text("cherry"), findsOneWidget);
     expect(find.text("Entry saved"), findsOneWidget);
     await tester.pump(const Duration(seconds: 3));
+  });
+
+  testWidgets("deleting an entry confirms with the delete-entry wording", (
+    tester,
+  ) async {
+    await pumpPage(tester);
+
+    await tester.tap(find.byIcon(Icons.delete_outline_rounded).first);
+    await tester.pumpAndSettle();
+
+    expect(find.text("Delete this entry?"), findsOneWidget);
+    expect(find.text("apple"), findsWidgets);
+  });
+
+  testWidgets("a missing dictionary shows the not-found page", (tester) async {
+    await pumpPage(tester, dictionaryId: 999);
+
+    expect(
+      find.text("This personal dictionary no longer exists"),
+      findsOneWidget,
+    );
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.text("My words"), findsNothing);
   });
 }

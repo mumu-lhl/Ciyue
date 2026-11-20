@@ -44,7 +44,11 @@ Future<void> importPersonalDictionaryDsl(
       stackTrace,
     );
     if (context.mounted) {
-      ToastService.show(e.toString(), context, type: ToastType.error);
+      ToastService.show(
+        l10n.personalDictionaryOperationFailed,
+        context,
+        type: ToastType.error,
+      );
     }
     return;
   }
@@ -68,7 +72,7 @@ Future<void> importPersonalDictionaryDsl(
               for (final warning in result.warnings)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
-                  child: Text("• $warning"),
+                  child: Text("• ${warning.message(l10n)}"),
                 ),
             ],
           ),
@@ -104,7 +108,11 @@ Future<void> exportPersonalDictionaryDsl(
       stackTrace,
     );
     if (context.mounted) {
-      ToastService.show(e.toString(), context, type: ToastType.error);
+      ToastService.show(
+        l10n.personalDictionaryOperationFailed,
+        context,
+        type: ToastType.error,
+      );
     }
     return;
   }
@@ -127,7 +135,11 @@ Future<void> exportPersonalDictionaryDsl(
       stackTrace,
     );
     if (context.mounted) {
-      ToastService.show(e.toString(), context, type: ToastType.error);
+      ToastService.show(
+        l10n.personalDictionaryOperationFailed,
+        context,
+        type: ToastType.error,
+      );
     }
     return;
   }

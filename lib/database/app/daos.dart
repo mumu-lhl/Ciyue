@@ -1368,6 +1368,18 @@ class PersonalDictionaryDao extends DatabaseAccessor<AppDatabase>
     return row.read(count) ?? 0;
   }
 
+  /// The number of articles (entries) in [dictionaryId]: aliases sharing
+  /// one article count once, unlike [countHeadwords].
+  Future<int> countArticles(int dictionaryId) async {
+    final count = personalArticles.id.count();
+    final row =
+        await (selectOnly(personalArticles)
+              ..addColumns([count])
+              ..where(personalArticles.dictionaryId.isValue(dictionaryId)))
+            .getSingle();
+    return row.read(count) ?? 0;
+  }
+
   Future<int> updateArticle(int articleId, PersonalArticlesCompanion article) {
     return (update(
       personalArticles,

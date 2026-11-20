@@ -207,9 +207,25 @@ class DictManager {
         for (var i = 0; i < validPaths.length; i++)
           _tryAdd(validDictIds[i], validPaths[i]),
       ]);
+      // The rows of the dictionaries that failed to load, so a failure
+      // can be told apart from a missing file below. A personal
+      // dictionary has no file: a load failure is a transient
+      // database/reader error, and deleting its list row would orphan
+      // every article and headword it owns (P1-3).
+      final failedRows = await Future.wait([
+        for (final dictId in validDictIds) dictionaryListDao.getById(dictId),
+      ]);
       final toRemove = <int>[];
       for (var i = 0; i < added.length; i++) {
         if (!added[i]) {
+          if (DictionaryType.isPersonal(failedRows[i]?.type ?? -1)) {
+            talker.warning(
+              "Keeping personal dictionary ${validDictIds[i]} "
+              "(${validPaths[i]}) after a failed load; its list row is "
+              "not deleted, so its articles stay recoverable.",
+            );
+            continue;
+          }
           await dictionaryListDao.remove(validPaths[i]);
           toRemove.add(i);
         }

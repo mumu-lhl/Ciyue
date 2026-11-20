@@ -80,7 +80,7 @@ void main() {
     expect(dict.id, dictionaryId);
     expect(dict.type, DictionaryType.personal);
     expect(dict.title, "My Words");
-    expect(dict.entriesTotal, 4);
+    expect(dict.entriesTotal, 3);
     expect(dict.isReady, isTrue);
     expect(dict.port, 0);
     expect(dict.description, "");
@@ -196,6 +196,43 @@ void main() {
     expect(entries.single.headword, "Apple");
   });
 
+  test("readExactEntries completes partial resolvedKeys per word", () async {
+    final id = await service.createDictionary("Kana");
+    await service.createEntry(id, headwords: ["ぱそこん"], body: "hiragana");
+    await service.createEntry(id, headwords: ["パソコン"], body: "katakana");
+    final dict = PersonalDictionary(path: "personal:$id", database: database);
+    await dict.init();
+
+    // The lookup passes only the exact key it already resolved; the
+    // other kana spelling must still be resolved, not dropped.
+    final entries = await dict.readExactEntries(
+      ["ぱそこん", "パソコン"],
+      resolvedKeys: {"ぱそこん": "ぱそこん"},
+    );
+
+    expect(entries.map((e) => e.headword), ["ぱそこん", "パソコン"]);
+    expect(
+      (await dict.readExactEntries(["ぱそこん", "パソコン"])).map((e) => e.headword),
+      ["ぱそこん", "パソコン"],
+    );
+  });
+
+  test("resolveExactKey and search fold full-width spellings", () async {
+    final id = await service.createDictionary("Width");
+    await service.createEntry(id, headwords: ["ＮＨＫ"], body: "broadcaster");
+    final dict = PersonalDictionary(path: "personal:$id", database: database);
+    await dict.init();
+
+    expect(await dict.resolveExactKey("NHK"), "ＮＨＫ");
+    expect(await dict.resolveExactKey("ｎｈｋ"), "ＮＨＫ");
+    expect(await dict.search("ｎｈ"), ["ＮＨＫ"]);
+
+    final main = dictionary();
+    await main.init();
+    expect(await main.resolveExactKey("Ａpple"), "Apple");
+    expect(await main.search("ａpp"), ["Apple", "apple fruit", "application"]);
+  });
+
   test("resource access is a no-op: no files, identity wrap, server serves nothing", () async {
     final dict = dictionary();
     await dict.init();
@@ -219,6 +256,187 @@ void main() {
       expect(await DictionaryListDao(database).getById(dictionaryId), isNull);
       expect(await service.entryCount(dictionaryId), 0);
       expect(await service.listEntries(dictionaryId), isEmpty);
+    },
+  );
+
+  group("sanitizePersonalDictionaryHtml", () {
+    test("strips script tags and their content", () {
+      expect(
+        sanitizePersonalDictionaryHtml(
+          "<p>safe</p><script>alert(1)</script><p>after</p>",
+        ),
+        "<p>safe</p><p>after</p>",
+      );
+      expect(
+        sanitizePersonalDictionaryHtml("<SCRIPT>alert(1)</SCRIPT>safe"),
+        "safe",
+      );
+      expect(
+        sanitizePersonalDictionaryHtml("<scr<script>ipt>alert(1)</script>safe"),
+        isNot(contains("alert(")),
+      );
+      expect(
+        sanitizePersonalDictionaryHtml("<script>alert(1)"),
+        isNot(contains("<script")),
+      );
+    });
+
+    test("strips event handler attributes", () {
+      expect(
+        sanitizePersonalDictionaryHtml("<img src=x onerror=alert(2)>"),
+        "<img src=x>",
+      );
+      expect(
+        sanitizePersonalDictionaryHtml(
+          "<p onclick=\"alert(3)\" title=\"keep\">text</p>",
+        ),
+        "<p title=\"keep\">text</p>",
+      );
+    });
+
+    test("strips dangerous URL schemes and keeps safe links", () {
+      expect(
+        sanitizePersonalDictionaryHtml("<a href=\"javascript:alert(3)\">x</a>"),
+        "<a>x</a>",
+      );
+      expect(
+        sanitizePersonalDictionaryHtml("<a href=\"JaVaScRiPt:alert(3)\">x</a>"),
+        "<a>x</a>",
+      );
+      expect(
+        sanitizePersonalDictionaryHtml(
+          "<a href=\"javascript&#58;alert(3)\">x</a>",
+        ),
+        "<a>x</a>",
+      );
+      expect(
+        sanitizePersonalDictionaryHtml(
+          "<a href=\"data:text/html,<script>alert(4)</script>\">x</a>",
+        ),
+        isNot(contains("data:")),
+      );
+      expect(
+        sanitizePersonalDictionaryHtml("<a href=\"https://example.com\">x</a>"),
+        "<a href=\"https://example.com\">x</a>",
+      );
+      expect(
+        sanitizePersonalDictionaryHtml("<b>bold</b> and <em>italic</em>"),
+        "<b>bold</b> and <em>italic</em>",
+      );
+    });
+
+    test("drops iframe/style/object content and dangerous styles", () {
+      expect(
+        sanitizePersonalDictionaryHtml(
+          "<iframe src=\"https://example.com\"></iframe>safe",
+        ),
+        "safe",
+      );
+      expect(
+        sanitizePersonalDictionaryHtml("<span style=\"color:red\">keep</span>"),
+        "<span style=\"color:red\">keep</span>",
+      );
+      expect(
+        sanitizePersonalDictionaryHtml(
+          "<span style=\"xss:expression(alert(1))\">drop</span>",
+        ),
+        "<span>drop</span>",
+      );
+    });
+  });
+
+  test(
+    "readExactEntries sanitizes script, event handlers and javascript: links",
+    () async {
+      final id = await service.createDictionary("Unsafe");
+      await service.createEntry(
+        id,
+        headwords: ["scripted"],
+        body: "<script>alert(1)</script>safe text",
+      );
+      await service.createEntry(
+        id,
+        headwords: ["imaged"],
+        body: "<img src=x onerror=alert(2)>",
+      );
+      await service.createEntry(
+        id,
+        headwords: ["linked"],
+        body: "[x](javascript:alert(3))",
+      );
+      final dict = PersonalDictionary(path: "personal:$id", database: database);
+      await dict.init();
+
+      final entries = await dict.readExactEntries([
+        "scripted",
+        "imaged",
+        "linked",
+      ]);
+
+      expect(entries.map((e) => e.headword), ["scripted", "imaged", "linked"]);
+      for (final entry in entries) {
+        expect(entry.content, isNot(contains("<script")));
+        expect(entry.content, isNot(contains("onerror")));
+        expect(entry.content, isNot(contains("javascript:")));
+        expect(entry.content, isNot(contains("alert(")));
+      }
+      expect(entries.first.content, contains("safe text"));
+      await dict.close();
+    },
+  );
+
+  test("close during init does not leak a server", () async {
+    final dict = dictionary();
+    final initializing = dict.init();
+    // Attach immediately: the init is expected to fail, and a failure
+    // with no listener yet would be reported as an unhandled async error
+    // while the test waits.
+    final initError = initializing.then<Object?>(
+      (_) => null,
+      onError: (Object error) => error,
+    );
+    await dict.close(waitForLoading: false);
+    await Future<void>.delayed(const Duration(milliseconds: 800));
+
+    expect(dict.port, 0);
+    await dict.close();
+    expect(dict.port, 0);
+    expect(dict.isReady, isFalse);
+    expect(await initError, isA<StateError>());
+  });
+
+  test("close then init binds a fresh server", () async {
+    final dict = dictionary();
+    await dict.init();
+
+    expect(dict.port, isNot(0));
+    expect(dict.isReady, isTrue);
+
+    await dict.close();
+    expect(dict.port, 0);
+    expect(dict.isReady, isFalse);
+
+    await dict.init();
+    expect(dict.port, isNot(0));
+    expect(dict.isReady, isTrue);
+
+    await dict.close();
+    expect(dict.port, 0);
+  });
+
+  test(
+    "a failed server bind surfaces initializationError and isReady false",
+    () async {
+      final dict = dictionary();
+      dict.bindServerForTest = (_, _) async =>
+          throw const SocketException("bind failed");
+
+      await expectLater(dict.init(), throwsA(isA<SocketException>()));
+
+      expect(dict.initializationError, isA<SocketException>());
+      expect(dict.isReady, isFalse);
+      expect(dict.port, 0);
+      await dict.close();
     },
   );
 
@@ -247,6 +465,40 @@ void main() {
       expect(await dict.search("kiw"), ["kiwi"]);
       final entries = await dict.readExactEntries(["KIWI"]);
       expect(entries.single.content, contains("<strong>green</strong>"));
+    });
+
+    test("a failed personal dictionary load keeps its list row", () async {
+      final listDao = DictionaryListDao(mainDatabase);
+      final groupDao = DictGroupDao(mainDatabase);
+      // A list row whose sentinel id has no row of its own: initMetadata
+      // throws, which used to delete this row and orphan its articles.
+      final ghostId = await listDao.add(
+        "personal:999999",
+        "Ghost",
+        type: DictionaryType.personal,
+      );
+      final groupId = await groupDao.addGroup(
+        "P1-3 probe ${DateTime.now().millisecondsSinceEpoch}",
+        [ghostId],
+      );
+      final previousGroup = dictManager.groupId;
+      addTearDown(() async {
+        try {
+          await dictManager.setCurrentGroup(previousGroup);
+        } catch (_) {}
+        try {
+          await groupDao.removeGroup(groupId);
+        } catch (_) {}
+        try {
+          await listDao.removeById(ghostId);
+        } catch (_) {}
+      });
+
+      await dictManager.setCurrentGroup(groupId);
+
+      expect(await listDao.getById(ghostId), isNotNull);
+      expect(dictManager.dicts.containsKey(ghostId), isFalse);
+      expect(dictManager.dictIds, contains(ghostId));
     });
   });
 }

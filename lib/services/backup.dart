@@ -6,9 +6,12 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/models/backup/backup.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
+import "package:ciyue/services/lookup_keys.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/viewModels/wordbook.dart";
+import "package:drift/drift.dart";
 import "package:file_selector/file_selector.dart";
 import "package:path/path.dart";
 import "package:ciyue/core/providers.dart";
@@ -90,6 +93,13 @@ class BackupService {
   final BackupFileHandler fileHandler;
   final WordbookModel? _wordbookModel;
 
+  /// Null in tests that do not cover personal dictionaries; when set,
+  /// export includes every personal dictionary and import restores them
+  /// (P1-2). Kept optional so the existing mock-based tests keep working
+  /// unchanged.
+  final PersonalDictionaryDao? personalDictionaryDao;
+  final DictionaryListDao? dictionaryListDao;
+
   BackupService({
     required this.wordbookDao,
     required this.wordbookTagsDao,
@@ -99,6 +109,8 @@ class BackupService {
     this.flashcardDao,
     required this.fileHandler,
     this._wordbookModel,
+    this.personalDictionaryDao,
+    this.dictionaryListDao,
   });
 
   Future<void> export({
@@ -128,11 +140,13 @@ class BackupService {
     final flashcardReviewLogs = wordbook && flashcardDao != null
         ? await flashcardDao!.getReviewLogs()
         : <FlashcardReviewLog>[];
+    final personalDictionaries = await _exportPersonalDictionaries();
 
     if (words.isNotEmpty ||
         history.isNotEmpty ||
         writingCheckHistoryData.isNotEmpty ||
-        translateHistoryData.isNotEmpty) {
+        translateHistoryData.isNotEmpty ||
+        personalDictionaries.isNotEmpty) {
       final backupData = BackupData(
         version: Backup.version,
         wordbookWords: words,
@@ -142,6 +156,7 @@ class BackupService {
         translateHistory: translateHistoryData,
         flashcards: flashcards,
         flashcardReviewLogs: flashcardReviewLogs,
+        personalDictionaries: personalDictionaries,
       );
       final jsonContent = backupData.toJson();
 
@@ -200,6 +215,118 @@ class BackupService {
     await translateHistoryDao.addAllHistory(backupData.translateHistory);
     await flashcardDao?.addAllCards(backupData.flashcards);
     await flashcardDao?.addAllReviewLogs(backupData.flashcardReviewLogs);
+    await _importPersonalDictionaries(backupData.personalDictionaries);
+  }
+
+  /// Reads every personal dictionary (title + articles + headwords) for
+  /// export. Returns [] when this service was built without the personal
+  /// dictionary DAOs.
+  Future<List<PersonalDictionaryBackup>> _exportPersonalDictionaries() async {
+    final dictionaryListDao = this.dictionaryListDao;
+    final personalDictionaryDao = this.personalDictionaryDao;
+    if (dictionaryListDao == null || personalDictionaryDao == null) {
+      return [];
+    }
+    final result = <PersonalDictionaryBackup>[];
+    for (final row in await dictionaryListDao.all()) {
+      if (row.type != DictionaryType.personal) continue;
+      final articles = await personalDictionaryDao.articlesForDictionary(
+        row.id,
+      );
+      final headwords = await personalDictionaryDao.headwordsForArticles(
+        articles.map((article) => article.id),
+      );
+      final headwordsByArticle = <int, List<String>>{};
+      for (final headword in headwords) {
+        (headwordsByArticle[headword.articleId] ??= []).add(headword.headword);
+      }
+      result.add(
+        PersonalDictionaryBackup(
+          title: row.title ?? "personal:${row.id}",
+          articles: [
+            for (final article in articles)
+              PersonalArticleBackup(
+                headwords: headwordsByArticle[article.id] ?? [],
+                body: article.body,
+                source: article.source,
+              ),
+          ],
+        ),
+      );
+    }
+    return result;
+  }
+
+  /// Restores personal dictionaries from a backup, assigning fresh ids
+  /// and remapping every article's headwords onto its new article id.
+  /// A restored dictionary is an ordinary list row afterwards, so it
+  /// loads through the manager exactly like a freshly created one
+  /// (`DictManager.add` + `updateDictIds`, the new-dictionary dialog's
+  /// wiring); import itself does not join it to the current group.
+  Future<void> _importPersonalDictionaries(
+    List<PersonalDictionaryBackup> dictionaries,
+  ) async {
+    final dictionaryListDao = this.dictionaryListDao;
+    final personalDictionaryDao = this.personalDictionaryDao;
+    if (dictionaryListDao == null || personalDictionaryDao == null) return;
+    for (final dictionary in dictionaries) {
+      final title = dictionary.title.trim().isEmpty
+          ? "personal"
+          : dictionary.title.trim();
+      final newId = await dictionaryListDao.add(
+        "",
+        title,
+        type: DictionaryType.personal,
+      );
+      await dictionaryListDao.updatePath(newId, "personal:$newId");
+      for (final article in dictionary.articles) {
+        if (article.body.trim().isEmpty) continue;
+        // Collapse duplicate spellings and skip headwords that are
+        // already filed in this dictionary (e.g. importing the same
+        // backup twice): the unique index would otherwise abort the
+        // whole import halfway through.
+        final seenNormalized = <String>{};
+        final fresh = <String>[];
+        for (final headword in article.headwords) {
+          final trimmed = headword.trim();
+          if (trimmed.isEmpty) continue;
+          if (seenNormalized.add(normalizePersonalHeadword(trimmed))) {
+            fresh.add(trimmed);
+          }
+        }
+        if (fresh.isEmpty) continue;
+        final existing = await personalDictionaryDao.resolveHeadwords(
+          newId,
+          fresh.map(normalizePersonalHeadword),
+        );
+        final toInsert = fresh
+            .where(
+              (headword) =>
+                  !existing.containsKey(normalizePersonalHeadword(headword)),
+            )
+            .toList();
+        if (toInsert.isEmpty) continue;
+        final now = DateTime.now();
+        final articleId = await personalDictionaryDao.insertArticle(
+          PersonalArticlesCompanion.insert(
+            dictionaryId: newId,
+            body: article.body,
+            createdAt: now,
+            updatedAt: now,
+            source: Value(article.source),
+          ),
+        );
+        await personalDictionaryDao.insertHeadwords([
+          for (final headword in toInsert)
+            PersonalHeadwordsCompanion.insert(
+              dictionaryId: newId,
+              articleId: articleId,
+              headword: headword,
+              normalizedHeadword: normalizePersonalHeadword(headword),
+            ),
+        ]);
+      }
+    }
   }
 }
 
@@ -221,6 +348,8 @@ class Backup {
       translateHistoryDao: translateHistoryDao,
       flashcardDao: flashcardDao,
       fileHandler: DefaultBackupFileHandler(),
+      personalDictionaryDao: PersonalDictionaryDao(mainDatabase),
+      dictionaryListDao: dictionaryListDao,
     );
     await service.export(
       autoExport: autoExport,
@@ -243,6 +372,8 @@ class Backup {
       translateHistoryDao: translateHistoryDao,
       flashcardDao: flashcardDao,
       fileHandler: DefaultBackupFileHandler(),
+      personalDictionaryDao: PersonalDictionaryDao(mainDatabase),
+      dictionaryListDao: dictionaryListDao,
     );
     await service.import();
   }

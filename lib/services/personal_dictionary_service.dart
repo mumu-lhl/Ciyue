@@ -7,7 +7,73 @@ import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/database/app/tables.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/services/lookup_keys.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:drift/drift.dart";
+
+/// Maximum length of a personal dictionary name, in characters.
+///
+/// `addGroup` (the dictionary-group counterpart) has no length limit, so
+/// there is no shared constant to reuse; 100 keeps names readable on the
+/// dictionary cards while leaving room for long titles.
+const personalDictionaryNameMaxLength = 100;
+
+/// One non-blocking warning from a DSL import, localised at the point of
+/// display: the service has no [BuildContext], so it reports the kind and
+/// the entry it belongs to and the UI renders [message].
+class PersonalDslWarning {
+  final PersonalDslWarningKind kind;
+
+  /// Headwords of the skipped entry, for [PersonalDslWarningKind.noBody],
+  /// [PersonalDslWarningKind.duplicate] and
+  /// [PersonalDslWarningKind.invalidEntry]; empty otherwise.
+  final String headwords;
+
+  /// Number of skipped lines, for
+  /// [PersonalDslWarningKind.orphanBodyLines]; 0 otherwise.
+  final int count;
+
+  const PersonalDslWarning(this.kind, [this.headwords = "", this.count = 0]);
+
+  @override
+  bool operator ==(Object other) =>
+      other is PersonalDslWarning &&
+      other.kind == kind &&
+      other.headwords == headwords &&
+      other.count == count;
+
+  @override
+  int get hashCode => Object.hash(kind, headwords, count);
+
+  String message(AppLocalizations l10n) {
+    return switch (kind) {
+      PersonalDslWarningKind.tags => l10n.personalDictionaryImportWarningTags,
+      PersonalDslWarningKind.tilde => l10n.personalDictionaryImportWarningTilde,
+      PersonalDslWarningKind.parentheses =>
+        l10n.personalDictionaryImportWarningParentheses,
+      PersonalDslWarningKind.doubleBraces =>
+        l10n.personalDictionaryImportWarningDoubleBraces,
+      PersonalDslWarningKind.noBody =>
+        l10n.personalDictionaryImportWarningNoBody(headwords),
+      PersonalDslWarningKind.duplicate =>
+        l10n.personalDictionaryImportWarningDuplicate(headwords),
+      PersonalDslWarningKind.orphanBodyLines =>
+        l10n.personalDictionaryImportWarningOrphanBodyLines(count),
+      PersonalDslWarningKind.invalidEntry =>
+        l10n.personalDictionaryImportWarningInvalidEntry(headwords),
+    };
+  }
+}
+
+enum PersonalDslWarningKind {
+  tags,
+  tilde,
+  parentheses,
+  doubleBraces,
+  noBody,
+  duplicate,
+  orphanBodyLines,
+  invalidEntry,
+}
 
 /// One article of a personal dictionary, with all of its headwords.
 class PersonalEntry {
@@ -31,7 +97,7 @@ class PersonalEntry {
 /// (DSL constructs this dictionary keeps as plain text).
 class PersonalDslImportResult {
   final int imported;
-  final List<String> warnings;
+  final List<PersonalDslWarning> warnings;
 
   const PersonalDslImportResult({
     required this.imported,
@@ -64,6 +130,49 @@ class PersonalDictionaryService {
     }
   }
 
+  /// Whether [id] is the id of an existing personal dictionary. A
+  /// missing row or a row of another type is not one.
+  Future<bool> dictionaryExists(int id) async {
+    try {
+      return await _dictionaryListDao.getType(id) == DictionaryType.personal;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Whether a personal dictionary named [name] already exists
+  /// (case-insensitive), ignoring the dictionary [exceptId] when given,
+  /// so renaming a dictionary to its own name is allowed.
+  Future<bool> dictionaryNameExists(String name, {int? exceptId}) async {
+    final wanted = name.trim().toLowerCase();
+    if (wanted.isEmpty) return false;
+    final dictionaries = await _dictionaryListDao.all();
+    return dictionaries.any(
+      (dictionary) =>
+          dictionary.type == DictionaryType.personal &&
+          dictionary.id != exceptId &&
+          (dictionary.title ?? "").toLowerCase() == wanted,
+    );
+  }
+
+  /// The headword of another article of [dictionaryId] that already owns
+  /// one of [headwords], or null when they are all free. [exceptArticleId]
+  /// is the article being edited: its own headwords do not conflict.
+  Future<String?> findConflictingHeadword(
+    int dictionaryId,
+    List<String> headwords, {
+    int? exceptArticleId,
+  }) async {
+    final existing = await _dao.resolveHeadwords(
+      dictionaryId,
+      headwords.map(normalizePersonalHeadword),
+    );
+    for (final row in existing.values) {
+      if (row.articleId != exceptArticleId) return row.headword;
+    }
+    return null;
+  }
+
   /// Creates a personal dictionary named [name] and returns its id.
   ///
   /// The list row is created first so the id is assigned by the database,
@@ -72,6 +181,15 @@ class PersonalDictionaryService {
     final title = name.trim();
     if (title.isEmpty) {
       throw ArgumentError("Dictionary name must not be empty");
+    }
+    if (title.length > personalDictionaryNameMaxLength) {
+      throw ArgumentError(
+        "Dictionary name must be at most "
+        "$personalDictionaryNameMaxLength characters",
+      );
+    }
+    if (await dictionaryNameExists(title)) {
+      throw StateError("A personal dictionary named “$title” already exists");
     }
     final id = await _dictionaryListDao.add(
       "",
@@ -87,7 +205,16 @@ class PersonalDictionaryService {
     if (title.isEmpty) {
       throw ArgumentError("Dictionary name must not be empty");
     }
+    if (title.length > personalDictionaryNameMaxLength) {
+      throw ArgumentError(
+        "Dictionary name must be at most "
+        "$personalDictionaryNameMaxLength characters",
+      );
+    }
     await _requirePersonalDictionary(id);
+    if (await dictionaryNameExists(title, exceptId: id)) {
+      throw StateError("A personal dictionary named “$title” already exists");
+    }
     await _dictionaryListDao.updateTitle(id, title);
   }
 
@@ -133,7 +260,7 @@ class PersonalDictionaryService {
   }
 
   Future<int> entryCount(int dictionaryId) {
-    return _dao.countHeadwords(dictionaryId);
+    return _dao.countArticles(dictionaryId);
   }
 
   /// Creates one article filed under [headwords] (aliases sharing the
@@ -247,17 +374,33 @@ class PersonalDictionaryService {
     String content,
   ) async {
     await _requirePersonalDictionary(dictionaryId);
-    final articles = _parseDsl(content);
+    final skippedOrphanBodyLines = <String>[];
+    final articles = _parseDsl(
+      content,
+      skippedOrphanBodyLines: skippedOrphanBodyLines,
+    );
     var imported = 0;
-    final warnings = <String>[];
-    final warnedKinds = <_DslWarningKind>{};
+    final warnings = <PersonalDslWarning>[];
+    if (skippedOrphanBodyLines.isNotEmpty) {
+      warnings.add(
+        PersonalDslWarning(
+          PersonalDslWarningKind.orphanBodyLines,
+          "",
+          skippedOrphanBodyLines.length,
+        ),
+      );
+    }
+    final warnedKinds = <PersonalDslWarningKind>{};
     for (final article in articles) {
       for (final kind in _dslWarningKinds(article.rawLines)) {
-        if (warnedKinds.add(kind)) warnings.add(kind.message);
+        if (warnedKinds.add(kind)) warnings.add(PersonalDslWarning(kind));
       }
       if (article.body.trim().isEmpty) {
         warnings.add(
-          "Skipped entry “${article.headwords.join(", ")}”: it has no body.",
+          PersonalDslWarning(
+            PersonalDslWarningKind.noBody,
+            article.headwords.join(", "),
+          ),
         );
         continue;
       }
@@ -274,7 +417,22 @@ class PersonalDictionaryService {
         // error (the dictionary vanished mid-import, for instance) is not
         // a duplicate and still aborts.
         if (!e.message.contains("already exists")) rethrow;
-        warnings.add("Skipped entry “${article.headwords.join(", ")}”: $e");
+        warnings.add(
+          PersonalDslWarning(
+            PersonalDslWarningKind.duplicate,
+            article.headwords.join(", "),
+          ),
+        );
+      } on ArgumentError catch (_) {
+        // A headword that trims to nothing (or an empty body): skip this
+        // article instead of aborting the whole import, same as for
+        // duplicates, and name the skipped entry in the warning.
+        final display = article.headwords.join(", ").trim().isEmpty
+            ? "<empty headword>"
+            : article.headwords.join(", ");
+        warnings.add(
+          PersonalDslWarning(PersonalDslWarningKind.invalidEntry, display),
+        );
       }
     }
     return PersonalDslImportResult(imported: imported, warnings: warnings);
@@ -333,16 +491,15 @@ class PersonalDictionaryService {
     List<String> headwords, {
     int? exceptArticleId,
   }) async {
-    final existing = await _dao.resolveHeadwords(
+    final conflict = await findConflictingHeadword(
       dictionaryId,
-      headwords.map(normalizePersonalHeadword),
+      headwords,
+      exceptArticleId: exceptArticleId,
     );
-    for (final row in existing.values) {
-      if (row.articleId != exceptArticleId) {
-        throw StateError(
-          "Headword “${row.headword}” already exists in this dictionary",
-        );
-      }
+    if (conflict != null) {
+      throw StateError(
+        "Headword “$conflict” already exists in this dictionary",
+      );
     }
   }
 }
@@ -366,9 +523,17 @@ class _DslArticle {
 /// indented lines after it are the article body. A blank line ends the
 /// current article, and so does a headword line after body lines.
 ///
-/// Throws [FormatException] on a body line with no headword above it: the
-/// file itself is malformed, so the import fails instead of guessing.
-List<_DslArticle> _parseDsl(String content) {
+/// A blank line inside a body is kept as an empty body line (a paragraph
+/// break), not an article separator. Lines starting with `#` before any
+/// headword has been collected are DSL metadata (`#NAME`,
+/// `#INDEX_LANGUAGE`, ...) or comments, not headwords; indented body lines
+/// (such as a Markdown heading) are never treated as metadata. A body line
+/// with no headword above it is skipped and recorded in
+/// [skippedOrphanBodyLines] instead of failing the whole import.
+List<_DslArticle> _parseDsl(
+  String content, {
+  List<String>? skippedOrphanBodyLines,
+}) {
   final articles = <_DslArticle>[];
   var headwords = <String>[];
   var bodyLines = <String>[];
@@ -376,10 +541,7 @@ List<_DslArticle> _parseDsl(String content) {
   var hasBody = false;
 
   void flush() {
-    if (headwords.isEmpty && bodyLines.isEmpty) return;
-    if (headwords.isEmpty) {
-      throw const FormatException("DSL body without a headword");
-    }
+    if (headwords.isEmpty) return;
     while (bodyLines.isNotEmpty && bodyLines.first.isEmpty) {
       bodyLines.removeAt(0);
     }
@@ -405,12 +567,24 @@ List<_DslArticle> _parseDsl(String content) {
         ? rawLine.substring(0, rawLine.length - 1)
         : rawLine;
     if (line.isEmpty) {
-      flush();
+      if (hasBody) {
+        // A blank line inside a body is a paragraph break.
+        bodyLines.add("");
+        rawLines.add(line);
+      } else {
+        flush();
+      }
+      continue;
+    }
+    if (line.startsWith("#") && headwords.isEmpty && !hasBody) {
+      // DSL metadata or a comment line before any entry: not a headword.
       continue;
     }
     if (line.startsWith(" ") || line.startsWith("\t")) {
       if (headwords.isEmpty) {
-        throw FormatException("DSL body line without a headword: $line");
+        // An orphan body line: skip it instead of failing the import.
+        skippedOrphanBodyLines?.add(line);
+        continue;
       }
       hasBody = true;
       bodyLines.add(_deindent(line));
@@ -434,33 +608,19 @@ String _deindent(String line) {
 
 /// DSL constructs this dictionary keeps as plain text, each reported once
 /// per import.
-enum _DslWarningKind {
-  tags(
-    "DSL tags such as [b] are stored as plain text; "
-    "formatting is not applied.",
-  ),
-  tilde("Lines containing ~ are stored as plain text."),
-  parentheses("Parenthesised text (...) is stored as plain text."),
-  doubleBraces("Double-brace {{...}} markers are stored as plain text.");
-
-  final String message;
-
-  const _DslWarningKind(this.message);
-}
-
-Set<_DslWarningKind> _dslWarningKinds(List<String> rawLines) {
-  final kinds = <_DslWarningKind>{};
+Set<PersonalDslWarningKind> _dslWarningKinds(List<String> rawLines) {
+  final kinds = <PersonalDslWarningKind>{};
   final tagPattern = RegExp(r"\[/?.[^\]]*\]");
   final parenthesesPattern = RegExp(r"\([^)]*\)");
   final doubleBracesPattern = RegExp(r"\{\{[^}]*\}\}");
   for (final line in rawLines) {
-    if (tagPattern.hasMatch(line)) kinds.add(_DslWarningKind.tags);
-    if (line.contains("~")) kinds.add(_DslWarningKind.tilde);
+    if (tagPattern.hasMatch(line)) kinds.add(PersonalDslWarningKind.tags);
+    if (line.contains("~")) kinds.add(PersonalDslWarningKind.tilde);
     if (parenthesesPattern.hasMatch(line)) {
-      kinds.add(_DslWarningKind.parentheses);
+      kinds.add(PersonalDslWarningKind.parentheses);
     }
     if (doubleBracesPattern.hasMatch(line)) {
-      kinds.add(_DslWarningKind.doubleBraces);
+      kinds.add(PersonalDslWarningKind.doubleBraces);
     }
   }
   return kinds;
@@ -470,8 +630,9 @@ bool _isGzip(Uint8List bytes) =>
     bytes.length >= 2 && bytes[0] == 0x1F && bytes[1] == 0x8B;
 
 /// Decodes text by BOM: UTF-32 LE/BE, UTF-8, UTF-16 LE/BE, and plain
-/// UTF-8 when there is no BOM. The UTF-32 check comes before UTF-16 LE:
-/// its BOM starts with the UTF-16 LE BOM.
+/// UTF-8 when there is no BOM — unless the bytes show the NUL interleave
+/// of BOM-less UTF-16 (see [_sniffUtf16]). The UTF-32 check comes before
+/// UTF-16 LE: its BOM starts with the UTF-16 LE BOM.
 String _decodeText(Uint8List bytes) {
   if (bytes.length >= 4 &&
       bytes[0] == 0xFF &&
@@ -499,7 +660,45 @@ String _decodeText(Uint8List bytes) {
   if (bytes.length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF) {
     return _decodeUtf16(bytes.sublist(2), littleEndian: false);
   }
+  final sniffedLittleEndian = _sniffUtf16(bytes);
+  if (sniffedLittleEndian != null) {
+    return _decodeUtf16(bytes, littleEndian: sniffedLittleEndian);
+  }
   return utf8.decode(bytes);
+}
+
+/// Sniffs BOM-less UTF-16: ASCII-range UTF-16 text leaves a NUL byte in
+/// every other position (odd positions for LE, even positions for BE),
+/// which plain UTF-8 text essentially never does. Returns true for LE,
+/// false for BE, null when no such interleave is detected.
+bool? _sniffUtf16(Uint8List bytes) {
+  final sampleLength = bytes.length.clamp(0, 1024);
+  if (sampleLength < 4) return null;
+  var evenNulls = 0;
+  var oddNulls = 0;
+  var evenTotal = 0;
+  var oddTotal = 0;
+  for (var i = 0; i < sampleLength; i++) {
+    if (i.isEven) {
+      evenTotal++;
+      if (bytes[i] == 0) evenNulls++;
+    } else {
+      oddTotal++;
+      if (bytes[i] == 0) oddNulls++;
+    }
+  }
+  // Require a clear interleave: many NULs on one side, few on the other.
+  if (oddNulls >= 2 &&
+      oddNulls / oddTotal >= 0.3 &&
+      oddNulls >= evenNulls * 4) {
+    return true;
+  }
+  if (evenNulls >= 2 &&
+      evenNulls / evenTotal >= 0.3 &&
+      evenNulls >= oddNulls * 4) {
+    return false;
+  }
+  return null;
 }
 
 String _decodeUtf16(Uint8List bytes, {required bool littleEndian}) {
@@ -565,18 +764,21 @@ String _markdownLineToDsl(String line) {
 
 String _markdownInlineToDsl(String text) {
   var result = text;
-  // Images keep their alt text; links keep their label.
+  // Images keep their alt text; links keep their label. The target may
+  // contain one level of nested parentheses, e.g. `...(Tea_(meal))`.
   result = result.replaceAllMapped(
-    RegExp(r"!\[([^\]]*)\]\([^)]*\)"),
+    RegExp(r"!\[([^\]]*)\]\((?:[^()]|\([^()]*\))*\)"),
     (m) => m.group(1)!,
   );
   result = result.replaceAllMapped(
-    RegExp(r"\[([^\]]*)\]\([^)]*\)"),
+    RegExp(r"\[([^\]]*)\]\((?:[^()]|\([^()]*\))*\)"),
     (m) => m.group(1)!,
   );
-  // Bold first, so `**x**` is not read as italic `*x*`.
+  // Bold first, so `**x**` is not read as italic `*x*`. The bold body
+  // may itself contain single-`*` italic, so it is matched with an
+  // alternation that lets `*...*` through instead of `[^*]+`.
   result = result.replaceAllMapped(
-    RegExp(r"\*\*([^*]+)\*\*"),
+    RegExp(r"\*\*((?:[^*]|\*[^*]+\*)+)\*\*"),
     (m) => "[b]${m.group(1)}[/b]",
   );
   result = result.replaceAllMapped(
@@ -590,6 +792,12 @@ String _markdownInlineToDsl(String text) {
   // Inline code and strikethrough have no DSL equivalent: plain text.
   result = result.replaceAllMapped(RegExp(r"`([^`]*)`"), (m) => m.group(1)!);
   result = result.replaceAllMapped(RegExp(r"~~([^~]+)~~"), (m) => m.group(1)!);
+  // Autolinks keep their URL as plain text; the HTML cleanup below would
+  // otherwise delete the whole `<https://...>` token.
+  result = result.replaceAllMapped(
+    RegExp(r"<(https?://[^>\s]+)>"),
+    (m) => m.group(1)!,
+  );
   // Remaining HTML tags and backslash escapes are syntax, not content.
   result = result.replaceAll(RegExp("<[^>]*>"), "");
   result = result.replaceAllMapped(

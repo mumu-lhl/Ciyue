@@ -9,6 +9,141 @@ import "package:ciyue/services/lookup_keys.dart";
 import "package:ciyue/utils.dart";
 import "package:markdown/markdown.dart" as markdown;
 
+/// Renders user-authored Markdown to HTML that is safe to load into the
+/// entry WebView.
+///
+/// `markdownToHtml` passes raw HTML through untouched, so without this an
+/// imported entry could run scripts in the WebView. The sanitizer drops
+/// tags whose content must never execute (`script`/`style`/`iframe`/
+/// `object`/…), strips event-handler attributes (`onerror`, …) and any
+/// attribute whose URL uses a dangerous scheme (`javascript:`/`data:`/
+/// `vbscript:`/`file:`, including entity-encoded spellings such as
+/// `javascript&#58;`). Ordinary markup (`<p>`, `<strong>`, safe links and
+/// images) passes through unchanged.
+String sanitizePersonalDictionaryHtml(String html) {
+  var result = html;
+  // Repeat the tag passes: a nested trick such as `<scr<script>ipt>`
+  // only becomes a plain `<script>` tag once the inner one is removed.
+  for (var pass = 0; pass < 3; pass++) {
+    final before = result;
+    // Tags whose *content* must never reach the WebView.
+    for (final tag in const [
+      "script",
+      "style",
+      "iframe",
+      "object",
+      "applet",
+      "frame",
+      "frameset",
+    ]) {
+      result = result.replaceAll(
+        RegExp(
+          "<$tag\\b[^>]*>.*?</$tag\\s*>",
+          caseSensitive: false,
+          dotAll: true,
+        ),
+        "",
+      );
+      result = result.replaceAll(
+        RegExp("<$tag\\b[^>]*>", caseSensitive: false),
+        "",
+      );
+    }
+    // Void or metadata tags: drop the tag itself.
+    for (final tag in const [
+      "embed",
+      "link",
+      "meta",
+      "base",
+      "input",
+      "keygen",
+    ]) {
+      result = result.replaceAll(
+        RegExp("<$tag\\b[^>]*/?>", caseSensitive: false),
+        "",
+      );
+    }
+    // Form controls: drop the tags, keep any inner text.
+    for (final tag in const ["form", "button", "select", "textarea", "title"]) {
+      result = result.replaceAll(
+        RegExp("</?$tag\\b[^>]*>", caseSensitive: false),
+        "",
+      );
+    }
+    if (result == before) break;
+  }
+  // Event-handler attributes, quoted or not: onerror, onclick, onbegin…
+  result = result.replaceAll(
+    RegExp(
+      "\\s+on\\w+\\s*=\\s*(\"[^\"]*\"|'[^']*'|[^\\s>]+)",
+      caseSensitive: false,
+    ),
+    "",
+  );
+  // Inline styles are only dangerous when they can run code or load a
+  // dangerous URL; plain styles (e.g. `<span style="color:red">`) stay.
+  result = result.replaceAllMapped(
+    RegExp(
+      "\\s+style\\s*=\\s*(\"[^\"]*\"|'[^']*'|[^\\s>]+)",
+      caseSensitive: false,
+    ),
+    (match) {
+      final value = match.group(1)!;
+      if (RegExp(
+        "expression\\s*\\(|javascript\\s*:|vbscript\\s*:|behaviour\\s*:|"
+        "url\\s*\\(\\s*['\"]?\\s*(data|javascript)\\s*:",
+        caseSensitive: false,
+      ).hasMatch(value)) {
+        return "";
+      }
+      return match.group(0)!;
+    },
+  );
+  // URL attributes with a dangerous scheme. The check runs on the value
+  // with whitespace/control characters stripped and numeric character
+  // references decoded, so `java\tscript:` and `javascript&#58;` are
+  // caught too.
+  result = result.replaceAllMapped(
+    RegExp(
+      "\\s+(href|src|action|formaction|poster|cite|background|xlink:href)"
+      "\\s*=\\s*(\"[^\"]*\"|'[^']*'|[^\\s>]+)",
+      caseSensitive: false,
+    ),
+    (match) {
+      final raw = match.group(2)!;
+      final value =
+          raw.length >= 2 &&
+              ((raw.startsWith("\"") && raw.endsWith("\"")) ||
+                  (raw.startsWith("'") && raw.endsWith("'")))
+          ? raw.substring(1, raw.length - 1)
+          : raw;
+      return _isDangerousUrl(value) ? "" : match.group(0)!;
+    },
+  );
+  return result;
+}
+
+bool _isDangerousUrl(String value) {
+  var decoded = value.replaceAll(RegExp(r"[\x00-\x20]"), "");
+  decoded = decoded.replaceAllMapped(
+    RegExp(r"&#x([0-9a-fA-F]+);?"),
+    (match) => String.fromCharCode(int.parse(match.group(1)!, radix: 16)),
+  );
+  decoded = decoded.replaceAllMapped(
+    RegExp(r"&#([0-9]+);?"),
+    (match) => String.fromCharCode(int.parse(match.group(1)!)),
+  );
+  decoded = decoded
+      .replaceAll(RegExp(r"&colon;", caseSensitive: false), ":")
+      .replaceAll(RegExp(r"&tab;", caseSensitive: false), "")
+      .replaceAll(RegExp(r"&newline;", caseSensitive: false), "");
+  decoded = decoded.toLowerCase();
+  return decoded.startsWith("javascript:") ||
+      decoded.startsWith("vbscript:") ||
+      decoded.startsWith("data:") ||
+      decoded.startsWith("file:");
+}
+
 /// Whether [path] is the sentinel path of a personal dictionary
 /// (`personal:<id>`), rather than a file path.
 bool isPersonalDictionaryPath(String path) => path.startsWith("personal:");
@@ -73,7 +208,7 @@ class PersonalDictionary extends BaseLoadedDictionary {
       );
     }
     title = row.title ?? "personal:$id";
-    entriesTotal = await _dao.countHeadwords(id);
+    entriesTotal = await _dao.countArticles(id);
     _metadataLoaded = true;
     isLoading = false;
   }
@@ -82,9 +217,14 @@ class PersonalDictionary extends BaseLoadedDictionary {
   Future<void> init() => initialization ??= _initialize();
 
   Future<void> _initialize() async {
+    // Starts a new init cycle: clears the closed flag left by an earlier
+    // close() so this cycle may bind a server again, and hands the
+    // generation to startDesktopServer so a close in the meantime
+    // invalidates this cycle instead of leaking a server (P1-4/P1-6).
+    final generation = beginInitialization();
     try {
       await initMetadata();
-      entriesTotal = await _dao.countHeadwords(id);
+      entriesTotal = await _dao.countArticles(id);
       if (isDesktop()) {
         // The desktop entry WebView waits for this dictionary's loopback
         // server port before loading content (WebviewWindows gives up
@@ -92,9 +232,10 @@ class PersonalDictionary extends BaseLoadedDictionary {
         // needs a server exactly like a file dictionary, even though it
         // serves no resources. Without it the word page shows the section
         // header but the entry body never loads.
-        await startDesktopServer();
+        await startDesktopServer(generation: generation);
       }
     } catch (e) {
+      _metadataLoaded = false;
       initializationError = e;
       rethrow;
     } finally {
@@ -111,13 +252,18 @@ class PersonalDictionary extends BaseLoadedDictionary {
       throw StateError("No personal dictionary with id $id");
     }
     title = row.title ?? "personal:$id";
-    entriesTotal = await _dao.countHeadwords(id);
+    entriesTotal = await _dao.countArticles(id);
     _metadataLoaded = true;
     isLoading = false;
   }
 
   @override
-  Future<void> onClose() async {}
+  Future<void> onClose() async {
+    // A closed dictionary is not ready: without this, isReady stays true
+    // after close() and a later init() would have to notice the stale
+    // metadata state itself (P1-6).
+    _metadataLoaded = false;
+  }
 
   /// Personal dictionaries have no description of their own.
   @override
@@ -168,11 +314,15 @@ class PersonalDictionary extends BaseLoadedDictionary {
     Iterable<String> words, {
     Map<String, String>? resolvedKeys,
   }) async {
-    final resolved = resolvedKeys ?? await resolveKeys(words);
+    // Complete the caller's partial keys word by word — the same contract
+    // as Mdict's readExactEntries — instead of replacing the whole map:
+    // the lookup passes only the exact key it already resolved, and the
+    // remaining candidates (a kana or width variant of the same word) must
+    // still be resolved, not silently dropped.
     final headwords = <String>[];
     final seenHeadwords = <String>{};
     for (final word in words) {
-      final headword = resolved[word];
+      final headword = resolvedKeys?[word] ?? await resolveExactKey(word);
       if (headword == null) continue;
       if (seenHeadwords.add(headword)) headwords.add(headword);
     }
@@ -190,7 +340,9 @@ class PersonalDictionary extends BaseLoadedDictionary {
       entries.add(
         DictionaryEntryData(
           headword: row.headword,
-          content: markdown.markdownToHtml(article.body),
+          content: sanitizePersonalDictionaryHtml(
+            markdown.markdownToHtml(article.body),
+          ),
         ),
       );
     }

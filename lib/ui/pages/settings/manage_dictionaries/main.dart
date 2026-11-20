@@ -8,6 +8,7 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/dictionary_files.dart";
 import "package:ciyue/repositories/hunspell.dart";
+import "package:ciyue/services/personal_dictionary_service.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/services/toast.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -21,9 +22,9 @@ import "package:path/path.dart";
 import "package:url_launcher/url_launcher.dart";
 
 /// Shows the name dialog for a new personal dictionary, or for renaming
-/// [dictionary] when given. An empty name is rejected with an error toast
-/// and the dialog stays open. On success the dictionary list refreshes and
-/// a toast confirms the change.
+/// [dictionary] when given. An empty, too-long or duplicate name is
+/// rejected with an inline error and the dialog stays open. On success the
+/// dictionary list refreshes and a toast confirms the change.
 Future<void> showPersonalDictionaryNameDialog(
   BuildContext context,
   DictionaryListData? dictionary,
@@ -31,22 +32,49 @@ Future<void> showPersonalDictionaryNameDialog(
   final l10n = AppLocalizations.of(context)!;
   final isRename = dictionary != null;
   final controller = TextEditingController(text: dictionary?.title ?? "");
+  // The inline error lives outside the StatefulBuilder: the builder
+  // re-runs on every setState, so a local declared inside it would reset.
+  String? nameError;
+  late StateSetter dialogSetState;
 
   Future<void> submit(BuildContext dialogContext, String value) async {
     final name = value.trim();
     if (name.isEmpty) {
-      ToastService.show(
-        l10n.personalDictionaryNameEmpty,
-        dialogContext,
-        type: ToastType.error,
+      dialogSetState(() => nameError = l10n.personalDictionaryNameEmpty);
+      return;
+    }
+    if (name.length > personalDictionaryNameMaxLength) {
+      dialogSetState(
+        () => nameError = l10n.personalDictionaryNameTooLong(
+          personalDictionaryNameMaxLength,
+        ),
       );
       return;
     }
 
     final container = ProviderScope.containerOf(dialogContext, listen: false);
     final service = container.read(personalDictionaryServiceProvider);
+    if (await service.dictionaryNameExists(
+      name,
+      exceptId: isRename ? dictionary.id : null,
+    )) {
+      dialogSetState(
+        () => nameError = l10n.personalDictionaryNameAlreadyExists,
+      );
+      return;
+    }
+    dialogSetState(() => nameError = null);
+
     try {
       if (isRename) {
+        final model = container.read(dictManagerModelProvider);
+        // Mirror _updateAlias for file dictionaries: the loaded
+        // dictionary keeps its own title, so sync it first — that is
+        // what the word page tabs read — and notify, then persist.
+        if (dictManager.contain(dictionary.id)) {
+          dictManager.dicts[dictionary.id]!.title = name;
+          model.update();
+        }
         await service.renameDictionary(dictionary.id, name);
       } else {
         final id = await service.createDictionary(name);
@@ -65,7 +93,27 @@ Future<void> showPersonalDictionaryNameDialog(
         stackTrace,
       );
       if (dialogContext.mounted) {
-        ToastService.show(e.toString(), dialogContext, type: ToastType.error);
+        // The service can still reject the name (a race with another
+        // create): map that onto the same inline error. Anything else is
+        // a generic failure toast, never the raw exception text.
+        final message = e.toString();
+        if (message.contains("already exists")) {
+          dialogSetState(
+            () => nameError = l10n.personalDictionaryNameAlreadyExists,
+          );
+        } else if (message.contains("at most")) {
+          dialogSetState(
+            () => nameError = l10n.personalDictionaryNameTooLong(
+              personalDictionaryNameMaxLength,
+            ),
+          );
+        } else {
+          ToastService.show(
+            l10n.personalDictionaryOperationFailed,
+            dialogContext,
+            type: ToastType.error,
+          );
+        }
       }
       return;
     }
@@ -84,26 +132,36 @@ Future<void> showPersonalDictionaryNameDialog(
 
   await showDialog(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(
-        isRename ? l10n.personalDictionaryRename : l10n.personalDictionaryNew,
-      ),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        decoration: InputDecoration(labelText: l10n.personalDictionaryName),
-        onSubmitted: (value) => submit(dialogContext, value),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(),
-          child: Text(l10n.close),
-        ),
-        FilledButton(
-          onPressed: () => submit(dialogContext, controller.text),
-          child: Text(l10n.confirm),
-        ),
-      ],
+    builder: (dialogContext) => StatefulBuilder(
+      builder: (statefulContext, setState) {
+        dialogSetState = setState;
+        return AlertDialog(
+          title: Text(
+            isRename
+                ? l10n.personalDictionaryRename
+                : l10n.personalDictionaryNew,
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: l10n.personalDictionaryName,
+              errorText: nameError,
+            ),
+            onSubmitted: (value) => submit(dialogContext, value),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.close),
+            ),
+            FilledButton(
+              onPressed: () => submit(dialogContext, controller.text),
+              child: Text(l10n.confirm),
+            ),
+          ],
+        );
+      },
     ),
   );
 }
@@ -745,10 +803,14 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
   }
 
   void _openPersonalEntries(BuildContext context, String title) {
-    context.push(
-      "/settings/personal_dictionary/${dictionary.id}",
-      extra: {"title": title},
-    );
+    context
+        .push(
+          "/settings/personal_dictionary/${dictionary.id}",
+          extra: {"title": title},
+        )
+        .then((_) {
+          if (mounted) _refreshPersonalEntryCount();
+        });
   }
 
   void _showPersonalActionsSheet(
@@ -917,7 +979,15 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                         context: context,
                         builder: (confirmContext) => AlertDialog(
                           title: Text(l10n.personalDictionaryDelete),
-                          content: Text(title),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(l10n.personalDictionaryDeleteConfirm),
+                              const SizedBox(height: 8),
+                              Text(title),
+                            ],
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () =>
@@ -947,7 +1017,7 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                         );
                         if (context.mounted) {
                           ToastService.show(
-                            e.toString(),
+                            l10n.personalDictionaryOperationFailed,
                             context,
                             type: ToastType.error,
                           );
@@ -1121,7 +1191,7 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                         );
                         if (context.mounted) {
                           ToastService.show(
-                            e.toString(),
+                            l10n.personalDictionaryOperationFailed,
                             context,
                             type: ToastType.error,
                           );
