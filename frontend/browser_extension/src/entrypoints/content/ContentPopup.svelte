@@ -163,14 +163,20 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="fixed z-[2147483647] flex items-center justify-center w-7 h-7 rounded-lg bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white shadow-md transition-all duration-150 cursor-pointer select-none active:scale-95 hover:scale-105 border border-primary-700/30"
+      role="button"
+      tabindex="0"
+      class="fixed z-[2147483647] flex items-center justify-center w-7 h-7 rounded-xl shadow-md transition-all duration-150 cursor-pointer select-none active:scale-95 hover:scale-110 border border-white/20"
       style:left="{triggerX}px"
       style:top="{triggerY}px"
+      style:background-color="var(--primary-600, #2563eb)"
+      style:color="#ffffff"
+      style:box-shadow="0 4px 12px -2px var(--primary-600, rgba(37,99,235,0.45)), 0 2px 4px -2px rgba(0,0,0,0.1)"
       onmousedown={(e) => e.stopPropagation()}
       onclick={onTriggerClick}
       title="词悦查词"
+      aria-label="词悦查词"
     >
-      <BookOpen class="w-4 h-4 text-white stroke-[2]" />
+      <BookOpen class="w-4 h-4 stroke-[2.2]" style="color: #ffffff;" />
     </div>
   {/if}
 

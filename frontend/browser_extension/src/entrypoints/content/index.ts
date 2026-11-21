@@ -46,6 +46,16 @@ export default defineContentScript({
     });
 
     ui.mount();
+    try {
+      ui.shadow.host.setAttribute("data-theme", settings.themeColor);
+    } catch {}
+
+    onSettingsChanged((newSettings) => {
+      settings = newSettings;
+      try {
+        ui.shadow.host.setAttribute("data-theme", newSettings.themeColor);
+      } catch {}
+    });
 
     // Handle mouse selection
     document.addEventListener("mouseup", (e) => {

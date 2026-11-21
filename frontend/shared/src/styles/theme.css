@@ -13,7 +13,26 @@
 }
 
 :root,
-[data-theme="blue"] {
+:host,
+[data-theme] {
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+  --color-primary-950: var(--primary-950);
+}
+
+:root,
+:host,
+[data-theme],
+[data-theme="blue"],
+:host([data-theme="blue"]) {
   --primary-50: #eff6ff;
   --primary-100: #dbeafe;
   --primary-200: #bfdbfe;
@@ -27,7 +46,8 @@
   --primary-950: #172554;
 }
 
-[data-theme="violet"] {
+[data-theme="violet"],
+:host([data-theme="violet"]) {
   --primary-50: #f5f3ff;
   --primary-100: #ede9fe;
   --primary-200: #ddd6fe;
@@ -41,7 +61,8 @@
   --primary-950: #2e1065;
 }
 
-[data-theme="teal"] {
+[data-theme="teal"],
+:host([data-theme="teal"]) {
   --primary-50: #f0fdfa;
   --primary-100: #ccfbf1;
   --primary-200: #99f6e4;
@@ -55,7 +76,8 @@
   --primary-950: #042f2e;
 }
 
-[data-theme="emerald"] {
+[data-theme="emerald"],
+:host([data-theme="emerald"]) {
   --primary-50: #ecfdf5;
   --primary-100: #d1fae5;
   --primary-200: #a7f3d0;
@@ -69,7 +91,8 @@
   --primary-950: #022c22;
 }
 
-[data-theme="rose"] {
+[data-theme="rose"],
+:host([data-theme="rose"]) {
   --primary-50: #fff1f2;
   --primary-100: #ffe4e6;
   --primary-200: #fecdd3;
@@ -83,7 +106,8 @@
   --primary-950: #4c0519;
 }
 
-[data-theme="amber"] {
+[data-theme="amber"],
+:host([data-theme="amber"]) {
   --primary-50: #fffbeb;
   --primary-100: #fef3c7;
   --primary-200: #fde68a;

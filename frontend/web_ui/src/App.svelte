@@ -9,6 +9,7 @@
   import { api } from './api/client';
   import type { DictionaryResult, GroupItem, ThemeColor, ThemeMode } from './api/types';
   import {
+    applyThemeColor,
     applyThemeMode,
     getStoredThemeColor,
     getStoredThemeMode,
@@ -53,6 +54,7 @@
     themeMode = getStoredThemeMode();
     themeColor = getStoredThemeColor();
     applyThemeMode(themeMode);
+    applyThemeColor(themeColor);
 
     try {
       const status = await api.getStatus();
@@ -97,6 +99,7 @@
   function onSelectThemeColor(color: ThemeColor) {
     themeColor = color;
     setStoredThemeColor(color);
+    applyThemeColor(color);
   }
 
   async function doLookup(word: string, anchor = '', dictId: number | string = '') {

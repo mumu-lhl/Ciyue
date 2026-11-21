@@ -13,6 +13,7 @@
   import AiView from '../../components/AiView.svelte';
   import { CiyueApiClient } from '../../api/client';
   import { getSettings, onSettingsChanged } from '../../utils/settings';
+  import { applyThemeColor } from '../../utils/theme';
   import type { DictionaryResult, GroupItem, ThemeColor } from '../../api/types';
 
   let serverUrl = $state('http://127.0.0.1:47117');
@@ -39,6 +40,7 @@
     const settings = await getSettings();
     serverUrl = settings.serverUrl;
     themeColor = settings.themeColor;
+    applyThemeColor(themeColor);
     await checkStatus();
     if (serverOnline) {
       await loadGroups();

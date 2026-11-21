@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   THEME_OPTIONS,
+  applyThemeColor,
   getStoredThemeColor,
   getStoredThemeMode,
   setStoredThemeColor,
@@ -36,5 +37,13 @@ describe("theme utilities", () => {
 
     setStoredThemeColor("emerald");
     expect(getStoredThemeColor()).toBe("emerald");
+  });
+
+  it("applies theme color to element via applyThemeColor", () => {
+    const el = {
+      setAttribute: vi.fn(),
+    } as unknown as HTMLElement;
+    applyThemeColor("violet", el);
+    expect(el.setAttribute).toHaveBeenCalledWith("data-theme", "violet");
   });
 });

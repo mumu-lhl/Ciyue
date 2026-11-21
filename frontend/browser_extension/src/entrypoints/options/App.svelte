@@ -12,7 +12,7 @@
   import Check from '@lucide/svelte/icons/check';
   import { getSettings, saveSettings } from '../../utils/settings';
   import { CiyueApiClient } from '../../api/client';
-  import { THEME_OPTIONS } from '../../utils/theme';
+  import { THEME_OPTIONS, applyThemeColor } from '../../utils/theme';
   import type { ExtensionSettings } from '../../api/types';
 
   let form = $state<ExtensionSettings>({
@@ -34,6 +34,7 @@
     const current = await getSettings();
     form = { ...current };
     blacklistText = (form.blacklistUrls || []).join('\n');
+    applyThemeColor(form.themeColor);
   });
 
   async function testConnection() {
@@ -114,7 +115,10 @@
               class="flex items-center gap-2.5 p-2.5 rounded-xl border text-left cursor-pointer transition-all {form.themeColor === opt.id
                 ? 'border-primary-600 bg-primary-50/50 dark:bg-primary-950/30 ring-2 ring-primary-500/20 text-zinc-900 dark:text-zinc-100 font-semibold'
                 : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300'}"
-              onclick={() => (form.themeColor = opt.id)}
+              onclick={() => {
+                form.themeColor = opt.id;
+                applyThemeColor(opt.id);
+              }}
             >
               <span
                 class="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-white shadow-xs transition-transform duration-150 {form.themeColor === opt.id ? 'scale-110' : ''}"

@@ -57,18 +57,25 @@ export function setStoredThemeColor(color: ThemeColor): void {
   } catch {}
 }
 
-export function applyThemeMode(mode: ThemeMode): void {
-  if (typeof document === "undefined") return;
+export function applyThemeColor(color: ThemeColor, rootElement?: HTMLElement): void {
+  const target = rootElement ?? (typeof document !== "undefined" ? document.documentElement : null);
+  if (!target) return;
+  target.setAttribute("data-theme", color);
+}
+
+export function applyThemeMode(mode: ThemeMode, rootElement?: HTMLElement): void {
+  const target = rootElement ?? (typeof document !== "undefined" ? document.documentElement : null);
+  if (!target) return;
   if (mode === "dark") {
-    document.documentElement.classList.add("dark");
+    target.classList.add("dark");
   } else if (mode === "light") {
-    document.documentElement.classList.remove("dark");
+    target.classList.remove("dark");
   } else if (typeof window !== "undefined" && window.matchMedia) {
     const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     if (isDark) {
-      document.documentElement.classList.add("dark");
+      target.classList.add("dark");
     } else {
-      document.documentElement.classList.remove("dark");
+      target.classList.remove("dark");
     }
   }
 }
