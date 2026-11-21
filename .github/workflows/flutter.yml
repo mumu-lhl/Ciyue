@@ -5,7 +5,12 @@ on:
     paths-ignore:
       - "**.md"
       - "docs/**"
+      - "browser_extension/**"
   pull_request:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "browser_extension/**"
 
 jobs:
   check:

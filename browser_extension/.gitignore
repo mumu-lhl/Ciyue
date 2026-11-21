@@ -1,6 +1,7 @@
 node_modules
 .output
 .wxt
+.vitest
 *.log
 dist
 public/assets

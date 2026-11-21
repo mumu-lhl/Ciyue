@@ -1,16 +1,11 @@
-import type {
-  GroupItem,
-  LookupResponse,
-  ServerStatus,
-  SuggestResponse,
-} from './types';
-import { proxyFetch } from '../utils/messaging';
+import type { GroupItem, LookupResponse, ServerStatus, SuggestResponse } from "./types";
+import { proxyFetch } from "../utils/messaging";
 
 export class CiyueApiClient {
   constructor(private serverUrl: string) {}
 
   setServerUrl(url: string) {
-    this.serverUrl = url.replace(/\/+$/, '');
+    this.serverUrl = url.replace(/\/+$/, "");
   }
 
   async getStatus(): Promise<ServerStatus> {
@@ -28,7 +23,7 @@ export class CiyueApiClient {
   async switchGroup(id: string): Promise<void> {
     await proxyFetch({
       url: `${this.serverUrl}/api/groups/switch?id=${encodeURIComponent(id)}`,
-      method: 'POST',
+      method: "POST",
     });
   }
 
@@ -50,7 +45,7 @@ export class CiyueApiClient {
         url: `${this.serverUrl}/api/wordbook/check?word=${encodeURIComponent(word)}`,
       });
       return !!res.stared;
-    } catch (_) {
+    } catch {
       return false;
     }
   }
@@ -58,14 +53,14 @@ export class CiyueApiClient {
   async addToWordbook(word: string): Promise<void> {
     await proxyFetch({
       url: `${this.serverUrl}/api/wordbook?word=${encodeURIComponent(word)}`,
-      method: 'POST',
+      method: "POST",
     });
   }
 
   async removeFromWordbook(word: string): Promise<void> {
     await proxyFetch({
       url: `${this.serverUrl}/api/wordbook?word=${encodeURIComponent(word)}`,
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 }

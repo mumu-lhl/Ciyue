@@ -34,7 +34,7 @@ export interface ServerStatus {
   dictionariesCount: number;
 }
 
-export type ModifierKey = 'none' | 'alt' | 'ctrl' | 'shift';
+export type ModifierKey = "none" | "alt" | "ctrl" | "shift";
 
 export interface ExtensionSettings {
   serverUrl: string;

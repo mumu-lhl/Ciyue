@@ -54,7 +54,7 @@
           a:hover { text-decoration: underline; }
           img { max-width: 100%; height: auto; }
         </style>
-        <script src="${darkReaderUrl}"><\/script>
+        <script src="${darkReaderUrl}"><` + `/script>
       </head>
       <body>
         ${item.content}
@@ -106,7 +106,7 @@
               }, '*');
             }
           });
-        <\/script>
+        <` + `/script>
       </body>
       </html>
     `);

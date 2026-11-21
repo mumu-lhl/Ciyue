@@ -1,0 +1,53 @@
+name: Browser Extension
+
+on:
+  push:
+    paths:
+      - "browser_extension/**"
+      - "assets/third_party/darkreader/darkreader.js"
+      - ".github/workflows/browser-extension.yml"
+  pull_request:
+    paths:
+      - "browser_extension/**"
+      - "assets/third_party/darkreader/darkreader.js"
+      - ".github/workflows/browser-extension.yml"
+
+jobs:
+  check-and-build:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: browser_extension
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.21.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+          cache-dependency-path: browser_extension/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check code formatting (oxfmt)
+        run: pnpm run format:check
+
+      - name: Lint (oxlint)
+        run: pnpm run lint --deny-warnings
+
+      - name: Type check (tsc)
+        run: pnpm run compile
+
+      - name: Run unit tests (vitest + wxt/testing)
+        run: pnpm test
+
+      - name: Build extension (wxt)
+        run: pnpm run build
