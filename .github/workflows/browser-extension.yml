@@ -22,16 +22,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/setup@v3
         with:
-          version: 12.21.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "pnpm"
+          runtime: node@latest
           cache-dependency-path: browser_extension/pnpm-lock.yaml
 
       - name: Install dependencies
