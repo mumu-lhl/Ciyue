@@ -243,6 +243,51 @@ void main() {
     expect(viewModel.clearableBytes, 3840);
   });
 
+  testWidgets("shows personal dictionary estimates under the database row", (
+    tester,
+  ) async {
+    final fullTextClear = _RecordingFullTextClear(cache);
+    final service = StorageUsageService(
+      cacheDirectory: () async => cache,
+      supportDirectory: () async => support,
+      documentsDirectory: () async => documents,
+      databaseDir: () async => database,
+      dictionariesDirectoryPath: () async => dictionaries.path,
+      personalDictionaryEstimates: () async => const [
+        PersonalDictionaryStorageEstimate(
+          dictionaryId: 7,
+          title: "My words",
+          entryCount: 3,
+          estimatedBytes: 1234,
+        ),
+        PersonalDictionaryStorageEstimate(
+          dictionaryId: 8,
+          title: "Empty notes",
+          entryCount: 0,
+          estimatedBytes: 0,
+        ),
+      ],
+    );
+    final viewModel = await pumpPage(tester, fullTextClear, service: service);
+
+    // The breakdown lives under the database row, not as its own
+    // category: the totals still count the shared file once.
+    expect(find.text("Personal dictionaries"), findsOneWidget);
+    expect(find.text("My words"), findsOneWidget);
+    expect(find.text("1.2 KB · 3 entries"), findsOneWidget);
+    expect(find.text("Empty notes"), findsOneWidget);
+    expect(find.text("0 B · 0 entries"), findsOneWidget);
+    expect(
+      find.text(
+        "Estimated from entry text — personal dictionaries share the app "
+        "database file.",
+      ),
+      findsOneWidget,
+    );
+    expect(viewModel.totalBytes, 8836);
+    expect(viewModel.personalDictionaryEstimatedBytes, 1234);
+  });
+
   testWidgets("clearing the full-text index row calls the service and "
       "refreshes to 0 B", (tester) async {
     final fullTextClear = _RecordingFullTextClear(cache);

@@ -5112,6 +5112,9 @@ class $PersonalArticlesTable extends PersonalArticles
         false,
         type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES dictionary_list (id) ON DELETE CASCADE',
+        ),
       );
   static const drift.VerificationMeta _bodyMeta = const drift.VerificationMeta(
     'body',
@@ -5521,6 +5524,9 @@ class $PersonalHeadwordsTable extends PersonalHeadwords
         false,
         type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES dictionary_list (id) ON DELETE CASCADE',
+        ),
       );
   static const drift.VerificationMeta _articleIdMeta =
       const drift.VerificationMeta('articleId');
@@ -5531,6 +5537,9 @@ class $PersonalHeadwordsTable extends PersonalHeadwords
     false,
     type: drift.DriftSqlType.int,
     requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES personal_articles (id) ON DELETE CASCADE',
+    ),
   );
   static const drift.VerificationMeta _headwordMeta =
       const drift.VerificationMeta('headword');
@@ -5945,6 +5954,10 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     'idx_quiz_mistakes_word',
     'CREATE INDEX idx_quiz_mistakes_word ON quiz_mistakes (word)',
   );
+  late final drift.Index idxPersonalArticlesDictionary = drift.Index(
+    'idx_personal_articles_dictionary',
+    'CREATE INDEX idx_personal_articles_dictionary ON personal_articles (dictionary_id)',
+  );
   late final drift.Index idxPersonalHeadwordsDictNormalized = drift.Index(
     'idx_personal_headwords_dict_normalized',
     'CREATE UNIQUE INDEX idx_personal_headwords_dict_normalized ON personal_headwords (dictionary_id, normalized_headword)',
@@ -6024,9 +6037,41 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     idxFlashcardReviewLogsWord,
     idxFlashcardReviewLogsReviewedAt,
     idxQuizMistakesWord,
+    idxPersonalArticlesDictionary,
     idxPersonalHeadwordsDictNormalized,
     idxPersonalHeadwordsArticle,
   ];
+  @override
+  drift.StreamQueryUpdateRules
+  get streamUpdateRules => const StreamQueryUpdateRules([
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'dictionary_list',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [
+        drift.TableUpdate('personal_articles', kind: drift.UpdateKind.delete),
+      ],
+    ),
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'dictionary_list',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [
+        drift.TableUpdate('personal_headwords', kind: drift.UpdateKind.delete),
+      ],
+    ),
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'personal_articles',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [
+        drift.TableUpdate('personal_headwords', kind: drift.UpdateKind.delete),
+      ],
+    ),
+  ]);
 }
 
 typedef $$DictionaryListTableCreateCompanionBuilder =
@@ -6047,6 +6092,68 @@ typedef $$DictionaryListTableUpdateCompanionBuilder =
       drift.Value<String> path,
       drift.Value<int> type,
     });
+
+final class $$DictionaryListTableReferences
+    extends
+        drift.BaseReferences<
+          _$AppDatabase,
+          $DictionaryListTable,
+          DictionaryListData
+        > {
+  $$DictionaryListTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static drift.MultiTypedResultKey<
+    $PersonalArticlesTable,
+    List<PersonalArticle>
+  >
+  _personalArticlesRefsTable(_$AppDatabase db) =>
+      drift.MultiTypedResultKey.fromTable(
+        db.personalArticles,
+        aliasName: 'dictionary_list__id__personal_articles__dictionary_id',
+      );
+
+  $$PersonalArticlesTableProcessedTableManager get personalArticlesRefs {
+    final manager = $$PersonalArticlesTableTableManager(
+      $_db,
+      $_db.personalArticles,
+    ).filter((f) => f.dictionaryId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _personalArticlesRefsTable($_db),
+    );
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static drift.MultiTypedResultKey<
+    $PersonalHeadwordsTable,
+    List<PersonalHeadword>
+  >
+  _personalHeadwordsRefsTable(_$AppDatabase db) =>
+      drift.MultiTypedResultKey.fromTable(
+        db.personalHeadwords,
+        aliasName: 'dictionary_list__id__personal_headwords__dictionary_id',
+      );
+
+  $$PersonalHeadwordsTableProcessedTableManager get personalHeadwordsRefs {
+    final manager = $$PersonalHeadwordsTableTableManager(
+      $_db,
+      $_db.personalHeadwords,
+    ).filter((f) => f.dictionaryId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _personalHeadwordsRefsTable($_db),
+    );
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
 
 class $$DictionaryListTableFilterComposer
     extends drift.Composer<_$AppDatabase, $DictionaryListTable> {
@@ -6086,6 +6193,56 @@ class $$DictionaryListTableFilterComposer
     column: $table.type,
     builder: (column) => drift.ColumnFilters(column),
   );
+
+  drift.Expression<bool> personalArticlesRefs(
+    drift.Expression<bool> Function($$PersonalArticlesTableFilterComposer f) f,
+  ) {
+    final $$PersonalArticlesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.personalArticles,
+      getReferencedColumn: (t) => t.dictionaryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PersonalArticlesTableFilterComposer(
+            $db: $db,
+            $table: $db.personalArticles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  drift.Expression<bool> personalHeadwordsRefs(
+    drift.Expression<bool> Function($$PersonalHeadwordsTableFilterComposer f) f,
+  ) {
+    final $$PersonalHeadwordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.personalHeadwords,
+      getReferencedColumn: (t) => t.dictionaryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PersonalHeadwordsTableFilterComposer(
+            $db: $db,
+            $table: $db.personalHeadwords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$DictionaryListTableOrderingComposer
@@ -6154,6 +6311,58 @@ class $$DictionaryListTableAnnotationComposer
 
   drift.GeneratedColumn<int> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
+
+  drift.Expression<T> personalArticlesRefs<T extends Object>(
+    drift.Expression<T> Function($$PersonalArticlesTableAnnotationComposer a) f,
+  ) {
+    final $$PersonalArticlesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.personalArticles,
+      getReferencedColumn: (t) => t.dictionaryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PersonalArticlesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.personalArticles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  drift.Expression<T> personalHeadwordsRefs<T extends Object>(
+    drift.Expression<T> Function($$PersonalHeadwordsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$PersonalHeadwordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.personalHeadwords,
+          getReferencedColumn: (t) => t.dictionaryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PersonalHeadwordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.personalHeadwords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$DictionaryListTableTableManager
@@ -6167,16 +6376,12 @@ class $$DictionaryListTableTableManager
           $$DictionaryListTableAnnotationComposer,
           $$DictionaryListTableCreateCompanionBuilder,
           $$DictionaryListTableUpdateCompanionBuilder,
-          (
-            DictionaryListData,
-            drift.BaseReferences<
-              _$AppDatabase,
-              $DictionaryListTable,
-              DictionaryListData
-            >,
-          ),
+          (DictionaryListData, $$DictionaryListTableReferences),
           DictionaryListData,
-          drift.PrefetchHooks Function()
+          drift.PrefetchHooks Function({
+            bool personalArticlesRefs,
+            bool personalHeadwordsRefs,
+          })
         > {
   $$DictionaryListTableTableManager(
     _$AppDatabase db,
@@ -6227,15 +6432,65 @@ class $$DictionaryListTableTableManager
               .map(
                 (e) => (
                   e.readTable<$DictionaryListTable, DictionaryListData>(table),
-                  drift.BaseReferences<
-                    _$AppDatabase,
-                    $DictionaryListTable,
-                    DictionaryListData
-                  >(db, table, e),
+                  $$DictionaryListTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback:
+              ({personalArticlesRefs = false, personalHeadwordsRefs = false}) {
+                return drift.PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (personalArticlesRefs) db.personalArticles,
+                    if (personalHeadwordsRefs) db.personalHeadwords,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (personalArticlesRefs)
+                        await drift.$_getPrefetchedDataByColumns<
+                          DictionaryListData,
+                          $DictionaryListTable,
+                          PersonalArticle,
+                          $PersonalArticlesTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DictionaryListTableReferences
+                              ._personalArticlesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DictionaryListTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).personalArticlesRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'dictionary_id',
+                          typedResults: items,
+                        ),
+                      if (personalHeadwordsRefs)
+                        await drift.$_getPrefetchedDataByColumns<
+                          DictionaryListData,
+                          $DictionaryListTable,
+                          PersonalHeadword,
+                          $PersonalHeadwordsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DictionaryListTableReferences
+                              ._personalHeadwordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DictionaryListTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).personalHeadwordsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'dictionary_id',
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
         ),
       );
 }
@@ -6250,16 +6505,12 @@ typedef $$DictionaryListTableProcessedTableManager =
       $$DictionaryListTableAnnotationComposer,
       $$DictionaryListTableCreateCompanionBuilder,
       $$DictionaryListTableUpdateCompanionBuilder,
-      (
-        DictionaryListData,
-        drift.BaseReferences<
-          _$AppDatabase,
-          $DictionaryListTable,
-          DictionaryListData
-        >,
-      ),
+      (DictionaryListData, $$DictionaryListTableReferences),
       DictionaryListData,
-      drift.PrefetchHooks Function()
+      drift.PrefetchHooks Function({
+        bool personalArticlesRefs,
+        bool personalHeadwordsRefs,
+      })
     >;
 typedef $$HunspellSourceTableCreateCompanionBuilder =
     HunspellSourceCompanion Function({
@@ -9089,6 +9340,62 @@ typedef $$PersonalArticlesTableUpdateCompanionBuilder =
       drift.Value<String?> source,
     });
 
+final class $$PersonalArticlesTableReferences
+    extends
+        drift.BaseReferences<
+          _$AppDatabase,
+          $PersonalArticlesTable,
+          PersonalArticle
+        > {
+  $$PersonalArticlesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $DictionaryListTable _dictionaryIdTable(_$AppDatabase db) => db
+      .dictionaryList
+      .createAlias('personal_articles__dictionary_id__dictionary_list__id');
+
+  $$DictionaryListTableProcessedTableManager get dictionaryId {
+    final $_column = $_itemColumn<int>('dictionary_id')!;
+
+    final manager = $$DictionaryListTableTableManager(
+      $_db,
+      $_db.dictionaryList,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_dictionaryIdTable($_db));
+    if (item == null) return manager;
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static drift.MultiTypedResultKey<
+    $PersonalHeadwordsTable,
+    List<PersonalHeadword>
+  >
+  _personalHeadwordsRefsTable(_$AppDatabase db) =>
+      drift.MultiTypedResultKey.fromTable(
+        db.personalHeadwords,
+        aliasName: 'personal_articles__id__personal_headwords__article_id',
+      );
+
+  $$PersonalHeadwordsTableProcessedTableManager get personalHeadwordsRefs {
+    final manager = $$PersonalHeadwordsTableTableManager(
+      $_db,
+      $_db.personalHeadwords,
+    ).filter((f) => f.articleId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _personalHeadwordsRefsTable($_db),
+    );
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
 class $$PersonalArticlesTableFilterComposer
     extends drift.Composer<_$AppDatabase, $PersonalArticlesTable> {
   $$PersonalArticlesTableFilterComposer({
@@ -9100,11 +9407,6 @@ class $$PersonalArticlesTableFilterComposer
   });
   drift.ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => drift.ColumnFilters(column),
-  );
-
-  drift.ColumnFilters<int> get dictionaryId => $composableBuilder(
-    column: $table.dictionaryId,
     builder: (column) => drift.ColumnFilters(column),
   );
 
@@ -9127,6 +9429,54 @@ class $$PersonalArticlesTableFilterComposer
     column: $table.source,
     builder: (column) => drift.ColumnFilters(column),
   );
+
+  $$DictionaryListTableFilterComposer get dictionaryId {
+    final $$DictionaryListTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dictionaryId,
+      referencedTable: $db.dictionaryList,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DictionaryListTableFilterComposer(
+            $db: $db,
+            $table: $db.dictionaryList,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  drift.Expression<bool> personalHeadwordsRefs(
+    drift.Expression<bool> Function($$PersonalHeadwordsTableFilterComposer f) f,
+  ) {
+    final $$PersonalHeadwordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.personalHeadwords,
+      getReferencedColumn: (t) => t.articleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PersonalHeadwordsTableFilterComposer(
+            $db: $db,
+            $table: $db.personalHeadwords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$PersonalArticlesTableOrderingComposer
@@ -9140,11 +9490,6 @@ class $$PersonalArticlesTableOrderingComposer
   });
   drift.ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => drift.ColumnOrderings(column),
-  );
-
-  drift.ColumnOrderings<int> get dictionaryId => $composableBuilder(
-    column: $table.dictionaryId,
     builder: (column) => drift.ColumnOrderings(column),
   );
 
@@ -9167,6 +9512,29 @@ class $$PersonalArticlesTableOrderingComposer
     column: $table.source,
     builder: (column) => drift.ColumnOrderings(column),
   );
+
+  $$DictionaryListTableOrderingComposer get dictionaryId {
+    final $$DictionaryListTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dictionaryId,
+      referencedTable: $db.dictionaryList,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DictionaryListTableOrderingComposer(
+            $db: $db,
+            $table: $db.dictionaryList,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$PersonalArticlesTableAnnotationComposer
@@ -9181,11 +9549,6 @@ class $$PersonalArticlesTableAnnotationComposer
   drift.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  drift.GeneratedColumn<int> get dictionaryId => $composableBuilder(
-    column: $table.dictionaryId,
-    builder: (column) => column,
-  );
-
   drift.GeneratedColumn<String> get body =>
       $composableBuilder(column: $table.body, builder: (column) => column);
 
@@ -9197,6 +9560,56 @@ class $$PersonalArticlesTableAnnotationComposer
 
   drift.GeneratedColumn<String> get source =>
       $composableBuilder(column: $table.source, builder: (column) => column);
+
+  $$DictionaryListTableAnnotationComposer get dictionaryId {
+    final $$DictionaryListTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dictionaryId,
+      referencedTable: $db.dictionaryList,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DictionaryListTableAnnotationComposer(
+            $db: $db,
+            $table: $db.dictionaryList,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  drift.Expression<T> personalHeadwordsRefs<T extends Object>(
+    drift.Expression<T> Function($$PersonalHeadwordsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$PersonalHeadwordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.personalHeadwords,
+          getReferencedColumn: (t) => t.articleId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PersonalHeadwordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.personalHeadwords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$PersonalArticlesTableTableManager
@@ -9210,16 +9623,12 @@ class $$PersonalArticlesTableTableManager
           $$PersonalArticlesTableAnnotationComposer,
           $$PersonalArticlesTableCreateCompanionBuilder,
           $$PersonalArticlesTableUpdateCompanionBuilder,
-          (
-            PersonalArticle,
-            drift.BaseReferences<
-              _$AppDatabase,
-              $PersonalArticlesTable,
-              PersonalArticle
-            >,
-          ),
+          (PersonalArticle, $$PersonalArticlesTableReferences),
           PersonalArticle,
-          drift.PrefetchHooks Function()
+          drift.PrefetchHooks Function({
+            bool dictionaryId,
+            bool personalHeadwordsRefs,
+          })
         > {
   $$PersonalArticlesTableTableManager(
     _$AppDatabase db,
@@ -9270,15 +9679,73 @@ class $$PersonalArticlesTableTableManager
               .map(
                 (e) => (
                   e.readTable<$PersonalArticlesTable, PersonalArticle>(table),
-                  drift.BaseReferences<
-                    _$AppDatabase,
-                    $PersonalArticlesTable,
-                    PersonalArticle
-                  >(db, table, e),
+                  $$PersonalArticlesTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback:
+              ({dictionaryId = false, personalHeadwordsRefs = false}) {
+                return drift.PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (personalHeadwordsRefs) db.personalHeadwords,
+                  ],
+                  addJoins:
+                      <
+                        T extends drift.TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (dictionaryId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.dictionaryId,
+                            referencedTable: $$PersonalArticlesTableReferences
+                                ._dictionaryIdTable(db),
+                            referencedColumn: $$PersonalArticlesTableReferences
+                                ._dictionaryIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (personalHeadwordsRefs)
+                        await drift.$_getPrefetchedDataByColumns<
+                          PersonalArticle,
+                          $PersonalArticlesTable,
+                          PersonalHeadword,
+                          $PersonalHeadwordsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PersonalArticlesTableReferences
+                              ._personalHeadwordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PersonalArticlesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).personalHeadwordsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'article_id',
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
         ),
       );
 }
@@ -9293,16 +9760,12 @@ typedef $$PersonalArticlesTableProcessedTableManager =
       $$PersonalArticlesTableAnnotationComposer,
       $$PersonalArticlesTableCreateCompanionBuilder,
       $$PersonalArticlesTableUpdateCompanionBuilder,
-      (
-        PersonalArticle,
-        drift.BaseReferences<
-          _$AppDatabase,
-          $PersonalArticlesTable,
-          PersonalArticle
-        >,
-      ),
+      (PersonalArticle, $$PersonalArticlesTableReferences),
       PersonalArticle,
-      drift.PrefetchHooks Function()
+      drift.PrefetchHooks Function({
+        bool dictionaryId,
+        bool personalHeadwordsRefs,
+      })
     >;
 typedef $$PersonalHeadwordsTableCreateCompanionBuilder =
     PersonalHeadwordsCompanion Function({
@@ -9321,6 +9784,56 @@ typedef $$PersonalHeadwordsTableUpdateCompanionBuilder =
       drift.Value<String> normalizedHeadword,
     });
 
+final class $$PersonalHeadwordsTableReferences
+    extends
+        drift.BaseReferences<
+          _$AppDatabase,
+          $PersonalHeadwordsTable,
+          PersonalHeadword
+        > {
+  $$PersonalHeadwordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $DictionaryListTable _dictionaryIdTable(_$AppDatabase db) => db
+      .dictionaryList
+      .createAlias('personal_headwords__dictionary_id__dictionary_list__id');
+
+  $$DictionaryListTableProcessedTableManager get dictionaryId {
+    final $_column = $_itemColumn<int>('dictionary_id')!;
+
+    final manager = $$DictionaryListTableTableManager(
+      $_db,
+      $_db.dictionaryList,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_dictionaryIdTable($_db));
+    if (item == null) return manager;
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $PersonalArticlesTable _articleIdTable(_$AppDatabase db) => db
+      .personalArticles
+      .createAlias('personal_headwords__article_id__personal_articles__id');
+
+  $$PersonalArticlesTableProcessedTableManager get articleId {
+    final $_column = $_itemColumn<int>('article_id')!;
+
+    final manager = $$PersonalArticlesTableTableManager(
+      $_db,
+      $_db.personalArticles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_articleIdTable($_db));
+    if (item == null) return manager;
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
 class $$PersonalHeadwordsTableFilterComposer
     extends drift.Composer<_$AppDatabase, $PersonalHeadwordsTable> {
   $$PersonalHeadwordsTableFilterComposer({
@@ -9335,16 +9848,6 @@ class $$PersonalHeadwordsTableFilterComposer
     builder: (column) => drift.ColumnFilters(column),
   );
 
-  drift.ColumnFilters<int> get dictionaryId => $composableBuilder(
-    column: $table.dictionaryId,
-    builder: (column) => drift.ColumnFilters(column),
-  );
-
-  drift.ColumnFilters<int> get articleId => $composableBuilder(
-    column: $table.articleId,
-    builder: (column) => drift.ColumnFilters(column),
-  );
-
   drift.ColumnFilters<String> get headword => $composableBuilder(
     column: $table.headword,
     builder: (column) => drift.ColumnFilters(column),
@@ -9354,6 +9857,52 @@ class $$PersonalHeadwordsTableFilterComposer
     column: $table.normalizedHeadword,
     builder: (column) => drift.ColumnFilters(column),
   );
+
+  $$DictionaryListTableFilterComposer get dictionaryId {
+    final $$DictionaryListTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dictionaryId,
+      referencedTable: $db.dictionaryList,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DictionaryListTableFilterComposer(
+            $db: $db,
+            $table: $db.dictionaryList,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PersonalArticlesTableFilterComposer get articleId {
+    final $$PersonalArticlesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.articleId,
+      referencedTable: $db.personalArticles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PersonalArticlesTableFilterComposer(
+            $db: $db,
+            $table: $db.personalArticles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$PersonalHeadwordsTableOrderingComposer
@@ -9370,16 +9919,6 @@ class $$PersonalHeadwordsTableOrderingComposer
     builder: (column) => drift.ColumnOrderings(column),
   );
 
-  drift.ColumnOrderings<int> get dictionaryId => $composableBuilder(
-    column: $table.dictionaryId,
-    builder: (column) => drift.ColumnOrderings(column),
-  );
-
-  drift.ColumnOrderings<int> get articleId => $composableBuilder(
-    column: $table.articleId,
-    builder: (column) => drift.ColumnOrderings(column),
-  );
-
   drift.ColumnOrderings<String> get headword => $composableBuilder(
     column: $table.headword,
     builder: (column) => drift.ColumnOrderings(column),
@@ -9389,6 +9928,52 @@ class $$PersonalHeadwordsTableOrderingComposer
     column: $table.normalizedHeadword,
     builder: (column) => drift.ColumnOrderings(column),
   );
+
+  $$DictionaryListTableOrderingComposer get dictionaryId {
+    final $$DictionaryListTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dictionaryId,
+      referencedTable: $db.dictionaryList,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DictionaryListTableOrderingComposer(
+            $db: $db,
+            $table: $db.dictionaryList,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PersonalArticlesTableOrderingComposer get articleId {
+    final $$PersonalArticlesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.articleId,
+      referencedTable: $db.personalArticles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PersonalArticlesTableOrderingComposer(
+            $db: $db,
+            $table: $db.personalArticles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$PersonalHeadwordsTableAnnotationComposer
@@ -9403,14 +9988,6 @@ class $$PersonalHeadwordsTableAnnotationComposer
   drift.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  drift.GeneratedColumn<int> get dictionaryId => $composableBuilder(
-    column: $table.dictionaryId,
-    builder: (column) => column,
-  );
-
-  drift.GeneratedColumn<int> get articleId =>
-      $composableBuilder(column: $table.articleId, builder: (column) => column);
-
   drift.GeneratedColumn<String> get headword =>
       $composableBuilder(column: $table.headword, builder: (column) => column);
 
@@ -9418,6 +9995,52 @@ class $$PersonalHeadwordsTableAnnotationComposer
     column: $table.normalizedHeadword,
     builder: (column) => column,
   );
+
+  $$DictionaryListTableAnnotationComposer get dictionaryId {
+    final $$DictionaryListTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dictionaryId,
+      referencedTable: $db.dictionaryList,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DictionaryListTableAnnotationComposer(
+            $db: $db,
+            $table: $db.dictionaryList,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PersonalArticlesTableAnnotationComposer get articleId {
+    final $$PersonalArticlesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.articleId,
+      referencedTable: $db.personalArticles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PersonalArticlesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.personalArticles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$PersonalHeadwordsTableTableManager
@@ -9431,16 +10054,9 @@ class $$PersonalHeadwordsTableTableManager
           $$PersonalHeadwordsTableAnnotationComposer,
           $$PersonalHeadwordsTableCreateCompanionBuilder,
           $$PersonalHeadwordsTableUpdateCompanionBuilder,
-          (
-            PersonalHeadword,
-            drift.BaseReferences<
-              _$AppDatabase,
-              $PersonalHeadwordsTable,
-              PersonalHeadword
-            >,
-          ),
+          (PersonalHeadword, $$PersonalHeadwordsTableReferences),
           PersonalHeadword,
-          drift.PrefetchHooks Function()
+          drift.PrefetchHooks Function({bool dictionaryId, bool articleId})
         > {
   $$PersonalHeadwordsTableTableManager(
     _$AppDatabase db,
@@ -9491,15 +10107,60 @@ class $$PersonalHeadwordsTableTableManager
               .map(
                 (e) => (
                   e.readTable<$PersonalHeadwordsTable, PersonalHeadword>(table),
-                  drift.BaseReferences<
-                    _$AppDatabase,
-                    $PersonalHeadwordsTable,
-                    PersonalHeadword
-                  >(db, table, e),
+                  $$PersonalHeadwordsTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({dictionaryId = false, articleId = false}) {
+            return drift.PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends drift.TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (dictionaryId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.dictionaryId,
+                        referencedTable: $$PersonalHeadwordsTableReferences
+                            ._dictionaryIdTable(db),
+                        referencedColumn: $$PersonalHeadwordsTableReferences
+                            ._dictionaryIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (articleId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.articleId,
+                        referencedTable: $$PersonalHeadwordsTableReferences
+                            ._articleIdTable(db),
+                        referencedColumn: $$PersonalHeadwordsTableReferences
+                            ._articleIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ),
       );
 }
@@ -9514,16 +10175,9 @@ typedef $$PersonalHeadwordsTableProcessedTableManager =
       $$PersonalHeadwordsTableAnnotationComposer,
       $$PersonalHeadwordsTableCreateCompanionBuilder,
       $$PersonalHeadwordsTableUpdateCompanionBuilder,
-      (
-        PersonalHeadword,
-        drift.BaseReferences<
-          _$AppDatabase,
-          $PersonalHeadwordsTable,
-          PersonalHeadword
-        >,
-      ),
+      (PersonalHeadword, $$PersonalHeadwordsTableReferences),
       PersonalHeadword,
-      drift.PrefetchHooks Function()
+      drift.PrefetchHooks Function({bool dictionaryId, bool articleId})
     >;
 
 class $AppDatabaseManager {

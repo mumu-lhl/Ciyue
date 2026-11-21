@@ -17,6 +17,9 @@ class FakePersonalDictionaryService implements PersonalDictionaryService {
   AppDatabase get db => throw UnimplementedError("Fake has no database");
 
   @override
+  Future<void> Function(int)? get onDictionaryDeleted => null;
+
+  @override
   Future<bool> dictionaryExists(int id) async => id == 1;
 
   @override

@@ -154,9 +154,17 @@ class QuizMistakes extends Table {
 /// [body] is the Markdown source, converted to HTML at read time; [source]
 /// records where the article came from when it was imported (e.g. a DSL
 /// file name), and is null for hand-written entries.
+///
+/// [dictionaryId] references [DictionaryList] with cascade delete (schema
+/// v27): deleting the list row — however it happens — removes the
+/// dictionary's articles instead of leaving orphan rows behind. The index
+/// on [dictionaryId] keeps the per-dictionary article queries and the
+/// cascade itself from scanning the whole table.
+@TableIndex(name: "idx_personal_articles_dictionary", columns: {#dictionaryId})
 class PersonalArticles extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get dictionaryId => integer()();
+  IntColumn get dictionaryId =>
+      integer().references(DictionaryList, #id, onDelete: KeyAction.cascade)();
   TextColumn get body => text()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
@@ -171,6 +179,13 @@ class PersonalArticles extends Table {
 /// prefix lookup, so the same word in another case or composition form
 /// still resolves. [dictionaryId] is denormalized so a lookup never has to
 /// join back to the article first.
+///
+/// Both foreign keys cascade (schema v27): deleting the dictionary row
+/// removes its headwords, and deleting an article removes the headwords
+/// filed under it. No extra single-column index on [dictionaryId] is
+/// needed: the composite `idx_personal_headwords_dict_normalized` index
+/// already has [dictionaryId] as its leftmost column, so
+/// dictionary-scoped lookups and deletes use it.
 @TableIndex(
   name: "idx_personal_headwords_dict_normalized",
   columns: {#dictionaryId, #normalizedHeadword},
@@ -179,8 +194,13 @@ class PersonalArticles extends Table {
 @TableIndex(name: "idx_personal_headwords_article", columns: {#articleId})
 class PersonalHeadwords extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get dictionaryId => integer()();
-  IntColumn get articleId => integer()();
+  IntColumn get dictionaryId =>
+      integer().references(DictionaryList, #id, onDelete: KeyAction.cascade)();
+  IntColumn get articleId => integer().references(
+    PersonalArticles,
+    #id,
+    onDelete: KeyAction.cascade,
+  )();
   TextColumn get headword => text()();
   TextColumn get normalizedHeadword => text()();
 }

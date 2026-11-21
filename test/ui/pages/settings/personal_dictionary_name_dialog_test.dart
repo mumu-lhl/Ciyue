@@ -1,5 +1,3 @@
-import "dart:typed_data";
-
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/dictionary.dart";
@@ -8,6 +6,7 @@ import "package:ciyue/services/personal_dictionary_service.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/viewModels/dictionary.dart";
+import "package:flutter/services.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:flutter_test/flutter_test.dart";
@@ -59,6 +58,9 @@ class FakePersonalDictionaryService implements PersonalDictionaryService {
 
   @override
   AppDatabase get db => throw UnimplementedError("Fake has no database");
+
+  @override
+  Future<void> Function(int)? get onDictionaryDeleted => null;
 
   @override
   Future<bool> dictionaryExists(int id) async => true;
@@ -247,12 +249,20 @@ void main() {
     expect(find.text("New personal dictionary"), findsOneWidget);
   });
 
+  // P2-28: the field does not truncate over-long input — the 101-character
+  // name reaches submit and is rejected with the inline error, the same
+  // as a duplicate name. Silently truncating would create a name the user
+  // never typed.
   testWidgets("a name over the length limit is rejected inline", (
     tester,
   ) async {
     await pumpDialog(tester);
 
     await tester.enterText(find.byType(TextField), "a" * 101);
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller!.text,
+      "a" * 101,
+    );
     await tester.tap(find.text("Confirm"));
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 3));
@@ -302,5 +312,26 @@ void main() {
     expect(dictModel.added, isEmpty);
     expect(dictModel.updateDictIdsCalls, 0);
     expect(find.text("New personal dictionary"), findsOneWidget);
+  });
+
+  testWidgets("the name field declares the cap but does not truncate", (
+    tester,
+  ) async {
+    await pumpDialog(tester);
+
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.maxLength, personalDictionaryNameMaxLength);
+    expect(field.maxLengthEnforcement, MaxLengthEnforcement.none);
+    // No counter: the cap is a guard, not a budget the user tracks.
+    expect(field.decoration?.counterText, "");
+
+    // Over-long input stays in the field; the submit-time validation
+    // rejects it instead of the field silently cutting it.
+    await tester.enterText(find.byType(TextField), "a" * 150);
+    await tester.pump();
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller?.text,
+      "a" * 150,
+    );
   });
 }

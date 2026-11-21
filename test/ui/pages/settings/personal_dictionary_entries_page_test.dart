@@ -31,6 +31,9 @@ class FakePersonalDictionaryService implements PersonalDictionaryService {
   AppDatabase get db => throw UnimplementedError("Fake has no database");
 
   @override
+  Future<void> Function(int)? get onDictionaryDeleted => null;
+
+  @override
   Future<bool> dictionaryExists(int id) async => _entries.containsKey(id);
 
   @override
@@ -263,6 +266,68 @@ void main() {
 
     expect(find.text("No entries yet"), findsOneWidget);
     expect(find.text("apple"), findsNothing);
+  });
+
+  testWidgets("the empty state's add-entry button opens the editor", (
+    tester,
+  ) async {
+    fake = FakePersonalDictionaryService({1: []});
+    await pumpRouterPage(tester);
+
+    expect(find.text("No entries yet"), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, "Add entry"));
+    await tester.pumpAndSettle();
+
+    expect(find.text("New entry"), findsOneWidget);
+  });
+
+  testWidgets("entry previews strip Markdown syntax", (tester) async {
+    fake = FakePersonalDictionaryService({
+      1: [
+        entry(1, ["apple"], "**bold** and [link](https://example.com)"),
+        entry(2, ["banana"], "# Heading\nA yellow fruit."),
+      ],
+    });
+    await pumpPage(tester);
+
+    expect(find.text("bold and link"), findsOneWidget);
+    expect(find.text("Heading"), findsOneWidget);
+    expect(find.textContaining("**"), findsNothing);
+    expect(find.textContaining("[link]"), findsNothing);
+    expect(find.textContaining("# Heading"), findsNothing);
+  });
+
+  testWidgets("the search field has a clear button that restores the "
+      "full list", (tester) async {
+    await pumpPage(tester);
+
+    expect(find.byIcon(Icons.clear_rounded), findsNothing);
+    await tester.enterText(find.byType(TextField), "app");
+    // The filter is debounced 300ms.
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.clear_rounded), findsOneWidget);
+    expect(find.text("banana"), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.clear_rounded));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller?.text,
+      "",
+    );
+    expect(fake.lastQuery, isNull);
+    expect(find.text("banana"), findsOneWidget);
+    expect(find.byIcon(Icons.clear_rounded), findsNothing);
+  });
+
+  testWidgets("the search hint says it is a prefix search", (tester) async {
+    await pumpPage(tester);
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).decoration?.hintText,
+      "Search headwords by prefix",
+    );
   });
 
   testWidgets("tapping an entry opens the editor for that entry", (

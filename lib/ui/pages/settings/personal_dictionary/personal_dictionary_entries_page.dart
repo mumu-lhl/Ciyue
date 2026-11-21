@@ -4,6 +4,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/services/personal_dictionary_service.dart";
 import "package:ciyue/services/toast.dart";
+import "package:ciyue/services/tts.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/settings/personal_dictionary/personal_dictionary_io.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -92,7 +93,10 @@ class _PersonalDictionaryEntriesPageState
   void initState() {
     super.initState();
     _service = widget.service ?? ref.read(personalDictionaryServiceProvider);
-    _checkDictionary();
+    // The clear button only shows while the field is non-empty; the
+    // listener rebuilds so it appears and disappears with the text.
+    _searchController.addListener(_onSearchTextChanged);
+    unawaited(_checkDictionary());
   }
 
   /// A deep link can point at a dictionary that no longer exists; that is
@@ -110,8 +114,13 @@ class _PersonalDictionaryEntriesPageState
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _searchController.removeListener(_onSearchTextChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchTextChanged() {
+    if (mounted) setState(() {});
   }
 
   void _reload() {
@@ -133,6 +142,15 @@ class _PersonalDictionaryEntriesPageState
       _query = value.trim();
       _reload();
     });
+  }
+
+  /// Clears the search immediately — no debounce wait: the user asked for
+  /// the full list back, and the pending debounced query is dropped.
+  void _clearSearch() {
+    _debounceTimer?.cancel();
+    _searchController.clear();
+    _query = "";
+    _reload();
   }
 
   String get _entriesRoute =>
@@ -185,17 +203,19 @@ class _PersonalDictionaryEntriesPageState
         stackTrace,
       );
       if (mounted) {
-        ToastService.show(
-          l10n.personalDictionaryOperationFailed,
-          context,
-          type: ToastType.error,
+        unawaited(
+          ToastService.show(
+            l10n.personalDictionaryOperationFailed,
+            context,
+            type: ToastType.error,
+          ),
         );
       }
       return;
     }
 
     if (!mounted) return;
-    ToastService.show(l10n.personalDictionaryEntryDeleted, context);
+    unawaited(ToastService.show(l10n.personalDictionaryEntryDeleted, context));
     _reload();
   }
 
@@ -215,19 +235,23 @@ class _PersonalDictionaryEntriesPageState
             tooltip: l10n.more,
             onSelected: (value) {
               if (value == "import") {
-                importPersonalDictionaryDsl(
-                  context,
-                  _service,
-                  widget.dictionaryId,
-                ).then((_) {
-                  if (mounted) _reload();
-                });
+                unawaited(
+                  importPersonalDictionaryDsl(
+                    context,
+                    _service,
+                    widget.dictionaryId,
+                  ).then((_) {
+                    if (mounted) _reload();
+                  }),
+                );
               } else if (value == "export") {
-                exportPersonalDictionaryDsl(
-                  context,
-                  _service,
-                  widget.dictionaryId,
-                  title,
+                unawaited(
+                  exportPersonalDictionaryDsl(
+                    context,
+                    _service,
+                    widget.dictionaryId,
+                    title,
+                  ),
                 );
               }
             },
@@ -261,6 +285,13 @@ class _PersonalDictionaryEntriesPageState
                   decoration: InputDecoration(
                     hintText: l10n.personalDictionarySearchHint,
                     prefixIcon: const Icon(Icons.search_rounded),
+                    suffixIcon: _searchController.text.isEmpty
+                        ? null
+                        : IconButton(
+                            icon: const Icon(Icons.clear_rounded),
+                            tooltip: l10n.clear,
+                            onPressed: _clearSearch,
+                          ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -340,12 +371,10 @@ class _PersonalDictionaryEntriesPageState
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Text(
-                                l10n.personalDictionaryAddEntry,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                                textAlign: TextAlign.center,
+                              FilledButton.icon(
+                                onPressed: () => _openEditor(),
+                                icon: const Icon(Icons.add_rounded, size: 18),
+                                label: Text(l10n.personalDictionaryAddEntry),
                               ),
                             ],
                           ),
@@ -359,12 +388,17 @@ class _PersonalDictionaryEntriesPageState
                       itemCount: entries.length,
                       itemBuilder: (context, index) {
                         final entry = entries[index];
-                        final preview = entry.body
-                            .split("\n")
-                            .firstWhere(
-                              (line) => line.trim().isNotEmpty,
-                              orElse: () => "",
-                            );
+                        // The preview is a plain-text subtitle: strip the
+                        // Markdown syntax, or `**bold**` and `[x](y)` leak
+                        // into the list verbatim.
+                        final preview = TtsHelper.stripMarkdown(
+                          entry.body
+                              .split("\n")
+                              .firstWhere(
+                                (line) => line.trim().isNotEmpty,
+                                orElse: () => "",
+                              ),
+                        );
                         return Card(
                           key: ValueKey(entry.articleId),
                           elevation: 0,

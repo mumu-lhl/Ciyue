@@ -162,7 +162,11 @@ int? personalDictionaryIdFromPath(String path) {
 /// loading reads the [DictionaryList] row for that id and nothing else, so
 /// a personal dictionary never touches the file system. Article bodies are
 /// Markdown source, converted to HTML at read time so entries flow through
-/// the existing word-display pipeline unchanged.
+/// the existing word-display pipeline unchanged. Entry HTML goes through
+/// the base [wrapContentWithResources] (standards-mode doctype plus the
+/// media-tag rewrite, as for Mdict) rather than passing through untouched
+/// (P2-22): personal entries are fragments too, and the WebView must not
+/// render them in quirks mode.
 class PersonalDictionary extends BaseLoadedDictionary {
   /// A test database. Null in production, where the shared [mainDatabase]
   /// is used. Kept unresolved until first use so merely constructing a
@@ -176,6 +180,8 @@ class PersonalDictionary extends BaseLoadedDictionary {
   AppDatabase get _db => _databaseOverride ?? mainDatabase;
 
   DictionaryListDao get _dictionaryListDao => DictionaryListDao(_db);
+
+  DictGroupDao get _dictGroupDao => DictGroupDao(_db);
 
   PersonalDictionaryDao get _dao => PersonalDictionaryDao(_db);
 
@@ -279,12 +285,11 @@ class PersonalDictionary extends BaseLoadedDictionary {
     await waitForLoading();
     final normalized = normalizePersonalHeadword(query.trim());
     if (normalized.isEmpty) return [];
-    try {
-      final rows = await _dao.searchHeadwords(id, normalized);
-      return rows.map((row) => row.headword).toList();
-    } catch (_) {
-      return [];
-    }
+    // No blanket catch here (P2-5): a database error must propagate to
+    // the caller instead of masquerading as "no results", matching
+    // resolveKeys.
+    final rows = await _dao.searchHeadwords(id, normalized);
+    return rows.map((row) => row.headword).toList();
   }
 
   @override
@@ -292,7 +297,13 @@ class PersonalDictionary extends BaseLoadedDictionary {
     await waitForLoading();
     final candidatesByNormalized = <String, List<String>>{};
     for (final word in words) {
-      (candidatesByNormalized[normalizePersonalHeadword(word)] ??= []).add(
+      // Trim like search does (P2-6): " apple " must resolve the same
+      // way "apple" does. The map stays keyed by the caller's original
+      // word, so resolveExactKey finds its answer under the word it was
+      // given.
+      final trimmed = word.trim();
+      if (trimmed.isEmpty) continue;
+      (candidatesByNormalized[normalizePersonalHeadword(trimmed)] ??= []).add(
         word,
       );
     }
@@ -331,15 +342,32 @@ class PersonalDictionary extends BaseLoadedDictionary {
       id,
       headwords.map(normalizePersonalHeadword),
     );
-    final entries = <DictionaryEntryData>[];
+    // One batch fetch for all articles (P2-7): the old code resolved the
+    // same headwords a second time and then awaited getArticle once per
+    // headword. The per-headword results are identical — one entry per
+    // resolved headword, in the same order, with the stored headword
+    // spelling — only the query pattern changed.
+    final articleIdByHeadword = <String, int>{};
+    final articleIds = <int>[];
+    final seenArticleIds = <int>{};
     for (final headword in headwords) {
       final row = rows[normalizePersonalHeadword(headword)];
       if (row == null) continue;
-      final article = await _dao.getArticle(row.articleId);
+      articleIdByHeadword[headword] = row.articleId;
+      if (seenArticleIds.add(row.articleId)) articleIds.add(row.articleId);
+    }
+    if (articleIds.isEmpty) return [];
+    final articles = await _dao.articlesByIds(articleIds);
+    final articleById = {for (final article in articles) article.id: article};
+    final entries = <DictionaryEntryData>[];
+    for (final headword in headwords) {
+      final articleId = articleIdByHeadword[headword];
+      if (articleId == null) continue;
+      final article = articleById[articleId];
       if (article == null) continue;
       entries.add(
         DictionaryEntryData(
-          headword: row.headword,
+          headword: rows[normalizePersonalHeadword(headword)]!.headword,
           content: sanitizePersonalDictionaryHtml(
             markdown.markdownToHtml(article.body),
           ),
@@ -349,22 +377,23 @@ class PersonalDictionary extends BaseLoadedDictionary {
     return entries;
   }
 
-  /// Personal entries are already HTML (converted from Markdown at read
-  /// time) and carry no resources, so there is nothing to wrap.
-  @override
-  String wrapContentWithResources(String content) => content;
-
   /// Personal dictionaries have no resource files.
   @override
   Future<Uint8List?> readResourceFile(String filename) async => null;
 
   /// Deletes the dictionary's articles and headwords plus its
-  /// [DictionaryList] row. No file path is involved: the sentinel path is
-  /// not a file, and personal dictionaries own no files.
+  /// [DictionaryList] row, and removes the id from every dictionary
+  /// group. No file path is involved: the sentinel path is not a file,
+  /// and personal dictionaries own no files. The data delete, the row
+  /// delete and the group cleanup run in one transaction (P2-3, P2-4),
+  /// so a failure mid-delete cannot leave a half-removed dictionary.
   @override
   Future<void> removeDictionary({int? dictionaryId}) async {
     final removeId = dictionaryId ?? id;
-    await _dao.deleteDictionaryData(removeId);
-    await _dictionaryListDao.removeById(removeId);
+    await _db.transaction(() async {
+      await _dao.deleteDictionaryData(removeId);
+      await _dictionaryListDao.removeById(removeId);
+      await _dictGroupDao.removeDictIdFromAllGroups(removeId);
+    });
   }
 }

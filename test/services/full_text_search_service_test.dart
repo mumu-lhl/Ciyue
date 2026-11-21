@@ -457,6 +457,40 @@ void main() {
       addTearDown(personalService.dispose);
     });
 
+    /// Seeds a stale ready meta row for [dictionaryId] the way the v1
+    /// test seeds its tables: the row a personal dictionary must never
+    /// have, left behind by an older build or a manual edit.
+    Future<void> seedReadyMetaRow(int dictionaryId) async {
+      final file = File("${dir.path}/full_text_search.db");
+      final raw = _RawFtsDatabase(NativeDatabase(file));
+      await raw.customStatement(
+        "CREATE TABLE fts_meta ("
+        "dictionary_id INTEGER PRIMARY KEY, "
+        "fingerprint TEXT NOT NULL, "
+        "total INTEGER NOT NULL DEFAULT 0, "
+        "indexed INTEGER NOT NULL DEFAULT 0, "
+        "state TEXT NOT NULL DEFAULT 'building', "
+        "updated_at INTEGER NOT NULL)",
+      );
+      await raw.customStatement(
+        "INSERT INTO fts_meta "
+        "(dictionary_id, fingerprint, total, indexed, state, updated_at) "
+        "VALUES ($dictionaryId, '', 0, 0, 'ready', 1234567890)",
+      );
+      await raw.close();
+    }
+
+    Future<int> metaRowCount() async {
+      final file = File("${dir.path}/full_text_search.db");
+      final check = _RawFtsDatabase(NativeDatabase(file));
+      final row = await check
+          .customSelect("SELECT COUNT(*) AS n FROM fts_meta")
+          .getSingle();
+      final count = row.read<int>("n");
+      await check.close();
+      return count;
+    }
+
     test("fingerprintFor returns empty for the personal type", () async {
       // The MDX file exists for this base path, so only the explicit
       // personal skip — not a missing file — can produce "" here.
@@ -489,6 +523,58 @@ void main() {
       // drag the aggregate status to notBuilt.
       expect(await personalService.indexStatus(), FullTextIndexStatus.ready);
     });
+
+    test("reconcile drops a ready meta row for a personal dictionary "
+        "outside the current group", () async {
+      await seedReadyMetaRow(7);
+      final outsideGroup = FullTextSearchService(
+        dictionaries: () => const [],
+        knownIds: () async => {7},
+        dictionaryType: (id) async => id == 7 ? DictionaryType.personal : null,
+        databaseDirectory: () async => dir.path,
+        runner: fakeRunner,
+      );
+      addTearDown(outsideGroup.dispose);
+
+      // Reconcile runs on the first status read. The row is known (so
+      // prune keeps it) and the dictionary is not in the group (so only
+      // the type lookup can recognise it): it must be dropped, not left
+      // reporting ready until a first FTS query fails on the missing
+      // tables.
+      expect(await outsideGroup.indexStatus(), FullTextIndexStatus.ready);
+      expect(outsideGroup.stateFor(7).status, FullTextIndexStatus.notBuilt);
+      expect(await metaRowCount(), 0);
+    });
+
+    test("reconcile drops a ready meta row for a personal dictionary in "
+        "the current group", () async {
+      await seedReadyMetaRow(7);
+
+      expect(await personalService.indexStatus(), FullTextIndexStatus.ready);
+      expect(personalService.stateFor(7).status, FullTextIndexStatus.notBuilt);
+      expect(await metaRowCount(), 0);
+    });
+
+    test(
+      "reconcile leaves a meta row alone when its type is unknown",
+      () async {
+        await seedReadyMetaRow(7);
+        final noLookup = FullTextSearchService(
+          dictionaries: () => const [],
+          knownIds: () async => {7},
+          databaseDirectory: () async => dir.path,
+          runner: fakeRunner,
+        );
+        addTearDown(noLookup.dispose);
+
+        // Without a type lookup the row cannot be proven personal, so it
+        // stays — dropping on a guess would delete a real dictionary's
+        // index.
+        await noLookup.indexStatus();
+        expect(noLookup.stateFor(7).status, FullTextIndexStatus.ready);
+        expect(await metaRowCount(), 1);
+      },
+    );
 
     test("dropDictionary and indexSizeBytes are safe no-ops", () async {
       await personalService.dropDictionary(7);

@@ -233,31 +233,93 @@ void main() {
     expect(await main.search("ａpp"), ["Apple", "apple fruit", "application"]);
   });
 
-  test("resource access is a no-op: no files, identity wrap, server serves nothing", () async {
+  test("wrapContentWithResources puts personal HTML in standards mode and "
+      "rewrites media tags (P2-22)", () async {
+    final dict = dictionary();
+    await dict.init();
+
+    expect(
+      dict.wrapContentWithResources("<p>x</p>"),
+      "<!DOCTYPE html>\n<p>x</p>",
+    );
+    final audio = dict.wrapContentWithResources(
+      '<audio src="a.mp3">play</audio>',
+    );
+    expect(audio, startsWith("<!DOCTYPE html>\n"));
+    expect(audio, contains('<a href="sound://a.mp3">play'));
+    final video = dict.wrapContentWithResources('<video src="v.mp4">');
+    expect(video, contains("<video src=\"v.mp4\" controls>"));
+    await dict.close();
+  });
+
+  test("resource access is a no-op: no files, server serves nothing", () async {
     final dict = dictionary();
     await dict.init();
 
     expect(await dict.readResourceFile("style.css"), isNull);
-    expect(dict.wrapContentWithResources("<p>x</p>"), "<p>x</p>");
     // The desktop server exists (the entry WebView needs its port), but
     // a personal dictionary serves no resources over it.
     expect(dict.port, isNot(0));
     await dict.close();
   });
 
-  test(
-    "removeDictionary deletes articles, headwords and the list row",
-    () async {
-      final dict = dictionary();
-      await dict.init();
+  test("search propagates a database error instead of returning no results "
+      "(P2-5)", () async {
+    final dict = dictionary();
+    await dict.init();
+    await database.customStatement("DROP TABLE personal_headwords");
 
-      await dict.removeDictionary(dictionaryId: dictionaryId);
+    await expectLater(dict.search("app"), throwsA(isA<Object>()));
+    await dict.close();
+  });
 
-      expect(await DictionaryListDao(database).getById(dictionaryId), isNull);
-      expect(await service.entryCount(dictionaryId), 0);
-      expect(await service.listEntries(dictionaryId), isEmpty);
-    },
-  );
+  test("resolveKeys and resolveExactKey trim their input (P2-6)", () async {
+    final dict = dictionary();
+    await dict.init();
+
+    expect(await dict.resolveExactKey(" apple "), "Apple");
+    expect(await dict.resolveExactKey("  APPLE  "), "Apple");
+    expect(await dict.resolveKeys([" banana ", "missing "]), {
+      " banana ": "banana",
+    });
+  });
+
+  test("readExactEntries returns the same entries for a multi-alias "
+      "dictionary (P2-7)", () async {
+    final dict = dictionary();
+    await dict.init();
+
+    final entries = await dict.readExactEntries([
+      "apple",
+      "APPLE",
+      "apple fruit",
+      "banana",
+      "missing",
+    ]);
+
+    expect(entries.map((e) => e.headword), ["Apple", "apple fruit", "banana"]);
+    // The two aliases share one article: identical content.
+    expect(entries[0].content, entries[1].content);
+    expect(entries.first.content, contains("<strong>red</strong>"));
+    expect(entries.last.content, contains("<em>yellow</em>"));
+  });
+
+  test("removeDictionary deletes articles, headwords, the list row and "
+      "group membership (P2-3, P2-4)", () async {
+    final dict = dictionary();
+    await dict.init();
+    final groupId = await DictGroupDao(database)
+        .addGroup("P2 group", [dictionaryId]);
+
+    await dict.removeDictionary(dictionaryId: dictionaryId);
+
+    expect(await DictionaryListDao(database).getById(dictionaryId), isNull);
+    // The dictionary no longer exists, so the read paths reject the id
+    // instead of silently reporting an empty dictionary (P2-10).
+    await expectLater(service.entryCount(dictionaryId), throwsStateError);
+    await expectLater(service.listEntries(dictionaryId), throwsStateError);
+    expect(await DictGroupDao(database).getDictIds(groupId), isEmpty);
+  });
 
   group("sanitizePersonalDictionaryHtml", () {
     test("strips script tags and their content", () {
@@ -439,6 +501,40 @@ void main() {
       await dict.close();
     },
   );
+
+  test("concurrent init of two dictionaries binds distinct ports and both "
+      "close cleanly (P2-34)", () async {
+    final first = dictionary();
+    final secondId = await service.createDictionary("Second");
+    final second = PersonalDictionary(
+      path: "personal:$secondId",
+      database: database,
+    );
+
+    await Future.wait([first.init(), second.init()]);
+
+    // Two dictionaries share nothing but the database: each binds its
+    // own loopback server on a system-assigned port.
+    expect(first.port, isNot(0));
+    expect(second.port, isNot(0));
+    expect(first.port, isNot(second.port));
+
+    await Future.wait([first.close(), second.close()]);
+
+    expect(first.port, 0);
+    expect(second.port, 0);
+    expect(first.isReady, isFalse);
+    expect(second.isReady, isFalse);
+
+    // A second init/close round stays safe too.
+    await Future.wait([first.init(), second.init()]);
+    expect(first.port, isNot(0));
+    expect(second.port, isNot(0));
+    expect(first.port, isNot(second.port));
+    await Future.wait([first.close(), second.close()]);
+    expect(first.port, 0);
+    expect(second.port, 0);
+  });
 
   group("DictManager loading", () {
     test("a personal dictionary loads through the manager", () async {

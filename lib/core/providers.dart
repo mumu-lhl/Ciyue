@@ -79,7 +79,15 @@ final writingCheckHistoryDaoProvider = Provider<WritingCheckHistoryDao>(
 );
 
 final personalDictionaryServiceProvider = Provider<PersonalDictionaryService>(
-  (ref) => PersonalDictionaryService(mainDatabase),
+  (ref) => PersonalDictionaryService(
+    mainDatabase,
+    // Drop the dictionary's full-text index after its data is gone
+    // (P2-4). The service invokes the hook after the delete transaction
+    // commits and swallows hook errors, so a disposed provider here
+    // cannot break the delete itself.
+    onDictionaryDeleted: (id) =>
+        ref.read(fullTextSearchServiceProvider).dropDictionary(id),
+  ),
 );
 
 final translateHistoryDaoProvider = Provider<TranslateHistoryDao>(
@@ -125,6 +133,16 @@ final fullTextSearchServiceProvider =
                 .toList(growable: false),
         knownIds: () async =>
             (await dictionaryListDao.all()).map((d) => d.id).toSet(),
+        // The type lookup behind reconcile's personal-dictionary prune:
+        // a stale meta row for a personal dictionary outside the current
+        // group is only recognisable through the dictionary list.
+        dictionaryType: (id) async {
+          try {
+            return await dictionaryListDao.getType(id);
+          } catch (_) {
+            return null;
+          }
+        },
       );
     });
 

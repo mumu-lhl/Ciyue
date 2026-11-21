@@ -124,7 +124,10 @@ void main() {
       await service.deleteDictionary(id);
 
       expect(await dictionaryListDao.getById(id), isNull);
-      expect(await service.entryCount(id), 0);
+      // The dictionary no longer exists, so the read paths reject the id
+      // instead of silently reporting an empty dictionary (P2-10).
+      await expectLater(service.entryCount(id), throwsStateError);
+      await expectLater(service.listEntries(id), throwsStateError);
     });
 
     test("rename and delete reject a non-personal dictionary", () async {
@@ -368,8 +371,8 @@ void main() {
 
       expect(
         dsl,
-        "Apple fruit\n"
         "apple\n"
+        "Apple fruit\n"
         "\tTitle\n"
         "\t\n"
         "\tThis is [b]bold[/b] and [i]italic[/i] text with code.\n"
@@ -722,6 +725,394 @@ void main() {
       );
 
       expect(await service.exportDsl(id), "apple\n\twiki end\n");
+    });
+  });
+
+  group("P2 data-layer fixes", () {
+    test("concurrent createEntry with the same headword, differing only by "
+        "case, reports the loser as already-exists (P2-1)", () async {
+      final id = await service.createDictionary("Words");
+
+      final results = await Future.wait([
+        service
+            .createEntry(id, headwords: ["dup"], body: "one")
+            .then<Object?>((value) => value, onError: (Object e) => e),
+        service
+            .createEntry(id, headwords: ["DUP"], body: "two")
+            .then<Object?>((value) => value, onError: (Object e) => e),
+      ]);
+
+      expect(results.whereType<int>(), hasLength(1));
+      final errors = results.whereType<StateError>().toList();
+      expect(errors, hasLength(1));
+      expect(errors.single.message, contains("already exists"));
+      expect(await service.entryCount(id), 1);
+    });
+
+    test("importDsl turns a case-folded duplicate into a warning, not a "
+        "raw error (P2-1)", () async {
+      final id = await service.createDictionary("Words");
+      await service.createEntry(id, headwords: ["dup"], body: "one");
+
+      final result = await service.importDsl(
+        id,
+        "DUP\n\tother body\nbanana\n\tyellow\n",
+      );
+
+      expect(result.imported, 1);
+      expect(result.warnings, [
+        const PersonalDslWarning(PersonalDslWarningKind.duplicate, "DUP"),
+      ]);
+      expect(await service.entryCount(id), 2);
+    });
+
+    test("deleteDictionary removes the id from all groups and calls the "
+        "delete hook (P2-4)", () async {
+      final deletedIds = <int>[];
+      final hooked = PersonalDictionaryService(
+        database,
+        onDictionaryDeleted: (dictionaryId) async {
+          deletedIds.add(dictionaryId);
+        },
+      );
+      final id = await hooked.createDictionary("Doomed");
+      await hooked.createEntry(id, headwords: ["apple"], body: "a fruit");
+      final groupDao = DictGroupDao(database);
+      final groupId = await groupDao.addGroup("Group", [id]);
+      final otherGroupId = await groupDao.addGroup("Other", [id, 424242]);
+
+      await hooked.deleteDictionary(id);
+
+      expect(await groupDao.getDictIds(groupId), isEmpty);
+      expect(await groupDao.getDictIds(otherGroupId), [424242]);
+      expect(deletedIds, [id]);
+    });
+
+    test("listEntries orders by normalized headword, not binary spelling "
+        "(P2-8)", () async {
+      final id = await service.createDictionary("Words");
+      await service.createEntry(id, headwords: ["Zebra"], body: "z");
+      await service.createEntry(id, headwords: ["apple"], body: "a");
+      await service.createEntry(id, headwords: ["Banana"], body: "b");
+
+      expect((await service.listEntries(id)).map((e) => e.headwords.single), [
+        "apple",
+        "Banana",
+        "Zebra",
+      ]);
+    });
+
+    test("listEntries with a query returns matched entries with all their "
+        "aliases (P2-9, P2-19)", () async {
+      final id = await service.createDictionary("Words");
+      await service.createEntry(
+        id,
+        headwords: ["apple", "apple fruit"],
+        body: "a",
+      );
+      await service.createEntry(id, headwords: ["application"], body: "b");
+      await service.createEntry(id, headwords: ["banana"], body: "c");
+
+      final entries = await service.listEntries(id, query: "APP");
+
+      expect(entries.map((e) => e.headwords), [
+        ["apple", "apple fruit"],
+        ["application"],
+      ]);
+    });
+
+    test("articleIdsForHeadwordPrefix honors its limit (P2-9)", () async {
+      final id = await service.createDictionary("Words");
+      for (var i = 0; i < 5; i++) {
+        await service.createEntry(id, headwords: ["word$i"], body: "b$i");
+      }
+      final dao = PersonalDictionaryDao(database);
+
+      expect(
+        await dao.articleIdsForHeadwordPrefix(id, "word", limit: 2),
+        hasLength(2),
+      );
+      expect(await dao.articleIdsForHeadwordPrefix(id, "word"), hasLength(5));
+      expect(await dao.articleIdsForHeadwordPrefix(id, "zzz"), isEmpty);
+    });
+
+    test("unknown dictionary ids throw a readable error instead of Bad "
+        "state or silence (P2-10)", () async {
+      await expectLater(
+        service.renameDictionary(999999, "X"),
+        throwsStateError,
+      );
+      await expectLater(service.deleteDictionary(999999), throwsStateError);
+      await expectLater(
+        service.createEntry(999999, headwords: ["a"], body: "b"),
+        throwsStateError,
+      );
+      await expectLater(service.listEntries(999999), throwsStateError);
+      await expectLater(service.entryCount(999999), throwsStateError);
+      await expectLater(service.exportDsl(999999), throwsStateError);
+      await expectLater(
+        service.listEntries(999999),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            "message",
+            contains("999999"),
+          ),
+        ),
+      );
+    });
+
+    test(
+      "createEntry and updateEntry store the body trimmed (P2-20)",
+      () async {
+        final id = await service.createDictionary("Words");
+        final articleId = await service.createEntry(
+          id,
+          headwords: ["apple"],
+          body: "  padded body\n\n",
+        );
+
+        expect((await service.listEntries(id)).single.body, "padded body");
+
+        await service.updateEntry(
+          articleId,
+          headwords: ["apple"],
+          body: "\n\nnew body  ",
+        );
+        expect((await service.listEntries(id)).single.body, "new body");
+
+        // The import path goes through createEntry, so it inherits the trim.
+        await service.importDsl(id, "banana\n\t  spaced body  \n");
+        expect((await service.listEntries(id)).last.body, "spaced body");
+      },
+    );
+  });
+
+  group("P2 DSL import/export fixes", () {
+    test(
+      "importDsl keeps nested body indent levels distinct (P2-11)",
+      () async {
+        final id = await service.createDictionary("Words");
+
+        // Space-indented nesting: the old strip-all-spaces behaviour
+        // flattened level2 onto level1.
+        final result = await service.importDsl(
+          id,
+          "apple\n"
+          "    [m1]level1\n"
+          "        [m2]level2\n"
+          "    [m1]tabbed\n",
+        );
+
+        expect(result.imported, 1);
+        expect(
+          (await service.listEntries(id)).single.body,
+          "[m1]level1\n    [m2]level2\n[m1]tabbed",
+        );
+      },
+    );
+
+    test("importDsl keeps tab-nested body levels distinct (P2-11)", () async {
+      final id = await service.createDictionary("Words");
+
+      final result = await service.importDsl(
+        id,
+        "apple\n"
+        "\t[m1]level1\n"
+        "\t\t[m2]level2\n"
+        "\t[m1]tabbed\n",
+      );
+
+      expect(result.imported, 1);
+      expect(
+        (await service.listEntries(id)).single.body,
+        "[m1]level1\n\t[m2]level2\n[m1]tabbed",
+      );
+    });
+
+    test("import/export/import round-trips a body with leading and trailing "
+        "blank lines (P2-12)", () async {
+      final first = await service.createDictionary("First");
+      // The probe body: a leading blank line, a middle blank line, and
+      // trailing blank lines, written as indented empty DSL lines.
+      final result = await service.importDsl(
+        first,
+        "apple\n"
+        "\t\n"
+        "\tleading blank\n"
+        "\t\n"
+        "\ttrailing blanks\n"
+        "\t\n"
+        "\t\n",
+      );
+
+      expect(result.imported, 1);
+      // The store layer trims bodies (P2-20), so the leading/trailing
+      // blank lines are normalised away at the first import; the middle
+      // blank line survives.
+      final firstBody = (await service.listEntries(first)).single.body;
+      expect(firstBody, "leading blank\n\ntrailing blanks");
+
+      // From then on the round-trip is stable: export and re-import
+      // yields the identical body.
+      final exported = await service.exportDsl(first);
+      final second = await service.createDictionary("Second");
+      final secondResult = await service.importDsl(second, exported);
+
+      expect(secondResult.imported, 1);
+      expect((await service.listEntries(second)).single.body, firstBody);
+    });
+
+    test("importDsl reports a repeated duplicate headword once, with a "
+        "localised warning (P2-13)", () async {
+      final id = await service.createDictionary("Words");
+      await service.createEntry(id, headwords: ["apple"], body: "old");
+
+      final result = await service.importDsl(
+        id,
+        "apple\n\tnew one\napple\n\tnew two\napple\n\tnew three\n",
+      );
+
+      expect(result.imported, 0);
+      expect(result.warnings, [
+        const PersonalDslWarning(PersonalDslWarningKind.duplicate, "apple"),
+      ]);
+      // The warning is the localised duplicate message, never the raw
+      // exception text.
+      final l10n = AppLocalizationsEn();
+      for (final warning in result.warnings) {
+        expect(warning.message(l10n), isNot(contains("Bad state")));
+        expect(warning.message(l10n), isNot(contains("SqliteException")));
+      }
+      expect(await service.entryCount(id), 1);
+    });
+
+    test(
+      "importDsl does not warn about parentheses in a headword (P2-14)",
+      () async {
+        final id = await service.createDictionary("Words");
+
+        final result = await service.importDsl(id, "a (b)\n\tclean body\n");
+
+        expect(result.imported, 1);
+        expect(result.warnings, isEmpty);
+        expect((await service.listEntries(id)).single.headwords, ["a (b)"]);
+      },
+    );
+
+    test(
+      "importDsl warns about @-prefixed references in the body (P2-15)",
+      () async {
+        final id = await service.createDictionary("Words");
+
+        final result = await service.importDsl(
+          id,
+          "apple\n\t@see banana\n\tplain line\n",
+        );
+
+        expect(result.imported, 1);
+        expect(result.warnings, [
+          const PersonalDslWarning(PersonalDslWarningKind.atReference),
+        ]);
+        expect(
+          const PersonalDslWarning(PersonalDslWarningKind.atReference)
+              .message(AppLocalizationsEn()),
+          "References such as @see are stored as plain text; "
+          "they are not cross-references.",
+        );
+
+        // An @ inside a word (an email address) is not a reference.
+        final other = await service.createDictionary("Other");
+        final clean = await service.importDsl(
+          other,
+          "apple\n\tmail user@example.com for details\n",
+        );
+        expect(clean.imported, 1);
+        expect(clean.warnings, isEmpty);
+      },
+    );
+
+    test("exportDsl converts single-underscore italics but keeps snake_case "
+        "(P2-16)", () async {
+      final id = await service.createDictionary("Words");
+      await service.createEntry(
+        id,
+        headwords: ["apple"],
+        body: "an _x_ and _italic_ word, plus snake_case",
+      );
+
+      expect(
+        await service.exportDsl(id),
+        "apple\n"
+        "\tan [i]x[/i] and [i]italic[/i] word, plus snake_case\n",
+      );
+    });
+
+    test("importDsl signals empty input distinctly (P2-17)", () async {
+      final id = await service.createDictionary("Words");
+
+      final empty = await service.importDsl(id, "");
+      expect(empty.imported, 0);
+      expect(empty.warnings, isEmpty);
+      expect(empty.isEmptyInput, isTrue);
+
+      final whitespace = await service.importDsl(id, "  \n\n  \n");
+      expect(whitespace.imported, 0);
+      expect(whitespace.isEmptyInput, isTrue);
+
+      final bytes = await service.importDslBytes(id, Uint8List(0), "empty.dsl");
+      expect(bytes.imported, 0);
+      expect(bytes.isEmptyInput, isTrue);
+
+      // Content that imports nothing is not empty input: a metadata-only
+      // file, and a file whose only entry has no body.
+      final metadataOnly = await service.importDsl(id, "#NAME \"Test\"\n");
+      expect(metadataOnly.imported, 0);
+      expect(metadataOnly.isEmptyInput, isFalse);
+
+      final result = await service.importDsl(id, "apple\n\tred fruit\n");
+      expect(result.imported, 1);
+      expect(result.isEmptyInput, isFalse);
+    });
+
+    test("importDslBytes names the file when the bytes are not valid text "
+        "(P2-18)", () async {
+      final id = await service.createDictionary("Words");
+
+      await expectLater(
+        service.importDslBytes(
+          id,
+          Uint8List.fromList([0x61, 0xFF, 0x62]),
+          "broken.dsl",
+        ),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            "message",
+            allOf(contains("broken.dsl"), contains("UTF-8")),
+          ),
+        ),
+      );
+    });
+
+    test("importDslBytes names the file when a .dz file is not gzip data "
+        "(P2-18)", () async {
+      final id = await service.createDictionary("Words");
+
+      await expectLater(
+        service.importDslBytes(
+          id,
+          Uint8List.fromList(utf8.encode("apple\n\tred fruit\n")),
+          "plain.dsl.dz",
+        ),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            "message",
+            allOf(contains("plain.dsl.dz"), contains("decompress")),
+          ),
+        ),
+      );
     });
   });
 }

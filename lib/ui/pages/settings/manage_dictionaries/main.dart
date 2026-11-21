@@ -15,6 +15,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/loading_dialog.dart";
 import "package:ciyue/ui/pages/settings/personal_dictionary/personal_dictionary_io.dart";
 import "package:ciyue/utils.dart";
+import "package:flutter/services.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:material_ui/material_ui.dart";
@@ -29,23 +30,54 @@ Future<void> showPersonalDictionaryNameDialog(
   BuildContext context,
   DictionaryListData? dictionary,
 ) async {
-  final l10n = AppLocalizations.of(context)!;
-  final isRename = dictionary != null;
-  final controller = TextEditingController(text: dictionary?.title ?? "");
-  // The inline error lives outside the StatefulBuilder: the builder
-  // re-runs on every setState, so a local declared inside it would reset.
-  String? nameError;
-  late StateSetter dialogSetState;
+  await showDialog(
+    context: context,
+    builder: (dialogContext) =>
+        _PersonalDictionaryNameDialog(dictionary: dictionary),
+  );
+}
 
-  Future<void> submit(BuildContext dialogContext, String value) async {
+/// The name dialog itself: a stateful widget so its [TextEditingController]
+/// is disposed with the dialog instead of leaking on every open.
+class _PersonalDictionaryNameDialog extends StatefulWidget {
+  const _PersonalDictionaryNameDialog({required this.dictionary});
+
+  final DictionaryListData? dictionary;
+
+  @override
+  State<_PersonalDictionaryNameDialog> createState() =>
+      _PersonalDictionaryNameDialogState();
+}
+
+class _PersonalDictionaryNameDialogState
+    extends State<_PersonalDictionaryNameDialog> {
+  late final TextEditingController _controller;
+  String? _nameError;
+
+  bool get _isRename => widget.dictionary != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.dictionary?.title ?? "");
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit(BuildContext dialogContext, String value) async {
+    final l10n = AppLocalizations.of(dialogContext)!;
     final name = value.trim();
     if (name.isEmpty) {
-      dialogSetState(() => nameError = l10n.personalDictionaryNameEmpty);
+      setState(() => _nameError = l10n.personalDictionaryNameEmpty);
       return;
     }
     if (name.length > personalDictionaryNameMaxLength) {
-      dialogSetState(
-        () => nameError = l10n.personalDictionaryNameTooLong(
+      setState(
+        () => _nameError = l10n.personalDictionaryNameTooLong(
           personalDictionaryNameMaxLength,
         ),
       );
@@ -56,17 +88,16 @@ Future<void> showPersonalDictionaryNameDialog(
     final service = container.read(personalDictionaryServiceProvider);
     if (await service.dictionaryNameExists(
       name,
-      exceptId: isRename ? dictionary.id : null,
+      exceptId: _isRename ? widget.dictionary!.id : null,
     )) {
-      dialogSetState(
-        () => nameError = l10n.personalDictionaryNameAlreadyExists,
-      );
+      setState(() => _nameError = l10n.personalDictionaryNameAlreadyExists);
       return;
     }
-    dialogSetState(() => nameError = null);
+    setState(() => _nameError = null);
 
     try {
-      if (isRename) {
+      if (_isRename) {
+        final dictionary = widget.dictionary!;
         final model = container.read(dictManagerModelProvider);
         // Mirror _updateAlias for file dictionaries: the loaded
         // dictionary keeps its own title, so sync it first — that is
@@ -88,82 +119,86 @@ Future<void> showPersonalDictionaryNameDialog(
       }
     } catch (e, stackTrace) {
       talker.error(
-        "Failed to ${isRename ? "rename" : "create"} personal dictionary",
+        "Failed to ${_isRename ? "rename" : "create"} personal dictionary",
         e,
         stackTrace,
       );
-      if (dialogContext.mounted) {
-        // The service can still reject the name (a race with another
-        // create): map that onto the same inline error. Anything else is
-        // a generic failure toast, never the raw exception text.
-        final message = e.toString();
-        if (message.contains("already exists")) {
-          dialogSetState(
-            () => nameError = l10n.personalDictionaryNameAlreadyExists,
-          );
-        } else if (message.contains("at most")) {
-          dialogSetState(
-            () => nameError = l10n.personalDictionaryNameTooLong(
-              personalDictionaryNameMaxLength,
-            ),
-          );
-        } else {
+      if (!dialogContext.mounted) return;
+      // The service can still reject the name (a race with another
+      // create): map that onto the same inline error. Anything else is
+      // a generic failure toast, never the raw exception text.
+      final message = e.toString();
+      if (message.contains("already exists")) {
+        setState(() => _nameError = l10n.personalDictionaryNameAlreadyExists);
+      } else if (message.contains("at most")) {
+        setState(
+          () => _nameError = l10n.personalDictionaryNameTooLong(
+            personalDictionaryNameMaxLength,
+          ),
+        );
+      } else {
+        unawaited(
           ToastService.show(
             l10n.personalDictionaryOperationFailed,
             dialogContext,
             type: ToastType.error,
-          );
-        }
+          ),
+        );
       }
       return;
     }
 
     container.read(manageDictionariesModelProvider).update();
     if (dialogContext.mounted) {
-      ToastService.show(
-        isRename
-            ? l10n.personalDictionaryRenamed
-            : l10n.personalDictionaryCreated,
-        dialogContext,
+      unawaited(
+        ToastService.show(
+          _isRename
+              ? l10n.personalDictionaryRenamed
+              : l10n.personalDictionaryCreated,
+          dialogContext,
+        ),
       );
       Navigator.of(dialogContext).pop();
     }
   }
 
-  await showDialog(
-    context: context,
-    builder: (dialogContext) => StatefulBuilder(
-      builder: (statefulContext, setState) {
-        dialogSetState = setState;
-        return AlertDialog(
-          title: Text(
-            isRename
-                ? l10n.personalDictionaryRename
-                : l10n.personalDictionaryNew,
-          ),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: l10n.personalDictionaryName,
-              errorText: nameError,
-            ),
-            onSubmitted: (value) => submit(dialogContext, value),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l10n.close),
-            ),
-            FilledButton(
-              onPressed: () => submit(dialogContext, controller.text),
-              child: Text(l10n.confirm),
-            ),
-          ],
-        );
-      },
-    ),
-  );
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(
+        _isRename ? l10n.personalDictionaryRename : l10n.personalDictionaryNew,
+      ),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        // The same 100-character cap the service enforces, but the
+        // field must not enforce it: silently truncating what the user
+        // typed would create a name they never entered. Over-long input
+        // stays in the field so _submit can reject it with the inline
+        // error, the same as a duplicate name. No counter: the cap is a
+        // guard, not a budget the user tracks.
+        maxLength: personalDictionaryNameMaxLength,
+        maxLengthEnforcement: MaxLengthEnforcement.none,
+        decoration: InputDecoration(
+          labelText: l10n.personalDictionaryName,
+          errorText: _nameError,
+          counterText: "",
+        ),
+        onSubmitted: (value) => _submit(context, value),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.close),
+        ),
+        FilledButton(
+          onPressed: () => _submit(context, _controller.text),
+          child: Text(l10n.confirm),
+        ),
+      ],
+    );
+  }
 }
 
 class NewPersonalDictionaryButton extends StatelessWidget {
@@ -803,14 +838,16 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
   }
 
   void _openPersonalEntries(BuildContext context, String title) {
-    context
-        .push(
-          "/settings/personal_dictionary/${dictionary.id}",
-          extra: {"title": title},
-        )
-        .then((_) {
-          if (mounted) _refreshPersonalEntryCount();
-        });
+    unawaited(
+      context
+          .push(
+            "/settings/personal_dictionary/${dictionary.id}",
+            extra: {"title": title},
+          )
+          .then((_) {
+            if (mounted) _refreshPersonalEntryCount();
+          }),
+    );
   }
 
   void _showPersonalActionsSheet(
@@ -939,13 +976,15 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                     label: l10n.personalDictionaryImportDsl,
                     onTap: () {
                       sheetContext.pop();
-                      importPersonalDictionaryDsl(
-                        context,
-                        ref.read(personalDictionaryServiceProvider),
-                        dictionary.id,
-                      ).then((_) {
-                        if (mounted) _refreshPersonalEntryCount();
-                      });
+                      unawaited(
+                        importPersonalDictionaryDsl(
+                          context,
+                          ref.read(personalDictionaryServiceProvider),
+                          dictionary.id,
+                        ).then((_) {
+                          if (mounted) _refreshPersonalEntryCount();
+                        }),
+                      );
                     },
                   ),
                   buildItem(
@@ -953,11 +992,13 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                     label: l10n.personalDictionaryExportDsl,
                     onTap: () {
                       sheetContext.pop();
-                      exportPersonalDictionaryDsl(
-                        context,
-                        ref.read(personalDictionaryServiceProvider),
-                        dictionary.id,
-                        title,
+                      unawaited(
+                        exportPersonalDictionaryDsl(
+                          context,
+                          ref.read(personalDictionaryServiceProvider),
+                          dictionary.id,
+                          title,
+                        ),
                       );
                     },
                   ),
@@ -966,7 +1007,9 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                     label: l10n.personalDictionaryRename,
                     onTap: () {
                       sheetContext.pop();
-                      showPersonalDictionaryNameDialog(context, dictionary);
+                      unawaited(
+                        showPersonalDictionaryNameDialog(context, dictionary),
+                      );
                     },
                   ),
                   buildItem(
@@ -1004,6 +1047,19 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                       );
                       if (confirmed != true) return;
 
+                      // Close first, mirroring the file-dictionary
+                      // delete: while the rows still exist a lookup can
+                      // still resolve, and close marks the dictionary
+                      // closed before an initialization still in flight
+                      // can bind a server nobody closes again (P1-4).
+                      // Deleting the rows first left lookups hitting a
+                      // loaded dictionary whose articles were already
+                      // gone.
+                      final model = ref.read(dictManagerModelProvider);
+                      if (dictManager.contain(dictionary.id)) {
+                        await model.close(dictionary.id);
+                      }
+
                       try {
                         await ref
                             .read(personalDictionaryServiceProvider)
@@ -1016,40 +1072,39 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                           stackTrace,
                         );
                         if (context.mounted) {
-                          ToastService.show(
-                            l10n.personalDictionaryOperationFailed,
-                            context,
-                            type: ToastType.error,
+                          unawaited(
+                            ToastService.show(
+                              l10n.personalDictionaryOperationFailed,
+                              context,
+                              type: ToastType.error,
+                            ),
                           );
                         }
                         return;
-                      }
-
-                      // The manager still holds the loaded instance after
-                      // the rows are gone: close it first, mirroring the
-                      // file-dictionary delete, or lookups keep asking a
-                      // dictionary whose data no longer exists.
-                      if (dictManager.contain(dictionary.id)) {
-                        final model = ref.read(dictManagerModelProvider);
-                        await model.close(dictionary.id);
-                        dictManager.dictIds = [
-                          for (final dict in dictManager.dicts.values) dict.id,
-                        ];
-                        model.checkIsEmpty();
                       }
 
                       await dictGroupDao.removeDictIdFromAllGroups(
                         dictionary.id,
                       );
 
+                      // Persist the enabled set and notify the word pages
+                      // whether or not the dictionary was loaded: the old
+                      // code kept this inside the `contain` block, so
+                      // deleting a disabled dictionary never wrote the
+                      // group list back or re-ran the lookups.
+                      // `updateDictIds` also runs `checkIsEmpty`.
+                      await model.updateDictIds();
+
                       if (sheetContext.mounted) {
                         ref.read(manageDictionariesModelProvider).update();
                         sheetContext.pop();
                       }
                       if (context.mounted) {
-                        ToastService.show(
-                          l10n.personalDictionaryDeleted,
-                          context,
+                        unawaited(
+                          ToastService.show(
+                            l10n.personalDictionaryDeleted,
+                            context,
+                          ),
                         );
                       }
                     },
@@ -1074,6 +1129,7 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
     final title = dictionary.title != null && dictionary.title != ""
         ? dictionary.title!
         : dictionary.path;
+    final isEnabled = dictManager.contain(dictionary.id);
 
     return Card(
       key: ValueKey(dictionary.id),
@@ -1083,7 +1139,9 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+          color: isEnabled
+              ? colorScheme.outlineVariant.withValues(alpha: 0.6)
+              : colorScheme.outlineVariant.withValues(alpha: 0.25),
           width: 0.8,
         ),
       ),
@@ -1092,6 +1150,20 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
         padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
         child: Row(
           children: [
+            ReorderableDragStartListener(
+              index: index,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.grab,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(
+                    Icons.drag_indicator_rounded,
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
             Expanded(
               child: InkWell(
                 borderRadius: BorderRadius.circular(10),
@@ -1107,15 +1179,23 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer.withValues(
-                            alpha: 0.8,
-                          ),
+                          color: isEnabled
+                              ? colorScheme.primaryContainer.withValues(
+                                  alpha: 0.8,
+                                )
+                              : colorScheme.surfaceContainerHighest.withValues(
+                                  alpha: 0.5,
+                                ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
                           Icons.edit_note_rounded,
                           size: 18,
-                          color: colorScheme.onPrimaryContainer,
+                          color: isEnabled
+                              ? colorScheme.onPrimaryContainer
+                              : colorScheme.onSurfaceVariant.withValues(
+                                  alpha: 0.7,
+                                ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -1128,6 +1208,11 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                               title,
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
+                                color: isEnabled
+                                    ? colorScheme.onSurface
+                                    : colorScheme.onSurface.withValues(
+                                        alpha: 0.65,
+                                      ),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1161,7 +1246,7 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
               ),
             ),
             Checkbox(
-              value: dictManager.contain(dictionary.id),
+              value: isEnabled,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -1174,7 +1259,45 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                         if (!context.mounted) return;
                         final model = ref.read(dictManagerModelProvider);
                         if (value == true) {
+                          final oldDictionariesNumber =
+                              dictManager.dicts.length;
+
+                          if (dictManager.isLoading) {
+                            // The switch that loads this group is still
+                            // running, and enabling now only sticks once it
+                            // has finished. Say so instead of leaving the
+                            // checkbox looking ignored for a while.
+                            unawaited(
+                              ToastService.show(
+                                l10n.dictionaryEnabledAfterLoading,
+                                context,
+                                type: ToastType.info,
+                              ),
+                            );
+                          }
+
                           await model.add(dictionary.id, dictionary.path);
+
+                          if (oldDictionariesNumber == 0) {
+                            if (!context.mounted) return;
+
+                            final searchBarFocusNode = ref
+                                .read(homeModelProvider)
+                                .searchBarFocusNode;
+
+                            void searchBarFocusListener() {
+                              if (searchBarFocusNode.hasFocus) {
+                                searchBarFocusNode.unfocus();
+                                searchBarFocusNode.removeListener(
+                                  searchBarFocusListener,
+                                );
+                              }
+                            }
+
+                            searchBarFocusNode.addListener(
+                              searchBarFocusListener,
+                            );
+                          }
                         } else {
                           await model.close(dictionary.id);
                         }
@@ -1190,10 +1313,12 @@ class _DictionaryCardState extends ConsumerState<DictionaryCard> {
                           stackTrace,
                         );
                         if (context.mounted) {
-                          ToastService.show(
-                            l10n.personalDictionaryOperationFailed,
-                            context,
-                            type: ToastType.error,
+                          unawaited(
+                            ToastService.show(
+                              l10n.personalDictionaryOperationFailed,
+                              context,
+                              type: ToastType.error,
+                            ),
                           );
                         }
                       } finally {
@@ -1922,6 +2047,21 @@ class ManageDictionariesBody extends ConsumerWidget {
                                 size: 18,
                               ),
                               label: Text(l10n.recommendedDictionaries),
+                            ),
+                            // The AppBar's new-dictionary button is still
+                            // there, but an empty list is exactly where a
+                            // first-time user looks for a way in — offer
+                            // the same create flow here.
+                            OutlinedButton.icon(
+                              onPressed: () => showPersonalDictionaryNameDialog(
+                                context,
+                                null,
+                              ),
+                              icon: const Icon(
+                                Icons.post_add_rounded,
+                                size: 18,
+                              ),
+                              label: Text(l10n.personalDictionaryNew),
                             ),
                           ],
                         ),

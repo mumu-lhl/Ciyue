@@ -9,6 +9,7 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/services/lookup_keys.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:drift/drift.dart";
+import "package:drift/native.dart" show SqliteException;
 
 /// Maximum length of a personal dictionary name, in characters.
 ///
@@ -52,6 +53,8 @@ class PersonalDslWarning {
         l10n.personalDictionaryImportWarningParentheses,
       PersonalDslWarningKind.doubleBraces =>
         l10n.personalDictionaryImportWarningDoubleBraces,
+      PersonalDslWarningKind.atReference =>
+        l10n.personalDictionaryImportWarningAtReference,
       PersonalDslWarningKind.noBody =>
         l10n.personalDictionaryImportWarningNoBody(headwords),
       PersonalDslWarningKind.duplicate =>
@@ -69,6 +72,7 @@ enum PersonalDslWarningKind {
   tilde,
   parentheses,
   doubleBraces,
+  atReference,
   noBody,
   duplicate,
   orphanBodyLines,
@@ -95,13 +99,23 @@ class PersonalEntry {
 /// The outcome of a DSL import: how many articles were stored, and the
 /// non-blocking warnings for entries that were skipped or stored verbatim
 /// (DSL constructs this dictionary keeps as plain text).
+///
+/// [isEmptyInput] is true only when the imported text had no content at
+/// all (empty or whitespace-only). It is the service-level empty-input
+/// signal (P2-17): the UI shows the "file is empty" message for it
+/// instead of "Imported 0 entries". A file with content but zero stored
+/// entries — metadata-only, or every entry skipped with warnings — leaves
+/// it false, so the caller can tell "nothing to import" apart from "the
+/// import found entries but could not store any".
 class PersonalDslImportResult {
   final int imported;
   final List<PersonalDslWarning> warnings;
+  final bool isEmptyInput;
 
   const PersonalDslImportResult({
     required this.imported,
     this.warnings = const [],
+    this.isEmptyInput = false,
   });
 }
 
@@ -114,18 +128,36 @@ class PersonalDslImportResult {
 class PersonalDictionaryService {
   final AppDatabase db;
 
-  PersonalDictionaryService(this.db);
+  /// Called with the dictionary id after [deleteDictionary] has removed
+  /// the dictionary, so the caller can drop state that lives outside this
+  /// database — the full-text index, for example. Kept a callback (rather
+  /// than importing the full-text service) so this service stays free of
+  /// the search stack: the provider wires it to
+  /// `FullTextSearchService.dropDictionary`. A failure here must not fail
+  /// the delete itself — the dictionary is already gone — so it is
+  /// swallowed. Group membership needs no hook: it lives in this database
+  /// and is cleaned up inside the delete transaction.
+  final Future<void> Function(int dictionaryId)? onDictionaryDeleted;
+
+  PersonalDictionaryService(this.db, {this.onDictionaryDeleted});
 
   DictionaryListDao get _dictionaryListDao => DictionaryListDao(db);
 
+  DictGroupDao get _dictGroupDao => DictGroupDao(db);
+
   PersonalDictionaryDao get _dao => PersonalDictionaryDao(db);
 
-  /// Throws unless [id] is the id of a personal dictionary.
+  /// Throws unless [id] is the id of a personal dictionary: a readable
+  /// [StateError] for a missing row or a row of another type, never
+  /// Drift's `Bad state: No element` from a bare `getSingle()` (P2-10).
   Future<void> _requirePersonalDictionary(int id) async {
-    final type = await _dictionaryListDao.getType(id);
-    if (type != DictionaryType.personal) {
+    final row = await _dictionaryListDao.getById(id);
+    if (row == null) {
+      throw StateError("Personal dictionary $id not found");
+    }
+    if (row.type != DictionaryType.personal) {
       throw StateError(
-        "Dictionary $id is not a personal dictionary (type $type)",
+        "Dictionary $id is not a personal dictionary (type ${row.type})",
       );
     }
   }
@@ -191,13 +223,17 @@ class PersonalDictionaryService {
     if (await dictionaryNameExists(title)) {
       throw StateError("A personal dictionary named “$title” already exists");
     }
-    final id = await _dictionaryListDao.add(
-      "",
-      title,
-      type: DictionaryType.personal,
-    );
-    await _dictionaryListDao.updatePath(id, "personal:$id");
-    return id;
+    // Both writes in one transaction (P2-3): a failure between the insert
+    // and the sentinel write-back used to leave a `path=""` orphan row.
+    return db.transaction(() async {
+      final id = await _dictionaryListDao.add(
+        "",
+        title,
+        type: DictionaryType.personal,
+      );
+      await _dictionaryListDao.updatePath(id, "personal:$id");
+      return id;
+    });
   }
 
   Future<void> renameDictionary(int id, String name) async {
@@ -220,21 +256,70 @@ class PersonalDictionaryService {
 
   Future<void> deleteDictionary(int id) async {
     await _requirePersonalDictionary(id);
-    await _dao.deleteDictionaryData(id);
-    await _dictionaryListDao.removeById(id);
+    // Data, list row and group membership in one transaction (P2-3,
+    // P2-4): a failure mid-delete used to leave a 0-entry row, and group
+    // cleanup used to live only in the UI, so any other caller left the
+    // deleted id behind in its groups. The full-text index lives outside
+    // this database; [onDictionaryDeleted] drops it after the transaction
+    // commits (personal dictionaries never have index rows, so the drop
+    // is a no-op for them today — the hook keeps the delete correct if
+    // that ever changes, and the UI still drops it as well).
+    await db.transaction(() async {
+      await _dao.deleteDictionaryData(id);
+      await _dictionaryListDao.removeById(id);
+      await _dictGroupDao.removeDictIdFromAllGroups(id);
+    });
+    final hook = onDictionaryDeleted;
+    if (hook != null) {
+      try {
+        await hook(id);
+      } catch (_) {
+        // The dictionary is already gone; a stale-index cleanup failure
+        // must not report the delete itself as failed.
+      }
+    }
   }
 
+  /// Entries of [dictionaryId], in normalized-headword order. With
+  /// [query], only entries with a headword starting with the normalized
+  /// query, at most [PersonalDictionaryDao]’s filtered limit — the
+  /// matching is done in SQL, and each matched entry comes back with
+  /// *all* of its headwords, not just the matching alias (P2-9, P2-19):
+  /// a filtered view must show every alias of a matched entry.
   Future<List<PersonalEntry>> listEntries(
     int dictionaryId, {
     String? query,
   }) async {
+    await _requirePersonalDictionary(dictionaryId);
     final normalizedPrefix = query == null || query.trim().isEmpty
         ? null
         : normalizePersonalHeadword(query.trim());
-    final headwords = await _dao.headwordsForDictionary(
-      dictionaryId,
-      normalizedPrefix: normalizedPrefix,
-    );
+    if (normalizedPrefix != null) {
+      final articleIds = await _dao.articleIdsForHeadwordPrefix(
+        dictionaryId,
+        normalizedPrefix,
+      );
+      if (articleIds.isEmpty) return [];
+      final articles = await _dao.articlesByIds(articleIds);
+      final headwords = await _dao.headwordsForArticles(articleIds);
+      final headwordsByArticle = <int, List<String>>{};
+      for (final headword in headwords) {
+        (headwordsByArticle[headword.articleId] ??= []).add(headword.headword);
+      }
+      final articleById = {for (final article in articles) article.id: article};
+      return [
+        for (final articleId in articleIds)
+          if (articleById[articleId] != null)
+            PersonalEntry(
+              articleId: articleId,
+              dictionaryId: dictionaryId,
+              headwords: headwordsByArticle[articleId] ?? const [],
+              body: articleById[articleId]!.body,
+              updatedAt: articleById[articleId]!.updatedAt,
+            ),
+      ];
+    }
+    final headwords = await _dao.headwordsForDictionary(dictionaryId);
     if (headwords.isEmpty) return [];
     // A set keeps insertion order, so articles come out in the order their
     // first headword appears in the headword-ordered query.
@@ -259,7 +344,8 @@ class PersonalDictionaryService {
     ];
   }
 
-  Future<int> entryCount(int dictionaryId) {
+  Future<int> entryCount(int dictionaryId) async {
+    await _requirePersonalDictionary(dictionaryId);
     return _dao.countArticles(dictionaryId);
   }
 
@@ -269,7 +355,9 @@ class PersonalDictionaryService {
   /// Headwords are trimmed, empties dropped and duplicates (after
   /// normalisation) collapsed; an empty headword list or an empty body is
   /// an error, as is a headword that already belongs to another article of
-  /// this dictionary.
+  /// this dictionary. The body is stored trimmed (P2-20), so the same
+  /// entry written through the UI editor and through the service or an
+  /// import comes out identical.
   Future<int> createEntry(
     int dictionaryId, {
     required List<String> headwords,
@@ -280,24 +368,33 @@ class PersonalDictionaryService {
     if (cleaned.isEmpty) {
       throw ArgumentError("At least one headword is required");
     }
-    if (body.trim().isEmpty) {
+    final trimmedBody = body.trim();
+    if (trimmedBody.isEmpty) {
       throw ArgumentError("Entry body must not be empty");
     }
-    await _requireHeadwordsFree(dictionaryId, cleaned);
-    final now = DateTime.now();
-    return db.transaction(() async {
-      final articleId = await _dao.insertArticle(
-        PersonalArticlesCompanion(
-          dictionaryId: Value(dictionaryId),
-          body: Value(body),
-          createdAt: Value(now),
-          updatedAt: Value(now),
-        ),
-      );
-      await _dao.insertHeadwords(
-        _headwordCompanions(dictionaryId, articleId, cleaned),
-      );
-      return articleId;
+    // The duplicate check runs inside the same transaction as the insert
+    // (P2-1): checked outside, two concurrent creates could both pass
+    // the check and the loser would leak the raw SQLite UNIQUE error.
+    // The check alone still cannot close the race under a deferred
+    // transaction, so a UNIQUE failure from the insert itself is
+    // translated to the same StateError below.
+    return _translateUniqueViolation(() {
+      return db.transaction(() async {
+        await _requireHeadwordsFree(dictionaryId, cleaned);
+        final now = DateTime.now();
+        final articleId = await _dao.insertArticle(
+          PersonalArticlesCompanion(
+            dictionaryId: Value(dictionaryId),
+            body: Value(trimmedBody),
+            createdAt: Value(now),
+            updatedAt: Value(now),
+          ),
+        );
+        await _dao.insertHeadwords(
+          _headwordCompanions(dictionaryId, articleId, cleaned),
+        );
+        return articleId;
+      });
     });
   }
 
@@ -315,26 +412,29 @@ class PersonalDictionaryService {
     if (cleaned.isEmpty) {
       throw ArgumentError("At least one headword is required");
     }
-    if (body.trim().isEmpty) {
+    final trimmedBody = body.trim();
+    if (trimmedBody.isEmpty) {
       throw ArgumentError("Entry body must not be empty");
     }
-    await _requireHeadwordsFree(
-      article.dictionaryId,
-      cleaned,
-      exceptArticleId: articleId,
-    );
-    await db.transaction(() async {
-      await _dao.updateArticle(
-        articleId,
-        PersonalArticlesCompanion(
-          body: Value(body),
-          updatedAt: Value(DateTime.now()),
-        ),
-      );
-      await _dao.replaceHeadwords(
-        articleId,
-        _headwordCompanions(article.dictionaryId, articleId, cleaned),
-      );
+    return _translateUniqueViolation(() {
+      return db.transaction(() async {
+        await _requireHeadwordsFree(
+          article.dictionaryId,
+          cleaned,
+          exceptArticleId: articleId,
+        );
+        await _dao.updateArticle(
+          articleId,
+          PersonalArticlesCompanion(
+            body: Value(trimmedBody),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+        await _dao.replaceHeadwords(
+          articleId,
+          _headwordCompanions(article.dictionaryId, articleId, cleaned),
+        );
+      });
     });
   }
 
@@ -381,6 +481,13 @@ class PersonalDictionaryService {
     );
     var imported = 0;
     final warnings = <PersonalDslWarning>[];
+    // Identical skip warnings are reported once (P2-13): a file that
+    // repeats the same duplicate headword three times produces one
+    // warning, not three, so the warnings dialog stays bounded.
+    void addWarningOnce(PersonalDslWarning warning) {
+      if (!warnings.contains(warning)) warnings.add(warning);
+    }
+
     if (skippedOrphanBodyLines.isNotEmpty) {
       warnings.add(
         PersonalDslWarning(
@@ -392,11 +499,11 @@ class PersonalDictionaryService {
     }
     final warnedKinds = <PersonalDslWarningKind>{};
     for (final article in articles) {
-      for (final kind in _dslWarningKinds(article.rawLines)) {
+      for (final kind in _dslWarningKinds(article.bodyRawLines)) {
         if (warnedKinds.add(kind)) warnings.add(PersonalDslWarning(kind));
       }
       if (article.body.trim().isEmpty) {
-        warnings.add(
+        addWarningOnce(
           PersonalDslWarning(
             PersonalDslWarningKind.noBody,
             article.headwords.join(", "),
@@ -415,9 +522,10 @@ class PersonalDictionaryService {
         // A headword that already belongs to another article: skip this
         // article instead of aborting the whole import. Any other state
         // error (the dictionary vanished mid-import, for instance) is not
-        // a duplicate and still aborts.
+        // a duplicate and still aborts. The warning is the localised
+        // duplicate kind, never the raw exception text (P2-13).
         if (!e.message.contains("already exists")) rethrow;
-        warnings.add(
+        addWarningOnce(
           PersonalDslWarning(
             PersonalDslWarningKind.duplicate,
             article.headwords.join(", "),
@@ -430,17 +538,27 @@ class PersonalDictionaryService {
         final display = article.headwords.join(", ").trim().isEmpty
             ? "<empty headword>"
             : article.headwords.join(", ");
-        warnings.add(
+        addWarningOnce(
           PersonalDslWarning(PersonalDslWarningKind.invalidEntry, display),
         );
       }
     }
-    return PersonalDslImportResult(imported: imported, warnings: warnings);
+    return PersonalDslImportResult(
+      imported: imported,
+      warnings: warnings,
+      isEmptyInput: content.trim().isEmpty,
+    );
   }
 
   /// Imports DSL from raw bytes: gunzips when [filename] ends with `.dz`
   /// or the bytes carry the gzip magic, then decodes by BOM (UTF-8/16/32
   /// LE/BE, otherwise UTF-8) and imports as [importDsl].
+  ///
+  /// A decode or decompress failure throws a [FormatException] that names
+  /// [filename] and what was being attempted, with the underlying decoder
+  /// error kept in the message (P2-18) — never the bare Dart/zlib text.
+  /// The UI reports it through the localised generic-operation-failed
+  /// toast, so no new l10n string is needed for it.
   Future<PersonalDslImportResult> importDslBytes(
     int dictionaryId,
     Uint8List bytes,
@@ -448,9 +566,23 @@ class PersonalDictionaryService {
   ) async {
     var data = bytes;
     if (filename.toLowerCase().endsWith(".dz") || _isGzip(data)) {
-      data = Uint8List.fromList(gzip.decode(data));
+      try {
+        data = Uint8List.fromList(gzip.decode(data));
+      } catch (e) {
+        throw FormatException(
+          "Could not decompress $filename as gzip (.dz): $e",
+        );
+      }
     }
-    return importDsl(dictionaryId, _decodeText(data));
+    late final String text;
+    try {
+      text = _decodeText(data);
+    } catch (e) {
+      throw FormatException(
+        "Could not read $filename as text (UTF-8/UTF-16/UTF-32): $e",
+      );
+    }
+    return importDsl(dictionaryId, text);
   }
 
   /// Trims headwords, drops empties, and collapses spellings that fold to
@@ -484,6 +616,23 @@ class PersonalDictionaryService {
     ];
   }
 
+  /// Runs [action], translating a SQLite UNIQUE constraint failure on
+  /// the personal-headwords index into the same `StateError("... already
+  /// exists")` the pre-check throws, so concurrent creates (P2-1) and
+  /// `importDsl` — which only catches `StateError` — see one consistent
+  /// duplicate error instead of a raw `SqliteException(2067)`.
+  Future<T> _translateUniqueViolation<T>(Future<T> Function() action) async {
+    try {
+      return await action();
+    } on SqliteException catch (e) {
+      if (e.extendedResultCode == 2067 ||
+          e.message.contains("UNIQUE constraint failed")) {
+        throw StateError("Headword already exists in this dictionary");
+      }
+      rethrow;
+    }
+  }
+
   /// Throws when any of [headwords] already belongs to another article of
   /// [dictionaryId] (or to any article, when [exceptArticleId] is null).
   Future<void> _requireHeadwordsFree(
@@ -505,17 +654,19 @@ class PersonalDictionaryService {
 }
 
 /// One article parsed from DSL text: its headwords, its body (indented
-/// lines joined with `\n`), and the raw lines it came from, used for the
-/// tag warnings.
+/// lines, dedented, joined with `\n`), and the body lines exactly as
+/// written in the file (indentation intact), used for the DSL-construct
+/// warnings. Headword lines are never included there: a parenthesis in a
+/// headword is not body text (P2-14).
 class _DslArticle {
   final List<String> headwords;
   final String body;
-  final List<String> rawLines;
+  final List<String> bodyRawLines;
 
   const _DslArticle({
     required this.headwords,
     required this.body,
-    required this.rawLines,
+    required this.bodyRawLines,
   });
 }
 
@@ -524,12 +675,21 @@ class _DslArticle {
 /// current article, and so does a headword line after body lines.
 ///
 /// A blank line inside a body is kept as an empty body line (a paragraph
-/// break), not an article separator. Lines starting with `#` before any
-/// headword has been collected are DSL metadata (`#NAME`,
-/// `#INDEX_LANGUAGE`, ...) or comments, not headwords; indented body lines
-/// (such as a Markdown heading) are never treated as metadata. A body line
-/// with no headword above it is skipped and recorded in
-/// [skippedOrphanBodyLines] instead of failing the whole import.
+/// break), not an article separator — including blank lines at the very
+/// start or end of a body, which `flush()` no longer trims (P2-12):
+/// dropping them broke the export/import round-trip. The store layer
+/// still trims bodies on write (P2-20), so leading/trailing blank lines
+/// are normalised away at the first import; from then on the round-trip
+/// is stable. Lines starting with `#` before any headword has been
+/// collected are DSL metadata (`#NAME`, `#INDEX_LANGUAGE`, ...) or
+/// comments, not headwords; indented body lines (such as a Markdown
+/// heading) are never treated as metadata. A body line with no headword
+/// above it is skipped and recorded in [skippedOrphanBodyLines] instead
+/// of failing the whole import.
+///
+/// Body indentation is dedented, not stripped: only the minimal common
+/// indent across the article's body lines is removed (P2-11), so nested
+/// levels keep their relative depth instead of being flattened to one.
 List<_DslArticle> _parseDsl(
   String content, {
   List<String>? skippedOrphanBodyLines,
@@ -537,27 +697,19 @@ List<_DslArticle> _parseDsl(
   final articles = <_DslArticle>[];
   var headwords = <String>[];
   var bodyLines = <String>[];
-  var rawLines = <String>[];
   var hasBody = false;
 
   void flush() {
     if (headwords.isEmpty) return;
-    while (bodyLines.isNotEmpty && bodyLines.first.isEmpty) {
-      bodyLines.removeAt(0);
-    }
-    while (bodyLines.isNotEmpty && bodyLines.last.isEmpty) {
-      bodyLines.removeLast();
-    }
     articles.add(
       _DslArticle(
         headwords: List.of(headwords),
-        body: bodyLines.join("\n"),
-        rawLines: List.of(rawLines),
+        body: _dedentBodyLines(bodyLines).join("\n"),
+        bodyRawLines: List.of(bodyLines),
       ),
     );
     headwords = [];
     bodyLines = [];
-    rawLines = [];
     hasBody = false;
   }
 
@@ -570,7 +722,6 @@ List<_DslArticle> _parseDsl(
       if (hasBody) {
         // A blank line inside a body is a paragraph break.
         bodyLines.add("");
-        rawLines.add(line);
       } else {
         flush();
       }
@@ -587,33 +738,59 @@ List<_DslArticle> _parseDsl(
         continue;
       }
       hasBody = true;
-      bodyLines.add(_deindent(line));
-      rawLines.add(line);
+      bodyLines.add(line);
     } else {
       if (hasBody) flush();
       headwords.add(line.trim());
-      rawLines.add(line);
     }
   }
   flush();
   return articles;
 }
 
-/// Removes one level of DSL body indentation: a single leading tab, or the
-/// leading spaces when the line is space-indented.
-String _deindent(String line) {
-  if (line.startsWith("\t")) return line.substring(1);
-  return line.replaceFirst(RegExp("^ +"), "");
+/// Removes only the minimal common indent across [lines] (dedent-style):
+/// the longest leading-whitespace prefix shared by every non-blank line.
+/// Blank lines are left empty. Unlike stripping all leading whitespace,
+/// this keeps nested levels distinct — a body indented 4/8/4 spaces comes
+/// back as 0/4/0, not 0/0/0 (P2-11).
+List<String> _dedentBodyLines(List<String> lines) {
+  var prefix = "";
+  var found = false;
+  for (final line in lines) {
+    if (line.trim().isEmpty) continue;
+    final indent = line.substring(0, line.length - line.trimLeft().length);
+    if (!found) {
+      prefix = indent;
+      found = true;
+    } else {
+      var i = 0;
+      while (i < prefix.length && i < indent.length && prefix[i] == indent[i]) {
+        i++;
+      }
+      prefix = prefix.substring(0, i);
+    }
+    if (prefix.isEmpty) break;
+  }
+  if (prefix.isEmpty) return List.of(lines);
+  return [
+    for (final line in lines)
+      line.startsWith(prefix) ? line.substring(prefix.length) : line,
+  ];
 }
 
 /// DSL constructs this dictionary keeps as plain text, each reported once
-/// per import.
-Set<PersonalDslWarningKind> _dslWarningKinds(List<String> rawLines) {
+/// per import. Only body lines are scanned (P2-14): headword lines are
+/// never passed in, so a parenthesis in a headword cannot warn.
+Set<PersonalDslWarningKind> _dslWarningKinds(List<String> bodyLines) {
   final kinds = <PersonalDslWarningKind>{};
   final tagPattern = RegExp(r"\[/?.[^\]]*\]");
   final parenthesesPattern = RegExp(r"\([^)]*\)");
   final doubleBracesPattern = RegExp(r"\{\{[^}]*\}\}");
-  for (final line in rawLines) {
+  // An @-prefixed word at the start of a body line or after whitespace,
+  // e.g. `@see banana`: stored as plain text, not a cross-reference
+  // (P2-15). An @ inside a word (an email address) does not count.
+  final atReferencePattern = RegExp(r"(^|\s)@\w+");
+  for (final line in bodyLines) {
     if (tagPattern.hasMatch(line)) kinds.add(PersonalDslWarningKind.tags);
     if (line.contains("~")) kinds.add(PersonalDslWarningKind.tilde);
     if (parenthesesPattern.hasMatch(line)) {
@@ -621,6 +798,9 @@ Set<PersonalDslWarningKind> _dslWarningKinds(List<String> rawLines) {
     }
     if (doubleBracesPattern.hasMatch(line)) {
       kinds.add(PersonalDslWarningKind.doubleBraces);
+    }
+    if (atReferencePattern.hasMatch(line)) {
+      kinds.add(PersonalDslWarningKind.atReference);
     }
   }
   return kinds;
@@ -787,6 +967,14 @@ String _markdownInlineToDsl(String text) {
   );
   result = result.replaceAllMapped(
     RegExp(r"\*([^*]+)\*"),
+    (m) => "[i]${m.group(1)}[/i]",
+  );
+  // Single-underscore emphasis `_x_` is italic too (P2-16). The
+  // underscores must sit next to non-word characters, so intra-word
+  // underscores in identifiers such as `snake_case` survive untouched;
+  // the content may not contain underscores or start/end with a space.
+  result = result.replaceAllMapped(
+    RegExp(r"(?<!\w)_([^_\s][^_]*[^_\s]|[^_\s])_(?!\w)"),
     (m) => "[i]${m.group(1)}[/i]",
   );
   // Inline code and strikethrough have no DSL equivalent: plain text.

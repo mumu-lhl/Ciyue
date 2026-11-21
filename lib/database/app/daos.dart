@@ -1264,8 +1264,27 @@ class PersonalDictionaryDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
+  Future<List<PersonalArticle>> articlesByIds(Iterable<int> articleIds) async {
+    final ids = articleIds.toList();
+    if (ids.isEmpty) return [];
+    final rows = <PersonalArticle>[];
+    for (final chunk in _chunks(ids, 500)) {
+      rows.addAll(
+        await (select(personalArticles)
+              ..where((t) => t.id.isIn(chunk))
+              ..orderBy([(t) => OrderingTerm(expression: t.id)]))
+            .get(),
+      );
+    }
+    return rows;
+  }
+
   /// Headwords of one dictionary, in display order. With [normalizedPrefix]
   /// set, only headwords whose normalized form starts with the prefix.
+  ///
+  /// Ordered by the *normalized* headword, not the display spelling:
+  /// binary ordering would put `Zebra` before `apple`, while the lookup
+  /// itself folds case (P2-8).
   Future<List<PersonalHeadword>> headwordsForDictionary(
     int dictionaryId, {
     String? normalizedPrefix,
@@ -1273,7 +1292,7 @@ class PersonalDictionaryDao extends DatabaseAccessor<AppDatabase>
     final query = select(personalHeadwords)
       ..where((t) => t.dictionaryId.isValue(dictionaryId))
       ..orderBy([
-        (t) => OrderingTerm(expression: t.headword),
+        (t) => OrderingTerm(expression: t.normalizedHeadword),
         (t) => OrderingTerm(expression: t.id),
       ]);
     if (normalizedPrefix != null) {
@@ -1285,6 +1304,30 @@ class PersonalDictionaryDao extends DatabaseAccessor<AppDatabase>
       );
     }
     return query.get();
+  }
+
+  /// The article ids whose headwords start with [normalizedPrefix], in
+  /// normalized-headword order, at most [limit] articles. The filter runs
+  /// in SQL so a filtered list never pulls the whole dictionary into
+  /// memory (P2-9); one article counts once no matter how many of its
+  /// aliases match.
+  Future<List<int>> articleIdsForHeadwordPrefix(
+    int dictionaryId,
+    String normalizedPrefix, {
+    int limit = 100,
+  }) async {
+    final rows = await customSelect(
+      "SELECT article_id FROM personal_headwords "
+      "WHERE dictionary_id = ? AND normalized_headword LIKE ? ESCAPE '\\' "
+      "GROUP BY article_id ORDER BY MIN(normalized_headword) LIMIT ?",
+      variables: [
+        Variable.withInt(dictionaryId),
+        Variable.withString("${_escapeLike(normalizedPrefix)}%"),
+        Variable.withInt(limit),
+      ],
+      readsFrom: {personalHeadwords},
+    ).get();
+    return rows.map((row) => row.read<int>("article_id")).toList();
   }
 
   Future<List<PersonalHeadword>> headwordsForArticle(int articleId) {
@@ -1302,9 +1345,14 @@ class PersonalDictionaryDao extends DatabaseAccessor<AppDatabase>
     final rows = <PersonalHeadword>[];
     for (final chunk in _chunks(ids, 500)) {
       rows.addAll(
-        await (select(
-          personalHeadwords,
-        )..where((t) => t.articleId.isIn(chunk))).get(),
+        await (select(personalHeadwords)
+              ..where((t) => t.articleId.isIn(chunk))
+              ..orderBy([
+                (t) => OrderingTerm(expression: t.articleId),
+                (t) => OrderingTerm(expression: t.normalizedHeadword),
+                (t) => OrderingTerm(expression: t.id),
+              ]))
+            .get(),
       );
     }
     return rows;

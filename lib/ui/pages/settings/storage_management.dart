@@ -37,6 +37,9 @@ class _StorageManagementPageState extends ConsumerState<StorageManagementPage> {
         StorageUsageViewModel(
           onClearFullTextIndex: () =>
               ref.read(fullTextSearchServiceProvider).clearAllIndexes(),
+          personalDictionaryEstimates: () => loadPersonalDictionaryEstimates(
+            ref.read(personalDictionaryServiceProvider),
+          ),
         );
   }
 
@@ -192,8 +195,76 @@ class _StorageManagementPageState extends ConsumerState<StorageManagementPage> {
           indent: 52,
           color: theme.colorScheme.outlineVariant.withValues(alpha: 0.25),
         ),
-        itemBuilder: (context, index) =>
-            _buildCategoryTile(theme, locale, usages[index]),
+        itemBuilder: (context, index) {
+          final usage = usages[index];
+          final tile = _buildCategoryTile(theme, locale, usage);
+          // The database file is shared by every personal dictionary, so
+          // the category cannot be split exactly; the per-dictionary
+          // content estimates go under it as a breakdown instead.
+          if (usage.kind != StorageCategoryKind.database ||
+              _viewModel.personalDictionaryEstimates.isEmpty) {
+            return tile;
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [tile, _buildPersonalDictionaryBreakdown(theme, locale)],
+          );
+        },
+      ),
+    );
+  }
+
+  /// Per-dictionary breakdown under the database category: each personal
+  /// dictionary's estimated content size with its entry count, plus the
+  /// note that the numbers are estimates sharing one database file.
+  Widget _buildPersonalDictionaryBreakdown(
+    ThemeData theme,
+    AppLocalizations locale,
+  ) {
+    final estimates = _viewModel.personalDictionaryEstimates;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(52, 2, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            locale.storagePersonalDictionaries,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          for (final estimate in estimates)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      estimate.title,
+                      style: theme.textTheme.bodyMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "${formatBytes(estimate.estimatedBytes)} · ${locale.personalDictionaryEntryCount(estimate.entryCount)}",
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 4),
+          Text(
+            locale.storagePersonalDictionarySizeEstimated,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       ),
     );
   }

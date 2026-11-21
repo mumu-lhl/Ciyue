@@ -207,6 +207,7 @@ class QuizMistakeDaoManager {
 }
 
 mixin _$PersonalDictionaryDaoMixin on DatabaseAccessor<AppDatabase> {
+  $DictionaryListTable get dictionaryList => attachedDatabase.dictionaryList;
   $PersonalArticlesTable get personalArticles =>
       attachedDatabase.personalArticles;
   $PersonalHeadwordsTable get personalHeadwords =>
@@ -218,6 +219,11 @@ mixin _$PersonalDictionaryDaoMixin on DatabaseAccessor<AppDatabase> {
 class PersonalDictionaryDaoManager {
   final _$PersonalDictionaryDaoMixin _db;
   PersonalDictionaryDaoManager(this._db);
+  $$DictionaryListTableTableManager get dictionaryList =>
+      $$DictionaryListTableTableManager(
+        _db.attachedDatabase,
+        _db.dictionaryList,
+      );
   $$PersonalArticlesTableTableManager get personalArticles =>
       $$PersonalArticlesTableTableManager(
         _db.attachedDatabase,

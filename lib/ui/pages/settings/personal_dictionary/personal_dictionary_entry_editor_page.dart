@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/services/personal_dictionary_service.dart";
@@ -8,12 +10,13 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:gpt_markdown/gpt_markdown.dart";
 import "package:material_ui/material_ui.dart";
 
-/// Splits a headwords field on commas and new lines, trims each part,
-/// drops empties, and de-duplicates while keeping the typed order.
+/// Splits a headwords field on commas, semicolons and new lines, trims
+/// each part, drops empties, and de-duplicates while keeping the typed
+/// order.
 List<String> parsePersonalHeadwords(String text) {
   final seen = <String>{};
   final headwords = <String>[];
-  for (final part in text.split(RegExp(r"[,，\n]"))) {
+  for (final part in text.split(RegExp(r"[,，;；\n]"))) {
     final headword = part.trim();
     if (headword.isEmpty || !seen.add(headword)) continue;
     headwords.add(headword);
@@ -78,7 +81,7 @@ class _PersonalDictionaryEntryEditorPageState
     // without asking.
     _headwordsController.addListener(_onFieldsChanged);
     _bodyController.addListener(_onFieldsChanged);
-    _checkDictionary();
+    unawaited(_checkDictionary());
   }
 
   void _onFieldsChanged() {
@@ -94,7 +97,7 @@ class _PersonalDictionaryEntryEditorPageState
       setState(() => _notFound = true);
       return;
     }
-    if (!_isNewEntry) _loadEntry();
+    if (!_isNewEntry) unawaited(_loadEntry());
   }
 
   /// Asks before discarding unsaved changes. Returns after the user picks
@@ -215,10 +218,12 @@ class _PersonalDictionaryEntryEditorPageState
       talker.error("Failed to save personal entry", e, stackTrace);
       if (mounted) {
         setState(() => _isSaving = false);
-        ToastService.show(
-          l10n.personalDictionaryOperationFailed,
-          context,
-          type: ToastType.error,
+        unawaited(
+          ToastService.show(
+            l10n.personalDictionaryOperationFailed,
+            context,
+            type: ToastType.error,
+          ),
         );
       }
       return;
@@ -226,7 +231,7 @@ class _PersonalDictionaryEntryEditorPageState
 
     if (!mounted) return;
     _allowPop = true;
-    ToastService.show(l10n.personalDictionaryEntrySaved, context);
+    unawaited(ToastService.show(l10n.personalDictionaryEntrySaved, context));
     Navigator.of(context).pop(true);
   }
 
@@ -240,7 +245,7 @@ class _PersonalDictionaryEntryEditorPageState
     return PopScope(
       canPop: !_isDirty || _allowPop,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _isDirty) _confirmDiscard();
+        if (!didPop && _isDirty) unawaited(_confirmDiscard());
       },
       child: Scaffold(
         appBar: AppBar(
@@ -257,9 +262,14 @@ class _PersonalDictionaryEntryEditorPageState
               tooltip: _isPreview
                   ? l10n.personalDictionaryEdit
                   : l10n.personalDictionaryPreview,
-              onPressed: () {
-                setState(() => _isPreview = !_isPreview);
-              },
+              // While the entry is still loading there is nothing to
+              // preview yet, and the tap would silently do nothing (the
+              // body branch checks _isLoading first).
+              onPressed: _isLoading
+                  ? null
+                  : () {
+                      setState(() => _isPreview = !_isPreview);
+                    },
             ),
             Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -303,12 +313,27 @@ class _PersonalDictionaryEntryEditorPageState
                     ),
                   )
                 : _isPreview
-                ? SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: SelectionArea(
-                      child: GptMarkdown(_bodyController.text),
-                    ),
-                  )
+                ? _bodyController.text.trim().isEmpty
+                      // An empty body previews as a blank page; say so
+                      // instead of showing nothing at all.
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              l10n.personalDictionaryEmptyPreview,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        )
+                      : SingleChildScrollView(
+                          padding: const EdgeInsets.all(16),
+                          child: SelectionArea(
+                            child: GptMarkdown(_bodyController.text),
+                          ),
+                        )
                 : Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(

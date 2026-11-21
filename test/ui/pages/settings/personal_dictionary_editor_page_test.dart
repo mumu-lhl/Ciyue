@@ -20,8 +20,15 @@ class FakePersonalDictionaryService implements PersonalDictionaryService {
   final updated = <({int articleId, List<String> headwords, String body})>[];
   var _nextArticleId = 100;
 
+  /// Delay applied to listEntries, so the loading state can be observed
+  /// instead of completing before the first frame.
+  Duration listEntriesDelay = Duration.zero;
+
   @override
   AppDatabase get db => throw UnimplementedError("Fake has no database");
+
+  @override
+  Future<void> Function(int)? get onDictionaryDeleted => null;
 
   @override
   Future<bool> dictionaryExists(int id) async => _entries.containsKey(id);
@@ -61,7 +68,12 @@ class FakePersonalDictionaryService implements PersonalDictionaryService {
   Future<List<PersonalEntry>> listEntries(
     int dictionaryId, {
     String? query,
-  }) async => List.unmodifiable(_entries[dictionaryId] ?? const []);
+  }) async {
+    if (listEntriesDelay > Duration.zero) {
+      await Future.delayed(listEntriesDelay);
+    }
+    return List.unmodifiable(_entries[dictionaryId] ?? const []);
+  }
 
   @override
   Future<int> entryCount(int dictionaryId) async =>
@@ -457,5 +469,88 @@ void main() {
       "banana",
     ]);
     expect(parsePersonalHeadwords(" , \n "), isEmpty);
+  });
+
+  test("parsePersonalHeadwords also splits on semicolons", () {
+    expect(parsePersonalHeadwords("apple; banana；cherry"), [
+      "apple",
+      "banana",
+      "cherry",
+    ]);
+    expect(parsePersonalHeadwords("apple;; banana；；cherry"), [
+      "apple",
+      "banana",
+      "cherry",
+    ]);
+    expect(parsePersonalHeadwords("apple; ,；\nbanana"), ["apple", "banana"]);
+  });
+
+  testWidgets("preview with an empty body shows an empty-preview hint", (
+    tester,
+  ) async {
+    await pumpEditor(tester);
+
+    await tester.tap(find.byIcon(Icons.preview_outlined));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text("Nothing to preview yet — write a definition first."),
+      findsOneWidget,
+    );
+    expect(find.byType(TextField), findsNothing);
+  });
+
+  testWidgets("preview with a body renders it and the hint is gone", (
+    tester,
+  ) async {
+    await pumpEditor(tester);
+
+    await tester.enterText(find.byType(TextField).first, "cherry");
+    await tester.enterText(find.byType(TextField).last, "A red fruit.");
+    await tester.tap(find.byIcon(Icons.preview_outlined));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text("Nothing to preview yet — write a definition first."),
+      findsNothing,
+    );
+    expect(find.textContaining("A red fruit."), findsOneWidget);
+  });
+
+  testWidgets("the preview toggle is disabled while the entry loads", (
+    tester,
+  ) async {
+    fake.listEntriesDelay = const Duration(seconds: 5);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          builder: FlutterSmartDialog.init(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale("en"),
+          home: PersonalDictionaryEntryEditorPage(
+            dictionaryId: 1,
+            articleId: 7,
+            service: fake,
+          ),
+        ),
+      ),
+    );
+    // One frame: the entry load is still pending behind the delay.
+    await tester.pump();
+
+    final toggle = tester.widget<IconButton>(
+      find.widgetWithIcon(IconButton, Icons.preview_outlined),
+    );
+    expect(toggle.onPressed, isNull);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    // Tapping the disabled toggle does nothing.
+    await tester.tap(find.widgetWithIcon(IconButton, Icons.preview_outlined));
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+
+    expect(find.text("Edit entry"), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(2));
   });
 }
