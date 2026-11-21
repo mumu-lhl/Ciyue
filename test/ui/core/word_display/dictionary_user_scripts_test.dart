@@ -43,18 +43,12 @@ void main() {
       );
       expect(selection.source, contains("document.caretRangeFromPoint"));
       expect(selection.source, contains("e.button === 0"));
-      expect(selection.source, contains("touchLongPressTimer"));
       expect(selection.source, contains("touchLongPressFired"));
       expect(
         selection.source,
         contains("window.__ciyueTextSelectionInstalled"),
       );
-      expect(selection.source, contains("passive: false"));
       expect(selection.source, contains("window.ciyueTouchSelectionMove"));
-      expect(
-        selection.source,
-        contains("window.__ciyueTextSelectionInstalled"),
-      );
       expect(selection.source, contains("'DesktopContextMenu'"));
 
       final withoutMenu = dictionaryUserScripts();

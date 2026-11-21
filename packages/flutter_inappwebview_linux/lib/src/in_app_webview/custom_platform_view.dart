@@ -293,7 +293,6 @@ class CustomPlatformViewController
     });
   }
 
-
   /// Sets the horizontal and vertical scroll delta.
   Future<void> _setScrollDelta(double dx, double dy) async {
     if (_isDisposed) {
