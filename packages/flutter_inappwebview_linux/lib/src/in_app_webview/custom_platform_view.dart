@@ -493,11 +493,18 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
       debugLabel: "flutter_inappwebview_linux_custom_platform_view",
       onFocusChange: (focused) {
         if (!focused) {
+          // A menu route takes the pointer sequence away from this widget. The
+          // matching UP never arrives, so release every button WPE still thinks
+          // is held; otherwise the next click carries a stale button modifier
+          // and neither the menu nor a new selection works.
+          for (final button in _downButtons.values) {
+            unawaited(_controller.forceCancelPointerButton(button));
+          }
           _downButtons.clear();
-          // Opening the app's context menu takes Flutter focus away from this
-          // node. Unfocusing WPE and clearing its selection at that point
-          // re-enters the compositor and has been terminating the WebProcess;
-          // keyboard routing is owned by this node anyway, so keep WPE as is.
+          _lastButtons = 0;
+          // Do not unfocus WPE or clear its selection: re-entering the
+          // compositor here has been terminating the WebProcess. Keyboard
+          // routing is owned by this node anyway.
           return;
         }
         if (_controller.value.isInitialized) {
