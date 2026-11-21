@@ -1,0 +1,24 @@
+{
+  "name": "@ciyue/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles/*": "./src/styles/*"
+  },
+  "scripts": {
+    "compile": "tsc --noEmit",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "lint": "oxlint --deny-warnings",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "oxfmt": "^0.23.0",
+    "oxlint": "^0.15.11",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  }
+}

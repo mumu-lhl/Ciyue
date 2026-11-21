@@ -15,7 +15,7 @@ on:
     paths:
       - "lib/ui/core/word_display/entry_link_script.dart"
       - "lib/services/web_server_service.dart"
-      - "web_ui/src/utils/entry.ts"
+      - "frontend/shared/src/utils/entry.ts"
       - "test/browser/**"
       - "justfile"
       - ".github/workflows/browser-tests.yml"
@@ -23,7 +23,7 @@ on:
     paths:
       - "lib/ui/core/word_display/entry_link_script.dart"
       - "lib/services/web_server_service.dart"
-      - "web_ui/src/utils/entry.ts"
+      - "frontend/shared/src/utils/entry.ts"
       - "test/browser/**"
       - "justfile"
       - ".github/workflows/browser-tests.yml"

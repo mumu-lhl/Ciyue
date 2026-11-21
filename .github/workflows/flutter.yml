@@ -5,15 +5,13 @@ on:
     paths-ignore:
       - "**.md"
       - "docs/**"
-      - "browser_extension/**"
-      - "web_ui/**"
+      - "frontend/**"
       - "assets/web/**"
   pull_request:
     paths-ignore:
       - "**.md"
       - "docs/**"
-      - "browser_extension/**"
-      - "web_ui/**"
+      - "frontend/**"
       - "assets/web/**"
 
 jobs:

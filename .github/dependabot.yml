@@ -24,16 +24,7 @@ updates:
           - "*"
 
   - package-ecosystem: "npm"
-    directory: "/browser_extension"
-    schedule:
-      interval: "weekly"
-    groups:
-      all-dependencies:
-        patterns:
-          - "*"
-
-  - package-ecosystem: "npm"
-    directory: "/web_ui"
+    directory: "/frontend"
     schedule:
       interval: "weekly"
     groups:

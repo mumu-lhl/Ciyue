@@ -1,0 +1,14 @@
+{
+  "name": "ciyue-frontend-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --recursive run build",
+    "test": "pnpm --recursive run test",
+    "lint": "pnpm --recursive run lint",
+    "compile": "pnpm --recursive run compile",
+    "format": "pnpm --recursive run format",
+    "format:check": "pnpm --recursive run format:check"
+  }
+}

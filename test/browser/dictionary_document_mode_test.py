@@ -17,7 +17,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "web_ui" / "src" / "utils" / "entry.ts"
+SOURCE = ROOT / "frontend" / "shared" / "src" / "utils" / "entry.ts"
 FUNCTION = re.compile(
     r"function splitEntryDoctype\(content: string\) \{[\s\S]*?\n\}"
 )
