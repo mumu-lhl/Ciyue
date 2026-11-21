@@ -1,2 +1,9 @@
 allowBuilds:
   esbuild: true
+
+overrides:
+  vite: "6.4.6"
+  esbuild: "0.25.0"
+  vue: "3.5.46"
+  "@vue/server-renderer": "3.5.46"
+  postcss: "8.5.10"
