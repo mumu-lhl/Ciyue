@@ -74,6 +74,11 @@ String desktopContextMenuScript() {
     }));
   }, true);
 
+  // The menu route can take the mouseup, leaving leftDown latched.
+  window.ciyueResetContextMenuState = function () {
+    leftDown = false;
+  };
+
   // The engine menu is already disabled in the WebView settings. Keep this
   // guard for engines that still dispatch contextmenu; a rocker gesture has
   // its own handler in gestureScript and is unaffected.

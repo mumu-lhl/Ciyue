@@ -1043,9 +1043,24 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
     );
   }
 
+  /// Clears the page-side button flags that a menu route can leave latched
+  /// when it swallows the matching mouseup.
+  void _resetWebviewPointerState() {
+    final controller = _desktopController;
+    if (controller == null) return;
+    unawaited(
+      controller.evaluateJavascript(
+        source:
+            "window.ciyueResetGestureState && window.ciyueResetGestureState();"
+            "window.ciyueResetContextMenuState && window.ciyueResetContextMenuState();",
+      ),
+    );
+  }
+
   void _handleDesktopContextMenu(String payload) {
     final request = parseDesktopContextMenu(payload);
     if (request == null || request.word.isEmpty) return;
+    _resetWebviewPointerState();
     // The caller is a WebKit script-message handler. Push the route only after
     // that handler has returned: showing it inline changes Flutter focus while
     // WebKit is still inside the message callback, and WPE then terminates the
@@ -1062,7 +1077,7 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
             ref: ref,
             dictId: widget.dictId,
             request: request,
-          ),
+          ).whenComplete(_resetWebviewPointerState),
         );
       }),
     );

@@ -605,6 +605,19 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                     modifiers: modifiers,
                   );
 
+                  // A menu route can swallow the UP of the previous sequence.
+                  // A non-touch down always starts a new press (a second mouse
+                  // button arrives as a move, not another down), so any held
+                  // button left here is stale. Release it before the new press
+                  // or WPE keeps the old modifier and the new click does
+                  // nothing.
+                  for (final staleButton in _downButtons.values) {
+                    unawaited(
+                      _controller.forceCancelPointerButton(staleButton),
+                    );
+                  }
+                  _downButtons.clear();
+
                   final button = _getDownButton(ev.buttons);
                   _downButtons[ev.pointer] = button;
                   _lastButtons = ev.buttons;
