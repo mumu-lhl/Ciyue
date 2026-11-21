@@ -7,12 +7,14 @@ on:
       - "docs/**"
       - "browser_extension/**"
       - "web_ui/**"
+      - "assets/web/**"
   pull_request:
     paths-ignore:
       - "**.md"
       - "docs/**"
       - "browser_extension/**"
       - "web_ui/**"
+      - "assets/web/**"
 
 jobs:
   check:
