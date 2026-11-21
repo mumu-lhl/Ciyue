@@ -63,7 +63,7 @@ dependencies:
   home_widget: ^0.10.0
   file_selector: ^1.1.0
   html_unescape: ^2.0.0
-  flutter_local_notifications: ^23.0.2
+  flutter_local_notifications: ^23.0.3
   dio: ^5.11.1
   genkit: ^1.0.1
   genkit_google_genai: ^1.0.1
