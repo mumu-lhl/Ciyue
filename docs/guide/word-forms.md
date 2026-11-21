@@ -30,11 +30,10 @@ kana, with the kanji form shown in parentheses.
 1. **Settings → Hunspell** — turn on *Enable word-form lookup*.
 2. Import `.aff` + `.dic`: pick the folder that contains them, one pair per
    language. Nothing is bundled with the app.
-3. Choose a lookup mode (below). What most people actually want is
-   **Supplement**.
+3. Choose a lookup mode (below). For most people, **Supplement** is the more
+   useful choice.
 
-Stem lookups run in a separate isolate, so enabling this does not slow the UI
-down.
+Stem lookups run in the background, so enabling this does not slow the UI down.
 
 ## Fallback vs Supplement
 

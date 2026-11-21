@@ -148,6 +148,50 @@ anyway, is needed by neither reader. `prune_zh_dic.py` in the repository above
 runs that comparison and takes a 29 MB table down to under 1 MB without losing a
 candidate — 1.1 million word-level lines fall to 37 thousand.
 
+## Japanese: `ICONV`, not `st:`
+
+Japanese needs the opposite of the Chinese table. An old form (`圖`) and its
+shinjitai (`図`) are the same word written another way, and modern dictionaries
+headword the shinjitai — so the relation is a **one-way normalisation**, not an
+equivalence class. It belongs in the `.aff`, and it is already there — the same
+table that folds half-width katakana. It starts with its row count (`ICONV 406`)
+and then has one line per pair:
+
+```text
+ICONV ｶﾞ ガ        # half-width katakana -> full-width
+ICONV 圖 図        # 旧字体 -> 新字体
+```
+
+`ICONV` rewrites the query *before* `analyze()`/`stem()` runs, so the
+normalised spelling is what gets deinflected:
+
+| Query | After `ICONV` | `stem()` |
+| --- | --- | --- |
+| `圖らず` | `図らず` | `図らず`, `図る` |
+| `圖書館` | `図書館` | `図書館` |
+
+That is why `st:` is the wrong tool here: a `st:` row only maps the spelling
+you typed, so `圖らず → 図らず` would stop at the spelling and never reach
+`図る`. `ICONV` folds first, and the existing `5A`/`f2` affix rules do the
+rest — for every word containing the character, without a row per word.
+
+Two consequences worth keeping:
+
+- **`.dic` source spellings must follow `ICONV`.** `圖/Zz st:図` is unreachable
+  once `圖` is rewritten to `図`, and the loss is silent (`spell()` still says
+  yes). `apply_iconv_to_dic.py` in `hunspell_ja_JP` rewrites the heads and
+  folds the now self-referential `st:` rows; run it (and then
+  `add_homonym_flag.py`) whenever the `ICONV` table changes.
+- **Do not put simplified Chinese in `ICONV`.** `图 → 図` is a cross-orthography
+  equivalence rather than a normalisation, so it stays a `st:` row and adds a
+  candidate instead of rewriting the query. The boundary: that path yields a
+  spelling to look up, not a lemma, so `图らず` does not deinflect to `図る`.
+
+Nor should the table be made bidirectional. `図 → 圖` would double the variants
+of every query containing the character, and the dictionaries that would
+benefit (headwords in 旧字体/異体字) are proper nouns and old-spelling phrases
+that are typed in their own form anyway.
+
 ## Encoding: `.dic` files use composed forms
 
 Ciyue normalises every query to **NFC** before handing it to Hunspell — the form
