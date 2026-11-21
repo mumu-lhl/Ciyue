@@ -4,11 +4,10 @@ export interface ThemeOption {
   id: ThemeColor;
   name: string;
   primaryHex: string;
-  isDefault?: boolean;
 }
 
 export const THEME_OPTIONS: ThemeOption[] = [
-  { id: "blue", name: "经典蓝", primaryHex: "#2563eb", isDefault: true },
+  { id: "blue", name: "经典蓝", primaryHex: "#2563eb" },
   { id: "violet", name: "极光紫", primaryHex: "#7c3aed" },
   { id: "teal", name: "苍岭青", primaryHex: "#0d9488" },
   { id: "emerald", name: "翡翠绿", primaryHex: "#059669" },

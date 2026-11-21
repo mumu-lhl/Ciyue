@@ -163,16 +163,16 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="fixed z-[2147483647] flex items-center justify-center w-7 h-7 rounded-full text-white font-bold text-xs transition-all cursor-pointer select-none active:scale-95 hover:scale-110 ring-2 ring-white/90 dark:ring-zinc-900/90"
+      class="fixed z-[2147483647] flex items-center justify-center w-7 h-7 rounded-full text-white transition-all cursor-pointer select-none active:scale-95 hover:scale-110 ring-2 ring-white/90 dark:ring-zinc-900/90"
       style:left="{triggerX}px"
       style:top="{triggerY}px"
       style:background="linear-gradient(135deg, var(--primary-gradient-from), var(--primary-gradient-to))"
-      style:box-shadow="0 8px 16px -2px var(--primary-shadow)"
+      style:box-shadow="0 6px 14px -2px var(--primary-shadow)"
       onmousedown={(e) => e.stopPropagation()}
       onclick={onTriggerClick}
       title="词悦查词"
     >
-      悦
+      <BookOpen class="w-3.5 h-3.5 text-white stroke-[2.2]" />
     </div>
   {/if}
 

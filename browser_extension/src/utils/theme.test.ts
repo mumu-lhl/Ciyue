@@ -2,10 +2,8 @@ import { describe, it, expect } from "vitest";
 import { THEME_OPTIONS, isValidThemeColor, getThemeOption } from "./theme";
 
 describe("theme utility", () => {
-  it("has blue as default recommended theme", () => {
-    const defaultTheme = THEME_OPTIONS.find((t) => t.isDefault);
-    expect(defaultTheme).toBeDefined();
-    expect(defaultTheme?.id).toBe("blue");
+  it("has blue as the first theme option", () => {
+    expect(THEME_OPTIONS[0]?.id).toBe("blue");
   });
 
   it("validates theme colors properly", () => {

@@ -104,7 +104,7 @@
           界面主色调
         </span>
         <p class="text-[11px] text-zinc-400">
-          选择扩展在网页划词弹窗、顶部栏及操作按钮上的主题强调色（默认推荐为蓝色）
+          选择扩展在网页划词弹窗、顶部栏及操作按钮上的主题强调色
         </p>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
@@ -124,12 +124,7 @@
                   <Check class="w-3 h-3 stroke-[3]" />
                 {/if}
               </span>
-              <div class="flex flex-col min-w-0">
-                <span class="text-xs truncate">{opt.name}</span>
-                {#if opt.isDefault}
-                  <span class="text-[10px] text-primary-600 dark:text-primary-400 font-normal">默认推荐</span>
-                {/if}
-              </div>
+              <span class="text-xs truncate">{opt.name}</span>
             </button>
           {/each}
         </div>

@@ -7,6 +7,14 @@ export default defineConfig({
   srcDir: "src",
   modules: ["@wxt-dev/module-svelte"],
   vite: () => ({
+    build: {
+      rollupOptions: {
+        onwarn(warning, defaultHandler) {
+          if (warning.code === "SOURCEMAP_BROKEN") return;
+          defaultHandler(warning);
+        },
+      },
+    },
     plugins: [
       tailwindcss(),
       {
