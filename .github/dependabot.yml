@@ -13,6 +13,10 @@ updates:
     directory: "/docs"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/browser_extension"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: "gradle"
     directory: "/android/app"
     schedule:
