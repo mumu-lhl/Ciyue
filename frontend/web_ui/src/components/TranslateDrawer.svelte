@@ -1,11 +1,11 @@
 <script lang="ts">
-  import Languages from 'lucide-svelte/icons/languages';
-  import X from 'lucide-svelte/icons/x';
-  import Copy from 'lucide-svelte/icons/copy';
-  import Check from 'lucide-svelte/icons/check';
-  import RotateCw from 'lucide-svelte/icons/rotate-cw';
-  import LoaderCircle from 'lucide-svelte/icons/loader-circle';
-  import CircleAlert from 'lucide-svelte/icons/circle-alert';
+  import Languages from '@lucide/svelte/icons/languages';
+  import X from '@lucide/svelte/icons/x';
+  import Copy from '@lucide/svelte/icons/copy';
+  import Check from '@lucide/svelte/icons/check';
+  import RotateCw from '@lucide/svelte/icons/rotate-cw';
+  import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+  import CircleAlert from '@lucide/svelte/icons/circle-alert';
   import { marked } from 'marked';
   import { fetchSseStream } from '../utils/sse';
 

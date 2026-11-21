@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import BookOpen from 'lucide-svelte/icons/book-open';
-  import Settings from 'lucide-svelte/icons/settings';
-  import Search from 'lucide-svelte/icons/search';
-  import Sparkles from 'lucide-svelte/icons/sparkles';
-  import Languages from 'lucide-svelte/icons/languages';
-  import WifiOff from 'lucide-svelte/icons/wifi-off';
-  import LoaderCircle from 'lucide-svelte/icons/loader-circle';
-  import X from 'lucide-svelte/icons/x';
+  import BookOpen from '@lucide/svelte/icons/book-open';
+  import Settings from '@lucide/svelte/icons/settings';
+  import Search from '@lucide/svelte/icons/search';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
+  import Languages from '@lucide/svelte/icons/languages';
+  import WifiOff from '@lucide/svelte/icons/wifi-off';
+  import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+  import X from '@lucide/svelte/icons/x';
   import WordHeader from '../../components/WordHeader.svelte';
   import DictCard from '../../components/DictCard.svelte';
   import AiView from '../../components/AiView.svelte';

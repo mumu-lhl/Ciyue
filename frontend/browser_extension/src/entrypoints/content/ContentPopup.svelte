@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import BookOpen from 'lucide-svelte/icons/book-open';
-  import Sparkles from 'lucide-svelte/icons/sparkles';
-  import Languages from 'lucide-svelte/icons/languages';
-  import WifiOff from 'lucide-svelte/icons/wifi-off';
-  import LoaderCircle from 'lucide-svelte/icons/loader-circle';
+  import BookOpen from '@lucide/svelte/icons/book-open';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
+  import Languages from '@lucide/svelte/icons/languages';
+  import WifiOff from '@lucide/svelte/icons/wifi-off';
+  import LoaderCircle from '@lucide/svelte/icons/loader-circle';
   import WordHeader from '../../components/WordHeader.svelte';
   import DictCard from '../../components/DictCard.svelte';
   import AiView from '../../components/AiView.svelte';

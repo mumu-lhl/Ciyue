@@ -15,9 +15,9 @@
     setStoredThemeColor,
     setStoredThemeMode,
   } from './utils/theme';
-  import LoaderCircle from 'lucide-svelte/icons/loader-circle';
-  import WifiOff from 'lucide-svelte/icons/wifi-off';
-  import Layers from 'lucide-svelte/icons/layers';
+  import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+  import WifiOff from '@lucide/svelte/icons/wifi-off';
+  import Layers from '@lucide/svelte/icons/layers';
 
   let themeMode = $state<ThemeMode>('auto');
   let themeColor = $state<ThemeColor>('blue');

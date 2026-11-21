@@ -1,8 +1,8 @@
 <script lang="ts">
-  import BookOpen from 'lucide-svelte/icons/book-open';
-  import Star from 'lucide-svelte/icons/star';
-  import Sparkles from 'lucide-svelte/icons/sparkles';
-  import LoaderCircle from 'lucide-svelte/icons/loader-circle';
+  import BookOpen from '@lucide/svelte/icons/book-open';
+  import Star from '@lucide/svelte/icons/star';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
+  import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 
   let {
     word,

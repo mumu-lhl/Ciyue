@@ -1,10 +1,10 @@
 <script lang="ts">
-  import BookOpen from 'lucide-svelte/icons/book-open';
-  import Languages from 'lucide-svelte/icons/languages';
-  import Sun from 'lucide-svelte/icons/sun';
-  import Moon from 'lucide-svelte/icons/moon';
-  import SunMoon from 'lucide-svelte/icons/sun-moon';
-  import Palette from 'lucide-svelte/icons/palette';
+  import BookOpen from '@lucide/svelte/icons/book-open';
+  import Languages from '@lucide/svelte/icons/languages';
+  import Sun from '@lucide/svelte/icons/sun';
+  import Moon from '@lucide/svelte/icons/moon';
+  import SunMoon from '@lucide/svelte/icons/sun-moon';
+  import Palette from '@lucide/svelte/icons/palette';
   import type { GroupItem, ThemeColor, ThemeMode } from '../api/types';
   import { THEME_OPTIONS } from '../utils/theme';
 

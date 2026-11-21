@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@ciyue/shared": "workspace:*",
-    "lucide-svelte": "0.577.0",
+    "@lucide/svelte": "^1.77.0",
     "marked": "18.2.1",
     "svelte": "^5.58.0"
   },

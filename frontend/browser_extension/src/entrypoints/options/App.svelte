@@ -1,15 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import BookOpen from 'lucide-svelte/icons/book-open';
-  import Server from 'lucide-svelte/icons/server';
-  import Palette from 'lucide-svelte/icons/palette';
-  import MousePointerClick from 'lucide-svelte/icons/mouse-pointer-click';
-  import ShieldAlert from 'lucide-svelte/icons/shield-alert';
-  import CircleCheck from 'lucide-svelte/icons/circle-check';
-  import CircleAlert from 'lucide-svelte/icons/circle-alert';
-  import LoaderCircle from 'lucide-svelte/icons/loader-circle';
-  import Save from 'lucide-svelte/icons/save';
-  import Check from 'lucide-svelte/icons/check';
+  import BookOpen from '@lucide/svelte/icons/book-open';
+  import Server from '@lucide/svelte/icons/server';
+  import Palette from '@lucide/svelte/icons/palette';
+  import MousePointerClick from '@lucide/svelte/icons/mouse-pointer-click';
+  import ShieldAlert from '@lucide/svelte/icons/shield-alert';
+  import CircleCheck from '@lucide/svelte/icons/circle-check';
+  import CircleAlert from '@lucide/svelte/icons/circle-alert';
+  import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+  import Save from '@lucide/svelte/icons/save';
+  import Check from '@lucide/svelte/icons/check';
   import { getSettings, saveSettings } from '../../utils/settings';
   import { CiyueApiClient } from '../../api/client';
   import { THEME_OPTIONS } from '../../utils/theme';

@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { marked } from 'marked';
-  import Sparkles from 'lucide-svelte/icons/sparkles';
-  import Copy from 'lucide-svelte/icons/copy';
-  import Check from 'lucide-svelte/icons/check';
-  import RotateCw from 'lucide-svelte/icons/rotate-cw';
-  import X from 'lucide-svelte/icons/x';
-  import CircleAlert from 'lucide-svelte/icons/circle-alert';
-  import LoaderCircle from 'lucide-svelte/icons/loader-circle';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
+  import Copy from '@lucide/svelte/icons/copy';
+  import Check from '@lucide/svelte/icons/check';
+  import RotateCw from '@lucide/svelte/icons/rotate-cw';
+  import X from '@lucide/svelte/icons/x';
+  import CircleAlert from '@lucide/svelte/icons/circle-alert';
+  import LoaderCircle from '@lucide/svelte/icons/loader-circle';
   import { fetchSseStream } from '../utils/sse';
 
   let {
