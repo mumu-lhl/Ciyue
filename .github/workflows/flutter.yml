@@ -6,11 +6,13 @@ on:
       - "**.md"
       - "docs/**"
       - "browser_extension/**"
+      - "web_ui/**"
   pull_request:
     paths-ignore:
       - "**.md"
       - "docs/**"
       - "browser_extension/**"
+      - "web_ui/**"
 
 jobs:
   check:

@@ -17,14 +17,15 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "lib" / "services" / "web_server_service.dart"
+SOURCE = ROOT / "web_ui" / "src" / "utils" / "entry.ts"
 FUNCTION = re.compile(
-    r"    function splitEntryDoctype\(content\) \{[\s\S]*?\n    \}"
+    r"function splitEntryDoctype\(content: string\) \{[\s\S]*?\n\}"
 )
 
 # The Web UI's iframe document, reduced to the part that decides the mode.
 DOCUMENT_JS = """({script, content}) => {
-  const split = new Function(script + '; return splitEntryDoctype;')();
+  const cleanScript = script.replace(/content: string/, 'content');
+  const split = new Function(cleanScript + '; return splitEntryDoctype;')();
   const parts = split(content);
   return parts.doctype + '<html><head><meta charset="utf-8"></head><body>'
        + parts.content + '</body></html>';

@@ -32,6 +32,15 @@ updates:
         patterns:
           - "*"
 
+  - package-ecosystem: "npm"
+    directory: "/web_ui"
+    schedule:
+      interval: "weekly"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+
   - package-ecosystem: "gradle"
     directory: "/android/app"
     schedule:

@@ -86,3 +86,10 @@ flatpak/bundle/
 flatpak_app/
 downloaded-linux/
 repo/
+
+# Browser Extension & Web UI
+browser_extension/.output/
+browser_extension/.wxt/
+browser_extension/node_modules/
+web_ui/dist/
+web_ui/node_modules/
