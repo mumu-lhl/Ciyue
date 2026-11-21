@@ -13,6 +13,7 @@ import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/word_display/content_scale_script.dart";
 import "package:ciyue/ui/core/word_display/desktop_context_menu_actions.dart";
 import "package:ciyue/ui/core/word_display/desktop_context_menu_script.dart";
+import "package:ciyue/ui/core/word_display/dictionary_selection_gesture_recognizer.dart";
 import "package:ciyue/ui/core/word_display/entry_anchor.dart";
 import "package:ciyue/ui/core/word_display/entry_link_script.dart";
 import "package:ciyue/ui/core/word_display/entry_pager.dart";
@@ -23,6 +24,7 @@ import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
 import "package:ciyue/ui/core/word_display/paging_script.dart";
 import "package:ciyue/ui/core/word_display/resource_url_script.dart";
 import "package:ciyue/ui/core/word_display/selection_style_script.dart";
+import "package:ciyue/ui/core/word_display/text_selection_script.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/ui/core/word_display/windows_rocker_edge.dart";
 import "package:ciyue/ui/pages/main/home/shortcuts.dart";
@@ -270,6 +272,11 @@ UnmodifiableListView<UserScript> dictionaryUserScripts({
           : contextWordScript(),
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ),
+    if (desktopContextMenu)
+      UserScript(
+        source: textSelectionScript(),
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+      ),
     UserScript(
       source: selectionStyleScript(),
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
@@ -1036,19 +1043,43 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
     );
   }
 
+  /// Clears the page-side button flags that a menu route can leave latched
+  /// when it swallows the matching mouseup.
+  void _resetWebviewPointerState() {
+    final controller = _desktopController;
+    if (controller == null) return;
+    unawaited(
+      controller.evaluateJavascript(
+        source:
+            "window.ciyueResetGestureState && window.ciyueResetGestureState();"
+            "window.ciyueResetContextMenuState && window.ciyueResetContextMenuState();",
+      ),
+    );
+  }
+
   void _handleDesktopContextMenu(String payload) {
     final request = parseDesktopContextMenu(payload);
     if (request == null || request.word.isEmpty) return;
-    final anchorContext = _webViewAnchorKey.currentContext;
-    if (anchorContext == null) return;
+    _resetWebviewPointerState();
+    // The caller is a WebKit script-message handler. Push the route only after
+    // that handler has returned: showing it inline changes Flutter focus while
+    // WebKit is still inside the message callback, and WPE then terminates the
+    // WebProcess.
     unawaited(
-      showDesktopContextMenu(
-        context: context,
-        anchorContext: anchorContext,
-        ref: ref,
-        dictId: widget.dictId,
-        request: request,
-      ),
+      Future<void>.delayed(Duration.zero, () {
+        if (!mounted || !context.mounted) return;
+        final anchorContext = _webViewAnchorKey.currentContext;
+        if (anchorContext == null || !anchorContext.mounted) return;
+        unawaited(
+          showDesktopContextMenu(
+            context: context,
+            anchorContext: anchorContext,
+            ref: ref,
+            dictId: widget.dictId,
+            request: request,
+          ).whenComplete(_resetWebviewPointerState),
+        );
+      }),
     );
   }
 
@@ -1262,6 +1293,13 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
             key: ValueKey(
               "theme-${!isLightTheme}-dark-reader-$darkReaderReady",
             ),
+            // Mouse drags belong to the WebView (text selection); touch is
+            // rejected so an enclosing PageView still switches dictionary tabs.
+            gestureRecognizers: {
+              Factory<OneSequenceGestureRecognizer>(
+                () => DictionarySelectionGestureRecognizer(),
+              ),
+            },
             initialUserScripts: dictionaryUserScripts(
               customCss: settings.dictionaryCustomCss,
               background: dictionaryBackgroundColor,
@@ -1282,6 +1320,11 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
             ),
             onLoadStop: (controller, url) async {
               _applyDictionaryTheme(controller, isDarkTheme: !isLightTheme);
+              // A lookup in another tab can replace the document while this
+              // WebView stays mounted; re-arm the mouse selection hooks.
+              unawaited(
+                controller.evaluateJavascript(source: textSelectionScript()),
+              );
               await _applyPendingAnchor(
                 controller,
                 ref,
@@ -1461,6 +1504,11 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
                 ),
                 onLoadStop: (controller, url) async {
                   _applyDictionaryTheme(controller, isDarkTheme: !isLightTheme);
+                  unawaited(
+                    controller.evaluateJavascript(
+                      source: textSelectionScript(),
+                    ),
+                  );
                   await _applyPendingAnchor(
                     controller,
                     ref,

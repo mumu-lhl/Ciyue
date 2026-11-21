@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -278,14 +279,7 @@ class CustomPlatformViewController
     });
   }
 
-  Future<void> _clearSelection() async {
-    if (_isDisposed) {
-      return;
-    }
-    assert(value.isInitialized);
-    return _methodChannel.invokeMethod('clearSelection');
-  }
-
+  /// Sets the horizontal and vertical scroll delta.
   Future<void> _setScrollDelta(double dx, double dy) async {
     if (_isDisposed) {
       return;
@@ -359,11 +353,17 @@ class CustomPlatformView extends StatefulWidget {
 
   final Function(int id)? onPlatformViewCreated;
 
+  /// Recognizers that let the WebView take part in Flutter's gesture arena.
+  /// Without them an enclosing PageView can win a drag and cancel the pointer
+  /// stream before the WebView can select text or handle a long press.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   const CustomPlatformView({
     this.creationParams,
     this.onPlatformViewCreated,
     this.scaleFactor,
     this.filterQuality = FilterQuality.none,
+    this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
     Key? key,
   }) : super(key: key);
 
@@ -388,12 +388,6 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
   final _controller = CustomPlatformViewController();
   final _focusNode = FocusNode();
 
-  /// Set while the focus is taken back from the widget that owns it.
-  ///
-  /// The takeover happens on purpose, so the selection the reader made must
-  /// not be thrown away with it.
-  bool _restoringFocus = false;
-
   StreamSubscription? _cursorSubscription;
 
   DateTime? _lastClickTime;
@@ -404,10 +398,27 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
 
   final _activeTouchPoints = <int, Offset>{};
 
+  /// Recognizers that keep the WebView in Flutter's gesture arena. A texture
+  /// view has no platform-view render object to do this for us, so the
+  /// recognizers are registered on each pointer down instead.
+  late final Set<OneSequenceGestureRecognizer> _gestureRecognizers;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _gestureRecognizers = widget.gestureRecognizers.map((factory) {
+      final recognizer = factory.constructor();
+      // A recognizer with no callbacks never enters the arena.
+      if (recognizer is LongPressGestureRecognizer) {
+        recognizer.onLongPress ??= () {};
+      } else if (recognizer is DragGestureRecognizer) {
+        recognizer.onDown ??= (_) {};
+      } else if (recognizer is TapGestureRecognizer) {
+        recognizer.onTapDown ??= (_) {};
+      }
+      return recognizer;
+    }).toSet();
 
     _controller.initialize(
       onPlatformViewCreated: (id) {
@@ -460,14 +471,14 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
       onFocusChange: (focused) {
         if (!focused) {
           _downButtons.clear();
-          // The takeover is not a real focus loss: clearing the selection
-          // here would throw away the word the reader just picked.
-          if (!_restoringFocus && _controller.value.isInitialized) {
-            unawaited(_controller._clearSelection());
-          }
+          // Opening the app's context menu takes Flutter focus away from this
+          // node. Unfocusing WPE and clearing its selection at that point
+          // re-enters the compositor and has been terminating the WebProcess;
+          // keyboard routing is owned by this node anyway, so keep WPE as is.
+          return;
         }
         if (_controller.value.isInitialized) {
-          unawaited(_controller._setFocused(focused));
+          unawaited(_controller._setFocused(true));
         }
       },
       onKeyEvent: _handleKeyEvent,
@@ -534,14 +545,10 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (identical(FocusManager.instance.primaryFocus, _focusNode)) return;
-      _restoringFocus = true;
       _focusNode.unfocus();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _focusNode.requestFocus();
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _restoringFocus = false;
-        });
       });
     });
   }
@@ -567,6 +574,11 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                 },
                 onPointerDown: (ev) {
                   _reportSurfaceSize();
+                  // Claim this pointer sequence before an enclosing PageView
+                  // can win the drag and cancel WebView input.
+                  for (final recognizer in _gestureRecognizers) {
+                    recognizer.addPointer(ev);
+                  }
 
                   final needsFocus = !_focusNode.hasFocus;
                   if (needsFocus) {
@@ -592,6 +604,19 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                     ev.localPosition,
                     modifiers: modifiers,
                   );
+
+                  // A menu route can swallow the UP of the previous sequence.
+                  // A non-touch down always starts a new press (a second mouse
+                  // button arrives as a move, not another down), so any held
+                  // button left here is stale. Release it before the new press
+                  // or WPE keeps the old modifier and the new click does
+                  // nothing.
+                  for (final staleButton in _downButtons.values) {
+                    unawaited(
+                      _controller.forceCancelPointerButton(staleButton),
+                    );
+                  }
+                  _downButtons.clear();
 
                   final button = _getDownButton(ev.buttons);
                   _downButtons[ev.pointer] = button;
@@ -827,6 +852,9 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
       _downButtons.clear();
     }
     WidgetsBinding.instance.removeObserver(this);
+    for (final recognizer in _gestureRecognizers) {
+      recognizer.dispose();
+    }
     super.dispose();
     _cursorSubscription?.cancel();
     _controller.dispose();

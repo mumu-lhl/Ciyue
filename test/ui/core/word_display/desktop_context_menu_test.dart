@@ -12,9 +12,9 @@ void main() {
       expect(script, contains("x: e.clientX"));
     });
 
-    test("keeps an existing selection under the pointer", () {
-      expect(script, contains("getClientRects()"));
-      expect(script, contains("return text;"));
+    test("keeps any existing selection wherever the right click lands", () {
+      expect(script, contains("if (text) return text;"));
+      expect(script, isNot(contains("getClientRects()")));
     });
 
     test("leaves rocker gestures alone", () {
@@ -59,7 +59,7 @@ void main() {
 
     test("swaps in the app menu script only when asked", () {
       final scripts = dictionaryUserScripts(desktopContextMenu: true);
-      expect(scripts, hasLength(9));
+      expect(scripts, hasLength(10));
       expect(
         scripts.any((s) => s.source.contains("'DesktopContextMenu'")),
         isTrue,
@@ -72,7 +72,7 @@ void main() {
         isDesktop: true,
         desktopContextMenu: true,
       );
-      expect(scripts, hasLength(10));
+      expect(scripts, hasLength(11));
       expect(scripts.any((s) => s.source.contains("'Gesture'")), isTrue);
       expect(
         scripts.any((s) => s.source.contains("'DesktopContextMenu'")),

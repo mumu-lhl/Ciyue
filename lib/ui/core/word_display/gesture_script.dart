@@ -79,6 +79,15 @@ String gestureScript({bool bitmaskFallback = true}) {
     if (leftDown) sendRocker(1);
   };
 
+  // A context-menu route takes the matching mouseup, which would otherwise
+  // latch these flags and swallow the next right click.
+  window.ciyueResetGestureState = function () {
+    leftDown = false;
+    rightDown = false;
+    rockerSent = false;
+    suppressClick = false;
+  };
+
   document.addEventListener('mousedown', function (e) {
     suppressClick = false;
     if (e.ctrlKey) return;

@@ -23,23 +23,16 @@ String desktopContextMenuScript() {
 
   var leftDown = false;
 
-  // Keep the reader's own selection when the click lands inside it, so Copy
-  // and the lookups use the whole phrase rather than a single word. Otherwise
-  // select the word under the pointer with the browser's own granularity,
-  // which also copes with languages that do not separate words with spaces.
+  // Keep any existing selection: Copy and the lookups should use the phrase
+  // the reader already picked, wherever the right click lands. Only when there
+  // is no selection do we select the word under the pointer with the browser's
+  // own granularity, which also copes with languages that do not separate
+  // words with spaces.
   function wordAt(x, y) {
     var selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
+    if (selection) {
       var text = selection.toString().trim();
-      if (text) {
-        var rects = selection.getRangeAt(0).getClientRects();
-        for (var i = 0; i < rects.length; i++) {
-          var r = rects[i];
-          if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
-            return text;
-          }
-        }
-      }
+      if (text) return text;
     }
     if (!document.caretRangeFromPoint || !selection) return '';
     var range = document.caretRangeFromPoint(x, y);
@@ -55,6 +48,17 @@ String desktopContextMenuScript() {
 
   document.addEventListener('mousedown', function (e) {
     if (e.button === 0) leftDown = true;
+  }, true);
+
+  // Report on release, not press: a Flutter menu opened on mousedown takes
+  // the matching mouseup, so WPE would keep the right button pressed and the
+  // next click would be ignored. By mouseup the webview has already seen the
+  // complete press/release pair.
+  document.addEventListener('mouseup', function (e) {
+    if (e.button === 0) {
+      leftDown = false;
+      return;
+    }
     if (e.button !== 2 || leftDown) return;
     post(JSON.stringify({
       x: e.clientX,
@@ -63,9 +67,10 @@ String desktopContextMenuScript() {
     }));
   }, true);
 
-  document.addEventListener('mouseup', function (e) {
-    if (e.button === 0) leftDown = false;
-  }, true);
+  // The menu route can take the mouseup, leaving leftDown latched.
+  window.ciyueResetContextMenuState = function () {
+    leftDown = false;
+  };
 
   // The engine menu is already disabled in the WebView settings. Keep this
   // guard for engines that still dispatch contextmenu; a rocker gesture has

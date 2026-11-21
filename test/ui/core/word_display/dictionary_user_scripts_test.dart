@@ -29,6 +29,36 @@ void main() {
     expect(fallback.source, contains("getPropertyValue(\"font-family\")"));
   });
 
+  test(
+    "desktop text selection fallback is injected only with the app menu",
+    () {
+      final withMenu = dictionaryUserScripts(desktopContextMenu: true);
+      final selection = withMenu.firstWhere(
+        (script) => script.source.contains("var mouseLongPressTimer"),
+      );
+
+      expect(
+        selection.injectionTime,
+        UserScriptInjectionTime.AT_DOCUMENT_START,
+      );
+      expect(selection.source, contains("document.caretRangeFromPoint"));
+      expect(selection.source, contains("e.button !== 0"));
+      expect(
+        selection.source,
+        contains("window.__ciyueTextSelectionInstalled"),
+      );
+      expect(selection.source, isNot(contains("ciyueTouchSelection")));
+
+      final withoutMenu = dictionaryUserScripts();
+      expect(
+        withoutMenu.any(
+          (script) => script.source.contains("var mouseLongPressTimer"),
+        ),
+        isFalse,
+      );
+    },
+  );
+
   test("the paging script is injected and starts inert", () {
     final scripts = dictionaryUserScripts();
     final paging = scripts.firstWhere(
