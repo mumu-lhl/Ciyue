@@ -64,7 +64,7 @@ jobs:
     needs: [build-android, build-android-full, build-windows, build-linux, build-macos, build-flatpak]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -116,10 +116,10 @@ jobs:
         run: flutter pub get
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
 
       - name: Checkout GitHub Pages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: gh-pages
           path: gh-pages

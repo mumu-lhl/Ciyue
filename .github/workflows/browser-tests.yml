@@ -32,17 +32,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # No floating major tag is published; the action requires an exact one.
-      - uses: astral-sh/setup-uv@v10.3.2
+      - uses: astral-sh/setup-uv@v10.4.0
         with:
           enable-cache: true
 
       # Chromium is around 150 MB. The key carries a hash of this file, so a
       # change to the install command starts from a clean cache.
       - name: Cache Chromium
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('.github/workflows/browser-tests.yml') }}

@@ -52,7 +52,7 @@ jobs:
       WPE_RUNTIME_SHA256: faa4e191cb550fd916085ca69eedc54716614a09b61012a59b53bf84c430dbca
     steps:
       - name: Cache archived Arch packages
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: /var/cache/pacman/pkg
           key: archlinux-packages-${{ runner.arch }}-${{ env.ARCHLINUX_PACKAGE_SET }}
@@ -99,7 +99,7 @@ jobs:
 
       # The pinned Arch image does not include Git. Install the build
       # dependencies first so checkout can use Git and initialize submodules.
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -246,7 +246,7 @@ jobs:
 
       - name: Upload bundle
         if: ${{ !inputs.package_release_artifacts }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
           path: build/linux/x64/release/bundle/
@@ -254,7 +254,7 @@ jobs:
 
       - name: Upload release artifacts
         if: ${{ inputs.package_release_artifacts }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
           path: |

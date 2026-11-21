@@ -11,10 +11,10 @@ jobs:
       image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-25.08
       options: --privileged
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Download Linux bundle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: Linux
           path: downloaded-linux
@@ -58,7 +58,7 @@ jobs:
             org.eu.mumulhl.ciyue stable
 
       - name: Upload Flatpak artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Flatpak
           path: ciyue-x86_64.flatpak

@@ -32,7 +32,7 @@ jobs:
     name: Build macOS (${{ inputs.workflow_profile }})
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -91,7 +91,7 @@ jobs:
 
       - name: Upload app bundle
         if: ${{ !inputs.package_release_artifacts }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ env.APP_BUNDLE }}
@@ -99,7 +99,7 @@ jobs:
 
       - name: Upload release artifacts
         if: ${{ inputs.package_release_artifacts }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
           path: |
