@@ -91,7 +91,7 @@ dependencies:
   fsrs: ^2.0.1
   flutter_riverpod: ^3.4.3
   riverpod: ^3.4.3
-  material_ui: ^1.9.0
+  material_ui: ^1.11.1
   cupertino_ui: ^1.1.6
   nativeapi: ^0.6.0
   simple_secure_storage: ^0.4.3
