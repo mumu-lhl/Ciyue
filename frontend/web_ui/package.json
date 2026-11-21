@@ -15,19 +15,19 @@
   },
   "dependencies": {
     "@ciyue/shared": "workspace:*",
-    "marked": "^15.0.7"
+    "marked": "^18.2.1"
   },
   "devDependencies": {
     "@lucide/svelte": "^1.77.0",
-    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@tailwindcss/vite": "^4.0.9",
-    "@types/node": "^22.13.1",
-    "oxfmt": "^0.23.0",
-    "oxlint": "^0.15.11",
+    "@types/node": "^26.6.6",
+    "oxfmt": "^0.79.0",
+    "oxlint": "^1.94.0",
     "svelte": "^5.58.0",
     "tailwindcss": "^4.0.9",
-    "typescript": "^5.7.3",
-    "vite": "^6.2.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
     "vite-plugin-singlefile": "^2.1.0",
     "vitest": "^5.1.1"
   }
