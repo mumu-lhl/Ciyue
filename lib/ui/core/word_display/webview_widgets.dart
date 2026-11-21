@@ -1293,8 +1293,9 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
             key: ValueKey(
               "theme-${!isLightTheme}-dark-reader-$darkReaderReady",
             ),
-            // Mouse drags belong to the WebView (text selection); touch is
-            // rejected so an enclosing PageView still switches dictionary tabs.
+            // Mouse drags belong to the WebView (text selection); touch drags
+            // only do so after a hold, otherwise an enclosing PageView is free
+            // to switch dictionary tabs.
             gestureRecognizers: {
               Factory<OneSequenceGestureRecognizer>(
                 () => DictionarySelectionGestureRecognizer(),
@@ -1320,8 +1321,8 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
             ),
             onLoadStop: (controller, url) async {
               _applyDictionaryTheme(controller, isDarkTheme: !isLightTheme);
-              // A lookup in another tab can replace the document while this
-              // WebView stays mounted; re-arm the mouse selection hooks.
+              // A lookup in another tab can leave this WebView alive while the
+              // document is replaced; re-arm the touch-selection hooks there.
               unawaited(
                 controller.evaluateJavascript(source: textSelectionScript()),
               );

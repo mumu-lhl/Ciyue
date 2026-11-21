@@ -1,17 +1,18 @@
-/// Mouse text-selection fallback for the Linux/Windows WebViews.
+/// Desktop text-selection fallback for the Linux/Windows WebViews.
 ///
-/// WPE on KDE does not always turn pointer motion into a DOM selection, and it
-/// can drop the word selection made by a double click on mouse up. This script
-/// builds mouse selections from `caretRangeFromPoint` itself:
+/// WPE on KDE does not always turn pointer motion or a press-and-hold into a
+/// DOM selection, and it can drop the word selection made by a double click on
+/// mouse up. This script builds selections from `caretRangeFromPoint` itself:
 ///
 /// * left drag extends from the press point to the current point;
-/// * a 400 ms left press-and-hold selects the word under the pointer;
+/// * a 450 ms left/touch press-and-hold selects the word under the pointer;
+/// * after a touch long press, dragging extends that selection and lifting the
+///   finger opens the app's context menu with the final selected text;
 /// * double-click and long-press selections are restored if the engine clears
 ///   them on release.
 ///
 /// It never cancels an event, so the engine's own selection and the app's
-/// context-menu/rocker handlers keep working. Touch input is deliberately left
-/// to the engine and to [DictionarySelectionGestureRecognizer].
+/// context-menu/rocker handlers keep working.
 String textSelectionScript() {
   return """
 (function () {
@@ -28,6 +29,23 @@ String textSelectionScript() {
   var lastPressDetail = 0;
   var longPressSelected = false;
   var mouseLongPressTimer = 0;
+  var touchStart = null;
+  var touchAnchor = null;
+  var touchLongPressFired = false;
+  var suppressClick = false;
+
+  function postMenu(x, y) {
+    var selection = window.getSelection();
+    var word = selection ? selection.toString().trim() : '';
+    if (!word) return;
+    if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+      window.flutter_inappwebview.callHandler(
+        'ciyueKey',
+        'DesktopContextMenu',
+        JSON.stringify({ x: x, y: y, word: word })
+      );
+    }
+  }
 
   function rangeAt(x, y) {
     return document.caretRangeFromPoint
@@ -84,7 +102,7 @@ String textSelectionScript() {
       if (!mouseStart) return;
       selectWordAt(mouseStart.x, mouseStart.y);
       longPressSelected = true;
-    }, 400);
+    }, 450);
   }, true);
 
   document.addEventListener('mousemove', function (e) {
@@ -127,6 +145,50 @@ String textSelectionScript() {
     dragging = false;
     anchor = null;
   });
+
+  // The long-press timer lives in Dart: once it fires, Dart stops forwarding
+  // touch moves to WPE so the entry cannot scroll, and sends coordinates here
+  // instead. These hooks are the only selection path after that point.
+  window.ciyueTouchSelection = function (x, y) {
+    touchAnchor = rangeAt(x, y);
+    selectWordAt(x, y);
+    touchLongPressFired = true;
+  };
+
+  window.ciyueTouchSelectionMove = function (x, y) {
+    if (!touchLongPressFired || !touchAnchor) return;
+    var current = rangeAt(x, y);
+    if (current) selectFrom(touchAnchor, current);
+  };
+
+  window.ciyueTouchSelectionEnd = function (x, y) {
+    if (touchLongPressFired) {
+      // The touch still ends with a normal UP (a synthetic cancel event made
+      // WPE terminate the WebProcess), so swallow the click it produces.
+      suppressClick = true;
+      postMenu(x, y);
+    }
+    touchStart = null;
+    touchAnchor = null;
+    touchLongPressFired = false;
+  };
+
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    suppressClick = false;
+  }, true);
+
+  document.addEventListener('contextmenu', function (e) {
+    if (e.button === 0) selectWordAt(e.clientX, e.clientY);
+  }, true);
+
+  document.addEventListener('click', function (e) {
+    if (!suppressClick) return;
+    suppressClick = false;
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
 })();
 """;
 }

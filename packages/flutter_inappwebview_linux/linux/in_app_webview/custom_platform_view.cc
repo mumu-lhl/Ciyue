@@ -430,6 +430,46 @@ void CustomPlatformView::HandleMethodCallImpl(FlMethodCall* method_call) {
     return;
   }
 
+  // touchSelection: {"action": str, "x": double, "y": double}
+  // Drives the JS selection hooks without sending touch events to WPE, which
+  // would scroll the entry while the reader adjusts a long-press selection.
+  if (strcmp(method, "touchSelection") == 0) {
+    if (webview_ && args && fl_value_get_type(args) == FL_VALUE_TYPE_MAP) {
+      FlValue* action_value = fl_value_lookup_string(args, "action");
+      FlValue* x_value = fl_value_lookup_string(args, "x");
+      FlValue* y_value = fl_value_lookup_string(args, "y");
+      if (action_value && fl_value_get_type(action_value) == FL_VALUE_TYPE_STRING &&
+          x_value && y_value) {
+        const char* action = fl_value_get_string(action_value);
+        double x = fl_value_get_type(x_value) == FL_VALUE_TYPE_FLOAT
+            ? fl_value_get_float(x_value)
+            : fl_value_get_int(x_value);
+        double y = fl_value_get_type(y_value) == FL_VALUE_TYPE_FLOAT
+            ? fl_value_get_float(y_value)
+            : fl_value_get_int(y_value);
+        auto number = [](double value) { return std::to_string(value); };
+        std::string script;
+        if (strcmp(action, "start") == 0) {
+          script = "window.ciyueTouchSelection && window.ciyueTouchSelection(" +
+                   number(x) + ", " + number(y) + ")";
+        } else if (strcmp(action, "move") == 0) {
+          script = "window.ciyueTouchSelectionMove && window.ciyueTouchSelectionMove(" +
+                   number(x) + ", " + number(y) + ")";
+        } else if (strcmp(action, "end") == 0) {
+          script = "window.ciyueTouchSelectionEnd && window.ciyueTouchSelectionEnd(" +
+                   number(x) + ", " + number(y) + ")";
+        }
+        if (!script.empty()) {
+          webview_->evaluateJavascript(
+              script, std::nullopt,
+              [](const std::optional<std::string>&) {});
+        }
+      }
+    }
+    fl_method_call_respond_success(method_call, nullptr, nullptr);
+    return;
+  }
+
   // setScrollDelta: [double dx, double dy]
   if (strcmp(method, "setScrollDelta") == 0) {
     if (fl_value_get_type(args) == FL_VALUE_TYPE_LIST && fl_value_get_length(args) >= 2) {
