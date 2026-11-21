@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import ChevronDown from 'lucide-svelte/icons/chevron-down';
   import type { DictionaryResult } from '../api/types';
 
   let {
@@ -138,89 +139,35 @@
   });
 </script>
 
-<div class="ciyue-dict-card" class:collapsed={isCollapsed}>
+<div class="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-xs mt-2 transition-all">
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="dict-card-header" onclick={() => (isCollapsed = !isCollapsed)}>
-    <div class="dict-title-group">
-      <span class="chevron">▼</span>
-      <span class="dict-title">{item.dictTitle || '词典'}</span>
+  <div
+    class="px-3 py-2 bg-zinc-50/70 hover:bg-zinc-100/70 dark:bg-zinc-800/40 dark:hover:bg-zinc-800/70 cursor-pointer flex items-center justify-between text-xs font-semibold select-none transition-colors border-b border-transparent {isCollapsed ? '' : 'border-zinc-100 dark:border-zinc-800/60'}"
+    onclick={() => (isCollapsed = !isCollapsed)}
+  >
+    <div class="flex items-center gap-1.5 min-w-0">
+      <ChevronDown
+        class="w-3.5 h-3.5 text-violet-600 dark:text-violet-400 shrink-0 transition-transform duration-200 {isCollapsed ? '-rotate-90' : ''}"
+      />
+      <span class="text-zinc-800 dark:text-zinc-200 truncate">
+        {item.dictTitle || '词典'}
+      </span>
     </div>
     {#if item.headword}
-      <span class="dict-headword">{item.headword}</span>
+      <span class="text-[11px] font-normal text-zinc-400 dark:text-zinc-500 truncate max-w-[140px] ml-2">
+        {item.headword}
+      </span>
     {/if}
   </div>
-  <div class="dict-card-body" style:display={isCollapsed ? 'none' : 'block'}>
+
+  <div style:display={isCollapsed ? 'none' : 'block'}>
     <iframe
       bind:this={frameRef}
-      class="dict-frame"
+      class="w-full border-none block bg-white dark:bg-zinc-900 transition-[height] duration-150"
       style:height={frameHeight}
       sandbox="allow-same-origin allow-scripts"
       title={item.dictTitle || '词典条目'}
     ></iframe>
   </div>
 </div>
-
-<style>
-  .ciyue-dict-card {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    margin-top: 8px;
-    overflow: hidden;
-    background: var(--card-bg);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  }
-  .dict-card-header {
-    padding: 8px 12px;
-    background: var(--surface);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 13px;
-    font-weight: 600;
-    user-select: none;
-    transition: background 0.15s ease;
-  }
-  .dict-card-header:hover {
-    background: var(--surface-variant);
-  }
-  .dict-title-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-  }
-  .chevron {
-    font-size: 9px;
-    color: var(--primary);
-    transition: transform 0.2s ease;
-    display: inline-block;
-  }
-  .ciyue-dict-card.collapsed .chevron {
-    transform: rotate(-90deg);
-  }
-  .dict-title {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .dict-headword {
-    font-size: 11px;
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 140px;
-  }
-  .dict-card-body {
-    width: 100%;
-  }
-  .dict-frame {
-    width: 100%;
-    border: none;
-    display: block;
-    background: var(--card-bg);
-    transition: height 0.15s ease;
-  }
-</style>

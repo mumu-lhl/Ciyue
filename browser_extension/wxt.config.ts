@@ -1,4 +1,5 @@
 import { defineConfig } from "wxt";
+import tailwindcss from "@tailwindcss/vite";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -7,6 +8,7 @@ export default defineConfig({
   modules: ["@wxt-dev/module-svelte"],
   vite: () => ({
     plugins: [
+      tailwindcss(),
       {
         name: "sync-darkreader-asset",
         buildStart() {

@@ -2,7 +2,7 @@ import { defineContentScript } from "wxt/utils/define-content-script";
 import { createShadowRootUi } from "wxt/utils/content-script-ui/shadow-root";
 import { mount, unmount } from "svelte";
 import ContentPopup from "./ContentPopup.svelte";
-import styleText from "./style.css?raw";
+import styleText from "./style.css?inline";
 import { getSettings, onSettingsChanged } from "../../utils/settings";
 import {
   checkModifierKey,

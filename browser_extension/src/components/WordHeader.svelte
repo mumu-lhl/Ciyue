@@ -1,4 +1,9 @@
 <script lang="ts">
+  import BookOpen from 'lucide-svelte/icons/book-open';
+  import Star from 'lucide-svelte/icons/star';
+  import X from 'lucide-svelte/icons/x';
+  import LoaderCircle from 'lucide-svelte/icons/loader-circle';
+
   let {
     word = '',
     stared = false,
@@ -16,92 +21,39 @@
   } = $props();
 </script>
 
-<div class="ciyue-word-header">
-  <div class="ciyue-title-area">
-    <span class="ciyue-book-icon">📖</span>
-    <span class="ciyue-word-text" title={word}>{word}</span>
+<div
+  class="flex items-center justify-between px-3.5 py-2.5 bg-zinc-50/90 dark:bg-zinc-800/80 border-b border-zinc-200/80 dark:border-zinc-800 select-none"
+>
+  <div class="flex items-center gap-2 min-w-0">
+    <BookOpen class="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0" />
+    <span class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate" title={word}>
+      {word}
+    </span>
   </div>
-  <div class="ciyue-actions">
+  <div class="flex items-center gap-1 shrink-0">
     <button
-      class="ciyue-icon-btn star-btn"
-      class:active={stared}
-      class:loading={loadingStar}
+      class="p-1.5 rounded-lg text-zinc-400 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 transition-all cursor-pointer"
       title={stared ? '从生词本移除' : '加入生词本'}
       onclick={onToggleStar}
     >
-      {stared ? '★' : '☆'}
+      {#if loadingStar}
+        <LoaderCircle class="w-4 h-4 animate-spin text-amber-500" />
+      {:else}
+        <Star
+          class="w-4 h-4 transition-transform duration-150 {stared
+            ? 'fill-amber-400 text-amber-400 scale-105'
+            : 'hover:scale-105'}"
+        />
+      {/if}
     </button>
     {#if showClose}
       <button
-        class="ciyue-icon-btn close-btn"
+        class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 transition-colors cursor-pointer"
         title="关闭"
         onclick={onClose}
       >
-        ✕
+        <X class="w-4 h-4" />
       </button>
     {/if}
   </div>
 </div>
-
-<style>
-  .ciyue-word-header {
-    padding: 10px 14px;
-    background: var(--surface);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    user-select: none;
-  }
-  .ciyue-title-area {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-  }
-  .ciyue-book-icon {
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-  .ciyue-word-text {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .ciyue-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-  .ciyue-icon-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 14px;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-  }
-  .ciyue-icon-btn:hover {
-    background: rgba(128, 128, 128, 0.15);
-    color: var(--text);
-  }
-  .star-btn {
-    font-size: 18px;
-    line-height: 1;
-  }
-  .star-btn.active {
-    color: var(--star);
-  }
-  .close-btn {
-    font-size: 13px;
-  }
-</style>

@@ -1,6 +1,13 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { marked } from 'marked';
+  import Sparkles from 'lucide-svelte/icons/sparkles';
+  import Languages from 'lucide-svelte/icons/languages';
+  import Copy from 'lucide-svelte/icons/copy';
+  import Check from 'lucide-svelte/icons/check';
+  import RotateCw from 'lucide-svelte/icons/rotate-cw';
+  import CircleAlert from 'lucide-svelte/icons/circle-alert';
+  import LoaderCircle from 'lucide-svelte/icons/loader-circle';
   import { createAiStream } from '../utils/messaging';
 
   let {
@@ -84,41 +91,59 @@
   });
 </script>
 
-<div class="ciyue-ai-panel">
-  <div class="ai-toolbar">
-    <span class="ai-tag">
-      {mode === 'translate' ? '🌐 AI 翻译' : '🤖 AI 深度解析'}
+<div class="p-3.5 flex flex-col gap-3 font-sans">
+  <div class="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+    <span
+      class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium {mode === 'translate'
+        ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60'
+        : 'bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300 border border-violet-200/60 dark:border-violet-800/60'}"
+    >
+      {#if mode === 'translate'}
+        <Languages class="w-3.5 h-3.5" />
+        <span>AI 智能翻译</span>
+      {:else}
+        <Sparkles class="w-3.5 h-3.5" />
+        <span>AI 深度解析</span>
+      {/if}
     </span>
-    <div class="ai-actions">
+
+    <div class="flex items-center gap-1.5">
       {#if content && !streaming}
         <button
-          class="ai-action-btn"
+          class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-750 transition-all cursor-pointer"
           onclick={copyContent}
           title={copied ? '已复制' : '复制内容'}
         >
-          {copied ? '✓ 已复制' : '📋 复制'}
+          {#if copied}
+            <Check class="w-3.5 h-3.5 text-emerald-500" />
+            <span class="text-emerald-600 dark:text-emerald-400">已复制</span>
+          {:else}
+            <Copy class="w-3.5 h-3.5" />
+            <span>复制</span>
+          {/if}
         </button>
       {/if}
       {#if !streaming}
         <button
-          class="ai-action-btn"
+          class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-750 transition-all cursor-pointer"
           onclick={startStream}
           title="重新生成"
         >
-          🔄 重试
+          <RotateCw class="w-3.5 h-3.5" />
+          <span>重试</span>
         </button>
       {/if}
     </div>
   </div>
 
   {#if errorMsg}
-    <div class="ai-error-state">
-      <span class="error-icon">⚠️</span>
-      <div class="error-text">{errorMsg}</div>
-      <div class="error-hint">请在词悦桌面端「设置」->「AI 模型服务」中配置 API Key。</div>
+    <div class="p-4 text-center bg-rose-50/70 dark:bg-rose-950/30 rounded-xl border border-dashed border-rose-300 dark:border-rose-800 flex flex-col items-center gap-1.5">
+      <CircleAlert class="w-6 h-6 text-rose-500 mb-1" />
+      <div class="text-xs font-semibold text-rose-700 dark:text-rose-400">{errorMsg}</div>
+      <div class="text-[11px] text-zinc-500 dark:text-zinc-400">请在词悦桌面端「设置」->「AI 模型服务」中配置 API Key。</div>
     </div>
   {:else}
-    <div class="ai-content-box">
+    <div class="relative leading-relaxed text-[13.5px] text-zinc-800 dark:text-zinc-200 max-h-[380px] overflow-y-auto pr-1">
       {#if content}
         <div class="markdown-body">
           <!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -126,159 +151,56 @@
         </div>
       {/if}
       {#if streaming && !content}
-        <div class="ai-loading">
-          <span class="pulse-dot"></span>
-          <span>正在连接 AI 模型解析中...</span>
+        <div class="flex items-center justify-center gap-2 py-10 text-xs text-zinc-500 dark:text-zinc-400">
+          <LoaderCircle class="w-4 h-4 animate-spin text-violet-600 dark:text-violet-400" />
+          <span>正在连接 AI 模型生成解析...</span>
         </div>
       {/if}
       {#if streaming && content}
-        <div class="ai-streaming-cursor"></div>
+        <span class="inline-block w-1.5 h-3.5 bg-violet-600 dark:bg-violet-400 ml-0.5 align-middle animate-pulse"></span>
       {/if}
     </div>
   {/if}
 </div>
 
 <style>
-  .ciyue-ai-panel {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .ai-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 8px;
-  }
-  .ai-tag {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--primary);
-    background: var(--surface);
-    padding: 2px 8px;
-    border-radius: 12px;
-  }
-  .ai-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .ai-action-btn {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 2px 8px;
-    font-size: 11px;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .ai-action-btn:hover {
-    background: var(--surface);
-    color: var(--text);
-    border-color: var(--primary);
-  }
-  .ai-error-state {
-    padding: 20px 14px;
-    text-align: center;
-    background: var(--surface);
-    border-radius: 10px;
-    border: 1px dashed var(--danger);
-  }
-  .error-icon {
-    font-size: 24px;
-    margin-bottom: 6px;
-    display: block;
-  }
-  .error-text {
-    font-size: 13px;
-    color: var(--danger);
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-  .error-hint {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-  .ai-content-box {
-    position: relative;
-    line-height: 1.6;
-    font-size: 13.5px;
-    max-height: 380px;
-    overflow-y: auto;
-    padding-right: 4px;
-  }
   :global(.markdown-body h1),
   :global(.markdown-body h2),
   :global(.markdown-body h3) {
     margin: 10px 0 6px 0;
-    color: var(--primary);
-    font-size: 14.5px;
+    color: #7c3aed;
+    font-size: 14px;
+    font-weight: 600;
   }
   :global(.markdown-body p) {
     margin: 6px 0;
   }
   :global(.markdown-body ul),
   :global(.markdown-body ol) {
-    padding-left: 20px;
+    padding-left: 18px;
     margin: 6px 0;
   }
   :global(.markdown-body li) {
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
   :global(.markdown-body code) {
-    background: var(--surface-variant);
+    background: rgba(120, 119, 198, 0.1);
     padding: 2px 5px;
     border-radius: 4px;
     font-size: 12px;
     font-family: monospace;
   }
   :global(.markdown-body pre) {
-    background: var(--surface);
+    background: rgba(0, 0, 0, 0.04);
     padding: 10px;
     border-radius: 8px;
     overflow-x: auto;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(0, 0, 0, 0.08);
   }
   :global(.markdown-body blockquote) {
     margin: 6px 0;
     padding-left: 10px;
-    border-left: 3px solid var(--primary);
-    color: var(--text-muted);
-  }
-  .ai-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 30px 10px;
-    color: var(--text-muted);
-    font-size: 13px;
-  }
-  .pulse-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--primary);
-    animation: pulse 1s infinite alternate;
-  }
-  @keyframes pulse {
-    0% { transform: scale(0.8); opacity: 0.5; }
-    100% { transform: scale(1.3); opacity: 1; }
-  }
-  .ai-streaming-cursor {
-    display: inline-block;
-    width: 6px;
-    height: 14px;
-    background: var(--primary);
-    margin-left: 2px;
-    vertical-align: middle;
-    animation: blink 0.8s infinite;
-  }
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+    border-left: 3px solid #7c3aed;
+    color: #71717a;
   }
 </style>

@@ -17,16 +17,19 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "lucide-svelte": "0.577.0",
     "marked": "18.2.1",
     "svelte": "^5.58.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
     "@types/chrome": "^0.3.7",
     "@types/node": "^26.6.6",
     "@wxt-dev/module-svelte": "^2.0.5",
     "oxfmt": "^0.79.0",
     "oxlint": "^1.94.0",
     "svelte-check": "^4.7.8",
+    "tailwindcss": "^4.3.5",
     "typescript": "7.0.2",
     "vitest": "^5.1.1",
     "wxt": "0.21.5"
