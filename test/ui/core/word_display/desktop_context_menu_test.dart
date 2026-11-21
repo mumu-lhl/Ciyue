@@ -59,7 +59,7 @@ void main() {
 
     test("swaps in the app menu script only when asked", () {
       final scripts = dictionaryUserScripts(desktopContextMenu: true);
-      expect(scripts, hasLength(9));
+      expect(scripts, hasLength(10));
       expect(
         scripts.any((s) => s.source.contains("'DesktopContextMenu'")),
         isTrue,
@@ -72,7 +72,7 @@ void main() {
         isDesktop: true,
         desktopContextMenu: true,
       );
-      expect(scripts, hasLength(10));
+      expect(scripts, hasLength(11));
       expect(scripts.any((s) => s.source.contains("'Gesture'")), isTrue);
       expect(
         scripts.any((s) => s.source.contains("'DesktopContextMenu'")),

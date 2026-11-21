@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -359,11 +360,17 @@ class CustomPlatformView extends StatefulWidget {
 
   final Function(int id)? onPlatformViewCreated;
 
+  /// Recognizers that let the WebView take part in Flutter's gesture arena.
+  /// Without them an enclosing PageView can win a drag and cancel the pointer
+  /// stream before the WebView can select text or handle a long press.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   const CustomPlatformView({
     this.creationParams,
     this.onPlatformViewCreated,
     this.scaleFactor,
     this.filterQuality = FilterQuality.none,
+    this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
     Key? key,
   }) : super(key: key);
 
@@ -404,10 +411,27 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
 
   final _activeTouchPoints = <int, Offset>{};
 
+  /// Recognizers that keep the WebView in Flutter's gesture arena. A texture
+  /// view has no platform-view render object to do this for us, so the
+  /// recognizers are registered on each pointer down instead.
+  late final Set<OneSequenceGestureRecognizer> _gestureRecognizers;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _gestureRecognizers = widget.gestureRecognizers.map((factory) {
+      final recognizer = factory.constructor();
+      // A recognizer with no callbacks never enters the arena.
+      if (recognizer is LongPressGestureRecognizer) {
+        recognizer.onLongPress ??= () {};
+      } else if (recognizer is DragGestureRecognizer) {
+        recognizer.onDown ??= (_) {};
+      } else if (recognizer is TapGestureRecognizer) {
+        recognizer.onTapDown ??= (_) {};
+      }
+      return recognizer;
+    }).toSet();
 
     _controller.initialize(
       onPlatformViewCreated: (id) {
@@ -567,6 +591,11 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
                 },
                 onPointerDown: (ev) {
                   _reportSurfaceSize();
+                  // Claim this pointer sequence before an enclosing PageView
+                  // can win the drag and cancel WebView input.
+                  for (final recognizer in _gestureRecognizers) {
+                    recognizer.addPointer(ev);
+                  }
 
                   final needsFocus = !_focusNode.hasFocus;
                   if (needsFocus) {
@@ -827,6 +856,9 @@ class _CustomPlatformViewState extends State<CustomPlatformView>
       _downButtons.clear();
     }
     WidgetsBinding.instance.removeObserver(this);
+    for (final recognizer in _gestureRecognizers) {
+      recognizer.dispose();
+    }
     super.dispose();
     _cursorSubscription?.cancel();
     _controller.dispose();
