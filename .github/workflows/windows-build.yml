@@ -36,7 +36,7 @@ jobs:
     name: Build Windows (${{ inputs.workflow_profile }})
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -44,7 +44,7 @@ jobs:
       # JAVA_HOME. Pin the JDK instead of taking whatever the runner image
       # ships: the image's copy changes between image releases, and the cached
       # CMake configuration would keep pointing at the old path.
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
@@ -103,7 +103,7 @@ jobs:
 
       - name: Cache Flutter Build
         if: ${{ inputs.enable_build_cache }}
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             .dart_tool
@@ -251,7 +251,7 @@ jobs:
 
       - name: Upload runtime bundle
         if: ${{ !inputs.package_release_artifacts }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
           path: build/windows/x64/runner/Release/
@@ -289,7 +289,7 @@ jobs:
 
       - name: Upload release artifacts
         if: ${{ inputs.package_release_artifacts }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
           path: |

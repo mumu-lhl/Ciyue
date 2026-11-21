@@ -43,7 +43,7 @@ jobs:
     name: Build Android (${{ inputs.workflow_profile }}-${{ inputs.build_mode }})
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -52,7 +52,7 @@ jobs:
           flutter-version: ${{ inputs.flutter_version }}
           cache: true
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           java-version: 21
           distribution: "temurin"
@@ -87,7 +87,7 @@ jobs:
 
       - name: Cache Flutter Build
         if: ${{ inputs.enable_build_cache }}
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             .dart_tool
@@ -98,7 +98,7 @@ jobs:
 
       - name: Cache Gradle
         if: ${{ inputs.enable_gradle_cache }}
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
@@ -206,7 +206,7 @@ jobs:
 
       - name: Upload CI APK
         if: ${{ inputs.build_mode == 'ci_full_dev' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
           path: build/app/outputs/flutter-apk/app-full-dev-release.apk
@@ -214,7 +214,7 @@ jobs:
 
       - name: Upload common release APKs
         if: ${{ inputs.build_mode == 'release_common' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
           path: build/app/outputs/flutter-apk/ciyue-*-release.apk
@@ -222,7 +222,7 @@ jobs:
 
       - name: Upload full release APKs
         if: ${{ inputs.build_mode == 'release_full' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
           path: build/app/outputs/flutter-apk/ciyue-*-full.apk
