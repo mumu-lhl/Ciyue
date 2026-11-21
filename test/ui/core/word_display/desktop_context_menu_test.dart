@@ -12,9 +12,9 @@ void main() {
       expect(script, contains("x: e.clientX"));
     });
 
-    test("keeps an existing selection under the pointer", () {
-      expect(script, contains("getClientRects()"));
-      expect(script, contains("return text;"));
+    test("keeps any existing selection wherever the right click lands", () {
+      expect(script, contains("if (text) return text;"));
+      expect(script, isNot(contains("getClientRects()")));
     });
 
     test("leaves rocker gestures alone", () {
