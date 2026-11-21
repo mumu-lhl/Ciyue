@@ -25,7 +25,7 @@
   class="flex items-center justify-between px-3.5 py-2.5 bg-zinc-50/90 dark:bg-zinc-800/80 border-b border-zinc-200/80 dark:border-zinc-800 select-none"
 >
   <div class="flex items-center gap-2 min-w-0">
-    <BookOpen class="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0" />
+    <BookOpen class="w-4 h-4 text-primary-600 dark:text-primary-400 shrink-0" />
     <span class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate" title={word}>
       {word}
     </span>

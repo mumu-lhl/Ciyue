@@ -33,6 +33,7 @@ export default defineContentScript({
           target: container,
           props: {
             serverUrl: settings.serverUrl,
+            themeColor: settings.themeColor,
           },
         });
         return popupInstance;
@@ -48,73 +49,56 @@ export default defineContentScript({
 
     // Handle mouse selection
     document.addEventListener("mouseup", (e) => {
+      if (isDomainBlacklisted(window.location.href, settings.blacklistUrls)) return;
       if (!settings.enableSelection) return;
-      if (isDomainBlacklisted(window.location.hostname, settings.blacklistUrls)) return;
-      if (settings.excludeEditable && isEditableElement(e.target as any)) return;
       if (!checkModifierKey(settings.requireModifierKey, e)) return;
+      if (settings.excludeEditable && isEditableElement(e.target as Element)) return;
 
       setTimeout(() => {
-        const sel = window.getSelection();
-        const text = sel ? sel.toString().trim() : "";
+        const selection = window.getSelection();
+        const text = selection ? selection.toString() : "";
+
+        if (!isValidSelectionText(text)) {
+          popupInstance?.hideTrigger();
+          return;
+        }
+
+        try {
+          const range = selection!.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          const triggerX = rect.right + window.scrollX + 8;
+          const triggerY = rect.bottom + window.scrollY - 8;
+
+          popupInstance?.displayTrigger(triggerX, triggerY, text.trim());
+        } catch {
+          popupInstance?.hideTrigger();
+        }
+      }, 50);
+    });
+
+    // Handle double click
+    document.addEventListener("dblclick", (e) => {
+      if (isDomainBlacklisted(window.location.href, settings.blacklistUrls)) return;
+      if (!settings.enableDoubleClick) return;
+      if (settings.excludeEditable && isEditableElement(e.target as Element)) return;
+
+      setTimeout(() => {
+        const selection = window.getSelection();
+        const text = selection ? selection.toString().trim() : "";
 
         if (isValidSelectionText(text)) {
-          if (popupInstance) {
-            popupInstance.displayTrigger(e.pageX + 8, e.pageY + 10, text);
-          }
-        } else {
-          if (popupInstance) {
-            popupInstance.hideTrigger();
-          }
+          popupInstance?.openCard(text, e.clientX + window.scrollX, e.clientY + window.scrollY);
         }
-      }, 10);
+      }, 30);
     });
 
-    // Handle double-click lookup
-    document.addEventListener("dblclick", (e) => {
-      if (!settings.enableDoubleClick) return;
-      if (isDomainBlacklisted(window.location.hostname, settings.blacklistUrls)) return;
-      if (settings.excludeEditable && isEditableElement(e.target as any)) return;
-
-      const sel = window.getSelection();
-      const text = sel ? sel.toString().trim() : "";
-      if (isValidSelectionText(text) && text.length <= 50) {
-        if (popupInstance) {
-          popupInstance.openCard(text, e.pageX + 10, e.pageY + 10);
-        }
-      }
-    });
-
-    // Dismiss on outside mousedown
+    // Global click dismisses floating trigger
     document.addEventListener("mousedown", (e) => {
-      if (ui.shadowHost && e.composedPath().includes(ui.shadowHost)) return;
-      if (popupInstance) {
-        popupInstance.hideTrigger();
+      const host = document.querySelector("ciyue-extension-host");
+      if (host && host.shadowRoot && host.shadowRoot.contains(e.target as Node)) {
+        return;
       }
-    });
-
-    // Dismiss on Escape
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        if (popupInstance) {
-          popupInstance.hideTrigger();
-          popupInstance.closeCard();
-        }
-      }
-    });
-
-    // Messages from background (context menu / hotkeys)
-    chrome.runtime.onMessage.addListener((msg) => {
-      if (msg.type === "CIYUE_LOOKUP" && msg.word) {
-        if (popupInstance) {
-          popupInstance.openCard(msg.word, window.innerWidth / 2 - 220, 100);
-        }
-      } else if (msg.type === "CIYUE_TRIGGER_HOTKEY") {
-        const sel = window.getSelection();
-        const text = sel ? sel.toString().trim() : "";
-        if (text && popupInstance) {
-          popupInstance.openCard(text, window.innerWidth / 2 - 220, 100);
-        }
-      }
+      popupInstance?.hideTrigger();
     });
   },
 });

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import BookOpen from 'lucide-svelte/icons/book-open';
   import Settings from 'lucide-svelte/icons/settings';
   import Search from 'lucide-svelte/icons/search';
@@ -12,10 +12,11 @@
   import DictCard from '../../components/DictCard.svelte';
   import AiView from '../../components/AiView.svelte';
   import { CiyueApiClient } from '../../api/client';
-  import { getSettings } from '../../utils/settings';
-  import type { DictionaryResult, GroupItem } from '../../api/types';
+  import { getSettings, onSettingsChanged } from '../../utils/settings';
+  import type { DictionaryResult, GroupItem, ThemeColor } from '../../api/types';
 
   let serverUrl = $state('http://127.0.0.1:47117');
+  let themeColor = $state<ThemeColor>('blue');
   let serverOnline = $state(false);
   let groups = $state<GroupItem[]>([]);
   let currentGroupId = $state('');
@@ -32,10 +33,12 @@
 
   let apiClient = $derived(new CiyueApiClient(serverUrl));
   let debounceTimer: any = null;
+  let unlistenSettings: (() => void) | null = null;
 
   async function init() {
     const settings = await getSettings();
     serverUrl = settings.serverUrl;
+    themeColor = settings.themeColor;
     await checkStatus();
     if (serverOnline) {
       await loadGroups();
@@ -146,14 +149,25 @@
 
   onMount(() => {
     init();
+    unlistenSettings = onSettingsChanged((newSettings) => {
+      themeColor = newSettings.themeColor;
+      serverUrl = newSettings.serverUrl;
+    });
+  });
+
+  onDestroy(() => {
+    if (unlistenSettings) unlistenSettings();
   });
 </script>
 
-<div class="w-[420px] max-h-[580px] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden text-sm font-sans antialiased">
+<div
+  data-theme={themeColor}
+  class="w-[420px] max-h-[580px] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden text-sm font-sans antialiased"
+>
   <!-- Top Header -->
   <header class="px-3.5 py-2.5 flex items-center justify-between border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/70 gap-2">
     <div class="flex items-center gap-2">
-      <div class="w-7 h-7 rounded-lg bg-violet-600/10 dark:bg-violet-400/10 flex items-center justify-center text-violet-600 dark:text-violet-400">
+      <div class="w-7 h-7 rounded-lg bg-primary-600/10 dark:bg-primary-400/10 flex items-center justify-center text-primary-600 dark:text-primary-400">
         <BookOpen class="w-4 h-4" />
       </div>
       <span class="font-bold text-zinc-900 dark:text-zinc-100 text-sm tracking-tight">词悦</span>
@@ -202,7 +216,7 @@
           placeholder="输入单词按回车查词..."
           autocomplete="off"
           autofocus
-          class="w-full pl-9 pr-8 py-2 rounded-xl border border-zinc-200 dark:border-zinc-750 bg-zinc-50/80 dark:bg-zinc-800/70 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 text-xs outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15 transition-all"
+          class="w-full pl-9 pr-8 py-2 rounded-xl border border-zinc-200 dark:border-zinc-750 bg-zinc-50/80 dark:bg-zinc-800/70 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 text-xs outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 transition-all"
           oninput={onInput}
           onkeydown={(e) => e.key === 'Enter' && submitSearch()}
         />
@@ -220,7 +234,7 @@
       </div>
 
       <button
-        class="px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 active:scale-95 text-white font-semibold text-xs cursor-pointer shadow-xs shadow-violet-500/20 transition-all shrink-0"
+        class="px-3.5 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 active:scale-95 text-white font-semibold text-xs cursor-pointer shadow-xs shadow-primary-500/20 transition-all shrink-0"
         onclick={submitSearch}
       >
         查询
@@ -234,7 +248,7 @@
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <!-- svelte-ignore a11y_no_static_element_interactions -->
           <div
-            class="px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-600 dark:hover:text-violet-400 cursor-pointer transition-colors"
+            class="px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200 hover:bg-primary-50 dark:hover:bg-primary-950/40 hover:text-primary-600 dark:hover:text-primary-400 cursor-pointer transition-colors"
             onclick={() => selectSuggestion(item)}
           >
             {item}
@@ -259,7 +273,7 @@
       <div
         class="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-t-lg transition-all cursor-pointer select-none {activeTab ===
         'dicts'
-          ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-600 dark:border-violet-400 font-semibold bg-white dark:bg-zinc-800/80'
+          ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 font-semibold bg-white dark:bg-zinc-800/80'
           : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium'}"
         onclick={() => (activeTab = 'dicts')}
       >
@@ -272,7 +286,7 @@
       <div
         class="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-t-lg transition-all cursor-pointer select-none {activeTab ===
         'ai-explain'
-          ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-600 dark:border-violet-400 font-semibold bg-white dark:bg-zinc-800/80'
+          ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 font-semibold bg-white dark:bg-zinc-800/80'
           : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium'}"
         onclick={() => (activeTab = 'ai-explain')}
       >
@@ -285,7 +299,7 @@
       <div
         class="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-t-lg transition-all cursor-pointer select-none {activeTab ===
         'ai-translate'
-          ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-600 dark:border-violet-400 font-semibold bg-white dark:bg-zinc-800/80'
+          ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 font-semibold bg-white dark:bg-zinc-800/80'
           : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium'}"
         onclick={() => (activeTab = 'ai-translate')}
       >
@@ -299,7 +313,7 @@
   <main class="flex-1 overflow-y-auto p-3 max-h-[420px]">
     {#if loading}
       <div class="flex flex-col items-center justify-center py-16 gap-2 text-zinc-400">
-        <LoaderCircle class="w-5 h-5 animate-spin text-violet-600 dark:text-violet-400" />
+        <LoaderCircle class="w-5 h-5 animate-spin text-primary-600 dark:text-primary-400" />
         <span class="text-xs">正在查询 “{searchQuery}”...</span>
       </div>
     {:else if !serverOnline}

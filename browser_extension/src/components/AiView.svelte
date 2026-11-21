@@ -94,9 +94,7 @@
 <div class="p-3.5 flex flex-col gap-3 font-sans">
   <div class="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
     <span
-      class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium {mode === 'translate'
-        ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60'
-        : 'bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300 border border-violet-200/60 dark:border-violet-800/60'}"
+      class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-50 text-primary-700 dark:bg-primary-950/50 dark:text-primary-300 border border-primary-200/60 dark:border-primary-800/60"
     >
       {#if mode === 'translate'}
         <Languages class="w-3.5 h-3.5" />
@@ -152,12 +150,12 @@
       {/if}
       {#if streaming && !content}
         <div class="flex items-center justify-center gap-2 py-10 text-xs text-zinc-500 dark:text-zinc-400">
-          <LoaderCircle class="w-4 h-4 animate-spin text-violet-600 dark:text-violet-400" />
+          <LoaderCircle class="w-4 h-4 animate-spin text-primary-600 dark:text-primary-400" />
           <span>正在连接 AI 模型生成解析...</span>
         </div>
       {/if}
       {#if streaming && content}
-        <span class="inline-block w-1.5 h-3.5 bg-violet-600 dark:bg-violet-400 ml-0.5 align-middle animate-pulse"></span>
+        <span class="inline-block w-1.5 h-3.5 bg-primary-600 dark:bg-primary-400 ml-0.5 align-middle animate-pulse"></span>
       {/if}
     </div>
   {/if}
@@ -168,7 +166,7 @@
   :global(.markdown-body h2),
   :global(.markdown-body h3) {
     margin: 10px 0 6px 0;
-    color: #7c3aed;
+    color: var(--primary-600);
     font-size: 14px;
     font-weight: 600;
   }
@@ -184,7 +182,8 @@
     margin-bottom: 2px;
   }
   :global(.markdown-body code) {
-    background: rgba(120, 119, 198, 0.1);
+    background: var(--primary-50);
+    color: var(--primary-700);
     padding: 2px 5px;
     border-radius: 4px;
     font-size: 12px;
@@ -200,7 +199,7 @@
   :global(.markdown-body blockquote) {
     margin: 6px 0;
     padding-left: 10px;
-    border-left: 3px solid #7c3aed;
+    border-left: 3px solid var(--primary-600);
     color: #71717a;
   }
 </style>

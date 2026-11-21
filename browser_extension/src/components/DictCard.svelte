@@ -148,7 +148,7 @@
   >
     <div class="flex items-center gap-1.5 min-w-0">
       <ChevronDown
-        class="w-3.5 h-3.5 text-violet-600 dark:text-violet-400 shrink-0 transition-transform duration-200 {isCollapsed ? '-rotate-90' : ''}"
+        class="w-3.5 h-3.5 text-primary-600 dark:text-primary-400 shrink-0 transition-transform duration-200 {isCollapsed ? '-rotate-90' : ''}"
       />
       <span class="text-zinc-800 dark:text-zinc-200 truncate">
         {item.dictTitle || '词典'}

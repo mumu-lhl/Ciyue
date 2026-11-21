@@ -36,8 +36,11 @@ export interface ServerStatus {
 
 export type ModifierKey = "none" | "alt" | "ctrl" | "shift";
 
+export type ThemeColor = "blue" | "violet" | "teal" | "emerald" | "rose" | "amber";
+
 export interface ExtensionSettings {
   serverUrl: string;
+  themeColor: ThemeColor;
   enableSelection: boolean;
   enableDoubleClick: boolean;
   requireModifierKey: ModifierKey;

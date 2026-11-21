@@ -2,18 +2,22 @@
   import { onMount } from 'svelte';
   import BookOpen from 'lucide-svelte/icons/book-open';
   import Server from 'lucide-svelte/icons/server';
+  import Palette from 'lucide-svelte/icons/palette';
   import MousePointerClick from 'lucide-svelte/icons/mouse-pointer-click';
   import ShieldAlert from 'lucide-svelte/icons/shield-alert';
   import CircleCheck from 'lucide-svelte/icons/circle-check';
   import CircleAlert from 'lucide-svelte/icons/circle-alert';
   import LoaderCircle from 'lucide-svelte/icons/loader-circle';
   import Save from 'lucide-svelte/icons/save';
+  import Check from 'lucide-svelte/icons/check';
   import { getSettings, saveSettings } from '../../utils/settings';
   import { CiyueApiClient } from '../../api/client';
+  import { THEME_OPTIONS } from '../../utils/theme';
   import type { ExtensionSettings } from '../../api/types';
 
   let form = $state<ExtensionSettings>({
     serverUrl: 'http://127.0.0.1:47117',
+    themeColor: 'blue',
     enableSelection: true,
     enableDoubleClick: false,
     requireModifierKey: 'none',
@@ -68,11 +72,14 @@
   }
 </script>
 
-<div class="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-10 px-4 font-sans antialiased flex justify-center">
+<div
+  data-theme={form.themeColor}
+  class="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-10 px-4 font-sans antialiased flex justify-center"
+>
   <div class="w-full max-w-2xl flex flex-col gap-6">
     <!-- Header -->
     <header class="flex items-center gap-3 pb-2">
-      <div class="w-10 h-10 rounded-xl bg-violet-600/10 dark:bg-violet-400/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+      <div class="w-10 h-10 rounded-xl bg-primary-600/10 dark:bg-primary-400/10 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
         <BookOpen class="w-5 h-5" />
       </div>
       <div>
@@ -80,15 +87,59 @@
           词悦查词助手 · 扩展设置
         </h1>
         <p class="text-xs text-zinc-500 dark:text-zinc-400">
-          配置浏览器拓展与词悦桌面端的连接方式及划词交互行为
+          配置浏览器拓展与词悦桌面端的连接方式、外观主题及划词交互行为
         </p>
       </div>
     </header>
 
-    <!-- Card 1: Desktop Connection -->
+    <!-- Card 1: Appearance & Theme Color -->
     <section class="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col gap-4">
       <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-        <Server class="w-4 h-4 text-violet-600 dark:text-violet-400" />
+        <Palette class="w-4 h-4 text-primary-600 dark:text-primary-400" />
+        <h2>外观与主题色</h2>
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+          界面主色调
+        </span>
+        <p class="text-[11px] text-zinc-400">
+          选择扩展在网页划词弹窗、顶部栏及操作按钮上的主题强调色（默认推荐为蓝色）
+        </p>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
+          {#each THEME_OPTIONS as opt (opt.id)}
+            <button
+              type="button"
+              class="flex items-center gap-2.5 p-2.5 rounded-xl border text-left cursor-pointer transition-all {form.themeColor === opt.id
+                ? 'border-primary-600 bg-primary-50/50 dark:bg-primary-950/30 ring-2 ring-primary-500/20 text-zinc-900 dark:text-zinc-100 font-semibold'
+                : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300'}"
+              onclick={() => (form.themeColor = opt.id)}
+            >
+              <span
+                class="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-white shadow-xs transition-transform duration-150 {form.themeColor === opt.id ? 'scale-110' : ''}"
+                style:background-color={opt.primaryHex}
+              >
+                {#if form.themeColor === opt.id}
+                  <Check class="w-3 h-3 stroke-[3]" />
+                {/if}
+              </span>
+              <div class="flex flex-col min-w-0">
+                <span class="text-xs truncate">{opt.name}</span>
+                {#if opt.isDefault}
+                  <span class="text-[10px] text-primary-600 dark:text-primary-400 font-normal">默认推荐</span>
+                {/if}
+              </div>
+            </button>
+          {/each}
+        </div>
+      </div>
+    </section>
+
+    <!-- Card 2: Desktop Connection -->
+    <section class="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col gap-4">
+      <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+        <Server class="w-4 h-4 text-primary-600 dark:text-primary-400" />
         <h2>桌面端服务连接</h2>
       </div>
 
@@ -105,7 +156,7 @@
             type="text"
             bind:value={form.serverUrl}
             placeholder="http://127.0.0.1:47117"
-            class="flex-1 px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-750 bg-zinc-50/70 dark:bg-zinc-800/60 text-xs text-zinc-900 dark:text-zinc-100 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15 transition-all"
+            class="flex-1 px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-750 bg-zinc-50/70 dark:bg-zinc-800/60 text-xs text-zinc-900 dark:text-zinc-100 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 transition-all"
           />
           <button
             class="px-4 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs font-semibold border border-zinc-200 dark:border-zinc-700 transition-all cursor-pointer flex items-center gap-1.5 shrink-0 disabled:opacity-60"
@@ -138,10 +189,10 @@
       </div>
     </section>
 
-    <!-- Card 2: Trigger Interaction -->
+    <!-- Card 3: Trigger Interaction -->
     <section class="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col gap-5">
       <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-        <MousePointerClick class="w-4 h-4 text-violet-600 dark:text-violet-400" />
+        <MousePointerClick class="w-4 h-4 text-primary-600 dark:text-primary-400" />
         <h2>划词查词交互</h2>
       </div>
 
@@ -158,7 +209,7 @@
           <input
             type="checkbox"
             bind:checked={form.enableSelection}
-            class="w-4 h-4 rounded text-violet-600 accent-violet-600 cursor-pointer shrink-0 mt-1"
+            class="w-4 h-4 rounded text-primary-600 accent-primary-600 cursor-pointer shrink-0 mt-1"
           />
         </div>
 
@@ -174,7 +225,7 @@
           <input
             type="checkbox"
             bind:checked={form.enableDoubleClick}
-            class="w-4 h-4 rounded text-violet-600 accent-violet-600 cursor-pointer shrink-0 mt-1"
+            class="w-4 h-4 rounded text-primary-600 accent-primary-600 cursor-pointer shrink-0 mt-1"
           />
         </div>
 
@@ -209,16 +260,16 @@
           <input
             type="checkbox"
             bind:checked={form.excludeEditable}
-            class="w-4 h-4 rounded text-violet-600 accent-violet-600 cursor-pointer shrink-0 mt-1"
+            class="w-4 h-4 rounded text-primary-600 accent-primary-600 cursor-pointer shrink-0 mt-1"
           />
         </div>
       </div>
     </section>
 
-    <!-- Card 3: Blacklist -->
+    <!-- Card 4: Blacklist -->
     <section class="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col gap-4">
       <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-        <ShieldAlert class="w-4 h-4 text-violet-600 dark:text-violet-400" />
+        <ShieldAlert class="w-4 h-4 text-primary-600 dark:text-primary-400" />
         <h2>网址黑名单</h2>
       </div>
 
@@ -234,7 +285,7 @@
           rows="4"
           bind:value={blacklistText}
           placeholder="example.com&#10;internal.company.net"
-          class="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-750 bg-zinc-50/70 dark:bg-zinc-800/60 font-mono text-xs text-zinc-800 dark:text-zinc-200 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15 transition-all resize-y"
+          class="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-750 bg-zinc-50/70 dark:bg-zinc-800/60 font-mono text-xs text-zinc-800 dark:text-zinc-200 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 transition-all resize-y"
         ></textarea>
       </div>
     </section>
@@ -249,7 +300,7 @@
       {/if}
 
       <button
-        class="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 active:scale-95 text-white text-xs font-semibold shadow-xs shadow-violet-500/20 cursor-pointer transition-all flex items-center gap-1.5"
+        class="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 active:scale-95 text-white text-xs font-semibold shadow-xs shadow-primary-500/20 cursor-pointer transition-all flex items-center gap-1.5"
         onclick={save}
       >
         <Save class="w-4 h-4" />

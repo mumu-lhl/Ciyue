@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
   import BookOpen from 'lucide-svelte/icons/book-open';
   import Sparkles from 'lucide-svelte/icons/sparkles';
   import Languages from 'lucide-svelte/icons/languages';
@@ -8,10 +9,19 @@
   import DictCard from '../../components/DictCard.svelte';
   import AiView from '../../components/AiView.svelte';
   import { CiyueApiClient } from '../../api/client';
-  import type { DictionaryResult } from '../../api/types';
+  import { onSettingsChanged } from '../../utils/settings';
+  import type { DictionaryResult, ThemeColor } from '../../api/types';
 
-  let { serverUrl }: { serverUrl: string } = $props();
+  let {
+    serverUrl,
+    themeColor = 'blue',
+  }: {
+    serverUrl: string;
+    themeColor?: ThemeColor;
+  } = $props();
 
+  let overrideTheme = $state<ThemeColor | null>(null);
+  let activeTheme = $derived(overrideTheme ?? themeColor);
   let showTrigger = $state(false);
   let triggerX = $state(0);
   let triggerY = $state(0);
@@ -29,6 +39,17 @@
   let dictResults = $state<DictionaryResult[]>([]);
 
   let apiClient = $derived(new CiyueApiClient(serverUrl));
+  let unlistenSettings: (() => void) | null = null;
+
+  onMount(() => {
+    unlistenSettings = onSettingsChanged((newSettings) => {
+      overrideTheme = newSettings.themeColor;
+    });
+  });
+
+  onDestroy(() => {
+    if (unlistenSettings) unlistenSettings();
+  });
 
   export function displayTrigger(x: number, y: number, word: string) {
     currentWord = word;
@@ -137,14 +158,16 @@
   }
 </script>
 
-<div class="relative font-sans text-zinc-900 dark:text-zinc-100 antialiased">
+<div data-theme={activeTheme} class="relative font-sans text-zinc-900 dark:text-zinc-100 antialiased">
   {#if showTrigger}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="fixed z-[2147483647] flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-violet-500/30 transition-all cursor-pointer select-none active:scale-95 hover:scale-110 ring-2 ring-white/90 dark:ring-zinc-900/90"
+      class="fixed z-[2147483647] flex items-center justify-center w-7 h-7 rounded-full text-white font-bold text-xs transition-all cursor-pointer select-none active:scale-95 hover:scale-110 ring-2 ring-white/90 dark:ring-zinc-900/90"
       style:left="{triggerX}px"
       style:top="{triggerY}px"
+      style:background="linear-gradient(135deg, var(--primary-gradient-from), var(--primary-gradient-to))"
+      style:box-shadow="0 8px 16px -2px var(--primary-shadow)"
       onmousedown={(e) => e.stopPropagation()}
       onclick={onTriggerClick}
       title="词悦查词"
@@ -182,7 +205,7 @@
           <div
             class="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-t-lg transition-all cursor-pointer select-none {activeTab ===
             'dicts'
-              ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-600 dark:border-violet-400 font-semibold bg-white dark:bg-zinc-800/80'
+              ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 font-semibold bg-white dark:bg-zinc-800/80'
               : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium'}"
             onclick={() => (activeTab = 'dicts')}
           >
@@ -195,7 +218,7 @@
           <div
             class="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-t-lg transition-all cursor-pointer select-none {activeTab ===
             'ai-explain'
-              ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-600 dark:border-violet-400 font-semibold bg-white dark:bg-zinc-800/80'
+              ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 font-semibold bg-white dark:bg-zinc-800/80'
               : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium'}"
             onclick={() => (activeTab = 'ai-explain')}
           >
@@ -208,7 +231,7 @@
           <div
             class="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-t-lg transition-all cursor-pointer select-none {activeTab ===
             'ai-translate'
-              ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-600 dark:border-violet-400 font-semibold bg-white dark:bg-zinc-800/80'
+              ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 font-semibold bg-white dark:bg-zinc-800/80'
               : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium'}"
             onclick={() => (activeTab = 'ai-translate')}
           >
@@ -222,7 +245,7 @@
       <div class="flex-1 overflow-y-auto p-3 max-h-[420px]">
         {#if loading}
           <div class="flex flex-col items-center justify-center py-12 gap-2 text-zinc-400">
-            <LoaderCircle class="w-5 h-5 animate-spin text-violet-600 dark:text-violet-400" />
+            <LoaderCircle class="w-5 h-5 animate-spin text-primary-600 dark:text-primary-400" />
             <span class="text-xs">正在查询词典...</span>
           </div>
         {:else if loadError}
