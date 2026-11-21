@@ -9,18 +9,38 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+
   - package-ecosystem: "npm"
     directory: "/docs"
     schedule:
       interval: "weekly"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+
   - package-ecosystem: "npm"
     directory: "/browser_extension"
     schedule:
       interval: "weekly"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+
   - package-ecosystem: "gradle"
     directory: "/android/app"
     schedule:
       interval: "weekly"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
