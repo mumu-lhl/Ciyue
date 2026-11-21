@@ -125,7 +125,7 @@ export default defineBackground(() => {
   });
 });
 
-async function handleProxyFetch(req: ProxyFetchRequest): Promise<ProxyFetchResponse> {
+export async function handleProxyFetch(req: ProxyFetchRequest): Promise<ProxyFetchResponse> {
   try {
     const res = await fetch(req.url, {
       method: req.method || "GET",

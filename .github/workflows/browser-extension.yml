@@ -22,13 +22,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: pnpm/setup@v3
+      - name: Setup pnpm and Node.js
+        uses: pnpm/setup@v3
         with:
-          runtime: node@latest
-          cache-dependency-path: browser_extension/pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          working-directory: browser_extension
+          runtime: node@lts
+          cache: true
+          require-lockfile: true
 
       - name: Check code formatting (oxfmt)
         run: pnpm run format:check

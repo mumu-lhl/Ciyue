@@ -4,6 +4,12 @@ import { mount, unmount } from "svelte";
 import ContentPopup from "./ContentPopup.svelte";
 import styleText from "./style.css?raw";
 import { getSettings, onSettingsChanged } from "../../utils/settings";
+import {
+  checkModifierKey,
+  isDomainBlacklisted,
+  isEditableElement,
+  isValidSelectionText,
+} from "../../utils/selection";
 import type { ExtensionSettings } from "../../api/types";
 
 export default defineContentScript({
@@ -40,39 +46,18 @@ export default defineContentScript({
 
     ui.mount();
 
-    function isBlacklisted(): boolean {
-      const currentHost = window.location.hostname;
-      return settings.blacklistUrls.some((domain) => {
-        const clean = domain.trim().toLowerCase();
-        return clean && (currentHost === clean || currentHost.endsWith("." + clean));
-      });
-    }
-
-    function checkModifier(e: MouseEvent): boolean {
-      if (settings.requireModifierKey === "alt") return e.altKey;
-      if (settings.requireModifierKey === "ctrl") return e.ctrlKey || e.metaKey;
-      if (settings.requireModifierKey === "shift") return e.shiftKey;
-      return true;
-    }
-
-    function isEditableElement(el: EventTarget | null): boolean {
-      if (!el || !(el instanceof HTMLElement)) return false;
-      if (el.isContentEditable) return true;
-      const tag = el.tagName.toUpperCase();
-      return tag === "INPUT" || tag === "TEXTAREA";
-    }
-
     // Handle mouse selection
     document.addEventListener("mouseup", (e) => {
-      if (isBlacklisted() || !settings.enableSelection) return;
-      if (settings.excludeEditable && isEditableElement(e.target)) return;
-      if (!checkModifier(e)) return;
+      if (!settings.enableSelection) return;
+      if (isDomainBlacklisted(window.location.hostname, settings.blacklistUrls)) return;
+      if (settings.excludeEditable && isEditableElement(e.target as any)) return;
+      if (!checkModifierKey(settings.requireModifierKey, e)) return;
 
       setTimeout(() => {
         const sel = window.getSelection();
         const text = sel ? sel.toString().trim() : "";
 
-        if (text && text.length >= 1 && text.length <= 250 && !/\n\n/.test(text)) {
+        if (isValidSelectionText(text)) {
           if (popupInstance) {
             popupInstance.displayTrigger(e.pageX + 8, e.pageY + 10, text);
           }
@@ -86,12 +71,13 @@ export default defineContentScript({
 
     // Handle double-click lookup
     document.addEventListener("dblclick", (e) => {
-      if (isBlacklisted() || !settings.enableDoubleClick) return;
-      if (settings.excludeEditable && isEditableElement(e.target)) return;
+      if (!settings.enableDoubleClick) return;
+      if (isDomainBlacklisted(window.location.hostname, settings.blacklistUrls)) return;
+      if (settings.excludeEditable && isEditableElement(e.target as any)) return;
 
       const sel = window.getSelection();
       const text = sel ? sel.toString().trim() : "";
-      if (text && text.length >= 1 && text.length <= 50) {
+      if (isValidSelectionText(text) && text.length <= 50) {
         if (popupInstance) {
           popupInstance.openCard(text, e.pageX + 10, e.pageY + 10);
         }
