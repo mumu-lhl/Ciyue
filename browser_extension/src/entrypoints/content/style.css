@@ -1,0 +1,96 @@
+@import '../../styles/theme.css';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.ciyue-trigger-icon {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--primary);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  z-index: 2147483646;
+  transition: transform 0.15s ease, background 0.15s ease;
+  user-select: none;
+}
+
+.ciyue-trigger-icon:hover {
+  transform: scale(1.12);
+  background: var(--primary-hover);
+}
+
+.ciyue-popup-card {
+  position: absolute;
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  max-height: 580px;
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 16px;
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 2147483647;
+  font-size: 14px;
+}
+
+.ciyue-drag-bar {
+  cursor: move;
+}
+
+.ciyue-tabs-row {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.ciyue-tab-item {
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.ciyue-tab-item:hover {
+  color: var(--text);
+}
+
+.ciyue-tab-item.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+.ciyue-body-scroll {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 480px;
+  padding: 8px 12px 14px 12px;
+}
+
+.ciyue-empty,
+.ciyue-loading {
+  padding: 36px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13.5px;
+}
