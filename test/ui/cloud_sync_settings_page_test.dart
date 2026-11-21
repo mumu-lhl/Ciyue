@@ -64,12 +64,63 @@ void main() {
     await tester.drag(find.byType(ListView), const Offset(0, -600));
     await tester.pumpAndSettle();
     expect(find.text("Confirm and sync"), findsOneWidget);
+    // The preview card grew by one line (the personal-dictionary
+    // not-synced note); scroll until the button is actually visible
+    // instead of assuming a fixed drag distance reaches it.
+    await tester.ensureVisible(find.text("Confirm and sync"));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text("Confirm and sync"));
     await tester.pumpAndSettle();
 
     expect(session.connectCalls, 1);
     expect(find.text("Sync complete."), findsOneWidget);
+  });
+
+  testWidgets("sync preview states personal dictionaries are not synced", (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: CloudSyncSettingsPage(sessionService: session),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    const notSyncedNote =
+        "Personal dictionaries are not synced and stay on this device only.";
+    // Outside the sync preview the page makes no claim about personal
+    // dictionaries; the disclosure belongs to the sync scope itself.
+    expect(find.text(notSyncedNote), findsNothing);
+
+    await tester.enterText(find.byType(TextField).first, "https://dav.test/");
+    await tester.tap(find.text("Preview changes"));
+    await tester.pumpAndSettle();
+
+    expect(find.text("Sync preview"), findsOneWidget);
+    // The note must sit inside the preview card, next to the dictionary
+    // list, so a user reviewing what will sync cannot miss that personal
+    // dictionaries are excluded.
+    final previewCard = find.ancestor(
+      of: find.text("Sync preview"),
+      matching: find.byType(Card),
+    );
+    expect(
+      find.descendant(of: previewCard, matching: find.text(notSyncedNote)),
+      findsOneWidget,
+    );
+    // And it must be in the dictionaries section, below the listed
+    // dictionary, not floating elsewhere in the card.
+    final dictionaryTile = find.byKey(
+      const ValueKey("dictionary-sync-local-package"),
+    );
+    expect(
+      tester.getBottomLeft(dictionaryTile).dy <
+          tester.getTopLeft(find.text(notSyncedNote)).dy,
+      isTrue,
+    );
   });
 
   testWidgets("shows configuration fields for each provider", (tester) async {

@@ -1,6 +1,7 @@
 import "dart:async";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/chat/chat.dart";
 import "package:ciyue/ui/pages/quiz/quiz_page.dart";
 import "package:ciyue/ui/pages/writing_check/writing_check.dart";
@@ -22,6 +23,8 @@ import "package:ciyue/ui/pages/settings/manage_dictionaries/full_text_index_over
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/properties.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/settings_dictionary.dart";
+import "package:ciyue/ui/pages/settings/personal_dictionary/personal_dictionary_entries_page.dart";
+import "package:ciyue/ui/pages/settings/personal_dictionary/personal_dictionary_entry_editor_page.dart";
 import "package:ciyue/ui/pages/settings/other.dart";
 import "package:ciyue/ui/pages/settings/privacy_policy.dart";
 import "package:ciyue/ui/pages/settings/terms_of_service.dart";
@@ -45,9 +48,27 @@ import "package:talker_flutter/talker_flutter.dart";
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
+/// Parses a route id, or null when the link carries a non-numeric value:
+/// a malformed deep link must land on the not-found page, not throw a
+/// [FormatException] inside the route builder.
+int? _tryParseRouteId(String? raw) => int.tryParse(raw ?? "");
+
 final router = GoRouter(
   navigatorKey: navigatorKey,
   observers: [TalkerRouteObserver(talker), FlutterSmartDialog.observer],
+  errorBuilder: (context, state) => Scaffold(
+    appBar: AppBar(title: Text(AppLocalizations.of(context)!.notFound)),
+    body: Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Text(
+          AppLocalizations.of(context)!.notFound,
+          style: Theme.of(context).textTheme.titleMedium,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    ),
+  ),
   routes: [
     GoRoute(
       path: "/",
@@ -125,6 +146,53 @@ final router = GoRouter(
     GoRoute(
       path: "/settings/dictionaries",
       builder: (context, state) => const ManageDictionariesPage(),
+    ),
+    GoRoute(
+      path: "/settings/personal_dictionary/:dictionaryId",
+      builder: (context, state) {
+        final extra = state.extra;
+        final title = extra is Map<String, dynamic>
+            ? extra["title"] as String?
+            : null;
+        final dictionaryId = _tryParseRouteId(
+          state.pathParameters["dictionaryId"],
+        );
+        if (dictionaryId == null) {
+          return const PersonalDictionaryNotFoundPage();
+        }
+        return PersonalDictionaryEntriesPage(
+          dictionaryId: dictionaryId,
+          title: title,
+        );
+      },
+    ),
+    GoRoute(
+      path: "/settings/personal_dictionary/:dictionaryId/entry/new",
+      builder: (context, state) {
+        final dictionaryId = _tryParseRouteId(
+          state.pathParameters["dictionaryId"],
+        );
+        if (dictionaryId == null) {
+          return const PersonalDictionaryNotFoundPage();
+        }
+        return PersonalDictionaryEntryEditorPage(dictionaryId: dictionaryId);
+      },
+    ),
+    GoRoute(
+      path: "/settings/personal_dictionary/:dictionaryId/entry/:articleId",
+      builder: (context, state) {
+        final dictionaryId = _tryParseRouteId(
+          state.pathParameters["dictionaryId"],
+        );
+        final articleId = _tryParseRouteId(state.pathParameters["articleId"]);
+        if (dictionaryId == null || articleId == null) {
+          return const PersonalDictionaryNotFoundPage();
+        }
+        return PersonalDictionaryEntryEditorPage(
+          dictionaryId: dictionaryId,
+          articleId: articleId,
+        );
+      },
     ),
     GoRoute(
       path: "/settings/ai_settings",

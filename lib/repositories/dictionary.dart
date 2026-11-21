@@ -8,6 +8,7 @@ import "package:ciyue/core/app_router.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary_import_failure.dart";
+import "package:ciyue/repositories/personal_dictionary.dart";
 import "package:ciyue/repositories/stardict.dart";
 import "package:ciyue/repositories/zim.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
@@ -51,6 +52,7 @@ LoadedDictionary createLoadedDictionary({
 }) {
   if (DictionaryType.isZim(type)) return Zim(path: path);
   if (DictionaryType.isStardict(type)) return Stardict(path: path);
+  if (DictionaryType.isPersonal(type)) return PersonalDictionary(path: path);
   return Mdict(path: path);
 }
 
@@ -205,9 +207,25 @@ class DictManager {
         for (var i = 0; i < validPaths.length; i++)
           _tryAdd(validDictIds[i], validPaths[i]),
       ]);
+      // The rows of the dictionaries that failed to load, so a failure
+      // can be told apart from a missing file below. A personal
+      // dictionary has no file: a load failure is a transient
+      // database/reader error, and deleting its list row would orphan
+      // every article and headword it owns (P1-3).
+      final failedRows = await Future.wait([
+        for (final dictId in validDictIds) dictionaryListDao.getById(dictId),
+      ]);
       final toRemove = <int>[];
       for (var i = 0; i < added.length; i++) {
         if (!added[i]) {
+          if (DictionaryType.isPersonal(failedRows[i]?.type ?? -1)) {
+            talker.warning(
+              "Keeping personal dictionary ${validDictIds[i]} "
+              "(${validPaths[i]}) after a failed load; its list row is "
+              "not deleted, so its articles stay recoverable.",
+            );
+            continue;
+          }
           await dictionaryListDao.remove(validPaths[i]);
           toRemove.add(i);
         }

@@ -44,6 +44,11 @@ class FullTextIndexSection extends ConsumerStatefulWidget {
 
 class _FullTextIndexSectionState extends ConsumerState<FullTextIndexSection> {
   LoadedDictionary? _dictionary;
+
+  /// True once the type lookup reports a personal dictionary, which has
+  /// no files and no full-text index: the row is hidden entirely instead
+  /// of offering a build that can never run.
+  bool _isPersonal = false;
   int? _sizeBytes;
   int? _sizeForIndexed;
 
@@ -57,7 +62,11 @@ class _FullTextIndexSectionState extends ConsumerState<FullTextIndexSection> {
     final type = await dictionaryListDao.getType(widget.id);
     if (!mounted) return;
     setState(() {
-      _dictionary = createLoadedDictionary(path: widget.path, type: type);
+      if (DictionaryType.isPersonal(type)) {
+        _isPersonal = true;
+      } else {
+        _dictionary = createLoadedDictionary(path: widget.path, type: type);
+      }
     });
   }
 
@@ -101,6 +110,9 @@ class _FullTextIndexSectionState extends ConsumerState<FullTextIndexSection> {
 
   @override
   Widget build(BuildContext context) {
+    // Personal dictionaries have no full-text index: hide the row rather
+    // than showing a build button for an index that can never exist.
+    if (_isPersonal) return const SizedBox.shrink();
     final dictionary = _dictionary;
     if (dictionary == null) return const SizedBox.shrink();
     final service = ref.watch(fullTextSearchServiceProvider);

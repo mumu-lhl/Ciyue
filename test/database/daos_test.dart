@@ -197,4 +197,78 @@ void main() {
       expect(await wordbookDao.wordExist(nfcWord), isFalse);
     });
   });
+
+  group("PersonalDictionaryDao foreign keys (P2-2)", () {
+    test("enforcement is on, violations fail, deletes cascade", () async {
+      final listDao = DictionaryListDao(database);
+      final dao = PersonalDictionaryDao(database);
+
+      final foreignKeys = await database
+          .customSelect("PRAGMA foreign_keys")
+          .getSingle();
+      expect(foreignKeys.read<bool>("foreign_keys"), isTrue);
+
+      final id = await listDao.add("personal:1", "Words", type: 4);
+      final now = DateTime.now();
+      final articleId = await dao.insertArticle(
+        PersonalArticlesCompanion(
+          dictionaryId: Value(id),
+          body: Value("a fruit"),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+        ),
+      );
+      await dao.insertHeadwords([
+        PersonalHeadwordsCompanion(
+          dictionaryId: Value(id),
+          articleId: Value(articleId),
+          headword: Value("apple"),
+          normalizedHeadword: Value("apple"),
+        ),
+      ]);
+
+      // A headword for a dictionary that does not exist is rejected.
+      await expectLater(
+        dao.insertHeadwords([
+          PersonalHeadwordsCompanion(
+            dictionaryId: const Value(99999),
+            articleId: Value(articleId),
+            headword: const Value("ghost"),
+            normalizedHeadword: const Value("ghost"),
+          ),
+        ]),
+        throwsA(isA<Object>()),
+      );
+      // A headword for an article that does not exist is rejected too.
+      await expectLater(
+        dao.insertHeadwords([
+          PersonalHeadwordsCompanion(
+            dictionaryId: Value(id),
+            articleId: const Value(99999),
+            headword: const Value("ghost"),
+            normalizedHeadword: const Value("ghost"),
+          ),
+        ]),
+        throwsA(isA<Object>()),
+      );
+
+      // Deleting the list row directly — bypassing the service — no
+      // longer orphans the dictionary's rows: the cascade removes them.
+      await listDao.removeById(id);
+      expect(await dao.countArticles(id), 0);
+      expect(await dao.countHeadwords(id), 0);
+
+      // The per-dictionary index exists on the articles table.
+      final indexes = await database
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'index' "
+            "AND tbl_name = 'personal_articles'",
+          )
+          .get();
+      expect(
+        indexes.map((row) => row.read<String>("name")),
+        contains("idx_personal_articles_dictionary"),
+      );
+    });
+  });
 }

@@ -34,6 +34,8 @@ AppDatabase appDatabase() {
     Flashcards,
     FlashcardReviewLogs,
     QuizMistakes,
+    PersonalArticles,
+    PersonalHeadwords,
   ],
   daos: [
     DictionaryListDao,
@@ -50,6 +52,7 @@ AppDatabase appDatabase() {
     OpenRecordsDao,
     FlashcardDao,
     QuizMistakeDao,
+    PersonalDictionaryDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -64,6 +67,11 @@ class AppDatabase extends _$AppDatabase {
       beforeOpen: (details) async {
         // WAL mode: readers don't block writers and vice versa.
         await customStatement("PRAGMA journal_mode=WAL;");
+        // Foreign keys are off by default in SQLite and drift does not
+        // turn them on: without this, the personal-dictionary foreign
+        // keys (schema v27) would be declarative only and neither the
+        // cascade deletes nor the constraint checks would ever run.
+        await customStatement("PRAGMA foreign_keys = ON;");
       },
       onUpgrade: stepByStep(
         from1To2: (m, schema) async {
@@ -185,10 +193,27 @@ class AppDatabase extends _$AppDatabase {
           // to keep them in creation order, with the default group on top.
           await m.addColumn(schema.dictGroup, schema.dictGroup.order);
         },
+        from25To26: (m, schema) async {
+          await m.create(schema.personalArticles);
+          await m.create(schema.personalHeadwords);
+          await m.createIndex(schema.idxPersonalHeadwordsDictNormalized);
+          await m.createIndex(schema.idxPersonalHeadwordsArticle);
+        },
+        from26To27: (m, schema) async {
+          // SQLite cannot add a foreign key to an existing table, so both
+          // personal tables are rebuilt with the new definition (the
+          // 12-step procedure; alterTable re-creates their indexes and
+          // copies every row, so no data is lost). The rebuild must run
+          // before the new index is created: dropping the old table
+          // would drop an index created on it first.
+          await m.alterTable(TableMigration(schema.personalArticles));
+          await m.alterTable(TableMigration(schema.personalHeadwords));
+          await m.createIndex(schema.idxPersonalArticlesDictionary);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 27;
 }

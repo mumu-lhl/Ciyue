@@ -28,6 +28,63 @@
 ///   to the index side, next to the existing NFC lookup key.
 library;
 
+import "package:dict_reader/dict_reader.dart" show normalizeKey;
+
+/// The stored key for a personal-dictionary headword, used for both exact
+/// and prefix lookup.
+///
+/// `normalizeKey` alone is NFC (see `dict_reader/src/normalize.dart`): it
+/// folds `e` + U+0301 to `é`, but `Apple` and `apple` would still be two
+/// different headwords. Personal dictionaries are user-authored, so the
+/// lookup must also be case-insensitive — append `toLowerCase()` — and
+/// fold full-width spellings to half-width ([_foldWidth]), so a CJK
+/// keyboard typing `Ａpple` or `ＮＨＫ` still finds `Apple` / `ＮＨＫ`.
+///
+/// The same function runs at write time (when headwords are stored) and at
+/// query time (exact, prefix and batch resolution), so a headword is always
+/// found regardless of the casing, width or composition form it was typed
+/// in. The original spelling is kept in `headword` for display; only the
+/// `normalizedHeadword` column is folded.
+String normalizePersonalHeadword(String headword) =>
+    _foldWidth(normalizeKey(headword)).toLowerCase();
+
+/// Folds the full-width spellings of [value] to one canonical form, one way
+/// only — the counterpart of the bidirectional enumeration in
+/// [widthVariants], which cannot be reused here: [_mapWidth] swaps both
+/// directions, so it would turn half-width ASCII into full-width instead of
+/// folding it away.
+///
+/// - ASCII full-width `FF01..FF5E` -> ASCII `0021..007E`;
+/// - the ideographic space `3000` -> `0020`;
+/// - half-width CJK marks `｡､･` (`FF61/FF64/FF65`) and corner brackets
+///   `｢｣` (`FF62/FF63`) -> their full-width forms (`。、・` / `「」`),
+///   the canonical side for Japanese punctuation.
+///
+/// Half-width katakana with a voiced mark (`ﾊﾞ`) is left alone, as in
+/// [widthVariants]: it is not a 1:1 fold.
+String _foldWidth(String value) {
+  return String.fromCharCodes(
+    value.runes.map((rune) {
+      if (rune >= 0xFF01 && rune <= 0xFF5E) return rune - 0xFEE0;
+      switch (rune) {
+        case 0x3000:
+          return 0x20; // '　' -> ' '
+        case 0xFF61:
+          return 0x3002; // ｡ -> 。
+        case 0xFF62:
+          return 0x300C; // ｢ -> 「
+        case 0xFF63:
+          return 0x300D; // ｣ -> 」
+        case 0xFF64:
+          return 0x3001; // ､ -> 、
+        case 0xFF65:
+          return 0x30FB; // ･ -> ・
+      }
+      return rune;
+    }),
+  );
+}
+
 /// Case spellings of [word], most faithful first: as typed, lower case,
 /// title case (word by word) and upper case.
 ///

@@ -1,5 +1,6 @@
 import "dart:io";
 
+import "package:ciyue/services/personal_dictionary_service.dart";
 import "package:ciyue/services/storage_usage.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:path/path.dart" as p;
@@ -19,7 +20,11 @@ void main() {
   late Directory databaseDir;
   late Directory dictionariesDir;
 
-  StorageUsageService service({String? dictionariesPath}) {
+  StorageUsageService service({
+    String? dictionariesPath,
+    Future<List<PersonalDictionaryStorageEstimate>> Function()?
+    personalDictionaryEstimates,
+  }) {
     return StorageUsageService(
       cacheDirectory: () async => cacheDir,
       supportDirectory: () async => supportDir,
@@ -27,6 +32,7 @@ void main() {
       databaseDir: () async => databaseDir,
       dictionariesDirectoryPath: () async =>
           dictionariesPath ?? dictionariesDir.path,
+      personalDictionaryEstimates: personalDictionaryEstimates,
     );
   }
 
@@ -228,6 +234,57 @@ void main() {
       expect(await s.clearDictionaryIndexCache(), 0);
       expect(await s.clearPronunciationCache(), 0);
       expect(await s.clearOtherCache(), 0);
+    });
+  });
+
+  group("estimatePersonalDictionaryBytes", () {
+    PersonalEntry entry(int id, List<String> headwords, String body) =>
+        PersonalEntry(
+          articleId: id,
+          dictionaryId: 1,
+          headwords: headwords,
+          body: body,
+          updatedAt: DateTime(2026, 11, 18),
+        );
+
+    test("sums body and headword bytes as UTF-8", () {
+      expect(
+        estimatePersonalDictionaryBytes([
+          entry(1, ["apple"], "A fruit."),
+          entry(2, ["苹果", "apple"], "一种水果。"),
+        ]),
+        // "A fruit." (8) + "apple" (5) + "一种水果。" (5 × 3 bytes = 15)
+        // + "苹果" (2 × 3 = 6) + "apple" (5) = 39.
+        39,
+      );
+      expect(estimatePersonalDictionaryBytes(const []), 0);
+      expect(estimatePersonalDictionaryBytes([entry(3, const [], "")]), 0);
+    });
+  });
+
+  group("measurePersonalDictionaries", () {
+    test("returns the loader's estimates", () async {
+      const estimates = [
+        PersonalDictionaryStorageEstimate(
+          dictionaryId: 7,
+          title: "My words",
+          entryCount: 3,
+          estimatedBytes: 1234,
+        ),
+      ];
+      final withLoader = service(
+        personalDictionaryEstimates: () async => estimates,
+      );
+      expect(await withLoader.measurePersonalDictionaries(), estimates);
+    });
+
+    test("returns empty without a loader or when the loader fails", () async {
+      expect(await service().measurePersonalDictionaries(), isEmpty);
+      final failing = service(
+        personalDictionaryEstimates: () =>
+            throw StateError("database unavailable"),
+      );
+      expect(await failing.measurePersonalDictionaries(), isEmpty);
     });
   });
 }

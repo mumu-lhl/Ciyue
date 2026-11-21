@@ -205,3 +205,33 @@ class QuizMistakeDaoManager {
   $$QuizMistakesTableTableManager get quizMistakes =>
       $$QuizMistakesTableTableManager(_db.attachedDatabase, _db.quizMistakes);
 }
+
+mixin _$PersonalDictionaryDaoMixin on DatabaseAccessor<AppDatabase> {
+  $DictionaryListTable get dictionaryList => attachedDatabase.dictionaryList;
+  $PersonalArticlesTable get personalArticles =>
+      attachedDatabase.personalArticles;
+  $PersonalHeadwordsTable get personalHeadwords =>
+      attachedDatabase.personalHeadwords;
+  PersonalDictionaryDaoManager get managers =>
+      PersonalDictionaryDaoManager(this);
+}
+
+class PersonalDictionaryDaoManager {
+  final _$PersonalDictionaryDaoMixin _db;
+  PersonalDictionaryDaoManager(this._db);
+  $$DictionaryListTableTableManager get dictionaryList =>
+      $$DictionaryListTableTableManager(
+        _db.attachedDatabase,
+        _db.dictionaryList,
+      );
+  $$PersonalArticlesTableTableManager get personalArticles =>
+      $$PersonalArticlesTableTableManager(
+        _db.attachedDatabase,
+        _db.personalArticles,
+      );
+  $$PersonalHeadwordsTableTableManager get personalHeadwords =>
+      $$PersonalHeadwordsTableTableManager(
+        _db.attachedDatabase,
+        _db.personalHeadwords,
+      );
+}

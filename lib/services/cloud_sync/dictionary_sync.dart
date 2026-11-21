@@ -133,6 +133,11 @@ class DictionarySyncService {
   Future<_DictionaryPackage?> _readLocalPackage(
     DictionaryListData dictionary,
   ) async {
+    // Personal dictionaries have no files, so there is no package to
+    // upload, download, or restore; without this the MDX branch below
+    // would stat `personal:<id>.mdx` and silently drop the dictionary
+    // from the sync preview.
+    if (DictionaryType.isPersonal(dictionary.type)) return null;
     if (DictionaryType.isZim(dictionary.type)) {
       return _readLocalZimPackage(dictionary);
     }

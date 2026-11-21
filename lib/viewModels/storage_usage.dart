@@ -1,7 +1,35 @@
 import "dart:async";
 
+import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/models/dictionary_lookup.dart";
+import "package:ciyue/services/personal_dictionary_service.dart";
 import "package:ciyue/services/storage_usage.dart";
 import "package:flutter/foundation.dart";
+
+/// Loads one content estimate per personal dictionary: the dictionary
+/// list gives the ids and titles, [service] the entries to measure. A
+/// dictionary with no entries still appears, with 0 bytes — its row
+/// exists, it just holds nothing yet.
+Future<List<PersonalDictionaryStorageEstimate>> loadPersonalDictionaryEstimates(
+  PersonalDictionaryService service,
+) async {
+  final estimates = <PersonalDictionaryStorageEstimate>[];
+  for (final dictionary in await dictionaryListDao.all()) {
+    if (!DictionaryType.isPersonal(dictionary.type)) continue;
+    final entries = await service.listEntries(dictionary.id);
+    estimates.add(
+      PersonalDictionaryStorageEstimate(
+        dictionaryId: dictionary.id,
+        title: dictionary.title?.isNotEmpty == true
+            ? dictionary.title!
+            : dictionary.path,
+        entryCount: entries.length,
+        estimatedBytes: estimatePersonalDictionaryBytes(entries),
+      ),
+    );
+  }
+  return estimates;
+}
 
 /// View model for the Telegram-style storage management page: measures how
 /// much space each category uses and deletes the rebuildable caches.
@@ -9,7 +37,13 @@ class StorageUsageViewModel extends ChangeNotifier {
   StorageUsageViewModel({
     StorageUsageService? service,
     this.onClearFullTextIndex,
-  }) : _service = service ?? StorageUsageService() {
+    Future<List<PersonalDictionaryStorageEstimate>> Function()?
+    personalDictionaryEstimates,
+  }) : _service =
+           service ??
+           StorageUsageService(
+             personalDictionaryEstimates: personalDictionaryEstimates,
+           ) {
     unawaited(refresh());
   }
 
@@ -18,6 +52,7 @@ class StorageUsageViewModel extends ChangeNotifier {
 
   bool _isLoading = false;
   List<StorageUsage> _usages = [];
+  List<PersonalDictionaryStorageEstimate> _personalDictionaryEstimates = [];
   String? _errorMessage;
 
   /// Set in [dispose]: a refresh still in flight when the page is popped
@@ -26,6 +61,21 @@ class StorageUsageViewModel extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   List<StorageUsage> get usages => _usages;
+
+  /// Per-dictionary personal-dictionary content estimates, for the
+  /// breakdown under the database category. Empty when there are no
+  /// personal dictionaries or no loader was provided.
+  List<PersonalDictionaryStorageEstimate> get personalDictionaryEstimates =>
+      _personalDictionaryEstimates;
+
+  /// Sum of the per-dictionary estimates, in bytes. A content estimate
+  /// only — it is not added to [totalBytes], whose database category
+  /// already counts the shared file these bytes live in.
+  int get personalDictionaryEstimatedBytes => _personalDictionaryEstimates.fold(
+    0,
+    (sum, estimate) => sum + estimate.estimatedBytes,
+  );
+
   String? get errorMessage => _errorMessage;
 
   /// Sum of every measurable category, in bytes.
@@ -58,9 +108,12 @@ class StorageUsageViewModel extends ChangeNotifier {
     _notify();
     try {
       _usages = await _service.measure();
+      _personalDictionaryEstimates = await _service
+          .measurePersonalDictionaries();
     } catch (e) {
       _errorMessage = e.toString();
       _usages = [];
+      _personalDictionaryEstimates = [];
     } finally {
       _isLoading = false;
       _notify();

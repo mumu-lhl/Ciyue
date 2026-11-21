@@ -11,6 +11,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/dictionary_lookup.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
 import "package:ciyue/services/full_text_search_service.dart";
+import "package:ciyue/services/personal_dictionary_service.dart";
 import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart";
 import "package:ciyue/viewModels/audio.dart";
 import "package:ciyue/viewModels/dictionary.dart";
@@ -77,6 +78,18 @@ final writingCheckHistoryDaoProvider = Provider<WritingCheckHistoryDao>(
   (ref) => WritingCheckHistoryDao(mainDatabase),
 );
 
+final personalDictionaryServiceProvider = Provider<PersonalDictionaryService>(
+  (ref) => PersonalDictionaryService(
+    mainDatabase,
+    // Drop the dictionary's full-text index after its data is gone
+    // (P2-4). The service invokes the hook after the delete transaction
+    // commits and swallows hook errors, so a disposed provider here
+    // cannot break the delete itself.
+    onDictionaryDeleted: (id) =>
+        ref.read(fullTextSearchServiceProvider).dropDictionary(id),
+  ),
+);
+
 final translateHistoryDaoProvider = Provider<TranslateHistoryDao>(
   (ref) => TranslateHistoryDao(mainDatabase),
 );
@@ -120,6 +133,16 @@ final fullTextSearchServiceProvider =
                 .toList(growable: false),
         knownIds: () async =>
             (await dictionaryListDao.all()).map((d) => d.id).toSet(),
+        // The type lookup behind reconcile's personal-dictionary prune:
+        // a stale meta row for a personal dictionary outside the current
+        // group is only recognisable through the dictionary list.
+        dictionaryType: (id) async {
+          try {
+            return await dictionaryListDao.getType(id);
+          } catch (_) {
+            return null;
+          }
+        },
       );
     });
 

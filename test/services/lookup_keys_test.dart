@@ -40,6 +40,30 @@ void main() {
     });
   });
 
+  group("normalizePersonalHeadword folds full-width spellings", () {
+    test("full-width ASCII folds to half-width", () {
+      expect(normalizePersonalHeadword("Ａpple"), "apple");
+      expect(normalizePersonalHeadword("ＮＨＫ"), "nhk");
+      expect(normalizePersonalHeadword("００７"), "007");
+    });
+
+    test("ideographic space folds to a space", () {
+      expect(normalizePersonalHeadword("ａ　ｂ"), "a b");
+    });
+
+    test("half-width CJK marks fold to their full-width forms", () {
+      expect(normalizePersonalHeadword("｢名前｣"), "「名前」");
+      expect(normalizePersonalHeadword("｡"), "。");
+      expect(normalizePersonalHeadword("､"), "、");
+      expect(normalizePersonalHeadword("･"), "・");
+    });
+
+    test("half-width ASCII and kana are unchanged", () {
+      expect(normalizePersonalHeadword("Apple"), "apple");
+      expect(normalizePersonalHeadword("パソコン"), "パソコン");
+    });
+  });
+
   group("lookupVariants crosses case with width", () {
     test("typed full-width lowercase reaches half-width upper", () {
       final variants = lookupVariants("ｎｈｋ");

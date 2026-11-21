@@ -1,7 +1,9 @@
+import "dart:convert";
 import "dart:io";
 import "dart:isolate";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/services/personal_dictionary_service.dart";
 import "package:ciyue/utils.dart";
 import "package:path/path.dart" as p;
 import "package:path_provider/path_provider.dart";
@@ -41,6 +43,44 @@ enum StorageCategoryKind {
   chatImages,
 }
 
+/// Estimated size of one personal dictionary's content: how much space
+/// its entries occupy, and how many entries that covers. The number is a
+/// content estimate, not on-disk usage — every personal dictionary shares
+/// the `dictionary_list.sqlite` file, so no exact per-dictionary byte
+/// count exists; see [estimatePersonalDictionaryBytes].
+class PersonalDictionaryStorageEstimate {
+  const PersonalDictionaryStorageEstimate({
+    required this.dictionaryId,
+    required this.title,
+    required this.entryCount,
+    required this.estimatedBytes,
+  });
+
+  final int dictionaryId;
+  final String title;
+  final int entryCount;
+
+  /// Estimated content size in bytes (see [estimatePersonalDictionaryBytes]).
+  final int estimatedBytes;
+}
+
+/// Estimates how many bytes [entries] occupy: the stored definition
+/// bodies plus headwords, measured as UTF-8 bytes. The database file
+/// itself also holds page overhead, indexes and free pages shared by all
+/// personal dictionaries, so this is a lower-bound content estimate, not
+/// an exact attribution — but it is what the storage page can show per
+/// dictionary, where the shared file's total cannot be split.
+int estimatePersonalDictionaryBytes(Iterable<PersonalEntry> entries) {
+  var total = 0;
+  for (final entry in entries) {
+    total += utf8.encode(entry.body).length;
+    for (final headword in entry.headwords) {
+      total += utf8.encode(headword).length;
+    }
+  }
+  return total;
+}
+
 /// Human-readable byte size, matching the format the dictionary pages use:
 /// `512 B`, `1.5 KB`, `2.0 MB`, `1.2 GB`.
 String formatBytes(int bytes) {
@@ -65,19 +105,30 @@ class StorageUsageService {
     Future<Directory> Function()? documentsDirectory,
     Future<Directory> Function()? databaseDir,
     Future<String?> Function()? dictionariesDirectoryPath,
+    Future<List<PersonalDictionaryStorageEstimate>> Function()?
+    personalDictionaryEstimates,
   }) : _cacheDirectory = cacheDirectory ?? getApplicationCacheDirectory,
        _supportDirectory = supportDirectory ?? getApplicationSupportDirectory,
        _documentsDirectory =
            documentsDirectory ?? getApplicationDocumentsDirectory,
        _databaseDirectory = databaseDir ?? databaseDirectory,
        _dictionariesDirectoryPath =
-           dictionariesDirectoryPath ?? _defaultDictionariesDirectoryPath;
+           dictionariesDirectoryPath ?? _defaultDictionariesDirectoryPath,
+       _personalDictionaryEstimates = // ignore: prefer_initializing_formals
+           personalDictionaryEstimates;
 
   final Future<Directory> Function() _cacheDirectory;
   final Future<Directory> Function() _supportDirectory;
   final Future<Directory> Function() _documentsDirectory;
   final Future<Directory> Function() _databaseDirectory;
   final Future<String?> Function() _dictionariesDirectoryPath;
+
+  /// Per-dictionary content estimates for the storage page's breakdown
+  /// under the database category (see [PersonalDictionaryStorageEstimate]).
+  /// Null when the caller cannot provide personal-dictionary data, in
+  /// which case [measurePersonalDictionaries] returns an empty list.
+  final Future<List<PersonalDictionaryStorageEstimate>> Function()?
+  _personalDictionaryEstimates;
 
   static Future<String?> _defaultDictionariesDirectoryPath() async {
     final pref = prefs.getString("dictionariesDirectory");
@@ -163,6 +214,23 @@ class StorageUsageService {
         clearable: false,
       ),
     ];
+  }
+
+  /// Per-dictionary personal-dictionary content estimates for the storage
+  /// page, from the injected loader. Empty when no loader was provided or
+  /// it fails: the breakdown is informational, and a failed estimate must
+  /// not break the page's measurement. The estimates are NOT part of
+  /// [measure]'s totals — the bytes live inside the shared database file
+  /// already counted there.
+  Future<List<PersonalDictionaryStorageEstimate>>
+  measurePersonalDictionaries() async {
+    final load = _personalDictionaryEstimates;
+    if (load == null) return const [];
+    try {
+      return await load();
+    } catch (_) {
+      return const [];
+    }
   }
 
   /// Deletes the per-dictionary binary index cache (`dict_reader_*.cidx`).

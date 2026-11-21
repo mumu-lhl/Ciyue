@@ -991,6 +991,13 @@ class _PreviewCard extends StatelessWidget {
                       "${l10n.cloudSyncDictionaryDetails(item.fileCount, _formatBytes(item.totalSizeBytes))}",
                     ),
                   ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.cloudSyncPersonalDictionariesNotSynced,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
           ],
         ),
