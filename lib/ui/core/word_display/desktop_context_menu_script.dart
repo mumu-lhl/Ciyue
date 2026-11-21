@@ -55,16 +55,23 @@ String desktopContextMenuScript() {
 
   document.addEventListener('mousedown', function (e) {
     if (e.button === 0) leftDown = true;
+  }, true);
+
+  // Report on release, not press: a Flutter menu opened on mousedown takes
+  // the matching mouseup, so WPE would keep the right button pressed and the
+  // next click would be ignored. By mouseup the webview has already seen the
+  // complete press/release pair.
+  document.addEventListener('mouseup', function (e) {
+    if (e.button === 0) {
+      leftDown = false;
+      return;
+    }
     if (e.button !== 2 || leftDown) return;
     post(JSON.stringify({
       x: e.clientX,
       y: e.clientY,
       word: wordAt(e.clientX, e.clientY)
     }));
-  }, true);
-
-  document.addEventListener('mouseup', function (e) {
-    if (e.button === 0) leftDown = false;
   }, true);
 
   // The engine menu is already disabled in the WebView settings. Keep this
