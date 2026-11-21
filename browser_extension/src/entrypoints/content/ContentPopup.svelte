@@ -163,23 +163,21 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="fixed z-[2147483647] flex items-center justify-center w-7 h-7 rounded-full text-white transition-all cursor-pointer select-none active:scale-95 hover:scale-110 ring-2 ring-white/90 dark:ring-zinc-900/90"
+      class="fixed z-[2147483647] flex items-center justify-center w-7 h-7 rounded-lg bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white shadow-md transition-all duration-150 cursor-pointer select-none active:scale-95 hover:scale-105 border border-primary-700/30"
       style:left="{triggerX}px"
       style:top="{triggerY}px"
-      style:background="linear-gradient(135deg, var(--primary-gradient-from), var(--primary-gradient-to))"
-      style:box-shadow="0 6px 14px -2px var(--primary-shadow)"
       onmousedown={(e) => e.stopPropagation()}
       onclick={onTriggerClick}
       title="词悦查词"
     >
-      <BookOpen class="w-3.5 h-3.5 text-white stroke-[2.2]" />
+      <BookOpen class="w-4 h-4 text-white stroke-[2]" />
     </div>
   {/if}
 
   {#if showCard}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="fixed z-[2147483647] w-[440px] max-h-[520px] rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200/90 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col font-sans text-sm select-none"
+      class="fixed z-[2147483647] w-[440px] max-h-[520px] rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden flex flex-col font-sans text-sm select-none"
       style:left="{cardX}px"
       style:top="{cardY}px"
       onmousedown={(e) => e.stopPropagation()}

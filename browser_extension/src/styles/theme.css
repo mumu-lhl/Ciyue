@@ -27,9 +27,6 @@
   --primary-800: #1e40af;
   --primary-900: #1e3a8a;
   --primary-950: #172554;
-  --primary-gradient-from: #2563eb;
-  --primary-gradient-to: #4f46e5;
-  --primary-shadow: rgba(37, 99, 235, 0.35);
 }
 
 [data-theme="violet"] {
@@ -44,9 +41,6 @@
   --primary-800: #5b21b6;
   --primary-900: #4c1d95;
   --primary-950: #2e1065;
-  --primary-gradient-from: #7c3aed;
-  --primary-gradient-to: #6366f1;
-  --primary-shadow: rgba(124, 58, 237, 0.35);
 }
 
 [data-theme="teal"] {
@@ -61,9 +55,6 @@
   --primary-800: #115e59;
   --primary-900: #134e4a;
   --primary-950: #042f2e;
-  --primary-gradient-from: #0d9488;
-  --primary-gradient-to: #059669;
-  --primary-shadow: rgba(13, 148, 136, 0.35);
 }
 
 [data-theme="emerald"] {
@@ -78,9 +69,6 @@
   --primary-800: #065f46;
   --primary-900: #064e3b;
   --primary-950: #022c22;
-  --primary-gradient-from: #059669;
-  --primary-gradient-to: #0d9488;
-  --primary-shadow: rgba(5, 150, 105, 0.35);
 }
 
 [data-theme="rose"] {
@@ -95,9 +83,6 @@
   --primary-800: #9f1239;
   --primary-900: #881337;
   --primary-950: #4c0519;
-  --primary-gradient-from: #e11d48;
-  --primary-gradient-to: #db2777;
-  --primary-shadow: rgba(225, 29, 72, 0.35);
 }
 
 [data-theme="amber"] {
@@ -112,7 +97,4 @@
   --primary-800: #92400e;
   --primary-900: #78350f;
   --primary-950: #451a03;
-  --primary-gradient-from: #d97706;
-  --primary-gradient-to: #ea580c;
-  --primary-shadow: rgba(217, 119, 6, 0.35);
 }
