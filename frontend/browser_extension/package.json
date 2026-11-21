@@ -32,7 +32,7 @@
     "svelte-check": "^4.7.8",
     "tailwindcss": "^4.3.5",
     "typescript": "7.0.2",
-    "vitest": "^5.1.1",
+    "vitest": "^4.1.11",
     "wxt": "0.21.5"
   }
 }
