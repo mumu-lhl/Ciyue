@@ -28,14 +28,9 @@ const _maxPhraseSuggestions = 3;
 /// word with more marks than that is not a word anyone typed.
 const _maxLongVowelSuggestions = 4;
 
-/// How long a Hunspell call may hold up a suggestion list.
-///
-/// `suggest` is slow — measured at ~330 ms for a 24-character German word —
-/// and it is only a supplement: the dictionary results are already in hand
-/// when it runs. Past this bound the call degrades to "no stems/suggestions"
-/// instead of stalling the list. The timeout only ever touches the Hunspell
-/// branches; a dictionary that found nothing still reports exactly that.
-const _morphologyTimeout = Duration(milliseconds: 300);
+// Morphology timing is owned by the provider: a query gives each word list its
+// own budget and keeps the results already collected, instead of one global
+// deadline dropping every word list together.
 
 /// Most prefix-suggestion queries kept in the cache (see [_prefixCache]).
 const _maxPrefixCacheEntries = 64;
@@ -423,7 +418,7 @@ class DictionaryLookup {
         activeDictionaries.isEmpty || exactKeys.any((key) => key == null);
     final stems =
         lookupMode() == HunspellLookupMode.supplement || someDictionaryMissed
-        ? await _morphologyWithTimeout(() => morphology.stems(query))
+        ? await morphology.stems(query)
         : const <String>[];
     if (isCancelled()) return _prefixOnlyResult(results);
 
@@ -457,9 +452,7 @@ class DictionaryLookup {
     final dictionarySuggestions = results.toList(growable: false);
     final spellingSuggestions = <String>[];
     if (someDictionaryMissed) {
-      for (final suggestion in await _morphologyWithTimeout(
-        () => morphology.suggestions(query),
-      )) {
+      for (final suggestion in await morphology.suggestions(query)) {
         if (seen.add(suggestion)) {
           results.add(suggestion);
           spellingSuggestions.add(suggestion);
@@ -486,26 +479,6 @@ class DictionaryLookup {
       result.spellingSuggestions,
     );
     return result;
-  }
-
-  /// Runs a Hunspell call with a [_morphologyTimeout] bound, degrading to
-  /// empty on timeout or failure.
-  ///
-  /// Hunspell is a supplement to the dictionary results, never the lookup
-  /// itself: a slow or broken worker must not stall the list, and a timeout
-  /// here says nothing about whether any dictionary matched.
-  Future<List<String>> _morphologyWithTimeout(
-    Future<List<String>> Function() call,
-  ) async {
-    try {
-      return await call().timeout(
-        _morphologyTimeout,
-        onTimeout: () => const <String>[],
-      );
-    } catch (e) {
-      talker.warning("Hunspell call failed: $e");
-      return const <String>[];
-    }
   }
 
   /// Cache key for the current suggestion inputs: which dictionaries (by
@@ -686,13 +659,10 @@ class DictionaryLookup {
 
     final List<String> proposed;
     try {
-      // Same bound as the search bar's Hunspell calls: a slow `suggest`
-      // degrades to no spelling suggestions instead of holding the page.
-      proposed = await _morphologyWithTimeout(
-        () => morphology.suggestions(query),
-      );
+      // The provider budgets each word list on its own and returns whatever
+      // it collected; a broken worker still must not take the page down.
+      proposed = await morphology.suggestions(query);
     } catch (_) {
-      // A broken word list must not take the page down with it.
       return const [];
     }
 

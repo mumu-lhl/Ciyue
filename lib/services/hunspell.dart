@@ -13,6 +13,17 @@ import "package:hunspell_ffi/hunspell_ffi.dart";
 /// this itself; it reports the marker and the UI turns it into a string.
 const hunspellFilesMissingMarker = "hunspell:files-missing";
 
+/// Budget for one word list inside a morphology query.
+///
+/// Native `suggest` already caps itself at roughly 250 ms; this bound stops a
+/// pathological `.dic` from consuming the budget of every other word list.
+const _perDictionaryBudget = Duration(milliseconds: 300);
+
+/// Loading the first word lists is not a query. Large tables can take far
+/// longer than a query budget, so wait for them separately instead of letting
+/// that wait be mistaken for a slow Hunspell call.
+const _initialReloadTimeout = Duration(seconds: 5);
+
 abstract interface class MorphologyProvider {
   Future<List<String>> stems(String word);
 
@@ -43,16 +54,18 @@ class _ReloadResult {
 
 class _StemsRequest {
   final String word;
+  final Duration budget;
   final SendPort replyPort;
 
-  const _StemsRequest(this.word, this.replyPort);
+  const _StemsRequest(this.word, this.budget, this.replyPort);
 }
 
 class _SuggestionsRequest {
   final String word;
+  final Duration budget;
   final SendPort replyPort;
 
-  const _SuggestionsRequest(this.word, this.replyPort);
+  const _SuggestionsRequest(this.word, this.budget, this.replyPort);
 }
 
 class _CloseRequest {
@@ -115,35 +128,55 @@ void _hunspellWorker(SendPort sendPort) {
     return _ReloadResult(dictionaries.length, Map.of(errors));
   }
 
-  List<String> doStems(String word) {
+  List<String> doStems(String word, Duration budget) {
     // Hunspell compares bytes against the `.dic`, and those files are written
     // in composed form (NFC) — see docs/internals/word-forms.md. A query that
     // arrived decomposed would silently find nothing, so normalise once here,
     // for every caller, rather than asking each of them to remember.
+    final start = DateTime.now();
     final trimmed = normalizeKey(word).trim();
     if (trimmed.isEmpty) return const <String>[];
 
     final tokens = trimmed.split(RegExp(r"\s+"));
     if (tokens.length > 1) {
-      return _phraseStems(dictionaries, tokens, trimmed);
+      return _phraseStems(
+        dictionaries,
+        tokens,
+        trimmed,
+        start: start,
+        budget: budget,
+      );
     }
 
     // A single token is still tried whole first: `闲适 st:閑適` in the `.dic`
     // is the explicit way to link one word to another, and it wins over the
     // character-by-character spellings below.
-    final stems = _singleWordStems(dictionaries, trimmed);
-    final variants = _charVariantStems(dictionaries, trimmed);
+    final stems = _singleWordStems(
+      dictionaries,
+      trimmed,
+      start: start,
+      budget: budget,
+    );
+    if (_outOfBudget(start, budget)) return stems;
+    final variants = _charVariantStems(
+      dictionaries,
+      trimmed,
+      start: start,
+      budget: budget,
+    );
     if (variants.isEmpty) return stems;
     return <String>{...stems, ...variants}.toList(growable: false);
   }
 
-  List<String> doSuggestions(String word) {
+  List<String> doSuggestions(String word, Duration budget) {
     // Same reason as `doStems`: a decomposed spelling is a misspelling as far
     // as the byte-level word list is concerned, and the candidates it gets back
     // would have nothing to do with the word that was typed.
+    final start = DateTime.now();
     final normalized = normalizeKey(word);
     final results = <String>{};
     for (final item in dictionaries) {
+      if (_outOfBudget(start, budget)) break;
       results.addAll(item.dictionary.suggest(normalized));
     }
     return results.toList(growable: false);
@@ -182,9 +215,9 @@ void _hunspellWorker(SendPort sendPort) {
         }
       });
     } else if (message is _StemsRequest) {
-      message.replyPort.send(doStems(message.word));
+      message.replyPort.send(doStems(message.word, message.budget));
     } else if (message is _SuggestionsRequest) {
-      message.replyPort.send(doSuggestions(message.word));
+      message.replyPort.send(doSuggestions(message.word, message.budget));
     } else if (message is _CloseRequest) {
       for (final item in dictionaries) {
         item.dictionary.close();
@@ -197,12 +230,18 @@ void _hunspellWorker(SendPort sendPort) {
   });
 }
 
+bool _outOfBudget(DateTime start, Duration budget) =>
+    DateTime.now().difference(start) >= budget;
+
 List<String> _singleWordStems(
   List<_LoadedHunspellSource> dictionaries,
-  String word,
-) {
+  String word, {
+  required DateTime start,
+  required Duration budget,
+}) {
   final results = <String>{};
   for (final item in dictionaries) {
+    if (_outOfBudget(start, budget)) break;
     results.addAll(
       item.dictionary.stem(word, twoPass: item.source.twoPassLookup),
     );
@@ -213,21 +252,39 @@ List<String> _singleWordStems(
 List<String> _phraseStems(
   List<_LoadedHunspellSource> dictionaries,
   List<String> tokens,
-  String originalPhrase,
-) {
+  String originalPhrase, {
+  required DateTime start,
+  required Duration budget,
+}) {
   const maxPhraseWords = 5;
   const maxCombinations = 32;
 
   if (tokens.length > maxPhraseWords) {
-    return _singleWordStems(dictionaries, originalPhrase);
+    return _singleWordStems(
+      dictionaries,
+      originalPhrase,
+      start: start,
+      budget: budget,
+    );
   }
 
-  final direct = _singleWordStems(dictionaries, originalPhrase);
+  final direct = _singleWordStems(
+    dictionaries,
+    originalPhrase,
+    start: start,
+    budget: budget,
+  );
 
   var hasAnyStem = false;
   final tokenCandidates = <List<String>>[];
   for (final token in tokens) {
-    final stems = _singleWordStems(dictionaries, token);
+    if (_outOfBudget(start, budget)) return direct;
+    final stems = _singleWordStems(
+      dictionaries,
+      token,
+      start: start,
+      budget: budget,
+    );
     if (stems.isNotEmpty && !(stems.length == 1 && stems.first == token)) {
       hasAnyStem = true;
     }
@@ -255,6 +312,7 @@ List<String> _phraseStems(
   }
 
   for (final combo in combinations) {
+    if (_outOfBudget(start, budget)) break;
     final phrase = combo.join(" ");
     if (phrase.toLowerCase() != normalizedOriginal.toLowerCase()) {
       results.add(phrase);
@@ -298,8 +356,10 @@ const maxCharVariantWordLength = 64;
 /// the caller either way.
 List<String> _charVariantStems(
   List<_LoadedHunspellSource> dictionaries,
-  String word,
-) {
+  String word, {
+  required DateTime start,
+  required Duration budget,
+}) {
   if (word.runes.length > maxCharVariantWordLength) return const <String>[];
 
   final chars = <String>[];
@@ -313,11 +373,12 @@ List<String> _charVariantStems(
   final candidatesPerChar = <List<String>>[];
   var combinations = 0;
   for (final char in chars) {
+    if (_outOfBudget(start, budget)) return const <String>[];
     // The character itself is always worth trying, even where the `.dic` has
     // no entry for it: `閒适` is a spelling too.
     final candidates = <String>{
       char,
-      ..._singleWordStems(dictionaries, char),
+      ..._singleWordStems(dictionaries, char, start: start, budget: budget),
     }.toList(growable: false);
     if (candidates.length > 1) {
       combinations = combinations == 0
@@ -495,21 +556,38 @@ class HunspellManager implements MorphologyProvider {
     }
   }
 
-  Future<void> _waitForInitialReload() async {
+  Future<void> _waitForInitialReloadBounded() async {
     final pending = _pendingInitialReload;
-    if (pending != null) await pending;
+    if (pending == null) return;
+    await pending.timeout(
+      _initialReloadTimeout,
+      onTimeout: () {
+        talker.warning(
+          "Hunspell initial reload exceeded $_initialReloadTimeout",
+        );
+      },
+    );
   }
+
+  /// One word list's worth of budget per loaded source, with a floor of one
+  /// for the case where the first reload has not reported its count yet.
+  Duration _queryBudget() =>
+      _perDictionaryBudget * (loadedSourceCount == 0 ? 1 : loadedSourceCount);
 
   @override
   Future<List<String>> stems(String word) async {
-    await _waitForInitialReload();
-    return _request<List<String>>((reply) => _StemsRequest(word, reply));
+    await _waitForInitialReloadBounded();
+    return _request<List<String>>(
+      (reply) => _StemsRequest(word, _queryBudget(), reply),
+    );
   }
 
   @override
   Future<List<String>> suggestions(String word) async {
-    await _waitForInitialReload();
-    return _request<List<String>>((reply) => _SuggestionsRequest(word, reply));
+    await _waitForInitialReloadBounded();
+    return _request<List<String>>(
+      (reply) => _SuggestionsRequest(word, _queryBudget(), reply),
+    );
   }
 
   Future<void> close() async {

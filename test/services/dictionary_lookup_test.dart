@@ -363,6 +363,27 @@ void main() {
       expect(suggestions, ["abschieben"]);
     });
 
+    test("keeps a slow spelling suggestion instead of timing it out", () async {
+      final lookup = makeLookup(
+        dictionary: FakeDictionarySource(
+          id: 1,
+          entries: {"abschieben": "abschieben content"},
+        ),
+        morphology: FakeMorphology(
+          stemsResult: const [],
+          suggestionsResult: const ["abschieben"],
+          suggestionsDelay: const Duration(milliseconds: 600),
+        ),
+        enabled: true,
+      );
+
+      final suggestions = await lookup.spellingSuggestionsFor("abgeschoben");
+
+      // A 600 ms answer from one word list is still useful on the not-found
+      // page; only the morphology provider may drop it under its own budget.
+      expect(suggestions, ["abschieben"]);
+    });
+
     test("shows the spelling the dictionary files the word under", () async {
       final dictionary = FakeDictionarySource(
         id: 1,
@@ -663,7 +684,7 @@ void main() {
     });
   });
 
-  group("prefix suggestions: cancellation, timeout, cache (P0-3/P0-4)", () {
+  group("prefix suggestions: cancellation, slow morphology, cache", () {
     test("an exact repeat answers from the cache without searching", () async {
       final dictionary = FakeDictionarySource(
         id: 1,
@@ -756,7 +777,7 @@ void main() {
     });
 
     test(
-      "a slow stems call times out instead of stalling suggestions",
+      "a slow stems call is kept instead of cut by a global timeout",
       () async {
         final morphology = FakeMorphology(
           stemsResult: ["rim"],
@@ -776,16 +797,16 @@ void main() {
         final result = await lookup.searchSuggestions("rims");
         stopwatch.stop();
 
-        // The stem "rim" would resolve in the second dictionary if it had
-        // arrived; the timeout drops it, and the dictionary result stands.
-        expect(result.dictionarySuggestions, ["rims"]);
+        // Timing belongs to the morphology provider, so a stem that arrives
+        // later is still resolved instead of being dropped wholesale.
+        expect(result.dictionarySuggestions, ["rims", "rim"]);
         expect(stopwatch.elapsedMilliseconds, lessThan(900));
         expect(morphology.stemCalls, 1);
       },
     );
 
     test(
-      "a slow spelling call times out and keeps the dictionary results",
+      "a slow spelling call is kept instead of cut by a global timeout",
       () async {
         final lookup = makeLookup(
           dictionary: FakeDictionarySource(
@@ -804,10 +825,10 @@ void main() {
         final result = await lookup.searchSuggestions("appl");
         stopwatch.stop();
 
-        // A Hunspell timeout is not "no dictionary match": the prefix
-        // result is untouched, only the spelling tail is dropped.
+        // The provider owns the budget; a single reasonably slow answer is
+        // still a real suggestion rather than a timeout artifact.
         expect(result.dictionarySuggestions, ["apple"]);
-        expect(result.spellingSuggestions, isEmpty);
+        expect(result.spellingSuggestions, ["apples"]);
         expect(stopwatch.elapsedMilliseconds, lessThan(900));
       },
     );
@@ -1104,8 +1125,8 @@ class FakeMorphology implements MorphologyProvider {
   int suggestionCalls = 0;
   bool stemsThrow;
 
-  /// Artificial latency, for the timeout tests: a Hunspell call slower
-  /// than the suggestion timeout must degrade to empty, not stall the list.
+  /// Artificial latency for the slow-morphology tests: results that arrive
+  /// later than the prefix search must still reach the caller.
   final Duration stemsDelay;
   final Duration suggestionsDelay;
 
