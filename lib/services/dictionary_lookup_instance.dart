@@ -12,4 +12,5 @@ final dictionaryLookup = DictionaryLookup(
   morphology: hunspellManager,
   morphologyEnabled: () => settings.enableHunspellMorphology,
   lookupMode: () => settings.hunspellLookupMode,
+  morphologyVersion: () => hunspellManager.generation,
 );

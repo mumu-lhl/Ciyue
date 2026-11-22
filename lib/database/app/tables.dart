@@ -2,6 +2,7 @@ import "package:drift/drift.dart";
 
 class DictGroup extends Table {
   TextColumn get dictIds => text()();
+  TextColumn get hunspellIds => text().withDefault(const Constant(""))();
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().unique()();
   IntColumn get order => integer().withDefault(const Constant(0))();

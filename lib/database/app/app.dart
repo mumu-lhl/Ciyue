@@ -210,10 +210,21 @@ class AppDatabase extends _$AppDatabase {
           await m.alterTable(TableMigration(schema.personalHeadwords));
           await m.createIndex(schema.idxPersonalArticlesDictionary);
         },
+        from27To28: (m, schema) async {
+          await m.addColumn(schema.dictGroup, schema.dictGroup.hunspellIds);
+          // Previously every enabled word list served every group. Seed each
+          // group with that set so upgrading never silently turns morphology
+          // off for a non-default group; the reader can prune it per group.
+          await customStatement(
+            "UPDATE dict_group SET hunspell_ids = "
+            "(SELECT group_concat(id, ',') FROM hunspell_source "
+            "WHERE enabled = 1)",
+          );
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 27;
+  int get schemaVersion => 28;
 }

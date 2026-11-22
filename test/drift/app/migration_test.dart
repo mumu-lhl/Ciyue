@@ -6,6 +6,7 @@ import "package:test/test.dart";
 
 import "generated/schema.dart";
 import "generated/schema_v26.dart" as v26;
+import "generated/schema_v27.dart" as v27;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -88,6 +89,43 @@ void main() {
       await DictionaryListDao(db).removeById(1);
       expect(await dao.countArticles(1), 0);
       expect(await dao.countHeadwords(1), 0);
+      await db.close();
+    });
+  });
+
+  group("v27 to v28 Hunspell group membership", () {
+    test("seeds every enabled word list into every existing group", () async {
+      final schema = await verifier.schemaAt(27);
+      final oldDb = v27.DatabaseAtV27(schema.newConnection());
+      await oldDb.customStatement(
+        "INSERT INTO dict_group (name, dict_ids) VALUES ('Default', '')",
+      );
+      await oldDb.customStatement(
+        "INSERT INTO dict_group (name, dict_ids) VALUES ('English', '')",
+      );
+      await oldDb.customStatement(
+        "INSERT INTO hunspell_source (name, aff_path, dic_path, enabled) "
+        "VALUES ('de_DE', 'de.aff', 'de.dic', 1)",
+      );
+      await oldDb.customStatement(
+        "INSERT INTO hunspell_source (name, aff_path, dic_path, enabled) "
+        "VALUES ('en_US', 'en.aff', 'en.dic', 1)",
+      );
+      await oldDb.customStatement(
+        "INSERT INTO hunspell_source (name, aff_path, dic_path, enabled) "
+        "VALUES ('ja_JP', 'ja.aff', 'ja.dic', 0)",
+      );
+      await oldDb.close();
+
+      final db = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(db, 28);
+
+      final dao = DictGroupDao(db);
+      final groups = await dao.getAllGroups();
+      expect(groups, hasLength(2));
+      for (final group in groups) {
+        expect(await dao.getHunspellIds(group.id), [1, 2]);
+      }
       await db.close();
     });
   });

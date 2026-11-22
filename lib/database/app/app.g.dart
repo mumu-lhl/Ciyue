@@ -1591,6 +1591,18 @@ class $DictGroupTable extends DictGroup
         type: drift.DriftSqlType.string,
         requiredDuringInsert: true,
       );
+  static const drift.VerificationMeta _hunspellIdsMeta =
+      const drift.VerificationMeta('hunspellIds');
+  @override
+  late final drift.GeneratedColumn<String> hunspellIds =
+      drift.GeneratedColumn<String>(
+        'hunspell_ids',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const drift.Constant(""),
+      );
   static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
     'id',
   );
@@ -1631,7 +1643,13 @@ class $DictGroupTable extends DictGroup
     defaultValue: const drift.Constant(0),
   );
   @override
-  List<drift.GeneratedColumn> get $columns => [dictIds, id, name, order];
+  List<drift.GeneratedColumn> get $columns => [
+    dictIds,
+    hunspellIds,
+    id,
+    name,
+    order,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1651,6 +1669,15 @@ class $DictGroupTable extends DictGroup
       );
     } else if (isInserting) {
       context.missing(_dictIdsMeta);
+    }
+    if (data.containsKey('hunspell_ids')) {
+      context.handle(
+        _hunspellIdsMeta,
+        hunspellIds.isAcceptableOrUnknown(
+          data['hunspell_ids']!,
+          _hunspellIdsMeta,
+        ),
+      );
     }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
@@ -1682,6 +1709,10 @@ class $DictGroupTable extends DictGroup
         drift.DriftSqlType.string,
         data['${effectivePrefix}dict_ids'],
       )!,
+      hunspellIds: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}hunspell_ids'],
+      )!,
       id: attachedDatabase.typeMapping.read(
         drift.DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -1706,11 +1737,13 @@ class $DictGroupTable extends DictGroup
 class DictGroupData extends drift.DataClass
     implements drift.Insertable<DictGroupData> {
   final String dictIds;
+  final String hunspellIds;
   final int id;
   final String name;
   final int order;
   const DictGroupData({
     required this.dictIds,
+    required this.hunspellIds,
     required this.id,
     required this.name,
     required this.order,
@@ -1719,6 +1752,7 @@ class DictGroupData extends drift.DataClass
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
     map['dict_ids'] = drift.Variable<String>(dictIds);
+    map['hunspell_ids'] = drift.Variable<String>(hunspellIds);
     map['id'] = drift.Variable<int>(id);
     map['name'] = drift.Variable<String>(name);
     map['order'] = drift.Variable<int>(order);
@@ -1728,6 +1762,7 @@ class DictGroupData extends drift.DataClass
   DictGroupCompanion toCompanion(bool nullToAbsent) {
     return DictGroupCompanion(
       dictIds: drift.Value(dictIds),
+      hunspellIds: drift.Value(hunspellIds),
       id: drift.Value(id),
       name: drift.Value(name),
       order: drift.Value(order),
@@ -1741,6 +1776,7 @@ class DictGroupData extends drift.DataClass
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return DictGroupData(
       dictIds: serializer.fromJson<String>(json['dictIds']),
+      hunspellIds: serializer.fromJson<String>(json['hunspellIds']),
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       order: serializer.fromJson<int>(json['order']),
@@ -1751,6 +1787,7 @@ class DictGroupData extends drift.DataClass
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'dictIds': serializer.toJson<String>(dictIds),
+      'hunspellIds': serializer.toJson<String>(hunspellIds),
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'order': serializer.toJson<int>(order),
@@ -1759,11 +1796,13 @@ class DictGroupData extends drift.DataClass
 
   DictGroupData copyWith({
     String? dictIds,
+    String? hunspellIds,
     int? id,
     String? name,
     int? order,
   }) => DictGroupData(
     dictIds: dictIds ?? this.dictIds,
+    hunspellIds: hunspellIds ?? this.hunspellIds,
     id: id ?? this.id,
     name: name ?? this.name,
     order: order ?? this.order,
@@ -1771,6 +1810,9 @@ class DictGroupData extends drift.DataClass
   DictGroupData copyWithCompanion(DictGroupCompanion data) {
     return DictGroupData(
       dictIds: data.dictIds.present ? data.dictIds.value : this.dictIds,
+      hunspellIds: data.hunspellIds.present
+          ? data.hunspellIds.value
+          : this.hunspellIds,
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       order: data.order.present ? data.order.value : this.order,
@@ -1781,6 +1823,7 @@ class DictGroupData extends drift.DataClass
   String toString() {
     return (StringBuffer('DictGroupData(')
           ..write('dictIds: $dictIds, ')
+          ..write('hunspellIds: $hunspellIds, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('order: $order')
@@ -1789,12 +1832,13 @@ class DictGroupData extends drift.DataClass
   }
 
   @override
-  int get hashCode => Object.hash(dictIds, id, name, order);
+  int get hashCode => Object.hash(dictIds, hunspellIds, id, name, order);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is DictGroupData &&
           other.dictIds == this.dictIds &&
+          other.hunspellIds == this.hunspellIds &&
           other.id == this.id &&
           other.name == this.name &&
           other.order == this.order);
@@ -1802,17 +1846,20 @@ class DictGroupData extends drift.DataClass
 
 class DictGroupCompanion extends drift.UpdateCompanion<DictGroupData> {
   final drift.Value<String> dictIds;
+  final drift.Value<String> hunspellIds;
   final drift.Value<int> id;
   final drift.Value<String> name;
   final drift.Value<int> order;
   const DictGroupCompanion({
     this.dictIds = const drift.Value.absent(),
+    this.hunspellIds = const drift.Value.absent(),
     this.id = const drift.Value.absent(),
     this.name = const drift.Value.absent(),
     this.order = const drift.Value.absent(),
   });
   DictGroupCompanion.insert({
     required String dictIds,
+    this.hunspellIds = const drift.Value.absent(),
     this.id = const drift.Value.absent(),
     required String name,
     this.order = const drift.Value.absent(),
@@ -1820,12 +1867,14 @@ class DictGroupCompanion extends drift.UpdateCompanion<DictGroupData> {
        name = drift.Value(name);
   static drift.Insertable<DictGroupData> custom({
     drift.Expression<String>? dictIds,
+    drift.Expression<String>? hunspellIds,
     drift.Expression<int>? id,
     drift.Expression<String>? name,
     drift.Expression<int>? order,
   }) {
     return drift.RawValuesInsertable({
       if (dictIds != null) 'dict_ids': dictIds,
+      if (hunspellIds != null) 'hunspell_ids': hunspellIds,
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (order != null) 'order': order,
@@ -1834,12 +1883,14 @@ class DictGroupCompanion extends drift.UpdateCompanion<DictGroupData> {
 
   DictGroupCompanion copyWith({
     drift.Value<String>? dictIds,
+    drift.Value<String>? hunspellIds,
     drift.Value<int>? id,
     drift.Value<String>? name,
     drift.Value<int>? order,
   }) {
     return DictGroupCompanion(
       dictIds: dictIds ?? this.dictIds,
+      hunspellIds: hunspellIds ?? this.hunspellIds,
       id: id ?? this.id,
       name: name ?? this.name,
       order: order ?? this.order,
@@ -1851,6 +1902,9 @@ class DictGroupCompanion extends drift.UpdateCompanion<DictGroupData> {
     final map = <String, drift.Expression>{};
     if (dictIds.present) {
       map['dict_ids'] = drift.Variable<String>(dictIds.value);
+    }
+    if (hunspellIds.present) {
+      map['hunspell_ids'] = drift.Variable<String>(hunspellIds.value);
     }
     if (id.present) {
       map['id'] = drift.Variable<int>(id.value);
@@ -1868,6 +1922,7 @@ class DictGroupCompanion extends drift.UpdateCompanion<DictGroupData> {
   String toString() {
     return (StringBuffer('DictGroupCompanion(')
           ..write('dictIds: $dictIds, ')
+          ..write('hunspellIds: $hunspellIds, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('order: $order')
@@ -7230,12 +7285,14 @@ typedef $$HistoryTableProcessedTableManager =
     >;
 typedef $$DictGroupTableCreateCompanionBuilder = DictGroupCompanion Function({
   required String dictIds,
+  drift.Value<String> hunspellIds,
   drift.Value<int> id,
   required String name,
   drift.Value<int> order,
 });
 typedef $$DictGroupTableUpdateCompanionBuilder = DictGroupCompanion Function({
   drift.Value<String> dictIds,
+  drift.Value<String> hunspellIds,
   drift.Value<int> id,
   drift.Value<String> name,
   drift.Value<int> order,
@@ -7252,6 +7309,11 @@ class $$DictGroupTableFilterComposer
   });
   drift.ColumnFilters<String> get dictIds => $composableBuilder(
     column: $table.dictIds,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get hunspellIds => $composableBuilder(
+    column: $table.hunspellIds,
     builder: (column) => drift.ColumnFilters(column),
   );
 
@@ -7285,6 +7347,11 @@ class $$DictGroupTableOrderingComposer
     builder: (column) => drift.ColumnOrderings(column),
   );
 
+  drift.ColumnOrderings<String> get hunspellIds => $composableBuilder(
+    column: $table.hunspellIds,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
   drift.ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => drift.ColumnOrderings(column),
@@ -7312,6 +7379,11 @@ class $$DictGroupTableAnnotationComposer
   });
   drift.GeneratedColumn<String> get dictIds =>
       $composableBuilder(column: $table.dictIds, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get hunspellIds => $composableBuilder(
+    column: $table.hunspellIds,
+    builder: (column) => column,
+  );
 
   drift.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -7355,11 +7427,13 @@ class $$DictGroupTableTableManager
           updateCompanionCallback:
               ({
                 drift.Value<String> dictIds = const drift.Value.absent(),
+                drift.Value<String> hunspellIds = const drift.Value.absent(),
                 drift.Value<int> id = const drift.Value.absent(),
                 drift.Value<String> name = const drift.Value.absent(),
                 drift.Value<int> order = const drift.Value.absent(),
               }) => DictGroupCompanion(
                 dictIds: dictIds,
+                hunspellIds: hunspellIds,
                 id: id,
                 name: name,
                 order: order,
@@ -7367,11 +7441,13 @@ class $$DictGroupTableTableManager
           createCompanionCallback:
               ({
                 required String dictIds,
+                drift.Value<String> hunspellIds = const drift.Value.absent(),
                 drift.Value<int> id = const drift.Value.absent(),
                 required String name,
                 drift.Value<int> order = const drift.Value.absent(),
               }) => DictGroupCompanion.insert(
                 dictIds: dictIds,
+                hunspellIds: hunspellIds,
                 id: id,
                 name: name,
                 order: order,

@@ -3,6 +3,7 @@ import "dart:async";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/hunspell.dart";
 import "package:material_ui/material_ui.dart";
 
 /// Returns [groups] with the group at [oldIndex] moved to [newIndex].
@@ -102,6 +103,9 @@ class DictManagerModel extends ChangeNotifier {
 
     try {
       await dictManager.setCurrentGroup(id);
+      // Hunspell sources are group-scoped too. Finish reloading them before
+      // bumping the lookup version, or providers would query the old word lists.
+      await reloadHunspellFromDatabase(groupId: id);
       // The dictionaries that left the group no longer need an index:
       // stop their builds now instead of letting them copy the whole
       // dictionary into the build isolate and write it to SQLite.

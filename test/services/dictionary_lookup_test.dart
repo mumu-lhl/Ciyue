@@ -776,6 +776,32 @@ void main() {
       expect(dicts.single.searchCalls, 2);
     });
 
+    test("switching the Hunspell word lists invalidates the cache", () async {
+      var generation = 0;
+      final morphology = FakeMorphology(
+        stemsResult: const [],
+        suggestionsResult: const ["apple"],
+      );
+      final lookup = makeLookup(
+        dictionary: FakeDictionarySource(id: 1, entries: {}),
+        morphology: morphology,
+        enabled: true,
+        morphologyVersion: () => generation,
+      );
+
+      expect((await lookup.searchSuggestions("appl")).spellingSuggestions, [
+        "apple",
+      ]);
+
+      // A group switch changes the loaded word lists without touching the
+      // dictionary set; the cached spelling tail must not survive it.
+      generation++;
+      morphology.suggestionsResult = const ["apples"];
+      expect((await lookup.searchSuggestions("appl")).spellingSuggestions, [
+        "apples",
+      ]);
+    });
+
     test(
       "a slow stems call is kept instead of cut by a global timeout",
       () async {
@@ -1048,12 +1074,14 @@ DictionaryLookup makeLookup({
   required bool enabled,
   HunspellLookupMode mode = HunspellLookupMode.fallback,
   List<FakeDictionarySource> others = const [],
+  int Function()? morphologyVersion,
 }) {
   return DictionaryLookup(
     dictionaries: () => [dictionary, ...others],
     morphology: morphology,
     morphologyEnabled: () => enabled,
     lookupMode: () => mode,
+    morphologyVersion: morphologyVersion,
   );
 }
 
@@ -1117,7 +1145,7 @@ class _FtsFakeDictionary implements LoadedDictionary {
 
 class FakeMorphology implements MorphologyProvider {
   final List<String> stemsResult;
-  final List<String> suggestionsResult;
+  List<String> suggestionsResult;
 
   /// Per-token answers, for tests that stem a whole phrase.
   final Map<String, List<String>> stemsByWord;

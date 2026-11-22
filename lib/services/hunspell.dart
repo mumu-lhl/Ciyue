@@ -437,6 +437,7 @@ class HunspellManager implements MorphologyProvider {
   Future<void>? _spawnFuture;
 
   int _loadedSourceCount = 0;
+  int _generation = 0;
   final Map<int, String> errors = {};
 
   /// The first reload, while it is still in flight.
@@ -450,6 +451,10 @@ class HunspellManager implements MorphologyProvider {
   bool _hasLoadedOnce = false;
 
   int get loadedSourceCount => _loadedSourceCount;
+
+  /// Changes whenever the loaded word-list set changes, so lookup caches can
+  /// tell a group switch from an unchanged morphology configuration.
+  int get generation => _generation;
 
   Future<SendPort> _ensureWorker() async {
     final existing = _workerPort;
@@ -541,6 +546,7 @@ class HunspellManager implements MorphologyProvider {
       (reply) => _ReloadRequest(sources, reply),
     );
     _loadedSourceCount = result.loadedCount;
+    _generation++;
     errors
       ..clear()
       ..addAll(result.errors);

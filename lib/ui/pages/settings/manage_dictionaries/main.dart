@@ -2078,6 +2078,7 @@ class ManageDictionariesBody extends ConsumerWidget {
                           id: 0,
                           name: "Default",
                           dictIds: "[]",
+                          hunspellIds: "",
                           order: 0,
                         ),
                 );

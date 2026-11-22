@@ -80,4 +80,31 @@ void main() {
     expect(groups.map((g) => g.name), ["Default", "English"]);
     expect(groups.map((g) => g.order), [0, 0]);
   });
+
+  test("Hunspell members are independent per group", () async {
+    final defaultId = await dao.addGroup("Default", [], hunspellIds: [1, 2, 3]);
+    final englishId = await dao.addGroup("English", [], hunspellIds: [2]);
+
+    expect(await dao.getHunspellIds(defaultId), [1, 2, 3]);
+    expect(await dao.getHunspellIds(englishId), [2]);
+
+    await dao.updateHunspellIds(englishId, [2, 4]);
+    expect(await dao.getHunspellIds(englishId), [2, 4]);
+    expect(await dao.getHunspellIds(defaultId), [1, 2, 3]);
+  });
+
+  test("removing a Hunspell source clears it from every group", () async {
+    final defaultId = await dao.addGroup("Default", [], hunspellIds: [1, 2]);
+    final englishId = await dao.addGroup("English", [], hunspellIds: [2]);
+
+    await dao.removeHunspellIdFromAllGroups(2);
+
+    expect(await dao.getHunspellIds(defaultId), [1]);
+    expect(await dao.getHunspellIds(englishId), isEmpty);
+  });
+
+  test("an empty Hunspell member list parses as no ids", () async {
+    final id = await dao.addGroup("Default", []);
+    expect(await dao.getHunspellIds(id), isEmpty);
+  });
 }
