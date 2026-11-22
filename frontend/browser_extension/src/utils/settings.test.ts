@@ -11,12 +11,14 @@ describe("settings utility", () => {
     const settings = await getSettings();
     expect(settings).toEqual(DEFAULT_SETTINGS);
     expect(settings.themeColor).toBe("blue");
+    expect(settings.themeMode).toBe("auto");
   });
 
-  it("saves and retrieves updated settings including themeColor", async () => {
+  it("saves and retrieves updated settings including themeColor and themeMode", async () => {
     await saveSettings({
       serverUrl: "http://localhost:12345/",
       themeColor: "emerald",
+      themeMode: "dark",
       enableDoubleClick: true,
       requireModifierKey: "alt",
     });
@@ -24,6 +26,7 @@ describe("settings utility", () => {
     const settings = await getSettings();
     expect(settings.serverUrl).toBe("http://localhost:12345");
     expect(settings.themeColor).toBe("emerald");
+    expect(settings.themeMode).toBe("dark");
     expect(settings.enableDoubleClick).toBe(true);
     expect(settings.requireModifierKey).toBe("alt");
     expect(settings.enableSelection).toBe(true);

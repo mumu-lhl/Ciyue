@@ -44,6 +44,7 @@ export type ThemeMode = "auto" | "light" | "dark";
 export interface ExtensionSettings {
   serverUrl: string;
   themeColor: ThemeColor;
+  themeMode: ThemeMode;
   enableSelection: boolean;
   enableDoubleClick: boolean;
   requireModifierKey: ModifierKey;

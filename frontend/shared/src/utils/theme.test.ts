@@ -1,5 +1,4 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   THEME_OPTIONS,
@@ -79,12 +78,16 @@ describe("theme utilities", () => {
   });
 
   it("ensures all THEME_OPTIONS have corresponding CSS selectors in theme.css", () => {
-    const cssPath = resolve(__dirname, "../styles/theme.css");
-    const cssContent = readFileSync(cssPath, "utf-8");
+    const cssContent = readFileSync(new URL("../styles/theme.css", import.meta.url), "utf-8");
 
     for (const option of THEME_OPTIONS) {
       expect(cssContent).toContain(`[data-theme="${option.id}"]`);
       expect(cssContent).toContain(`:host([data-theme="${option.id}"])`);
     }
+  });
+
+  it("ensures theme.css defines custom variant for dark mode", () => {
+    const cssContent = readFileSync(new URL("../styles/theme.css", import.meta.url), "utf-8");
+    expect(cssContent).toContain("@custom-variant dark");
   });
 });

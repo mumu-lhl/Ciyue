@@ -10,14 +10,18 @@
   import LoaderCircle from '@lucide/svelte/icons/loader-circle';
   import Save from '@lucide/svelte/icons/save';
   import Check from '@lucide/svelte/icons/check';
+  import Sun from '@lucide/svelte/icons/sun';
+  import Moon from '@lucide/svelte/icons/moon';
+  import SunMoon from '@lucide/svelte/icons/sun-moon';
   import { getSettings, saveSettings } from '../../utils/settings';
   import { CiyueApiClient } from '../../api/client';
-  import { THEME_OPTIONS, applyThemeColor } from '../../utils/theme';
+  import { THEME_OPTIONS, applyThemeColor, applyThemeMode } from '../../utils/theme';
   import type { ExtensionSettings } from '../../api/types';
 
   let form = $state<ExtensionSettings>({
     serverUrl: 'http://127.0.0.1:47117',
     themeColor: 'blue',
+    themeMode: 'auto',
     enableSelection: true,
     enableDoubleClick: false,
     requireModifierKey: 'none',
@@ -35,6 +39,18 @@
     form = { ...current };
     blacklistText = (form.blacklistUrls || []).join('\n');
     applyThemeColor(form.themeColor);
+    applyThemeMode(form.themeMode);
+
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+      const listener = () => {
+        if (form.themeMode === 'auto') {
+          applyThemeMode('auto');
+        }
+      };
+      media.addEventListener('change', listener);
+      return () => media.removeEventListener('change', listener);
+    }
   });
 
   async function testConnection() {
@@ -94,13 +110,68 @@
     </header>
 
     <!-- Card 1: Appearance & Theme Color -->
-    <section class="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col gap-4">
+    <section class="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col gap-5">
       <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
         <Palette class="w-4 h-4 text-primary-600 dark:text-primary-400" />
-        <h2>外观与主题色</h2>
+        <h2>外观与主题</h2>
       </div>
 
+      <!-- Theme Mode -->
       <div class="flex flex-col gap-2.5">
+        <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+          明暗外观模式
+        </span>
+        <p class="text-[11px] text-zinc-400">
+          选择扩展的显示模式，可跟随操作系统偏好或固定为浅色/深色
+        </p>
+
+        <div class="grid grid-cols-3 gap-2.5 pt-1">
+          <button
+            type="button"
+            class="flex items-center gap-2.5 p-2.5 rounded-xl border text-left cursor-pointer transition-all {form.themeMode === 'auto'
+              ? 'border-primary-600 bg-primary-50/50 dark:bg-primary-950/30 ring-2 ring-primary-500/20 text-zinc-900 dark:text-zinc-100 font-semibold'
+              : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300'}"
+            onclick={() => {
+              form.themeMode = 'auto';
+              applyThemeMode('auto');
+            }}
+          >
+            <SunMoon class="w-4 h-4 text-primary-600 dark:text-primary-400 shrink-0" />
+            <span class="text-xs font-medium">跟随系统</span>
+          </button>
+
+          <button
+            type="button"
+            class="flex items-center gap-2.5 p-2.5 rounded-xl border text-left cursor-pointer transition-all {form.themeMode === 'light'
+              ? 'border-primary-600 bg-primary-50/50 dark:bg-primary-950/30 ring-2 ring-primary-500/20 text-zinc-900 dark:text-zinc-100 font-semibold'
+              : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300'}"
+            onclick={() => {
+              form.themeMode = 'light';
+              applyThemeMode('light');
+            }}
+          >
+            <Sun class="w-4 h-4 text-amber-500 shrink-0" />
+            <span class="text-xs font-medium">浅色模式</span>
+          </button>
+
+          <button
+            type="button"
+            class="flex items-center gap-2.5 p-2.5 rounded-xl border text-left cursor-pointer transition-all {form.themeMode === 'dark'
+              ? 'border-primary-600 bg-primary-50/50 dark:bg-primary-950/30 ring-2 ring-primary-500/20 text-zinc-900 dark:text-zinc-100 font-semibold'
+              : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300'}"
+            onclick={() => {
+              form.themeMode = 'dark';
+              applyThemeMode('dark');
+            }}
+          >
+            <Moon class="w-4 h-4 text-indigo-400 shrink-0" />
+            <span class="text-xs font-medium">深色模式</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Theme Color -->
+      <div class="flex flex-col gap-2.5 pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
         <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
           界面主色调
         </span>

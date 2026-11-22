@@ -4,6 +4,7 @@ import { mount, unmount } from "svelte";
 import ContentPopup from "./ContentPopup.svelte";
 import styleText from "./style.css?inline";
 import { getSettings, onSettingsChanged } from "../../utils/settings";
+import { applyThemeColor, applyThemeMode } from "../../utils/theme";
 import {
   checkModifierKey,
   isDomainBlacklisted,
@@ -16,9 +17,6 @@ export default defineContentScript({
   matches: ["<all_urls>"],
   async main(ctx) {
     let settings: ExtensionSettings = await getSettings();
-    onSettingsChanged((newSettings) => {
-      settings = newSettings;
-    });
 
     let popupInstance: any = null;
 
@@ -45,17 +43,31 @@ export default defineContentScript({
       },
     });
 
+    const applyHostTheme = (s: ExtensionSettings) => {
+      try {
+        if (!ui.shadow?.host) return;
+        const host = ui.shadow.host as HTMLElement;
+        applyThemeColor(s.themeColor, host);
+        applyThemeMode(s.themeMode, host);
+      } catch {}
+    };
+
     ui.mount();
-    try {
-      ui.shadow.host.setAttribute("data-theme", settings.themeColor);
-    } catch {}
+    applyHostTheme(settings);
 
     onSettingsChanged((newSettings) => {
       settings = newSettings;
-      try {
-        ui.shadow.host.setAttribute("data-theme", newSettings.themeColor);
-      } catch {}
+      applyHostTheme(newSettings);
     });
+
+    if (typeof window !== "undefined" && window.matchMedia) {
+      const media = window.matchMedia("(prefers-color-scheme: dark)");
+      media.addEventListener("change", () => {
+        if (settings.themeMode === "auto") {
+          applyHostTheme(settings);
+        }
+      });
+    }
 
     // Handle mouse selection
     document.addEventListener("mouseup", (e) => {

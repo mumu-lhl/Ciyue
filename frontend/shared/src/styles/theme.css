@@ -1,3 +1,5 @@
+@custom-variant dark (&:where(.dark, .dark *), :host(.dark) &, :host(.dark));
+
 @theme {
   --color-primary-50: var(--primary-50);
   --color-primary-100: var(--primary-100);

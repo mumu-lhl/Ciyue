@@ -8,16 +8,20 @@
   import WifiOff from '@lucide/svelte/icons/wifi-off';
   import LoaderCircle from '@lucide/svelte/icons/loader-circle';
   import X from '@lucide/svelte/icons/x';
+  import Sun from '@lucide/svelte/icons/sun';
+  import Moon from '@lucide/svelte/icons/moon';
+  import SunMoon from '@lucide/svelte/icons/sun-moon';
   import WordHeader from '../../components/WordHeader.svelte';
   import DictCard from '../../components/DictCard.svelte';
   import AiView from '../../components/AiView.svelte';
   import { CiyueApiClient } from '../../api/client';
-  import { getSettings, onSettingsChanged } from '../../utils/settings';
-  import { applyThemeColor } from '../../utils/theme';
-  import type { DictionaryResult, GroupItem, ThemeColor } from '../../api/types';
+  import { getSettings, onSettingsChanged, saveSettings } from '../../utils/settings';
+  import { applyThemeColor, applyThemeMode } from '../../utils/theme';
+  import type { DictionaryResult, GroupItem, ThemeColor, ThemeMode } from '../../api/types';
 
   let serverUrl = $state('http://127.0.0.1:47117');
   let themeColor = $state<ThemeColor>('blue');
+  let themeMode = $state<ThemeMode>('auto');
   let serverOnline = $state(false);
   let groups = $state<GroupItem[]>([]);
   let currentGroupId = $state('');
@@ -40,7 +44,9 @@
     const settings = await getSettings();
     serverUrl = settings.serverUrl;
     themeColor = settings.themeColor;
+    themeMode = settings.themeMode ?? 'auto';
     applyThemeColor(themeColor);
+    applyThemeMode(themeMode);
     await checkStatus();
     if (serverOnline) {
       await loadGroups();
@@ -149,12 +155,33 @@
     chrome.runtime.openOptionsPage();
   }
 
+  async function toggleThemeMode() {
+    const next: ThemeMode = themeMode === 'auto' ? 'dark' : themeMode === 'dark' ? 'light' : 'auto';
+    themeMode = next;
+    applyThemeMode(next);
+    await saveSettings({ themeMode: next });
+  }
+
   onMount(() => {
     init();
     unlistenSettings = onSettingsChanged((newSettings) => {
       themeColor = newSettings.themeColor;
       serverUrl = newSettings.serverUrl;
+      themeMode = newSettings.themeMode ?? 'auto';
+      applyThemeColor(themeColor);
+      applyThemeMode(themeMode);
     });
+
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+      const listener = () => {
+        if (themeMode === 'auto') {
+          applyThemeMode('auto');
+        }
+      };
+      media.addEventListener('change', listener);
+      return () => media.removeEventListener('change', listener);
+    }
   });
 
   onDestroy(() => {
@@ -196,6 +223,20 @@
           {/each}
         </select>
       {/if}
+      <button
+        class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+        onclick={toggleThemeMode}
+        title="切换明暗主题 (当前: {themeMode === 'dark' ? '深色' : themeMode === 'light' ? '浅色' : '跟随系统'})"
+      >
+        {#if themeMode === 'dark'}
+          <Moon class="w-4 h-4" />
+        {:else if themeMode === 'light'}
+          <Sun class="w-4 h-4" />
+        {:else}
+          <SunMoon class="w-4 h-4" />
+        {/if}
+      </button>
+
       <button
         class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
         onclick={openOptions}

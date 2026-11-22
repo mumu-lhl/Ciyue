@@ -50,6 +50,18 @@
         window.matchMedia('(prefers-color-scheme: dark)').matches),
   );
 
+  $effect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const listener = () => {
+      if (themeMode === 'auto') {
+        applyThemeMode('auto');
+      }
+    };
+    media.addEventListener('change', listener);
+    return () => media.removeEventListener('change', listener);
+  });
+
   async function init() {
     themeMode = getStoredThemeMode();
     themeColor = getStoredThemeColor();
