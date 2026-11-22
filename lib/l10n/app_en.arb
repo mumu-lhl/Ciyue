@@ -875,6 +875,8 @@
   "@storageChatImages": {},
   "storageTotalUsed": "Total storage used",
   "@storageTotalUsed": {},
+  "storageUsage": "Storage usage",
+  "@storageUsage": {},
   "storageTotalExcludesUnknown": "Some items couldn't be measured and aren't included in the total.",
   "@storageTotalExcludesUnknown": {},
   "storageClearCache": "Clear cache",

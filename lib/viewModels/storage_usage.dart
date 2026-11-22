@@ -82,10 +82,47 @@ class StorageUsageViewModel extends ChangeNotifier {
   int get totalBytes =>
       _usages.fold(0, (sum, usage) => sum + (usage.bytes ?? 0));
 
-  /// Sum of the measurable clearable categories, in bytes.
-  int get clearableBytes => _usages
-      .where((usage) => usage.clearable)
+  /// Kinds the user unchecked on the page: excluded from the clear even
+  /// though they are clearable. Everything clearable starts selected, so
+  /// this set is empty until the user taps a row's check.
+  final Set<StorageCategoryKind> _deselected = {};
+
+  /// Whether [kind] is included in the next clear: clearable, measurable,
+  /// and not unchecked by the user. Size-only categories are never
+  /// selected.
+  bool isSelected(StorageCategoryKind kind) {
+    final usage = _usageFor(kind);
+    return usage != null &&
+        usage.clearable &&
+        (usage.bytes ?? 0) > 0 &&
+        !_deselected.contains(kind);
+  }
+
+  /// Toggles [kind] in or out of the next clear. A no-op for categories
+  /// that cannot be cleared or have nothing to clear.
+  void toggleSelection(StorageCategoryKind kind) {
+    final usage = _usageFor(kind);
+    if (usage == null || !usage.clearable || (usage.bytes ?? 0) <= 0) return;
+    if (_deselected.contains(kind)) {
+      _deselected.remove(kind);
+    } else {
+      _deselected.add(kind);
+    }
+    _notify();
+  }
+
+  /// Sum of the selected clearable categories, in bytes: the number the
+  /// bottom button shows and the clear confirms.
+  int get selectedClearableBytes => _usages
+      .where((usage) => isSelected(usage.kind))
       .fold(0, (sum, usage) => sum + (usage.bytes ?? 0));
+
+  StorageUsage? _usageFor(StorageCategoryKind kind) {
+    for (final usage in _usages) {
+      if (usage.kind == kind) return usage;
+    }
+    return null;
+  }
 
   /// True when at least one category could not be measured (for example
   /// the dictionaries behind a `content://` URI): the total then covers
@@ -110,6 +147,15 @@ class StorageUsageViewModel extends ChangeNotifier {
       _usages = await _service.measure();
       _personalDictionaryEstimates = await _service
           .measurePersonalDictionaries();
+      // Drop unchecked kinds that are gone or no longer clearable, so a
+      // stale entry can never exclude a category that was re-measured
+      // with bytes again.
+      _deselected.removeWhere(
+        (kind) =>
+            _usageFor(kind) == null ||
+            !_usageFor(kind)!.clearable ||
+            (_usageFor(kind)!.bytes ?? 0) <= 0,
+      );
     } catch (e) {
       _errorMessage = e.toString();
       _usages = [];
@@ -120,23 +166,10 @@ class StorageUsageViewModel extends ChangeNotifier {
     }
   }
 
-  /// Deletes one clearable category and refreshes. Returns the bytes freed;
-  /// 0 for kinds that cannot be cleared or when the clear fails.
-  Future<int> clearCategory(StorageCategoryKind kind) async {
-    var freed = 0;
-    try {
-      freed = await _clearOne(kind);
-    } catch (_) {
-      freed = 0;
-    }
-    await refresh();
-    return freed;
-  }
-
-  /// Deletes every clearable category, continuing past individual failures.
-  /// The full-text index goes first, then the file-backed caches. Returns
-  /// the total bytes freed.
-  Future<int> clearAllCache() async {
+  /// Deletes the selected clearable categories (see [isSelected]),
+  /// continuing past individual failures. The full-text index goes first,
+  /// then the file-backed caches. Returns the total bytes freed.
+  Future<int> clearSelectedCache() async {
     var freed = 0;
     for (final kind in [
       StorageCategoryKind.fullTextIndex,
@@ -144,6 +177,7 @@ class StorageUsageViewModel extends ChangeNotifier {
       StorageCategoryKind.pronunciationCache,
       StorageCategoryKind.otherCache,
     ]) {
+      if (!isSelected(kind)) continue;
       try {
         freed += await _clearOne(kind);
       } catch (_) {

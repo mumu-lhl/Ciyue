@@ -403,6 +403,8 @@
   "@storageChatImages": {},
   "storageTotalUsed": "总占用",
   "@storageTotalUsed": {},
+  "storageUsage": "存储使用情况",
+  "@storageUsage": {},
   "storageTotalExcludesUnknown": "部分内容无法统计，未计入总量。",
   "@storageTotalExcludesUnknown": {},
   "storageClearCache": "清除缓存",

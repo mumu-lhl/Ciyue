@@ -28,6 +28,120 @@ void main() {
     if (await tempRoot.exists()) await tempRoot.delete(recursive: true);
   });
 
+  Future<void> writeSizedFile(String path, int size) async {
+    await File(path).writeAsBytes(List.filled(size, 0));
+  }
+
+  Future<StorageUsageViewModel> buildMeasuredViewModel({
+    void Function()? onFullTextCall,
+  }) async {
+    await writeSizedFile(p.join(cache.path, "full_text_search.db"), 2048);
+    await writeSizedFile(p.join(cache.path, "dict_reader_1.cidx"), 1024);
+    final pronunciation = Directory(p.join(cache.path, "online_pronunciation"))
+      ..createSync();
+    await writeSizedFile(p.join(pronunciation.path, "a.mp3"), 512);
+    await writeSizedFile(p.join(cache.path, "foo.tmp"), 256);
+    final viewModel = StorageUsageViewModel(
+      service: StorageUsageService(
+        cacheDirectory: () async => cache,
+        supportDirectory: () async => support,
+        documentsDirectory: () async => documents,
+        databaseDir: () async => database,
+        dictionariesDirectoryPath: () async => dictionaries.path,
+      ),
+      onClearFullTextIndex: () async {
+        onFullTextCall?.call();
+        final file = File(p.join(cache.path, "full_text_search.db"));
+        if (await file.exists()) await file.delete();
+      },
+    );
+    await viewModel.refresh();
+    return viewModel;
+  }
+
+  test("selection defaults to every clearable category with bytes", () async {
+    final viewModel = await buildMeasuredViewModel();
+
+    for (final kind in [
+      StorageCategoryKind.fullTextIndex,
+      StorageCategoryKind.dictionaryIndexCache,
+      StorageCategoryKind.pronunciationCache,
+      StorageCategoryKind.otherCache,
+    ]) {
+      expect(viewModel.isSelected(kind), isTrue);
+    }
+    for (final kind in [
+      StorageCategoryKind.dictionaries,
+      StorageCategoryKind.database,
+      StorageCategoryKind.audioPacks,
+      StorageCategoryKind.chatImages,
+    ]) {
+      expect(viewModel.isSelected(kind), isFalse);
+    }
+    expect(viewModel.selectedClearableBytes, 3840);
+  });
+
+  test("toggling a category excludes it from the clear only", () async {
+    var fullTextCalls = 0;
+    final viewModel = await buildMeasuredViewModel(
+      onFullTextCall: () => fullTextCalls++,
+    );
+
+    viewModel.toggleSelection(StorageCategoryKind.fullTextIndex);
+    expect(viewModel.isSelected(StorageCategoryKind.fullTextIndex), isFalse);
+    expect(viewModel.selectedClearableBytes, 1792);
+
+    await viewModel.clearSelectedCache();
+
+    expect(fullTextCalls, 0);
+    expect(
+      await File(p.join(cache.path, "full_text_search.db")).exists(),
+      isTrue,
+    );
+    expect(
+      await File(p.join(cache.path, "dict_reader_1.cidx")).exists(),
+      isFalse,
+    );
+    expect(
+      await Directory(p.join(cache.path, "online_pronunciation")).exists(),
+      isFalse,
+    );
+    expect(await File(p.join(cache.path, "foo.tmp")).exists(), isFalse);
+
+    // Toggling again re-selects the category.
+    viewModel.toggleSelection(StorageCategoryKind.fullTextIndex);
+    expect(viewModel.isSelected(StorageCategoryKind.fullTextIndex), isTrue);
+  });
+
+  test("toggling a size-only category is a no-op", () async {
+    final viewModel = await buildMeasuredViewModel();
+
+    viewModel.toggleSelection(StorageCategoryKind.dictionaries);
+    viewModel.toggleSelection(StorageCategoryKind.database);
+    expect(viewModel.isSelected(StorageCategoryKind.dictionaries), isFalse);
+    expect(viewModel.selectedClearableBytes, 3840);
+  });
+
+  test("clearSelectedCache with everything selected clears all", () async {
+    var fullTextCalls = 0;
+    final viewModel = await buildMeasuredViewModel(
+      onFullTextCall: () => fullTextCalls++,
+    );
+
+    await viewModel.clearSelectedCache();
+
+    expect(fullTextCalls, 1);
+    expect(viewModel.selectedClearableBytes, 0);
+    expect(
+      await File(p.join(cache.path, "full_text_search.db")).exists(),
+      isFalse,
+    );
+    expect(
+      await File(p.join(cache.path, "dict_reader_1.cidx")).exists(),
+      isFalse,
+    );
+  });
+
   test("a refresh in flight when disposed does not notify listeners", () async {
     // Regression: refresh() called notifyListeners() after the page had
     // popped and disposed the view model, throwing "used after being

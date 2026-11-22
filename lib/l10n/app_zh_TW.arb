@@ -195,6 +195,8 @@
   "@storageChatImages": {},
   "storageTotalUsed": "總佔用",
   "@storageTotalUsed": {},
+  "storageUsage": "儲存使用情況",
+  "@storageUsage": {},
   "storageTotalExcludesUnknown": "部分內容無法統計，未計入總量。",
   "@storageTotalExcludesUnknown": {},
   "storageClearCache": "清除快取",
