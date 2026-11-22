@@ -128,5 +128,67 @@ void main() {
       }
       await db.close();
     });
+
+    test(
+      "leaves every group with an empty set when no word list is enabled",
+      () async {
+        final schema = await verifier.schemaAt(27);
+        final oldDb = v27.DatabaseAtV27(schema.newConnection());
+        await oldDb.customStatement(
+          "INSERT INTO dict_group (name, dict_ids) VALUES ('Default', '')",
+        );
+        await oldDb.customStatement(
+          "INSERT INTO dict_group (name, dict_ids) VALUES ('English', '')",
+        );
+        // Only a disabled word list: group_concat over enabled rows is NULL.
+        await oldDb.customStatement(
+          "INSERT INTO hunspell_source (name, aff_path, dic_path, enabled) "
+          "VALUES ('ja_JP', 'ja.aff', 'ja.dic', 0)",
+        );
+        await oldDb.close();
+
+        final db = AppDatabase(schema.newConnection());
+        await verifier.migrateAndValidate(db, 28);
+
+        final dao = DictGroupDao(db);
+        final groups = await dao.getAllGroups();
+        expect(groups, hasLength(2));
+        for (final group in groups) {
+          expect(await dao.getHunspellIds(group.id), isEmpty);
+        }
+        await db.close();
+      },
+    );
+
+    test(
+      "retries cleanly when the column was left behind by a failed run",
+      () async {
+        final schema = await verifier.schemaAt(27);
+        final oldDb = v27.DatabaseAtV27(schema.newConnection());
+        await oldDb.customStatement(
+          "INSERT INTO dict_group (name, dict_ids) VALUES ('Default', '')",
+        );
+        await oldDb.customStatement(
+          "INSERT INTO hunspell_source (name, aff_path, dic_path, enabled) "
+          "VALUES ('en_US', 'en.aff', 'en.dic', 1)",
+        );
+        // The state a pre-fix build left behind: the step added the
+        // column, then the UPDATE threw, so the version stayed 27.
+        await oldDb.customStatement(
+          "ALTER TABLE dict_group ADD COLUMN hunspell_ids "
+          "TEXT NOT NULL DEFAULT ''",
+        );
+        await oldDb.close();
+
+        final db = AppDatabase(schema.newConnection());
+        await verifier.migrateAndValidate(db, 28);
+
+        final dao = DictGroupDao(db);
+        final groups = await dao.getAllGroups();
+        expect(groups, hasLength(1));
+        expect(await dao.getHunspellIds(groups.single.id), [1]);
+        await db.close();
+      },
+    );
   });
 }

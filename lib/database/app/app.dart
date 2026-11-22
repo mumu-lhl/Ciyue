@@ -211,14 +211,27 @@ class AppDatabase extends _$AppDatabase {
           await m.createIndex(schema.idxPersonalArticlesDictionary);
         },
         from27To28: (m, schema) async {
-          await m.addColumn(schema.dictGroup, schema.dictGroup.hunspellIds);
+          // A pre-fix build failed this step halfway through (the UPDATE
+          // below threw when no word list was enabled), leaving the
+          // column behind at version 27: adding it again would fail
+          // with "duplicate column name", so only add it when absent.
+          final columns = await customSelect("PRAGMA table_info(dict_group)")
+              .get();
+          final hasColumn = columns.any(
+            (row) => row.read<String>("name") == "hunspell_ids",
+          );
+          if (!hasColumn) {
+            await m.addColumn(schema.dictGroup, schema.dictGroup.hunspellIds);
+          }
           // Previously every enabled word list served every group. Seed each
           // group with that set so upgrading never silently turns morphology
           // off for a non-default group; the reader can prune it per group.
+          // group_concat returns NULL when nothing is enabled, and the
+          // column is NOT NULL, so fall back to the empty set.
           await customStatement(
             "UPDATE dict_group SET hunspell_ids = "
-            "(SELECT group_concat(id, ',') FROM hunspell_source "
-            "WHERE enabled = 1)",
+            "COALESCE((SELECT group_concat(id, ',') FROM hunspell_source "
+            "WHERE enabled = 1), '')",
           );
         },
       ),
