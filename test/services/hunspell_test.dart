@@ -292,6 +292,19 @@ void main() {
     // the combination bound alone would have let it through.
     expect(await manager.stems("${"木" * 63}闲适"), isEmpty);
   });
+
+  test("generation advances when the loaded word lists change", () async {
+    final manager = HunspellManager();
+    addTearDown(manager.close);
+
+    final before = manager.generation;
+    await _loadCjkVariants(manager);
+    expect(manager.generation, greaterThan(before));
+
+    final afterFirstReload = manager.generation;
+    await manager.reload(const []);
+    expect(manager.generation, greaterThan(afterFirstReload));
+  });
 }
 
 Future<void> _loadCjkVariants(HunspellManager manager) {

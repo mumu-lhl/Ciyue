@@ -4,6 +4,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/models/hunspell.dart";
+import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/hunspell.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/hunspell.dart";
@@ -11,10 +12,19 @@ import "package:ciyue/services/platform.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:ciyue/ui/core/settings_group.dart";
+import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart"
+    show GroupDialog;
 import "package:ciyue/utils.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
+
+class _HunspellPageData {
+  final List<HunspellSourceData> sources;
+  final Set<int> groupHunspellIds;
+
+  const _HunspellPageData(this.sources, this.groupHunspellIds);
+}
 
 class HunspellSettingsPage extends ConsumerStatefulWidget {
   const HunspellSettingsPage({super.key});
@@ -25,7 +35,7 @@ class HunspellSettingsPage extends ConsumerStatefulWidget {
 }
 
 class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
-  late Future<List<HunspellSourceData>> _sources;
+  late Future<_HunspellPageData> _data;
 
   /// Why a word list could not be loaded, keyed by its id.
   var _errors = const <int, String>{};
@@ -34,9 +44,15 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
   @override
   void initState() {
     super.initState();
-    _sources = hunspellSourceDao.all();
+    _data = _loadData();
     _errors = Map.of(hunspellManager.errors);
     PlatformMethod.onHunspellDirectoryImported = _onHunspellDirectoryImported;
+  }
+
+  Future<_HunspellPageData> _loadData() async {
+    final sources = await hunspellSourceDao.all();
+    final ids = await dictGroupDao.getHunspellIds(dictManager.groupId);
+    return _HunspellPageData(sources, ids.toSet());
   }
 
   @override
@@ -59,6 +75,19 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    ref.listen(
+      dictManagerModelProvider.select((model) => model.state),
+      (_, _) => _refreshSources(),
+    );
+    final storedGroupName = dictManager.groups
+        .where((group) => group.id == dictManager.groupId)
+        .map((group) => group.name)
+        .firstOrNull;
+    // The first-run group is stored as the literal "Default"; show the
+    // translated name instead of leaking the stored identifier.
+    final groupName = storedGroupName == null || storedGroupName == "Default"
+        ? l10n.default_
+        : storedGroupName;
     return Scaffold(
       appBar: AppBar(title: const Text("Hunspell")),
       body: Center(
@@ -123,8 +152,34 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                         : const Icon(Icons.chevron_right),
                     onTap: _isImporting ? null : _importDirectory,
                   ),
-                  FutureBuilder<List<HunspellSourceData>>(
-                    future: _sources,
+                ],
+              ),
+              const SizedBox(height: 16),
+              SettingsGroupCard(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.collections_bookmark_rounded),
+                    title: Text(l10n.dictionaryGroups),
+                    subtitle: Text(l10n.currentDictionaryGroup(groupName)),
+                    trailing: TextButton(
+                      onPressed: () => showDialog<void>(
+                        context: context,
+                        builder: (_) => const GroupDialog(),
+                      ),
+                      child: Text(l10n.manageGroups),
+                    ),
+                    onTap: () => showDialog<void>(
+                      context: context,
+                      builder: (_) => const GroupDialog(),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SettingsGroupCard(
+                children: [
+                  FutureBuilder<_HunspellPageData>(
+                    future: _data,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState != ConnectionState.done) {
                         return const Padding(
@@ -141,13 +196,14 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                           ),
                         );
                       }
-                      if (snapshot.data!.isEmpty) {
+                      if (snapshot.data!.sources.isEmpty) {
                         return ListTile(
                           title: Text(l10n.noHunspellDictionaries),
                         );
                       }
 
-                      final sources = snapshot.data!;
+                      final sources = snapshot.data!.sources;
+                      final groupIds = snapshot.data!.groupHunspellIds;
                       final failed = sources
                           .where((source) => _errors.containsKey(source.id))
                           .length;
@@ -175,11 +231,12 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                             _HunspellSourceTile(
                               source: sources[i],
                               l10n: l10n,
+                              inGroup: groupIds.contains(sources[i].id),
                               errorText: _errorTextFor(sources[i].id, l10n),
                               onShowSettings: () =>
                                   _showSourceSettings(sources[i]),
-                              onSetEnabled: (value) =>
-                                  _setSourceEnabled(sources[i].id, value),
+                              onSetInGroup: (value) =>
+                                  _setSourceInGroup(sources[i].id, value),
                               onRemove: () => _removeSource(sources[i].id),
                             ),
                           ],
@@ -216,11 +273,15 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _setSourceEnabled(int id, bool value) async {
+  Future<void> _setSourceGloballyEnabled(int id, bool value) async {
     await hunspellSourceDao.setEnabled(id, value);
-    if (settings.enableHunspellMorphology) {
-      await reloadHunspellFromDatabase();
-    }
+    await reloadHunspellFromDatabase();
+    _invalidateLookup();
+    _refreshSources();
+  }
+
+  Future<void> _setSourceInGroup(int id, bool value) async {
+    await setHunspellSourceInCurrentGroup(id, value);
     _invalidateLookup();
     _refreshSources();
   }
@@ -239,6 +300,7 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
+        var globallyEnabled = source.enabled;
         var twoPass = source.twoPassLookup;
         return StatefulBuilder(
           builder: (context, setDialogState) {
@@ -248,6 +310,15 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.hunspellAvailableToAllGroups),
+                    value: globallyEnabled,
+                    onChanged: (value) async {
+                      setDialogState(() => globallyEnabled = value);
+                      await _setSourceGloballyEnabled(source.id, value);
+                    },
+                  ),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(l10n.twoPassLookup),
@@ -274,10 +345,7 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
   }
 
   Future<void> _removeSource(int id) async {
-    await hunspellSourceDao.remove(id);
-    if (settings.enableHunspellMorphology) {
-      await reloadHunspellFromDatabase();
-    }
+    await removeHunspellSource(id);
     _invalidateLookup();
     _refreshSources();
   }
@@ -310,7 +378,7 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
   void _refreshSources() {
     if (!mounted) return;
     setState(() {
-      _sources = hunspellSourceDao.all();
+      _data = _loadData();
       // Read this only after the reload that preceded the call: the manager
       // holds the failures of the last reload, not of the current one.
       _errors = Map.of(hunspellManager.errors);
@@ -328,16 +396,18 @@ class _HunspellSourceTile extends StatelessWidget {
   const _HunspellSourceTile({
     required this.source,
     required this.l10n,
+    required this.inGroup,
     required this.onShowSettings,
-    required this.onSetEnabled,
+    required this.onSetInGroup,
     required this.onRemove,
     this.errorText,
   });
 
   final HunspellSourceData source;
   final AppLocalizations l10n;
+  final bool inGroup;
   final VoidCallback onShowSettings;
-  final ValueChanged<bool> onSetEnabled;
+  final ValueChanged<bool> onSetInGroup;
   final VoidCallback onRemove;
 
   /// Set when this word list failed to load; the text is the loader's reason.
@@ -359,6 +429,16 @@ class _HunspellSourceTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(description),
+          if (!source.enabled)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                l10n.hunspellGloballyDisabled,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+              ),
+            ),
           if (errorText != null)
             Padding(
               padding: const EdgeInsets.only(top: 2),
@@ -395,7 +475,10 @@ class _HunspellSourceTile extends StatelessWidget {
             icon: const Icon(Icons.tune),
             onPressed: onShowSettings,
           ),
-          Switch(value: source.enabled, onChanged: onSetEnabled),
+          Tooltip(
+            message: l10n.hunspellInCurrentGroup,
+            child: Switch(value: inGroup, onChanged: onSetInGroup),
+          ),
           IconButton(
             tooltip: l10n.remove,
             icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),

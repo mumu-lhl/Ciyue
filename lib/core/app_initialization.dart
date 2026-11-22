@@ -4,6 +4,7 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
+import "package:ciyue/repositories/hunspell.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/cloud_sync/configuration.dart";
 import "package:ciyue/services/global_hotkey.dart";
@@ -37,7 +38,7 @@ Future<void> reloadHunspell() async {
     return;
   }
 
-  await hunspellManager.reloadFromDatabase();
+  await reloadHunspellFromDatabase();
 }
 
 Future<void> initGroup() async {
@@ -273,8 +274,9 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
   // Don't block the real app's first frame on dictionary loading.
   // The UI shows loading state via dictManager.isLoading (Completer-based
   // waitForLoading notifies when done).
-  unawaited(initGroup());
-  unawaited(reloadHunspell());
+  // Hunspell sources are filtered by the active group, so the group must be
+  // loaded first even though neither blocks the first frame.
+  unawaited(initGroup().then((_) => reloadHunspell()));
 
   flutterTts = FlutterTts();
 

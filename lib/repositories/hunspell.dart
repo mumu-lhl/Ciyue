@@ -1,6 +1,8 @@
 import "dart:io";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/models/hunspell.dart";
+import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:path/path.dart";
@@ -70,32 +72,60 @@ Future<List<HunspellPair>> findHunspellPairsOnAndroid(
   return findHunspellPairs(root);
 }
 
-Future<void> reloadHunspellFromDatabase() async {
-  await hunspellManager.reloadFromDatabase();
+/// Reloads only the word lists that are enabled globally and members of
+/// [groupId] (the current dictionary group by default).
+Future<void> reloadHunspellFromDatabase({int? groupId}) async {
+  if (!settings.enableHunspellMorphology) {
+    await hunspellManager.close();
+    return;
+  }
+  final group = groupId ?? dictManager.groupId;
+  final memberIds = await dictGroupDao.getHunspellIds(group);
+  final sources = await hunspellSourceDao.all();
+  await hunspellManager.reload(
+    sources
+        .where((source) => source.enabled && memberIds.contains(source.id))
+        .map(
+          (source) => HunspellSourceInfo(
+            id: source.id,
+            name: source.name,
+            affPath: source.affPath,
+            dicPath: source.dicPath,
+            language: source.language,
+            enabled: true,
+            order: source.order,
+            twoPassLookup: source.twoPassLookup,
+          ),
+        ),
+  );
 }
 
 Future<int> addHunspellPairs(
   Iterable<HunspellPair> pairs, {
-  bool enabled = false,
+  bool enabled = true,
 }) async {
+  final groupId = dictManager.groupId;
+  final memberIds = await dictGroupDao.getHunspellIds(groupId);
   var added = 0;
   for (final pair in pairs) {
     if (await hunspellSourceDao.exists(pair.affPath, pair.dicPath)) {
       continue;
     }
 
-    await hunspellSourceDao.add(
+    final id = await hunspellSourceDao.add(
       name: pair.name,
       affPath: pair.affPath,
       dicPath: pair.dicPath,
       enabled: enabled,
     );
+    if (enabled) memberIds.add(id);
     added++;
   }
 
   if (added > 0) {
+    await dictGroupDao.updateHunspellIds(groupId, memberIds);
     if (settings.enableHunspellMorphology) {
-      await reloadHunspellFromDatabase();
+      await reloadHunspellFromDatabase(groupId: groupId);
     } else {
       await hunspellManager.close();
     }
@@ -103,6 +133,28 @@ Future<int> addHunspellPairs(
   return added;
 }
 
-Future<int> addHunspellPair(HunspellPair pair, {bool enabled = false}) {
+Future<int> addHunspellPair(HunspellPair pair, {bool enabled = true}) {
   return addHunspellPairs([pair], enabled: enabled);
+}
+
+Future<void> setHunspellSourceInCurrentGroup(int id, bool inGroup) async {
+  final groupId = dictManager.groupId;
+  final memberIds = await dictGroupDao.getHunspellIds(groupId);
+  if (inGroup) {
+    if (!memberIds.contains(id)) memberIds.add(id);
+  } else {
+    memberIds.remove(id);
+  }
+  await dictGroupDao.updateHunspellIds(groupId, memberIds);
+  if (settings.enableHunspellMorphology) {
+    await reloadHunspellFromDatabase(groupId: groupId);
+  }
+}
+
+Future<void> removeHunspellSource(int id) async {
+  await hunspellSourceDao.remove(id);
+  await dictGroupDao.removeHunspellIdFromAllGroups(id);
+  if (settings.enableHunspellMorphology) {
+    await reloadHunspellFromDatabase();
+  }
 }

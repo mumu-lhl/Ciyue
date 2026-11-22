@@ -550,18 +550,31 @@ void main() {
             await fileStore.insertBatch(id, rows, rows.length);
             await fileStore.markComplete(id, rows.length);
           }
-          Future<int> timed(int id) async {
+          // One search is only a few milliseconds, so a single round would
+          // measure isolate scheduling noise rather than pooling. Repeat the
+          // same work enough times for the serial and parallel totals to be
+          // dominated by the searches themselves.
+          const rounds = 10;
+          Future<int> timedSerial(int id) async {
             final stopwatch = Stopwatch()..start();
-            await fileStore.searchOne(id, '"the"');
+            for (var i = 0; i < rounds; i++) {
+              await fileStore.searchOne(id, '"the"');
+            }
             return stopwatch.elapsedMilliseconds;
           }
 
           await fileStore.searchOne(1, '"the"');
-          final t1 = await timed(1);
-          final t2 = await timed(2);
-          final t3 = await timed(3);
+          final t1 = await timedSerial(1);
+          final t2 = await timedSerial(2);
+          final t3 = await timedSerial(3);
           final stopwatch = Stopwatch()..start();
-          await Future.wait([timed(1), timed(2), timed(3)]);
+          for (var i = 0; i < rounds; i++) {
+            await Future.wait([
+              fileStore.searchOne(1, '"the"'),
+              fileStore.searchOne(2, '"the"'),
+              fileStore.searchOne(3, '"the"'),
+            ]);
+          }
           final wall = stopwatch.elapsedMilliseconds;
           // Three queries on three reader isolates finish in about one
           // query's time, not three; the 0.8 bound leaves room for a

@@ -106,6 +106,7 @@ class DictionaryLookup {
   final MorphologyProvider morphology;
   final bool Function() morphologyEnabled;
   final HunspellLookupMode Function() lookupMode;
+  final int Function() morphologyVersion;
 
   /// Monotonic id for prefix-suggestion runs. A newer keystroke bumps it;
   /// every `await` in [_prefixSuggestions] checks it and bails out with the
@@ -128,7 +129,8 @@ class DictionaryLookup {
     required this.morphology,
     required this.morphologyEnabled,
     required this.lookupMode,
-  });
+    int Function()? morphologyVersion,
+  }) : morphologyVersion = morphologyVersion ?? (() => 0);
 
   Future<DictionaryLookupResult> lookup(String word) async {
     if (word.isEmpty) {
@@ -491,7 +493,9 @@ class DictionaryLookup {
   ) {
     final buffer = StringBuffer()
       ..write(morphology ? "m1" : "m0")
-      ..write(mode);
+      ..write(mode)
+      ..write(":h")
+      ..write(morphologyVersion());
     for (final dict in activeDictionaries) {
       buffer
         ..write(",")

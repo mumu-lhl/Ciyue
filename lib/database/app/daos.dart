@@ -23,7 +23,11 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
     with _$DictGroupDaoMixin {
   DictGroupDao(super.attachedDatabase);
 
-  Future<int> addGroup(String name, List<int> dictIds) async {
+  Future<int> addGroup(
+    String name,
+    List<int> dictIds, {
+    List<int> hunspellIds = const [],
+  }) async {
     // Append the new group to the end of the list instead of the position its
     // id would give it.
     final last =
@@ -39,6 +43,7 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
       DictGroupCompanion(
         name: Value(name),
         dictIds: Value(dictIds.join(",")),
+        hunspellIds: Value(hunspellIds.join(",")),
         order: Value((last?.order ?? -1) + 1),
       ),
     );
@@ -67,12 +72,19 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
+  static List<int> _parseIds(String value) => value
+      .split(",")
+      .where((e) => e.isNotEmpty)
+      .map((e) => int.tryParse(e))
+      .whereType<int>()
+      .toList();
+
   Future<List<int>> getDictIds(int id) async {
     try {
       final group = await (select(
         dictGroup,
       )..where((t) => t.id.isValue(id))).getSingle();
-      return group.dictIds.split(",").map((e) => int.parse(e)).toList();
+      return _parseIds(group.dictIds);
     } catch (e) {
       return [];
     }
@@ -81,14 +93,36 @@ class DictGroupDao extends DatabaseAccessor<AppDatabase>
   Future<void> removeDictIdFromAllGroups(int dictId) async {
     final groups = await getAllGroups();
     for (final group in groups) {
-      final ids = group.dictIds
-          .split(",")
-          .where((e) => e.isNotEmpty)
-          .map((e) => int.tryParse(e))
-          .whereType<int>()
-          .toList();
+      final ids = _parseIds(group.dictIds);
       if (ids.remove(dictId)) {
         await updateDictIds(group.id, ids);
+      }
+    }
+  }
+
+  Future<List<int>> getHunspellIds(int id) async {
+    try {
+      final group = await (select(
+        dictGroup,
+      )..where((t) => t.id.isValue(id))).getSingle();
+      return _parseIds(group.hunspellIds);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> updateHunspellIds(int id, List<int> hunspellIds) {
+    return (update(dictGroup)..where((t) => t.id.isValue(id))).write(
+      DictGroupCompanion(hunspellIds: Value(hunspellIds.join(","))),
+    );
+  }
+
+  Future<void> removeHunspellIdFromAllGroups(int hunspellId) async {
+    final groups = await getAllGroups();
+    for (final group in groups) {
+      final ids = _parseIds(group.hunspellIds);
+      if (ids.remove(hunspellId)) {
+        await updateHunspellIds(group.id, ids);
       }
     }
   }

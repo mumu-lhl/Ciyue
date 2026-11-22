@@ -2,8 +2,13 @@ import "package:ciyue/database/app/app.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:flutter_test/flutter_test.dart";
 
-DictGroupData _group(int id, String name) =>
-    DictGroupData(id: id, name: name, dictIds: "", order: id - 1);
+DictGroupData _group(int id, String name) => DictGroupData(
+  id: id,
+  name: name,
+  dictIds: "",
+  hunspellIds: "",
+  order: id - 1,
+);
 
 void main() {
   final groups = [
