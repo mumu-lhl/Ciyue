@@ -73,11 +73,16 @@ class AudioSettingsPage extends ConsumerWidget {
   }
 }
 
-class PronunciationModeSelector extends StatelessWidget {
+class PronunciationModeSelector extends ConsumerWidget {
   const PronunciationModeSelector({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the settings so the dropdown field follows the selected mode
+    // immediately. This widget is const, and Flutter skips rebuilding a
+    // child whose widget instance did not change, so the parent rebuild
+    // alone never refreshes it.
+    ref.watch(settingsProvider);
     final localizations = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,6 +123,11 @@ class AudioList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final localizations = AppLocalizations.of(context)!;
+    // Watch the settings so the pack description follows the
+    // pronunciation mode. This widget is const, and Flutter skips
+    // rebuilding a child whose widget instance did not change, so the
+    // parent rebuild alone never refreshes it.
+    ref.watch(settingsProvider);
     ref.watch(audioModelProvider.select((model) => model.mddAudioListState));
     final mddAudioList = ref.read(audioModelProvider).mddAudioList;
     final packsOff = settings.pronunciationMode == PronunciationMode.ttsOnly;
@@ -197,6 +207,11 @@ class AudioItems extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the settings so the TTS card note follows the pronunciation
+    // mode. This widget is const, and Flutter skips rebuilding a child
+    // whose widget instance did not change, so the parent rebuild alone
+    // never refreshes it.
+    ref.watch(settingsProvider);
     ref.watch(audioModelProvider.select((model) => model.mddAudioListState));
     final audioModel = ref.read(audioModelProvider);
     final mddAudioList = audioModel.mddAudioList;
@@ -317,16 +332,16 @@ class AudioItems extends ConsumerWidget {
   }
 }
 
-class OnlinePronunciationSettings extends StatefulWidget {
+class OnlinePronunciationSettings extends ConsumerStatefulWidget {
   const OnlinePronunciationSettings({super.key});
 
   @override
-  State<OnlinePronunciationSettings> createState() =>
+  ConsumerState<OnlinePronunciationSettings> createState() =>
       _OnlinePronunciationSettingsState();
 }
 
 class _OnlinePronunciationSettingsState
-    extends State<OnlinePronunciationSettings> {
+    extends ConsumerState<OnlinePronunciationSettings> {
   static const _forvoApiKeyStorageKey = "forvoApiKey";
   static const _forvoApiKeyPlaceholder = "••••••••";
   static const _onlinePronunciationLanguages = <String>[
@@ -448,6 +463,11 @@ class _OnlinePronunciationSettingsState
 
   @override
   Widget build(BuildContext context) {
+    // Watch the settings so the switches and language dropdowns follow
+    // their toggles immediately. This widget is const, and Flutter skips
+    // rebuilding a child whose widget instance did not change, so the
+    // parent rebuild alone never refreshes it.
+    ref.watch(settingsProvider);
     final localizations = AppLocalizations.of(context)!;
     final helperStyle = Theme.of(context).textTheme.bodySmall
         ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
@@ -577,11 +597,16 @@ class _OnlinePronunciationSettingsState
   }
 }
 
-class TTSEngines extends StatelessWidget {
+class TTSEngines extends ConsumerWidget {
   const TTSEngines({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the settings so the dropdown field follows the selected
+    // engine immediately. This widget is const, and Flutter skips
+    // rebuilding a child whose widget instance did not change, so the
+    // parent rebuild alone never refreshes it.
+    ref.watch(settingsProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -633,14 +658,14 @@ class TTSEngines extends StatelessWidget {
 /// the backend picks its default voice for the language. Detection
 /// failures leave the no-backend hint in place rather than
 /// erroring: TTS simply falls through to unavailable at speak time.
-class LinuxTtsSettings extends StatefulWidget {
+class LinuxTtsSettings extends ConsumerStatefulWidget {
   const LinuxTtsSettings({super.key});
 
   @override
-  State<LinuxTtsSettings> createState() => _LinuxTtsSettingsState();
+  ConsumerState<LinuxTtsSettings> createState() => _LinuxTtsSettingsState();
 }
 
-class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
+class _LinuxTtsSettingsState extends ConsumerState<LinuxTtsSettings> {
   /// Voices shown in the picker; capped for dropdown usability.
   static const _maxVoices = 50;
 
@@ -676,6 +701,11 @@ class _LinuxTtsSettingsState extends State<LinuxTtsSettings> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch the settings so the dropdown field follows the selected voice
+    // immediately. This widget is const, and Flutter skips rebuilding a
+    // child whose widget instance did not change, so the parent rebuild
+    // alone never refreshes it.
+    ref.watch(settingsProvider);
     final localizations = AppLocalizations.of(context)!;
     final helperStyle = Theme.of(context).textTheme.bodySmall
         ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);

@@ -7,6 +7,7 @@ import "package:ciyue/services/linux_tts_driver.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/app_dropdown.dart";
 import "package:ciyue/ui/pages/settings/audio.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:material_ui/material_ui.dart";
 import "package:shared_preferences/shared_preferences.dart";
@@ -82,11 +83,13 @@ void main() {
 
   Future<void> pumpSettings(WidgetTester tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale("en"),
-        home: const Scaffold(body: LinuxTtsSettings()),
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale("en"),
+          home: const Scaffold(body: LinuxTtsSettings()),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -124,6 +127,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(settings.linuxTtsVoice, "English_(America)");
     expect(prefs.getString("linuxTtsVoice"), "English_(America)");
+    // The dropdown field itself must show the selected voice, not the
+    // previous "Default voice" value.
+    expect(find.text("English_(America) (en-us)"), findsOneWidget);
+    expect(find.text("Default voice"), findsNothing);
   });
 
   testWidgets("shows the no-backend hint when nothing is detected", (
