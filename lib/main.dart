@@ -460,13 +460,19 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
         builder: (BuildContext context, Widget? child) {
           // Widgets that honour the accessibility flag (page turn animations,
           // scrollbars, some implicit animations) also stop animating.
-          final content = settings.eInkMode
+          Widget content = settings.eInkMode
               ? MediaQuery(
                   data: MediaQuery.of(context)
                       .copyWith(disableAnimations: true),
                   child: child ?? const SizedBox.shrink(),
                 )
-              : child;
+              : (child ?? const SizedBox.shrink());
+          // The floating window is placed well inside the display, so the
+          // system-bar insets it inherits would only shrink the card
+          // (issue #905).
+          if (runningInFloatingWindow) {
+            content = floatingWindowSafeArea(context, content);
+          }
           // Some dependencies still use package:flutter/material.dart.
           // Keep their legacy ThemeData and MaterialLocalizations working
           // while they are migrated to package:material_ui.

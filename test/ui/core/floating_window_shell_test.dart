@@ -249,4 +249,32 @@ void main() {
       matchesRect(const Rect.fromLTWH(60, 180, 340, 440)),
     );
   });
+
+  testWidgets("the popup drops the status and navigation bar insets", (
+    tester,
+  ) async {
+    late MediaQueryData seen;
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(
+          padding: EdgeInsets.only(top: 24, bottom: 48, left: 6),
+        ),
+        child: Builder(
+          builder: (context) => floatingWindowSafeArea(
+            context,
+            Builder(
+              builder: (inner) {
+                seen = MediaQuery.of(inner);
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(seen.padding.top, 0);
+    expect(seen.padding.bottom, 0);
+    expect(seen.padding.left, 6);
+  });
 }

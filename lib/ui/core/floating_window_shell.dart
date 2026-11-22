@@ -94,3 +94,17 @@ Widget floatingWindowView({required Widget child}) {
     },
   );
 }
+
+/// Drops the insets of system bars the popup window does not really cover.
+///
+/// The Activity places the window and the card sits inside it, so neither the
+/// status bar nor the navigation bar overlaps the visible surface; keeping
+/// `MediaQuery.padding` only shrinks the content area (issue #905).
+Widget floatingWindowSafeArea(BuildContext context, Widget child) {
+  return MediaQuery.removePadding(
+    context: context,
+    removeTop: true,
+    removeBottom: true,
+    child: child,
+  );
+}

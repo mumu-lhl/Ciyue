@@ -58,4 +58,11 @@ void main() {
     expect(activity, contains("displayHeight - height"));
     expect(activity, contains("coerceIn(0, (displayWidth - width)"));
   });
+
+  test("the popup stays out of the system bars", () {
+    // A window reaching under the status or navigation bar loses that strip:
+    // the Flutter view is clipped there and nothing paints it (issue #905).
+    expect(activity, contains("WindowInsets.Type.systemBars()"));
+    expect(activity, contains("r.inset(i.left, i.top, i.right, i.bottom)"));
+  });
 }

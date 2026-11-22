@@ -3,11 +3,13 @@ package org.eu.mumulhl.ciyue
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterActivityLaunchConfigs.BackgroundMode
@@ -67,19 +69,25 @@ class FloatingWindowActivity : FlutterActivity() {
      *
      * `maximumWindowMetrics` describes the area a task may use, so a split
      * screen or a free-form task reports the task rather than the whole
-     * display. The popup is both sized and offset inside that area, which is
-     * what keeps the clamp in [applyWindowLayout] meaningful.
+     * display. Its insets describe the system bars, and a window reaching
+     * under them leaves a strip the Flutter view cannot paint (issue #905),
+     * so they are subtracted here.
      */
+    private fun usable(m: WindowManager): Rect {
+        val b = m.maximumWindowMetrics
+        val r = Rect(b.bounds)
+        val i = b.windowInsets.getInsets(WindowInsets.Type.systemBars())
+        r.inset(i.left, i.top, i.right, i.bottom)
+        return r
+    }
+
     @Suppress("DEPRECATION")
-    private fun displaySize(): Pair<Int, Int> {
+    private fun displayArea(): Rect {
         val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val bounds = manager.maximumWindowMetrics.bounds
-            return bounds.width() to bounds.height()
-        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) return usable(manager)
         val metrics = DisplayMetrics()
         manager.defaultDisplay.getRealMetrics(metrics)
-        return metrics.widthPixels to metrics.heightPixels
+        return Rect(0, 0, metrics.widthPixels, metrics.heightPixels)
     }
 
     /**
@@ -110,7 +118,9 @@ class FloatingWindowActivity : FlutterActivity() {
             FloatingWindowSettings.DEFAULT_GRAVITY,
         )
 
-        val (displayWidth, displayHeight) = displaySize()
+        val area = displayArea()
+        val displayWidth = area.width()
+        val displayHeight = area.height()
 
         // The reader proposes a popup; the user's panel fraction is an upper
         // bound so a reader that requests a full-width popup cannot cover more
@@ -147,12 +157,12 @@ class FloatingWindowActivity : FlutterActivity() {
         window.setGravity(Gravity.TOP or Gravity.START)
 
         // Offsets are measured inside the area this window may occupy, which is
-        // what [displaySize] reports, so the clamp is enough to keep an
+        // what [displayArea] reports, so the clamp is enough to keep an
         // oversized reader request or a free-form task from pushing the popup
         // off the screen.
         val layoutParams = window.attributes
-        layoutParams.x = left.coerceIn(0, (displayWidth - width).coerceAtLeast(0))
-        layoutParams.y = top.coerceIn(0, (displayHeight - height).coerceAtLeast(0))
+        layoutParams.x = area.left + left.coerceIn(0, (displayWidth - width).coerceAtLeast(0))
+        layoutParams.y = area.top + top.coerceIn(0, (displayHeight - height).coerceAtLeast(0))
         window.attributes = layoutParams
     }
 
