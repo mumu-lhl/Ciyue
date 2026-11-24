@@ -72,7 +72,18 @@ class _BottomSearchBarState extends ConsumerState<BottomSearchBar> {
 class HomeSearchBar extends ConsumerWidget {
   final ValueChanged<String>? onWordSelected;
 
-  const HomeSearchBar({super.key, this.onWordSelected});
+  /// Draws the matches in the pane below instead of the anchor's dropdown,
+  /// for the split view's left pane (see [WordSearchBarWithSuggestions
+  /// .inlineResults]).
+  final bool inlineResults;
+  final ValueChanged<String>? onQueryChanged;
+
+  const HomeSearchBar({
+    super.key,
+    this.onWordSelected,
+    this.inlineResults = false,
+    this.onQueryChanged,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -89,6 +100,8 @@ class HomeSearchBar extends ConsumerWidget {
         isHome: true,
         autoFocus: settings.autoFocusSearch,
         onWordSelected: onWordSelected,
+        inlineResults: inlineResults,
+        onQueryChanged: onQueryChanged,
       ),
     );
   }

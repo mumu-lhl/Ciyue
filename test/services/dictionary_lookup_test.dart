@@ -745,6 +745,33 @@ void main() {
       expect(dictionary.searchCalls, 2);
     });
 
+    test("a different limit is a different answer, not a cache hit", () async {
+      final dictionary = FakeDictionarySource(
+        id: 1,
+        entries: {
+          for (final word in ["ab", "abc", "abcd", "abcde"]) word: "$word doc",
+        },
+      );
+      final lookup = makeLookup(
+        dictionary: dictionary,
+        morphology: FakeMorphology(stemsResult: const []),
+        enabled: false,
+      );
+
+      // The suggestion overlay asks for a short list and a browsing pane for
+      // a longer one: the set truncated for the first must not answer the
+      // second, so the limit is part of the cache key.
+      final short = await lookup.searchSuggestions("a", limit: 2);
+      final long = await lookup.searchSuggestions("a", limit: 4);
+
+      expect(short.dictionarySuggestions, ["ab", "abc"]);
+      expect(long.dictionarySuggestions, ["ab", "abc", "abcd", "abcde"]);
+      expect(dictionary.lastSearchLimit, 4);
+      // Each query searched once per width variant, and neither was served
+      // from the other's cached answer.
+      expect(dictionary.searchCalls, 4);
+    });
+
     test("switching the dictionary set invalidates the cache", () async {
       var dicts = [
         FakeDictionarySource(id: 1, entries: {"apple": "apple content"}),
@@ -988,6 +1015,33 @@ void main() {
       expect(japanese.dictionarySuggestions, containsAll(["運動", "行動"]));
       expect(japanese.dictionarySuggestions, isNot(contains("動詞")));
     });
+
+    test(
+      "browse order returns suffix hits in reverse-dictionary order",
+      () async {
+        final service = await makeFtsService(const [
+          FullTextIndexRow(rowid: 1, headword: "读者", body: "人"),
+          FullTextIndexRow(rowid: 2, headword: "朗读者", body: "人"),
+          FullTextIndexRow(rowid: 3, headword: "作者", body: "人"),
+        ]);
+        final lookup = makeLookup(
+          dictionary: FakeDictionarySource(id: 1, entries: const {}),
+          morphology: FakeMorphology(stemsResult: const []),
+          enabled: false,
+        );
+
+        final result = await lookup.searchSuggestions(
+          "者",
+          mode: SearchMode.suffix,
+          fullText: service,
+          browseOrder: true,
+        );
+
+        // Reversed keys: 者作 < 者读 < 者读朗. By headword the last two would
+        // come out as 朗读者 < 读者, so this pins the tail-first ordering.
+        expect(result.dictionarySuggestions, ["作者", "读者", "朗读者"]);
+      },
+    );
 
     test("multi-word mode matches non-adjacent headword characters", () async {
       final service = await makeFtsService(ftsRows);
@@ -1233,11 +1287,21 @@ class FakeDictionarySource implements DictionarySource {
   }
 
   @override
-  Future<List<String>> search(String query) async {
+  Future<List<String>> search(
+    String query, {
+    int limit = defaultHeadwordSearchLimit,
+  }) async {
     searchCalls++;
+    lastSearchLimit = limit;
     await Future.delayed(searchDelay);
-    return entries.keys.where((key) => key.startsWith(query)).toList();
+    return entries.keys
+        .where((key) => key.startsWith(query))
+        .take(limit)
+        .toList();
   }
+
+  /// The `limit` of the most recent [search] call.
+  int? lastSearchLimit;
 
   /// The `resolvedKeys` argument of the most recent [readExactEntries]
   /// call, or null when the caller passed none.

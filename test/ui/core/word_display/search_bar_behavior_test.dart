@@ -126,7 +126,7 @@ void main() {
     // uses its own SearchController so they never share an anchor.
     expect(find.byType(WordSearchBarWithSuggestions), findsNWidgets(2));
 
-    await tester.tap(find.byTooltip("Hide Search Pane"));
+    await tester.tap(find.byTooltip("Hide Search Pane (Ctrl+B)"));
     await tester.pumpAndSettle();
 
     expect(find.byType(HomeSearchBar), findsNothing);

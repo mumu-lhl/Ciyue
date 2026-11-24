@@ -2,18 +2,22 @@ import "dart:async";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/models/search_mode.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:ciyue/utils.dart";
+import "package:ciyue/viewModels/headword_pane.dart";
 import "package:ciyue/viewModels/home.dart";
+import "package:flutter/services.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/gestures.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
 import "actions.dart";
 import "app_bar.dart" show GroupSelectorButton;
+import "headword_pane.dart";
 import "history.dart";
 import "more_button.dart";
 import "search.dart";
@@ -74,10 +78,47 @@ class _DesktopHomeSplitViewState extends ConsumerState<_DesktopHomeSplitView> {
   double _dragStartWidth = 0;
   double _dragStartX = 0;
 
+  /// The pane's headword list, owned here because the pane is the only place
+  /// it is shown and it has to survive the pane's own rebuilds.
+  final HeadwordPaneModel _headwordPane = HeadwordPaneModel();
+
   @override
   void initState() {
     super.initState();
     _paneWidth = ref.read(settingsProvider).searchPaneWidth;
+  }
+
+  @override
+  void dispose() {
+    _headwordPane.dispose();
+    super.dispose();
+  }
+
+  /// Walks the pane's list with the arrow keys.
+  ///
+  /// Each step previews the row in the entry pane, the same thing a click on
+  /// the row does, so arrowing is enough to browse; nothing has to be
+  /// confirmed with Enter (which keeps its meaning of opening what was typed).
+  void _moveHeadwordSelection(int delta) {
+    final row = _headwordPane.moveSelection(delta);
+    if (row == null) return;
+    ref.read(homeModelProvider).selectedWord = row.headword;
+  }
+
+  /// Re-runs the pane's list for the text the search box reports.
+  ///
+  /// The full-text service opens the index database when it is first used, and
+  /// prefix mode never needs it, so it is not built just because the pane is
+  /// on screen.
+  void _updateHeadwordPane(String text) {
+    final mode = ref.read(settingsProvider).searchMode;
+    _headwordPane.update(
+      text,
+      mode: mode,
+      fullText: mode == SearchMode.prefix
+          ? null
+          : ref.read(fullTextSearchServiceProvider),
+    );
   }
 
   Widget _buildDivider(
@@ -206,30 +247,68 @@ class _DesktopHomeSplitViewState extends ConsumerState<_DesktopHomeSplitView> {
                 if (showSearchPane) ...[
                   SizedBox(
                     width: paneWidth,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                          child: HomeSearchBar(
-                            // The pane's own title search box owns the common
-                            // "look up here" path. This pane can be collapsed, so
-                            // its search box opens the word in a new tab instead.
-                            onWordSelected: homeModel.openWordInNewTab,
+                    child: CallbackShortcuts(
+                      // Plain arrows walk the list while the pane's box has
+                      // focus: in a single-line field they have nothing to do,
+                      // and the list is what the reader is scanning. The
+                      // callbacks no-op when the pane is showing history.
+                      bindings: {
+                        const SingleActivator(
+                          LogicalKeyboardKey.arrowDown,
+                        ): () =>
+                            _moveHeadwordSelection(1),
+                        const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
+                            _moveHeadwordSelection(-1),
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                            child: HomeSearchBar(
+                              // The pane's own title search box owns the common
+                              // "look up here" path. This pane can be collapsed, so
+                              // its search box opens the word in a new tab instead.
+                              onWordSelected: homeModel.openWordInNewTab,
+                              // The matches belong to the pane below, not to a
+                              // dropdown that would cover it.
+                              inlineResults: true,
+                              onQueryChanged: _updateHeadwordPane,
+                            ),
                           ),
-                        ),
-                        const ActionButtons(),
-                        const HistoryLabel(),
-                        HistoryList(
-                          selectedWord: selectedWord,
-                          onWordSelected: (word) {
-                            homeModel.selectedWord = word;
-                          },
-                          onWordTertiarySelected: (word) {
-                            homeModel.openWordInNewTab(word);
-                          },
-                        ),
-                      ],
+                          Expanded(
+                            child: ListenableBuilder(
+                              listenable: _headwordPane,
+                              builder: (context, _) => _headwordPane.isEmpty
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const ActionButtons(),
+                                        const HistoryLabel(),
+                                        HistoryList(
+                                          selectedWord: selectedWord,
+                                          onWordSelected: (word) {
+                                            homeModel.selectedWord = word;
+                                          },
+                                          onWordTertiarySelected: (word) {
+                                            homeModel.openWordInNewTab(word);
+                                          },
+                                        ),
+                                      ],
+                                    )
+                                  : HeadwordPaneList(
+                                      model: _headwordPane,
+                                      onWordSelected: (word) {
+                                        homeModel.selectedWord = word;
+                                      },
+                                      onWordTertiarySelected:
+                                          homeModel.openWordInNewTab,
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   _buildDivider(context, paneWidth, maxPaneWidth),
@@ -413,7 +492,9 @@ class _DesktopWordTabBar extends ConsumerWidget {
                   : Icons.keyboard_double_arrow_right,
               size: 18,
             ),
-            tooltip: showSearchPane ? l10n.hideSearchPane : l10n.showSearchPane,
+            tooltip: showSearchPane
+                ? "${l10n.hideSearchPane} (Ctrl+B)"
+                : "${l10n.showSearchPane} (Ctrl+B)",
             splashRadius: 16,
             onPressed: () {
               unawaited(

@@ -69,6 +69,32 @@ You can also build and manage every dictionary's index at once from
 **Settings → Manage Dictionaries → the index-overview icon**, which lists
 each dictionary's status, on-disk size and build / cancel / rebuild actions.
 
+## The search pane on a wide window
+
+A landscape window wide enough for the split view has a column on the left.
+While its search box is empty the column shows your history; as soon as you
+type it shows the headwords that match, and keeps them on screen while you
+scroll. They are the same matches the drop-down offers, as a list to read
+rather than one to pick from.
+
+The order follows the mode, which is what makes that list worth scanning:
+
+| Mode | Ordered by |
+| --- | --- |
+| Prefix | The headword, the way a dictionary is |
+| Suffix | The reversed headword, so entries that share an ending sit together — the order a reverse dictionary (倒序词典) uses |
+| Multi-word | The headword |
+| Full text | The entries that matched, each with its surrounding text |
+
+The drop-down under the search bar stops at 30 matches per dictionary, because
+a drop-down is for picking one; the pane asks for 200, because there it is a
+list to read. Only prefix works without an index: the other three need the
+full-text index, and the pane reports its state instead of showing an empty
+column.
+
+`↑` / `↓` walk the list and show each word in the entry pane. `Ctrl`+`B` hides
+and shows the column.
+
 ## See also
 
 - [Word-Form Lookup](./word-forms) — resolve inflected forms to their lemma.

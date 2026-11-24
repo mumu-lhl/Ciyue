@@ -1,5 +1,13 @@
 import "dart:typed_data";
 
+/// Default cap on the prefix matches one dictionary returns.
+///
+/// Shared by the formats and the personal dictionary so that "a dictionary
+/// that returned this many may have been truncated" holds for every source.
+/// A caller that shows a longer list passes a bigger [DictionarySource.search]
+/// limit instead of assuming this one.
+const defaultHeadwordSearchLimit = 30;
+
 abstract interface class DictionarySource {
   int get id;
 
@@ -15,7 +23,15 @@ abstract interface class DictionarySource {
   /// a binary search.
   Future<Map<String, String>> resolveKeys(Iterable<String> words);
 
-  Future<List<String>> search(String query);
+  /// Prefix-matches headwords against [query], at most [limit] of them.
+  ///
+  /// The cap is a display concern shared by the merged suggestion list, not a
+  /// performance one: a prefix scan is a binary search plus a short forward
+  /// run over an on-disk index.
+  Future<List<String>> search(
+    String query, {
+    int limit = defaultHeadwordSearchLimit,
+  });
 
   /// Reads the entries for [words], one per distinct headword, in the order
   /// the headwords first appear.

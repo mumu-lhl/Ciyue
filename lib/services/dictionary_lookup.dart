@@ -5,6 +5,7 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/models/hunspell.dart";
 import "package:ciyue/models/search_mode.dart";
 import "package:ciyue/services/full_text_index_store.dart";
+import "package:ciyue/services/full_text_search.dart";
 import "package:ciyue/services/full_text_search_service.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/lookup_keys.dart";
@@ -32,16 +33,9 @@ const _maxLongVowelSuggestions = 4;
 // own budget and keeps the results already collected, instead of one global
 // deadline dropping every word list together.
 
-/// Most prefix-suggestion queries kept in the cache (see [_prefixCache]).
+/// Most prefix-suggestion queries kept for each per-dictionary limit (see
+/// [_prefixCache]).
 const _maxPrefixCacheEntries = 64;
-
-/// Per-dictionary cap on prefix matches (`reader.search` defaults to 30).
-///
-/// The incremental cache filter is only used when the cached prefix result
-/// holds fewer entries than this: with fewer than 30 merged results no
-/// dictionary could have hit its cap, so the cached set is the complete
-/// prefix set and filtering it cannot lose a match.
-const _prefixSearchLimit = 30;
 
 /// One cached prefix-suggestion answer.
 ///
@@ -114,14 +108,16 @@ class DictionaryLookup {
   /// pipeline for a query the user has already moved past.
   int _prefixGen = 0;
 
-  /// Prefix-suggestion answers by query, for the current dictionary set.
+  /// Prefix-suggestion answers by per-dictionary limit, then by query.
   ///
-  /// Keyed by query only; [_prefixCacheFingerprint] tracks which dictionary
-  /// set (and morphology settings) the entries belong to, and a change
-  /// clears the cache. An exact hit answers with zero I/O; a longer query
-  /// whose cached shorter prefix holds fewer than [_prefixSearchLimit]
-  /// results is filtered from that set instead of searched.
-  final Map<String, _PrefixCacheEntry> _prefixCache = {};
+  /// The limit is part of the key: a caller showing a short list and one
+  /// showing a long list ask for different answers, and a set truncated at
+  /// one limit must never be read back as the other's. [_prefixCacheFingerprint]
+  /// tracks which dictionary set (and morphology settings) the entries belong
+  /// to, and a change clears the cache. An exact hit answers with zero I/O; a
+  /// longer query whose cached shorter prefix holds fewer than that entry's
+  /// limit is filtered from that set instead of searched.
+  final Map<int, Map<String, _PrefixCacheEntry>> _prefixCache = {};
   String? _prefixCacheFingerprint;
 
   DictionaryLookup({
@@ -226,12 +222,23 @@ class DictionaryLookup {
   /// [FullTextIndexStatus.notBuilt] instead of an unexplained empty list,
   /// so the UI can say why there is nothing to show.
   ///
+  /// [limit] caps how many matches each dictionary contributes. A caller that
+  /// shows a long list passes a bigger value than the overlay does; prefix
+  /// answers for different limits are cached apart.
+  ///
+  /// [browseOrder] asks for the full-text modes to return their hits in the
+  /// order a reader scans them (reverse order for [SearchMode.suffix],
+  /// headword order for [SearchMode.multiWord]) instead of by relevance. It
+  /// does not affect prefix mode, whose list is already in headword order.
+  ///
   /// Exact lookup on submit is deliberately NOT mode-dependent: Enter
   /// always opens the exact headword, in every mode.
   Future<DictionarySearchSuggestions> searchSuggestions(
     String query, {
     SearchMode mode = SearchMode.prefix,
     FullTextSearchService? fullText,
+    int limit = defaultHeadwordSearchLimit,
+    bool browseOrder = false,
   }) async {
     if (query.isEmpty) {
       return const DictionarySearchSuggestions(
@@ -241,17 +248,25 @@ class DictionaryLookup {
     }
 
     if (mode != SearchMode.prefix) {
-      return _fullTextSuggestions(query, mode, fullText);
+      return _fullTextSuggestions(
+        query,
+        mode,
+        fullText,
+        limit: limit,
+        browseOrder: browseOrder,
+      );
     }
 
-    return _prefixSuggestions(query);
+    return _prefixSuggestions(query, limit);
   }
 
   Future<DictionarySearchSuggestions> _fullTextSuggestions(
     String query,
     SearchMode mode,
-    FullTextSearchService? fullText,
-  ) async {
+    FullTextSearchService? fullText, {
+    int limit = 50,
+    bool browseOrder = false,
+  }) async {
     if (fullText == null) {
       return const DictionarySearchSuggestions(
         dictionarySuggestions: [],
@@ -265,13 +280,38 @@ class DictionaryLookup {
     final seenHeadwords = <String>{};
     for (final variant in widthVariants(query)) {
       final variantHits = switch (mode) {
-        SearchMode.suffix => await fullText.searchSuffix(variant),
-        SearchMode.multiWord => await fullText.searchHeadwordAnd(variant),
+        SearchMode.suffix => await fullText.searchSuffix(
+          variant,
+          limit: limit,
+          browseOrder: browseOrder,
+        ),
+        SearchMode.multiWord => await fullText.searchHeadwordAnd(
+          variant,
+          limit: limit,
+          browseOrder: browseOrder,
+        ),
         SearchMode.fullText => await fullText.search(variant),
         SearchMode.prefix => const <FullTextHit>[],
       };
       for (final hit in variantHits) {
         if (seenHeadwords.add(hit.headword)) hits.add(hit);
+      }
+    }
+    // Each dictionary applied [limit] before the merge, so its own list is
+    // already in browse order; sorting the union by the same key keeps the
+    // result a prefix of the order a reader would see without the cap.
+    if (browseOrder) {
+      switch (mode) {
+        case SearchMode.suffix:
+          hits.sort(
+            (a, b) =>
+                reverseHeadword(a.headword)
+                    .compareTo(reverseHeadword(b.headword)),
+          );
+        case SearchMode.multiWord:
+          hits.sort((a, b) => a.headword.compareTo(b.headword));
+        case SearchMode.prefix || SearchMode.fullText:
+          break;
       }
     }
     final status = await fullText.indexStatus();
@@ -291,15 +331,17 @@ class DictionaryLookup {
   }
 
   void _cachePrefixResult(
+    int limit,
     String query,
     List<String> prefixResults,
     List<String> dictionarySuggestions,
     List<String> spellingSuggestions,
   ) {
-    if (_prefixCache.length >= _maxPrefixCacheEntries) {
-      _prefixCache.remove(_prefixCache.keys.first);
+    final cache = _prefixCache.putIfAbsent(limit, () => {});
+    if (cache.length >= _maxPrefixCacheEntries) {
+      cache.remove(cache.keys.first);
     }
-    _prefixCache[query] = _PrefixCacheEntry(
+    cache[query] = _PrefixCacheEntry(
       prefixResults: prefixResults,
       dictionarySuggestions: dictionarySuggestions,
       spellingSuggestions: spellingSuggestions,
@@ -313,7 +355,10 @@ class DictionaryLookup {
     );
   }
 
-  Future<DictionarySearchSuggestions> _prefixSuggestions(String query) async {
+  Future<DictionarySearchSuggestions> _prefixSuggestions(
+    String query,
+    int limit,
+  ) async {
     // A newer keystroke cancels this run: bump first, so even a cache hit
     // abandons the in-flight pipeline for the older query.
     final gen = ++_prefixGen;
@@ -332,7 +377,8 @@ class DictionaryLookup {
       _prefixCacheFingerprint = fingerprint;
     }
 
-    final cached = _prefixCache[query];
+    final cache = _prefixCache[limit];
+    final cached = cache?[query];
     if (cached != null) {
       return DictionarySearchSuggestions(
         dictionarySuggestions: cached.dictionarySuggestions,
@@ -349,10 +395,11 @@ class DictionaryLookup {
       for (final variant in queryVariants) variant.toLowerCase(),
     ];
     String? incrementalQuery;
-    for (final entry in _prefixCache.entries) {
+    for (final entry
+        in cache?.entries ?? const <MapEntry<String, _PrefixCacheEntry>>[]) {
       if (entry.key.length >= query.length ||
           !query.startsWith(entry.key) ||
-          entry.value.prefixResults.length >= _prefixSearchLimit) {
+          entry.value.prefixResults.length >= limit) {
         continue;
       }
       if (incrementalQuery == null ||
@@ -362,7 +409,7 @@ class DictionaryLookup {
     }
     final incrementalEntry = incrementalQuery == null
         ? null
-        : _prefixCache[incrementalQuery];
+        : cache?[incrementalQuery];
     if (incrementalEntry != null) {
       prefixResults = [
         for (final headword in incrementalEntry.prefixResults)
@@ -386,6 +433,7 @@ class DictionaryLookup {
     prefixResults ??= await _searchPrefixAcross(
       activeDictionaries,
       queryVariants,
+      limit,
     );
     // `seen` backs O(1) dedup; `results` preserves display order.
     final seen = <String>{...prefixResults};
@@ -402,7 +450,13 @@ class DictionaryLookup {
     }
 
     if (!morphologyEnabled()) {
-      _cachePrefixResult(query, prefixSnapshot, prefixSnapshot, const []);
+      _cachePrefixResult(
+        limit,
+        query,
+        prefixSnapshot,
+        prefixSnapshot,
+        const [],
+      );
       return _prefixOnlyResult(results);
     }
 
@@ -475,6 +529,7 @@ class DictionaryLookup {
       spellingSuggestions: spellingSuggestions.toList(growable: false),
     );
     _cachePrefixResult(
+      limit,
       query,
       prefixSnapshot,
       dictionarySuggestions,
@@ -509,13 +564,14 @@ class DictionaryLookup {
   Future<List<String>> _searchPrefixAcross(
     List<DictionarySource> activeDictionaries,
     List<String> queryVariants,
+    int limit,
   ) async {
     final prefixResults = await Future.wait(
       activeDictionaries.map((dict) async {
         final matches = <String>{};
         for (final variant in queryVariants) {
           try {
-            matches.addAll(await dict.search(variant));
+            matches.addAll(await dict.search(variant, limit: limit));
           } catch (_) {
             // A broken dictionary contributes nothing instead of failing.
           }

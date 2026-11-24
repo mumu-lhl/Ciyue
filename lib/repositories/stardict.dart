@@ -212,10 +212,13 @@ class Stardict extends BaseLoadedDictionary {
   }
 
   @override
-  Future<List<String>> search(String query) async {
+  Future<List<String>> search(
+    String query, {
+    int limit = defaultHeadwordSearchLimit,
+  }) async {
     await waitForLoading();
     try {
-      return reader.search(query);
+      return reader.search(query, limit: limit);
     } catch (_) {
       return [];
     }

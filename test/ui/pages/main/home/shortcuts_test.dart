@@ -39,6 +39,18 @@ void main() {
       expect(activator.control, isFalse);
     });
 
+    test("reads the pane toggle out of the bridge message", () {
+      // The bridge script forwards Ctrl+B; without this mapping the Dart side
+      // drops the message and the key is dead while an entry is being read.
+      final activator = bridgeShortcutActivator(
+        '{"code":"KeyB","key":"b","ctrl":true,"alt":false,"shift":false,"meta":false}',
+      );
+
+      expect(activator, isNotNull);
+      expect(activator!.trigger, LogicalKeyboardKey.keyB);
+      expect(activator.control, isTrue);
+    });
+
     test("ignores a key the home page does not bind", () {
       expect(bridgeShortcutActivator('{"code":"KeyC","ctrl":true}'), isNull);
     });

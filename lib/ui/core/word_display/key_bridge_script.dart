@@ -30,6 +30,7 @@ String keyBridgeScript() {
   var shortcuts = [
     ['Escape', false, false, false, false],
     ['KeyF', true, false, false, false],
+    ['KeyB', true, false, false, false],
     ['KeyT', true, false, false, false],
     ['KeyW', true, false, false, false],
     ['KeyR', true, false, false, false],
