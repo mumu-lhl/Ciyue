@@ -610,6 +610,8 @@ const preferencesAllowList = <String>{
   "aiProviderFetchedModels",
   "aiExplainWord",
   "aiExplainWordManual",
+  "aiExplainSourceLanguageMode",
+  "aiExplainSourceLanguage",
   "aiExplainStructured",
   "includePrereleaseUpdates",
   "updateChannel",

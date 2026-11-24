@@ -14,6 +14,7 @@ class AiExample {
 class AiExplanationData {
   const AiExplanationData({
     this.phonetic,
+    this.romanization,
     this.partOfSpeech,
     this.meanings = const [],
     this.examples = const [],
@@ -22,6 +23,10 @@ class AiExplanationData {
   });
 
   final String? phonetic;
+
+  /// Most common Latin-script romanization for non-Latin words, e.g. Pinyin
+  /// or Hepburn. Null when the source language already uses Latin letters.
+  final String? romanization;
   final String? partOfSpeech;
   final List<String> meanings;
   final List<AiExample> examples;
@@ -30,6 +35,7 @@ class AiExplanationData {
 
   bool get isEmpty =>
       (phonetic == null || phonetic!.isEmpty) &&
+      (romanization == null || romanization!.isEmpty) &&
       (partOfSpeech == null || partOfSpeech!.isEmpty) &&
       meanings.isEmpty &&
       examples.isEmpty &&
@@ -58,6 +64,9 @@ class AiExplanationData {
     }
     final data = AiExplanationData(
       phonetic: _asString(decoded["phonetic"]),
+      romanization: _asString(
+        decoded["romanization"] ?? decoded["romaji"] ?? decoded["pinyin"],
+      ),
       partOfSpeech: _asString(
         decoded["partOfSpeech"] ?? decoded["part_of_speech"],
       ),

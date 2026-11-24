@@ -1,5 +1,7 @@
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/language_names.dart";
+import "package:ciyue/ui/core/language_picker.dart";
 import "package:ciyue/ui/core/title_text.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
@@ -15,6 +17,12 @@ class ExplainWordSetting extends ConsumerWidget {
     );
     final explainWordManual = ref.watch(
       aiSettingsViewModelProvider.select((vm) => vm.explainWordManual),
+    );
+    final sourceLanguageMode = ref.watch(
+      aiSettingsViewModelProvider.select((vm) => vm.explainSourceLanguageMode),
+    );
+    final sourceLanguage = ref.watch(
+      aiSettingsViewModelProvider.select((vm) => vm.explainSourceLanguage),
     );
     final explainStructured = ref.watch(
       aiSettingsViewModelProvider.select((vm) => vm.explainStructured),
@@ -58,6 +66,70 @@ class ExplainWordSetting extends ConsumerWidget {
             ),
           ],
         ),
+        const SizedBox(height: 8),
+        Text(
+          localizations.aiSourceLanguageMode,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: 4),
+        SegmentedButton<String>(
+          segments: [
+            ButtonSegment(
+              value: "fixed",
+              label: Text(localizations.aiSourceLanguageFixed),
+            ),
+            ButtonSegment(
+              value: "groupName",
+              label: Text(localizations.aiSourceLanguageFromGroup),
+            ),
+          ],
+          selected: {sourceLanguageMode},
+          onSelectionChanged: (selection) {
+            viewModel.setExplainSourceLanguageMode(selection.first);
+          },
+        ),
+        if (sourceLanguageMode == "fixed")
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  localizations.sourceLanguage,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+              TextButton(
+                onPressed: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  builder: (_) => FractionallySizedBox(
+                    heightFactor: 0.85,
+                    child: LanguagePicker(
+                      selectedLanguage: sourceLanguage,
+                      isSource: true,
+                      onLanguageSelected: (code) {
+                        viewModel.setExplainSourceLanguage(code);
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                ),
+                child: Text(
+                  localizedLanguageName(sourceLanguage, localizations),
+                ),
+              ),
+            ],
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              localizations.aiSourceLanguageFromGroupDescription,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
         const SizedBox(height: 8),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,

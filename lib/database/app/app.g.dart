@@ -2693,8 +2693,19 @@ class $AiExplanationsTable extends AiExplanations
     false,
     type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
+  static const drift.VerificationMeta _sourceLanguageMeta =
+      const drift.VerificationMeta('sourceLanguage');
+  @override
+  late final drift.GeneratedColumn<String> sourceLanguage =
+      drift.GeneratedColumn<String>(
+        'source_language',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const drift.Constant("auto"),
+      );
   static const drift.VerificationMeta _explanationMeta =
       const drift.VerificationMeta('explanation');
   @override
@@ -2707,7 +2718,11 @@ class $AiExplanationsTable extends AiExplanations
         requiredDuringInsert: true,
       );
   @override
-  List<drift.GeneratedColumn> get $columns => [word, explanation];
+  List<drift.GeneratedColumn> get $columns => [
+    word,
+    sourceLanguage,
+    explanation,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2728,6 +2743,15 @@ class $AiExplanationsTable extends AiExplanations
     } else if (isInserting) {
       context.missing(_wordMeta);
     }
+    if (data.containsKey('source_language')) {
+      context.handle(
+        _sourceLanguageMeta,
+        sourceLanguage.isAcceptableOrUnknown(
+          data['source_language']!,
+          _sourceLanguageMeta,
+        ),
+      );
+    }
     if (data.containsKey('explanation')) {
       context.handle(
         _explanationMeta,
@@ -2743,7 +2767,7 @@ class $AiExplanationsTable extends AiExplanations
   }
 
   @override
-  Set<drift.GeneratedColumn> get $primaryKey => const {};
+  Set<drift.GeneratedColumn> get $primaryKey => {word, sourceLanguage};
   @override
   AiExplanation map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -2751,6 +2775,10 @@ class $AiExplanationsTable extends AiExplanations
       word: attachedDatabase.typeMapping.read(
         drift.DriftSqlType.string,
         data['${effectivePrefix}word'],
+      )!,
+      sourceLanguage: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}source_language'],
       )!,
       explanation: attachedDatabase.typeMapping.read(
         drift.DriftSqlType.string,
@@ -2768,12 +2796,18 @@ class $AiExplanationsTable extends AiExplanations
 class AiExplanation extends drift.DataClass
     implements drift.Insertable<AiExplanation> {
   final String word;
+  final String sourceLanguage;
   final String explanation;
-  const AiExplanation({required this.word, required this.explanation});
+  const AiExplanation({
+    required this.word,
+    required this.sourceLanguage,
+    required this.explanation,
+  });
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
     map['word'] = drift.Variable<String>(word);
+    map['source_language'] = drift.Variable<String>(sourceLanguage);
     map['explanation'] = drift.Variable<String>(explanation);
     return map;
   }
@@ -2781,6 +2815,7 @@ class AiExplanation extends drift.DataClass
   AiExplanationsCompanion toCompanion(bool nullToAbsent) {
     return AiExplanationsCompanion(
       word: drift.Value(word),
+      sourceLanguage: drift.Value(sourceLanguage),
       explanation: drift.Value(explanation),
     );
   }
@@ -2792,6 +2827,7 @@ class AiExplanation extends drift.DataClass
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return AiExplanation(
       word: serializer.fromJson<String>(json['word']),
+      sourceLanguage: serializer.fromJson<String>(json['sourceLanguage']),
       explanation: serializer.fromJson<String>(json['explanation']),
     );
   }
@@ -2800,17 +2836,26 @@ class AiExplanation extends drift.DataClass
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'word': serializer.toJson<String>(word),
+      'sourceLanguage': serializer.toJson<String>(sourceLanguage),
       'explanation': serializer.toJson<String>(explanation),
     };
   }
 
-  AiExplanation copyWith({String? word, String? explanation}) => AiExplanation(
+  AiExplanation copyWith({
+    String? word,
+    String? sourceLanguage,
+    String? explanation,
+  }) => AiExplanation(
     word: word ?? this.word,
+    sourceLanguage: sourceLanguage ?? this.sourceLanguage,
     explanation: explanation ?? this.explanation,
   );
   AiExplanation copyWithCompanion(AiExplanationsCompanion data) {
     return AiExplanation(
       word: data.word.present ? data.word.value : this.word,
+      sourceLanguage: data.sourceLanguage.present
+          ? data.sourceLanguage.value
+          : this.sourceLanguage,
       explanation: data.explanation.present
           ? data.explanation.value
           : this.explanation,
@@ -2821,43 +2866,50 @@ class AiExplanation extends drift.DataClass
   String toString() {
     return (StringBuffer('AiExplanation(')
           ..write('word: $word, ')
+          ..write('sourceLanguage: $sourceLanguage, ')
           ..write('explanation: $explanation')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(word, explanation);
+  int get hashCode => Object.hash(word, sourceLanguage, explanation);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AiExplanation &&
           other.word == this.word &&
+          other.sourceLanguage == this.sourceLanguage &&
           other.explanation == this.explanation);
 }
 
 class AiExplanationsCompanion extends drift.UpdateCompanion<AiExplanation> {
   final drift.Value<String> word;
+  final drift.Value<String> sourceLanguage;
   final drift.Value<String> explanation;
   final drift.Value<int> rowid;
   const AiExplanationsCompanion({
     this.word = const drift.Value.absent(),
+    this.sourceLanguage = const drift.Value.absent(),
     this.explanation = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   });
   AiExplanationsCompanion.insert({
     required String word,
+    this.sourceLanguage = const drift.Value.absent(),
     required String explanation,
     this.rowid = const drift.Value.absent(),
   }) : word = drift.Value(word),
        explanation = drift.Value(explanation);
   static drift.Insertable<AiExplanation> custom({
     drift.Expression<String>? word,
+    drift.Expression<String>? sourceLanguage,
     drift.Expression<String>? explanation,
     drift.Expression<int>? rowid,
   }) {
     return drift.RawValuesInsertable({
       if (word != null) 'word': word,
+      if (sourceLanguage != null) 'source_language': sourceLanguage,
       if (explanation != null) 'explanation': explanation,
       if (rowid != null) 'rowid': rowid,
     });
@@ -2865,11 +2917,13 @@ class AiExplanationsCompanion extends drift.UpdateCompanion<AiExplanation> {
 
   AiExplanationsCompanion copyWith({
     drift.Value<String>? word,
+    drift.Value<String>? sourceLanguage,
     drift.Value<String>? explanation,
     drift.Value<int>? rowid,
   }) {
     return AiExplanationsCompanion(
       word: word ?? this.word,
+      sourceLanguage: sourceLanguage ?? this.sourceLanguage,
       explanation: explanation ?? this.explanation,
       rowid: rowid ?? this.rowid,
     );
@@ -2880,6 +2934,9 @@ class AiExplanationsCompanion extends drift.UpdateCompanion<AiExplanation> {
     final map = <String, drift.Expression>{};
     if (word.present) {
       map['word'] = drift.Variable<String>(word.value);
+    }
+    if (sourceLanguage.present) {
+      map['source_language'] = drift.Variable<String>(sourceLanguage.value);
     }
     if (explanation.present) {
       map['explanation'] = drift.Variable<String>(explanation.value);
@@ -2894,6 +2951,7 @@ class AiExplanationsCompanion extends drift.UpdateCompanion<AiExplanation> {
   String toString() {
     return (StringBuffer('AiExplanationsCompanion(')
           ..write('word: $word, ')
+          ..write('sourceLanguage: $sourceLanguage, ')
           ..write('explanation: $explanation, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -5983,7 +6041,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   );
   late final drift.Index idxAiExplanations = drift.Index(
     'idx_ai_explanations',
-    'CREATE INDEX idx_ai_explanations ON ai_explanations (word)',
+    'CREATE INDEX idx_ai_explanations ON ai_explanations (word, source_language)',
   );
   late final drift.Index idxTranslateHistoryInputText = drift.Index(
     'idx_translate_history_input_text',
@@ -7929,12 +7987,14 @@ typedef $$MddAudioResourceTableProcessedTableManager =
 typedef $$AiExplanationsTableCreateCompanionBuilder =
     AiExplanationsCompanion Function({
       required String word,
+      drift.Value<String> sourceLanguage,
       required String explanation,
       drift.Value<int> rowid,
     });
 typedef $$AiExplanationsTableUpdateCompanionBuilder =
     AiExplanationsCompanion Function({
       drift.Value<String> word,
+      drift.Value<String> sourceLanguage,
       drift.Value<String> explanation,
       drift.Value<int> rowid,
     });
@@ -7950,6 +8010,11 @@ class $$AiExplanationsTableFilterComposer
   });
   drift.ColumnFilters<String> get word => $composableBuilder(
     column: $table.word,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get sourceLanguage => $composableBuilder(
+    column: $table.sourceLanguage,
     builder: (column) => drift.ColumnFilters(column),
   );
 
@@ -7973,6 +8038,11 @@ class $$AiExplanationsTableOrderingComposer
     builder: (column) => drift.ColumnOrderings(column),
   );
 
+  drift.ColumnOrderings<String> get sourceLanguage => $composableBuilder(
+    column: $table.sourceLanguage,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
   drift.ColumnOrderings<String> get explanation => $composableBuilder(
     column: $table.explanation,
     builder: (column) => drift.ColumnOrderings(column),
@@ -7990,6 +8060,11 @@ class $$AiExplanationsTableAnnotationComposer
   });
   drift.GeneratedColumn<String> get word =>
       $composableBuilder(column: $table.word, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get sourceLanguage => $composableBuilder(
+    column: $table.sourceLanguage,
+    builder: (column) => column,
+  );
 
   drift.GeneratedColumn<String> get explanation => $composableBuilder(
     column: $table.explanation,
@@ -8035,20 +8110,24 @@ class $$AiExplanationsTableTableManager
           updateCompanionCallback:
               ({
                 drift.Value<String> word = const drift.Value.absent(),
+                drift.Value<String> sourceLanguage = const drift.Value.absent(),
                 drift.Value<String> explanation = const drift.Value.absent(),
                 drift.Value<int> rowid = const drift.Value.absent(),
               }) => AiExplanationsCompanion(
                 word: word,
+                sourceLanguage: sourceLanguage,
                 explanation: explanation,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String word,
+                drift.Value<String> sourceLanguage = const drift.Value.absent(),
                 required String explanation,
                 drift.Value<int> rowid = const drift.Value.absent(),
               }) => AiExplanationsCompanion.insert(
                 word: word,
+                sourceLanguage: sourceLanguage,
                 explanation: explanation,
                 rowid: rowid,
               ),

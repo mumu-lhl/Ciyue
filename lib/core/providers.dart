@@ -4,6 +4,7 @@ import "dart:convert";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
+import "package:ciyue/models/language.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/open_records.dart";
@@ -416,8 +417,41 @@ final writingCheckViewModelProvider =
       );
     });
 
-/// AIExplanationModel family provider per word.
+/// Per-word temporary source-language override from the AI page. "auto"
+/// falls back to the global setting.
+final aiExplanationSourceLanguageOverrideProvider =
+    StateProvider.family<String, String>((ref, word) => "auto");
+
+/// The effective source language for a word's AI explanation.
+final aiExplanationSourceLanguageProvider = Provider.family<String, String>((
+  ref,
+  word,
+) {
+  final override = ref.watch(aiExplanationSourceLanguageOverrideProvider(word));
+  if (override != "auto") return override;
+
+  final settings = ref.watch(settingsProvider);
+  if (settings.aiExplainSourceLanguageMode != "groupName") {
+    return settings.aiExplainSourceLanguage;
+  }
+
+  ref.watch(dictManagerModelProvider);
+  final groupName = dictManager.groups
+      .where((group) => group.id == dictManager.groupId)
+      .map((group) => group.name)
+      .firstOrNull;
+  if (groupName == null || groupName == "Default") return "auto";
+  return languageCodeFromGroupName(groupName) ?? "auto";
+});
+
+/// AIExplanationModel family provider per word and source language.
 final aiExplanationModelProvider = ChangeNotifierProvider.family
-    .autoDispose<AIExplanationModel, String>((ref, word) {
-      return AIExplanationModel(aiPrompts: ref.read(aiPromptsProvider));
+    .autoDispose<AIExplanationModel, ({String word, String sourceLanguage})>((
+      ref,
+      key,
+    ) {
+      return AIExplanationModel(
+        aiPrompts: ref.read(aiPromptsProvider),
+        sourceLanguage: key.sourceLanguage,
+      );
     });

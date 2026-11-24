@@ -395,6 +395,7 @@ class WebServerService {
     final stream = request.uri.queryParameters["stream"] == "true";
     final targetLang =
         request.uri.queryParameters["lang"] ?? "Simplified Chinese";
+    final sourceLang = request.uri.queryParameters["sourceLang"] ?? "auto";
 
     if (word.isEmpty) {
       _sendJson(request, {"error": "Missing word parameter"}, statusCode: 400);
@@ -421,9 +422,12 @@ class WebServerService {
     final promptTemplate =
         prefs.getString("customExplainPrompt") ??
         AIPrompts.defaultExplainPrompt;
-    final prompt = promptTemplate
-        .replaceAll(r"$word", word)
-        .replaceAll(r"$targetLanguage", targetLang);
+    final prompt = AIPrompts.substituteExplain(
+      promptTemplate,
+      word: word,
+      sourceLanguage: sourceLang,
+      targetLanguage: targetLang,
+    );
 
     if (stream) {
       request.response.headers.set(

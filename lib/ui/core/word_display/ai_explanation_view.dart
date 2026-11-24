@@ -13,7 +13,9 @@ class AiExplanationView extends StatelessWidget {
     final theme = Theme.of(context);
     final children = <Widget>[];
 
-    if (data.phonetic != null || data.partOfSpeech != null) {
+    if (data.phonetic != null ||
+        data.romanization != null ||
+        data.partOfSpeech != null) {
       children.add(
         Wrap(
           spacing: 10,
@@ -25,6 +27,13 @@ class AiExplanationView extends StatelessWidget {
                 data.phonetic!,
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            if (data.romanization != null)
+              Text(
+                data.romanization!,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.primary,
                 ),
               ),
             if (data.partOfSpeech != null) _chip(context, data.partOfSpeech!),

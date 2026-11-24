@@ -191,7 +191,14 @@ class _ButtonState extends ConsumerState<Button> {
               word: widget.word,
               initialExplanation:
                   ref
-                      .watch(aiExplanationModelProvider(widget.word))
+                      .watch(
+                        aiExplanationModelProvider((
+                          word: widget.word,
+                          sourceLanguage: ref.watch(
+                            aiExplanationSourceLanguageProvider(widget.word),
+                          ),
+                        )),
+                      )
                       .explanation ??
                   "",
             ),
@@ -406,12 +413,20 @@ class RefreshAIExplainIconButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sourceLanguage = ref.watch(aiExplanationSourceLanguageProvider(word));
     return IconButton(
       tooltip: AppLocalizations.of(context)!.update,
       icon: const Icon(Icons.refresh),
       onPressed: () {
         unawaited(
-          ref.read(aiExplanationModelProvider(word)).refreshExplanation(word),
+          ref
+              .read(
+                aiExplanationModelProvider((
+                  word: word,
+                  sourceLanguage: sourceLanguage,
+                )),
+              )
+              .refreshExplanation(word),
         );
       },
     );
@@ -425,11 +440,17 @@ class EditAIExplainIconButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sourceLanguage = ref.watch(aiExplanationSourceLanguageProvider(word));
     return IconButton(
       tooltip: AppLocalizations.of(context)!.editAIExplanation,
       icon: const Icon(Icons.edit),
       onPressed: () {
-        final model = ref.read(aiExplanationModelProvider(word));
+        final model = ref.read(
+          aiExplanationModelProvider((
+            word: word,
+            sourceLanguage: sourceLanguage,
+          )),
+        );
         unawaited(
           context.push(
             "/edit_ai_explanation",

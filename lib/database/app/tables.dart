@@ -73,10 +73,14 @@ class WordbookTags extends Table {
   TextColumn get tag => text().unique()();
 }
 
-@TableIndex(name: "idx_ai_explanations", columns: {#word})
+@TableIndex(name: "idx_ai_explanations", columns: {#word, #sourceLanguage})
 class AiExplanations extends Table {
-  TextColumn get word => text().unique()();
+  TextColumn get word => text()();
+  TextColumn get sourceLanguage => text().withDefault(const Constant("auto"))();
   TextColumn get explanation => text()();
+
+  @override
+  Set<Column> get primaryKey => {word, sourceLanguage};
 }
 
 class WritingCheckHistory extends Table {

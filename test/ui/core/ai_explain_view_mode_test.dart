@@ -7,6 +7,7 @@ import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/viewModels/ai_explanation.dart";
+import "package:drift/drift.dart";
 import "package:drift/native.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
@@ -20,6 +21,10 @@ class _FakeAIExplanationModel extends AIExplanationModel {
 
   _FakeAIExplanationModel({this.text})
     : super(dao: AiExplanationDao(AppDatabase(NativeDatabase.memory())));
+
+  @override
+  // ignore: must_call_super
+  void dispose() {}
 
   @override
   String? get explanation => text;
@@ -38,6 +43,9 @@ class _FakeAIExplanationModel extends AIExplanationModel {
 }
 
 void main() {
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  late ProviderContainer container;
+
   setUpAll(() async {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
@@ -49,14 +57,16 @@ void main() {
   });
 
   tearDown(() {
+    container.dispose();
     settings.aiExplainWordManual = false;
   });
 
   Widget buildTestWidget(AIExplanationModel model) {
-    return ProviderScope(
-      overrides: [
-        aiExplanationModelProvider.overrideWith((ref, word) => model),
-      ],
+    container = ProviderContainer(
+      overrides: [aiExplanationModelProvider.overrideWith((ref, key) => model)],
+    );
+    return UncontrolledProviderScope(
+      container: container,
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -103,5 +113,25 @@ void main() {
 
     expect(model.getCalls, 0);
     expect(find.text("Request AI explanation"), findsNothing);
+  });
+
+  testWidgets("source language override changes the chip without requesting", (
+    tester,
+  ) async {
+    settings.aiExplainWordManual = true;
+    final model = _FakeAIExplanationModel();
+
+    await tester.pumpWidget(buildTestWidget(model));
+    await tester.pump();
+
+    expect(find.text("Auto Detect"), findsOneWidget);
+    container
+            .read(aiExplanationSourceLanguageOverrideProvider("apple").notifier)
+            .state =
+        "ja";
+    await tester.pump();
+
+    expect(find.text("Japanese"), findsOneWidget);
+    expect(model.getCalls, 0);
   });
 }

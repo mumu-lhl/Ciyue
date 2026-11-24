@@ -234,10 +234,24 @@ class AppDatabase extends _$AppDatabase {
             "WHERE enabled = 1), '')",
           );
         },
+        from28To29: (m, schema) async {
+          // Explanations are now keyed by word and source language so the
+          // same word can have separate Chinese and Japanese explanations.
+          // Rebuilding the table drops the old single-column UNIQUE constraint;
+          // existing rows keep their word and get source_language = "auto".
+          await m.alterTable(
+            TableMigration(
+              schema.aiExplanations,
+              newColumns: [schema.aiExplanations.sourceLanguage],
+            ),
+          );
+          await m.drop(schema.idxAiExplanations);
+          await m.createIndex(schema.idxAiExplanations);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 28;
+  int get schemaVersion => 29;
 }

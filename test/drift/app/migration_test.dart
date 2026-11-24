@@ -7,6 +7,7 @@ import "package:test/test.dart";
 import "generated/schema.dart";
 import "generated/schema_v26.dart" as v26;
 import "generated/schema_v27.dart" as v27;
+import "generated/schema_v28.dart" as v28;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -190,5 +191,42 @@ void main() {
         await db.close();
       },
     );
+  });
+
+  group("v28 to v29 AI explanation source language", () {
+    test("preserves old rows as auto and allows per-language rows", () async {
+      final schema = await verifier.schemaAt(28);
+      final oldDb = v28.DatabaseAtV28(schema.newConnection());
+      await oldDb.customStatement(
+        "INSERT INTO ai_explanations (word, explanation) "
+        "VALUES ('中国', 'old explanation')",
+      );
+      await oldDb.close();
+
+      final db = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(db, 29);
+
+      final dao = AiExplanationDao(db);
+      final legacy = await dao.getAiExplanation("中国");
+      expect(legacy?.explanation, "old explanation");
+
+      await dao.insertAiExplanation(
+        AiExplanation(
+          word: "中国",
+          sourceLanguage: "ja",
+          explanation: "Japanese explanation",
+        ),
+      );
+      expect(
+        (await dao.getAiExplanation("中国", sourceLanguage: "ja"))?.explanation,
+        "Japanese explanation",
+      );
+      expect(
+        (await dao.getAiExplanation("中国"))?.explanation,
+        "old explanation",
+      );
+
+      await db.close();
+    });
   });
 }

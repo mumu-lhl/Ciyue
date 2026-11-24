@@ -104,6 +104,15 @@ class Settings extends ChangeNotifier {
   /// explanation. Cached explanations are still shown on tap.
   late bool aiExplainWordManual;
 
+  /// Where the fallback source language comes from: "fixed" uses
+  /// [aiExplainSourceLanguage], "groupName" infers it from the active
+  /// dictionary group's name.
+  late String aiExplainSourceLanguageMode;
+
+  /// Global fallback source language for AI word explanations. "auto" lets
+  /// the model detect it from the word itself.
+  late String aiExplainSourceLanguage;
+
   /// Whether AI word explanations are requested as structured data
   /// (JSON) and rendered natively, instead of markdown text.
   late bool aiExplainStructured;
@@ -318,6 +327,10 @@ class Settings extends ChangeNotifier {
     aiProvider = prefs.getString("aiProvider") ?? "openai";
     aiExplainWord = prefs.getBool("aiExplainWord") ?? false;
     aiExplainWordManual = prefs.getBool("aiExplainWordManual") ?? false;
+    aiExplainSourceLanguageMode =
+        prefs.getString("aiExplainSourceLanguageMode") ?? "fixed";
+    aiExplainSourceLanguage =
+        prefs.getString("aiExplainSourceLanguage") ?? "auto";
     aiExplainStructured = prefs.getBool("aiExplainStructured") ?? true;
     translationProvider = prefs.getString("translationProvider") ?? "ai";
     deeplxUrl = prefs.getString("deeplxUrl");

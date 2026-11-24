@@ -5,10 +5,11 @@ void main() {
   group("AiExplanationData.tryParse", () {
     test("parses a complete structured explanation", () {
       final data = AiExplanationData.tryParse("""
-{"phonetic": "/ˌser.ənˈdɪp.ə.ti/", "partOfSpeech": "noun", "meanings": ["the fact of finding something valuable by chance"], "examples": [{"sentence": "Finding that book was pure serendipity.", "translation": "发现那本书纯属机缘巧合。"}], "synonyms": ["chance", "fluke"], "antonyms": ["design"]}
+{"phonetic": "/ˌser.ənˈdɪp.ə.ti/", "romanization": "serendipity", "partOfSpeech": "noun", "meanings": ["the fact of finding something valuable by chance"], "examples": [{"sentence": "Finding that book was pure serendipity.", "translation": "发现那本书纯属机缘巧合。"}], "synonyms": ["chance", "fluke"], "antonyms": ["design"]}
 """);
       expect(data, isNotNull);
       expect(data!.phonetic, "/ˌser.ənˈdɪp.ə.ti/");
+      expect(data.romanization, "serendipity");
       expect(data.partOfSpeech, "noun");
       expect(data.meanings, hasLength(1));
       expect(data.examples.single.sentence, contains("serendipity"));
@@ -53,6 +54,7 @@ void main() {
       expect(data!.synonyms, ["luck", "fate"]);
       expect(data.meanings, isEmpty);
       expect(data.phonetic, isNull);
+      expect(data.romanization, isNull);
     });
   });
 }

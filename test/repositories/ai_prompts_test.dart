@@ -116,5 +116,25 @@ void main() {
         }
       }
     });
+
+    test("substitutes a readable source language", () {
+      final prompt = AIPrompts.substituteExplain(
+        r"$word|$sourceLanguage|$targetLanguage",
+        word: "中国",
+        sourceLanguage: "ja",
+        targetLanguage: "zh",
+      );
+      expect(prompt, "中国|Japanese|zh");
+    });
+
+    test("phrases auto source language for the model", () {
+      final prompt = AIPrompts.substituteExplain(
+        r"Source language: $sourceLanguage",
+        word: "中国",
+        sourceLanguage: "auto",
+        targetLanguage: "zh",
+      );
+      expect(prompt, "Source language: auto-detect the language from the word");
+    });
   });
 }
