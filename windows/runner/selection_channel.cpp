@@ -154,7 +154,7 @@ std::optional<std::string> GetSelectedTextFromValuePattern(
     return std::nullopt;
   }
   BSTR value = nullptr;
-  if (FAILED(value_pattern->GetValue(&value)) || value == nullptr) {
+  if (FAILED(value_pattern->get_CurrentValue(&value)) || value == nullptr) {
     return std::nullopt;
   }
   std::wstring text(value, ::SysStringLen(value));

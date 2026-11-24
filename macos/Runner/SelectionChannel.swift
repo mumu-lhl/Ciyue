@@ -73,7 +73,7 @@ enum SelectionChannel {
     guard
       let focused = attribute(
         systemWide,
-        kAXFocusedUIElementAttribute
+        kAXFocusedUIElementAttribute as CFString
       ) as? AXUIElement
     else { return nil }
 
@@ -85,7 +85,7 @@ enum SelectionChannel {
 
     if let selected = attribute(
       focused,
-      kAXSelectedTextAttribute
+      kAXSelectedTextAttribute as CFString
     ) as? String, !selected.isEmpty {
       return selected
     }
@@ -96,10 +96,10 @@ enum SelectionChannel {
   /// AXSecureTextField.
   private static func isSecureTextField(_ element: AXUIElement) -> Bool {
     guard
-      let role = attribute(element, kAXRoleAttribute) as? String,
+      let role = attribute(element, kAXRoleAttribute as CFString) as? String,
       role == (kAXTextFieldRole as String)
     else { return false }
-    let subrole = attribute(element, kAXSubroleAttribute) as? String
+    let subrole = attribute(element, kAXSubroleAttribute as CFString) as? String
     return subrole == (kAXSecureTextFieldSubrole as String)
   }
 
@@ -110,9 +110,9 @@ enum SelectionChannel {
     guard
       let rangeValue = attribute(
         element,
-        kAXSelectedTextRangeAttribute
+        kAXSelectedTextRangeAttribute as CFString
       ) as? AXValue,
-      let value = attribute(element, kAXValueAttribute) as? String
+      let value = attribute(element, kAXValueAttribute as CFString) as? String
     else { return nil }
     var range = CFRange(location: 0, length: 0)
     guard AXValueGetValue(rangeValue, .cfRange, &range), range.length > 0
@@ -160,8 +160,8 @@ enum SelectionChannel {
     else { return false }
     keyDown.flags = .maskCommand
     keyUp.flags = .maskCommand
-    CGEventPost(.cghidEventTap, keyDown)
-    CGEventPost(.cghidEventTap, keyUp)
+    keyDown.post(tap: .cghidEventTap)
+    keyUp.post(tap: .cghidEventTap)
     return true
   }
 
