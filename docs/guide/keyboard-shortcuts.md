@@ -21,11 +21,14 @@ Ctrl+`  /  Ctrl+1…9      Groups: which dictionaries a lookup uses
 | Shortcut | Action |
 |---|---|
 | `Ctrl`+`F` | Move the focus into the search box |
+| `Ctrl`+`B` | Show or hide the search pane, in the wide layout |
 | `Esc` | Move the focus into the search box **and select the text in it**, so typing replaces the word; press it again to return to the entry |
 | `Enter` on a selection | Look up the selected text (see below) |
 | `Ctrl`+`Enter` on a selection | Look it up in a new tab, the way `Ctrl`+click does for a link |
 
 The wide window has two search boxes: the one in the left column and the one in the title bar of the entry. `Ctrl`+`F` and `Esc` go to the one you used last, so they follow you around the window instead of always landing on the left one.
+
+While the left column is showing a headword list, `↑` / `↓` walk that list and show each word in the entry pane, so the arrow keys alone are enough to browse the matches. `Enter` keeps its meaning of opening what you typed.
 
 ### Looking up a selection
 
@@ -155,4 +158,4 @@ In the **Expansion** style there are no dictionary tabs, so that action falls ba
 - `Ctrl`+`PgUp` and `Ctrl`+`PgDn` change the word tab, while `Alt`+`PgUp` and `Alt`+`PgDn` change the dictionary tab; the same keys without a modifier scroll the entry in the expansion layout.
 - Shortcuts with a modifier also fire while the entry's native WebView holds the focus, regardless of which control is focused. Bare `PgUp` / `PgDn` still belong to the entry's scrolling and to text fields.
 - History navigation uses only `Alt`+`↑` / `↓`: macOS Mission Control takes `Ctrl`+`↑` / `↓`, while window tiling on KDE, GNOME and Windows takes `Super` / `Win`+`↑` / `↓`. `Alt` is the pair every mainstream desktop leaves free. Inside a macOS text field `Option`+`↑` / `↓` moves to the paragraph start / end, so Ciyue yields to the field while it has the focus.
-- On the desktop layout the arrow keys move the keyboard focus between controls; `Enter` or `Space` activates the focused one.
+- On the desktop layout the arrow keys move the keyboard focus between controls; `Enter` or `Space` activates the focused one. While the left column shows a headword list, `↑` / `↓` walk that list instead.
