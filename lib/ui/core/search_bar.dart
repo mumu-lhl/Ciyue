@@ -562,8 +562,24 @@ class _WordSearchBarWithSuggestionsState
               onChanged: (_) {
                 _markActive();
                 if (widget.inlineResults) {
-                  widget.onQueryChanged?.call(controller.text);
-                } else if (!_isViewOpen) {
+                  // Nothing may be written back to the controller here.
+                  // `TextEditingController.selection` has no "unchanged"
+                  // short-circuit: setting it produces a new
+                  // `TextEditingValue`, which pushes a `setEditingState` to
+                  // the platform and resets the input method's composition.
+                  // With fcitx5 that commits the preedit on every keystroke, so
+                  // a CJK word can never be composed. The non-inline path gets
+                  // away with it because typing then happens in the anchor
+                  // view's own field, whose `onChanged` is null.
+                  //
+                  // A composing value is the IME's preedit, not the reader's
+                  // query, so it does not start a search either.
+                  if (controller.value.composing.isCollapsed) {
+                    widget.onQueryChanged?.call(controller.text);
+                  }
+                  return;
+                }
+                if (!_isViewOpen) {
                   controller.openView();
                 }
                 controller.selection = TextSelection.collapsed(

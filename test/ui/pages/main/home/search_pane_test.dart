@@ -260,6 +260,51 @@ void main() {
     });
   });
 
+  group("live headword pane and IME", () {
+    Finder paneField() => find.descendant(
+      of: find.byType(HomeSearchBar),
+      matching: find.byType(TextField),
+    );
+
+    testWidgets("a composition is not searched until it is committed", (
+      tester,
+    ) async {
+      await pumpHomeBody(
+        tester,
+        surfaceSize: const Size(1280, 800),
+        homeModel: HomeModel(),
+      );
+      await tester.showKeyboard(paneField());
+
+      // What fcitx5 sends while the reader is still composing: the preedit is
+      // in the field, but it is not a query yet. Searching it would also mean
+      // rebuilding the list under an active composition.
+      tester.testTextInput.log.clear();
+      tester.testTextInput.updateEditingValue(
+        const TextEditingValue(
+          text: "zhong",
+          selection: TextSelection.collapsed(offset: 5),
+          composing: TextRange(start: 0, end: 5),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(HistoryList), findsOneWidget);
+      expect(find.byType(HeadwordPaneList), findsNothing);
+
+      tester.testTextInput.updateEditingValue(
+        const TextEditingValue(
+          text: "中",
+          selection: TextSelection.collapsed(offset: 1),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HeadwordPaneList), findsOneWidget);
+    });
+  });
+
   group("portrait layout", () {
     testWidgets("portrait tablet shows the mobile layout, not the split view", (
       tester,
