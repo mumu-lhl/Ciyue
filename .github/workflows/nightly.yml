@@ -142,15 +142,6 @@ jobs:
           Latest commit: $(git log -1 --pretty=%s)
           Commit hash: $(git rev-parse --short=7 HEAD)
           Build date: $(date -u +'%Y-%m-%dT%H:%M:%SZ')
-
-          ## Downloads
-
-          ### Browser Extension (Chrome & Firefox)
-
-          | Browser | Download |
-          | --- | --- |
-          | Chrome / Chromium-based | [ciyue-extension-chrome.zip](${RELEASE_ASSET_BASE}/ciyue-extension-chrome.zip) |
-          | Firefox | [ciyue-extension-firefox.zip](${RELEASE_ASSET_BASE}/ciyue-extension-firefox.zip) |
           DELIMITER
           EOF
 
