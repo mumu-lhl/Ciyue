@@ -1,8 +1,11 @@
 import "dart:async";
 
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/search_bar.dart";
+import "package:ciyue/ui/core/word_display/buttons.dart";
+import "package:ciyue/ui/core/word_display/entry_actions.dart";
 import "package:ciyue/ui/core/word_display/paging_buttons.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -119,6 +122,7 @@ class _MobileWordBrowserState extends ConsumerState<MobileWordBrowser> {
                     showBackButton: true,
                     bottomNavigationBar: MobileWordBottomBar(
                       homeModel: homeModel,
+                      word: activeWord,
                     ),
                   )),
     );
@@ -248,7 +252,15 @@ class MobileNewTabPage extends ConsumerWidget {
 class MobileWordBottomBar extends ConsumerWidget {
   final HomeModel homeModel;
 
-  const MobileWordBottomBar({super.key, required this.homeModel});
+  /// The word on screen. Empty on the new-tab page, where the entry actions
+  /// have nothing to act on.
+  final String word;
+
+  const MobileWordBottomBar({
+    super.key,
+    required this.homeModel,
+    this.word = "",
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -258,6 +270,184 @@ class MobileWordBottomBar extends ConsumerWidget {
     final eInkMode = ref.watch(
       settingsProvider.select((settings) => settings.eInkMode),
     );
+    final preset = ref.watch(
+      settingsProvider.select((settings) => settings.mobileToolbarPreset),
+    );
+
+    // The entry actions move into the bar only when the user picked a bottom
+    // bar preset; the floating preset keeps them as bottom action buttons.
+    final showEntryActions =
+        word.isNotEmpty && preset != MobileToolbarPreset.floating;
+    // Paging is shown whenever e-ink mode is on (its original home) or when the
+    // paging preset asks for it. One condition keeps the two sources from
+    // adding the same buttons twice.
+    final showPaging = eInkMode || preset == MobileToolbarPreset.eInkPaging;
+    // E-ink readers usually have no speaker, so the paging preset trades the
+    // pronunciation button for the two paging buttons.
+    final showPronunciation =
+        showEntryActions && preset != MobileToolbarPreset.eInkPaging;
+
+    final twoRows =
+        preset == MobileToolbarPreset.bottomDouble && showEntryActions;
+
+    final navigation = <Widget>[
+      IconButton(
+        tooltip: locale.back,
+        icon: const Icon(Icons.arrow_back_rounded),
+        onPressed: homeModel.canGoBack ? () => homeModel.goBack() : null,
+      ),
+      IconButton(
+        tooltip: locale.forward,
+        icon: const Icon(Icons.arrow_forward_rounded),
+        onPressed: homeModel.canGoForward ? () => homeModel.goForward() : null,
+      ),
+      IconButton(
+        tooltip: locale.newTab,
+        icon: const Icon(Icons.add_rounded),
+        onPressed: () => homeModel.newTab(),
+      ),
+      Tooltip(
+        message: locale.tabs,
+        child: InkWell(
+          onTap: () => homeModel.toggleTabOverview(),
+          borderRadius: BorderRadius.circular(7),
+          child: Container(
+            width: 26,
+            height: 26,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: colorScheme.onSurfaceVariant,
+                width: 1.8,
+              ),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Text(
+              "${homeModel.tabs.length}",
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurfaceVariant,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ),
+      ),
+      PopupMenuButton<String>(
+        tooltip: locale.more,
+        icon: const Icon(Icons.more_vert_rounded),
+        onSelected: (value) {
+          switch (value) {
+            case "refresh_ai":
+              refreshAIExplanation(ref, word);
+              break;
+            case "edit_ai":
+              editAIExplanation(context, ref, word);
+              break;
+            case "close_tab":
+              homeModel.closeTab(homeModel.activeTabIndex);
+              if (homeModel.tabs.isEmpty && context.canPop()) {
+                context.pop();
+              }
+              break;
+            case "close_other_tabs":
+              homeModel.closeOtherTabs(homeModel.activeTabIndex);
+              break;
+            case "close_all_tabs":
+              homeModel.closeAllTabs();
+              if (context.canPop()) {
+                context.pop();
+              }
+              break;
+          }
+        },
+        itemBuilder: (context) => [
+          // The AI actions would make one row too crowded, so the bar offers
+          // them here instead of as extra buttons.
+          if (showEntryActions && entryAIActionsVisible.value) ...[
+            PopupMenuItem(
+              value: "refresh_ai",
+              child: Row(
+                children: [
+                  const Icon(Icons.refresh, size: 18),
+                  const SizedBox(width: 8),
+                  Text(locale.update),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: "edit_ai",
+              child: Row(
+                children: [
+                  const Icon(Icons.edit, size: 18),
+                  const SizedBox(width: 8),
+                  Text(locale.editAIExplanation),
+                ],
+              ),
+            ),
+          ],
+          PopupMenuItem(
+            value: "close_tab",
+            child: Row(
+              children: [
+                const Icon(Icons.close_rounded, size: 18),
+                const SizedBox(width: 8),
+                Text(locale.closeTab),
+              ],
+            ),
+          ),
+          if (homeModel.tabs.length > 1)
+            PopupMenuItem(
+              value: "close_other_tabs",
+              child: Row(
+                children: [
+                  const Icon(Icons.tab_unselected_rounded, size: 18),
+                  const SizedBox(width: 8),
+                  Text(locale.closeOtherTabs),
+                ],
+              ),
+            ),
+          PopupMenuItem(
+            value: "close_all_tabs",
+            child: Row(
+              children: [
+                const Icon(Icons.clear_all_rounded, size: 18),
+                const SizedBox(width: 8),
+                Text(locale.closeAllTabs),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ];
+
+    final entryActions = <Widget>[
+      if (showEntryActions) WordStarIconButton(word: word),
+      if (showPronunciation) WordPronounceIconButton(word: word),
+    ];
+
+    final paging = <Widget>[
+      if (showPaging) ...[
+        const PagingButton(screens: -1, compact: true),
+        const PagingButton(screens: 1, compact: true),
+      ],
+    ];
+
+    // With the floating preset the bar keeps its original shape: navigation
+    // first and the paging buttons at the far right.
+    final singleRow = <Widget>[
+      ...navigation,
+      if (!showEntryActions) ...paging,
+      ...entryActions,
+      if (showEntryActions) ...paging,
+    ];
+
+    // The entry actions make the row longer than a narrow phone fits at the
+    // default size, so the bottom bar presets use the compact metrics.
+    final compact =
+        eInkMode ||
+        preset == MobileToolbarPreset.bottomSingle ||
+        preset == MobileToolbarPreset.eInkPaging;
 
     return Container(
       decoration: BoxDecoration(
@@ -272,132 +462,37 @@ class MobileWordBottomBar extends ConsumerWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 54,
-          // Seven buttons on a narrow phone would not fit at the default
-          // size; the e-ink mode shrinks them a little so they all stay
-          // reachable. Every other mode keeps the default sizes.
+          height: twoRows ? 96 : 54,
           child: IconButtonTheme(
             data: IconButtonThemeData(
-              style: eInkMode
+              style: compact
                   ? IconButton.styleFrom(
                       minimumSize: const Size(36, 36),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     )
                   : null,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  tooltip: locale.back,
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  onPressed: homeModel.canGoBack
-                      ? () => homeModel.goBack()
-                      : null,
-                ),
-                IconButton(
-                  tooltip: locale.forward,
-                  icon: const Icon(Icons.arrow_forward_rounded),
-                  onPressed: homeModel.canGoForward
-                      ? () => homeModel.goForward()
-                      : null,
-                ),
-                IconButton(
-                  tooltip: locale.newTab,
-                  icon: const Icon(Icons.add_rounded),
-                  onPressed: () => homeModel.newTab(),
-                ),
-                Tooltip(
-                  message: locale.tabs,
-                  child: InkWell(
-                    onTap: () => homeModel.toggleTabOverview(),
-                    borderRadius: BorderRadius.circular(7),
-                    child: Container(
-                      width: 26,
-                      height: 26,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: colorScheme.onSurfaceVariant,
-                          width: 1.8,
-                        ),
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                      child: Text(
-                        "${homeModel.tabs.length}",
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurfaceVariant,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  tooltip: locale.more,
-                  icon: const Icon(Icons.more_vert_rounded),
-                  onSelected: (value) {
-                    switch (value) {
-                      case "close_tab":
-                        homeModel.closeTab(homeModel.activeTabIndex);
-                        if (homeModel.tabs.isEmpty && context.canPop()) {
-                          context.pop();
-                        }
-                        break;
-                      case "close_other_tabs":
-                        homeModel.closeOtherTabs(homeModel.activeTabIndex);
-                        break;
-                      case "close_all_tabs":
-                        homeModel.closeAllTabs();
-                        if (context.canPop()) {
-                          context.pop();
-                        }
-                        break;
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: "close_tab",
-                      child: Row(
-                        children: [
-                          const Icon(Icons.close_rounded, size: 18),
-                          const SizedBox(width: 8),
-                          Text(locale.closeTab),
-                        ],
-                      ),
-                    ),
-                    if (homeModel.tabs.length > 1)
-                      PopupMenuItem(
-                        value: "close_other_tabs",
+            child: twoRows
+                ? Column(
+                    children: [
+                      Expanded(
                         child: Row(
-                          children: [
-                            const Icon(Icons.tab_unselected_rounded, size: 18),
-                            const SizedBox(width: 8),
-                            Text(locale.closeOtherTabs),
-                          ],
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: navigation,
                         ),
                       ),
-                    PopupMenuItem(
-                      value: "close_all_tabs",
-                      child: Row(
-                        children: [
-                          const Icon(Icons.clear_all_rounded, size: 18),
-                          const SizedBox(width: 8),
-                          Text(locale.closeAllTabs),
-                        ],
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [...entryActions, ...paging],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                // The e-ink paging buttons sit at the far right of the bar,
-                // matching the entry app bar on wide screens.
-                if (eInkMode) ...[
-                  const PagingButton(screens: -1, compact: true),
-                  const PagingButton(screens: 1, compact: true),
-                ],
-              ],
-            ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: singleRow,
+                  ),
           ),
         ),
       ),

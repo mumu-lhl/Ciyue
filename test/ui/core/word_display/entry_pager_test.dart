@@ -36,6 +36,40 @@ void main() {
     setExpansionEntryPager(null);
     setActiveEntryDict(null);
     settings.eInkMode = false;
+    settings.mobileToolbarPreset = MobileToolbarPreset.floating;
+  });
+
+  group("shouldPageWebView", () {
+    test("follows the e-ink switch", () {
+      expect(
+        shouldPageWebView(eInkMode: true, preset: MobileToolbarPreset.floating),
+        isTrue,
+      );
+      expect(
+        shouldPageWebView(
+          eInkMode: false,
+          preset: MobileToolbarPreset.floating,
+        ),
+        isFalse,
+      );
+    });
+
+    test("the paging preset pages without the e-ink switch", () {
+      expect(
+        shouldPageWebView(
+          eInkMode: false,
+          preset: MobileToolbarPreset.eInkPaging,
+        ),
+        isTrue,
+      );
+      expect(
+        shouldPageWebView(
+          eInkMode: false,
+          preset: MobileToolbarPreset.bottomSingle,
+        ),
+        isFalse,
+      );
+    });
   });
 
   group("registry", () {

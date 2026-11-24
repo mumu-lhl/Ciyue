@@ -12,6 +12,7 @@ import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
+import "package:ciyue/ui/core/word_display/entry_actions.dart";
 import "package:ciyue/ui/core/word_display/expansion_display.dart";
 import "package:ciyue/ui/core/word_display/missing_word_suggestions.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
@@ -260,6 +261,10 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
     _word = selected != null && selected.isNotEmpty ? selected : widget.word;
     final settings = ref.watch(settingsProvider);
     final showAIExplain = isAiExplainWordEnabled(settings);
+    // The floating preset is the only one that keeps the action buttons off the
+    // bottom bar, so it also keeps the AI actions floating.
+    final floatingEntryActions =
+        settings.mobileToolbarPreset == MobileToolbarPreset.floating;
     // The theme reaches an entry through a user script that only runs when the
     // WebView is created. The tab key below carries this flag, so a flip
     // rebuilds the views exactly like a dictionary-group switch does.
@@ -318,6 +323,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
           data: (validDictIds) {
             if (validDictIds.isEmpty && !showAIExplain) {
               final searchBar = _buildSearchBar(settings);
+              publishEntryAIActions(false);
               return Scaffold(
                 appBar: buildAppBar(context, false, title: searchBar),
                 bottomNavigationBar:
@@ -363,6 +369,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               // hand the focus back to.
               if (!widget.inLookupPopup) activeEntryDictId = null;
               final searchBar = _buildSearchBar(settings);
+              publishEntryAIActions(showAIExplain && !widget.inLookupPopup);
               return Scaffold(
                 appBar: buildAppBar(
                   context,
@@ -379,7 +386,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                     ? null
                     : Button(
                         word: _word,
-                        showAIButtons: showAIExplain && !widget.inLookupPopup,
+                        showAIButtons:
+                            showAIExplain &&
+                            !widget.inLookupPopup &&
+                            floatingEntryActions,
+                        showWordButtons: floatingEntryActions,
                       ),
                 body: SafeArea(
                   top: false,
@@ -460,6 +471,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                       builder: (context, child) {
                         final isAIExplainTabSelected =
                             showAIExplain && tabController.index == 0;
+                        publishEntryAIActions(
+                          isAIExplainTabSelected && !widget.inLookupPopup,
+                        );
 
                         return Scaffold(
                           appBar: buildAppBar(
@@ -476,7 +490,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                                   word: _word,
                                   showAIButtons:
                                       isAIExplainTabSelected &&
-                                      !widget.inLookupPopup,
+                                      !widget.inLookupPopup &&
+                                      floatingEntryActions,
+                                  showWordButtons: floatingEntryActions,
                                 ),
                           body: SafeArea(
                             top: false,
@@ -532,6 +548,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   : null;
             }
 
+            publishEntryAIActions(false);
             return ExpansionWordDisplay(
               word: _word,
               validDictIds: validDictIds,
@@ -543,6 +560,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             );
           },
           loading: () {
+            publishEntryAIActions(false);
             final searchBar = _buildSearchBar(settings);
             final firstLoadedDictId = dictManager.dictIds.firstWhere(
               (id) => dictManager.dicts[id]?.isReady == true,
@@ -591,6 +609,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             );
           },
           error: (err, stack) {
+            publishEntryAIActions(false);
             final searchBar = _buildSearchBar(settings);
             return Scaffold(
               appBar: buildAppBar(context, false, title: searchBar),
