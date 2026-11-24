@@ -47,6 +47,13 @@ class MainFlutterWindow: NSWindow {
     )
     (NSApp.delegate as? AppDelegate)?.attachCommandLineChannel(commandLineChannel)
 
+    // Native selection access for the lookup popup: reads the frontmost
+    // app's selected text, synthesizes Cmd+C, and reports the frontmost
+    // app's bundle id.
+    SelectionChannel.register(
+      with: flutterViewController.engine.binaryMessenger
+    )
+
     RegisterGeneratedPlugins(registry: flutterViewController)
 
     super.awakeFromNib()

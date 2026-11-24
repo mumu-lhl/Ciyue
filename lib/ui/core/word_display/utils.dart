@@ -71,8 +71,33 @@ Widget? buildTitle(
   }
 }
 
-Widget withFloatingWindowBackHandler(BuildContext context, Widget child) {
-  final canPop = context.canPop();
+/// Guards the system back gesture for a window without a route stack.
+///
+/// [onPopAttempt] is the desktop lookup popup's own close: that window is a
+/// second View in the same process, so the process-wide
+/// [runningInFloatingWindow] flag (set only at the Android floating-window
+/// entry) never covers it, and the "back closes" branch below would be dead
+/// code there. When given, a back attempt closes through the callback
+/// instead of the router.
+Widget withFloatingWindowBackHandler(
+  BuildContext context,
+  Widget child, {
+  VoidCallback? onPopAttempt,
+}) {
+  // The lookup popup runs a plain MaterialApp with no router, so there may
+  // be no GoRouter ancestor at all: GoRouter.maybeOf returns null there
+  // instead of throwing, and a popup with no route stack cannot pop.
+  final canPop = GoRouter.maybeOf(context)?.canPop() ?? false;
+
+  if (onPopAttempt != null) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) onPopAttempt();
+      },
+      child: child,
+    );
+  }
 
   return PopScope(
     canPop: !runningInFloatingWindow || canPop,

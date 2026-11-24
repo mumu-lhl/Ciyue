@@ -16,11 +16,15 @@ import "package:ciyue/services/single_instance.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/font_fallback.dart";
+import "package:ciyue/ui/core/lookup_popup_host.dart";
+import "package:ciyue/ui/pages/lookup_popup/lookup_bubble_page.dart";
 import "package:ciyue/services/floating_window_preferences.dart";
 import "package:ciyue/ui/core/floating_window_shell.dart";
 import "package:ciyue/utils.dart";
 import "package:drift/drift.dart" as drift;
 import "package:dynamic_color/dynamic_color.dart";
+// ignore: implementation_imports
+import "package:flutter/src/foundation/_features.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -29,6 +33,14 @@ import "package:shared_preferences/util/legacy_to_async_migration_util.dart";
 import "package:nativeapi/nativeapi.dart" as nativeapi;
 
 void main(List<String> args) async {
+  if (isDesktop()) {
+    // The desktop lookup popup renders into a second native window through
+    // Flutter's experimental multi-window API; enabling it in code keeps
+    // the build free of a `flutter config --enable-windowing` flag.
+    // ignore: invalid_use_of_internal_member
+    isWindowingEnabled = true;
+  }
+
   WidgetsFlutterBinding.ensureInitialized();
 
   var allArgs = args;
@@ -87,7 +99,13 @@ void main(List<String> args) async {
 
   // Show a splash immediately so the first frame isn't blocked on disk I/O
   // (prefs migration) and heavy init.
-  runApp(const ProviderScope(child: _StartupSplash()));
+  runApp(
+    ProviderScope(
+      child: LookupBubbleHost(
+        child: LookupPopupHost(child: const _StartupSplash()),
+      ),
+    ),
+  );
   try {
     drift.driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
@@ -102,7 +120,11 @@ void main(List<String> args) async {
 
     await initApp();
 
-    runApp(const ProviderScope(child: Ciyue()));
+    runApp(
+      ProviderScope(
+        child: LookupBubbleHost(child: LookupPopupHost(child: const Ciyue())),
+      ),
+    );
 
     if (options.hasUiActions) {
       unawaited(_applyOptionsWhenReady(options));

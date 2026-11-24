@@ -44,6 +44,21 @@ class WordDisplay extends ConsumerStatefulWidget {
   /// other caller manages `selectedWord` itself or shows a different word.
   final bool syncSelectionOnOpen;
 
+  /// True when this display is embedded in the desktop lookup popup.
+  ///
+  /// The popup has no router, no tabs and no home pane, so the display
+  /// must not touch the main window: it hides its title search box (the
+  /// popup has its own) and its chat button (which would push a route),
+  /// never takes over the shared tab controller or active-entry id, and
+  /// reports a system back attempt through [onPopAttempt] instead of the
+  /// router. The main window never sets this, so its behaviour is
+  /// untouched.
+  final bool inLookupPopup;
+
+  /// Called when the system back gesture fires inside the popup, where
+  /// there is no route to pop. Only used with [inLookupPopup].
+  final VoidCallback? onPopAttempt;
+
   const WordDisplay({
     super.key,
     required this.word,
@@ -52,6 +67,8 @@ class WordDisplay extends ConsumerStatefulWidget {
     this.showBackButton = true,
     this.bottomNavigationBar,
     this.syncSelectionOnOpen = false,
+    this.inLookupPopup = false,
+    this.onPopAttempt,
   });
 
   @override
@@ -120,6 +137,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   }
 
   Widget? _buildSearchBar(Settings settings) {
+    // The popup has its own search field above this display; a second box
+    // here would send its picks to the main window's selection instead.
+    if (widget.inLookupPopup) return null;
     return buildTitle(
       _word,
       settings,
@@ -188,11 +208,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   }
 
   void _goBack(BuildContext context) {
-    if (context.canPop()) {
+    if (GoRouter.maybeOf(context)?.canPop() ?? false) {
       context.pop();
     } else if (runningInFloatingWindow) {
       unawaited(dismissFloatingWindow());
-    } else {
+    } else if (GoRouter.maybeOf(context) != null) {
       context.go("/");
     }
   }
@@ -203,14 +223,16 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
       _tabController?.removeListener(_tabListener!);
     }
     // Only clear the shared controller when it is still the one this entry
-    // handed over: a newer entry may have taken over already.
-    if (identical(dictTabController, _tabController)) {
+    // handed over: a newer entry may have taken over already. A popup
+    // display never owned it, so it must not clear the main window's.
+    if (!widget.inLookupPopup && identical(dictTabController, _tabController)) {
       dictTabController = null;
     }
     // The node is disposed right below, so the global pointer has to let go
     // of it first: handing the focus to a disposed node is an assertion
     // failure.
-    if (identical(pageSearchFocusNode, _searchFocusNode)) {
+    if (!widget.inLookupPopup &&
+        identical(pageSearchFocusNode, _searchFocusNode)) {
       pageSearchFocusNode = null;
     }
     _searchFocusNode.dispose();
@@ -222,7 +244,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
   Widget build(BuildContext context) {
     // A pushed entry page owns its title search box. The pane inside the home
     // split view does not, so the home page's box stays the default there.
-    if (widget.showBackButton) {
+    // A popup display owns no box at all (see _buildSearchBar), so it must
+    // not register its focus node as the page's either.
+    if (widget.showBackButton && !widget.inLookupPopup) {
       pageSearchFocusNode = _searchFocusNode;
     }
     // A pushed entry page follows the tab's current word so a lookup swaps the
@@ -335,7 +359,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             if (!showTab && validDictIds.isEmpty) {
               // Only the AI explanation is on screen; there is no entry to
               // hand the focus back to.
-              activeEntryDictId = null;
+              if (!widget.inLookupPopup) activeEntryDictId = null;
               final searchBar = _buildSearchBar(settings);
               return Scaffold(
                 appBar: buildAppBar(
@@ -353,7 +377,8 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                     ? null
                     : Button(
                         word: _word,
-                        showAIButtons: settings.aiExplainWord,
+                        showAIButtons:
+                            settings.aiExplainWord && !widget.inLookupPopup,
                       ),
                 body: SafeArea(
                   top: false,
@@ -403,25 +428,30 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   builder: (context) {
                     final tabController = DefaultTabController.of(context);
                     // The shortcut that switches dictionaries lives outside the
-                    // entry, so the tab bar hands its controller over.
-                    if (!identical(_tabController, tabController)) {
-                      if (_tabListener != null) {
-                        _tabController?.removeListener(_tabListener!);
+                    // entry, so the tab bar hands its controller over — except
+                    // in the popup, whose tabs the main window's shortcuts
+                    // must never drive, and which must not clear the main
+                    // window's controller when it closes.
+                    if (!widget.inLookupPopup) {
+                      if (!identical(_tabController, tabController)) {
+                        if (_tabListener != null) {
+                          _tabController?.removeListener(_tabListener!);
+                        }
+                        _tabController = tabController;
+                        _tabListener = () => _syncActiveEntry(
+                          tabController,
+                          validDictIds,
+                          settings.aiExplainWord,
+                        );
+                        tabController.addListener(_tabListener!);
                       }
-                      _tabController = tabController;
-                      _tabListener = () => _syncActiveEntry(
+                      dictTabController = tabController;
+                      _syncActiveEntry(
                         tabController,
                         validDictIds,
                         settings.aiExplainWord,
                       );
-                      tabController.addListener(_tabListener!);
                     }
-                    dictTabController = tabController;
-                    _syncActiveEntry(
-                      tabController,
-                      validDictIds,
-                      settings.aiExplainWord,
-                    );
                     final searchBar = _buildSearchBar(settings);
 
                     return ListenableBuilder(
@@ -443,7 +473,9 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                               ? null
                               : Button(
                                   word: _word,
-                                  showAIButtons: isAIExplainTabSelected,
+                                  showAIButtons:
+                                      isAIExplainTabSelected &&
+                                      !widget.inLookupPopup,
                                 ),
                           body: SafeArea(
                             top: false,
@@ -490,11 +522,14 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
 
             // The expansion layout has no tab bar. Drop the controller left
             // over from the tab layout so the shortcut cannot switch a tab
-            // that is no longer on screen.
-            dictTabController = null;
-            activeEntryDictId = validDictIds.isNotEmpty
-                ? validDictIds.first
-                : null;
+            // that is no longer on screen — unless this is the popup, which
+            // never owned the shared controller or entry id.
+            if (!widget.inLookupPopup) {
+              dictTabController = null;
+              activeEntryDictId = validDictIds.isNotEmpty
+                  ? validDictIds.first
+                  : null;
+            }
 
             return ExpansionWordDisplay(
               word: _word,
@@ -503,6 +538,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               pagerInfo: widget.pagerInfo,
               showBackButton: widget.showBackButton,
               bottomNavigationBar: widget.bottomNavigationBar,
+              inLookupPopup: widget.inLookupPopup,
             );
           },
           loading: () {
@@ -511,9 +547,11 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               (id) => dictManager.dicts[id]?.isReady == true,
               orElse: () => -1,
             );
-            activeEntryDictId = firstLoadedDictId != -1
-                ? firstLoadedDictId
-                : null;
+            if (!widget.inLookupPopup) {
+              activeEntryDictId = firstLoadedDictId != -1
+                  ? firstLoadedDictId
+                  : null;
+            }
 
             return Scaffold(
               appBar: buildAppBar(context, false, title: searchBar),
@@ -568,6 +606,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             );
           },
         ),
+        onPopAttempt: widget.onPopAttempt,
       ),
     );
   }
@@ -656,19 +695,24 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         if (isDesktopScreen) ...[
           WordPronounceIconButton(word: _word),
           WordStarIconButton(word: _word),
-          if (showAIButtons) ...[
+          // The AI edit button pushes a route, which the popup has none
+          // of, so no AI buttons are shown there at all.
+          if (showAIButtons && !widget.inLookupPopup) ...[
             RefreshAIExplainIconButton(word: _word),
             EditAIExplainIconButton(word: _word),
           ],
         ],
-        IconButton(
-          // The home top row offers a general chat; this one is scoped to
-          // the word on screen, so the tooltip says which.
-          tooltip: locale.askAboutWord(_word),
-          icon: const Icon(Icons.chat_bubble_outline),
-          onPressed: () =>
-              context.push("/chat?word=${Uri.encodeComponent(_word)}"),
-        ),
+        // The chat button pushes "/chat?...": hidden in the popup, which
+        // has no router to push onto.
+        if (!widget.inLookupPopup)
+          IconButton(
+            // The home top row offers a general chat; this one is scoped to
+            // the word on screen, so the tooltip says which.
+            tooltip: locale.askAboutWord(_word),
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () =>
+                context.push("/chat?word=${Uri.encodeComponent(_word)}"),
+          ),
         IconButton(
           tooltip: locale.copy,
           icon: const Icon(Icons.copy),

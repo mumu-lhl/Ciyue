@@ -29,6 +29,35 @@ String? _lastOpenWordName;
 String? _lastOpenWordAnchor;
 bool? _lastOpenWordIsNewTab;
 
+/// Carries the lookup popup's in-page navigation target down to [WordDisplay].
+///
+/// The popup has no router and must never touch the main window's tab or
+/// history, so [handleOpenWordNavigation] hands the word to this callback
+/// instead when one is installed above it. [LookupPopupPage] installs it
+/// above its [WordDisplay]; the main window never does, so its navigation
+/// is untouched. Looked up without subscribing: the callback is only read
+/// from tap handlers, never during a build.
+class PopupWordNavigationScope extends InheritedWidget {
+  const PopupWordNavigationScope({
+    super.key,
+    required this.onOpenWord,
+    required super.child,
+  });
+
+  final ValueChanged<String> onOpenWord;
+
+  static ValueChanged<String>? maybeOf(BuildContext context) {
+    final element = context
+        .getElementForInheritedWidgetOfExactType<PopupWordNavigationScope>();
+    if (element == null) return null;
+    return (element.widget as PopupWordNavigationScope).onOpenWord;
+  }
+
+  @override
+  bool updateShouldNotify(PopupWordNavigationScope oldWidget) =>
+      onOpenWord != oldWidget.onOpenWord;
+}
+
 void handleOpenWordNavigation(
   BuildContext context,
   String rawWord, {
@@ -64,6 +93,17 @@ void handleOpenWordNavigation(
         .request(word: word, dictId: dictId, anchor: anchor);
   } catch (_) {}
 
+  // Inside the lookup popup the word stays in the popup: the popup has no
+  // router and no tabs, so the main window's tab, history and open records
+  // must not move, and a push would throw. The popup's own page swaps to
+  // the word through this callback instead. A new-tab request degrades to
+  // the same in-place swap: the popup has nowhere else to put it.
+  final popupOpenWord = PopupWordNavigationScope.maybeOf(context);
+  if (popupOpenWord != null) {
+    popupOpenWord(word);
+    return;
+  }
+
   // Whether the lookup lands on the home page's pane or on the page that is
   // on screen is a question about the route, not about the window size: a
   // wide window can still show a pushed entry page, and that page has to
@@ -76,6 +116,10 @@ void handleOpenWordNavigation(
     isAlreadyInWordRoute = false;
   }
 
+  // A context with no router (the popup, reached without the scope above)
+  // can still move the main window's tab, but must never push a route.
+  final hasRouter = GoRouter.maybeOf(context) != null;
+
   if (isLargeScreen(context)) {
     if (isAlreadyInWordRoute) {
       // The reader is looking at an entry page of their own, and that is the
@@ -83,7 +127,7 @@ void handleOpenWordNavigation(
       // instead would leave the reader staring at the old word until they
       // go back to the home page.
       final query = dictId != null ? "?dictId=$dictId" : "";
-      if (context.mounted) {
+      if (context.mounted && hasRouter) {
         context.pushReplacement("/word/${Uri.encodeComponent(word)}$query");
       }
     }
@@ -111,7 +155,7 @@ void handleOpenWordNavigation(
       }
     } catch (_) {}
 
-    if (!isAlreadyInWordRoute && context.mounted) {
+    if (!isAlreadyInWordRoute && context.mounted && hasRouter) {
       final query = dictId != null ? "?dictId=$dictId" : "";
       unawaited(context.push("/word/${Uri.encodeComponent(word)}$query"));
     }

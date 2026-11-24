@@ -2,9 +2,9 @@ import "package:args/args.dart";
 
 /// Options parsed from the desktop command line or from a `ciyue://` URL.
 ///
-/// PC builds have no popup window, so the goldendict popup options are
-/// accepted for script compatibility and mapped onto the main window; see
-/// [effectiveGroupName] and [window].
+/// The goldendict popup options (`--popup`, `--scanpopup`) target the
+/// lookup popup window; everything else targets the main window. See
+/// [window].
 class CommandLineOptions {
   const CommandLineOptions({
     this.word,
@@ -29,15 +29,15 @@ class CommandLineOptions {
   /// Dictionary group to switch to before the lookup.
   final String? groupName;
 
-  /// goldendict's popup group option. PC builds have no popup window, so
-  /// [effectiveGroupName] falls back to it when [groupName] is absent.
+  /// goldendict's popup group option. [effectiveGroupName] falls back to it
+  /// when [groupName] is absent.
   final String? popupGroupName;
 
   /// Requested target window: `main` or `popup`.
   ///
-  /// PC builds map both to the main window. The field is kept so the message
-  /// forwarded to a running instance and future popup support stay
-  /// compatible.
+  /// `popup` shows the lookup in the popup window; `main` (the default)
+  /// shows it in the main window. The field is kept so the message
+  /// forwarded to a running instance stays compatible.
   final String? window;
 
   final bool logToFile;
@@ -47,8 +47,7 @@ class CommandLineOptions {
   final bool showHelp;
   final bool showVersion;
 
-  /// PC builds have no popup window, so the popup group acts as the main
-  /// group.
+  /// The popup group acts as the main group when no main group is given.
   String? get effectiveGroupName => groupName ?? popupGroupName;
 
   /// Whether startup should print information and exit instead of showing
@@ -263,12 +262,13 @@ class CommandLineParser {
         "scanpopup",
         abbr: "s",
         negatable: false,
-        help: "Accepted for goldendict compatibility; maps to the main window.",
+        help: "Show the lookup popup for the selected text.",
       )
       ..addFlag(
         "popup",
         negatable: false,
-        help: "Accepted for goldendict compatibility; maps to the main window.",
+        help:
+            "Look the word up in the lookup popup instead of the main window.",
       )
       ..addFlag(
         "main-window",

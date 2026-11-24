@@ -7,10 +7,19 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/hunspell.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/cloud_sync/configuration.dart";
+import "package:ciyue/services/desktop_selection_atspi.dart";
+import "package:ciyue/services/desktop_selection_native.dart";
+import "package:ciyue/services/desktop_selection_x11.dart";
+import "package:ciyue/services/focused_app_x11.dart";
 import "package:ciyue/services/global_hotkey.dart";
+import "package:ciyue/services/lookup_bubble.dart";
+import "package:ciyue/services/lookup_hotkey.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/changelog.dart";
 import "package:ciyue/services/platform.dart";
+import "package:ciyue/services/selection_text_provider.dart";
+import "package:ciyue/services/selection_watcher.dart";
+import "package:ciyue/services/selection_watcher_x11.dart";
 import "package:ciyue/services/startup.dart";
 import "package:ciyue/services/updater.dart";
 import "package:ciyue/services/web_server_service.dart";
@@ -254,6 +263,14 @@ Future<void> _showWebView2InstallPromptIfNeeded() async {
   );
 }
 
+/// Whether this engine is the main window on desktop: the lookup popup
+/// runs in a second engine that re-runs [initApp] with [isFloatingWindow]
+/// set, and that engine must not re-register the system hotkeys, restart
+/// the bubble, or resize its own window as if it were the main window.
+@visibleForTesting
+bool shouldInitDesktopMainWindow({required bool isFloatingWindow}) =>
+    isDesktop() && !isFloatingWindow;
+
 Future<void> initApp({bool isFloatingWindow = false}) async {
   runningInFloatingWindow = isFloatingWindow;
   talker.info("Initializing application...");
@@ -386,7 +403,7 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
       windowsWebview2Directory = (await getApplicationCacheDirectory()).path;
     }
 
-    if (isDesktop()) {
+    if (shouldInitDesktopMainWindow(isFloatingWindow: isFloatingWindow)) {
       await StartupService.init();
 
       // The app-wide hotkey is opt-in and off by default; the switch lives in
@@ -395,6 +412,24 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
       // makes KDE ask for approval on every launch, so [GlobalHotkeyService]
       // skips those sessions and leaves the key to the desktop environment.
       await GlobalHotkeyService.apply(settings.enableGlobalHotkey);
+      await initSelectionProviders();
+      // The focused-app resolver serves both the hotkey's exclusion check
+      // and the bubble; install it before the hotkey is registered.
+      final focusedAppResolver = lookupFocusedAppResolver();
+      LookupHotkeyService.focusedAppResolver = focusedAppResolver;
+      // A registration that fails at startup (another program holds the
+      // chord) must not leave the setting claiming the hotkey is on: the
+      // switch reads the preference, so write it back off. Wayland is
+      // excluded: the chord stays saved for the next X11 session.
+      final lookupHotkeyApplied = await LookupHotkeyService.apply(
+        settings.enableLookupHotkey,
+      );
+      if (!lookupHotkeyApplied &&
+          settings.enableLookupHotkey &&
+          LookupHotkeyService.isSupported) {
+        await settings.setEnableLookupHotkey(false);
+      }
+      await restartLookupBubble(focusedAppResolver: focusedAppResolver);
 
       final window = WindowManager.instance.getCurrent();
       if (window != null) {
@@ -413,6 +448,133 @@ Future<void> initApp({bool isFloatingWindow = false}) async {
 
     talker.info("Application initialized successfully.");
   });
+}
+
+/// Installs the Phase 2 lane providers into the selection ladder, each
+/// only when its `isAvailable` says it can work in this process. Until this
+/// runs the ladder is the Phase 1 behaviour (synthetic copy on X11 with
+/// XTest, clipboard everywhere else). Never throws at startup.
+///
+/// AT-SPI2 availability is only known after an async probe of the registry
+/// daemon, so that probe runs first; a missing registry simply leaves the
+/// AT-SPI2 rung uninstalled. Exposed for tests; startup calls it.
+@visibleForTesting
+Future<void> initSelectionProviders() async {
+  try {
+    if (!isDesktop()) return;
+    // Probe AT-SPI2 on its own: the registry may be absent (or its bus
+    // not up yet) at startup, and that must not block the other lanes —
+    // the X11 PRIMARY rung is the one the bubble relies on. Linux only:
+    // Windows and macOS have no session bus, so the probe there could only
+    // fail.
+    if (Platform.isLinux) {
+      try {
+        await AtSpiSelectionProvider.refreshAvailability();
+      } catch (error, stackTrace) {
+        talker.error("Failed to probe AT-SPI2 availability", error, stackTrace);
+      }
+    }
+    SelectionTextProviders.x11PrimaryProvider =
+        X11PrimarySelectionProvider.isAvailable
+        ? X11PrimarySelectionProvider()
+        : null;
+    SelectionTextProviders.atspiProvider = AtSpiSelectionProvider.isAvailable
+        ? AtSpiSelectionProvider()
+        : null;
+    SelectionTextProviders.nativeDesktopProvider = NativeSelection.isAvailable
+        ? const NativeSelectionProvider()
+        : null;
+    SelectionTextProviders.nativeCopySender = NativeSelection.isAvailable
+        ? const NativeCopyKeySender()
+        : null;
+  } catch (error, stackTrace) {
+    talker.error(
+      "Failed to install the selection providers",
+      error,
+      stackTrace,
+    );
+  }
+}
+
+/// The selection watcher for this platform, or null when none exists.
+/// AT-SPI2 (Lane B) first — it works on X11 and Wayland — else XFixes on
+/// X11 (Lane A). Lane C built no watcher, so there is none on
+/// Windows/macOS. The watcher only starts when the bubble is enabled.
+/// Exposed for tests; [restartLookupBubble] calls it.
+@visibleForTesting
+SelectionWatcher? lookupSelectionWatcher() {
+  if (AtSpiSelectionProvider.isAvailable) {
+    return AtSpiSelectionWatcher();
+  }
+  if (Platform.isLinux && !isWaylandSession()) {
+    // isAvailable is an instance getter on the XFixes watcher (it probes
+    // libXfixes on construction), so check the instance, not the class.
+    final watcher = XFixesSelectionWatcher();
+    if (watcher.isAvailable) return watcher;
+  }
+  return null;
+}
+
+/// The focused-app resolver for this platform, or null when none exists.
+/// The X11 resolver (Lane A) on X11, Lane C's native resolver on
+/// Windows/macOS; none on Wayland, where AT-SPI2 reports no focused app.
+/// Exposed for tests; [restartLookupBubble] calls it.
+@visibleForTesting
+FocusedAppResolver? lookupFocusedAppResolver() {
+  if (Platform.isLinux) {
+    if (!isWaylandSession() && X11FocusedAppResolver.isAvailable) {
+      return const X11FocusedAppResolver();
+    }
+    return null;
+  }
+  if ((Platform.isWindows || Platform.isMacOS) && NativeSelection.isAvailable) {
+    return const NativeFocusedAppResolver();
+  }
+  return null;
+}
+
+/// Reports whether the bubble's configured modifier key is held, on X11
+/// only: the X11 modifier state comes from Lane A's helper, and no other
+/// platform has one — there the trigger simply never fires. Exposed for
+/// tests; [restartLookupBubble] calls it.
+@visibleForTesting
+Future<bool> Function(String modifier)? lookupModifierHeld() {
+  if (!Platform.isLinux || isWaylandSession()) return null;
+  return (modifier) async {
+    final parsed = switch (modifier) {
+      "alt" => X11Modifier.alt,
+      "shift" => X11Modifier.shift,
+      _ => X11Modifier.control,
+    };
+    return X11ModifierState.isHeld(parsed);
+  };
+}
+
+/// (Re)builds the desktop lookup bubble from the current preferences and
+/// starts it when enabled. Called at startup and whenever a bubble
+/// preference changes in Settings, so toggling the switch or changing the
+/// trigger takes effect without a restart. The service instance itself is
+/// never replaced (see [LookupBubbleService.instance]): [reconfigure]
+/// updates it in place, so the bubble host — which captured the instance
+/// at construction — keeps listening to the live service. A disabled
+/// bubble leaves the service stopped with no watcher behind. Never throws.
+Future<void> restartLookupBubble({
+  FocusedAppResolver? focusedAppResolver,
+}) async {
+  try {
+    if (!isDesktop()) return;
+    await LookupBubbleService.instance.reconfigure(
+      enabled: settings.enableLookupBubble,
+      trigger: settings.lookupBubbleTrigger,
+      modifier: settings.lookupBubbleModifier,
+      excludedApps: settings.lookupExcludedApps,
+      watcher: lookupSelectionWatcher(),
+      focusedAppResolver: focusedAppResolver ?? lookupFocusedAppResolver(),
+      isModifierHeld: lookupModifierHeld(),
+    );
+  } catch (error, stackTrace) {
+    talker.error("Failed to start the lookup bubble", error, stackTrace);
+  }
 }
 
 const preferencesAllowList = <String>{
@@ -512,6 +674,12 @@ const preferencesAllowList = <String>{
   "autoFocusSearch",
   "launchAtStartup",
   "enableGlobalHotkey",
+  "enableLookupHotkey",
+  "enableLookupBubble",
+  "lookupBubbleTrigger",
+  "lookupBubbleModifier",
+  "lookupExcludedApps",
+  "lookupHotkeyChord",
   "flashcardDailyNewLimit",
   "enableWebServer",
   "webServerPort",

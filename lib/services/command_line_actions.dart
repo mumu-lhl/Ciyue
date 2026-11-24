@@ -4,6 +4,7 @@ import "dart:io";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/services/command_line.dart";
+import "package:ciyue/services/lookup_popup.dart";
 import "package:ciyue/services/platform.dart";
 import "package:ciyue/utils.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -114,13 +115,20 @@ Future<void> applyCommandLineOptions(
     await _switchToGroup(container, groupName);
   }
 
+  final word = options.word;
+  if (options.window == "popup" && isDesktop()) {
+    // The popup fetches the selected text itself when no word was given,
+    // and the main window stays where it is.
+    await LookupPopupService.instance.showLookup(word);
+    return;
+  }
+
   final wantsWindow =
-      options.word != null || options.togglePopup || options.window != null;
+      word != null || options.togglePopup || options.window != null;
   if (wantsWindow && isDesktop()) {
     await _bringToFront();
   }
 
-  final word = options.word;
   if (word != null) {
     navigateToProcessText(word);
   }

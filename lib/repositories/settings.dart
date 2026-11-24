@@ -157,6 +157,32 @@ class Settings extends ChangeNotifier {
   /// grab a system-wide key unless the user asks for it.
   late bool enableGlobalHotkey;
 
+  /// Whether the user enabled the desktop-wide hotkey that looks up the
+  /// selected text in a popup window. Off by default, same as the global
+  /// hotkey above: the app must not grab a system-wide key unless the user
+  /// asks for it.
+  late bool enableLookupHotkey;
+
+  /// Whether the user enabled the bubble that appears when text is selected
+  /// in another app. Off by default: it watches selections system-wide.
+  late bool enableLookupBubble;
+
+  /// When the lookup bubble appears: "selection" (any selection shows it)
+  /// or "modifier" (only while the [lookupBubbleModifier] key is held).
+  late String lookupBubbleTrigger;
+
+  /// The modifier key that gates the bubble when [lookupBubbleTrigger] is
+  /// "modifier": "control" | "alt" | "shift".
+  late String lookupBubbleModifier;
+
+  /// App ids the lookup popup never triggers for, matched case-insensitively
+  /// by the lookup exclusion service. Empty by default: nothing is excluded.
+  late List<String> lookupExcludedApps;
+
+  /// The custom lookup hotkey chord, as JSON from `HotKey.toJson`. Empty
+  /// means the built-in default chord; see `LookupHotkeyService.parseChord`.
+  late String lookupHotkeyChord;
+
   late int flashcardDailyNewLimit;
 
   late bool enableWebServer;
@@ -174,6 +200,24 @@ class Settings extends ChangeNotifier {
   void _readFromPrefs() {
     launchAtStartup = prefs.getBool("launchAtStartup") ?? false;
     enableGlobalHotkey = prefs.getBool("enableGlobalHotkey") ?? false;
+    enableLookupHotkey = prefs.getBool("enableLookupHotkey") ?? false;
+    enableLookupBubble = prefs.getBool("enableLookupBubble") ?? false;
+    // Unknown stored values fall back to the defaults rather than reaching
+    // the UI or the watcher.
+    final lookupBubbleTriggerValue = prefs.getString("lookupBubbleTrigger");
+    lookupBubbleTrigger = switch (lookupBubbleTriggerValue) {
+      "modifier" => "modifier",
+      "doubleClick" => "doubleClick",
+      _ => "selection",
+    };
+    final lookupBubbleModifierValue = prefs.getString("lookupBubbleModifier");
+    lookupBubbleModifier = switch (lookupBubbleModifierValue) {
+      "alt" => "alt",
+      "shift" => "shift",
+      _ => "control",
+    };
+    lookupExcludedApps = prefs.getStringList("lookupExcludedApps") ?? [];
+    lookupHotkeyChord = prefs.getString("lookupHotkeyChord") ?? "";
     flashcardDailyNewLimit = prefs.getInt("flashcardDailyNewLimit") ?? 20;
     enableWebServer = prefs.getBool("enableWebServer") ?? false;
     webServerPort = prefs.getInt("webServerPort") ?? 47117;
@@ -756,6 +800,48 @@ class Settings extends ChangeNotifier {
   Future<void> setEnableGlobalHotkey(bool value) async {
     enableGlobalHotkey = value;
     await prefs.setBool("enableGlobalHotkey", value);
+    notifyListeners();
+  }
+
+  Future<void> setEnableLookupHotkey(bool value) async {
+    enableLookupHotkey = value;
+    await prefs.setBool("enableLookupHotkey", value);
+    notifyListeners();
+  }
+
+  Future<void> setEnableLookupBubble(bool value) async {
+    enableLookupBubble = value;
+    await prefs.setBool("enableLookupBubble", value);
+    notifyListeners();
+  }
+
+  Future<void> setLookupBubbleTrigger(String value) async {
+    lookupBubbleTrigger = switch (value) {
+      "modifier" => "modifier",
+      "doubleClick" => "doubleClick",
+      _ => "selection",
+    };
+    await prefs.setString("lookupBubbleTrigger", lookupBubbleTrigger);
+    notifyListeners();
+  }
+
+  Future<void> setLookupBubbleModifier(String value) async {
+    lookupBubbleModifier = value == "alt" || value == "shift"
+        ? value
+        : "control";
+    await prefs.setString("lookupBubbleModifier", lookupBubbleModifier);
+    notifyListeners();
+  }
+
+  Future<void> setLookupExcludedApps(List<String> apps) async {
+    lookupExcludedApps = List.of(apps);
+    await prefs.setStringList("lookupExcludedApps", lookupExcludedApps);
+    notifyListeners();
+  }
+
+  Future<void> setLookupHotkeyChord(String value) async {
+    lookupHotkeyChord = value;
+    await prefs.setString("lookupHotkeyChord", value);
     notifyListeners();
   }
 

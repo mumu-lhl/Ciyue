@@ -96,6 +96,7 @@ dependencies:
   nativeapi: ^0.6.1
   simple_secure_storage: ^0.4.3
   dartssh2: ^4.1.0
+  dbus: ^0.8.0
   s3_client: ^1.0.0
   http: ^1.6.0
   image_picker: ^1.2.4

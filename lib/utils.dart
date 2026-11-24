@@ -103,3 +103,20 @@ bool isWaylandSession() {
   final waylandDisplay = Platform.environment["WAYLAND_DISPLAY"];
   return waylandDisplay != null && waylandDisplay.isNotEmpty;
 }
+
+/// The session variables [isWaylandSession] reads, for failure logs: a
+/// hotkey that fails to register on a session that merely claims to be X11
+/// is otherwise indistinguishable from a chord another program holds.
+/// Only the variables the detection uses; values are session metadata, not
+/// user data.
+String sessionEnvironmentDescription() {
+  final environment = Platform.environment;
+  String show(String key) {
+    final value = environment[key];
+    return value == null || value.isEmpty ? "<unset>" : value;
+  }
+
+  return "XDG_SESSION_TYPE=${show("XDG_SESSION_TYPE")}, "
+      "WAYLAND_DISPLAY=${show("WAYLAND_DISPLAY")}, "
+      "DISPLAY=${show("DISPLAY")}";
+}

@@ -4,6 +4,7 @@ import "dart:convert";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/lookup_popup.dart";
 import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
@@ -625,6 +626,14 @@ class _SearchEscapeCloserState extends ConsumerState<SearchEscapeCloser> {
       return false;
     }
     if (!mounted) return false;
+    // The lookup popup is a second window on top of the main window, so
+    // Esc closes it wherever the focus is. This global handler runs first
+    // engine-wide and claims the event, so without this the popup's own
+    // Esc handler never sees the press.
+    if (LookupPopupService.instance.isVisible) {
+      LookupPopupService.instance.hide();
+      return true;
+    }
     // The suggestion view is a route of its own, and `SearchController.isOpen`
     // is still false while that route is opening: Esc used to miss the view and
     // move the focus into the box instead, so the reader had to press it twice

@@ -27,6 +27,11 @@ class ExpansionWordDisplay extends ConsumerStatefulWidget {
   final bool showBackButton;
   final Widget? bottomNavigationBar;
 
+  /// True when this display is embedded in the desktop lookup popup: the
+  /// same contract as the tab layout's popup flag — no title search box,
+  /// no chat button, no AI buttons that would push a route.
+  final bool inLookupPopup;
+
   const ExpansionWordDisplay({
     super.key,
     required this.word,
@@ -35,6 +40,7 @@ class ExpansionWordDisplay extends ConsumerStatefulWidget {
     this.pagerInfo,
     this.showBackButton = true,
     this.bottomNavigationBar,
+    this.inLookupPopup = false,
   });
 
   @override
@@ -56,6 +62,9 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
   );
 
   Widget? _buildSearchBar(Settings settings) {
+    // The popup has its own search field above this display; a second box
+    // here would send its picks to the main window's selection instead.
+    if (widget.inLookupPopup) return null;
     return buildTitle(
       widget.word,
       settings,
@@ -67,11 +76,11 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
   }
 
   void _goBack(BuildContext context) {
-    if (context.canPop()) {
+    if (GoRouter.maybeOf(context)?.canPop() ?? false) {
       context.pop();
     } else if (runningInFloatingWindow) {
       unawaited(dismissFloatingWindow());
-    } else {
+    } else if (GoRouter.maybeOf(context) != null) {
       context.go("/");
     }
   }
@@ -231,17 +240,23 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
           if (isDesktopScreen) ...[
             WordPronounceIconButton(word: widget.word),
             WordStarIconButton(word: widget.word),
-            if (isAIExplainTabSelected) ...[
+            // The AI edit button pushes a route, which the popup has none
+            // of, so no AI buttons are shown there at all.
+            if (isAIExplainTabSelected && !widget.inLookupPopup) ...[
               RefreshAIExplainIconButton(word: widget.word),
               EditAIExplainIconButton(word: widget.word),
             ],
           ],
-          IconButton(
-            tooltip: locale.aiChat,
-            icon: const Icon(Icons.chat_bubble_outline),
-            onPressed: () =>
-                context.push("/chat?word=${Uri.encodeComponent(widget.word)}"),
-          ),
+          // The chat button pushes "/chat?...": hidden in the popup, which
+          // has no router to push onto.
+          if (!widget.inLookupPopup)
+            IconButton(
+              tooltip: locale.aiChat,
+              icon: const Icon(Icons.chat_bubble_outline),
+              onPressed: () => context.push(
+                "/chat?word=${Uri.encodeComponent(widget.word)}",
+              ),
+            ),
           IconButton(
             tooltip: locale.copy,
             icon: const Icon(Icons.copy),
@@ -261,7 +276,10 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
               : null),
       floatingActionButton: isDesktopScreen
           ? null
-          : Button(word: widget.word, showAIButtons: isAIExplainTabSelected),
+          : Button(
+              word: widget.word,
+              showAIButtons: isAIExplainTabSelected && !widget.inLookupPopup,
+            ),
       body: SafeArea(
         top: false,
         child: Stack(

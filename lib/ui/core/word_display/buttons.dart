@@ -74,7 +74,7 @@ Future<void> toggleStarWord(
                   title: Text(locale.remove),
                   leading: const Icon(Icons.delete),
                   onTap: () async {
-                    context.pop();
+                    Navigator.of(context).pop();
                     await wordbookModel.removeWordWithAllTags(word);
                     await autoExportWordbook();
                     onUpdated();
@@ -86,13 +86,13 @@ Future<void> toggleStarWord(
             TextButton(
               child: Text(locale.cancel),
               onPressed: () {
-                context.pop();
+                Navigator.of(context).pop();
               },
             ),
             TextButton(
               child: Text(locale.confirm),
               onPressed: () async {
-                context.pop();
+                Navigator.of(context).pop();
                 if (!currentStared) {
                   await wordbookModel.add(word);
                 }

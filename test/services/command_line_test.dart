@@ -58,6 +58,30 @@ void main() {
       expect(parser.parse(["-m"]).window, "main");
     });
 
+    test("popup flags keep the word for the lookup popup", () {
+      final options = parser.parse(["--popup", "hello"]);
+      expect(options.window, "popup");
+      expect(options.word, "hello");
+      expect(options.hasUiActions, isTrue);
+    });
+
+    test("popup flags work without a word", () {
+      final options = parser.parse(["--scanpopup"]);
+      expect(options.window, "popup");
+      expect(options.word, isNull);
+      expect(options.hasUiActions, isTrue);
+    });
+
+    test("main window flag wins over popup flags", () {
+      expect(parser.parse(["--popup", "--main-window"]).window, "main");
+      expect(parser.parse(["--main-window", "--popup"]).window, "main");
+    });
+
+    test("usage describes the lookup popup", () {
+      expect(parser.usage, contains("lookup popup"));
+      expect(parser.usage, isNot(contains("maps to the main window")));
+    });
+
     test("parses boolean flags", () {
       final options = parser.parse([
         "--log-to-file",
