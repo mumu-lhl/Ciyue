@@ -63,11 +63,17 @@ class _LookupPopupHostState extends ConsumerState<LookupPopupHost> {
 
   @override
   Widget build(BuildContext context) {
-    // The popup app reads its theme, mode and locale from the settings at
-    // build time, so watching the provider rebuilds the open popup when
-    // the reader changes any of them in the main window.
-    ref.watch(settingsProvider);
     final request = widget.service.currentRequest.value;
+    // The splash tree is mounted before initPrefs() runs, and reading the
+    // settings then would construct Settings while its `prefs` field is still
+    // unset. A popup cannot be requested before the services start, which
+    // happens after the preferences are loaded, so only watch while there is a
+    // popup to render. The popup app reads its theme, mode and locale from the
+    // settings at build time, so this still rebuilds the open popup when the
+    // reader changes any of them in the main window.
+    if (request != null) {
+      ref.watch(settingsProvider);
+    }
     final backend = widget.service.windowBackend;
     final controller = backend.controller;
     final Widget? popupView =
