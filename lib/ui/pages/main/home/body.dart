@@ -2,11 +2,13 @@ import "dart:async";
 
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/models/search_mode.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:ciyue/ui/core/word_display/word_display.dart";
 import "package:ciyue/utils.dart";
+import "package:ciyue/viewModels/headword_pane.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter/gestures.dart";
@@ -14,6 +16,7 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 
 import "actions.dart";
 import "app_bar.dart" show GroupSelectorButton;
+import "headword_pane.dart";
 import "history.dart";
 import "more_button.dart";
 import "search.dart";
@@ -74,10 +77,36 @@ class _DesktopHomeSplitViewState extends ConsumerState<_DesktopHomeSplitView> {
   double _dragStartWidth = 0;
   double _dragStartX = 0;
 
+  /// The pane's headword list, owned here because the pane is the only place
+  /// it is shown and it has to survive the pane's own rebuilds.
+  final HeadwordPaneModel _headwordPane = HeadwordPaneModel();
+
   @override
   void initState() {
     super.initState();
     _paneWidth = ref.read(settingsProvider).searchPaneWidth;
+  }
+
+  @override
+  void dispose() {
+    _headwordPane.dispose();
+    super.dispose();
+  }
+
+  /// Re-runs the pane's list for the text the search box reports.
+  ///
+  /// The full-text service opens the index database when it is first used, and
+  /// prefix mode never needs it, so it is not built just because the pane is
+  /// on screen.
+  void _updateHeadwordPane(String text) {
+    final mode = ref.read(settingsProvider).searchMode;
+    _headwordPane.update(
+      text,
+      mode: mode,
+      fullText: mode == SearchMode.prefix
+          ? null
+          : ref.read(fullTextSearchServiceProvider),
+    );
   }
 
   Widget _buildDivider(
@@ -216,18 +245,42 @@ class _DesktopHomeSplitViewState extends ConsumerState<_DesktopHomeSplitView> {
                             // "look up here" path. This pane can be collapsed, so
                             // its search box opens the word in a new tab instead.
                             onWordSelected: homeModel.openWordInNewTab,
+                            // The matches belong to the pane below, not to a
+                            // dropdown that would cover it.
+                            inlineResults: true,
+                            onQueryChanged: _updateHeadwordPane,
                           ),
                         ),
-                        const ActionButtons(),
-                        const HistoryLabel(),
-                        HistoryList(
-                          selectedWord: selectedWord,
-                          onWordSelected: (word) {
-                            homeModel.selectedWord = word;
-                          },
-                          onWordTertiarySelected: (word) {
-                            homeModel.openWordInNewTab(word);
-                          },
+                        Expanded(
+                          child: ListenableBuilder(
+                            listenable: _headwordPane,
+                            builder: (context, _) => _headwordPane.isEmpty
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const ActionButtons(),
+                                      const HistoryLabel(),
+                                      HistoryList(
+                                        selectedWord: selectedWord,
+                                        onWordSelected: (word) {
+                                          homeModel.selectedWord = word;
+                                        },
+                                        onWordTertiarySelected: (word) {
+                                          homeModel.openWordInNewTab(word);
+                                        },
+                                      ),
+                                    ],
+                                  )
+                                : HeadwordPaneList(
+                                    model: _headwordPane,
+                                    onWordSelected: (word) {
+                                      homeModel.selectedWord = word;
+                                    },
+                                    onWordTertiarySelected:
+                                        homeModel.openWordInNewTab,
+                                  ),
+                          ),
                         ),
                       ],
                     ),

@@ -1016,6 +1016,33 @@ void main() {
       expect(japanese.dictionarySuggestions, isNot(contains("動詞")));
     });
 
+    test(
+      "browse order returns suffix hits in reverse-dictionary order",
+      () async {
+        final service = await makeFtsService(const [
+          FullTextIndexRow(rowid: 1, headword: "读者", body: "人"),
+          FullTextIndexRow(rowid: 2, headword: "朗读者", body: "人"),
+          FullTextIndexRow(rowid: 3, headword: "作者", body: "人"),
+        ]);
+        final lookup = makeLookup(
+          dictionary: FakeDictionarySource(id: 1, entries: const {}),
+          morphology: FakeMorphology(stemsResult: const []),
+          enabled: false,
+        );
+
+        final result = await lookup.searchSuggestions(
+          "者",
+          mode: SearchMode.suffix,
+          fullText: service,
+          browseOrder: true,
+        );
+
+        // Reversed keys: 者作 < 者读 < 者读朗. By headword the last two would
+        // come out as 朗读者 < 读者, so this pins the tail-first ordering.
+        expect(result.dictionarySuggestions, ["作者", "读者", "朗读者"]);
+      },
+    );
+
     test("multi-word mode matches non-adjacent headword characters", () async {
       final service = await makeFtsService(ftsRows);
       final lookup = makeLookup(

@@ -136,6 +136,19 @@ class WordSearchBarWithSuggestions extends ConsumerStatefulWidget {
   final bool autoFocus;
   final ValueChanged<String>? onWordSelected;
 
+  /// Shows the matches somewhere other than the anchor's own view.
+  ///
+  /// The split view's left pane owns the list, so the bar must not open the
+  /// dropdown over it: with this set, typing only calls [onQueryChanged] and
+  /// submitting still opens the word. Everything else about the bar — the
+  /// mode button, the shortcuts, the focus handling — is unchanged.
+  final bool inlineResults;
+
+  /// The text to match, called on every edit (and after a mode change) when
+  /// [inlineResults] is set. Debouncing belongs to the host that draws the
+  /// list, since that is what decides how long a list stays on screen.
+  final ValueChanged<String>? onQueryChanged;
+
   const WordSearchBarWithSuggestions({
     super.key,
     required this.word,
@@ -144,6 +157,8 @@ class WordSearchBarWithSuggestions extends ConsumerStatefulWidget {
     this.isHome = false,
     this.autoFocus = false,
     this.onWordSelected,
+    this.inlineResults = false,
+    this.onQueryChanged,
   });
 
   @override
@@ -286,6 +301,7 @@ class _WordSearchBarWithSuggestionsState
     // text they type has to land where they can see it. The box of the home
     // page keeps its own behaviour and only opens when it is tapped.
     if (!widget.isHome &&
+        !widget.inlineResults &&
         controller != null &&
         !controller.isOpen &&
         !_ignoreNextFocusOpen) {
@@ -312,6 +328,12 @@ class _WordSearchBarWithSuggestionsState
   void _refreshSuggestionsView() {
     final controller = _effectiveController;
     if (controller == null || !mounted) return;
+    if (widget.inlineResults) {
+      // No view to reopen: the host redraws its list for the same text, and
+      // it is the one that has to pick up the new mode.
+      widget.onQueryChanged?.call(controller.text);
+      return;
+    }
     _suggestionGen++;
     if (!controller.isAttached || !controller.isOpen) return;
     final text = controller.text;
@@ -400,6 +422,9 @@ class _WordSearchBarWithSuggestionsState
     FocusManager.instance.primaryFocus?.unfocus();
     if (widget.isHome && settings.autoRemoveSearchWord) {
       controller.text = "";
+      // Clearing the field programmatically does not fire `onChanged`, so the
+      // pane's list would otherwise stay on screen for text that is gone.
+      if (widget.inlineResults) widget.onQueryChanged?.call(controller.text);
     }
     if (widget.onWordSelected != null) {
       widget.onWordSelected!(normalizedWord);
@@ -532,11 +557,13 @@ class _WordSearchBarWithSuggestionsState
                 if (controller.text.isNotEmpty && !widget.isHome) {
                   _selectAllText(controller);
                 }
-                controller.openView();
+                if (!widget.inlineResults) controller.openView();
               },
               onChanged: (_) {
                 _markActive();
-                if (!_isViewOpen) {
+                if (widget.inlineResults) {
+                  widget.onQueryChanged?.call(controller.text);
+                } else if (!_isViewOpen) {
                   controller.openView();
                 }
                 controller.selection = TextSelection.collapsed(

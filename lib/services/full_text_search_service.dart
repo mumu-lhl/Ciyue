@@ -462,22 +462,45 @@ class FullTextSearchService extends ChangeNotifier {
 
   /// Suffix search across the active dictionaries: headwords ending with
   /// [query]. Same ready-only rule as [search].
-  Future<List<FullTextHit>> searchSuffix(String query) async {
+  ///
+  /// [browseOrder] returns the hits in reverse-dictionary order (grouped by
+  /// ending) instead of by relevance, for a caller that shows them as a list
+  /// to read rather than as ranked results.
+  Future<List<FullTextHit>> searchSuffix(
+    String query, {
+    int limit = 50,
+    bool browseOrder = false,
+  }) async {
     if (buildSuffixMatchExpression(query).isEmpty) return const [];
     return _searchReady(
-      (store, dictionaryId) =>
-          store.searchSuffixOne(dictionaryId, query, limit: 50),
+      (store, dictionaryId) => store.searchSuffixOne(
+        dictionaryId,
+        query,
+        limit: limit,
+        browseOrder: browseOrder,
+      ),
     );
   }
 
   /// Multi-word AND search across the active dictionaries: headwords
   /// containing every character/word of [query]. Same ready-only rule as
   /// [search].
-  Future<List<FullTextHit>> searchHeadwordAnd(String query) async {
+  ///
+  /// [browseOrder] returns the hits in headword order instead of by
+  /// relevance, for a caller that shows them as a list to read.
+  Future<List<FullTextHit>> searchHeadwordAnd(
+    String query, {
+    int limit = 50,
+    bool browseOrder = false,
+  }) async {
     if (buildHeadwordAndMatchExpression(query).isEmpty) return const [];
     return _searchReady(
-      (store, dictionaryId) =>
-          store.searchHeadwordAndOne(dictionaryId, query, limit: 50),
+      (store, dictionaryId) => store.searchHeadwordAndOne(
+        dictionaryId,
+        query,
+        limit: limit,
+        browseOrder: browseOrder,
+      ),
     );
   }
 

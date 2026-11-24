@@ -5,6 +5,7 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/models/hunspell.dart";
 import "package:ciyue/models/search_mode.dart";
 import "package:ciyue/services/full_text_index_store.dart";
+import "package:ciyue/services/full_text_search.dart";
 import "package:ciyue/services/full_text_search_service.dart";
 import "package:ciyue/services/hunspell.dart";
 import "package:ciyue/services/lookup_keys.dart";
@@ -221,10 +222,14 @@ class DictionaryLookup {
   /// [FullTextIndexStatus.notBuilt] instead of an unexplained empty list,
   /// so the UI can say why there is nothing to show.
   ///
-  /// [limit] caps how many prefix matches each dictionary contributes, and
-  /// only affects prefix mode: the full-text modes rank and cap their own
-  /// results. A caller that shows a long list passes a bigger value than the
-  /// overlay does; answers for different limits are cached apart.
+  /// [limit] caps how many matches each dictionary contributes. A caller that
+  /// shows a long list passes a bigger value than the overlay does; prefix
+  /// answers for different limits are cached apart.
+  ///
+  /// [browseOrder] asks for the full-text modes to return their hits in the
+  /// order a reader scans them (reverse order for [SearchMode.suffix],
+  /// headword order for [SearchMode.multiWord]) instead of by relevance. It
+  /// does not affect prefix mode, whose list is already in headword order.
   ///
   /// Exact lookup on submit is deliberately NOT mode-dependent: Enter
   /// always opens the exact headword, in every mode.
@@ -233,6 +238,7 @@ class DictionaryLookup {
     SearchMode mode = SearchMode.prefix,
     FullTextSearchService? fullText,
     int limit = defaultHeadwordSearchLimit,
+    bool browseOrder = false,
   }) async {
     if (query.isEmpty) {
       return const DictionarySearchSuggestions(
@@ -242,7 +248,13 @@ class DictionaryLookup {
     }
 
     if (mode != SearchMode.prefix) {
-      return _fullTextSuggestions(query, mode, fullText);
+      return _fullTextSuggestions(
+        query,
+        mode,
+        fullText,
+        limit: limit,
+        browseOrder: browseOrder,
+      );
     }
 
     return _prefixSuggestions(query, limit);
@@ -251,8 +263,10 @@ class DictionaryLookup {
   Future<DictionarySearchSuggestions> _fullTextSuggestions(
     String query,
     SearchMode mode,
-    FullTextSearchService? fullText,
-  ) async {
+    FullTextSearchService? fullText, {
+    int limit = 50,
+    bool browseOrder = false,
+  }) async {
     if (fullText == null) {
       return const DictionarySearchSuggestions(
         dictionarySuggestions: [],
@@ -266,13 +280,38 @@ class DictionaryLookup {
     final seenHeadwords = <String>{};
     for (final variant in widthVariants(query)) {
       final variantHits = switch (mode) {
-        SearchMode.suffix => await fullText.searchSuffix(variant),
-        SearchMode.multiWord => await fullText.searchHeadwordAnd(variant),
+        SearchMode.suffix => await fullText.searchSuffix(
+          variant,
+          limit: limit,
+          browseOrder: browseOrder,
+        ),
+        SearchMode.multiWord => await fullText.searchHeadwordAnd(
+          variant,
+          limit: limit,
+          browseOrder: browseOrder,
+        ),
         SearchMode.fullText => await fullText.search(variant),
         SearchMode.prefix => const <FullTextHit>[],
       };
       for (final hit in variantHits) {
         if (seenHeadwords.add(hit.headword)) hits.add(hit);
+      }
+    }
+    // Each dictionary applied [limit] before the merge, so its own list is
+    // already in browse order; sorting the union by the same key keeps the
+    // result a prefix of the order a reader would see without the cap.
+    if (browseOrder) {
+      switch (mode) {
+        case SearchMode.suffix:
+          hits.sort(
+            (a, b) =>
+                reverseHeadword(a.headword)
+                    .compareTo(reverseHeadword(b.headword)),
+          );
+        case SearchMode.multiWord:
+          hits.sort((a, b) => a.headword.compareTo(b.headword));
+        case SearchMode.prefix || SearchMode.fullText:
+          break;
       }
     }
     final status = await fullText.indexStatus();

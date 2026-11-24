@@ -14,6 +14,23 @@ import "package:drift/native.dart";
 /// silently empty for everyone who already had an index.
 const int fullTextIndexSchemaVersion = 2;
 
+/// How a full-text match set is ordered for the caller.
+///
+/// A search result list wants [rank], but a list the reader scans wants a
+/// stable order instead: [headword] for a dictionary-style list, and
+/// [reversedHeadword] for a reverse (倒序) list, where entries that share a
+/// tail have to end up next to each other.
+enum _SearchOrder {
+  rank("rank"),
+  headword("c.headword"),
+  reversedHeadword("c.headword_rev");
+
+  const _SearchOrder(this.column);
+
+  /// The `ORDER BY` key, qualified for the content-table join.
+  final String column;
+}
+
 /// One indexed entry: the row id is the entry's ordinal in the dictionary's
 /// iteration order (1-based), which is what makes a cancelled build
 /// resumable — rebuilding skips the rows already stored.
@@ -461,7 +478,8 @@ class FullTextIndexStore {
   }
 
   /// Suffix search on one dictionary's index: headwords ending with
-  /// [query], best rank first.
+  /// [query], best rank first, or in reverse order when [browseOrder] is
+  /// set (see [_SearchOrder.reversedHeadword]).
   ///
   /// The MATCH is a prefix query on the reversed-headword column (see
   /// [buildSuffixMatchExpression]), which on its own also matches headwords
@@ -481,6 +499,7 @@ class FullTextIndexStore {
     int dictionaryId,
     String query, {
     int limit = 50,
+    bool browseOrder = false,
   }) async {
     final expression = buildSuffixMatchExpression(query);
     if (expression.isEmpty) return const [];
@@ -492,6 +511,9 @@ class FullTextIndexStore {
       bm25Weights: "0.0, 1.0, 0.0",
       limit: limit,
       endsWithQuery: query,
+      // A reverse dictionary groups entries by their ending, which is the
+      // order of the reversed key — not relevance, and not the headword.
+      order: browseOrder ? _SearchOrder.reversedHeadword : _SearchOrder.rank,
     );
     final foldedQuery = query.toLowerCase();
     return [
@@ -510,6 +532,7 @@ class FullTextIndexStore {
     int dictionaryId,
     String query, {
     int limit = 50,
+    bool browseOrder = false,
   }) async {
     final expression = buildHeadwordAndMatchExpression(query);
     if (expression.isEmpty) return const [];
@@ -518,6 +541,9 @@ class FullTextIndexStore {
       expression,
       bm25Weights: "10.0, 0.0, 1.0",
       limit: limit,
+      // Every character matched, anywhere in the headword: a reader scanning
+      // the list wants the dictionary's own order, not a score.
+      order: browseOrder ? _SearchOrder.headword : _SearchOrder.rank,
     );
   }
 
@@ -527,6 +553,7 @@ class FullTextIndexStore {
     required String bm25Weights,
     required int limit,
     String? endsWithQuery,
+    _SearchOrder order = _SearchOrder.rank,
   }) async {
     await _ensureMeta();
     final content = _contentTable(dictionaryId);
@@ -539,7 +566,7 @@ class FullTextIndexStore {
           "FROM $fts JOIN $content AS c ON c.rowid = $fts.rowid "
           "WHERE $fts MATCH ? "
           "${endsWithQuery == null ? "" : "AND substr(lower(c.headword), -length(?)) = lower(?) "}"
-          "ORDER BY rank LIMIT ?",
+          "ORDER BY ${order.column} LIMIT ?",
           variables: [
             Variable.withString(snippetMatchStart),
             Variable.withString(snippetMatchEnd),

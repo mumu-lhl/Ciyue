@@ -160,6 +160,28 @@ void main() {
       );
     });
 
+    test("browse order groups suffix hits by their ending", () async {
+      expect(await store.ensureDictionary(11, "fp2"), isTrue);
+      const group = [
+        FullTextIndexRow(rowid: 1, headword: "读者", body: "人"),
+        FullTextIndexRow(rowid: 2, headword: "朗读者", body: "人"),
+        FullTextIndexRow(rowid: 3, headword: "作者", body: "人"),
+      ];
+      await store.insertBatch(11, group, group.length);
+      await store.markComplete(11, group.length);
+
+      // Reverse keys are 者作 < 者读 < 者读朗, so the order differs from the
+      // headword one (作者 < 朗读者 < 读者) at the last two positions.
+      expect(
+        (await store.searchSuffixOne(
+          11,
+          "者",
+          browseOrder: true,
+        )).map((hit) => hit.headword),
+        ["作者", "读者", "朗读者"],
+      );
+    });
+
     test("suffix CJK matches are anchored at the end", () async {
       await buildIndex();
       expect(

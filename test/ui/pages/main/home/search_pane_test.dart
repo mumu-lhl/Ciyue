@@ -5,6 +5,8 @@ import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/main/home/body.dart";
+import "package:ciyue/ui/pages/main/home/headword_pane.dart";
+import "package:ciyue/ui/pages/main/home/history.dart";
 import "package:ciyue/ui/pages/main/home/search.dart";
 import "package:ciyue/ui/pages/settings/appearance/search_pane_switch.dart";
 import "package:ciyue/viewModels/dictionary.dart";
@@ -220,6 +222,41 @@ void main() {
       expect(find.byType(HomeSearchBar), findsNothing);
       expect(settings.showSearchPane, isFalse);
       expect(prefs.getBool("showSearchPane"), isFalse);
+    });
+  });
+
+  group("live headword pane", () {
+    Finder paneField() => find.descendant(
+      of: find.byType(HomeSearchBar),
+      matching: find.byType(TextField),
+    );
+
+    testWidgets("typing swaps the history list for the headword list", (
+      tester,
+    ) async {
+      await pumpHomeBody(
+        tester,
+        surfaceSize: const Size(1280, 800),
+        homeModel: HomeModel(),
+      );
+
+      expect(find.byType(HistoryList), findsOneWidget);
+      expect(find.byType(HeadwordPaneList), findsNothing);
+
+      await tester.enterText(paneField(), "app");
+      // The pane debounces before it searches.
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HeadwordPaneList), findsOneWidget);
+      expect(find.byType(HistoryList), findsNothing);
+
+      await tester.enterText(paneField(), "");
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HistoryList), findsOneWidget);
+      expect(find.byType(HeadwordPaneList), findsNothing);
     });
   });
 
