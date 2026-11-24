@@ -102,9 +102,11 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
     // Ctrl+B is a text-field command on Linux (caret left); like Ctrl+F above,
     // this table sits nearer the focus than the text-editing shortcuts and
     // wins. Ctrl+F already takes the symmetric key from that set.
-    // Focus tree only, like the page keys below: the global handler sees every
-    // press that reaches a Flutter widget too, and a toggle run twice puts the
-    // pane straight back where it was.
+    // Focus tree and key bridge, but not the global handler. Unlike the page
+    // keys below, the WebView has no native behaviour for this one, so the
+    // bridge has to carry it while an entry is being read; the global handler
+    // is left out because it also sees every press the focus tree sees, and a
+    // toggle applied twice puts the pane straight back.
     if (!forGlobalHandler)
       const SingleActivator(LogicalKeyboardKey.keyB, control: true):
           toggleSearchPane,
@@ -568,6 +570,8 @@ VoidCallback? shortcutActionFor(
 /// does not bind.
 LogicalKeyboardKey? _logicalKeyForCode(String code) {
   switch (code) {
+    case "KeyB":
+      return LogicalKeyboardKey.keyB;
     case "KeyF":
       return LogicalKeyboardKey.keyF;
     case "KeyT":

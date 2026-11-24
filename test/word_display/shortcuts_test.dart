@@ -1,3 +1,5 @@
+import "dart:convert";
+
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/ui/core/word_display/content_scale_script.dart";
 import "package:ciyue/ui/core/word_display/key_bridge_script.dart";
@@ -44,6 +46,39 @@ void main() {
       // itself, which is what the tab layout relies on.
       expect(script, contains("plainPageKey"));
       expect(script, contains("!window.ciyuePagingEnabled"));
+    });
+
+    test("forwards Ctrl+B, which the WebView has no use for", () {
+      final script = keyBridgeScript();
+      // The pane toggle has no native WebView behaviour, so unlike the plain
+      // page keys it has to be carried over while an entry is being read.
+      expect(script, contains("['KeyB', true, false, false, false]"));
+    });
+
+    test("every combination it forwards can be decoded on this side", () {
+      // The script list and the Dart mapping are two halves of one table; a
+      // combination that exists only in the script is forwarded and then
+      // dropped, which is how Ctrl+B stayed dead inside an entry.
+      final script = keyBridgeScript();
+      final entries = RegExp(
+        r"\['(\w+)', (true|false), (true|false), (true|false), (true|false)\]",
+      ).allMatches(script);
+      expect(entries, isNotEmpty);
+
+      for (final entry in entries) {
+        final payload = jsonEncode({
+          "code": entry.group(1),
+          "ctrl": entry.group(2) == "true",
+          "alt": entry.group(3) == "true",
+          "shift": entry.group(4) == "true",
+          "meta": entry.group(5) == "true",
+        });
+        expect(
+          bridgeShortcutActivator(payload),
+          isNotNull,
+          reason: "${entry.group(0)} is forwarded but cannot be decoded",
+        );
+      }
     });
 
     test("forwards Alt+Arrow for history only", () {
