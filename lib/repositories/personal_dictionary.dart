@@ -281,14 +281,17 @@ class PersonalDictionary extends BaseLoadedDictionary {
   void setDefaultTitle() {}
 
   @override
-  Future<List<String>> search(String query) async {
+  Future<List<String>> search(
+    String query, {
+    int limit = defaultHeadwordSearchLimit,
+  }) async {
     await waitForLoading();
     final normalized = normalizePersonalHeadword(query.trim());
     if (normalized.isEmpty) return [];
     // No blanket catch here (P2-5): a database error must propagate to
     // the caller instead of masquerading as "no results", matching
     // resolveKeys.
-    final rows = await _dao.searchHeadwords(id, normalized);
+    final rows = await _dao.searchHeadwords(id, normalized, limit: limit);
     return rows.map((row) => row.headword).toList();
   }
 

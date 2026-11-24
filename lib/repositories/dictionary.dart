@@ -1032,11 +1032,14 @@ class Mdict implements LoadedDictionary {
   String get description => reader.header["Description"] ?? "";
 
   @override
-  Future<List<String>> search(String query) async {
+  Future<List<String>> search(
+    String query, {
+    int limit = defaultHeadwordSearchLimit,
+  }) async {
     await waitForLoading();
 
     try {
-      return reader.search(query, limit: 30);
+      return reader.search(query, limit: limit);
     } catch (e) {
       return [];
     }

@@ -266,7 +266,10 @@ class _CountingMdict extends Mdict {
   bool get isReady => true;
 
   @override
-  Future<List<String>> search(String query) async {
+  Future<List<String>> search(
+    String query, {
+    int limit = defaultHeadwordSearchLimit,
+  }) async {
     searchCalls++;
     lastQuery = query;
     return const [];
