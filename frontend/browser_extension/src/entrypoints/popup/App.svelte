@@ -17,6 +17,7 @@
   import { CiyueApiClient } from '../../api/client';
   import { getSettings, onSettingsChanged, saveSettings } from '../../utils/settings';
   import { applyThemeColor, applyThemeMode } from '../../utils/theme';
+  import { t, i18n } from '../../utils/i18n.svelte';
   import type { DictionaryResult, GroupItem, ThemeColor, ThemeMode } from '../../api/types';
 
   let serverUrl = $state('http://127.0.0.1:47117');
@@ -47,6 +48,7 @@
     themeMode = settings.themeMode ?? 'auto';
     applyThemeColor(themeColor);
     applyThemeMode(themeMode);
+    i18n.setLocalePreference(settings.locale ?? 'auto');
     await checkStatus();
     if (serverOnline) {
       await loadGroups();
@@ -168,6 +170,9 @@
       themeColor = newSettings.themeColor;
       serverUrl = newSettings.serverUrl;
       themeMode = newSettings.themeMode ?? 'auto';
+      if (newSettings.locale) {
+        i18n.setLocalePreference(newSettings.locale);
+      }
       applyThemeColor(themeColor);
       applyThemeMode(themeMode);
     });
@@ -199,12 +204,12 @@
       <div class="w-7 h-7 rounded-lg bg-primary-600/10 dark:bg-primary-400/10 flex items-center justify-center text-primary-600 dark:text-primary-400">
         <BookOpen class="w-4 h-4" />
       </div>
-      <span class="font-bold text-zinc-900 dark:text-zinc-100 text-sm tracking-tight">词悦</span>
+      <span class="font-bold text-zinc-900 dark:text-zinc-100 text-sm tracking-tight">{t('common.appName')}</span>
       <span
         class="w-2 h-2 rounded-full inline-block {serverOnline
           ? 'bg-emerald-500 shadow-xs shadow-emerald-500/50'
           : 'bg-rose-500 shadow-xs shadow-rose-500/50'}"
-        title={serverOnline ? '已连接到词悦桌面端' : '未连接到桌面端服务'}
+        title={serverOnline ? t('common.online') : t('common.offline')}
       ></span>
     </div>
 
@@ -214,7 +219,7 @@
           class="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 px-2 py-1 rounded-lg text-xs outline-none cursor-pointer max-w-[140px] truncate"
           bind:value={currentGroupId}
           onchange={onGroupChange}
-          title="切换词典分组"
+          title={t('header.switchGroup')}
         >
           {#each groups as g (g.id)}
             <option value={g.id}>
@@ -226,7 +231,14 @@
       <button
         class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
         onclick={toggleThemeMode}
-        title="切换明暗主题 (当前: {themeMode === 'dark' ? '深色' : themeMode === 'light' ? '浅色' : '跟随系统'})"
+        title={t('header.toggleThemeMode', {
+          mode:
+            themeMode === 'dark'
+              ? t('theme.modeDark')
+              : themeMode === 'light'
+                ? t('theme.modeLight')
+                : t('theme.modeAuto'),
+        })}
       >
         {#if themeMode === 'dark'}
           <Moon class="w-4 h-4" />
@@ -240,7 +252,7 @@
       <button
         class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
         onclick={openOptions}
-        title="扩展设置"
+        title={t('header.settings')}
       >
         <Settings class="w-4 h-4" />
       </button>
@@ -256,7 +268,7 @@
         <input
           type="text"
           bind:value={searchQuery}
-          placeholder="输入单词按回车查词..."
+          placeholder={t('common.searchPlaceholder')}
           autocomplete="off"
           autofocus
           class="w-full pl-9 pr-8 py-2 rounded-xl border border-zinc-200 dark:border-zinc-750 bg-zinc-50/80 dark:bg-zinc-800/70 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 text-xs outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 transition-all"
@@ -280,7 +292,7 @@
         class="px-3.5 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 active:scale-95 text-white font-semibold text-xs cursor-pointer shadow-xs shadow-primary-500/20 transition-all shrink-0"
         onclick={submitSearch}
       >
-        查询
+        {t('common.search')}
       </button>
     </div>
 
@@ -321,7 +333,7 @@
         onclick={() => (activeTab = 'dicts')}
       >
         <BookOpen class="w-3.5 h-3.5" />
-        <span>本地词典 ({dictResults.length})</span>
+        <span>{t('lookup.localDicts', { count: dictResults.length })}</span>
       </div>
 
       <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -334,7 +346,7 @@
         onclick={() => (activeTab = 'ai-explain')}
       >
         <Sparkles class="w-3.5 h-3.5" />
-        <span>AI 解析</span>
+        <span>{t('lookup.aiExplainTab')}</span>
       </div>
 
       <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -347,7 +359,7 @@
         onclick={() => (activeTab = 'ai-translate')}
       >
         <Languages class="w-3.5 h-3.5" />
-        <span>划词翻译</span>
+        <span>{t('lookup.aiTranslateTab')}</span>
       </div>
     </div>
   {/if}
@@ -357,25 +369,25 @@
     {#if loading}
       <div class="flex flex-col items-center justify-center py-16 gap-2 text-zinc-400">
         <LoaderCircle class="w-5 h-5 animate-spin text-primary-600 dark:text-primary-400" />
-        <span class="text-xs">正在查询 “{searchQuery}”...</span>
+        <span class="text-xs">{t('lookup.searchingWord', { word: searchQuery })}</span>
       </div>
     {:else if !serverOnline}
       <div class="p-6 text-center bg-rose-50/50 dark:bg-rose-950/20 rounded-2xl border border-dashed border-rose-300 dark:border-rose-800/60 flex flex-col items-center gap-2">
         <WifiOff class="w-6 h-6 text-rose-500" />
-        <p class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">未连接到词悦桌面端</p>
+        <p class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t('common.offline')}</p>
         <p class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-normal">
-          请确认词悦桌面端已打开并在设置中开启「Web 与 API 服务」。
+          {t('lookup.offlineDesc')}
         </p>
       </div>
     {:else if !lookupWord}
       <div class="flex flex-col items-center justify-center py-16 gap-2 text-zinc-400">
         <Search class="w-6 h-6 stroke-1 text-zinc-300 dark:text-zinc-600" />
-        <span class="text-xs">输入单词并按回车或点击查询</span>
+        <span class="text-xs">{t('lookup.enterWordPrompt')}</span>
       </div>
     {:else if activeTab === 'dicts'}
       {#if dictResults.length === 0}
         <div class="text-center py-16 text-zinc-400 text-xs">
-          未在当前词典分组中找到 “{lookupWord}”
+          {t('lookup.notFound', { word: lookupWord })}
         </div>
       {:else}
         {#each dictResults as item, idx (item.dictId + idx)}

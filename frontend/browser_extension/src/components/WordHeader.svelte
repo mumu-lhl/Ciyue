@@ -3,6 +3,7 @@
   import Star from '@lucide/svelte/icons/star';
   import X from '@lucide/svelte/icons/x';
   import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+  import { t } from '../utils/i18n.svelte';
 
   let {
     word = '',
@@ -33,7 +34,7 @@
   <div class="flex items-center gap-1 shrink-0">
     <button
       class="p-1.5 rounded-lg text-zinc-400 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 transition-all cursor-pointer"
-      title={stared ? '从生词本移除' : '加入生词本'}
+      title={stared ? t('wordHeader.removeFromNotebook') : t('wordHeader.addToNotebook')}
       onclick={onToggleStar}
     >
       {#if loadingStar}
@@ -49,7 +50,7 @@
     {#if showClose}
       <button
         class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 transition-colors cursor-pointer"
-        title="关闭"
+        title={t('common.close')}
         onclick={onClose}
       >
         <X class="w-4 h-4" />

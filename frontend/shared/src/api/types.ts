@@ -1,3 +1,5 @@
+import type { LocalePreference } from "../i18n/types";
+
 export interface DictionaryResult {
   dictId: number | string;
   dictTitle: string;
@@ -45,6 +47,7 @@ export interface ExtensionSettings {
   serverUrl: string;
   themeColor: ThemeColor;
   themeMode: ThemeMode;
+  locale: LocalePreference;
   enableSelection: boolean;
   enableDoubleClick: boolean;
   requireModifierKey: ModifierKey;

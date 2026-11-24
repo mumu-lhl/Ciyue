@@ -9,7 +9,8 @@
   import DictCard from '../../components/DictCard.svelte';
   import AiView from '../../components/AiView.svelte';
   import { CiyueApiClient } from '../../api/client';
-  import { onSettingsChanged } from '../../utils/settings';
+  import { getSettings, onSettingsChanged } from '../../utils/settings';
+  import { t, i18n } from '../../utils/i18n.svelte';
   import type { DictionaryResult, ThemeColor } from '../../api/types';
 
   let {
@@ -41,9 +42,16 @@
   let apiClient = $derived(new CiyueApiClient(serverUrl));
   let unlistenSettings: (() => void) | null = null;
 
-  onMount(() => {
+  onMount(async () => {
+    const settings = await getSettings();
+    if (settings.locale) {
+      i18n.setLocalePreference(settings.locale);
+    }
     unlistenSettings = onSettingsChanged((newSettings) => {
       overrideTheme = newSettings.themeColor;
+      if (newSettings.locale) {
+        i18n.setLocalePreference(newSettings.locale);
+      }
     });
   });
 
@@ -173,8 +181,8 @@
       style:box-shadow="0 4px 12px -2px var(--primary-600, rgba(37,99,235,0.45)), 0 2px 4px -2px rgba(0,0,0,0.1)"
       onmousedown={(e) => e.stopPropagation()}
       onclick={onTriggerClick}
-      title="词悦查词"
-      aria-label="词悦查词"
+      title={t('common.appName')}
+      aria-label={t('common.appName')}
     >
       <BookOpen class="w-4 h-4 stroke-[2.2]" style="color: #ffffff;" />
     </div>
@@ -214,7 +222,7 @@
             onclick={() => (activeTab = 'dicts')}
           >
             <BookOpen class="w-3.5 h-3.5" />
-            <span>本地词典 ({dictResults.length})</span>
+            <span>{t('lookup.localDicts', { count: dictResults.length })}</span>
           </div>
 
           <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -227,7 +235,7 @@
             onclick={() => (activeTab = 'ai-explain')}
           >
             <Sparkles class="w-3.5 h-3.5" />
-            <span>AI 解析</span>
+            <span>{t('lookup.aiExplainTab')}</span>
           </div>
 
           <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -240,7 +248,7 @@
             onclick={() => (activeTab = 'ai-translate')}
           >
             <Languages class="w-3.5 h-3.5" />
-            <span>划词翻译</span>
+            <span>{t('lookup.aiTranslateTab')}</span>
           </div>
         </div>
       {/if}
@@ -250,20 +258,20 @@
         {#if loading}
           <div class="flex flex-col items-center justify-center py-12 gap-2 text-zinc-400">
             <LoaderCircle class="w-5 h-5 animate-spin text-primary-600 dark:text-primary-400" />
-            <span class="text-xs">正在查询词典...</span>
+            <span class="text-xs">{t('lookup.searchingPrompt')}</span>
           </div>
         {:else if loadError}
           <div class="p-5 text-center bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 flex flex-col items-center gap-2">
             <WifiOff class="w-6 h-6 text-rose-500" />
-            <div class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">无法连接到词悦桌面端服务</div>
+            <div class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t('lookup.offlineTitle')}</div>
             <div class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-normal">
-              请确认词悦桌面端已打开，并在「设置」中开启「Web 与 API 服务」。
+              {t('lookup.offlineDesc')}
             </div>
           </div>
         {:else if activeTab === 'dicts'}
           {#if dictResults.length === 0}
             <div class="text-center py-12 text-zinc-400 text-xs">
-              未在当前词典分组中找到 “{currentWord}”
+              {t('lookup.notFound', { word: currentWord })}
             </div>
           {:else}
             {#each dictResults as item, idx (item.dictId + idx)}

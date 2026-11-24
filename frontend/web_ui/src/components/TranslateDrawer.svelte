@@ -8,6 +8,7 @@
   import CircleAlert from '@lucide/svelte/icons/circle-alert';
   import { marked } from 'marked';
   import { fetchSseStream } from '../utils/sse';
+  import { t } from '../utils/i18n.svelte';
 
   let {
     isOpen,
@@ -81,7 +82,7 @@
     <div class="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
       <div class="flex items-center gap-2">
         <Languages class="w-4 h-4 text-primary-600 dark:text-primary-400" />
-        <span class="text-sm font-bold text-zinc-900 dark:text-zinc-100">AI 智能翻译</span>
+        <span class="text-sm font-bold text-zinc-900 dark:text-zinc-100">{t('aiTranslate.title')}</span>
       </div>
 
       <div class="flex items-center gap-2">
@@ -102,6 +103,7 @@
         <button
           class="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
           onclick={onClose}
+          title={t('common.close')}
         >
           <X class="w-4 h-4" />
         </button>
@@ -112,7 +114,7 @@
       <textarea
         bind:value={text}
         rows="3"
-        placeholder="输入或粘贴需要翻译的段落文本..."
+        placeholder={t('aiTranslate.inputPlaceholder')}
         class="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-750 bg-zinc-50/70 dark:bg-zinc-800/60 text-xs text-zinc-900 dark:text-zinc-100 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 resize-y transition-all"
         onkeydown={(e) => {
           if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -122,7 +124,7 @@
       ></textarea>
 
       <div class="flex justify-between items-center">
-        <span class="text-[11px] text-zinc-400">快捷键: Ctrl/Cmd + Enter 发送</span>
+        <span class="text-[11px] text-zinc-400">Ctrl/Cmd + Enter</span>
         <button
           class="px-4 py-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 active:scale-95 text-white text-xs font-semibold cursor-pointer shadow-xs shadow-primary-500/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
           disabled={streaming || !text.trim()}
@@ -130,9 +132,9 @@
         >
           {#if streaming}
             <LoaderCircle class="w-3.5 h-3.5 animate-spin" />
-            <span>翻译中...</span>
+            <span>{t('aiTranslate.translating')}</span>
           {:else}
-            <span>立即翻译</span>
+            <span>{t('aiTranslate.translateBtn')}</span>
           {/if}
         </button>
       </div>
@@ -148,27 +150,29 @@
     {#if result || streaming}
       <div class="p-4 bg-zinc-50/70 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-750 rounded-xl flex flex-col gap-2 relative">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">译文结果</span>
+          <span class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{t('aiTranslate.title')}</span>
           {#if result && !streaming}
             <div class="flex items-center gap-1.5">
               <button
                 class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-zinc-700 cursor-pointer"
                 onclick={copyResult}
+                title={copied ? t('common.copied') : t('common.copy')}
               >
                 {#if copied}
                   <Check class="w-3.5 h-3.5 text-emerald-500" />
-                  <span class="text-emerald-600 dark:text-emerald-400">已复制</span>
+                  <span class="text-emerald-600 dark:text-emerald-400">{t('common.copied')}</span>
                 {:else}
                   <Copy class="w-3.5 h-3.5" />
-                  <span>复制</span>
+                  <span>{t('common.copy')}</span>
                 {/if}
               </button>
               <button
                 class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-zinc-700 cursor-pointer"
                 onclick={startTranslate}
+                title={t('common.retry')}
               >
                 <RotateCw class="w-3.5 h-3.5" />
-                <span>重试</span>
+                <span>{t('common.retry')}</span>
               </button>
             </div>
           {/if}

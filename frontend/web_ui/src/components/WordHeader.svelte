@@ -3,6 +3,7 @@
   import Star from '@lucide/svelte/icons/star';
   import Sparkles from '@lucide/svelte/icons/sparkles';
   import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+  import { t } from '../utils/i18n.svelte';
 
   let {
     word,
@@ -35,7 +36,7 @@
       onclick={onToggleAi}
     >
       <Sparkles class="w-3.5 h-3.5" />
-      <span>AI 深度解析</span>
+      <span>{t('wordHeader.aiDeepExplain')}</span>
     </button>
 
     <button
@@ -43,14 +44,14 @@
         ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800/60'
         : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700/80'}"
       onclick={onToggleStar}
-      title={stared ? '从生词本移除' : '存入生词本'}
+      title={stared ? t('wordHeader.removeFromNotebook') : t('wordHeader.addToNotebook')}
     >
       {#if loadingStar}
         <LoaderCircle class="w-3.5 h-3.5 animate-spin text-amber-500" />
       {:else}
         <Star class="w-3.5 h-3.5 {stared ? 'fill-amber-400 text-amber-400' : ''}" />
       {/if}
-      <span>{stared ? '已存生词本' : '存入生词本'}</span>
+      <span>{stared ? t('wordHeader.savedToNotebook') : t('wordHeader.addToNotebook')}</span>
     </button>
   </div>
 </div>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import ChevronDown from '@lucide/svelte/icons/chevron-down';
+  import { t } from '../utils/i18n.svelte';
   import type { DictionaryResult } from '../api/types';
 
   let {
@@ -151,7 +152,7 @@
         class="w-3.5 h-3.5 text-primary-600 dark:text-primary-400 shrink-0 transition-transform duration-200 {isCollapsed ? '-rotate-90' : ''}"
       />
       <span class="text-zinc-800 dark:text-zinc-200 truncate">
-        {item.dictTitle || '词典'}
+        {item.dictTitle || t('common.appName')}
       </span>
     </div>
     {#if item.headword}
@@ -167,7 +168,7 @@
       class="w-full border-none block bg-white dark:bg-zinc-900 transition-[height] duration-150"
       style:height={frameHeight}
       sandbox="allow-same-origin allow-scripts"
-      title={item.dictTitle || '词典条目'}
+      title={item.dictTitle || t('common.appName')}
     ></iframe>
   </div>
 </div>

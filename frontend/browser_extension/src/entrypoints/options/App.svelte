@@ -13,15 +13,18 @@
   import Sun from '@lucide/svelte/icons/sun';
   import Moon from '@lucide/svelte/icons/moon';
   import SunMoon from '@lucide/svelte/icons/sun-moon';
+  import Globe from '@lucide/svelte/icons/globe';
   import { getSettings, saveSettings } from '../../utils/settings';
   import { CiyueApiClient } from '../../api/client';
-  import { THEME_OPTIONS, applyThemeColor, applyThemeMode } from '../../utils/theme';
+  import { THEME_OPTIONS, applyThemeColor, applyThemeMode, getThemeName } from '../../utils/theme';
+  import { t, i18n } from '../../utils/i18n.svelte';
   import type { ExtensionSettings } from '../../api/types';
 
   let form = $state<ExtensionSettings>({
     serverUrl: 'http://127.0.0.1:47117',
     themeColor: 'blue',
     themeMode: 'auto',
+    locale: 'auto',
     enableSelection: true,
     enableDoubleClick: false,
     requireModifierKey: 'none',
@@ -40,6 +43,7 @@
     blacklistText = (form.blacklistUrls || []).join('\n');
     applyThemeColor(form.themeColor);
     applyThemeMode(form.themeMode);
+    i18n.setLocalePreference(form.locale ?? 'auto');
 
     if (typeof window !== 'undefined' && window.matchMedia) {
       const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -62,12 +66,16 @@
       const status = await client.getStatus();
       testResult = {
         status: 'success',
-        message: `连接成功！已连接到词悦桌面端，当前分组已加载 ${status.dictionariesCount || 0} 本词典。`,
+        message: t('extensionOptions.testConnSuccess', {
+          count: status.dictionariesCount || 0,
+        }),
       };
     } catch (err: any) {
       testResult = {
         status: 'error',
-        message: `连接失败：${err.message || '无法访问'}。请确认词悦桌面端已打开并开启服务。`,
+        message: t('extensionOptions.testConnFailed', {
+          error: err.message || t('common.error'),
+        }),
       };
     } finally {
       testing = false;
@@ -101,28 +109,28 @@
       </div>
       <div>
         <h1 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
-          词悦查词助手 · 扩展设置
+          {t('extensionOptions.extSettingsTitle')}
         </h1>
         <p class="text-xs text-zinc-500 dark:text-zinc-400">
-          配置浏览器拓展与词悦桌面端的连接方式、外观主题及划词交互行为
+          {t('extensionOptions.extSettingsDesc')}
         </p>
       </div>
     </header>
 
-    <!-- Card 1: Appearance & Theme Color -->
+    <!-- Card 1: Appearance & Theme Color & Language -->
     <section class="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col gap-5">
       <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
         <Palette class="w-4 h-4 text-primary-600 dark:text-primary-400" />
-        <h2>外观与主题</h2>
+        <h2>{t('theme.appearanceTitle')}</h2>
       </div>
 
       <!-- Theme Mode -->
       <div class="flex flex-col gap-2.5">
         <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-          明暗外观模式
+          {t('theme.modeTitle')}
         </span>
         <p class="text-[11px] text-zinc-400">
-          选择扩展的显示模式，可跟随操作系统偏好或固定为浅色/深色
+          {t('theme.modeDesc')}
         </p>
 
         <div class="grid grid-cols-3 gap-2.5 pt-1">
@@ -137,7 +145,7 @@
             }}
           >
             <SunMoon class="w-4 h-4 text-primary-600 dark:text-primary-400 shrink-0" />
-            <span class="text-xs font-medium">跟随系统</span>
+            <span class="text-xs font-medium">{t('theme.modeAuto')}</span>
           </button>
 
           <button
@@ -151,7 +159,7 @@
             }}
           >
             <Sun class="w-4 h-4 text-amber-500 shrink-0" />
-            <span class="text-xs font-medium">浅色模式</span>
+            <span class="text-xs font-medium">{t('theme.modeLight')}</span>
           </button>
 
           <button
@@ -165,7 +173,61 @@
             }}
           >
             <Moon class="w-4 h-4 text-indigo-400 shrink-0" />
-            <span class="text-xs font-medium">深色模式</span>
+            <span class="text-xs font-medium">{t('theme.modeDark')}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Language Preference -->
+      <div class="flex flex-col gap-2.5 pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
+        <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+          {t('language.title')}
+        </span>
+        <p class="text-[11px] text-zinc-400">
+          {t('language.desc')}
+        </p>
+
+        <div class="grid grid-cols-3 gap-2.5 pt-1">
+          <button
+            type="button"
+            class="flex items-center gap-2.5 p-2.5 rounded-xl border text-left cursor-pointer transition-all {form.locale === 'auto'
+              ? 'border-primary-600 bg-primary-50/50 dark:bg-primary-950/30 ring-2 ring-primary-500/20 text-zinc-900 dark:text-zinc-100 font-semibold'
+              : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300'}"
+            onclick={() => {
+              form.locale = 'auto';
+              i18n.setLocalePreference('auto');
+            }}
+          >
+            <Globe class="w-4 h-4 text-primary-600 dark:text-primary-400 shrink-0" />
+            <span class="text-xs font-medium">{t('language.auto')}</span>
+          </button>
+
+          <button
+            type="button"
+            class="flex items-center gap-2.5 p-2.5 rounded-xl border text-left cursor-pointer transition-all {form.locale === 'zh'
+              ? 'border-primary-600 bg-primary-50/50 dark:bg-primary-950/30 ring-2 ring-primary-500/20 text-zinc-900 dark:text-zinc-100 font-semibold'
+              : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300'}"
+            onclick={() => {
+              form.locale = 'zh';
+              i18n.setLocalePreference('zh');
+            }}
+          >
+            <span class="w-4 h-4 flex items-center justify-center font-bold text-xs text-primary-600 dark:text-primary-400 shrink-0">中</span>
+            <span class="text-xs font-medium">{t('language.zh')}</span>
+          </button>
+
+          <button
+            type="button"
+            class="flex items-center gap-2.5 p-2.5 rounded-xl border text-left cursor-pointer transition-all {form.locale === 'en'
+              ? 'border-primary-600 bg-primary-50/50 dark:bg-primary-950/30 ring-2 ring-primary-500/20 text-zinc-900 dark:text-zinc-100 font-semibold'
+              : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300'}"
+            onclick={() => {
+              form.locale = 'en';
+              i18n.setLocalePreference('en');
+            }}
+          >
+            <span class="w-4 h-4 flex items-center justify-center font-bold text-xs text-primary-600 dark:text-primary-400 shrink-0">EN</span>
+            <span class="text-xs font-medium">{t('language.en')}</span>
           </button>
         </div>
       </div>
@@ -173,10 +235,10 @@
       <!-- Theme Color -->
       <div class="flex flex-col gap-2.5 pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
         <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-          界面主色调
+          {t('theme.colorTitle')}
         </span>
         <p class="text-[11px] text-zinc-400">
-          选择扩展在网页划词弹窗、顶部栏及操作按钮上的主题强调色
+          {t('theme.colorDesc')}
         </p>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
@@ -199,7 +261,7 @@
                   <Check class="w-3 h-3 stroke-[3]" />
                 {/if}
               </span>
-              <span class="text-xs truncate">{opt.name}</span>
+              <span class="text-xs truncate">{getThemeName(opt.id, i18n.currentLocale)}</span>
             </button>
           {/each}
         </div>
@@ -210,15 +272,15 @@
     <section class="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col gap-4">
       <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
         <Server class="w-4 h-4 text-primary-600 dark:text-primary-400" />
-        <h2>桌面端服务连接</h2>
+        <h2>{t('extensionOptions.serverConnection')}</h2>
       </div>
 
       <div class="flex flex-col gap-2">
         <label for="server-url" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-          服务地址 (Server URL)
+          {t('extensionOptions.serverUrl')}
         </label>
         <p class="text-[11px] text-zinc-400">
-          词悦桌面端「设置」->「Web 与 API 服务」所监听的完整地址
+          {t('extensionOptions.serverUrlDesc')}
         </p>
         <div class="flex gap-2">
           <input
@@ -235,9 +297,9 @@
           >
             {#if testing}
               <LoaderCircle class="w-3.5 h-3.5 animate-spin" />
-              <span>测试中...</span>
+              <span>{t('common.testing')}</span>
             {:else}
-              <span>测试连接</span>
+              <span>{t('common.test')}</span>
             {/if}
           </button>
         </div>
@@ -263,17 +325,17 @@
     <section class="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col gap-5">
       <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
         <MousePointerClick class="w-4 h-4 text-primary-600 dark:text-primary-400" />
-        <h2>划词查词交互</h2>
+        <h2>{t('extensionOptions.selectionBehavior')}</h2>
       </div>
 
       <div class="flex flex-col gap-4 divide-y divide-zinc-100 dark:divide-zinc-800">
         <div class="flex items-start justify-between gap-4 pt-1">
           <div>
             <span class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 block">
-              划词后显示「悦」字浮标
+              {t('extensionOptions.enableSelection')}
             </span>
             <span class="text-[11px] text-zinc-400">
-              选中网页文本后在鼠标旁弹出快捷浮标，点击展开查词卡片。
+              {t('extensionOptions.enableSelectionDesc')}
             </span>
           </div>
           <input
@@ -286,10 +348,10 @@
         <div class="flex items-start justify-between gap-4 pt-4">
           <div>
             <span class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 block">
-              双击单词直接查词
+              {t('extensionOptions.enableDoubleClick')}
             </span>
             <span class="text-[11px] text-zinc-400">
-              双击页面单词时无需点击浮标，直接呼出查词卡片。
+              {t('extensionOptions.enableDoubleClickDesc')}
             </span>
           </div>
           <input
@@ -301,30 +363,30 @@
 
         <div class="flex flex-col gap-2 pt-4">
           <label for="modifier-key" class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-            划词修饰键要求
+            {t('extensionOptions.modifierKey')}
           </label>
           <span class="text-[11px] text-zinc-400">
-            设置仅在按住某个按键时划词才触发，防止日常浏览误触。
+            {t('extensionOptions.modifierKeyDesc')}
           </span>
           <select
             id="modifier-key"
             bind:value={form.requireModifierKey}
             class="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-750 bg-zinc-50/70 dark:bg-zinc-800/60 text-xs text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer max-w-sm"
           >
-            <option value="none">无需按键（默认任何划词均触发）</option>
-            <option value="alt">按住 Alt 键划词</option>
-            <option value="ctrl">按住 Ctrl (或 Cmd) 键划词</option>
-            <option value="shift">按住 Shift 键划词</option>
+            <option value="none">{t('extensionOptions.modNone')}</option>
+            <option value="alt">{t('extensionOptions.modAlt')}</option>
+            <option value="ctrl">{t('extensionOptions.modCtrl')}</option>
+            <option value="shift">{t('extensionOptions.modShift')}</option>
           </select>
         </div>
 
         <div class="flex items-start justify-between gap-4 pt-4">
           <div>
             <span class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 block">
-              在输入框与文本编辑区内禁用
+              {t('extensionOptions.excludeEditable')}
             </span>
             <span class="text-[11px] text-zinc-400">
-              在网页输入框 (input)、多行文本域 (textarea) 或富文本编辑器内划词时不弹浮标。
+              {t('extensionOptions.excludeEditableDesc')}
             </span>
           </div>
           <input
@@ -340,21 +402,21 @@
     <section class="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col gap-4">
       <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
         <ShieldAlert class="w-4 h-4 text-primary-600 dark:text-primary-400" />
-        <h2>网址黑名单</h2>
+        <h2>{t('extensionOptions.blacklist')}</h2>
       </div>
 
       <div class="flex flex-col gap-2">
         <label for="blacklist" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-          不启用查词的网站域名列表
+          {t('extensionOptions.blacklist')}
         </label>
         <span class="text-[11px] text-zinc-400">
-          每行一个域名（例如：<code>github.com</code> 或 <code>mail.google.com</code>），在这些网站上将完全不注入查词功能。
+          {t('extensionOptions.blacklistDesc')}
         </span>
         <textarea
           id="blacklist"
           rows="4"
           bind:value={blacklistText}
-          placeholder="example.com&#10;internal.company.net"
+          placeholder={t('extensionOptions.blacklistPlaceholder')}
           class="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-750 bg-zinc-50/70 dark:bg-zinc-800/60 font-mono text-xs text-zinc-800 dark:text-zinc-200 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 transition-all resize-y"
         ></textarea>
       </div>
@@ -365,7 +427,7 @@
       {#if savedToast}
         <div class="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold animate-fade-in">
           <CircleCheck class="w-4 h-4" />
-          <span>设置已保存！</span>
+          <span>{t('common.saved')}</span>
         </div>
       {/if}
 
@@ -374,7 +436,7 @@
         onclick={save}
       >
         <Save class="w-4 h-4" />
-        <span>保存设置</span>
+        <span>{t('common.save')}</span>
       </button>
     </div>
   </div>

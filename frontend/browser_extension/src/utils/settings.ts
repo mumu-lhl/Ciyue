@@ -4,6 +4,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   serverUrl: "http://127.0.0.1:47117",
   themeColor: "blue",
   themeMode: "auto",
+  locale: "auto",
   enableSelection: true,
   enableDoubleClick: false,
   requireModifierKey: "none",

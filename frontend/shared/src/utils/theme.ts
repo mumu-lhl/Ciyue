@@ -1,4 +1,6 @@
 import type { ThemeColor, ThemeMode } from "../api/types";
+import { t } from "../i18n";
+import type { SupportedLocale, TranslationKey } from "../i18n/types";
 
 export interface ThemeOption {
   id: ThemeColor;
@@ -14,6 +16,18 @@ export const THEME_OPTIONS: ThemeOption[] = [
   { id: "rose", name: "玫瑰红", primaryHex: "#e11d48" },
   { id: "amber", name: "琥珀橙", primaryHex: "#d97706" },
 ];
+
+export function getThemeName(color: ThemeColor, locale: SupportedLocale = "zh"): string {
+  const map: Record<ThemeColor, TranslationKey> = {
+    blue: "theme.blue",
+    violet: "theme.violet",
+    teal: "theme.teal",
+    emerald: "theme.emerald",
+    rose: "theme.rose",
+    amber: "theme.amber",
+  };
+  return t(map[color] ?? "theme.blue", undefined, locale);
+}
 
 export function isValidThemeColor(color: string): color is ThemeColor {
   return THEME_OPTIONS.some((t) => t.id === color);

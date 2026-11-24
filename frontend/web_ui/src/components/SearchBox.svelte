@@ -2,6 +2,7 @@
   import Search from '@lucide/svelte/icons/search';
   import X from '@lucide/svelte/icons/x';
   import { api } from '../api/client';
+  import { t } from '../utils/i18n.svelte';
 
   let {
     query = $bindable(''),
@@ -58,7 +59,7 @@
       bind:value={query}
       oninput={onInput}
       onkeydown={onKeyDown}
-      placeholder="输入单词按回车查词..."
+      placeholder={t('common.searchPlaceholder')}
       autocomplete="off"
       class="w-full pl-11 pr-24 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 shadow-xs transition-all"
     />
@@ -70,7 +71,7 @@
             query = '';
             suggestions = [];
           }}
-          title="清空"
+          title={t('common.clear')}
         >
           <X class="w-4 h-4" />
         </button>
@@ -79,7 +80,7 @@
         class="px-4 py-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 active:scale-95 text-white text-xs font-semibold cursor-pointer shadow-xs shadow-primary-500/20 transition-all"
         onclick={() => submit(query)}
       >
-        查询
+        {t('common.search')}
       </button>
     </div>
   </div>

@@ -16,6 +16,7 @@
     setStoredThemeColor,
     setStoredThemeMode,
   } from './utils/theme';
+  import { t } from './utils/i18n.svelte';
   import LoaderCircle from '@lucide/svelte/icons/loader-circle';
   import WifiOff from '@lucide/svelte/icons/wifi-off';
   import Layers from '@lucide/svelte/icons/layers';
@@ -212,14 +213,14 @@
     {#if loading}
       <div class="flex flex-col items-center justify-center py-20 gap-3 text-zinc-400">
         <LoaderCircle class="w-6 h-6 animate-spin text-primary-600 dark:text-primary-400" />
-        <span class="text-xs">正在查询 “{currentWord}”...</span>
+        <span class="text-xs">{t('lookup.searchingWord', { word: currentWord })}</span>
       </div>
     {:else if !serverOnline}
       <div class="p-8 text-center bg-rose-50/60 dark:bg-rose-950/30 border border-dashed border-rose-300 dark:border-rose-800 rounded-3xl flex flex-col items-center gap-3">
         <WifiOff class="w-8 h-8 text-rose-500" />
-        <span class="text-sm font-bold text-zinc-900 dark:text-zinc-100">无法连接到词悦桌面端 Web 服务</span>
+        <span class="text-sm font-bold text-zinc-900 dark:text-zinc-100">{t('lookup.offlineTitle')}</span>
         <span class="text-xs text-zinc-500 dark:text-zinc-400 max-w-md leading-relaxed">
-          请确保词悦桌面端已启动，并在桌面端「设置」->「Web 与 API 服务」中确认已开启服务并允许访问。
+          {t('lookup.offlineDesc')}
         </span>
       </div>
     {:else if errorMsg}
@@ -245,19 +246,19 @@
 
       {#if results.length === 0}
         <div class="p-12 text-center text-zinc-400 text-xs bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl">
-          未在当前分组词典中找到 “<b>{currentWord}</b>”
+          {t('lookup.notFound', { word: currentWord })}
         </div>
       {:else}
         <div class="flex items-center justify-between px-1 text-xs text-zinc-500 dark:text-zinc-400">
           <div class="flex items-center gap-1.5 font-medium">
             <Layers class="w-3.5 h-3.5" />
-            <span>共找到 {results.length} 本词典释义</span>
+            <span>{t('lookup.dictCount', { count: results.length })}</span>
           </div>
           <button
             class="px-2.5 py-1 rounded-lg hover:bg-zinc-200/60 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium cursor-pointer transition-colors"
             onclick={toggleAll}
           >
-            {isAllCollapsed ? '展开全部' : '折叠全部'}
+            {isAllCollapsed ? t('lookup.expandAll') : t('lookup.collapseAll')}
           </button>
         </div>
 
