@@ -52,6 +52,16 @@ enum SelectionChannel {
     return value
   }
 
+  /// Newer Swift compilers reject conditionally downcasting a CFTypeRef to a
+  /// CF type, so the attribute types promised by the names are bit-cast.
+  private static func axElement(_ value: CFTypeRef) -> AXUIElement {
+    unsafeBitCast(value, to: AXUIElement.self)
+  }
+
+  private static func axValue(_ value: CFTypeRef) -> AXValue {
+    unsafeBitCast(value, to: AXValue.self)
+  }
+
   /// Silent trust check: never prompts here, so a lookup never pops a
   /// system dialog. The user grants access in System Settings.
   private static func isTrusted() -> Bool {
@@ -71,11 +81,12 @@ enum SelectionChannel {
     }
     let systemWide = AXUIElementCreateSystemWide()
     guard
-      let focused = attribute(
+      let focusedValue = attribute(
         systemWide,
         kAXFocusedUIElementAttribute as CFString
-      ) as? AXUIElement
+      )
     else { return nil }
+    let focused = axElement(focusedValue)
 
     // Never force-read a password field. Whether every app marks its
     // password field with the secure subrole is unverified; a secure field
@@ -108,12 +119,13 @@ enum SelectionChannel {
   /// Only reached for non-secure fields (see `selectedText`).
   private static func selectedTextFromRange(_ element: AXUIElement) -> String? {
     guard
-      let rangeValue = attribute(
+      let rangeRaw = attribute(
         element,
         kAXSelectedTextRangeAttribute as CFString
-      ) as? AXValue,
+      ),
       let value = attribute(element, kAXValueAttribute as CFString) as? String
     else { return nil }
+    let rangeValue = axValue(rangeRaw)
     var range = CFRange(location: 0, length: 0)
     guard AXValueGetValue(rangeValue, .cfRange, &range), range.length > 0
     else { return nil }
