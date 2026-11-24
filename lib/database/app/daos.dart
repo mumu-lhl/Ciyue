@@ -996,25 +996,41 @@ class AiExplanationDao extends DatabaseAccessor<AppDatabase>
     return into(aiExplanations).insert(explanation);
   }
 
-  Future<AiExplanation?> getAiExplanation(String word) {
-    return (select(
-      aiExplanations,
-    )..where((t) => t.word.isValue(word))).getSingleOrNull();
+  Future<AiExplanation?> getAiExplanation(
+    String word, {
+    String sourceLanguage = "auto",
+  }) {
+    return (select(aiExplanations)..where(
+          (t) =>
+              t.word.isValue(word) & t.sourceLanguage.isValue(sourceLanguage),
+        ))
+        .getSingleOrNull();
   }
 
   Future<int> updateAiExplanation(AiExplanation explanation) {
-    return (update(
-      aiExplanations,
-    )..where((t) => t.word.isValue(explanation.word))).write(
-      AiExplanationsCompanion(
-        word: Value(explanation.word),
-        explanation: Value(explanation.explanation),
-      ),
-    );
+    return (update(aiExplanations)..where(
+          (t) =>
+              t.word.isValue(explanation.word) &
+              t.sourceLanguage.isValue(explanation.sourceLanguage),
+        ))
+        .write(
+          AiExplanationsCompanion(
+            word: Value(explanation.word),
+            sourceLanguage: Value(explanation.sourceLanguage),
+            explanation: Value(explanation.explanation),
+          ),
+        );
   }
 
-  Future<int> deleteAiExplanation(String word) {
-    return (delete(aiExplanations)..where((t) => t.word.isValue(word))).go();
+  Future<int> deleteAiExplanation(
+    String word, {
+    String sourceLanguage = "auto",
+  }) {
+    return (delete(aiExplanations)..where(
+          (t) =>
+              t.word.isValue(word) & t.sourceLanguage.isValue(sourceLanguage),
+        ))
+        .go();
   }
 }
 

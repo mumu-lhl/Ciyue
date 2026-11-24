@@ -18,6 +18,8 @@ void main() {
     expect(preferencesAllowList, contains("searchPaneWidth"));
     expect(preferencesAllowList, contains("linuxTtsVoice"));
     expect(preferencesAllowList, contains("aiExplainWordManual"));
+    expect(preferencesAllowList, contains("aiExplainSourceLanguage"));
+    expect(preferencesAllowList, contains("aiExplainSourceLanguageMode"));
     // The Linux voice pref round-trips through the allowlisted
     // cache: set persists, clearing removes the key.
     await settings.setLinuxTtsVoice("test-voice");

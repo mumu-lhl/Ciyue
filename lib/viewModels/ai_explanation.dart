@@ -15,6 +15,9 @@ class AIExplanationModel extends ChangeNotifier {
   final AIPrompts? _aiPrompts;
   final AI _ai;
 
+  /// Language the word is being explained in; also part of the cache key.
+  final String sourceLanguage;
+
   String? _explanation;
   String? get explanation => _explanation;
 
@@ -34,14 +37,18 @@ class AIExplanationModel extends ChangeNotifier {
   bool _mounted = true;
   CancellationController? _streamController;
 
-  AIExplanationModel({this._aiPrompts, AiExplanationDao? dao})
-    : _aiExplanationDao = dao ?? AiExplanationDao(mainDatabase),
-      _ai = AI(
-        provider: settings.aiProvider,
-        model: settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
-        apikey:
-            settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
-      );
+  AIExplanationModel({
+    this._aiPrompts,
+    AiExplanationDao? dao,
+    this.sourceLanguage = "auto",
+  }) : _aiExplanationDao = dao ?? AiExplanationDao(mainDatabase),
+       _ai = AI(
+         provider: settings.aiProvider,
+         model:
+             settings.getAiProviderConfig(settings.aiProvider)["model"] ?? "",
+         apikey:
+             settings.getAiProviderConfig(settings.aiProvider)["apiKey"] ?? "",
+       );
 
   @override
   void dispose() {
@@ -78,7 +85,10 @@ class AIExplanationModel extends ChangeNotifier {
     _structured = null;
     notifyListeners();
 
-    final cached = await _aiExplanationDao.getAiExplanation(word);
+    final cached = await _aiExplanationDao.getAiExplanation(
+      word,
+      sourceLanguage: sourceLanguage,
+    );
 
     if (!_mounted) return;
 
@@ -110,9 +120,12 @@ class AIExplanationModel extends ChangeNotifier {
     final template = structuredMode
         ? prompts.explainStructuredPrompt
         : prompts.explainPrompt;
-    final prompt = template
-        .replaceAll(r"$word", word)
-        .replaceAll(r"$targetLanguage", targetLanguage);
+    final prompt = AIPrompts.substituteExplain(
+      template,
+      word: word,
+      sourceLanguage: sourceLanguage,
+      targetLanguage: targetLanguage,
+    );
 
     final controller = CancellationController();
     _streamController = controller;
@@ -148,14 +161,25 @@ class AIExplanationModel extends ChangeNotifier {
         _explanation = fullExplanation;
       }
 
-      final existing = await _aiExplanationDao.getAiExplanation(word);
+      final existing = await _aiExplanationDao.getAiExplanation(
+        word,
+        sourceLanguage: sourceLanguage,
+      );
       if (existing != null) {
         await _aiExplanationDao.updateAiExplanation(
-          AiExplanation(word: word, explanation: fullExplanation),
+          AiExplanation(
+            word: word,
+            sourceLanguage: sourceLanguage,
+            explanation: fullExplanation,
+          ),
         );
       } else {
         await _aiExplanationDao.insertAiExplanation(
-          AiExplanation(word: word, explanation: fullExplanation),
+          AiExplanation(
+            word: word,
+            sourceLanguage: sourceLanguage,
+            explanation: fullExplanation,
+          ),
         );
       }
     } catch (e) {
@@ -182,7 +206,11 @@ class AIExplanationModel extends ChangeNotifier {
         ? AiExplanationData.tryParse(newExplanation)
         : null;
     await _aiExplanationDao.updateAiExplanation(
-      AiExplanation(word: word, explanation: newExplanation),
+      AiExplanation(
+        word: word,
+        sourceLanguage: sourceLanguage,
+        explanation: newExplanation,
+      ),
     );
 
     if (!_mounted) return;

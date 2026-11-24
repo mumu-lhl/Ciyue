@@ -131,6 +131,26 @@ class AISettingsViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  String get explainSourceLanguageMode => settings.aiExplainSourceLanguageMode;
+
+  void setExplainSourceLanguageMode(String value) {
+    settings.aiExplainSourceLanguageMode = value;
+    unawaited(prefs.setString("aiExplainSourceLanguageMode", value));
+    settings.refresh();
+    _homeModel.update();
+    notifyListeners();
+  }
+
+  String get explainSourceLanguage => settings.aiExplainSourceLanguage;
+
+  void setExplainSourceLanguage(String value) {
+    settings.aiExplainSourceLanguage = value;
+    unawaited(prefs.setString("aiExplainSourceLanguage", value));
+    settings.refresh();
+    _homeModel.update();
+    notifyListeners();
+  }
+
   bool get explainStructured => settings.aiExplainStructured;
 
   void setExplainStructured(bool value) {

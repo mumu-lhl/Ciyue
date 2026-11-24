@@ -1,4 +1,5 @@
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/models/language.dart";
 import "package:flutter/foundation.dart";
 
 /// Static description of one customizable prompt: where it is
@@ -24,9 +25,12 @@ class AiPromptDefinition {
 }
 
 class AIPrompts with ChangeNotifier {
-  static const String defaultExplainPrompt = """Explain the word "\$word" in detail using markdown. Structure your response with these sections:
+  static const String defaultExplainPrompt =
+      """Source language: \$sourceLanguage.
+Explain the word "\$word" for a language learner, using markdown. Structure your response with these sections:
 
 ## Pronunciation
+Give the IPA transcription on one line. On a second line give the most common Latin-script romanization for \$sourceLanguage (for example Pinyin, Hepburn, or Revised Romanization). Omit the second line when the language already uses the Latin script.
 ## Part of Speech
 ## Meanings
 List each meaning with a brief definition. If the word has multiple meanings, list them all numbered.
@@ -36,11 +40,14 @@ Give 1-2 example sentences for the most common meanings, with translations.
 List common synonyms and antonyms if any.
 
 The output is entirely and exclusively in \$targetLanguage. Start directly with the first section header, no intro or outro text.""";
-  static const String defaultExplainStructuredPrompt = """Explain the word "\$word" for a language learner. Respond with ONLY a JSON object — no markdown fences, no intro or outro text — using exactly this structure:
+  static const String defaultExplainStructuredPrompt =
+      """Source language: \$sourceLanguage.
+Explain the word "\$word" for a language learner. Respond with ONLY a JSON object — no markdown fences, no intro or outro text — using exactly this structure:
 
-{"phonetic": "...", "partOfSpeech": "...", "meanings": ["...", "..."], "examples": [{"sentence": "...", "translation": "..."}], "synonyms": ["..."], "antonyms": ["..."]}
+{"phonetic": "...", "romanization": "...", "partOfSpeech": "...", "meanings": ["...", "..."], "examples": [{"sentence": "...", "translation": "..."}], "synonyms": ["..."], "antonyms": ["..."]}
 
 - phonetic: the IPA transcription of the word.
+- romanization: the most common Latin-script romanization for \$sourceLanguage (e.g. Pinyin for Mandarin, Hepburn for Japanese, Revised Romanization for Korean). Leave it empty when the language already uses the Latin script.
 - partOfSpeech: the part(s) of speech, e.g. "noun" or "verb / noun".
 - meanings: every common meaning, one concise definition each, most frequent first.
 - examples: 1-2 example sentences for the most common meanings, each with a translation.
@@ -96,13 +103,13 @@ Stay in character throughout the conversation. Gently correct the user's languag
     id: "explain",
     prefsKey: "customExplainPrompt",
     defaultText: defaultExplainPrompt,
-    variables: [r"$word", r"$targetLanguage"],
+    variables: [r"$word", r"$sourceLanguage", r"$targetLanguage"],
   );
   static const explainStructuredDefinition = AiPromptDefinition(
     id: "explainStructured",
     prefsKey: "customExplainStructuredPrompt",
     defaultText: defaultExplainStructuredPrompt,
-    variables: [r"$word", r"$targetLanguage"],
+    variables: [r"$word", r"$sourceLanguage", r"$targetLanguage"],
   );
   static const translateDefinition = AiPromptDefinition(
     id: "translate",
@@ -190,6 +197,23 @@ Stay in character throughout the conversation. Gently correct the user's languag
       await prefs.remove(definition.prefsKey);
     }
     notifyListeners();
+  }
+
+  /// Substitutes the variables shared by both word-explanation prompts.
+  /// Custom prompts that do not mention a variable are left unchanged.
+  static String substituteExplain(
+    String template, {
+    required String word,
+    required String sourceLanguage,
+    required String targetLanguage,
+  }) {
+    final source = sourceLanguage == "auto"
+        ? "auto-detect the language from the word"
+        : languageMap[sourceLanguage] ?? sourceLanguage;
+    return template
+        .replaceAll(r"$word", word)
+        .replaceAll(r"$sourceLanguage", source)
+        .replaceAll(r"$targetLanguage", targetLanguage);
   }
 
   String get explainPrompt => promptFor(explainDefinition);

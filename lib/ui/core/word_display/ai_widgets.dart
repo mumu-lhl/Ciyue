@@ -4,6 +4,8 @@ import "package:ciyue/core/providers.dart";
 import "package:ciyue/services/ai.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/e_ink.dart";
+import "package:ciyue/ui/core/language_names.dart";
+import "package:ciyue/ui/core/language_picker.dart";
 import "package:ciyue/ui/core/word_display/ai_explanation_view.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:material_ui/material_ui.dart";
@@ -29,7 +31,14 @@ class _AIExplainViewState extends ConsumerState<AIExplainView> {
       if (!mounted) return;
       unawaited(
         ref
-            .read(aiExplanationModelProvider(widget.word))
+            .read(
+              aiExplanationModelProvider((
+                word: widget.word,
+                sourceLanguage: ref.read(
+                  aiExplanationSourceLanguageProvider(widget.word),
+                ),
+              )),
+            )
             .getExplanation(widget.word),
       );
     });
@@ -49,20 +58,63 @@ class _AIExplainViewState extends ConsumerState<AIExplainView> {
     }
   }
 
+  Widget _sourceLanguageChip(BuildContext context, String sourceLanguage) {
+    final l10n = AppLocalizations.of(context)!;
+    return ActionChip(
+      label: Text(localizedLanguageName(sourceLanguage, l10n)),
+      onPressed: () => showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (_) => FractionallySizedBox(
+          heightFactor: 0.85,
+          child: LanguagePicker(
+            selectedLanguage: sourceLanguage,
+            isSource: true,
+            onLanguageSelected: (code) {
+              ref
+                      .read(
+                        aiExplanationSourceLanguageOverrideProvider(widget.word)
+                            .notifier,
+                      )
+                      .state =
+                  code;
+              Navigator.pop(context);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final manual = ref.watch(
       settingsProvider.select((settings) => settings.aiExplainWordManual),
     );
-    final model = ref.watch(aiExplanationModelProvider(widget.word));
+    final sourceLanguage = ref.watch(
+      aiExplanationSourceLanguageProvider(widget.word),
+    );
+    ref.listen(aiExplanationSourceLanguageProvider(widget.word), (_, _) {
+      _requestExplanation();
+    });
+    final model = ref.watch(
+      aiExplanationModelProvider((
+        word: widget.word,
+        sourceLanguage: sourceLanguage,
+      )),
+    );
+    final localizations = AppLocalizations.of(context)!;
+    final chip = _sourceLanguageChip(context, sourceLanguage);
     if (manual && !model.isLoading && model.explanation == null) {
-      final localizations = AppLocalizations.of(context)!;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              chip,
+              const SizedBox(height: 16),
               Text(
                 localizations.aiExplainWordManualDescription,
                 textAlign: TextAlign.center,
@@ -80,7 +132,16 @@ class _AIExplainViewState extends ConsumerState<AIExplainView> {
       );
     }
     if (model.isLoading || model.explanation == null) {
-      return const Center(child: EInkAwareSpinner());
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            chip,
+            const SizedBox(height: 16),
+            const EInkAwareSpinner(),
+          ],
+        ),
+      );
     }
     return Center(
       child: Container(
@@ -88,9 +149,16 @@ class _AIExplainViewState extends ConsumerState<AIExplainView> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: model.structured != null
-                ? AiExplanationView(data: model.structured!)
-                : SelectionArea(child: GptMarkdown(model.explanation!)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                chip,
+                const SizedBox(height: 12),
+                model.structured != null
+                    ? AiExplanationView(data: model.structured!)
+                    : SelectionArea(child: GptMarkdown(model.explanation!)),
+              ],
+            ),
           ),
         ),
       ),
@@ -106,6 +174,7 @@ class RefreshAIExplainButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final sourceLanguage = ref.watch(aiExplanationSourceLanguageProvider(word));
 
     return FloatingActionButton.small(
       heroTag: "refresh_ai_explain_$word",
@@ -115,7 +184,14 @@ class RefreshAIExplainButton extends ConsumerWidget {
       child: const Icon(Icons.refresh),
       onPressed: () {
         unawaited(
-          ref.read(aiExplanationModelProvider(word)).refreshExplanation(word),
+          ref
+              .read(
+                aiExplanationModelProvider((
+                  word: word,
+                  sourceLanguage: sourceLanguage,
+                )),
+              )
+              .refreshExplanation(word),
         );
       },
     );
@@ -135,6 +211,7 @@ class EditAIExplainButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final sourceLanguage = ref.watch(aiExplanationSourceLanguageProvider(word));
 
     return FloatingActionButton.small(
       heroTag: "edit_ai_explain_$word",
@@ -149,7 +226,12 @@ class EditAIExplainButton extends ConsumerWidget {
             extra: {
               "word": word,
               "initialExplanation": initialExplanation,
-              "aiExplanationModel": ref.read(aiExplanationModelProvider(word)),
+              "aiExplanationModel": ref.read(
+                aiExplanationModelProvider((
+                  word: word,
+                  sourceLanguage: sourceLanguage,
+                )),
+              ),
             },
           ),
         );

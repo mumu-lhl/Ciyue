@@ -2,12 +2,15 @@ import "dart:convert";
 
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/ai.dart";
+import "package:ciyue/models/language.dart";
 import "package:ciyue/models/translation_result.dart";
 import "package:material_ui/material_ui.dart";
 
 import "package:ciyue/core/http_client.dart";
 import "package:ciyue/core/providers.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+
+export "package:ciyue/models/language.dart" show languageMap;
 
 abstract class TranslationService {
   Future<TranslationResult> translate(
@@ -119,26 +122,3 @@ class DeepLXTranslationService implements TranslationService {
     }
   }
 }
-
-const languageMap = {
-  "auto": "Auto Detect",
-  "en": "English",
-  "zh": "简体中文",
-  "zh_HK": "繁體中文",
-  "zh_TW": "正體中文",
-  "ja": "Japanese",
-  "ko": "Korean",
-  "fr": "French",
-  "de": "Deutsch",
-  "es": "Español",
-  "ru": "Русский",
-  "hi": "Hindi",
-  "bn": "Bengali",
-  "ca": "Catalan",
-  "nb": "Bokmål",
-  "sc": "Sardinian",
-  "ta": "Tamil",
-  "fa": "فارسی",
-  "bg": "Bulgarian",
-  "vi": "Tiếng Việt",
-};

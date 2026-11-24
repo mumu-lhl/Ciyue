@@ -10,6 +10,7 @@ void main() {
   ) async {
     const data = AiExplanationData(
       phonetic: "/ˌser.ənˈdɪp.ə.ti/",
+      romanization: "serendipity",
       partOfSpeech: "noun",
       meanings: ["finding something valuable by chance"],
       examples: [
@@ -31,6 +32,7 @@ void main() {
     );
 
     expect(find.text("/ˌser.ənˈdɪp.ə.ti/"), findsOneWidget);
+    expect(find.text("serendipity"), findsOneWidget);
     expect(find.text("noun"), findsOneWidget);
     expect(find.text("Meanings"), findsOneWidget);
     expect(find.text("finding something valuable by chance"), findsOneWidget);
