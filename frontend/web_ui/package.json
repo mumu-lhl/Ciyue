@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/copy-to-assets.mjs",
+    "build": "vite build && bun scripts/copy-to-assets.mjs",
     "preview": "vite preview",
     "check": "bun check",
     "compile": "bun check",
