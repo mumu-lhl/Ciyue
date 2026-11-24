@@ -13,6 +13,12 @@ enum TabBarPosition { top, bottom }
 
 enum DictionarySwitchStyle { expansion, tag }
 
+/// Where the bookmark and pronunciation buttons sit on a phone-sized entry
+/// page. A narrow bottom bar cannot hold every action, so the layout is chosen
+/// as a whole instead of per button. E-ink readers often have no speaker, so
+/// [eInkPaging] trades the pronunciation button for screen paging.
+enum MobileToolbarPreset { floating, bottomSingle, bottomDouble, eInkPaging }
+
 /// What a mouse gesture in the entry does. The dictionary tabs only exist in
 /// the tab layout, so that action falls back to word tabs in the expansion
 /// layout.
@@ -75,6 +81,7 @@ class Settings extends ChangeNotifier {
   late bool showMoreOptionsButton;
   late bool showSearchBarInWordDisplay;
   late DictionarySwitchStyle dictionarySwitchStyle;
+  late MobileToolbarPreset mobileToolbarPreset;
   late MouseGestureAction rockerGestureAction;
   late MouseGestureAction wheelGestureAction;
 
@@ -276,6 +283,11 @@ class Settings extends ChangeNotifier {
         dictionarySwitchStyleString,
       );
     }
+
+    mobileToolbarPreset = MobileToolbarPreset.values.firstWhere(
+      (preset) => preset.name == prefs.getString("mobileToolbarPreset"),
+      orElse: () => MobileToolbarPreset.floating,
+    );
 
     rockerGestureAction = MouseGestureAction.values.firstWhere(
       (action) => action.name == prefs.getString("rockerGestureAction"),
@@ -577,6 +589,12 @@ class Settings extends ChangeNotifier {
   Future<void> setDictionarySwitchStyle(DictionarySwitchStyle style) async {
     dictionarySwitchStyle = style;
     await prefs.setString("dictionarySwitchStyle", style.name);
+    notifyListeners();
+  }
+
+  Future<void> setMobileToolbarPreset(MobileToolbarPreset preset) async {
+    mobileToolbarPreset = preset;
+    await prefs.setString("mobileToolbarPreset", preset.name);
     notifyListeners();
   }
 

@@ -75,4 +75,16 @@ void main() {
 
     expect(settings.contentScale, 1.2);
   });
+
+  test("defaults the mobile toolbar preset to floating", () {
+    expect(Settings().mobileToolbarPreset, MobileToolbarPreset.floating);
+  });
+
+  test("persists the mobile toolbar preset", () async {
+    final settings = Settings();
+    await settings.setMobileToolbarPreset(MobileToolbarPreset.bottomDouble);
+
+    expect(settings.mobileToolbarPreset, MobileToolbarPreset.bottomDouble);
+    expect(Settings().mobileToolbarPreset, MobileToolbarPreset.bottomDouble);
+  });
 }

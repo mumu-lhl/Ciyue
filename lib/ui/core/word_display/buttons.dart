@@ -145,7 +145,16 @@ class Button extends ConsumerStatefulWidget {
   final String word;
   final bool showAIButtons;
 
-  const Button({super.key, required this.word, this.showAIButtons = false});
+  /// Whether the bookmark and pronunciation buttons still float. A bottom bar
+  /// preset moves them into the bar, so only the AI actions may be left here.
+  final bool showWordButtons;
+
+  const Button({
+    super.key,
+    required this.word,
+    this.showAIButtons = false,
+    this.showWordButtons = true,
+  });
 
   @override
   ConsumerState<Button> createState() => _ButtonState();
@@ -180,6 +189,11 @@ class _ButtonState extends ConsumerState<Button> {
 
   @override
   Widget build(BuildContext context) {
+    // In a bottom bar preset both word buttons live in the bar; only the AI
+    // actions may still need the floating column.
+    if (!widget.showWordButtons && !widget.showAIButtons) {
+      return const SizedBox.shrink();
+    }
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -203,14 +217,16 @@ class _ButtonState extends ConsumerState<Button> {
                   "",
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: buildReadLoudlyButton(context, widget.word),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: buildStarButton(context),
-        ),
+        if (widget.showWordButtons)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: buildReadLoudlyButton(context, widget.word),
+          ),
+        if (widget.showWordButtons)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: buildStarButton(context),
+          ),
       ],
     );
   }
@@ -406,6 +422,48 @@ class _WordPronounceIconButtonState
   }
 }
 
+/// Asks the AI model for a fresh explanation. Shared by the app bar button and
+/// the mobile bottom bar's overflow menu.
+void refreshAIExplanation(
+  WidgetRef ref,
+  String word, {
+  String? sourceLanguage,
+}) {
+  final String language =
+      sourceLanguage ?? ref.read(aiExplanationSourceLanguageProvider(word));
+  unawaited(
+    ref
+        .read(
+          aiExplanationModelProvider((word: word, sourceLanguage: language)),
+        )
+        .refreshExplanation(word),
+  );
+}
+
+/// Opens the editor for the current AI explanation of [word].
+void editAIExplanation(
+  BuildContext context,
+  WidgetRef ref,
+  String word, {
+  String? sourceLanguage,
+}) {
+  final String language =
+      sourceLanguage ?? ref.read(aiExplanationSourceLanguageProvider(word));
+  final model = ref.read(
+    aiExplanationModelProvider((word: word, sourceLanguage: language)),
+  );
+  unawaited(
+    context.push(
+      "/edit_ai_explanation",
+      extra: {
+        "word": word,
+        "initialExplanation": model.explanation ?? "",
+        "aiExplanationModel": model,
+      },
+    ),
+  );
+}
+
 class RefreshAIExplainIconButton extends ConsumerWidget {
   final String word;
 
@@ -417,18 +475,8 @@ class RefreshAIExplainIconButton extends ConsumerWidget {
     return IconButton(
       tooltip: AppLocalizations.of(context)!.update,
       icon: const Icon(Icons.refresh),
-      onPressed: () {
-        unawaited(
-          ref
-              .read(
-                aiExplanationModelProvider((
-                  word: word,
-                  sourceLanguage: sourceLanguage,
-                )),
-              )
-              .refreshExplanation(word),
-        );
-      },
+      onPressed: () =>
+          refreshAIExplanation(ref, word, sourceLanguage: sourceLanguage),
     );
   }
 }
@@ -444,24 +492,8 @@ class EditAIExplainIconButton extends ConsumerWidget {
     return IconButton(
       tooltip: AppLocalizations.of(context)!.editAIExplanation,
       icon: const Icon(Icons.edit),
-      onPressed: () {
-        final model = ref.read(
-          aiExplanationModelProvider((
-            word: word,
-            sourceLanguage: sourceLanguage,
-          )),
-        );
-        unawaited(
-          context.push(
-            "/edit_ai_explanation",
-            extra: {
-              "word": word,
-              "initialExplanation": model.explanation ?? "",
-              "aiExplanationModel": model,
-            },
-          ),
-        );
-      },
+      onPressed: () =>
+          editAIExplanation(context, ref, word, sourceLanguage: sourceLanguage),
     );
   }
 }

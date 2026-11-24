@@ -7,6 +7,7 @@ import "package:ciyue/repositories/open_records.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/dictionary_lookup.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/core/word_display/entry_actions.dart";
 import "package:ciyue/ui/core/word_display/mobile_word_browser.dart";
 import "package:ciyue/ui/core/word_display/paging_buttons.dart";
 import "package:ciyue/viewModels/home.dart";
@@ -71,6 +72,8 @@ void main() {
     }
     settings.dictionarySwitchStyle = DictionarySwitchStyle.tag;
     settings.aiExplainWord = false;
+    settings.mobileToolbarPreset = MobileToolbarPreset.floating;
+    entryAIActionsVisible.value = false;
   });
 
   tearDown(() {
@@ -380,4 +383,133 @@ void main() {
       expect(find.text("Home"), findsOneWidget);
     },
   );
+
+  testWidgets("floating preset keeps the entry actions out of the bar", (
+    tester,
+  ) async {
+    usePhoneSurface(tester);
+    final homeModel = HomeModel();
+    await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // Bookmark and pronunciation still float.
+    expect(find.byType(FloatingActionButton), findsNWidgets(2));
+    expect(
+      find.descendant(
+        of: find.byType(MobileWordBottomBar),
+        matching: find.byIcon(Icons.star_outline),
+      ),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets("bottom single preset moves the entry actions into the bar", (
+    tester,
+  ) async {
+    usePhoneSurface(tester);
+    settings.mobileToolbarPreset = MobileToolbarPreset.bottomSingle;
+
+    final homeModel = HomeModel();
+    await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(MobileWordBottomBar),
+        matching: find.byIcon(Icons.star_outline),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(MobileWordBottomBar),
+        matching: find.byIcon(Icons.volume_up),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets("bottom double preset stacks the actions into two rows", (
+    tester,
+  ) async {
+    usePhoneSurface(tester);
+    settings.mobileToolbarPreset = MobileToolbarPreset.bottomDouble;
+
+    final homeModel = HomeModel();
+    await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(
+      tester.getSize(find.byType(MobileWordBottomBar)).height,
+      greaterThanOrEqualTo(96),
+    );
+    expect(
+      find.descendant(
+        of: find.byType(MobileWordBottomBar),
+        matching: find.byIcon(Icons.star_outline),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(MobileWordBottomBar),
+        matching: find.byIcon(Icons.volume_up),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets("e-ink paging preset trades pronunciation for paging", (
+    tester,
+  ) async {
+    usePhoneSurface(tester);
+    settings.mobileToolbarPreset = MobileToolbarPreset.eInkPaging;
+
+    final homeModel = HomeModel();
+    await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.byType(PagingButton), findsNWidgets(2));
+    expect(find.byIcon(Icons.volume_up), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(MobileWordBottomBar),
+        matching: find.byIcon(Icons.star_outline),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets("the bar overflow offers AI actions while the AI tab is active", (
+    tester,
+  ) async {
+    usePhoneSurface(tester);
+    settings.mobileToolbarPreset = MobileToolbarPreset.bottomSingle;
+
+    final homeModel = HomeModel();
+    await tester.pumpWidget(buildTestWidget(homeModel: homeModel));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // The entry publishes this asynchronously; set it directly for the menu.
+    entryAIActionsVisible.value = true;
+    await tester.tap(find.byIcon(Icons.more_vert_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.byIcon(Icons.refresh), findsOneWidget);
+    expect(find.byIcon(Icons.edit), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

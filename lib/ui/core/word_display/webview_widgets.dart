@@ -597,16 +597,18 @@ class _WebviewAndroidState extends ConsumerState<WebviewAndroid> {
       if (previous == next) return;
       _applyContentScale(_webViewController, next);
     });
-    // Switching the mode while an entry is open must not rebuild the WebView,
-    // so the page is told about the change instead.
-    ref.listen<bool>(settingsProvider.select((s) => s.eInkMode), (
-      previous,
-      next,
-    ) {
-      if (previous == next) return;
-      final pager = _entryPager;
-      if (pager != null) unawaited(pager.syncPagingSetting());
-    });
+    // Switching either the e-ink mode or the paging preset changes whether the
+    // page reports its scroll bounds; tell the open page without rebuilding it.
+    ref.listen(
+      settingsProvider.select(
+        (s) => (eInk: s.eInkMode, preset: s.mobileToolbarPreset),
+      ),
+      (previous, next) {
+        if (previous == next) return;
+        final pager = _entryPager;
+        if (pager != null) unawaited(pager.syncPagingSetting());
+      },
+    );
     final dictManager = ref.watch(dictManagerProvider);
     final height =
         ref.watch(
@@ -1212,16 +1214,18 @@ class _WebviewWindowsState extends ConsumerState<WebviewWindows> {
       if (previous == next) return;
       _applyContentScale(_desktopController, next);
     });
-    // Switching the mode while an entry is open must not rebuild the WebView,
-    // so the page is told about the change instead.
-    ref.listen<bool>(settingsProvider.select((s) => s.eInkMode), (
-      previous,
-      next,
-    ) {
-      if (previous == next) return;
-      final pager = _entryPager;
-      if (pager != null) unawaited(pager.syncPagingSetting());
-    });
+    // Switching either the e-ink mode or the paging preset changes whether the
+    // page reports its scroll bounds; tell the open page without rebuilding it.
+    ref.listen(
+      settingsProvider.select(
+        (s) => (eInk: s.eInkMode, preset: s.mobileToolbarPreset),
+      ),
+      (previous, next) {
+        if (previous == next) return;
+        final pager = _entryPager;
+        if (pager != null) unawaited(pager.syncPagingSetting());
+      },
+    );
     final darkReaderSetting = ref.watch(dictionaryDarkReaderProvider);
     // A group edit removes dictionaries before the old WebView is torn down,
     // so the id can be gone for a frame. Fall back to the loading state

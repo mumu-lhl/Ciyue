@@ -659,6 +659,7 @@ const preferencesAllowList = <String>{
   "enableHistory",
   "versionCode",
   "dictionarySwitchStyle",
+  "mobileToolbarPreset",
   "rockerGestureAction",
   "wheelGestureAction",
   "translationProvider",

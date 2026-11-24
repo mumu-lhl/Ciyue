@@ -28,6 +28,16 @@ class PageBounds {
   String toString() => "PageBounds(atStart: $atStart, atEnd: $atEnd)";
 }
 
+/// Whether the WebView should run its paging mode.
+///
+/// The e-ink switch turns it on for every entry. The paging toolbar preset also
+/// turns it on while the reader leaves e-ink mode off, so the buttons still get
+/// the scroll-boundary updates they grey themselves out from.
+bool shouldPageWebView({
+  required bool eInkMode,
+  required MobileToolbarPreset preset,
+}) => eInkMode || preset == MobileToolbarPreset.eInkPaging;
+
 /// The tab layout scrolls inside a WebView, which Dart cannot read or move,
 /// while the expansion layout scrolls a Flutter [ScrollController]. Both
 /// hide that difference behind this interface so the keys and the buttons
@@ -230,9 +240,13 @@ class WebViewEntryPager implements EntryPager {
   Future<void> syncPagingSetting() async {
     final webView = controller();
     if (webView == null) return;
-    final enabled = settings.eInkMode;
-    // The state is only asked for when the buttons exist: with the mode off
-    // nothing subscribes to it, and every entry would pay for the message.
+    final enabled = shouldPageWebView(
+      eInkMode: settings.eInkMode,
+      preset: settings.mobileToolbarPreset,
+    );
+    // The state is only asked for when the buttons can exist: with neither the
+    // mode nor the preset on, nothing subscribes to it, and every entry would
+    // pay for the message.
     final source = enabled
         ? "window.ciyueSetPaging && window.ciyueSetPaging(true);"
               "window.ciyueReportPageState && window.ciyueReportPageState();"

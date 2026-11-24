@@ -9,6 +9,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
 import "package:ciyue/ui/core/word_display/audio_waveform.dart";
 import "package:ciyue/ui/core/word_display/buttons.dart";
+import "package:ciyue/ui/core/word_display/entry_actions.dart";
 import "package:ciyue/ui/core/word_display/entry_pager.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/paging_buttons.dart";
@@ -181,6 +182,9 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
 
     final isAIExplainTabSelected =
         showAIExplain && _isExpanded.isNotEmpty && _isExpanded[0];
+    publishEntryAIActions(isAIExplainTabSelected && !widget.inLookupPopup);
+    final floatingEntryActions =
+        settings.mobileToolbarPreset == MobileToolbarPreset.floating;
 
     final searchBar = _buildSearchBar(settings);
     final isDesktopScreen = app_utils.isLargeScreen(context);
@@ -283,7 +287,11 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
           ? null
           : Button(
               word: widget.word,
-              showAIButtons: isAIExplainTabSelected && !widget.inLookupPopup,
+              showAIButtons:
+                  isAIExplainTabSelected &&
+                  !widget.inLookupPopup &&
+                  floatingEntryActions,
+              showWordButtons: floatingEntryActions,
             ),
       body: SafeArea(
         top: false,
