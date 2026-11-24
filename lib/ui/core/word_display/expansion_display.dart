@@ -3,6 +3,7 @@ import "dart:async";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/word_display/ai_widgets.dart";
@@ -101,7 +102,10 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     super.initState();
     _ownsController = widget.searchController == null;
     _searchController = widget.searchController ?? SearchController();
-    _panelIds = _getPanelIds(settings.aiExplainWord, widget.validDictIds);
+    _panelIds = _getPanelIds(
+      isAiExplainWordEnabled(settings),
+      widget.validDictIds,
+    );
     _isExpanded = List<bool>.filled(_panelIds.length, true);
     setExpansionEntryPager(_pager);
   }
@@ -129,16 +133,17 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    final showAIExplain = isAiExplainWordEnabled(settings);
     final dictManager = ref.watch(dictManagerProvider);
     // A group switch reloads the dictionaries; rebuild the entry views so a
     // reused platform WebView cannot come back blank.
     final groupId = dictManager.groupId;
-    _syncPanelState(settings.aiExplainWord, widget.validDictIds);
+    _syncPanelState(showAIExplain, widget.validDictIds);
 
     final panels = <ExpansionPanel>[];
     int panelIndex = 0;
 
-    if (settings.aiExplainWord) {
+    if (showAIExplain) {
       panels.add(
         ExpansionPanel(
           headerBuilder: (context, isExpanded) {
@@ -175,7 +180,7 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     }
 
     final isAIExplainTabSelected =
-        settings.aiExplainWord && _isExpanded.isNotEmpty && _isExpanded[0];
+        showAIExplain && _isExpanded.isNotEmpty && _isExpanded[0];
 
     final searchBar = _buildSearchBar(settings);
     final isDesktopScreen = app_utils.isLargeScreen(context);

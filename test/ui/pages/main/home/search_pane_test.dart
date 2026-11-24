@@ -37,6 +37,11 @@ void main() {
     settings.showSearchPane = true;
     await prefs.setDouble("searchPaneWidth", 360);
     settings.searchPaneWidth = 360;
+    await settings.saveAiProviderConfig(
+      settings.aiProvider,
+      "test-model",
+      "test-key",
+    );
   });
 
   Future<void> pumpHomeBody(

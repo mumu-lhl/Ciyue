@@ -43,8 +43,12 @@ const keylessAiProviders = {"ollama", "openai_compatible"};
 
 /// What is missing for [provider] to be usable, based on the config
 /// saved in AI Settings. Both flags false means fully configured.
-({bool missingModel, bool missingApiKey}) aiConfigurationGaps(String provider) {
-  final config = settings.getAiProviderConfig(provider);
+/// [source] allows checking a settings instance other than the app singleton.
+({bool missingModel, bool missingApiKey}) aiConfigurationGaps(
+  String provider, {
+  Settings? source,
+}) {
+  final config = (source ?? settings).getAiProviderConfig(provider);
   final model = (config["model"]?.toString() ?? "").trim();
   final apiKey = (config["apiKey"]?.toString() ?? "").trim();
   return (
@@ -54,10 +58,22 @@ const keylessAiProviders = {"ollama", "openai_compatible"};
 }
 
 /// Whether [provider] has everything it needs in AI Settings.
-bool isAiProviderConfigured(String provider) {
-  final gaps = aiConfigurationGaps(provider);
+bool isAiProviderConfigured(String provider, {Settings? source}) {
+  final gaps = aiConfigurationGaps(provider, source: source);
   return !gaps.missingModel && !gaps.missingApiKey;
 }
+
+/// Whether the word-display UI should offer an AI explanation.
+///
+/// The user switch alone is not enough: an unconfigured provider would leave
+/// an AI page whose only content is a configuration error.
+bool isAiExplainWordEnabled(Settings settings) =>
+    settings.aiExplainWord &&
+    isAiProviderConfigured(settings.aiProvider, source: settings);
+
+/// Whether entering the AI page should request an explanation automatically.
+bool shouldAutoRequestAiExplanation(Settings settings) =>
+    !settings.aiExplainWordManual;
 
 class AI {
   final String provider;

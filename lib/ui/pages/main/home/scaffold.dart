@@ -1,6 +1,7 @@
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/ai.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 
@@ -14,9 +15,10 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(homeModelProvider.select((value) => value.state));
     ref.watch(dictManagerModelProvider.select((value) => value.isEmpty));
+    ref.watch(settingsProvider);
 
     final isNoDict = !dictManager.isLoading && dictManager.isEmpty;
-    final content = isNoDict && !settings.aiExplainWord
+    final content = isNoDict && !isAiExplainWordEnabled(settings)
         ? const RecommendedDictionaries()
         : const HomeBody();
 

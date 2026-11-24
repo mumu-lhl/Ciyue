@@ -60,7 +60,7 @@ void main() {
 
   const dictIds = [10, 20, 30];
 
-  setUp(() {
+  setUp(() async {
     for (final id in dictIds) {
       dictManager.dicts[id] = Mdict(path: "unused_$id")
         ..id = id
@@ -69,6 +69,11 @@ void main() {
     }
     settings.dictionarySwitchStyle = DictionarySwitchStyle.tag;
     settings.aiExplainWord = false;
+    await settings.saveAiProviderConfig(
+      settings.aiProvider,
+      "test-model",
+      "test-key",
+    );
   });
 
   tearDown(() {

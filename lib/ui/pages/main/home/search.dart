@@ -3,6 +3,7 @@ import "dart:async";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/ai.dart";
 import "package:ciyue/ui/core/search_bar.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -26,6 +27,7 @@ class _BottomSearchBarState extends ConsumerState<BottomSearchBar> {
   @override
   Widget build(BuildContext context) {
     ref.watch(homeModelProvider.select((value) => value.state));
+    ref.watch(settingsProvider);
 
     if (_isLoading) {
       return const SizedBox.shrink();
@@ -40,7 +42,7 @@ class _BottomSearchBarState extends ConsumerState<BottomSearchBar> {
         dictManagerModelProvider.select((model) => model.isEmpty),
       );
 
-      if (isEmpty && !settings.aiExplainWord) {
+      if (isEmpty && !isAiExplainWordEnabled(settings)) {
         return const SizedBox.shrink();
       }
 

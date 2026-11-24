@@ -1,6 +1,7 @@
 import "dart:async";
 
 import "package:ciyue/core/providers.dart";
+import "package:ciyue/services/ai.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/word_display/ai_explanation_view.dart";
@@ -19,7 +20,11 @@ class AIExplainView extends ConsumerStatefulWidget {
 }
 
 class _AIExplainViewState extends ConsumerState<AIExplainView> {
-  void _requestExplanation() {
+  void _requestExplanation({bool manual = false}) {
+    if (!manual &&
+        !shouldAutoRequestAiExplanation(ref.read(settingsProvider))) {
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(
@@ -46,7 +51,34 @@ class _AIExplainViewState extends ConsumerState<AIExplainView> {
 
   @override
   Widget build(BuildContext context) {
+    final manual = ref.watch(
+      settingsProvider.select((settings) => settings.aiExplainWordManual),
+    );
     final model = ref.watch(aiExplanationModelProvider(widget.word));
+    if (manual && !model.isLoading && model.explanation == null) {
+      final localizations = AppLocalizations.of(context)!;
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                localizations.aiExplainWordManualDescription,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () => _requestExplanation(manual: true),
+                icon: const Icon(Icons.auto_awesome),
+                label: Text(localizations.requestAIExplanation),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     if (model.isLoading || model.explanation == null) {
       return const Center(child: EInkAwareSpinner());
     }

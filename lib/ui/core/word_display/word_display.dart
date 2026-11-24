@@ -5,6 +5,7 @@ import "package:ciyue/core/providers.dart";
 import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/e_ink.dart";
@@ -258,6 +259,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         : null;
     _word = selected != null && selected.isNotEmpty ? selected : widget.word;
     final settings = ref.watch(settingsProvider);
+    final showAIExplain = isAiExplainWordEnabled(settings);
     // The theme reaches an entry through a user script that only runs when the
     // WebView is created. The tab key below carries this flag, so a flip
     // rebuilds the views exactly like a dictionary-group switch does.
@@ -314,7 +316,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         context,
         displayedValidDictIdsAsync.when(
           data: (validDictIds) {
-            if (validDictIds.isEmpty && !settings.aiExplainWord) {
+            if (validDictIds.isEmpty && !showAIExplain) {
               final searchBar = _buildSearchBar(settings);
               return Scaffold(
                 appBar: buildAppBar(context, false, title: searchBar),
@@ -347,7 +349,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               );
             }
 
-            final dictsLength = settings.aiExplainWord
+            final dictsLength = showAIExplain
                 ? validDictIds.length + 1
                 : validDictIds.length;
             final showTab = dictsLength > 1;
@@ -366,7 +368,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                   context,
                   showTab,
                   title: searchBar,
-                  showAIButtons: settings.aiExplainWord,
+                  showAIButtons: showAIExplain,
                 ),
                 bottomNavigationBar:
                     widget.bottomNavigationBar ??
@@ -377,14 +379,13 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                     ? null
                     : Button(
                         word: _word,
-                        showAIButtons:
-                            settings.aiExplainWord && !widget.inLookupPopup,
+                        showAIButtons: showAIExplain && !widget.inLookupPopup,
                       ),
                 body: SafeArea(
                   top: false,
                   child: Stack(
                     children: [
-                      settings.aiExplainWord
+                      showAIExplain
                           ? AIExplainView(word: _word)
                           : _buildWebView(validDictIds[0]),
                       const Positioned(
@@ -404,7 +405,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
               if (widget.initialDictId != null) {
                 final targetIndex = validDictIds.indexOf(widget.initialDictId!);
                 if (targetIndex != -1) {
-                  initialTabIndex = settings.aiExplainWord
+                  initialTabIndex = showAIExplain
                       ? targetIndex + 1
                       : targetIndex;
                 }
@@ -441,7 +442,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                         _tabListener = () => _syncActiveEntry(
                           tabController,
                           validDictIds,
-                          settings.aiExplainWord,
+                          showAIExplain,
                         );
                         tabController.addListener(_tabListener!);
                       }
@@ -449,7 +450,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                       _syncActiveEntry(
                         tabController,
                         validDictIds,
-                        settings.aiExplainWord,
+                        showAIExplain,
                       );
                     }
                     final searchBar = _buildSearchBar(settings);
@@ -458,7 +459,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                       listenable: tabController,
                       builder: (context, child) {
                         final isAIExplainTabSelected =
-                            settings.aiExplainWord && tabController.index == 0;
+                            showAIExplain && tabController.index == 0;
 
                         return Scaffold(
                           appBar: buildAppBar(
@@ -760,7 +761,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
         isScrollable: true,
         tabAlignment: TabAlignment.start,
         tabs: [
-          if (settings.aiExplainWord) Tab(text: "AI"),
+          if (isAiExplainWordEnabled(settings)) Tab(text: "AI"),
           for (final id in validDictIds)
             Tab(text: dictManager.dicts[id]?.title ?? ""),
         ],
@@ -785,7 +786,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
             settings.themeMode == ThemeMode.system &&
                 MediaQuery.of(context).platformBrightness == Brightness.light);
     final children = <Widget>[
-      if (settings.aiExplainWord)
+      if (isAiExplainWordEnabled(settings))
         KeepAliveWidget(
           key: ValueKey("ai_tab_$groupId"),
           child: AIExplainView(word: _word),

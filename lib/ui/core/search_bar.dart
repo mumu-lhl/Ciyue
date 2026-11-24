@@ -6,6 +6,7 @@ import "package:ciyue/models/dictionary_lookup.dart";
 import "package:ciyue/models/search_mode.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/dictionary_lookup_instance.dart";
 import "package:ciyue/services/full_text_index_store.dart";
 import "package:ciyue/services/full_text_search.dart";
@@ -830,7 +831,7 @@ class _WordSearchBarWithSuggestionsState
       if (mode == SearchMode.fullText)
         ...suggestions.fullTextHits.map(buildFullTextTile)
       else ...[
-        if (settings.aiExplainWord) buildSuggestionTile(searchWord),
+        if (isAiExplainWordEnabled(settings)) buildSuggestionTile(searchWord),
         ...suggestions.dictionarySuggestions.map(buildSuggestionTile),
         if (suggestions.spellingSuggestions.isNotEmpty)
           Padding(

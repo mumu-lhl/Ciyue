@@ -44,6 +44,7 @@ class AISettingsViewModel with ChangeNotifier {
       _provider = ModelProviderManager.modelProviders.values.first.name;
       settings.aiProvider = _provider;
       unawaited(prefs.setString("aiProvider", _provider));
+      settings.refresh();
     }
 
     final config = settings.getAiProviderConfig(_provider);
@@ -82,6 +83,7 @@ class AISettingsViewModel with ChangeNotifier {
     _provider = newProvider;
     settings.aiProvider = newProvider;
     unawaited(prefs.setString("aiProvider", newProvider));
+    settings.refresh();
 
     final config = settings.getAiProviderConfig(_provider);
     modelController.text = config["model"] ?? "";
@@ -116,6 +118,15 @@ class AISettingsViewModel with ChangeNotifier {
   void setExplainWord(bool value) {
     settings.aiExplainWord = value;
     unawaited(prefs.setBool("aiExplainWord", value));
+    _homeModel.update();
+    notifyListeners();
+  }
+
+  bool get explainWordManual => settings.aiExplainWordManual;
+
+  void setExplainWordManual(bool value) {
+    settings.aiExplainWordManual = value;
+    unawaited(prefs.setBool("aiExplainWordManual", value));
     _homeModel.update();
     notifyListeners();
   }
