@@ -11,6 +11,7 @@ import "package:ciyue/ui/pages/main/home/search.dart";
 import "package:ciyue/ui/pages/settings/appearance/search_pane_switch.dart";
 import "package:ciyue/viewModels/dictionary.dart";
 import "package:ciyue/viewModels/home.dart";
+import "package:flutter/services.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:material_ui/material_ui.dart";
@@ -85,13 +86,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(HomeSearchBar), findsOneWidget);
 
-      await tester.tap(find.byTooltip("Hide Search Pane"));
+      await tester.tap(find.byTooltip("Hide Search Pane (Ctrl+B)"));
       await tester.pumpAndSettle();
       expect(find.byType(HomeSearchBar), findsNothing);
       // The tab bar itself stays, so the pane can be expanded again.
       expect(find.byTooltip("New Tab (Ctrl+T)"), findsOneWidget);
 
-      await tester.tap(find.byTooltip("Show Search Pane"));
+      await tester.tap(find.byTooltip("Show Search Pane (Ctrl+B)"));
       await tester.pumpAndSettle();
       expect(find.byType(HomeSearchBar), findsOneWidget);
     });
@@ -108,7 +109,7 @@ void main() {
       homeModel.newTab();
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip("Hide Search Pane"));
+      await tester.tap(find.byTooltip("Hide Search Pane (Ctrl+B)"));
       await tester.pumpAndSettle();
       expect(find.byType(HomeSearchBar), findsNothing);
       expect(prefs.getBool("showSearchPane"), isFalse);
@@ -206,6 +207,23 @@ void main() {
         homeModel: HomeModel(),
       );
       expect(tester.getTopLeft(divider()).dx, 300);
+    });
+
+    testWidgets("Ctrl+B toggles the pane", (tester) async {
+      await pumpHomeBody(
+        tester,
+        surfaceSize: const Size(1280, 800),
+        homeModel: HomeModel(),
+      );
+      expect(find.byType(HomeSearchBar), findsOneWidget);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyB);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+
+      expect(settings.showSearchPane, isFalse);
+      expect(find.byType(HomeSearchBar), findsNothing);
     });
 
     testWidgets("the divider handle collapses the pane", (tester) async {

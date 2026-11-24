@@ -10,6 +10,7 @@ import "package:ciyue/ui/core/word_display/buttons.dart";
 import "package:ciyue/ui/core/word_display/content_scale_script.dart";
 import "package:ciyue/ui/core/word_display/entry_pager.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
+import "package:ciyue/utils.dart";
 import "package:ciyue/viewModels/home.dart";
 import "package:flutter/services.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -28,6 +29,25 @@ const _digitKeys = <LogicalKeyboardKey>[
   LogicalKeyboardKey.digit8,
   LogicalKeyboardKey.digit9,
 ];
+
+/// Keys that only ever modify another key, left and right variants included.
+///
+/// Not `const`: [LogicalKeyboardKey] overrides `==`, which constant sets
+/// reject.
+final Set<LogicalKeyboardKey> _modifierKeys = {
+  LogicalKeyboardKey.control,
+  LogicalKeyboardKey.controlLeft,
+  LogicalKeyboardKey.controlRight,
+  LogicalKeyboardKey.shift,
+  LogicalKeyboardKey.shiftLeft,
+  LogicalKeyboardKey.shiftRight,
+  LogicalKeyboardKey.alt,
+  LogicalKeyboardKey.altLeft,
+  LogicalKeyboardKey.altRight,
+  LogicalKeyboardKey.meta,
+  LogicalKeyboardKey.metaLeft,
+  LogicalKeyboardKey.metaRight,
+};
 
 /// The shortcuts the home page binds.
 ///
@@ -65,10 +85,29 @@ Map<SingleActivator, VoidCallback> homeShortcutBindings(
     }
   }
 
+  void toggleSearchPane() {
+    if (!useDesktopLayout(context)) return;
+    final paneSettings = ref.read(settingsProvider);
+    unawaited(paneSettings.setShowSearchPane(!paneSettings.showSearchPane));
+  }
+
   return {
     const SingleActivator(LogicalKeyboardKey.keyF, control: true): () {
       _focusNode(_nearestSearchNode(ref));
     },
+    // Toggles the split view's search pane, the way a sidebar key does
+    // elsewhere. Only the wide layout has one, so on every other layout the
+    // key does nothing instead of toggling a setting nobody can see.
+    //
+    // Ctrl+B is a text-field command on Linux (caret left); like Ctrl+F above,
+    // this table sits nearer the focus than the text-editing shortcuts and
+    // wins. Ctrl+F already takes the symmetric key from that set.
+    // Focus tree only, like the page keys below: the global handler sees every
+    // press that reaches a Flutter widget too, and a toggle run twice puts the
+    // pane straight back where it was.
+    if (!forGlobalHandler)
+      const SingleActivator(LogicalKeyboardKey.keyB, control: true):
+          toggleSearchPane,
     const SingleActivator(LogicalKeyboardKey.keyT, control: true):
         homeModel.newTab,
     const SingleActivator(LogicalKeyboardKey.keyW, control: true): () {
@@ -212,6 +251,10 @@ class _HomeShortcutsState extends ConsumerState<HomeShortcuts> {
 
   bool _handleGlobalKey(KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return false;
+    // A modifier on its own is never a shortcut, and `SingleActivator` asserts
+    // that its trigger is not one: building it from a Ctrl press would throw in
+    // debug builds instead of ignoring the key.
+    if (_modifierKeys.contains(event.logicalKey)) return false;
     if (!mounted) return false;
     // Text fields keep their own combinations (^T / ^W on macOS, for
     // example), and a focused Flutter widget is served by CallbackShortcuts.

@@ -50,6 +50,7 @@ class HeadwordPaneModel extends ChangeNotifier {
   SearchMode _mode = SearchMode.prefix;
   List<HeadwordPaneRow> _rows = const [];
   FullTextIndexStatus _indexStatus = FullTextIndexStatus.ready;
+  int _selectedIndex = -1;
 
   /// The text the rows belong to, trimmed.
   String get text => _text;
@@ -62,8 +63,31 @@ class HeadwordPaneModel extends ChangeNotifier {
   /// full-text index. Always [FullTextIndexStatus.ready] in prefix mode.
   FullTextIndexStatus get indexStatus => _indexStatus;
 
+  /// The row the arrow keys last moved to, or -1 when none is selected yet.
+  int get selectedIndex => _selectedIndex;
+
   /// Whether the pane should show history instead of the list.
   bool get isEmpty => _text.isEmpty;
+
+  /// Moves the selection by [delta] rows and returns the row it landed on.
+  ///
+  /// With nothing selected, a forward move starts at the top and a backward
+  /// move at the bottom, which is what a reader pressing Up to start at the
+  /// end of the list expects.
+  HeadwordPaneRow? moveSelection(int delta) {
+    if (_rows.isEmpty) return null;
+    final int next;
+    if (_selectedIndex < 0) {
+      next = delta > 0 ? 0 : _rows.length - 1;
+    } else {
+      next = (_selectedIndex + delta).clamp(0, _rows.length - 1);
+    }
+    if (next != _selectedIndex) {
+      _selectedIndex = next;
+      notifyListeners();
+    }
+    return _rows[next];
+  }
 
   /// Re-runs the list for [text] once the debounce expires.
   ///
@@ -77,6 +101,9 @@ class HeadwordPaneModel extends ChangeNotifier {
   }) {
     _text = text.trim();
     _mode = mode;
+    // The selection belongs to the list the reader was looking at; new text or
+    // a new mode starts a new list.
+    _selectedIndex = -1;
     _timer?.cancel();
     final generation = ++_generation;
     if (_text.isEmpty) {
