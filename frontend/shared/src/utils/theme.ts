@@ -17,7 +17,10 @@ export const THEME_OPTIONS: ThemeOption[] = [
   { id: "amber", name: "琥珀橙", primaryHex: "#d97706" },
 ];
 
-export function getThemeName(color: ThemeColor, locale: SupportedLocale = "zh"): string {
+export function getThemeName(
+  color: ThemeColor,
+  locale: SupportedLocale = "zh",
+): string {
   const map: Record<ThemeColor, TranslationKey> = {
     blue: "theme.blue",
     violet: "theme.violet",
@@ -41,7 +44,8 @@ export function getStoredThemeMode(): ThemeMode {
   try {
     if (typeof localStorage === "undefined") return "auto";
     const stored = localStorage.getItem("ciyue_theme_mode");
-    if (stored === "light" || stored === "dark" || stored === "auto") return stored;
+    if (stored === "light" || stored === "dark" || stored === "auto")
+      return stored;
   } catch {}
   return "auto";
 }
@@ -71,14 +75,24 @@ export function setStoredThemeColor(color: ThemeColor): void {
   } catch {}
 }
 
-export function applyThemeColor(color: ThemeColor, rootElement?: HTMLElement): void {
-  const target = rootElement ?? (typeof document !== "undefined" ? document.documentElement : null);
+export function applyThemeColor(
+  color: ThemeColor,
+  rootElement?: HTMLElement,
+): void {
+  const target =
+    rootElement ??
+    (typeof document !== "undefined" ? document.documentElement : null);
   if (!target) return;
   target.setAttribute("data-theme", color);
 }
 
-export function applyThemeMode(mode: ThemeMode, rootElement?: HTMLElement): void {
-  const target = rootElement ?? (typeof document !== "undefined" ? document.documentElement : null);
+export function applyThemeMode(
+  mode: ThemeMode,
+  rootElement?: HTMLElement,
+): void {
+  const target =
+    rootElement ??
+    (typeof document !== "undefined" ? document.documentElement : null);
   if (!target) return;
   if (mode === "dark") {
     target.classList.add("dark");

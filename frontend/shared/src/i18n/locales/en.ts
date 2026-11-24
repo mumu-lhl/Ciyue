@@ -24,7 +24,8 @@ export const en: Translations = {
   theme: {
     appearanceTitle: "Appearance & Theme",
     modeTitle: "Theme Mode",
-    modeDesc: "Choose interface appearance: follow system preference or stick to light/dark",
+    modeDesc:
+      "Choose interface appearance: follow system preference or stick to light/dark",
     modeAuto: "System",
     modeLight: "Light",
     modeDark: "Dark",
@@ -76,7 +77,8 @@ export const en: Translations = {
   },
   aiExplain: {
     title: "AI Deep Analysis - {word}",
-    generating: "AI is analyzing nuances, deep definitions, and sample sentences...",
+    generating:
+      "AI is analyzing nuances, deep definitions, and sample sentences...",
     failed: "Generation failed: ",
     promptHint:
       "To use AI features, ensure that AI model and API Key are configured in Ciyue desktop.",
@@ -95,27 +97,32 @@ export const en: Translations = {
       "Configure connection, appearance, and selection lookup behavior for the browser extension",
     serverConnection: "Desktop Service Connection",
     serverUrl: "Server URL",
-    serverUrlDesc: "The full URL where Ciyue desktop Web & API service is listening",
+    serverUrlDesc:
+      "The full URL where Ciyue desktop Web & API service is listening",
     testConnSuccess:
       "Connected! Reached desktop service, current group loaded with {count} dictionaries.",
     testConnFailed:
       "Connection failed: {error}. Please ensure Ciyue desktop is running with service enabled.",
     selectionBehavior: "Web Selection Behavior",
     enableSelection: "Enable Selection Lookup",
-    enableSelectionDesc: "Display floating lookup trigger after selecting text on web pages",
+    enableSelectionDesc:
+      "Display floating lookup trigger after selecting text on web pages",
     enableDoubleClick: "Enable Double-Click Lookup",
     enableDoubleClickDesc:
       "Directly open lookup card when double-clicking words (skips trigger icon)",
     modifierKey: "Modifier Key Requirement",
-    modifierKeyDesc: "Only trigger when selecting text while holding the specified modifier key",
+    modifierKeyDesc:
+      "Only trigger when selecting text while holding the specified modifier key",
     modNone: "None (Default)",
     modAlt: "Hold Alt / Option",
     modCtrl: "Hold Ctrl / Command",
     modShift: "Hold Shift",
     excludeEditable: "Exclude Input & Editable Areas",
-    excludeEditableDesc: "Do not show lookup trigger inside text inputs or contenteditable editors",
+    excludeEditableDesc:
+      "Do not show lookup trigger inside text inputs or contenteditable editors",
     blacklist: "Domain Blacklist",
-    blacklistDesc: "Disable selection lookup on these domains (one per line, e.g. github.com)",
+    blacklistDesc:
+      "Disable selection lookup on these domains (one per line, e.g. github.com)",
     blacklistPlaceholder: "e.g.:\ngithub.com\nmail.google.com",
   },
 };

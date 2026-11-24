@@ -1,6 +1,11 @@
 import { zh } from "./locales/zh";
 import { en } from "./locales/en";
-import type { LocalePreference, SupportedLocale, TranslationKey, Translations } from "./types";
+import type {
+  LocalePreference,
+  SupportedLocale,
+  TranslationKey,
+  Translations,
+} from "./types";
 
 export * from "./types";
 export { zh, en };

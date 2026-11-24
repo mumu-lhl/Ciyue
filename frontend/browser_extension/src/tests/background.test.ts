@@ -16,12 +16,16 @@ describe("background service worker", () => {
         vi.fn().mockResolvedValue({
           ok: true,
           status: 200,
-          headers: new Headers({ "content-type": "application/json; charset=utf-8" }),
+          headers: new Headers({
+            "content-type": "application/json; charset=utf-8",
+          }),
           json: async () => mockData,
         }),
       );
 
-      const res = await handleProxyFetch({ url: "http://127.0.0.1:47117/api/lookup" });
+      const res = await handleProxyFetch({
+        url: "http://127.0.0.1:47117/api/lookup",
+      });
       expect(res).toEqual({
         ok: true,
         status: 200,
@@ -40,7 +44,9 @@ describe("background service worker", () => {
         }),
       );
 
-      const res = await handleProxyFetch({ url: "http://127.0.0.1:47117/ping" });
+      const res = await handleProxyFetch({
+        url: "http://127.0.0.1:47117/ping",
+      });
       expect(res).toEqual({
         ok: true,
         status: 200,
@@ -59,7 +65,9 @@ describe("background service worker", () => {
         }),
       );
 
-      const res = await handleProxyFetch({ url: "http://127.0.0.1:47117/api/lookup" });
+      const res = await handleProxyFetch({
+        url: "http://127.0.0.1:47117/api/lookup",
+      });
       expect(res).toEqual({
         ok: false,
         status: 400,
@@ -78,7 +86,9 @@ describe("background service worker", () => {
         }),
       );
 
-      const res = await handleProxyFetch({ url: "http://127.0.0.1:47117/api/lookup" });
+      const res = await handleProxyFetch({
+        url: "http://127.0.0.1:47117/api/lookup",
+      });
       expect(res).toEqual({
         ok: false,
         status: 502,
@@ -89,10 +99,14 @@ describe("background service worker", () => {
     it("catches network errors and returns friendly error message", async () => {
       vi.stubGlobal(
         "fetch",
-        vi.fn().mockRejectedValue(new Error("Failed to connect to localhost:47117")),
+        vi
+          .fn()
+          .mockRejectedValue(new Error("Failed to connect to localhost:47117")),
       );
 
-      const res = await handleProxyFetch({ url: "http://127.0.0.1:47117/api/lookup" });
+      const res = await handleProxyFetch({
+        url: "http://127.0.0.1:47117/api/lookup",
+      });
       expect(res.ok).toBe(false);
       expect(res.status).toBe(0);
       expect(res.error).toBe("Failed to connect to localhost:47117");

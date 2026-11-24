@@ -59,7 +59,10 @@ describe("theme utilities", () => {
     };
     vi.stubGlobal("document", { documentElement: mockDocElement });
     applyThemeColor("rose");
-    expect(mockDocElement.setAttribute).toHaveBeenCalledWith("data-theme", "rose");
+    expect(mockDocElement.setAttribute).toHaveBeenCalledWith(
+      "data-theme",
+      "rose",
+    );
   });
 
   it("applies theme mode correctly to documentElement", () => {
@@ -78,7 +81,10 @@ describe("theme utilities", () => {
   });
 
   it("ensures all THEME_OPTIONS have corresponding CSS selectors in theme.css", () => {
-    const cssContent = readFileSync(new URL("../styles/theme.css", import.meta.url), "utf-8");
+    const cssContent = readFileSync(
+      new URL("../styles/theme.css", import.meta.url),
+      "utf-8",
+    );
 
     for (const option of THEME_OPTIONS) {
       expect(cssContent).toContain(`[data-theme="${option.id}"]`);
@@ -87,7 +93,10 @@ describe("theme utilities", () => {
   });
 
   it("ensures theme.css defines custom variant for dark mode", () => {
-    const cssContent = readFileSync(new URL("../styles/theme.css", import.meta.url), "utf-8");
+    const cssContent = readFileSync(
+      new URL("../styles/theme.css", import.meta.url),
+      "utf-8",
+    );
     expect(cssContent).toContain("@custom-variant dark");
   });
 });

@@ -8,15 +8,15 @@
     "./styles/*": "./src/styles/*"
   },
   "scripts": {
-    "compile": "tsc --noEmit",
-    "format": "oxfmt",
-    "format:check": "oxfmt --check",
+    "check": "bun check",
+    "compile": "bun check",
+    "format": "bun fmt",
+    "format:check": "bun fmt --check",
     "lint": "oxlint --deny-warnings",
     "test": "vitest run"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "oxfmt": "^0.79.0",
     "oxlint": "^1.94.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.1"

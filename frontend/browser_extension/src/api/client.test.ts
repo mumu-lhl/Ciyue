@@ -27,7 +27,9 @@ describe("CiyueApiClient", () => {
     const spy = vi.spyOn(messaging, "proxyFetch").mockResolvedValue(mockStatus);
 
     const res = await client.getStatus();
-    expect(spy).toHaveBeenCalledWith({ url: "http://127.0.0.1:47117/api/status" });
+    expect(spy).toHaveBeenCalledWith({
+      url: "http://127.0.0.1:47117/api/status",
+    });
     expect(res).toEqual(mockStatus);
   });
 
@@ -39,12 +41,16 @@ describe("CiyueApiClient", () => {
     const spy = vi.spyOn(messaging, "proxyFetch").mockResolvedValue(mockGroups);
 
     const res = await client.getGroups();
-    expect(spy).toHaveBeenCalledWith({ url: "http://127.0.0.1:47117/api/groups" });
+    expect(spy).toHaveBeenCalledWith({
+      url: "http://127.0.0.1:47117/api/groups",
+    });
     expect(res).toEqual(mockGroups);
   });
 
   it("switches current dictionary group via switchGroup", async () => {
-    const spy = vi.spyOn(messaging, "proxyFetch").mockResolvedValue({ success: true });
+    const spy = vi
+      .spyOn(messaging, "proxyFetch")
+      .mockResolvedValue({ success: true });
 
     await client.switchGroup("g2");
     expect(spy).toHaveBeenCalledWith({
@@ -59,10 +65,14 @@ describe("CiyueApiClient", () => {
       dictionarySuggestions: ["apple", "apply"],
       spellingSuggestions: [],
     };
-    const spy = vi.spyOn(messaging, "proxyFetch").mockResolvedValue(mockSuggestions);
+    const spy = vi
+      .spyOn(messaging, "proxyFetch")
+      .mockResolvedValue(mockSuggestions);
 
     const res = await client.getSuggestions("app");
-    expect(spy).toHaveBeenCalledWith({ url: "http://127.0.0.1:47117/api/suggest?q=app" });
+    expect(spy).toHaveBeenCalledWith({
+      url: "http://127.0.0.1:47117/api/suggest?q=app",
+    });
     expect(res).toEqual(mockSuggestions);
   });
 
@@ -73,7 +83,9 @@ describe("CiyueApiClient", () => {
       stared: false,
     };
 
-    const spy = vi.spyOn(messaging, "proxyFetch").mockResolvedValue(mockLookupRes);
+    const spy = vi
+      .spyOn(messaging, "proxyFetch")
+      .mockResolvedValue(mockLookupRes);
 
     const result = await client.lookup("hello");
     expect(spy).toHaveBeenCalledWith({
@@ -83,7 +95,9 @@ describe("CiyueApiClient", () => {
   });
 
   it("checks wordbook status accurately", async () => {
-    const spy = vi.spyOn(messaging, "proxyFetch").mockResolvedValue({ stared: true });
+    const spy = vi
+      .spyOn(messaging, "proxyFetch")
+      .mockResolvedValue({ stared: true });
     const isStared = await client.checkWordbook("star");
     expect(spy).toHaveBeenCalledWith({
       url: "http://127.0.0.1:47117/api/wordbook/check?word=star",
@@ -92,13 +106,17 @@ describe("CiyueApiClient", () => {
   });
 
   it("handles wordbook check returning false on error", async () => {
-    vi.spyOn(messaging, "proxyFetch").mockRejectedValue(new Error("Network error"));
+    vi.spyOn(messaging, "proxyFetch").mockRejectedValue(
+      new Error("Network error"),
+    );
     const isStared = await client.checkWordbook("test");
     expect(isStared).toBe(false);
   });
 
   it("adds word to wordbook via addToWordbook", async () => {
-    const spy = vi.spyOn(messaging, "proxyFetch").mockResolvedValue({ success: true });
+    const spy = vi
+      .spyOn(messaging, "proxyFetch")
+      .mockResolvedValue({ success: true });
     await client.addToWordbook("galaxy");
     expect(spy).toHaveBeenCalledWith({
       url: "http://127.0.0.1:47117/api/wordbook?word=galaxy",
@@ -107,7 +125,9 @@ describe("CiyueApiClient", () => {
   });
 
   it("removes word from wordbook via removeFromWordbook", async () => {
-    const spy = vi.spyOn(messaging, "proxyFetch").mockResolvedValue({ success: true });
+    const spy = vi
+      .spyOn(messaging, "proxyFetch")
+      .mockResolvedValue({ success: true });
     await client.removeFromWordbook("galaxy");
     expect(spy).toHaveBeenCalledWith({
       url: "http://127.0.0.1:47117/api/wordbook?word=galaxy",

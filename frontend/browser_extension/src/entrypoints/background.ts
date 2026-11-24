@@ -23,7 +23,10 @@ export default defineBackground(() => {
 
   chrome.commands.onCommand.addListener(async (command) => {
     if (command === "lookup-selection") {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
       if (tab?.id) {
         chrome.tabs.sendMessage(tab.id, {
           type: "CIYUE_TRIGGER_HOTKEY",
@@ -56,7 +59,11 @@ export default defineBackground(() => {
     });
 
     port.onMessage.addListener(
-      async (msg: { mode: "explain" | "translate"; text: string; serverUrl: string }) => {
+      async (msg: {
+        mode: "explain" | "translate";
+        text: string;
+        serverUrl: string;
+      }) => {
         const { mode, text, serverUrl } = msg;
         const cleanUrl = serverUrl.replace(/\/+$/, "");
         const endpoint =
@@ -125,7 +132,9 @@ export default defineBackground(() => {
   });
 });
 
-export async function handleProxyFetch(req: ProxyFetchRequest): Promise<ProxyFetchResponse> {
+export async function handleProxyFetch(
+  req: ProxyFetchRequest,
+): Promise<ProxyFetchResponse> {
   try {
     const res = await fetch(req.url, {
       method: req.method || "GET",

@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { t, resolveLocale, getStoredLocale, setStoredLocale, zh, en } from "./index";
+import {
+  t,
+  resolveLocale,
+  getStoredLocale,
+  setStoredLocale,
+  zh,
+  en,
+} from "./index";
 
 describe("i18n utilities", () => {
   const store = new Map<string, string>();
@@ -61,9 +68,15 @@ describe("i18n utilities", () => {
   });
 
   it("interpolates parameters properly", () => {
-    expect(t("lookup.searchingWord", { word: "apple" }, "zh")).toBe("正在查询 “apple”...");
-    expect(t("lookup.searchingWord", { word: "apple" }, "en")).toBe("Searching “apple”...");
-    expect(t("lookup.dictCount", { count: 3 }, "en")).toBe("Found 3 dictionary results");
+    expect(t("lookup.searchingWord", { word: "apple" }, "zh")).toBe(
+      "正在查询 “apple”...",
+    );
+    expect(t("lookup.searchingWord", { word: "apple" }, "en")).toBe(
+      "Searching “apple”...",
+    );
+    expect(t("lookup.dictCount", { count: 3 }, "en")).toBe(
+      "Found 3 dictionary results",
+    );
   });
 
   it("falls back to key if translation key does not exist", () => {

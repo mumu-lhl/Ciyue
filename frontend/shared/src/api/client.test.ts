@@ -41,13 +41,20 @@ describe("CiyueApiClient", () => {
 
   it("supports custom ApiTransport", async () => {
     const mockTransport: ApiTransport = {
-      fetch: vi.fn().mockResolvedValue({ status: "ok", app: "CiyueCustom", port: 1234 }),
+      fetch: vi
+        .fn()
+        .mockResolvedValue({ status: "ok", app: "CiyueCustom", port: 1234 }),
     };
-    const customClient = new CiyueApiClient("http://custom-url:1234", mockTransport);
+    const customClient = new CiyueApiClient(
+      "http://custom-url:1234",
+      mockTransport,
+    );
 
     const res = await customClient.getStatus();
     expect(res.app).toBe("CiyueCustom");
-    expect(mockTransport.fetch).toHaveBeenCalledWith("http://custom-url:1234/api/status");
+    expect(mockTransport.fetch).toHaveBeenCalledWith(
+      "http://custom-url:1234/api/status",
+    );
   });
 
   it("handles wordbook operations", async () => {

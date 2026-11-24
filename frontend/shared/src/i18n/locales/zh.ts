@@ -90,19 +90,23 @@ export const zh: Translations = {
   },
   extensionOptions: {
     extSettingsTitle: "词悦查词助手 · 扩展设置",
-    extSettingsDesc: "配置浏览器拓展与词悦桌面端的连接方式、外观主题及划词交互行为",
+    extSettingsDesc:
+      "配置浏览器拓展与词悦桌面端的连接方式、外观主题及划词交互行为",
     serverConnection: "桌面端服务连接",
     serverUrl: "服务地址 (Server URL)",
     serverUrlDesc: "词悦桌面端「设置」->「Web 与 API 服务」所监听的完整地址",
-    testConnSuccess: "连接成功！已连接到词悦桌面端，当前分组已加载 {count} 本词典。",
+    testConnSuccess:
+      "连接成功！已连接到词悦桌面端，当前分组已加载 {count} 本词典。",
     testConnFailed: "连接失败：{error}。请确认词悦桌面端已打开并开启服务。",
     selectionBehavior: "网页划词交互",
     enableSelection: "开启网页划词查词",
     enableSelectionDesc: "在网页上选中文字后，右下角自动弹出快速查词图标",
     enableDoubleClick: "开启双击直接查词",
-    enableDoubleClickDesc: "双击网页英文单词时直接打开查词卡片（无需点击悬浮图标）",
+    enableDoubleClickDesc:
+      "双击网页英文单词时直接打开查词卡片（无需点击悬浮图标）",
     modifierKey: "划词辅助触发按键",
-    modifierKeyDesc: "仅在按住指定辅助键并划词时才触发查词（防止日常复制时误触）",
+    modifierKeyDesc:
+      "仅在按住指定辅助键并划词时才触发查词（防止日常复制时误触）",
     modNone: "不限制按键 (默认)",
     modAlt: "按住 Alt / Option",
     modCtrl: "按住 Ctrl / Command",
@@ -110,7 +114,8 @@ export const zh: Translations = {
     excludeEditable: "排除输入框和可编辑区域",
     excludeEditableDesc: "在文本输入框、富文本编辑器中划词不弹出查词图标",
     blacklist: "域名黑名单列表",
-    blacklistDesc: "在此列表中的网站将完全禁用划词查词功能（每行一个域名，例如 github.com）",
+    blacklistDesc:
+      "在此列表中的网站将完全禁用划词查词功能（每行一个域名，例如 github.com）",
     blacklistPlaceholder: "例如：\ngithub.com\nmail.google.com",
   },
 };

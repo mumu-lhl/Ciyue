@@ -71,10 +71,12 @@ export default defineContentScript({
 
     // Handle mouse selection
     document.addEventListener("mouseup", (e) => {
-      if (isDomainBlacklisted(window.location.href, settings.blacklistUrls)) return;
+      if (isDomainBlacklisted(window.location.href, settings.blacklistUrls))
+        return;
       if (!settings.enableSelection) return;
       if (!checkModifierKey(settings.requireModifierKey, e)) return;
-      if (settings.excludeEditable && isEditableElement(e.target as Element)) return;
+      if (settings.excludeEditable && isEditableElement(e.target as Element))
+        return;
 
       setTimeout(() => {
         const selection = window.getSelection();
@@ -100,16 +102,22 @@ export default defineContentScript({
 
     // Handle double click
     document.addEventListener("dblclick", (e) => {
-      if (isDomainBlacklisted(window.location.href, settings.blacklistUrls)) return;
+      if (isDomainBlacklisted(window.location.href, settings.blacklistUrls))
+        return;
       if (!settings.enableDoubleClick) return;
-      if (settings.excludeEditable && isEditableElement(e.target as Element)) return;
+      if (settings.excludeEditable && isEditableElement(e.target as Element))
+        return;
 
       setTimeout(() => {
         const selection = window.getSelection();
         const text = selection ? selection.toString().trim() : "";
 
         if (isValidSelectionText(text)) {
-          popupInstance?.openCard(text, e.clientX + window.scrollX, e.clientY + window.scrollY);
+          popupInstance?.openCard(
+            text,
+            e.clientX + window.scrollX,
+            e.clientY + window.scrollY,
+          );
         }
       }, 30);
     });
@@ -117,7 +125,11 @@ export default defineContentScript({
     // Global click dismisses floating trigger
     document.addEventListener("mousedown", (e) => {
       const host = document.querySelector("ciyue-extension-host");
-      if (host && host.shadowRoot && host.shadowRoot.contains(e.target as Node)) {
+      if (
+        host &&
+        host.shadowRoot &&
+        host.shadowRoot.contains(e.target as Node)
+      ) {
         return;
       }
       popupInstance?.hideTrigger();

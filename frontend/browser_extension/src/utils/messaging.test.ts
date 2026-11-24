@@ -16,16 +16,18 @@ describe("messaging utilities", () => {
         data: { word: "apple", results: [] },
       });
 
-      const res = await proxyFetch({ url: "http://127.0.0.1:47117/api/lookup?word=apple" });
+      const res = await proxyFetch({
+        url: "http://127.0.0.1:47117/api/lookup?word=apple",
+      });
       expect(res).toEqual({ word: "apple", results: [] });
     });
 
     it("throws error when background returns no response", async () => {
       (vi.spyOn(chrome.runtime, "sendMessage") as any).mockResolvedValue(null);
 
-      await expect(proxyFetch({ url: "http://127.0.0.1:47117/api/status" })).rejects.toThrow(
-        "未收到后台响应，请检查扩展后台状态",
-      );
+      await expect(
+        proxyFetch({ url: "http://127.0.0.1:47117/api/status" }),
+      ).rejects.toThrow("未收到后台响应，请检查扩展后台状态");
     });
 
     it("throws error with background error message on failure", async () => {
@@ -35,9 +37,9 @@ describe("messaging utilities", () => {
         error: "服务内部错误",
       });
 
-      await expect(proxyFetch({ url: "http://127.0.0.1:47117/api/status" })).rejects.toThrow(
-        "服务内部错误",
-      );
+      await expect(
+        proxyFetch({ url: "http://127.0.0.1:47117/api/status" }),
+      ).rejects.toThrow("服务内部错误");
     });
 
     it("throws HTTP status error message if error string is empty", async () => {
@@ -46,9 +48,9 @@ describe("messaging utilities", () => {
         status: 404,
       });
 
-      await expect(proxyFetch({ url: "http://127.0.0.1:47117/api/unknown" })).rejects.toThrow(
-        "请求失败 (HTTP 404)",
-      );
+      await expect(
+        proxyFetch({ url: "http://127.0.0.1:47117/api/unknown" }),
+      ).rejects.toThrow("请求失败 (HTTP 404)");
     });
   });
 
@@ -81,7 +83,9 @@ describe("messaging utilities", () => {
         onDone,
       );
 
-      expect(chrome.runtime.connect).toHaveBeenCalledWith({ name: "ai-stream" });
+      expect(chrome.runtime.connect).toHaveBeenCalledWith({
+        name: "ai-stream",
+      });
       expect(mockPort.postMessage).toHaveBeenCalledWith({
         mode: "explain",
         text: "test",
@@ -130,7 +134,11 @@ describe("messaging utilities", () => {
       const onDone = vi.fn();
 
       createAiStream(
-        { mode: "translate", text: "hello", serverUrl: "http://127.0.0.1:47117" },
+        {
+          mode: "translate",
+          text: "hello",
+          serverUrl: "http://127.0.0.1:47117",
+        },
         onChunk,
         onError,
         onDone,
@@ -164,14 +172,20 @@ describe("messaging utilities", () => {
       const onDone = vi.fn();
 
       createAiStream(
-        { mode: "translate", text: "test", serverUrl: "http://127.0.0.1:47117" },
+        {
+          mode: "translate",
+          text: "test",
+          serverUrl: "http://127.0.0.1:47117",
+        },
         onChunk,
         onError,
         onDone,
       );
 
       // Simulate chrome.runtime.lastError on disconnect
-      (chrome.runtime as any).lastError = { message: "Extension context invalidated" };
+      (chrome.runtime as any).lastError = {
+        message: "Extension context invalidated",
+      };
 
       disconnectListeners.forEach((listener) => listener());
 

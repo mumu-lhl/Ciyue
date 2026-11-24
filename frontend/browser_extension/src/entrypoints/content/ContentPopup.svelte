@@ -1,21 +1,21 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-  import BookOpen from '@lucide/svelte/icons/book-open';
-  import Sparkles from '@lucide/svelte/icons/sparkles';
-  import Languages from '@lucide/svelte/icons/languages';
-  import WifiOff from '@lucide/svelte/icons/wifi-off';
-  import LoaderCircle from '@lucide/svelte/icons/loader-circle';
-  import WordHeader from '../../components/WordHeader.svelte';
-  import DictCard from '../../components/DictCard.svelte';
-  import AiView from '../../components/AiView.svelte';
-  import { CiyueApiClient } from '../../api/client';
-  import { getSettings, onSettingsChanged } from '../../utils/settings';
-  import { t, i18n } from '../../utils/i18n.svelte';
-  import type { DictionaryResult, ThemeColor } from '../../api/types';
+  import { onMount, onDestroy } from "svelte";
+  import BookOpen from "@lucide/svelte/icons/book-open";
+  import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Languages from "@lucide/svelte/icons/languages";
+  import WifiOff from "@lucide/svelte/icons/wifi-off";
+  import LoaderCircle from "@lucide/svelte/icons/loader-circle";
+  import WordHeader from "../../components/WordHeader.svelte";
+  import DictCard from "../../components/DictCard.svelte";
+  import AiView from "../../components/AiView.svelte";
+  import { CiyueApiClient } from "../../api/client";
+  import { getSettings, onSettingsChanged } from "../../utils/settings";
+  import { t, i18n } from "../../utils/i18n.svelte";
+  import type { DictionaryResult, ThemeColor } from "../../api/types";
 
   let {
     serverUrl,
-    themeColor = 'blue',
+    themeColor = "blue",
   }: {
     serverUrl: string;
     themeColor?: ThemeColor;
@@ -31,8 +31,8 @@
   let cardX = $state(100);
   let cardY = $state(100);
 
-  let currentWord = $state('');
-  let activeTab = $state<'dicts' | 'ai-explain' | 'ai-translate'>('dicts');
+  let currentWord = $state("");
+  let activeTab = $state<"dicts" | "ai-explain" | "ai-translate">("dicts");
   let loading = $state(false);
   let loadError = $state(false);
   let isStared = $state(false);
@@ -73,7 +73,10 @@
   export function openCard(word: string, x: number, y: number) {
     const popupWidth = 440;
     const padding = 16;
-    const posX = Math.max(padding, Math.min(x, window.innerWidth - popupWidth - padding));
+    const posX = Math.max(
+      padding,
+      Math.min(x, window.innerWidth - popupWidth - padding),
+    );
     let posY = y + 15;
 
     if (posY + 420 > window.innerHeight + window.scrollY) {
@@ -102,7 +105,7 @@
     currentWord = word;
     loading = true;
     loadError = false;
-    activeTab = 'dicts';
+    activeTab = "dicts";
 
     try {
       apiClient.setServerUrl(serverUrl);
@@ -141,15 +144,15 @@
   let origTop = 0;
 
   function startDrag(e: MouseEvent) {
-    if ((e.target as HTMLElement).closest('button')) return;
+    if ((e.target as HTMLElement).closest("button")) return;
     isDragging = true;
     startMouseX = e.clientX;
     startMouseY = e.clientY;
     origLeft = cardX;
     origTop = cardY;
 
-    window.addEventListener('mousemove', onDragging);
-    window.addEventListener('mouseup', stopDrag);
+    window.addEventListener("mousemove", onDragging);
+    window.addEventListener("mouseup", stopDrag);
     e.preventDefault();
   }
 
@@ -161,12 +164,15 @@
 
   function stopDrag() {
     isDragging = false;
-    window.removeEventListener('mousemove', onDragging);
-    window.removeEventListener('mouseup', stopDrag);
+    window.removeEventListener("mousemove", onDragging);
+    window.removeEventListener("mouseup", stopDrag);
   }
 </script>
 
-<div data-theme={activeTheme} class="relative font-sans text-zinc-900 dark:text-zinc-100 antialiased">
+<div
+  data-theme={activeTheme}
+  class="relative font-sans text-zinc-900 dark:text-zinc-100 antialiased"
+>
   {#if showTrigger}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -178,11 +184,12 @@
       style:top="{triggerY}px"
       style:background-color="var(--primary-600, #2563eb)"
       style:color="#ffffff"
-      style:box-shadow="0 4px 12px -2px var(--primary-600, rgba(37,99,235,0.45)), 0 2px 4px -2px rgba(0,0,0,0.1)"
+      style:box-shadow="0 4px 12px -2px var(--primary-600,
+      rgba(37,99,235,0.45)), 0 2px 4px -2px rgba(0,0,0,0.1)"
       onmousedown={(e) => e.stopPropagation()}
       onclick={onTriggerClick}
-      title={t('common.appName')}
-      aria-label={t('common.appName')}
+      title={t("common.appName")}
+      aria-label={t("common.appName")}
     >
       <BookOpen class="w-4 h-4 stroke-[2.2]" style="color: #ffffff;" />
     </div>
@@ -202,7 +209,7 @@
         <WordHeader
           word={currentWord}
           stared={isStared}
-          loadingStar={loadingStar}
+          {loadingStar}
           showClose={true}
           onToggleStar={toggleStar}
           onClose={closeCard}
@@ -211,7 +218,9 @@
 
       <!-- Navigation Tabs -->
       {#if !loading && !loadError}
-        <div class="flex items-center px-3 pt-1 gap-1 border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60">
+        <div
+          class="flex items-center px-3 pt-1 gap-1 border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60"
+        >
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <!-- svelte-ignore a11y_no_static_element_interactions -->
           <div
@@ -219,10 +228,10 @@
             'dicts'
               ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 font-semibold bg-white dark:bg-zinc-800/80'
               : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium'}"
-            onclick={() => (activeTab = 'dicts')}
+            onclick={() => (activeTab = "dicts")}
           >
             <BookOpen class="w-3.5 h-3.5" />
-            <span>{t('lookup.localDicts', { count: dictResults.length })}</span>
+            <span>{t("lookup.localDicts", { count: dictResults.length })}</span>
           </div>
 
           <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -232,10 +241,10 @@
             'ai-explain'
               ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 font-semibold bg-white dark:bg-zinc-800/80'
               : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium'}"
-            onclick={() => (activeTab = 'ai-explain')}
+            onclick={() => (activeTab = "ai-explain")}
           >
             <Sparkles class="w-3.5 h-3.5" />
-            <span>{t('lookup.aiExplainTab')}</span>
+            <span>{t("lookup.aiExplainTab")}</span>
           </div>
 
           <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -245,10 +254,10 @@
             'ai-translate'
               ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 font-semibold bg-white dark:bg-zinc-800/80'
               : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium'}"
-            onclick={() => (activeTab = 'ai-translate')}
+            onclick={() => (activeTab = "ai-translate")}
           >
             <Languages class="w-3.5 h-3.5" />
-            <span>{t('lookup.aiTranslateTab')}</span>
+            <span>{t("lookup.aiTranslateTab")}</span>
           </div>
         </div>
       {/if}
@@ -256,45 +265,42 @@
       <!-- Main Body Scroll Area -->
       <div class="flex-1 overflow-y-auto p-3 max-h-[420px]">
         {#if loading}
-          <div class="flex flex-col items-center justify-center py-12 gap-2 text-zinc-400">
-            <LoaderCircle class="w-5 h-5 animate-spin text-primary-600 dark:text-primary-400" />
-            <span class="text-xs">{t('lookup.searchingPrompt')}</span>
+          <div
+            class="flex flex-col items-center justify-center py-12 gap-2 text-zinc-400"
+          >
+            <LoaderCircle
+              class="w-5 h-5 animate-spin text-primary-600 dark:text-primary-400"
+            />
+            <span class="text-xs">{t("lookup.searchingPrompt")}</span>
           </div>
         {:else if loadError}
-          <div class="p-5 text-center bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 flex flex-col items-center gap-2">
+          <div
+            class="p-5 text-center bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 flex flex-col items-center gap-2"
+          >
             <WifiOff class="w-6 h-6 text-rose-500" />
-            <div class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t('lookup.offlineTitle')}</div>
-            <div class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-normal">
-              {t('lookup.offlineDesc')}
+            <div class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+              {t("lookup.offlineTitle")}
+            </div>
+            <div
+              class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-normal"
+            >
+              {t("lookup.offlineDesc")}
             </div>
           </div>
-        {:else if activeTab === 'dicts'}
+        {:else if activeTab === "dicts"}
           {#if dictResults.length === 0}
             <div class="text-center py-12 text-zinc-400 text-xs">
-              {t('lookup.notFound', { word: currentWord })}
+              {t("lookup.notFound", { word: currentWord })}
             </div>
           {:else}
             {#each dictResults as item, idx (item.dictId + idx)}
-              <DictCard
-                {item}
-                index={idx}
-                {serverUrl}
-                onSubLookup={doLookup}
-              />
+              <DictCard {item} index={idx} {serverUrl} onSubLookup={doLookup} />
             {/each}
           {/if}
-        {:else if activeTab === 'ai-explain'}
-          <AiView
-            mode="explain"
-            text={currentWord}
-            {serverUrl}
-          />
-        {:else if activeTab === 'ai-translate'}
-          <AiView
-            mode="translate"
-            text={currentWord}
-            {serverUrl}
-          />
+        {:else if activeTab === "ai-explain"}
+          <AiView mode="explain" text={currentWord} {serverUrl} />
+        {:else if activeTab === "ai-translate"}
+          <AiView mode="translate" text={currentWord} {serverUrl} />
         {/if}
       </div>
     </div>

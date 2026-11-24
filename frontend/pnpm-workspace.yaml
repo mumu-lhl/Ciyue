@@ -1,6 +1,0 @@
-packages:
-  - 'shared'
-  - 'browser_extension'
-  - 'web_ui'
-allowBuilds:
-  esbuild: true

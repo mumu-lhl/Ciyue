@@ -9,7 +9,10 @@ export function isValidSelectionText(text: string): boolean {
   return true;
 }
 
-export function isDomainBlacklisted(hostname: string, blacklist: string[]): boolean {
+export function isDomainBlacklisted(
+  hostname: string,
+  blacklist: string[],
+): boolean {
   if (!hostname || !blacklist || blacklist.length === 0) return false;
   const targetHost = hostname.trim().toLowerCase();
 
@@ -29,7 +32,12 @@ export function isDomainBlacklisted(hostname: string, blacklist: string[]): bool
 
 export function checkModifierKey(
   mode: ModifierKey,
-  event: { altKey?: boolean; ctrlKey?: boolean; metaKey?: boolean; shiftKey?: boolean },
+  event: {
+    altKey?: boolean;
+    ctrlKey?: boolean;
+    metaKey?: boolean;
+    shiftKey?: boolean;
+  },
 ): boolean {
   switch (mode) {
     case "alt":
@@ -63,7 +71,10 @@ export function calculatePopupPosition(
   cardHeight: number = 440,
 ): { x: number; y: number } {
   const padding = 16;
-  const posX = Math.max(padding, Math.min(x, viewportWidth - cardWidth - padding));
+  const posX = Math.max(
+    padding,
+    Math.min(x, viewportWidth - cardWidth - padding),
+  );
 
   let posY = y + 15;
   if (posY + cardHeight > viewportHeight + scrollY) {

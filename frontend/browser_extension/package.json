@@ -10,10 +10,12 @@
     "build:firefox": "wxt build -b firefox",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
-    "compile": "tsc --noEmit",
+    "postinstall": "wxt prepare",
+    "check": "wxt prepare && bun check",
+    "compile": "wxt prepare && bun check",
     "lint": "oxlint",
-    "format": "oxfmt",
-    "format:check": "oxfmt --check",
+    "format": "bun fmt",
+    "format:check": "bun fmt --check",
     "test": "vitest run"
   },
   "dependencies": {
@@ -27,7 +29,6 @@
     "@types/chrome": "^0.3.7",
     "@types/node": "^26.6.6",
     "@wxt-dev/module-svelte": "^2.0.5",
-    "oxfmt": "^0.79.0",
     "oxlint": "^1.94.0",
     "svelte-check": "^4.7.8",
     "tailwindcss": "^4.3.5",

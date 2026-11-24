@@ -1,4 +1,8 @@
-import type { ProxyFetchRequest, ProxyFetchResponse, StreamChunkMessage } from "../api/types";
+import type {
+  ProxyFetchRequest,
+  ProxyFetchResponse,
+  StreamChunkMessage,
+} from "../api/types";
 
 export async function proxyFetch<T = any>(req: ProxyFetchRequest): Promise<T> {
   const res = (await chrome.runtime.sendMessage({

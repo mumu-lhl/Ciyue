@@ -35,5 +35,7 @@ class ExtensionI18nManager {
 }
 
 export const i18n = new ExtensionI18nManager();
-export const t = (key: TranslationKey, params?: Record<string, string | number>): string =>
-  i18n.t(key, params);
+export const t = (
+  key: TranslationKey,
+  params?: Record<string, string | number>,
+): string => i18n.t(key, params);

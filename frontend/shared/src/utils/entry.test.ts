@@ -10,7 +10,9 @@ describe("entry utilities", () => {
     });
 
     it("handles leading comments before doctype", () => {
-      const res = splitEntryDoctype("<!-- archived page -->\n<!DOCTYPE html>\n<p>wiki</p>");
+      const res = splitEntryDoctype(
+        "<!-- archived page -->\n<!DOCTYPE html>\n<p>wiki</p>",
+      );
       expect(res.doctype).toBe("<!-- archived page -->\n<!DOCTYPE html>");
       expect(res.content).toBe("\n<p>wiki</p>");
     });
@@ -28,12 +30,18 @@ describe("entry utilities", () => {
     });
 
     it("parses entry with anchor", () => {
-      expect(parseEntryLink("verb#transitive")).toEqual({ word: "verb", anchor: "transitive" });
+      expect(parseEntryLink("verb#transitive")).toEqual({
+        word: "verb",
+        anchor: "transitive",
+      });
     });
 
     it("handles escaped literal hash", () => {
       expect(parseEntryLink("C##")).toEqual({ word: "C#", anchor: "" });
-      expect(parseEntryLink("C###intro")).toEqual({ word: "C#", anchor: "intro" });
+      expect(parseEntryLink("C###intro")).toEqual({
+        word: "C#",
+        anchor: "intro",
+      });
     });
   });
 

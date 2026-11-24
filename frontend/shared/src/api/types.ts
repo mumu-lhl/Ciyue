@@ -40,7 +40,8 @@ export interface ServerStatus {
 }
 
 export type ModifierKey = "none" | "alt" | "ctrl" | "shift";
-export type ThemeColor = "blue" | "violet" | "teal" | "emerald" | "rose" | "amber";
+export type ThemeColor =
+  "blue" | "violet" | "teal" | "emerald" | "rose" | "amber";
 export type ThemeMode = "auto" | "light" | "dark";
 
 export interface ExtensionSettings {

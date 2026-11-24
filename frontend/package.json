@@ -3,12 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "shared",
+    "browser_extension",
+    "web_ui"
+  ],
   "scripts": {
-    "build": "pnpm --recursive run build",
-    "test": "pnpm --recursive run test",
-    "lint": "pnpm --recursive run lint",
-    "compile": "pnpm --recursive run compile",
-    "format": "pnpm --recursive run format",
-    "format:check": "pnpm --recursive run format:check"
+    "build": "bun --filter '*' build",
+    "test": "bun --filter '*' test",
+    "lint": "bun --filter '*' lint",
+    "check": "bun --filter '*' check",
+    "compile": "bun --filter '*' check",
+    "format": "bun fmt",
+    "format:check": "bun fmt --check"
   }
 }

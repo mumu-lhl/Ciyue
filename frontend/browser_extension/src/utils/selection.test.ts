@@ -21,14 +21,20 @@ describe("selection utilities", () => {
     });
 
     it("returns false for multi-paragraph text with double newlines", () => {
-      expect(isValidSelectionText("paragraph one\n\nparagraph two")).toBe(false);
+      expect(isValidSelectionText("paragraph one\n\nparagraph two")).toBe(
+        false,
+      );
       expect(isValidSelectionText("line one\n  \nline two")).toBe(false);
     });
 
     it("returns true for valid words and phrases", () => {
       expect(isValidSelectionText("word")).toBe(true);
       expect(isValidSelectionText("look up")).toBe(true);
-      expect(isValidSelectionText("A single line sentence without paragraph breaks.")).toBe(true);
+      expect(
+        isValidSelectionText(
+          "A single line sentence without paragraph breaks.",
+        ),
+      ).toBe(true);
       expect(isValidSelectionText("a".repeat(250))).toBe(true);
     });
   });
@@ -46,7 +52,9 @@ describe("selection utilities", () => {
 
     it("matches subdomains correctly", () => {
       expect(isDomainBlacklisted("gist.github.com", ["github.com"])).toBe(true);
-      expect(isDomainBlacklisted("api.sub.github.com", ["github.com"])).toBe(true);
+      expect(isDomainBlacklisted("api.sub.github.com", ["github.com"])).toBe(
+        true,
+      );
     });
 
     it("does not match partial prefix domain names", () => {
@@ -55,8 +63,12 @@ describe("selection utilities", () => {
     });
 
     it("cleans URL scheme, path, and port from user blacklist inputs", () => {
-      expect(isDomainBlacklisted("twitter.com", ["https://twitter.com/home"])).toBe(true);
-      expect(isDomainBlacklisted("localhost", ["http://localhost:3000"])).toBe(true);
+      expect(
+        isDomainBlacklisted("twitter.com", ["https://twitter.com/home"]),
+      ).toBe(true);
+      expect(isDomainBlacklisted("localhost", ["http://localhost:3000"])).toBe(
+        true,
+      );
       expect(isDomainBlacklisted("example.org", ["*.example.org"])).toBe(true);
     });
   });
@@ -82,7 +94,9 @@ describe("selection utilities", () => {
     it("requires ctrl or meta key when mode is ctrl", () => {
       expect(checkModifierKey("ctrl", { ctrlKey: true })).toBe(true);
       expect(checkModifierKey("ctrl", { metaKey: true })).toBe(true);
-      expect(checkModifierKey("ctrl", { ctrlKey: false, metaKey: false })).toBe(false);
+      expect(checkModifierKey("ctrl", { ctrlKey: false, metaKey: false })).toBe(
+        false,
+      );
     });
 
     it("requires shift key when mode is shift", () => {
@@ -98,7 +112,9 @@ describe("selection utilities", () => {
     });
 
     it("returns true for contenteditable elements", () => {
-      expect(isEditableElement({ isContentEditable: true, tagName: "DIV" })).toBe(true);
+      expect(
+        isEditableElement({ isContentEditable: true, tagName: "DIV" }),
+      ).toBe(true);
     });
 
     it("returns true for INPUT and TEXTAREA", () => {
@@ -108,7 +124,9 @@ describe("selection utilities", () => {
     });
 
     it("returns false for ordinary text elements", () => {
-      expect(isEditableElement({ tagName: "DIV", isContentEditable: false })).toBe(false);
+      expect(
+        isEditableElement({ tagName: "DIV", isContentEditable: false }),
+      ).toBe(false);
       expect(isEditableElement({ tagName: "SPAN" })).toBe(false);
       expect(isEditableElement({ tagName: "P" })).toBe(false);
     });

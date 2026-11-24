@@ -1,4 +1,9 @@
-import type { GroupItem, LookupResponse, ServerStatus, SuggestResponse } from "./types";
+import type {
+  GroupItem,
+  LookupResponse,
+  ServerStatus,
+  SuggestResponse,
+} from "./types";
 
 export interface ApiTransport {
   fetch<T>(
@@ -15,7 +20,9 @@ export class FetchApiTransport implements ApiTransport {
     const init: RequestInit = {
       method: options?.method,
       headers: {
-        ...(options?.body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...(options?.body !== undefined
+          ? { "Content-Type": "application/json" }
+          : {}),
         ...options?.headers,
       },
     };
@@ -60,9 +67,12 @@ export class CiyueApiClient {
   }
 
   async switchGroup(id: number | string): Promise<void> {
-    await this.transport.fetch(this.url(`/api/groups/switch?id=${encodeURIComponent(id)}`), {
-      method: "POST",
-    });
+    await this.transport.fetch(
+      this.url(`/api/groups/switch?id=${encodeURIComponent(id)}`),
+      {
+        method: "POST",
+      },
+    );
   }
 
   async getSuggestions(query: string): Promise<SuggestResponse> {
@@ -71,7 +81,10 @@ export class CiyueApiClient {
     );
   }
 
-  async lookup(word: string, groupId?: number | string): Promise<LookupResponse> {
+  async lookup(
+    word: string,
+    groupId?: number | string,
+  ): Promise<LookupResponse> {
     let endpoint = `/api/lookup?word=${encodeURIComponent(word)}`;
     if (groupId !== undefined) {
       endpoint += `&groupId=${encodeURIComponent(groupId)}`;
@@ -91,14 +104,20 @@ export class CiyueApiClient {
   }
 
   async addToWordbook(word: string): Promise<void> {
-    await this.transport.fetch(this.url(`/api/wordbook?word=${encodeURIComponent(word)}`), {
-      method: "POST",
-    });
+    await this.transport.fetch(
+      this.url(`/api/wordbook?word=${encodeURIComponent(word)}`),
+      {
+        method: "POST",
+      },
+    );
   }
 
   async removeFromWordbook(word: string): Promise<void> {
-    await this.transport.fetch(this.url(`/api/wordbook?word=${encodeURIComponent(word)}`), {
-      method: "DELETE",
-    });
+    await this.transport.fetch(
+      this.url(`/api/wordbook?word=${encodeURIComponent(word)}`),
+      {
+        method: "DELETE",
+      },
+    );
   }
 }

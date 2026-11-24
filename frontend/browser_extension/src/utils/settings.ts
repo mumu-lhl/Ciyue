@@ -14,17 +14,22 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
 
 export async function getSettings(): Promise<ExtensionSettings> {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(DEFAULT_SETTINGS as unknown as { [key: string]: any }, (items) => {
-      const merged = { ...DEFAULT_SETTINGS, ...items };
-      if (merged.serverUrl) {
-        merged.serverUrl = merged.serverUrl.replace(/\/+$/, "");
-      }
-      resolve(merged as ExtensionSettings);
-    });
+    chrome.storage.sync.get(
+      DEFAULT_SETTINGS as unknown as { [key: string]: any },
+      (items) => {
+        const merged = { ...DEFAULT_SETTINGS, ...items };
+        if (merged.serverUrl) {
+          merged.serverUrl = merged.serverUrl.replace(/\/+$/, "");
+        }
+        resolve(merged as ExtensionSettings);
+      },
+    );
   });
 }
 
-export async function saveSettings(settings: Partial<ExtensionSettings>): Promise<void> {
+export async function saveSettings(
+  settings: Partial<ExtensionSettings>,
+): Promise<void> {
   return new Promise((resolve) => {
     if (settings.serverUrl) {
       settings.serverUrl = settings.serverUrl.replace(/\/+$/, "");
@@ -35,7 +40,9 @@ export async function saveSettings(settings: Partial<ExtensionSettings>): Promis
   });
 }
 
-export function onSettingsChanged(callback: (settings: ExtensionSettings) => void): () => void {
+export function onSettingsChanged(
+  callback: (settings: ExtensionSettings) => void,
+): () => void {
   const listener = () => {
     getSettings().then(callback);
   };
