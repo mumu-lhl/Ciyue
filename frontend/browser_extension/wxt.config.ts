@@ -6,6 +6,9 @@ import path from "node:path";
 export default defineConfig({
   srcDir: "src",
   modules: ["@wxt-dev/module-svelte"],
+  suppressWarnings: {
+    firefoxDataCollection: true,
+  },
   vite: () => ({
     build: {
       rollupOptions: {
@@ -40,7 +43,6 @@ export default defineConfig({
     name: "词悦 (Ciyue) 查词助手",
     description:
       "词悦桌面端配套浏览器扩展，提供网页划词/双击即时查词、AI 深度解析与翻译、离线词典渲染及生词本一键收藏。",
-    version: "1.1.0",
     icons: {
       16: "icons/icon16.png",
       48: "icons/icon48.png",
@@ -72,5 +74,11 @@ export default defineConfig({
         matches: ["<all_urls>"],
       },
     ],
+    browser_specific_settings: {
+      gecko: {
+        id: "ciyue-extension@mumulhl.eu.org",
+        strict_min_version: "109.0",
+      },
+    },
   },
 });

@@ -1,13 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import {
-  t,
-  resolveLocale,
-  getStoredLocale,
-  setStoredLocale,
-  zh,
-  en,
-  type TranslationKey,
-} from "./index";
+import { t, resolveLocale, getStoredLocale, setStoredLocale, zh, en } from "./index";
 
 describe("i18n utilities", () => {
   const store = new Map<string, string>();

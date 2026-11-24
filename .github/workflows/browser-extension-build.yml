@@ -1,0 +1,63 @@
+name: Browser Extension Build
+
+on:
+  workflow_call:
+    inputs:
+      workflow_profile:
+        required: false
+        type: string
+        default: "ci"
+      artifact_name:
+        required: false
+        type: string
+        default: "Extension"
+
+jobs:
+  build-extension:
+    name: Build Browser Extension (${{ inputs.workflow_profile }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup pnpm and Node.js
+        uses: pnpm/setup@v3
+        with:
+          version: latest
+          working-directory: frontend
+          runtime: node@lts
+          cache: true
+          require-lockfile: true
+
+      - name: Build and package browser extension (Chrome & Firefox)
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          if [[ "${{ inputs.workflow_profile }}" == "release" ]]; then
+            version_with_build="$(grep -m1 '^version:' pubspec.yaml | cut -d: -f2- | sed 's/[[:space:]\"]//g')"
+            version="${version_with_build%%+*}"
+            if [[ -n "$version" ]]; then
+              echo "Setting browser extension version to $version"
+              cd frontend/browser_extension
+              npm version "$version" --no-git-tag-version --allow-same-version || true
+              cd ../..
+            fi
+          fi
+
+          cd frontend
+          pnpm --filter ciyue-browser-extension zip
+          pnpm --filter ciyue-browser-extension zip:firefox
+
+          mkdir -p ../dist-extension
+          cp browser_extension/.output/*-chrome.zip ../dist-extension/ciyue-extension-chrome.zip
+          cp browser_extension/.output/*-firefox.zip ../dist-extension/ciyue-extension-firefox.zip
+          if compgen -G "browser_extension/.output/*-sources.zip" > /dev/null; then
+            cp browser_extension/.output/*-sources.zip ../dist-extension/ciyue-extension-sources.zip
+          fi
+
+      - name: Upload Browser Extension artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: dist-extension/*
+          if-no-files-found: error

@@ -100,6 +100,14 @@ jobs:
     if: needs.check-activity.outputs.should_run == 'true'
     uses: ./.github/workflows/flatpak-build.yml
 
+  build-extension:
+    needs: check-activity
+    if: needs.check-activity.outputs.should_run == 'true'
+    uses: ./.github/workflows/browser-extension-build.yml
+    with:
+      workflow_profile: nightly
+      artifact_name: Extension
+
   release:
     name: Release
     runs-on: ubuntu-latest
@@ -112,6 +120,7 @@ jobs:
         build-linux,
         build-macos,
         build-flatpak,
+        build-extension,
       ]
     if: needs.check-activity.outputs.should_run == 'true'
     steps:
@@ -125,12 +134,23 @@ jobs:
 
       - name: Generate release body
         id: release_body
+        env:
+          RELEASE_ASSET_BASE: ${{ github.server_url }}/${{ github.repository }}/releases/download/nightly
         run: |
           cat <<EOF >> $GITHUB_OUTPUT
           body<<DELIMITER
           Latest commit: $(git log -1 --pretty=%s)
           Commit hash: $(git rev-parse --short=7 HEAD)
           Build date: $(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+          ## Downloads
+
+          ### Browser Extension (Chrome & Firefox)
+
+          | Browser | Download |
+          | --- | --- |
+          | Chrome / Chromium-based | [ciyue-extension-chrome.zip](${RELEASE_ASSET_BASE}/ciyue-extension-chrome.zip) |
+          | Firefox | [ciyue-extension-firefox.zip](${RELEASE_ASSET_BASE}/ciyue-extension-firefox.zip) |
           DELIMITER
           EOF
 
@@ -142,7 +162,7 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/*,Linux/*,macOS/*,Flatpak/ciyue-x86_64.flatpak"
+          artifacts: "APK/ciyue-*-release.apk,APK-FULL/ciyue-*-full.apk,Windows/*,Linux/*,macOS/*,Flatpak/ciyue-x86_64.flatpak,Extension/*"
           tag: "nightly"
           name: "Nightly Build"
           body: ${{ steps.release_body.outputs.body }}

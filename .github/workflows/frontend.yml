@@ -45,3 +45,6 @@ jobs:
 
       - name: Build packages (shared, browser_extension, web_ui)
         run: pnpm run build
+
+      - name: Build browser extension for Firefox
+        run: pnpm --filter ciyue-browser-extension build:firefox
