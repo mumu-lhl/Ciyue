@@ -100,6 +100,10 @@ class Settings extends ChangeNotifier {
   late String aiProvider;
   late bool aiExplainWord;
 
+  /// Whether the AI page waits for an explicit tap before requesting a word
+  /// explanation. Cached explanations are still shown on tap.
+  late bool aiExplainWordManual;
+
   /// Whether AI word explanations are requested as structured data
   /// (JSON) and rendered natively, instead of markdown text.
   late bool aiExplainStructured;
@@ -313,6 +317,7 @@ class Settings extends ChangeNotifier {
 
     aiProvider = prefs.getString("aiProvider") ?? "openai";
     aiExplainWord = prefs.getBool("aiExplainWord") ?? false;
+    aiExplainWordManual = prefs.getBool("aiExplainWordManual") ?? false;
     aiExplainStructured = prefs.getBool("aiExplainStructured") ?? true;
     translationProvider = prefs.getString("translationProvider") ?? "ai";
     deeplxUrl = prefs.getString("deeplxUrl");
@@ -443,6 +448,10 @@ class Settings extends ChangeNotifier {
     currentConfig["apiKey"] = apiKey;
     aiProviderConfigs[provider] = currentConfig;
     await prefs.setString("aiProviderConfigs", jsonEncode(aiProviderConfigs));
+    // Word-display pages hide the AI tab when the provider becomes
+    // unconfigured, so they must see config edits even while AI Settings is
+    // still open on top of them.
+    notifyListeners();
   }
 
   /// The image-generation model chosen for a provider, stored in

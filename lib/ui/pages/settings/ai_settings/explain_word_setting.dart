@@ -13,6 +13,9 @@ class ExplainWordSetting extends ConsumerWidget {
     final explainWord = ref.watch(
       aiSettingsViewModelProvider.select((vm) => vm.explainWord),
     );
+    final explainWordManual = ref.watch(
+      aiSettingsViewModelProvider.select((vm) => vm.explainWordManual),
+    );
     final explainStructured = ref.watch(
       aiSettingsViewModelProvider.select((vm) => vm.explainStructured),
     );
@@ -25,6 +28,34 @@ class ExplainWordSetting extends ConsumerWidget {
             TitleText(localizations.aiExplainWord),
             const Spacer(),
             Switch(value: explainWord, onChanged: viewModel.setExplainWord),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    localizations.aiExplainWordManual,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    localizations.aiExplainWordManualDescription,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: explainWordManual,
+              onChanged: explainWord ? viewModel.setExplainWordManual : null,
+            ),
           ],
         ),
         const SizedBox(height: 8),

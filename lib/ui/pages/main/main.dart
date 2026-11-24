@@ -5,6 +5,7 @@ import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/repositories/dictionary.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/floating_window.dart";
 import "package:ciyue/ui/core/sliding_indexed_stack.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart";
@@ -90,6 +91,7 @@ class _HomeState extends ConsumerState<Home> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(settingsProvider);
     final ratio = MediaQuery.sizeOf(context).aspectRatio;
     final useDesktop = useDesktopLayout(context);
     // A manual toggle only overrides the size rule for this run; portrait
@@ -158,7 +160,8 @@ class _HomeState extends ConsumerState<Home> {
               : _currentIndex == 0
               ? PreferredSize(
                   preferredSize: const Size.fromHeight(kToolbarHeight),
-                  child: (!dictManager.isEmpty || settings.aiExplainWord)
+                  child:
+                      (!dictManager.isEmpty || isAiExplainWordEnabled(settings))
                       ? const HomeAppBar()
                       : const SizedBox.shrink(),
                 )
@@ -208,7 +211,8 @@ class _HomeState extends ConsumerState<Home> {
                       child: Column(
                         children: [
                           if (_currentIndex == 0 &&
-                              (!dictManager.isEmpty || settings.aiExplainWord))
+                              (!dictManager.isEmpty ||
+                                  isAiExplainWordEnabled(settings)))
                             const HomeAppBar(),
                           Expanded(
                             child: SlidingIndexedStack(

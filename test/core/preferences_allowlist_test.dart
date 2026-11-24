@@ -17,6 +17,7 @@ void main() {
     expect(preferencesAllowList, contains("dictionaryDarkReaderEnabled"));
     expect(preferencesAllowList, contains("searchPaneWidth"));
     expect(preferencesAllowList, contains("linuxTtsVoice"));
+    expect(preferencesAllowList, contains("aiExplainWordManual"));
     // The Linux voice pref round-trips through the allowlisted
     // cache: set persists, clearing removes the key.
     await settings.setLinuxTtsVoice("test-voice");

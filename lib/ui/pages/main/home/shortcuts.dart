@@ -4,6 +4,7 @@ import "dart:convert";
 import "package:ciyue/core/app_globals.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
+import "package:ciyue/services/ai.dart";
 import "package:ciyue/services/lookup_popup.dart";
 import "package:ciyue/ui/core/e_ink.dart";
 import "package:ciyue/ui/core/search_bar.dart";
@@ -435,11 +436,11 @@ Map<SingleActivator, VoidCallback> _dictionaryTabShortcuts(
       if (tabController == null) return;
 
       final settings = ref.read(settingsProvider);
-      final dictionaryCount =
-          tabController.length - (settings.aiExplainWord ? 1 : 0);
+      final showAIExplain = isAiExplainWordEnabled(settings);
+      final dictionaryCount = tabController.length - (showAIExplain ? 1 : 0);
       final index = dictTabIndexForNumber(
         number: number,
-        aiExplainWord: settings.aiExplainWord,
+        aiExplainWord: showAIExplain,
         dictionaryCount: dictionaryCount,
       );
       if (index == null) return;
