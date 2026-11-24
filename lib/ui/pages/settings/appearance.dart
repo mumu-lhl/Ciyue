@@ -5,6 +5,7 @@ import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/core/settings_group.dart";
 import "package:material_ui/material_ui.dart";
 
+import "appearance/advance_switch.dart";
 import "appearance/content_scale_slider.dart";
 import "appearance/dictionary_background_color.dart";
 import "appearance/dictionary_dark_reader_switch.dart";
@@ -31,45 +32,54 @@ class AppearanceSettingsPage extends StatelessWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
-          child: ListView(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 12,
-              // See the Hunspell page: keep the last row clear of the navigation bar.
-              bottom: 12 + MediaQuery.viewPaddingOf(context).bottom,
-            ),
-            children: [
-              SettingsGroupCard(
-                children: [
-                  const LanguageSelector(),
-                  const ThemeSelector(),
-                  const EInkModeSwitch(),
-                  const ThemeColorSettingsSection(),
-                  const DictionaryBackgroundColor(),
-                  if (Platform.isWindows || Platform.isLinux)
-                    const DictionaryDarkReaderSwitch(),
-                  const DictionaryCustomCss(),
-                  const ContentScaleSlider(),
-                ],
+          // The page decides on its own whether the advanced card exists, and
+          // the switch that flips that decision is one of its rows: without
+          // this the tile's `setState` rebuilds the tile only and the card
+          // appears on the next visit instead of on the toggle.
+          child: ListenableBuilder(
+            listenable: settings,
+            builder: (context, _) => ListView(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 12,
+                // See the Hunspell page: keep the last row clear of the
+                // navigation bar.
+                bottom: 12 + MediaQuery.viewPaddingOf(context).bottom,
               ),
-              const SizedBox(height: 16),
-              const SettingsGroupCard(
-                children: [
-                  DictionarySwitchStyleSelector(),
-                  SearchbarLocationSelector(),
-                  TabBarPositionSelector(),
-                  SearchbarInWordDisplaySwitch(),
-                  SearchPaneSwitch(),
-                ],
-              ),
-              if (settings.advance) ...[
+              children: [
+                SettingsGroupCard(
+                  children: [
+                    const LanguageSelector(),
+                    const ThemeSelector(),
+                    const EInkModeSwitch(),
+                    const ThemeColorSettingsSection(),
+                    const DictionaryBackgroundColor(),
+                    if (Platform.isWindows || Platform.isLinux)
+                      const DictionaryDarkReaderSwitch(),
+                    const DictionaryCustomCss(),
+                    const ContentScaleSlider(),
+                  ],
+                ),
                 const SizedBox(height: 16),
                 const SettingsGroupCard(
-                  children: [DrawerIconSwitch(), MoreOptionsButtonSwitch()],
+                  children: [
+                    DictionarySwitchStyleSelector(),
+                    SearchbarLocationSelector(),
+                    TabBarPositionSelector(),
+                    SearchbarInWordDisplaySwitch(),
+                    SearchPaneSwitch(),
+                    AdvanceSwitch(),
+                  ],
                 ),
+                if (settings.advance) ...[
+                  const SizedBox(height: 16),
+                  const SettingsGroupCard(
+                    children: [DrawerIconSwitch(), MoreOptionsButtonSwitch()],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

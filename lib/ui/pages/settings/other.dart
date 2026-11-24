@@ -289,7 +289,6 @@ class OtherSettingsPage extends StatelessWidget {
                     const NotificationSwitch(),
                     const FloatingWindow(),
                   ],
-                  const AdvanceSwitch(),
                 ],
               ),
               if (isDesktop() || Platform.isAndroid) ...[
@@ -350,30 +349,6 @@ class _SecureScreenSwitchState extends State<SecureScreenSwitch> {
         });
       },
       secondary: const Icon(Icons.security),
-    );
-  }
-}
-
-class AdvanceSwitch extends StatefulWidget {
-  const AdvanceSwitch({super.key});
-
-  @override
-  State<AdvanceSwitch> createState() => _AdvanceSwitchState();
-}
-
-class _AdvanceSwitchState extends State<AdvanceSwitch> {
-  @override
-  Widget build(BuildContext context) {
-    final locale = AppLocalizations.of(context);
-    return SwitchListTile(
-      title: Text(locale!.advance),
-      subtitle: Text(locale.advanceSwitchDescription),
-      value: settings.advance,
-      onChanged: (value) async {
-        await settings.setAdvance(value);
-        setState(() {});
-      },
-      secondary: const Icon(Icons.settings),
     );
   }
 }
