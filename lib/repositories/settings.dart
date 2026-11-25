@@ -14,7 +14,7 @@ enum TabBarPosition { top, bottom }
 enum DictionarySwitchStyle { expansion, tag }
 
 /// How the dictionary name in an expansion panel is drawn.
-enum PanelHeaderStyle { plain, primaryText, primaryBackground }
+enum PanelHeaderStyle { plain, primaryText, tintedBackground }
 
 /// Where the bookmark and pronunciation buttons sit on a phone-sized entry
 /// page. A narrow bottom bar cannot hold every action, so the layout is chosen

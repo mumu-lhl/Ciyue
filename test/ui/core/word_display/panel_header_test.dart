@@ -36,13 +36,13 @@ void main() {
     expect(title.style?.color, scheme.primary);
   });
 
-  testWidgets("primary background uses the primary surface", (tester) async {
-    await pumpHeader(tester, PanelHeaderStyle.primaryBackground);
+  testWidgets("tinted background uses the secondary container", (tester) async {
+    await pumpHeader(tester, PanelHeaderStyle.tintedBackground);
 
     final scheme = schemeOf(tester);
     final tile = tester.widget<ListTile>(find.byType(ListTile));
     final title = tester.widget<Text>(find.text("t-dict.tsv"));
-    expect(tile.tileColor, scheme.primary);
-    expect(title.style?.color, scheme.onPrimary);
+    expect(tile.tileColor, scheme.secondaryContainer);
+    expect(title.style?.color, scheme.onSecondaryContainer);
   });
 }

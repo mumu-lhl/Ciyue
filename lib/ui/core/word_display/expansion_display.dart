@@ -149,7 +149,10 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
       panels.add(
         ExpansionPanel(
           headerBuilder: (context, isExpanded) {
-            return const ListTile(title: Text("AI"));
+            return ExpansionPanelHeader(
+              title: "AI",
+              style: settings.panelHeaderStyle,
+            );
           },
           body: AIExplainView(word: widget.word),
           isExpanded: _isExpanded[panelIndex],

@@ -23,9 +23,12 @@ class ExpansionPanelHeader extends StatelessWidget {
       PanelHeaderStyle.primaryText => ListTile(
         title: Text(title, style: TextStyle(color: scheme.primary)),
       ),
-      PanelHeaderStyle.primaryBackground => ListTile(
-        tileColor: scheme.primary,
-        title: Text(title, style: TextStyle(color: scheme.onPrimary)),
+      PanelHeaderStyle.tintedBackground => ListTile(
+        tileColor: scheme.secondaryContainer,
+        title: Text(
+          title,
+          style: TextStyle(color: scheme.onSecondaryContainer),
+        ),
       ),
     };
   }

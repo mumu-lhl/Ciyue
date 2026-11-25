@@ -35,9 +35,9 @@ class _PanelHeaderStyleSelectorState extends State<PanelHeaderStyleSelector> {
               label: Text(locale.panelHeaderStylePrimaryText),
             ),
             ButtonSegment(
-              value: PanelHeaderStyle.primaryBackground,
+              value: PanelHeaderStyle.tintedBackground,
               icon: const Icon(Icons.format_color_fill),
-              label: Text(locale.panelHeaderStylePrimaryBackground),
+              label: Text(locale.panelHeaderStyleTintedBackground),
             ),
           ],
           selected: {settings.panelHeaderStyle},
