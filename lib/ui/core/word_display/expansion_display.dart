@@ -300,6 +300,11 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
             SingleChildScrollView(
               controller: _scrollController,
               child: ExpansionPanelList(
+                // The Material defaults add 16 px above and below an expanded
+                // header and a 16 px gap between expanded panels, so the title
+                // jumps when a panel opens. Keep the headers in place.
+                expandedHeaderPadding: EdgeInsets.zero,
+                materialGapSize: 0,
                 expansionCallback: (int index, bool isExpanded) {
                   setState(() {
                     _isExpanded[index] = isExpanded;
