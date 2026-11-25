@@ -163,7 +163,12 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
       panels.add(
         ExpansionPanel(
           headerBuilder: (context, isExpanded) {
-            return ListTile(title: Text(dictManager.dicts[dictId]!.title));
+            return ListTile(
+              title: Text(
+                dictManager.dicts[dictId]!.title,
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
+            );
           },
           // Lazy-load the WebView only when expanded; collapsed panels
           // keep a placeholder instead of instantiating N WebViews upfront.
