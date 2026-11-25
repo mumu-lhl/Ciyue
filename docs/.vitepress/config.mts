@@ -20,11 +20,13 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: 'Home', link: '/' },
+          { text: 'Download', link: '/download' },
           { text: 'Guide', link: '/guide/' },
           { text: 'Internals', link: '/internals/' },
           { text: 'FAQ', link: '/guide/faq' }
         ],
         sidebar: [
+          { text: 'Download', link: '/download' },
           {
             text: 'Guide',
             items: [
@@ -67,11 +69,13 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: '首页', link: '/zh/' },
+          { text: '下载', link: '/zh/download' },
           { text: '指南', link: '/zh/guide/' },
           { text: '实现与原理', link: '/zh/internals/' },
           { text: '常见问题', link: '/zh/guide/faq' }
         ],
         sidebar: [
+          { text: '下载', link: '/zh/download' },
           {
             text: '指南',
             items: [

@@ -11,11 +11,11 @@ hero:
     alt: Ciyue
   actions:
     - theme: brand
+      text: Download
+      link: /download
+    - theme: alt
       text: Quickstart
       link: /guide/getting-started
-    - theme: alt
-      text: View on GitHub
-      link: https://github.com/mumu-lhl/Ciyue
 
 features:
   - icon: 📄
@@ -62,4 +62,4 @@ features:
   </a>
 </p>
 
-See the [Getting Started](/guide/getting-started) guide for desktop downloads (Windows, Linux, macOS) and other install methods.
+For desktop downloads (Windows, Linux, macOS), other install methods, and nightly builds, see the [Download](/download) page.

@@ -11,11 +11,11 @@ hero:
     alt: 词悦
   actions:
     - theme: brand
+      text: 下载
+      link: /zh/download
+    - theme: alt
       text: 快速上手
       link: /zh/guide/getting-started
-    - theme: alt
-      text: 在 GitHub 上查看
-      link: https://github.com/mumu-lhl/Ciyue
 
 features:
   - icon: 📄
@@ -62,4 +62,4 @@ features:
   </a>
 </p>
 
-桌面端下载（Windows、Linux、macOS）和其他安装方式，见[快速上手](/zh/guide/getting-started)。
+桌面端下载（Windows、Linux、macOS）、其他安装方式与 nightly 构建，见[下载](/zh/download)页。
