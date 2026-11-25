@@ -13,6 +13,9 @@ enum TabBarPosition { top, bottom }
 
 enum DictionarySwitchStyle { expansion, tag }
 
+/// How the dictionary name in an expansion panel is drawn.
+enum PanelHeaderStyle { plain, primaryText, primaryBackground }
+
 /// Where the bookmark and pronunciation buttons sit on a phone-sized entry
 /// page. A narrow bottom bar cannot hold every action, so the layout is chosen
 /// as a whole instead of per button. E-ink readers often have no speaker, so
@@ -81,6 +84,7 @@ class Settings extends ChangeNotifier {
   late bool showMoreOptionsButton;
   late bool showSearchBarInWordDisplay;
   late DictionarySwitchStyle dictionarySwitchStyle;
+  late PanelHeaderStyle panelHeaderStyle;
   late MobileToolbarPreset mobileToolbarPreset;
   late MouseGestureAction rockerGestureAction;
   late MouseGestureAction wheelGestureAction;
@@ -283,6 +287,11 @@ class Settings extends ChangeNotifier {
         dictionarySwitchStyleString,
       );
     }
+
+    panelHeaderStyle = PanelHeaderStyle.values.firstWhere(
+      (style) => style.name == prefs.getString("panelHeaderStyle"),
+      orElse: () => PanelHeaderStyle.plain,
+    );
 
     mobileToolbarPreset = MobileToolbarPreset.values.firstWhere(
       (preset) => preset.name == prefs.getString("mobileToolbarPreset"),
@@ -589,6 +598,12 @@ class Settings extends ChangeNotifier {
   Future<void> setDictionarySwitchStyle(DictionarySwitchStyle style) async {
     dictionarySwitchStyle = style;
     await prefs.setString("dictionarySwitchStyle", style.name);
+    notifyListeners();
+  }
+
+  Future<void> setPanelHeaderStyle(PanelHeaderStyle style) async {
+    panelHeaderStyle = style;
+    await prefs.setString("panelHeaderStyle", style.name);
     notifyListeners();
   }
 

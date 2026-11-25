@@ -13,6 +13,7 @@ import "package:ciyue/ui/core/word_display/entry_actions.dart";
 import "package:ciyue/ui/core/word_display/entry_pager.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/paging_buttons.dart";
+import "package:ciyue/ui/core/word_display/panel_header.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
 import "package:ciyue/utils.dart" as app_utils;
@@ -163,11 +164,9 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
       panels.add(
         ExpansionPanel(
           headerBuilder: (context, isExpanded) {
-            return ListTile(
-              title: Text(
-                dictManager.dicts[dictId]!.title,
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
-              ),
+            return ExpansionPanelHeader(
+              title: dictManager.dicts[dictId]!.title,
+              style: settings.panelHeaderStyle,
             );
           },
           // Lazy-load the WebView only when expanded; collapsed panels
