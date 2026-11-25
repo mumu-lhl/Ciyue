@@ -82,7 +82,10 @@ void main() {
     }
   });
 
-  Widget buildTestWidget({String initialLocation = "/word/apple"}) {
+  Widget buildTestWidget({
+    String initialLocation = "/word/apple",
+    List<int> ids = dictIds,
+  }) {
     final testRouter = GoRouter(
       initialLocation: initialLocation,
       routes: [
@@ -102,7 +105,7 @@ void main() {
 
     return ProviderScope(
       overrides: [
-        validDictIdsProvider.overrideWith((ref, word) async => dictIds),
+        validDictIdsProvider.overrideWith((ref, word) async => ids),
         dictionaryLookupProvider.overrideWith(
           (ref, word) async =>
               const DictionaryLookupResult(entriesByDictionary: {}),
@@ -121,6 +124,20 @@ void main() {
       ),
     );
   }
+
+  testWidgets("single dictionary in tab mode shows its name", (tester) async {
+    settings.aiExplainWord = false;
+
+    await tester.pumpWidget(
+      buildTestWidget(initialLocation: "/word/apple", ids: const [10]),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text("dict 10"), findsOneWidget);
+    // The single tab bar stays hidden; only the name is shown.
+    expect(find.byType(TabBar), findsNothing);
+  });
 
   testWidgets("WordDisplay opens initialDictId tab without AI", (tester) async {
     settings.aiExplainWord = false;
