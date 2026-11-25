@@ -16,6 +16,7 @@ import "appearance/e_ink_mode_switch.dart";
 import "appearance/language_selector.dart";
 import "appearance/mobile_toolbar_preset_selector.dart";
 import "appearance/more_options_button_switch.dart";
+import "appearance/panel_header_alignment_selector.dart";
 import "appearance/panel_header_style_selector.dart";
 import "appearance/search_pane_switch.dart";
 import "appearance/searchbar_in_word_display_switch.dart";
@@ -68,6 +69,7 @@ class AppearanceSettingsPage extends StatelessWidget {
                   children: [
                     DictionarySwitchStyleSelector(),
                     PanelHeaderStyleSelector(),
+                    PanelHeaderAlignmentSelector(),
                     SearchbarLocationSelector(),
                     TabBarPositionSelector(),
                     MobileToolbarPresetSelector(),

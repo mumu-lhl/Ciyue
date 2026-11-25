@@ -4,11 +4,19 @@ import "package:material_ui/material_ui.dart";
 import "package:flutter_test/flutter_test.dart";
 
 void main() {
-  Future<void> pumpHeader(WidgetTester tester, PanelHeaderStyle style) {
+  Future<void> pumpHeader(
+    WidgetTester tester,
+    PanelHeaderStyle style, {
+    PanelHeaderAlignment alignment = PanelHeaderAlignment.left,
+  }) {
     return tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: ExpansionPanelHeader(title: "t-dict.tsv", style: style),
+          body: ExpansionPanelHeader(
+            title: "t-dict.tsv",
+            style: style,
+            alignment: alignment,
+          ),
         ),
       ),
     );
@@ -24,6 +32,20 @@ void main() {
     final title = tester.widget<Text>(find.text("t-dict.tsv"));
     expect(tile.tileColor, isNull);
     expect(title.style?.color, isNull);
+    expect(tester.getTopLeft(find.text("t-dict.tsv")).dx, 16);
+  });
+
+  testWidgets("right alignment moves the title to the trailing edge", (
+    tester,
+  ) async {
+    await pumpHeader(
+      tester,
+      PanelHeaderStyle.plain,
+      alignment: PanelHeaderAlignment.right,
+    );
+
+    // The title sits in the right half of the 800 px test surface.
+    expect(tester.getTopRight(find.text("t-dict.tsv")).dx, greaterThan(400));
   });
 
   testWidgets("primary text colours only the title", (tester) async {

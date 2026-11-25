@@ -660,6 +660,7 @@ const preferencesAllowList = <String>{
   "versionCode",
   "dictionarySwitchStyle",
   "panelHeaderStyle",
+  "panelHeaderAlignment",
   "mobileToolbarPreset",
   "rockerGestureAction",
   "wheelGestureAction",
