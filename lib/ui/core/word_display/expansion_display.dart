@@ -152,7 +152,7 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
             return ExpansionPanelHeader(
               title: "AI",
               style: settings.panelHeaderStyle,
-              alignment: PanelHeaderAlignment.left,
+              alignment: settings.panelHeaderAlignment,
             );
           },
           body: AIExplainView(word: widget.word),
