@@ -112,6 +112,22 @@ inside an `.mdd`).
 | Windows | Dark Reader (optional) | Without Dark Reader and without a custom background, the page stays white in dark mode |
 | Linux / macOS | Dark Reader (optional) | Automatic darkening is available as well |
 
+## Panel headers in the expansion layout
+
+The dictionary name above each entry is Flutter UI, not part of the WebView, so
+Custom CSS cannot style it. **Settings → Appearance** offers two independent
+choices:
+
+- **Panel Header Style** — the default `ListTile` text, the title in the theme's
+  primary colour, or a tinted background (the same `secondaryContainer` surface
+  the main navigation uses for its selected item).
+- **Panel Header Alignment** — left or right. The AI header follows the same
+  setting.
+
+They apply to the **Expansion** dictionary switch style only. In the **Tabs**
+style the dictionary name lives in the tab bar, and a single result hides the
+tab bar entirely.
+
 ## See also
 
 - [Word-Form Lookup](./word-forms) — lemma resolution and Hunspell setup.
