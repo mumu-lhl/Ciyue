@@ -9,7 +9,7 @@ Welcome to the Ciyue documentation. Start here to install the app, add dictionar
 - [Translation](./translation) — translate with 20+ free, official-API, and AI sources in parallel and compare the results.
 - [Cloud Sync](./cloud-sync) — keep your wordbook, tags, flashcards, and history in sync across devices via WebDAV, SFTP, or S3.
 - [Word-Form Lookup](./word-forms) — resolve inflected forms back to their lemma with Hunspell, and choose between fallback and supplement modes.
-- [Appearance](./appearance) — make dictionary pages follow the app theme, fix entries that are unreadable in dark mode, and inject custom CSS.
+- [Appearance](./appearance) — make dictionary pages follow the app theme, fix entries that are unreadable in dark mode, inject custom CSS, and choose how panel headers look.
 - [Pronunciation](./pronunciation) — which audio formats play, and how to convert a pack the device cannot decode.
 - [Command Line & ciyue://](./command-line) — look words up from a terminal or a link, and reuse the running window.
 - [Keyboard Shortcuts](./keyboard-shortcuts) — desktop keys for lookup, word tabs, dictionary groups, and zoom, in the GoldenDict-ng and EBWin tradition.

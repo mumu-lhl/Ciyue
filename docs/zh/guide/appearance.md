@@ -99,6 +99,18 @@ html.ciyue-dark { border-top: 8px solid lime !important; }
 | Windows | Dark Reader（可选） | 不开暗化、又没设自定义背景时，暗色模式下页面仍是白底 |
 | Linux / macOS | Dark Reader（可选） | 同样支持自动暗化 |
 
+## 展开式下的面板标题
+
+每部词典上方的词典名是 Flutter 原生界面，不在 WebView 里，所以自定义 CSS 改不到它。
+**设置 → 外观** 里有两个独立选项：
+
+- **面板标题样式**——默认的 `ListTile` 文本、用主题主色显示标题文字，或浅色背景
+  （和主导航选中项相同的 `secondaryContainer` 底色）。
+- **面板标题对齐**——左对齐或右对齐。AI 面板标题也跟随同一设置。
+
+它们只作用于**展开式**词典切换样式。**标签式**下词典名在标签栏里，而且只有一个
+结果时标签栏会整个隐藏。
+
 ## 相关
 
 - [词形还原](./word-forms) —— 词干还原与 Hunspell 配置。

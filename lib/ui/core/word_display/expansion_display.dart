@@ -13,6 +13,7 @@ import "package:ciyue/ui/core/word_display/entry_actions.dart";
 import "package:ciyue/ui/core/word_display/entry_pager.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/paging_buttons.dart";
+import "package:ciyue/ui/core/word_display/panel_header.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
 import "package:ciyue/utils.dart" as app_utils;
@@ -148,7 +149,11 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
       panels.add(
         ExpansionPanel(
           headerBuilder: (context, isExpanded) {
-            return const ListTile(title: Text("AI"));
+            return ExpansionPanelHeader(
+              title: "AI",
+              style: settings.panelHeaderStyle,
+              alignment: settings.panelHeaderAlignment,
+            );
           },
           body: AIExplainView(word: widget.word),
           isExpanded: _isExpanded[panelIndex],
@@ -163,7 +168,11 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
       panels.add(
         ExpansionPanel(
           headerBuilder: (context, isExpanded) {
-            return ListTile(title: Text(dictManager.dicts[dictId]!.title));
+            return ExpansionPanelHeader(
+              title: dictManager.dicts[dictId]!.title,
+              style: settings.panelHeaderStyle,
+              alignment: settings.panelHeaderAlignment,
+            );
           },
           // Lazy-load the WebView only when expanded; collapsed panels
           // keep a placeholder instead of instantiating N WebViews upfront.
@@ -190,6 +199,25 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
     final isDesktopScreen = app_utils.isLargeScreen(context);
 
     final locale = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final tintedHeader =
+        settings.panelHeaderStyle == PanelHeaderStyle.tintedBackground;
+    final panelList = ExpansionPanelList(
+      // The Material defaults add 16 px above and below an expanded header
+      // and a 16 px gap between expanded panels, so the title jumps when a
+      // panel opens. Keep the headers in place.
+      expandedHeaderPadding: EdgeInsets.zero,
+      materialGapSize: 0,
+      // The arrow sits outside the header builder, so its colour has to
+      // follow the tinted surface from here.
+      expandIconColor: tintedHeader ? scheme.onSecondaryContainer : null,
+      expansionCallback: (int index, bool isExpanded) {
+        setState(() {
+          _isExpanded[index] = isExpanded;
+        });
+      },
+      children: panels,
+    );
     return Scaffold(
       appBar: AppBar(
         leading: widget.showBackButton
@@ -299,14 +327,18 @@ class _ExpansionWordDisplayState extends ConsumerState<ExpansionWordDisplay> {
           children: [
             SingleChildScrollView(
               controller: _scrollController,
-              child: ExpansionPanelList(
-                expansionCallback: (int index, bool isExpanded) {
-                  setState(() {
-                    _isExpanded[index] = isExpanded;
-                  });
-                },
-                children: panels,
-              ),
+              child: tintedHeader
+                  ? Theme(
+                      data: Theme.of(context).copyWith(
+                        iconButtonTheme: IconButtonThemeData(
+                          style: IconButton.styleFrom(
+                            backgroundColor: scheme.secondaryContainer,
+                          ),
+                        ),
+                      ),
+                      child: panelList,
+                    )
+                  : panelList,
             ),
             const Positioned(
               left: 16,

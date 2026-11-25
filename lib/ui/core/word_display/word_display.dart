@@ -17,6 +17,7 @@ import "package:ciyue/ui/core/word_display/expansion_display.dart";
 import "package:ciyue/ui/core/word_display/missing_word_suggestions.dart";
 import "package:ciyue/ui/core/word_display/pager_context.dart";
 import "package:ciyue/ui/core/word_display/paging_buttons.dart";
+import "package:ciyue/ui/core/word_display/panel_header.dart";
 import "package:ciyue/ui/core/word_display/utils.dart";
 import "package:ciyue/ui/core/word_display/webview_helpers.dart";
 import "package:ciyue/ui/pages/main/home/app_bar.dart" show GroupSelectorButton;
@@ -360,6 +361,7 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                 : validDictIds.length;
             final showTab = dictsLength > 1;
 
+            final dictManager = ref.watch(dictManagerProvider);
             final isDesktopScreen = app_utils.isLargeScreen(context);
 
             // Keep a single dictionary entry in the same tab/expansion layout it
@@ -500,6 +502,21 @@ class _WordDisplayState extends ConsumerState<WordDisplay> {
                               children: [
                                 Column(
                                   children: [
+                                    // A single matched dictionary hides the
+                                    // tab bar, which would also hide its name.
+                                    // Show the name on its own, without the
+                                    // expand arrow of the expansion layout.
+                                    if (!showTab && validDictIds.isNotEmpty)
+                                      ExpansionPanelHeader(
+                                        title:
+                                            dictManager
+                                                .dicts[validDictIds.first]
+                                                ?.title ??
+                                            "",
+                                        style: settings.panelHeaderStyle,
+                                        alignment:
+                                            settings.panelHeaderAlignment,
+                                      ),
                                     Expanded(
                                       child: buildTabView(
                                         context,
