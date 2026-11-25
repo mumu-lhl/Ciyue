@@ -4,6 +4,15 @@ Ciyue is a dictionary application built with Flutter (MDX/MDD dictionaries, AI t
 
 Consult relevant sections of [DEVELOPMENT.md](DEVELOPMENT.md) when working on architecture, database migrations, localization, build tooling, or platform-specific behavior.
 
+## Task Completion and Verification
+
+- Before substantial work, identify the scope, constraints, and acceptance criteria. For exhaustive tasks, enumerate relevant cases and track coverage systematically.
+- Complete the full requested scope, not just representative cases or the first discovered issues.
+- Before finalizing, critically review the result against the requirements, assumptions, edge cases, and regression risks. Prefer objective evidence over self-assessment.
+- Resolve material issues within scope and revalidate affected behavior. Scale verification effort to task complexity and risk.
+- Stop when acceptance criteria are met and no known material issues remain. Do not force changes or pursue speculative improvements merely to satisfy a review request.
+- Report incomplete coverage, failed or skipped verification, unresolved issues, and material uncertainties. Never claim completeness without sufficient evidence.
+
 ## Maintainability
 
 - Before adding a new implementation or abstraction, search for existing code that owns the responsibility. Reuse or extend it when appropriate; avoid parallel implementations, but do not force unrelated concerns together.
