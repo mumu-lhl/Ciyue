@@ -34,12 +34,12 @@ class _MobileToolbarPresetSelectorState
             ),
             ButtonSegment(
               value: MobileToolbarPreset.bottomSingle,
-              icon: const Icon(Icons.view_stream_outlined),
+              icon: const Icon(Icons.horizontal_rule),
               label: Text(locale.mobileToolbarPresetBottomSingle),
             ),
             ButtonSegment(
               value: MobileToolbarPreset.bottomDouble,
-              icon: const Icon(Icons.view_agenda_outlined),
+              icon: const Icon(Icons.drag_handle),
               label: Text(locale.mobileToolbarPresetBottomDouble),
             ),
             ButtonSegment(
