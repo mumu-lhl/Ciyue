@@ -67,9 +67,16 @@ class StardictEntryListView extends StatelessWidget {
       ],
     );
     if (isExpansion) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-        child: content,
+      // The expansion panel's body sits in a loose-width parent and centres
+      // anything narrower than the panel, which would centre a short entry.
+      // Claim the full width, as the scroll view below does for the tab
+      // layout.
+      return SizedBox(
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: content,
+        ),
       );
     }
     return SingleChildScrollView(

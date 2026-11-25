@@ -258,6 +258,34 @@ void main() {
     expect((provider as MemoryImage).scale, 0.5);
   });
 
+  testWidgets("fills the available width in expansion mode", (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          // The expansion panel puts its body in a loose-width parent and
+          // centres whatever ends up narrower than the panel, so the native
+          // entry has to claim the full width itself.
+          body: Align(
+            alignment: Alignment.topCenter,
+            child: StardictEntryListView(
+              entries: [
+                StardictNativeEntry(
+                  headword: "ase",
+                  fields: [StarDictField("m", text: "A Short Entry")],
+                ),
+              ],
+              resourceDirectory: "/nonexistent",
+              dictId: 1,
+              isExpansion: true,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.getTopLeft(find.text("A Short Entry")).dx, 16);
+  });
+
   testWidgets("a missing loose image degrades without crashing", (
     tester,
   ) async {
