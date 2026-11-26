@@ -1520,3 +1520,29 @@ class PersonalDictionaryDao extends DatabaseAccessor<AppDatabase>
     });
   }
 }
+
+@DriftAccessor(tables: [StoreInstalledItems])
+class StoreInstalledItemDao extends DatabaseAccessor<AppDatabase>
+    with _$StoreInstalledItemDaoMixin {
+  StoreInstalledItemDao(super.attachedDatabase);
+
+  Future<List<StoreInstalledItem>> all() {
+    return select(storeInstalledItems).get();
+  }
+
+  Future<StoreInstalledItem?> getById(String itemId) {
+    return (select(
+      storeInstalledItems,
+    )..where((t) => t.itemId.isValue(itemId))).getSingleOrNull();
+  }
+
+  Future<void> upsert(StoreInstalledItemsCompanion entry) {
+    return into(storeInstalledItems).insertOnConflictUpdate(entry);
+  }
+
+  Future<int> remove(String itemId) {
+    return (delete(
+      storeInstalledItems,
+    )..where((t) => t.itemId.isValue(itemId))).go();
+  }
+}

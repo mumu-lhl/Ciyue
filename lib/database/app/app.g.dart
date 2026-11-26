@@ -5982,6 +5982,490 @@ class PersonalHeadwordsCompanion
   }
 }
 
+class $StoreInstalledItemsTable extends StoreInstalledItems
+    with drift.TableInfo<$StoreInstalledItemsTable, StoreInstalledItem> {
+  @override
+  final drift.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $StoreInstalledItemsTable(this.attachedDatabase, [this._alias]);
+  static const drift.VerificationMeta _itemIdMeta =
+      const drift.VerificationMeta('itemId');
+  @override
+  late final drift.GeneratedColumn<String> itemId =
+      drift.GeneratedColumn<String>(
+        'item_id',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _typeMeta = const drift.VerificationMeta(
+    'type',
+  );
+  @override
+  late final drift.GeneratedColumn<String> type = drift.GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: drift.DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const drift.VerificationMeta _formatMeta =
+      const drift.VerificationMeta('format');
+  @override
+  late final drift.GeneratedColumn<String> format =
+      drift.GeneratedColumn<String>(
+        'format',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _installDirMeta =
+      const drift.VerificationMeta('installDir');
+  @override
+  late final drift.GeneratedColumn<String> installDir =
+      drift.GeneratedColumn<String>(
+        'install_dir',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _remoteVersionMeta =
+      const drift.VerificationMeta('remoteVersion');
+  @override
+  late final drift.GeneratedColumn<String> remoteVersion =
+      drift.GeneratedColumn<String>(
+        'remote_version',
+        aliasedName,
+        true,
+        type: drift.DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const drift.VerificationMeta _installedAtMeta =
+      const drift.VerificationMeta('installedAt');
+  @override
+  late final drift.GeneratedColumn<DateTime> installedAt =
+      drift.GeneratedColumn<DateTime>(
+        'installed_at',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _targetIdsMeta =
+      const drift.VerificationMeta('targetIds');
+  @override
+  late final drift.GeneratedColumn<String> targetIds =
+      drift.GeneratedColumn<String>(
+        'target_ids',
+        aliasedName,
+        false,
+        type: drift.DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const drift.Constant(""),
+      );
+  @override
+  List<drift.GeneratedColumn> get $columns => [
+    itemId,
+    type,
+    format,
+    installDir,
+    remoteVersion,
+    installedAt,
+    targetIds,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'store_installed_items';
+  @override
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<StoreInstalledItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = drift.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_itemIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('format')) {
+      context.handle(
+        _formatMeta,
+        format.isAcceptableOrUnknown(data['format']!, _formatMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_formatMeta);
+    }
+    if (data.containsKey('install_dir')) {
+      context.handle(
+        _installDirMeta,
+        installDir.isAcceptableOrUnknown(data['install_dir']!, _installDirMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_installDirMeta);
+    }
+    if (data.containsKey('remote_version')) {
+      context.handle(
+        _remoteVersionMeta,
+        remoteVersion.isAcceptableOrUnknown(
+          data['remote_version']!,
+          _remoteVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('installed_at')) {
+      context.handle(
+        _installedAtMeta,
+        installedAt.isAcceptableOrUnknown(
+          data['installed_at']!,
+          _installedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_installedAtMeta);
+    }
+    if (data.containsKey('target_ids')) {
+      context.handle(
+        _targetIdsMeta,
+        targetIds.isAcceptableOrUnknown(data['target_ids']!, _targetIdsMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<drift.GeneratedColumn> get $primaryKey => {itemId};
+  @override
+  StoreInstalledItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StoreInstalledItem(
+      itemId: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}item_id'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      format: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}format'],
+      )!,
+      installDir: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}install_dir'],
+      )!,
+      remoteVersion: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}remote_version'],
+      ),
+      installedAt: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.dateTime,
+        data['${effectivePrefix}installed_at'],
+      )!,
+      targetIds: attachedDatabase.typeMapping.read(
+        drift.DriftSqlType.string,
+        data['${effectivePrefix}target_ids'],
+      )!,
+    );
+  }
+
+  @override
+  $StoreInstalledItemsTable createAlias(String alias) {
+    return $StoreInstalledItemsTable(attachedDatabase, alias);
+  }
+}
+
+class StoreInstalledItem extends drift.DataClass
+    implements drift.Insertable<StoreInstalledItem> {
+  final String itemId;
+  final String type;
+  final String format;
+  final String installDir;
+  final String? remoteVersion;
+  final DateTime installedAt;
+  final String targetIds;
+  const StoreInstalledItem({
+    required this.itemId,
+    required this.type,
+    required this.format,
+    required this.installDir,
+    this.remoteVersion,
+    required this.installedAt,
+    required this.targetIds,
+  });
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['item_id'] = drift.Variable<String>(itemId);
+    map['type'] = drift.Variable<String>(type);
+    map['format'] = drift.Variable<String>(format);
+    map['install_dir'] = drift.Variable<String>(installDir);
+    if (!nullToAbsent || remoteVersion != null) {
+      map['remote_version'] = drift.Variable<String>(remoteVersion);
+    }
+    map['installed_at'] = drift.Variable<DateTime>(installedAt);
+    map['target_ids'] = drift.Variable<String>(targetIds);
+    return map;
+  }
+
+  StoreInstalledItemsCompanion toCompanion(bool nullToAbsent) {
+    return StoreInstalledItemsCompanion(
+      itemId: drift.Value(itemId),
+      type: drift.Value(type),
+      format: drift.Value(format),
+      installDir: drift.Value(installDir),
+      remoteVersion: remoteVersion == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(remoteVersion),
+      installedAt: drift.Value(installedAt),
+      targetIds: drift.Value(targetIds),
+    );
+  }
+
+  factory StoreInstalledItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return StoreInstalledItem(
+      itemId: serializer.fromJson<String>(json['itemId']),
+      type: serializer.fromJson<String>(json['type']),
+      format: serializer.fromJson<String>(json['format']),
+      installDir: serializer.fromJson<String>(json['installDir']),
+      remoteVersion: serializer.fromJson<String?>(json['remoteVersion']),
+      installedAt: serializer.fromJson<DateTime>(json['installedAt']),
+      targetIds: serializer.fromJson<String>(json['targetIds']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'itemId': serializer.toJson<String>(itemId),
+      'type': serializer.toJson<String>(type),
+      'format': serializer.toJson<String>(format),
+      'installDir': serializer.toJson<String>(installDir),
+      'remoteVersion': serializer.toJson<String?>(remoteVersion),
+      'installedAt': serializer.toJson<DateTime>(installedAt),
+      'targetIds': serializer.toJson<String>(targetIds),
+    };
+  }
+
+  StoreInstalledItem copyWith({
+    String? itemId,
+    String? type,
+    String? format,
+    String? installDir,
+    drift.Value<String?> remoteVersion = const drift.Value.absent(),
+    DateTime? installedAt,
+    String? targetIds,
+  }) => StoreInstalledItem(
+    itemId: itemId ?? this.itemId,
+    type: type ?? this.type,
+    format: format ?? this.format,
+    installDir: installDir ?? this.installDir,
+    remoteVersion: remoteVersion.present
+        ? remoteVersion.value
+        : this.remoteVersion,
+    installedAt: installedAt ?? this.installedAt,
+    targetIds: targetIds ?? this.targetIds,
+  );
+  StoreInstalledItem copyWithCompanion(StoreInstalledItemsCompanion data) {
+    return StoreInstalledItem(
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      type: data.type.present ? data.type.value : this.type,
+      format: data.format.present ? data.format.value : this.format,
+      installDir: data.installDir.present
+          ? data.installDir.value
+          : this.installDir,
+      remoteVersion: data.remoteVersion.present
+          ? data.remoteVersion.value
+          : this.remoteVersion,
+      installedAt: data.installedAt.present
+          ? data.installedAt.value
+          : this.installedAt,
+      targetIds: data.targetIds.present ? data.targetIds.value : this.targetIds,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StoreInstalledItem(')
+          ..write('itemId: $itemId, ')
+          ..write('type: $type, ')
+          ..write('format: $format, ')
+          ..write('installDir: $installDir, ')
+          ..write('remoteVersion: $remoteVersion, ')
+          ..write('installedAt: $installedAt, ')
+          ..write('targetIds: $targetIds')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    itemId,
+    type,
+    format,
+    installDir,
+    remoteVersion,
+    installedAt,
+    targetIds,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StoreInstalledItem &&
+          other.itemId == this.itemId &&
+          other.type == this.type &&
+          other.format == this.format &&
+          other.installDir == this.installDir &&
+          other.remoteVersion == this.remoteVersion &&
+          other.installedAt == this.installedAt &&
+          other.targetIds == this.targetIds);
+}
+
+class StoreInstalledItemsCompanion
+    extends drift.UpdateCompanion<StoreInstalledItem> {
+  final drift.Value<String> itemId;
+  final drift.Value<String> type;
+  final drift.Value<String> format;
+  final drift.Value<String> installDir;
+  final drift.Value<String?> remoteVersion;
+  final drift.Value<DateTime> installedAt;
+  final drift.Value<String> targetIds;
+  final drift.Value<int> rowid;
+  const StoreInstalledItemsCompanion({
+    this.itemId = const drift.Value.absent(),
+    this.type = const drift.Value.absent(),
+    this.format = const drift.Value.absent(),
+    this.installDir = const drift.Value.absent(),
+    this.remoteVersion = const drift.Value.absent(),
+    this.installedAt = const drift.Value.absent(),
+    this.targetIds = const drift.Value.absent(),
+    this.rowid = const drift.Value.absent(),
+  });
+  StoreInstalledItemsCompanion.insert({
+    required String itemId,
+    required String type,
+    required String format,
+    required String installDir,
+    this.remoteVersion = const drift.Value.absent(),
+    required DateTime installedAt,
+    this.targetIds = const drift.Value.absent(),
+    this.rowid = const drift.Value.absent(),
+  }) : itemId = drift.Value(itemId),
+       type = drift.Value(type),
+       format = drift.Value(format),
+       installDir = drift.Value(installDir),
+       installedAt = drift.Value(installedAt);
+  static drift.Insertable<StoreInstalledItem> custom({
+    drift.Expression<String>? itemId,
+    drift.Expression<String>? type,
+    drift.Expression<String>? format,
+    drift.Expression<String>? installDir,
+    drift.Expression<String>? remoteVersion,
+    drift.Expression<DateTime>? installedAt,
+    drift.Expression<String>? targetIds,
+    drift.Expression<int>? rowid,
+  }) {
+    return drift.RawValuesInsertable({
+      if (itemId != null) 'item_id': itemId,
+      if (type != null) 'type': type,
+      if (format != null) 'format': format,
+      if (installDir != null) 'install_dir': installDir,
+      if (remoteVersion != null) 'remote_version': remoteVersion,
+      if (installedAt != null) 'installed_at': installedAt,
+      if (targetIds != null) 'target_ids': targetIds,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  StoreInstalledItemsCompanion copyWith({
+    drift.Value<String>? itemId,
+    drift.Value<String>? type,
+    drift.Value<String>? format,
+    drift.Value<String>? installDir,
+    drift.Value<String?>? remoteVersion,
+    drift.Value<DateTime>? installedAt,
+    drift.Value<String>? targetIds,
+    drift.Value<int>? rowid,
+  }) {
+    return StoreInstalledItemsCompanion(
+      itemId: itemId ?? this.itemId,
+      type: type ?? this.type,
+      format: format ?? this.format,
+      installDir: installDir ?? this.installDir,
+      remoteVersion: remoteVersion ?? this.remoteVersion,
+      installedAt: installedAt ?? this.installedAt,
+      targetIds: targetIds ?? this.targetIds,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    if (itemId.present) {
+      map['item_id'] = drift.Variable<String>(itemId.value);
+    }
+    if (type.present) {
+      map['type'] = drift.Variable<String>(type.value);
+    }
+    if (format.present) {
+      map['format'] = drift.Variable<String>(format.value);
+    }
+    if (installDir.present) {
+      map['install_dir'] = drift.Variable<String>(installDir.value);
+    }
+    if (remoteVersion.present) {
+      map['remote_version'] = drift.Variable<String>(remoteVersion.value);
+    }
+    if (installedAt.present) {
+      map['installed_at'] = drift.Variable<DateTime>(installedAt.value);
+    }
+    if (targetIds.present) {
+      map['target_ids'] = drift.Variable<String>(targetIds.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = drift.Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StoreInstalledItemsCompanion(')
+          ..write('itemId: $itemId, ')
+          ..write('type: $type, ')
+          ..write('format: $format, ')
+          ..write('installDir: $installDir, ')
+          ..write('remoteVersion: $remoteVersion, ')
+          ..write('installedAt: $installedAt, ')
+          ..write('targetIds: $targetIds, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6011,6 +6495,8 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   );
   late final $PersonalHeadwordsTable personalHeadwords =
       $PersonalHeadwordsTable(this);
+  late final $StoreInstalledItemsTable storeInstalledItems =
+      $StoreInstalledItemsTable(this);
   late final drift.Index idxDictionaryListPath = drift.Index(
     'idx_dictionary_list_path',
     'CREATE INDEX idx_dictionary_list_path ON dictionary_list (path)',
@@ -6114,6 +6600,8 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   );
   late final PersonalDictionaryDao personalDictionaryDao =
       PersonalDictionaryDao(this as AppDatabase);
+  late final StoreInstalledItemDao storeInstalledItemDao =
+      StoreInstalledItemDao(this as AppDatabase);
   @override
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
@@ -6136,6 +6624,7 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     quizMistakes,
     personalArticles,
     personalHeadwords,
+    storeInstalledItems,
     idxDictionaryListPath,
     idxWordbook,
     idxWordbookCreatedAt,
@@ -10334,6 +10823,277 @@ typedef $$PersonalHeadwordsTableProcessedTableManager =
       PersonalHeadword,
       drift.PrefetchHooks Function({bool dictionaryId, bool articleId})
     >;
+typedef $$StoreInstalledItemsTableCreateCompanionBuilder =
+    StoreInstalledItemsCompanion Function({
+      required String itemId,
+      required String type,
+      required String format,
+      required String installDir,
+      drift.Value<String?> remoteVersion,
+      required DateTime installedAt,
+      drift.Value<String> targetIds,
+      drift.Value<int> rowid,
+    });
+typedef $$StoreInstalledItemsTableUpdateCompanionBuilder =
+    StoreInstalledItemsCompanion Function({
+      drift.Value<String> itemId,
+      drift.Value<String> type,
+      drift.Value<String> format,
+      drift.Value<String> installDir,
+      drift.Value<String?> remoteVersion,
+      drift.Value<DateTime> installedAt,
+      drift.Value<String> targetIds,
+      drift.Value<int> rowid,
+    });
+
+class $$StoreInstalledItemsTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $StoreInstalledItemsTable> {
+  $$StoreInstalledItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get format => $composableBuilder(
+    column: $table.format,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get installDir => $composableBuilder(
+    column: $table.installDir,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get remoteVersion => $composableBuilder(
+    column: $table.remoteVersion,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<DateTime> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get targetIds => $composableBuilder(
+    column: $table.targetIds,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+}
+
+class $$StoreInstalledItemsTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $StoreInstalledItemsTable> {
+  $$StoreInstalledItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get format => $composableBuilder(
+    column: $table.format,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get installDir => $composableBuilder(
+    column: $table.installDir,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get remoteVersion => $composableBuilder(
+    column: $table.remoteVersion,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<DateTime> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get targetIds => $composableBuilder(
+    column: $table.targetIds,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+}
+
+class $$StoreInstalledItemsTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $StoreInstalledItemsTable> {
+  $$StoreInstalledItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get format =>
+      $composableBuilder(column: $table.format, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get installDir => $composableBuilder(
+    column: $table.installDir,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<String> get remoteVersion => $composableBuilder(
+    column: $table.remoteVersion,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<DateTime> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<String> get targetIds =>
+      $composableBuilder(column: $table.targetIds, builder: (column) => column);
+}
+
+class $$StoreInstalledItemsTableTableManager
+    extends
+        drift.RootTableManager<
+          _$AppDatabase,
+          $StoreInstalledItemsTable,
+          StoreInstalledItem,
+          $$StoreInstalledItemsTableFilterComposer,
+          $$StoreInstalledItemsTableOrderingComposer,
+          $$StoreInstalledItemsTableAnnotationComposer,
+          $$StoreInstalledItemsTableCreateCompanionBuilder,
+          $$StoreInstalledItemsTableUpdateCompanionBuilder,
+          (
+            StoreInstalledItem,
+            drift.BaseReferences<
+              _$AppDatabase,
+              $StoreInstalledItemsTable,
+              StoreInstalledItem
+            >,
+          ),
+          StoreInstalledItem,
+          drift.PrefetchHooks Function()
+        > {
+  $$StoreInstalledItemsTableTableManager(
+    _$AppDatabase db,
+    $StoreInstalledItemsTable table,
+  ) : super(
+        drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$StoreInstalledItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$StoreInstalledItemsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$StoreInstalledItemsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                drift.Value<String> itemId = const drift.Value.absent(),
+                drift.Value<String> type = const drift.Value.absent(),
+                drift.Value<String> format = const drift.Value.absent(),
+                drift.Value<String> installDir = const drift.Value.absent(),
+                drift.Value<String?> remoteVersion = const drift.Value.absent(),
+                drift.Value<DateTime> installedAt = const drift.Value.absent(),
+                drift.Value<String> targetIds = const drift.Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
+              }) => StoreInstalledItemsCompanion(
+                itemId: itemId,
+                type: type,
+                format: format,
+                installDir: installDir,
+                remoteVersion: remoteVersion,
+                installedAt: installedAt,
+                targetIds: targetIds,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String itemId,
+                required String type,
+                required String format,
+                required String installDir,
+                drift.Value<String?> remoteVersion = const drift.Value.absent(),
+                required DateTime installedAt,
+                drift.Value<String> targetIds = const drift.Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
+              }) => StoreInstalledItemsCompanion.insert(
+                itemId: itemId,
+                type: type,
+                format: format,
+                installDir: installDir,
+                remoteVersion: remoteVersion,
+                installedAt: installedAt,
+                targetIds: targetIds,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$StoreInstalledItemsTable, StoreInstalledItem>(
+                    table,
+                  ),
+                  drift.BaseReferences<
+                    _$AppDatabase,
+                    $StoreInstalledItemsTable,
+                    StoreInstalledItem
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$StoreInstalledItemsTableProcessedTableManager =
+    drift.ProcessedTableManager<
+      _$AppDatabase,
+      $StoreInstalledItemsTable,
+      StoreInstalledItem,
+      $$StoreInstalledItemsTableFilterComposer,
+      $$StoreInstalledItemsTableOrderingComposer,
+      $$StoreInstalledItemsTableAnnotationComposer,
+      $$StoreInstalledItemsTableCreateCompanionBuilder,
+      $$StoreInstalledItemsTableUpdateCompanionBuilder,
+      (
+        StoreInstalledItem,
+        drift.BaseReferences<
+          _$AppDatabase,
+          $StoreInstalledItemsTable,
+          StoreInstalledItem
+        >,
+      ),
+      StoreInstalledItem,
+      drift.PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -10372,4 +11132,6 @@ class $AppDatabaseManager {
       $$PersonalArticlesTableTableManager(_db, _db.personalArticles);
   $$PersonalHeadwordsTableTableManager get personalHeadwords =>
       $$PersonalHeadwordsTableTableManager(_db, _db.personalHeadwords);
+  $$StoreInstalledItemsTableTableManager get storeInstalledItems =>
+      $$StoreInstalledItemsTableTableManager(_db, _db.storeInstalledItems);
 }

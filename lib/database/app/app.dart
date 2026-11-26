@@ -36,6 +36,7 @@ AppDatabase appDatabase() {
     QuizMistakes,
     PersonalArticles,
     PersonalHeadwords,
+    StoreInstalledItems,
   ],
   daos: [
     DictionaryListDao,
@@ -53,6 +54,7 @@ AppDatabase appDatabase() {
     FlashcardDao,
     QuizMistakeDao,
     PersonalDictionaryDao,
+    StoreInstalledItemDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -248,10 +250,13 @@ class AppDatabase extends _$AppDatabase {
           await m.drop(schema.idxAiExplanations);
           await m.createIndex(schema.idxAiExplanations);
         },
+        from29To30: (m, schema) async {
+          await m.createTable(schema.storeInstalledItems);
+        },
       ),
     );
   }
 
   @override
-  int get schemaVersion => 29;
+  int get schemaVersion => 30;
 }

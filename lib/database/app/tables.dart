@@ -209,3 +209,17 @@ class PersonalHeadwords extends Table {
   TextColumn get headword => text()();
   TextColumn get normalizedHeadword => text()();
 }
+
+/// Installed resource tracked by the in-app Store (schema v30).
+class StoreInstalledItems extends Table {
+  TextColumn get itemId => text()();
+  TextColumn get type => text()();
+  TextColumn get format => text()();
+  TextColumn get installDir => text()();
+  TextColumn get remoteVersion => text().nullable()();
+  DateTimeColumn get installedAt => dateTime()();
+  TextColumn get targetIds => text().withDefault(const Constant(""))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {itemId};
+}

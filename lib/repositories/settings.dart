@@ -5,6 +5,7 @@ import "package:ciyue/models/ai/ai.dart";
 import "package:ciyue/models/audio.dart";
 import "package:ciyue/models/hunspell.dart";
 import "package:ciyue/models/search_mode.dart";
+import "package:ciyue/models/store.dart";
 import "package:material_ui/material_ui.dart";
 
 final settings = Settings();
@@ -111,6 +112,10 @@ class Settings extends ChangeNotifier {
 
   late bool enableHunspellMorphology;
   late HunspellLookupMode hunspellLookupMode;
+
+  late String storeCatalogUrl;
+  late StoreMirrorMode storeMirrorMode;
+  late String storeCustomMirrorPrefix;
 
   late String aiProvider;
   late bool aiExplainWord;
@@ -351,6 +356,12 @@ class Settings extends ChangeNotifier {
       (mode) => mode.name == hunspellLookupModeName,
       orElse: () => HunspellLookupMode.fallback,
     );
+
+    storeCatalogUrl = prefs.getString("storeCatalogUrl") ?? "";
+    storeMirrorMode = StoreMirrorMode.tryParse(
+      prefs.getString("storeMirrorMode"),
+    );
+    storeCustomMirrorPrefix = prefs.getString("storeCustomMirrorPrefix") ?? "";
 
     skipTaggedWord = prefs.getBool("skipTaggedWord") ?? false;
 
@@ -918,6 +929,24 @@ class Settings extends ChangeNotifier {
   Future<void> setFlashcardDailyNewLimit(int value) async {
     flashcardDailyNewLimit = value.clamp(0, 9999);
     await prefs.setInt("flashcardDailyNewLimit", flashcardDailyNewLimit);
+    notifyListeners();
+  }
+
+  Future<void> setStoreCatalogUrl(String value) async {
+    storeCatalogUrl = value.trim();
+    await prefs.setString("storeCatalogUrl", storeCatalogUrl);
+    notifyListeners();
+  }
+
+  Future<void> setStoreMirrorMode(StoreMirrorMode mode) async {
+    storeMirrorMode = mode;
+    await prefs.setString("storeMirrorMode", mode.name);
+    notifyListeners();
+  }
+
+  Future<void> setStoreCustomMirrorPrefix(String value) async {
+    storeCustomMirrorPrefix = value.trim();
+    await prefs.setString("storeCustomMirrorPrefix", storeCustomMirrorPrefix);
     notifyListeners();
   }
 }

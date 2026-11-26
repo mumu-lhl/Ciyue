@@ -235,3 +235,20 @@ class PersonalDictionaryDaoManager {
         _db.personalHeadwords,
       );
 }
+
+mixin _$StoreInstalledItemDaoMixin on DatabaseAccessor<AppDatabase> {
+  $StoreInstalledItemsTable get storeInstalledItems =>
+      attachedDatabase.storeInstalledItems;
+  StoreInstalledItemDaoManager get managers =>
+      StoreInstalledItemDaoManager(this);
+}
+
+class StoreInstalledItemDaoManager {
+  final _$StoreInstalledItemDaoMixin _db;
+  StoreInstalledItemDaoManager(this._db);
+  $$StoreInstalledItemsTableTableManager get storeInstalledItems =>
+      $$StoreInstalledItemsTableTableManager(
+        _db.attachedDatabase,
+        _db.storeInstalledItems,
+      );
+}

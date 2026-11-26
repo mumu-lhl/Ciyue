@@ -130,5 +130,6 @@ final wordbookTagsDao = WordbookTagsDao(mainDatabase);
 final flashcardDao = FlashcardDao(mainDatabase);
 final writingCheckHistoryDao = WritingCheckHistoryDao(mainDatabase);
 final translateHistoryDao = TranslateHistoryDao(mainDatabase);
+final storeInstalledItemDao = StoreInstalledItemDao(mainDatabase);
 
 final talker = TalkerFlutter.init();

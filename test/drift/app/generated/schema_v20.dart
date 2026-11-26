@@ -3788,6 +3788,10 @@ class DatabaseAtV20 extends GeneratedDatabase {
   late final FlashcardReviewLogs flashcardReviewLogs = FlashcardReviewLogs(
     this,
   );
+  late final Index idxHistoryWord = Index(
+    'idx_history_word',
+    'CREATE INDEX idx_history_word ON history (word)',
+  );
   late final Index idxWordbook = Index(
     'idx_wordbook',
     'CREATE INDEX idx_wordbook ON wordbook (word, created_at)',
@@ -3816,10 +3820,6 @@ class DatabaseAtV20 extends GeneratedDatabase {
     'idx_flashcard_review_logs_word',
     'CREATE INDEX idx_flashcard_review_logs_word ON flashcard_review_logs (word)',
   );
-  late final Index idxHistoryWord = Index(
-    'idx_history_word',
-    'CREATE INDEX idx_history_word ON history (word)',
-  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3839,6 +3839,7 @@ class DatabaseAtV20 extends GeneratedDatabase {
     openRecords,
     flashcards,
     flashcardReviewLogs,
+    idxHistoryWord,
     idxWordbook,
     idxWordbookTags,
     idxMddAudioResource,
@@ -3846,7 +3847,6 @@ class DatabaseAtV20 extends GeneratedDatabase {
     idxOpenRecords,
     idxFlashcardsDue,
     idxFlashcardReviewLogsWord,
-    idxHistoryWord,
   ];
   @override
   int get schemaVersion => 20;

@@ -2177,6 +2177,11 @@ class ManageDictionariesPageState extends State<ManageDictionariesPage> {
           if (Platform.isAndroid) const UpdateButton(),
           const InfoButton(),
           IconButton(
+            tooltip: l10n.storeTitle,
+            icon: const Icon(Icons.storefront_rounded),
+            onPressed: () => context.push("/store?type=dictionary"),
+          ),
+          IconButton(
             tooltip: l10n.fullTextIndexOverview,
             icon: const Icon(Icons.manage_search_rounded),
             onPressed: () => context.push("/full-text-index-overview"),

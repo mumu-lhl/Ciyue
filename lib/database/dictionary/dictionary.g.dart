@@ -17,7 +17,7 @@ class $ResourceTable extends Resource
         'block_offset',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _compressedSizeMeta =
@@ -28,7 +28,7 @@ class $ResourceTable extends Resource
         'compressed_size',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _endOffsetMeta =
@@ -38,7 +38,7 @@ class $ResourceTable extends Resource
     'end_offset',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _keyMeta = const drift.VerificationMeta(
@@ -49,7 +49,7 @@ class $ResourceTable extends Resource
     'key',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _startOffsetMeta =
@@ -60,7 +60,7 @@ class $ResourceTable extends Resource
         'start_offset',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _partMeta = const drift.VerificationMeta(
@@ -71,7 +71,7 @@ class $ResourceTable extends Resource
     'part',
     aliasedName,
     true,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: false,
   );
   @override
@@ -160,27 +160,27 @@ class $ResourceTable extends Resource
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ResourceData(
       blockOffset: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}block_offset'],
       )!,
       compressedSize: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}compressed_size'],
       )!,
       endOffset: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}end_offset'],
       )!,
       key: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}key'],
       )!,
       startOffset: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}start_offset'],
       )!,
       part: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}part'],
       ),
     );
@@ -454,7 +454,7 @@ class $DictionaryTable extends Dictionary
         'block_offset',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _compressedSizeMeta =
@@ -465,7 +465,7 @@ class $DictionaryTable extends Dictionary
         'compressed_size',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _endOffsetMeta =
@@ -475,7 +475,7 @@ class $DictionaryTable extends Dictionary
     'end_offset',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: drift.DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _keyMeta = const drift.VerificationMeta(
@@ -486,7 +486,7 @@ class $DictionaryTable extends Dictionary
     'key',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: drift.DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const drift.VerificationMeta _startOffsetMeta =
@@ -497,7 +497,7 @@ class $DictionaryTable extends Dictionary
         'start_offset',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: drift.DriftSqlType.int,
         requiredDuringInsert: true,
       );
   @override
@@ -579,23 +579,23 @@ class $DictionaryTable extends Dictionary
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DictionaryData(
       blockOffset: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}block_offset'],
       )!,
       compressedSize: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}compressed_size'],
       )!,
       endOffset: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}end_offset'],
       )!,
       key: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        drift.DriftSqlType.string,
         data['${effectivePrefix}key'],
       )!,
       startOffset: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        drift.DriftSqlType.int,
         data['${effectivePrefix}start_offset'],
       )!,
     );

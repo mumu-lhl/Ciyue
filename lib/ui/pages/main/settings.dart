@@ -15,6 +15,7 @@ import "package:ciyue/ui/pages/settings/storage_management.dart";
 import "package:ciyue/ui/pages/settings/update.dart";
 import "package:ciyue/ui/pages/settings/web_service.dart";
 import "package:ciyue/ui/pages/settings/wordbook_stats.dart";
+import "package:ciyue/ui/pages/store/store_page.dart";
 import "package:ciyue/utils.dart";
 import "package:ciyue/core/providers.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -243,6 +244,7 @@ class _WordbookStats extends ConsumerWidget {
 enum _SettingsSection {
   wordbookStats,
   dictionaries,
+  store,
   aiSettings,
   audio,
   manageStorage,
@@ -276,6 +278,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         section: _SettingsSection.dictionaries,
         icon: Icons.book,
         title: locale?.manageDictionaries ?? "Dictionaries",
+      ),
+      _SettingsItem(
+        section: _SettingsSection.store,
+        icon: Icons.storefront_rounded,
+        title: locale?.storeTitle ?? "Resource Store",
       ),
       _SettingsItem(
         section: _SettingsSection.aiSettings,
@@ -361,6 +368,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return const WordbookStatsPage();
       case _SettingsSection.dictionaries:
         return const ManageDictionariesPage();
+      case _SettingsSection.store:
+        return const StorePage();
       case _SettingsSection.aiSettings:
         return const AiSettingsPage();
       case _SettingsSection.audio:
@@ -465,6 +474,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: l10n?.manageDictionaries ?? "Dictionaries & AI",
                   children: [
                     const ManageDictionariesPageListTile(),
+                    ListTile(
+                      leading: const Icon(Icons.storefront_rounded),
+                      title: Text(l10n?.storeTitle ?? "Resource Store"),
+                      onTap: () => context.push("/store"),
+                    ),
                     const AiSettingsPageListTile(),
                     const AudioSettingsPageListTile(),
                     const ManageStorageListTile(),

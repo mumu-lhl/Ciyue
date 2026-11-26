@@ -1,6 +1,7 @@
 import "dart:async";
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/models/store.dart";
 import "package:ciyue/src/generated/i18n/app_localizations.dart";
 import "package:ciyue/ui/pages/chat/chat.dart";
 import "package:ciyue/ui/pages/quiz/quiz_page.dart";
@@ -32,6 +33,7 @@ import "package:ciyue/ui/pages/settings/update.dart";
 import "package:ciyue/ui/pages/settings/web_service.dart";
 import "package:ciyue/ui/pages/settings/logs.dart";
 import "package:ciyue/ui/pages/settings/wordbook_stats.dart";
+import "package:ciyue/ui/pages/store/store_page.dart";
 import "package:ciyue/ui/core/ai_explanation_edit_page.dart";
 import "package:material_ui/material_ui.dart";
 import "package:flutter_smart_dialog/flutter_smart_dialog.dart";
@@ -241,6 +243,12 @@ final router = GoRouter(
     GoRoute(
       path: "/settings/hunspell",
       builder: (context, state) => const HunspellSettingsPage(),
+    ),
+    GoRoute(
+      path: "/store",
+      builder: (context, state) => StorePage(
+        initialType: StoreItemType.tryParse(state.uri.queryParameters["type"]),
+      ),
     ),
     GoRoute(
       path: "/settings/about",

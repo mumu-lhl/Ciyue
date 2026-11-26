@@ -228,5 +228,35 @@ void main() {
 
       await db.close();
     });
+
+    test(
+      "migrating from v29 to v30 creates store_installed_items table",
+      () async {
+        final schema = await verifier.schemaAt(29);
+        final oldDb = schema.newConnection();
+        await oldDb.close();
+
+        final db = AppDatabase(schema.newConnection());
+        await verifier.migrateAndValidate(db, 30);
+
+        final storeDao = StoreInstalledItemDao(db);
+        await storeDao.upsert(
+          StoreInstalledItemsCompanion(
+            itemId: const Value("test-item"),
+            type: const Value("hunspell"),
+            format: const Value("hunspell"),
+            installDir: const Value("/tmp/store/hunspell/test-item"),
+            remoteVersion: const Value("v1.0"),
+            installedAt: Value(DateTime.utc(2026, 11, 27)),
+            targetIds: const Value("1"),
+          ),
+        );
+        final fetched = await storeDao.getById("test-item");
+        expect(fetched?.itemId, "test-item");
+        expect(fetched?.remoteVersion, "v1.0");
+
+        await db.close();
+      },
+    );
   });
 }

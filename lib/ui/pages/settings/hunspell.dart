@@ -17,6 +17,7 @@ import "package:ciyue/ui/pages/settings/manage_dictionaries/main.dart"
 import "package:ciyue/utils.dart";
 import "package:file_selector/file_selector.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:go_router/go_router.dart";
 import "package:material_ui/material_ui.dart";
 
 class _HunspellPageData {
@@ -151,6 +152,18 @@ class _HunspellSettingsPageState extends ConsumerState<HunspellSettingsPage> {
                           )
                         : const Icon(Icons.chevron_right),
                     onTap: _isImporting ? null : _importDirectory,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.storefront_rounded),
+                    title: Text(l10n.storeTitle),
+                    subtitle: Text(l10n.storeEntryDescription),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () async {
+                      await context.push("/store?type=hunspell");
+                      if (mounted) {
+                        _refreshSources();
+                      }
+                    },
                   ),
                 ],
               ),
