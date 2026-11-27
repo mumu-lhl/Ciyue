@@ -24,7 +24,7 @@ Tip: [Obtainium](https://obtainium.imranr.dev/) tracks GitHub releases directly,
 
 ### Windows
 
-Download the installer (`ciyue-setup.exe`) or portable ZIP from the [latest release](https://github.com/mumu-lhl/Ciyue/releases/latest).
+Download the installer (`ciyue-installer.exe`) or portable ZIP from the [latest release](https://github.com/mumu-lhl/Ciyue/releases/latest).
 
 ### Linux
 

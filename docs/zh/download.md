@@ -24,7 +24,7 @@
 
 ### Windows
 
-从 [latest release](https://github.com/mumu-lhl/Ciyue/releases/latest) 下载安装包（`ciyue-setup.exe`）或绿色版 ZIP。
+从 [latest release](https://github.com/mumu-lhl/Ciyue/releases/latest) 下载安装包（`ciyue-installer.exe`）或绿色版 ZIP。
 
 ### Linux
 
