@@ -83,6 +83,16 @@ bool matchStoreAssetPattern(String filename, String pattern) {
   return RegExp("^$escaped\$", caseSensitive: false).hasMatch(filename);
 }
 
+/// Returns the expected size of a downloaded file, or null when the response
+/// body is encoded and `Content-Length` does not describe the decoded file.
+int? storeDownloadExpectedLength({
+  String? contentLength,
+  String? contentEncoding,
+}) {
+  if (contentEncoding != null && contentEncoding.isNotEmpty) return null;
+  return int.tryParse(contentLength ?? "");
+}
+
 class StoreReleaseAsset {
   final String name;
   final String downloadUrl;
@@ -445,6 +455,7 @@ class StoreService {
         final response = await AppHttp.dio.download(
           downloadUrl,
           destFile.path,
+          options: Options(headers: {"accept-encoding": "identity"}),
           cancelToken: cancelToken,
           onReceiveProgress: (received, total) {
             if (onProgress == null) return;
@@ -468,8 +479,9 @@ class StoreService {
         if (!await destFile.exists() || await destFile.length() == 0) {
           throw const FileSystemException("Downloaded file is empty");
         }
-        final expectedLength = int.tryParse(
-          response.headers.value(Headers.contentLengthHeader) ?? "",
+        final expectedLength = storeDownloadExpectedLength(
+          contentLength: response.headers.value(Headers.contentLengthHeader),
+          contentEncoding: response.headers.value("content-encoding"),
         );
         if (expectedLength != null && expectedLength > 0) {
           final actualLength = await destFile.length();

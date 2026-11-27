@@ -94,6 +94,21 @@ class StoreSourceConfig {
   });
 }
 
+class StoreTranslation {
+  final String? name;
+  final String? description;
+
+  const StoreTranslation({this.name, this.description});
+}
+
+/// Normalizes a locale tag for comparison against catalog `translations` keys.
+///
+/// Catalog keys and UI locale tags are treated case-insensitively, with `-`
+/// and `_` as equivalent separators.
+String normalizeStoreLocaleTag(String localeTag) {
+  return localeTag.trim().toLowerCase().replaceAll("-", "_");
+}
+
 class StoreItem {
   final String id;
   final StoreItemType type;
@@ -106,6 +121,7 @@ class StoreItem {
   final StoreItemFormat format;
   final bool extract;
   final StoreSourceConfig source;
+  final Map<String, StoreTranslation> translations;
 
   const StoreItem({
     required this.id,
@@ -119,7 +135,53 @@ class StoreItem {
     required this.format,
     required this.extract,
     required this.source,
+    this.translations = const {},
   });
+
+  /// Returns the translation for [localeTag], falling back from a
+  /// region-specific tag (e.g. `zh_TW`) to its base language (`zh`).
+  StoreTranslation? _translationFor(String localeTag) {
+    final normalized = normalizeStoreLocaleTag(localeTag);
+    if (normalized.isEmpty) return null;
+
+    final exact = translations[normalized];
+    if (exact != null) return exact;
+
+    final separator = normalized.indexOf("_");
+    if (separator <= 0) return null;
+    return translations[normalized.substring(0, separator)];
+  }
+
+  String localizedName(String localeTag) {
+    return _translationFor(localeTag)?.name ?? name;
+  }
+
+  String localizedDescription(String localeTag) {
+    return _translationFor(localeTag)?.description ?? description;
+  }
+
+  /// Returns a copy with [name] and [description] resolved for [localeTag].
+  ///
+  /// Used when installing so the database records the name in the language
+  /// active at install time.
+  StoreItem localized(String localeTag) {
+    final translation = _translationFor(localeTag);
+    if (translation == null) return this;
+    return StoreItem(
+      id: id,
+      type: type,
+      name: translation.name ?? name,
+      description: translation.description ?? description,
+      author: author,
+      license: license,
+      sourceUrl: sourceUrl,
+      languages: languages,
+      format: format,
+      extract: extract,
+      source: source,
+      translations: translations,
+    );
+  }
 }
 
 class StoreCatalog {
@@ -218,6 +280,7 @@ class StoreCatalogParser {
         .map((e) => e.toLowerCase())
         .where((e) => e.isNotEmpty)
         .toList(growable: false);
+    final translations = _parseTranslations(id, raw["translations"], onWarning);
 
     final defaultExtract = switch (format) {
       StoreItemFormat.audioMdd ||
@@ -242,7 +305,67 @@ class StoreCatalogParser {
       format: format,
       extract: extract,
       source: source,
+      translations: translations,
     );
+  }
+
+  static Map<String, StoreTranslation> _parseTranslations(
+    String itemId,
+    dynamic raw,
+    void Function(String message)? onWarning,
+  ) {
+    if (raw == null) return const {};
+    if (raw is! Map) {
+      onWarning?.call(
+        "Item '$itemId': 'translations' must be a mapping; ignoring",
+      );
+      return const {};
+    }
+
+    final translations = <String, StoreTranslation>{};
+    for (final entry in raw.entries) {
+      final rawKey = _nonEmptyString(entry.key);
+      if (rawKey == null) {
+        onWarning?.call(
+          "Item '$itemId': skipping translation with an empty locale key",
+        );
+        continue;
+      }
+
+      final key = normalizeStoreLocaleTag(rawKey);
+      if (translations.containsKey(key)) {
+        onWarning?.call(
+          "Item '$itemId': duplicate translation locale '$key'; keeping first",
+        );
+        continue;
+      }
+
+      final value = entry.value;
+      if (value is! Map) {
+        onWarning?.call(
+          "Item '$itemId': translation '$key' must be a mapping; skipping",
+        );
+        continue;
+      }
+
+      final name = _nonEmptyString(value["name"]);
+      final description = _nonEmptyString(value["description"]);
+      if (name == null && description == null) {
+        onWarning?.call(
+          "Item '$itemId': translation '$key' has no name or description; skipping",
+        );
+        continue;
+      }
+
+      translations[key] = StoreTranslation(
+        name: name,
+        description: description,
+      );
+    }
+
+    return translations.isEmpty
+        ? const {}
+        : Map<String, StoreTranslation>.unmodifiable(translations);
   }
 
   static StoreSourceConfig? _parseSource(
