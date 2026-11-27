@@ -2,6 +2,7 @@
 // ignore_for_file: implementation_imports
 
 import "package:ciyue/core/localization_delegates.dart";
+import "package:ciyue/core/locale_utils.dart";
 import "package:ciyue/core/providers.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/lookup_popup.dart";
@@ -141,12 +142,5 @@ class _LookupPopupHostState extends ConsumerState<LookupPopupHost> {
   }
 
   /// The locale the main window uses, from the language setting.
-  Locale? _locale() {
-    if (settings.language == "system") return null;
-    final parts = settings.language!.split("_");
-    if (parts.length > 1) {
-      return Locale.fromSubtags(languageCode: parts[0], countryCode: parts[1]);
-    }
-    return Locale(settings.language!);
-  }
+  Locale? _locale() => localeFromLanguageCode(settings.language);
 }

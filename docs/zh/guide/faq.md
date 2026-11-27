@@ -86,6 +86,15 @@ CIYUE_RENDER_MODE=software ciyue
 
 翻译在 [Weblate](https://hosted.weblate.org/engage/ciyue/) 上管理。可以添加新语言或改进现有翻译，不需要会编程。
 
+## 界面语言选小篆后显示方框怎么办？
+
+小篆用的是 Unicode 18.0 新增的字符区，目前主流系统字体还没有覆盖。词悦不内置小篆字体：可用的 Seal Sans 采用 AGPL-3.0 许可，与词悦的 MIT 许可不兼容，因此不随应用分发。界面本身可以正常切换和保存，只是系统缺少对应字形时，所有文字都会显示为方框，切回其他语言即恢复正常。
+
+- **Linux / Windows / macOS**：在系统里安装一款覆盖 Unicode 18.0 小篆字符的字体（例如 Unicodia 项目提供的 Seal Sans，可从 [GitHub 下载](https://github.com/Mercury13/unicodia/blob/main/Fonts/SealSans-Regular.ttf)），然后重启词悦。
+- **Android**：只能依赖系统或设备厂商内置的字体，普通用户目前无法自行安装字体。
+
+相关讨论：[freemdict 论坛](https://forumcdn.freemdict.com/t/topic/45293/3)。
+
 ## 发现 bug / 有功能建议，去哪里反馈？
 
 到 [GitHub](https://github.com/mumu-lhl/Ciyue/issues) 提 issue。请附上应用版本、平台和复现步骤。

@@ -1,6 +1,7 @@
 import "dart:ui" as ui;
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/locale_utils.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/models/translation_result.dart";
 import "package:ciyue/repositories/settings.dart";
@@ -30,7 +31,9 @@ class SourceResult {
 /// through to every provider.
 String resolveTranslateTargetDefault() {
   final configured = settings.language;
-  if (configured != null && configured != "system") return configured;
+  if (configured != null && configured != "system") {
+    return functionalLanguageCode(configured);
+  }
   final locale = ui.PlatformDispatcher.instance.locale;
   var code = locale.languageCode;
   if (code == "zh" && locale.scriptCode == "Hant") {

@@ -44,6 +44,8 @@ class _LanguageSelectorState extends State<LanguageSelector> {
         return "繁體中文（香港）";
       case "zh_TW":
         return "正體中文（臺灣）";
+      case "zh_Seal":
+        return "𽌠𽴖";
       default:
         return code ?? locale.system;
     }
@@ -54,6 +56,7 @@ class _LanguageSelectorState extends State<LanguageSelector> {
     "zh",
     "zh_HK",
     "zh_TW",
+    "zh_Seal",
     "en",
     "de",
     "es",

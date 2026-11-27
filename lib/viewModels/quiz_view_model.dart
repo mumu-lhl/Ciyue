@@ -4,6 +4,7 @@ import "dart:math" as math;
 import "dart:ui" as ui;
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/locale_utils.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/repositories/ai_prompts.dart";
@@ -319,7 +320,7 @@ class QuizViewModel extends ChangeNotifier {
 
       final targetLanguage = settings.language! == "system"
           ? ui.PlatformDispatcher.instance.locale.languageCode
-          : settings.language!;
+          : functionalLanguageCode(settings.language!);
 
       final types = questionTypes;
       final template = AIPrompts().quizPrompt;

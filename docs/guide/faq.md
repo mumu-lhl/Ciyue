@@ -86,6 +86,15 @@ If a different dictionary opens instead, Android has remembered a default for th
 
 Translations are managed on [Weblate](https://hosted.weblate.org/engage/ciyue/). You can add a new language or improve existing translations there — no coding needed.
 
+## The Small Seal interface shows boxes instead of characters. Why?
+
+The Small Seal (小篆) characters live in a Unicode 18.0 block that most system fonts do not cover yet. Ciyue does not bundle a Small Seal font: the available one (Seal Sans, distributed by the [Unicodia](https://github.com/Mercury13/unicodia) project) is AGPL-3.0-licensed and therefore incompatible with Ciyue's MIT license, so it cannot ship with the app. The language itself can still be selected and saved; when the system has no glyphs for that block, every label renders as a box until you switch back to another language.
+
+- **Linux / Windows / macOS**: install a font that covers the Unicode 18.0 Small Seal block (for example Seal Sans, downloadable from [GitHub](https://github.com/Mercury13/unicodia/blob/main/Fonts/SealSans-Regular.ttf)), then restart Ciyue.
+- **Android**: rendering depends on the system font provided by the device; there is no user-installable font path yet.
+
+Background: [freemdict forum](https://forumcdn.freemdict.com/t/topic/45293/3).
+
 ## I found a bug / have a feature request. Where do I report it?
 
 Open an issue on [GitHub](https://github.com/mumu-lhl/Ciyue/issues). Please include your app version, platform, and steps to reproduce.
