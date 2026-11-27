@@ -137,6 +137,9 @@ class _StorePageState extends ConsumerState<StorePage> {
   Future<void> _downloadItem(StoreItem item) async {
     if (_activeDownloads.containsKey(item.id)) return;
     final l10n = AppLocalizations.of(context)!;
+    final displayItem = item.localized(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
     final cancelToken = CancelToken();
 
     setState(() {
@@ -149,7 +152,7 @@ class _StorePageState extends ConsumerState<StorePage> {
 
     try {
       final installed = await StoreService.instance.downloadAndInstall(
-        item,
+        displayItem,
         cancelToken: cancelToken,
         onProgress: (received, total) {
           if (!mounted) return;
@@ -174,7 +177,7 @@ class _StorePageState extends ConsumerState<StorePage> {
         _updatesAvailable[item.id] = false;
       });
       await ToastService.show(
-        l10n.storeInstallSuccess(item.name),
+        l10n.storeInstallSuccess(displayItem.name),
         context,
         type: ToastType.success,
       );
@@ -218,11 +221,14 @@ class _StorePageState extends ConsumerState<StorePage> {
     StoreInstalledItem installed,
   ) async {
     final l10n = AppLocalizations.of(context)!;
+    final displayName = item.localizedName(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.storeUninstall),
-        content: Text(l10n.storeUninstallConfirm(item.name)),
+        content: Text(l10n.storeUninstallConfirm(displayName)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -250,7 +256,7 @@ class _StorePageState extends ConsumerState<StorePage> {
         _updatesAvailable.remove(item.id);
       });
       await ToastService.show(
-        l10n.storeUninstallSuccess(item.name),
+        l10n.storeUninstallSuccess(displayName),
         context,
         type: ToastType.success,
       );
@@ -283,7 +289,7 @@ class _StorePageState extends ConsumerState<StorePage> {
     return sorted;
   }
 
-  List<StoreItem> get _filteredItems {
+  List<StoreItem> _filteredItems(String localeTag) {
     final query = _searchQuery.trim().toLowerCase();
     return _items
         .where((item) {
@@ -293,8 +299,12 @@ class _StorePageState extends ConsumerState<StorePage> {
             return false;
           }
           if (query.isNotEmpty) {
+            final localizedName = item.localizedName(localeTag);
+            final localizedDescription = item.localizedDescription(localeTag);
             final haystack =
-                "${item.name} ${item.author} ${item.description} ${item.license}"
+                "$localizedName ${item.name} "
+                        "$localizedDescription ${item.description} "
+                        "${item.author} ${item.license}"
                     .toLowerCase();
             if (!haystack.contains(query)) return false;
           }
@@ -306,7 +316,8 @@ class _StorePageState extends ConsumerState<StorePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final filtered = _filteredItems;
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+    final filtered = _filteredItems(localeTag);
     final languages = _availableLanguages;
 
     return Scaffold(
@@ -438,7 +449,7 @@ class _StorePageState extends ConsumerState<StorePage> {
                   ],
                 ),
               ),
-              Expanded(child: _buildBody(context, l10n, filtered)),
+              Expanded(child: _buildBody(context, l10n, filtered, localeTag)),
             ],
           ),
         ),
@@ -450,6 +461,7 @@ class _StorePageState extends ConsumerState<StorePage> {
     BuildContext context,
     AppLocalizations l10n,
     List<StoreItem> filtered,
+    String localeTag,
   ) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -496,6 +508,7 @@ class _StorePageState extends ConsumerState<StorePage> {
         final item = filtered[index];
         return _StoreItemCard(
           item: item,
+          localeTag: localeTag,
           installed: _installedById[item.id],
           hasUpdate: _updatesAvailable[item.id] ?? false,
           downloadProgress: _activeDownloads[item.id],
@@ -512,6 +525,7 @@ class _StorePageState extends ConsumerState<StorePage> {
 
 class _StoreItemCard extends StatelessWidget {
   final StoreItem item;
+  final String localeTag;
   final StoreInstalledItem? installed;
   final bool hasUpdate;
   final _DownloadProgress? downloadProgress;
@@ -521,6 +535,7 @@ class _StoreItemCard extends StatelessWidget {
 
   const _StoreItemCard({
     required this.item,
+    required this.localeTag,
     required this.installed,
     required this.hasUpdate,
     required this.downloadProgress,
@@ -547,6 +562,8 @@ class _StoreItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final localizedName = item.localizedName(localeTag);
+    final localizedDescription = item.localizedDescription(localeTag);
     final isDownloading = downloadProgress != null;
     final isInstalled = installed != null;
 
@@ -573,7 +590,7 @@ class _StoreItemCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item.name,
+                        localizedName,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -615,9 +632,9 @@ class _StoreItemCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (item.description.isNotEmpty) ...[
+            if (localizedDescription.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(item.description, style: theme.textTheme.bodyMedium),
+              Text(localizedDescription, style: theme.textTheme.bodyMedium),
             ],
             const SizedBox(height: 8),
             Wrap(

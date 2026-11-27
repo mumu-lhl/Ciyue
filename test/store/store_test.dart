@@ -144,6 +144,164 @@ items:
         expect(warnings, hasLength(2));
       },
     );
+
+    test(
+      "parses translations and falls back from region to language to default",
+      () {
+        const yaml = """
+schemaVersion: 1
+items:
+  - id: hunspell-zh-cn
+    type: hunspell
+    name: 中文默认名
+    description: 中文默认描述
+    author: yx-wh
+    license: GPL-3.0
+    sourceUrl: https://example.com/zh
+    languages:
+      - zh
+    format: hunspell
+    translations:
+      en:
+        name: English name
+        description: English description
+      zh:
+        name: 中文翻译名
+        description: 中文翻译描述
+      zh_TW:
+        name: 繁體名稱
+        description: 繁體描述
+      ja:
+        description: 日本語の説明
+    source:
+      type: github_raw
+      repo: a/b
+      files: [a.aff, a.dic]
+""";
+
+        final warnings = <String>[];
+        final catalog = StoreCatalogParser.parse(yaml, onWarning: warnings.add);
+        final item = catalog.items.single;
+
+        expect(warnings, isEmpty);
+        expect(item.translations, hasLength(4));
+        expect(item.translations.containsKey("zh_tw"), isTrue);
+
+        expect(item.localizedName("zh-TW"), "繁體名稱");
+        expect(item.localizedDescription("zh-TW"), "繁體描述");
+        expect(item.localizedName("zh-HK"), "中文翻译名");
+        expect(item.localizedName("ja"), "中文默认名");
+        expect(item.localizedDescription("ja"), "日本語の説明");
+        expect(item.localizedName("fr"), "中文默认名");
+        expect(item.localizedDescription("fr"), "中文默认描述");
+        expect(item.localizedName("en-US"), "English name");
+
+        final localized = item.localized("zh-TW");
+        expect(localized.name, "繁體名稱");
+        expect(localized.description, "繁體描述");
+        expect(localized.id, item.id);
+        expect(localized.source.type, StoreSourceType.githubRaw);
+        expect(localized.translations, same(item.translations));
+      },
+    );
+
+    test("keeps an item when translations are malformed", () {
+      const yaml = """
+schemaVersion: 1
+items:
+  - id: bad-translations
+    type: hunspell
+    name: 默认名
+    description: 默认描述
+    author: Tester
+    license: MIT
+    sourceUrl: https://example.com
+    format: hunspell
+    translations: not-a-map
+    source:
+      type: github_raw
+      repo: a/b
+      files: [a.aff, a.dic]
+""";
+
+      final warnings = <String>[];
+      final catalog = StoreCatalogParser.parse(yaml, onWarning: warnings.add);
+      final item = catalog.items.single;
+
+      expect(item.translations, isEmpty);
+      expect(item.localizedName("en"), "默认名");
+      expect(item.localizedDescription("en"), "默认描述");
+      expect(warnings, hasLength(1));
+      expect(warnings.single, contains("translations"));
+    });
+
+    test("skips invalid translation entries and keeps valid ones", () {
+      const yaml = """
+schemaVersion: 1
+items:
+  - id: partial-translations
+    type: hunspell
+    name: 默认名
+    description: 默认描述
+    author: Tester
+    license: MIT
+    sourceUrl: https://example.com
+    format: hunspell
+    translations:
+      en: not-a-map
+      "":
+        name: Empty key
+      ja:
+        name: ""
+        description: ""
+      zh:
+        name: 有效翻译
+    source:
+      type: github_raw
+      repo: a/b
+      files: [a.aff, a.dic]
+""";
+
+      final warnings = <String>[];
+      final catalog = StoreCatalogParser.parse(yaml, onWarning: warnings.add);
+      final item = catalog.items.single;
+
+      expect(item.translations, hasLength(1));
+      expect(item.localizedName("zh"), "有效翻译");
+      expect(item.localizedName("en"), "默认名");
+      expect(warnings, hasLength(3));
+      expect(warnings.any((w) => w.contains("must be a mapping")), isTrue);
+      expect(warnings.any((w) => w.contains("empty locale key")), isTrue);
+      expect(warnings.any((w) => w.contains("no name or description")), isTrue);
+    });
+  });
+
+  group("storeDownloadExpectedLength", () {
+    test("uses Content-Length when the response is not encoded", () {
+      expect(storeDownloadExpectedLength(contentLength: "315"), 315);
+      expect(
+        storeDownloadExpectedLength(contentLength: "315", contentEncoding: ""),
+        315,
+      );
+    });
+
+    test("skips Content-Length when the response is encoded", () {
+      expect(
+        storeDownloadExpectedLength(
+          contentLength: "307",
+          contentEncoding: "gzip",
+        ),
+        isNull,
+      );
+    });
+
+    test("returns null for missing or invalid Content-Length", () {
+      expect(storeDownloadExpectedLength(), isNull);
+      expect(
+        storeDownloadExpectedLength(contentLength: "not-a-number"),
+        isNull,
+      );
+    });
   });
 
   group("applyStoreMirror", () {
