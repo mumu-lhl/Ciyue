@@ -1,6 +1,7 @@
 import "dart:ui" as ui;
 
 import "package:ciyue/core/app_globals.dart";
+import "package:ciyue/core/locale_utils.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/models/ai_explanation_data.dart";
@@ -114,7 +115,7 @@ class AIExplanationModel extends ChangeNotifier {
   Future<void> _fetchFromAI(String word, {bool forceRefresh = false}) async {
     final targetLanguage = settings.language! == "system"
         ? ui.PlatformDispatcher.instance.locale.languageCode
-        : settings.language!;
+        : functionalLanguageCode(settings.language!);
     final structuredMode = settings.aiExplainStructured;
     final prompts = _aiPrompts ?? AIPrompts();
     final template = structuredMode

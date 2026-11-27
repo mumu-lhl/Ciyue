@@ -92,13 +92,32 @@ Set<String> generatedLocales(String source) {
   if (start < 0) return {};
   final end = source.indexOf("];", start);
   if (end < 0) return {};
+  final section = source.substring(start, end);
   final pattern = RegExp(r"Locale\('([A-Za-z_]+)'(?:, '([A-Za-z]+)')?\)");
-  return {
-    for (final match in pattern.allMatches(source.substring(start, end)))
+  final locales = {
+    for (final match in pattern.allMatches(section))
       match.group(2) == null
           ? match.group(1)!
           : "${match.group(1)}_${match.group(2)}",
   };
+  // Locales with a script subtag are emitted as `Locale.fromSubtags(...)`,
+  // which the pattern above does not match.
+  for (final match in RegExp(
+    r"Locale\.fromSubtags\(([^)]*)\)",
+  ).allMatches(section)) {
+    final arguments = match.group(1)!;
+    String? argument(String name) =>
+        RegExp("$name:\\s*'([A-Za-z]+)'").firstMatch(arguments)?.group(1);
+    final language = argument("languageCode");
+    if (language == null) continue;
+    final parts = <String>[language];
+    final script = argument("scriptCode");
+    if (script != null) parts.add(script);
+    final country = argument("countryCode");
+    if (country != null) parts.add(country);
+    locales.add(parts.join("_"));
+  }
+  return locales;
 }
 
 String _localeFromPath(String path) =>

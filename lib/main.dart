@@ -6,6 +6,7 @@ import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/core/app_router.dart";
 import "package:ciyue/core/ciyue_error.dart";
 import "package:ciyue/core/localization_delegates.dart";
+import "package:ciyue/core/locale_utils.dart";
 import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/command_line.dart";
 import "package:ciyue/services/command_line_actions.dart";
@@ -291,18 +292,7 @@ class _CiyueState extends State<Ciyue> with WidgetsBindingObserver {
     // Theme changes rebuild through refresh(); the OS-brightness half of
     // ThemeMode.system arrives via didChangePlatformBrightness.
     unawaited(_syncWindowBrightness());
-    Locale? locale;
-    if (settings.language != "system") {
-      final splittedLanguage = settings.language!.split("_");
-      if (splittedLanguage.length > 1) {
-        locale = Locale.fromSubtags(
-          languageCode: splittedLanguage[0],
-          countryCode: splittedLanguage[1],
-        );
-      } else {
-        locale = Locale(settings.language!);
-      }
-    }
+    final locale = localeFromLanguageCode(settings.language);
 
     if (!settings.enableDynamicColor) {
       final Color seedColor = settings.themeSeedColor;
