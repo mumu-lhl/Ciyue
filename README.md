@@ -5,7 +5,7 @@
 [![F-Droid Version](https://img.shields.io/f-droid/v/org.eu.mumulhl.ciyue)](https://f-droid.org/packages/org.eu.mumulhl.ciyue/)
 [![Translation status](https://hosted.weblate.org/widget/ciyue/svg-badge.svg)](https://hosted.weblate.org/engage/ciyue/)
 
-English | [中文](./README_CN.md)
+English | [中文](./README_CN.md) | [Türkçe](./README.tr.md)
 
 A dictionary for Android, Windows, Linux, and macOS, supporting MDX/MDD, StarDict, and ZIM dictionaries.
 
