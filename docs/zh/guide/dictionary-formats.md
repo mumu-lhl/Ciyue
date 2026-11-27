@@ -215,5 +215,5 @@ ZIM 词典档案主要由 [Kiwix](https://www.kiwix.org/) 与 [openZIM](https://
 ## 相关
 
 - [快速上手](./getting-started)——添加词典。
-- [词形还原](./word-forms)——Hunspell 文件，与词典格式无关。
+- [词形还原](./word-forms)——Hunspell 文件，与词典格式无关，但必须是 UTF-8。
 - [常见问题](./faq)——导入报错与显示问题。

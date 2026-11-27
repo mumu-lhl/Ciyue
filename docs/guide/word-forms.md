@@ -35,6 +35,27 @@ kana, with the kanji form shown in parentheses.
 
 Stem lookups run in the background, so enabling this does not slow the UI down.
 
+## Encoding
+
+Ciyue sends lookup words to Hunspell as UTF-8 and decodes the results as UTF-8;
+it does not transcode between encodings. The `.aff` must declare `SET UTF-8`,
+and the `.dic` must actually be stored as UTF-8.
+
+Legacy dictionaries still import, and ASCII words may work, but accented or
+Cyrillic words will not resolve. Some old GoldenDict packs have this problem:
+“better morphologies” 1.0 uses ISO-8859-1 for `es_ES` and KOI8-R for `ru_RU`.
+Convert both files before importing:
+
+```bash
+# ISO-8859-1 example; use the encoding named by the original SET line
+iconv -f ISO-8859-1 -t UTF-8 es_ES.aff | sed 's/^SET .*/SET UTF-8/' > es_ES.aff.utf8
+iconv -f ISO-8859-1 -t UTF-8 es_ES.dic > es_ES.dic.utf8
+```
+
+Verify a few non-ASCII words, then replace the originals. Keep `SET UTF-8`
+uppercase and do not add a BOM. GitHub serves the exact bytes committed, so
+store the converted UTF-8 files in the repository.
+
 ## Fallback vs Supplement
 
 | Query | Fallback (default) | Supplement |

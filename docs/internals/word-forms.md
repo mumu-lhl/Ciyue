@@ -192,7 +192,15 @@ of every query containing the character, and the dictionaries that would
 benefit (headwords in 旧字体/異体字) are proper nouns and old-spelling phrases
 that are typed in their own form anyway.
 
-## Encoding: `.dic` files use composed forms
+## Encoding: UTF-8 and composed forms
+
+Ciyue's FFI passes every query as UTF-8 and decodes the results as UTF-8; it
+does not transcode. Hunspell reads `SET` from the `.aff` and expects the bytes
+of the word in that encoding, so only `SET UTF-8` matches Ciyue's input. A
+Latin-1 or KOI8-R pair still imports, and ASCII words may work, but non-ASCII
+lookups fail. Convert both files to UTF-8 and change the `SET` line. Do not use
+the Hunspell CLI to decide whether Ciyue can use a dictionary: the CLI performs
+its own iconv conversion and may succeed where Ciyue does not.
 
 Ciyue normalises every query to **NFC** before handing it to Hunspell — the form
 keyboards, web pages and the maintained sets above already use. A `.dic` you
