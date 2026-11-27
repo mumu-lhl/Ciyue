@@ -30,6 +30,20 @@ Hunspell `.aff`/`.dic`，那种语言就能用。
 
 词干查询在后台执行，开启后不会拖慢界面。
 
+## 编码
+
+词悦把查询词以 UTF-8 传给 Hunspell，并把结果按 UTF-8 解码；这一层不会在编码之间做转换。因此 `.aff` 必须声明 `SET UTF-8`，`.dic` 也必须实际以 UTF-8 保存。
+
+旧编码的词典仍然能导入，纯 ASCII 词也可能正常，但带重音或西里尔字母的词会还原不出来。一些老的 GoldenDict 资源就有这个问题，例如 “better morphologies” 1.0 里的 `es_ES` 是 ISO-8859-1、`ru_RU` 是 KOI8-R。导入前请把两个文件一起转成 UTF-8：
+
+```bash
+# 以 ISO-8859-1 为例；实际请用原 SET 行声明的编码
+iconv -f ISO-8859-1 -t UTF-8 es_ES.aff | sed 's/^SET .*/SET UTF-8/' > es_ES.aff.utf8
+iconv -f ISO-8859-1 -t UTF-8 es_ES.dic > es_ES.dic.utf8
+```
+
+确认几个非 ASCII 词能查后，再替换原文件。`SET UTF-8` 要用大写，也不要加 BOM。GitHub raw 返回的是仓库里提交的原始字节，所以仓库里要存转换后的 UTF-8 文件。
+
 ## 兜底 vs 补充
 
 | 查询 | 兜底（默认） | 补充 |

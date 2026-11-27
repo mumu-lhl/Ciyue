@@ -246,5 +246,5 @@ only free for personal use.
 
 - [Getting started](./getting-started) — importing a dictionary.
 - [Word-form lookup](./word-forms) — Hunspell files, which are separate from the
-  dictionary format itself.
+  dictionary format itself and must be UTF-8.
 - [FAQ](./faq) — import errors and display problems.
