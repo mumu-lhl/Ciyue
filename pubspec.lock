@@ -261,10 +261,10 @@ packages:
     dependency: transitive
     description:
       name: cnativeapi
-      sha256: "510107ee007a7b4a01aa1eaec3ed097007d65760be6b272f093c4ca34a0d12ff"
+      sha256: "49662734cdf3dd1707b1ee35102ac1754e0ab3d450a2d30b066730f219dacc86"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.1"
+    version: "0.6.2"
   code_assets:
     dependency: transitive
     description:
@@ -381,10 +381,10 @@ packages:
     dependency: "direct main"
     description:
       name: dbus
-      sha256: f7db8504e715b835f5ebe5fe74604ccd961d504c73389a5d8e81bafc2e2f3612
+      sha256: fe6b46eae35441227e9e750656d06a4f40c230fe96e4390da7d7ebc69a60f0b3
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.0"
+    version: "0.8.1"
   decimal:
     dependency: transitive
     description:
@@ -446,10 +446,10 @@ packages:
     dependency: transitive
     description:
       name: dotprompt
-      sha256: d588959f509a67062874c4378085f982a7ed4d10ae521c9504cd9c3331f13304
+      sha256: "85d42c0fbfe015dacb7f46f3476fdec5c99af161cb21b37d05addfb7c1307efe"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "2.0.1"
   drift:
     dependency: "direct main"
     description:
@@ -682,10 +682,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_local_notifications
-      sha256: "7d37d69ded3028af4f22531a0097a3baa478a384dff2e23e873707c93df3b704"
+      sha256: "2b7579556c117b535ef83835798a7f3c4003dc892a888a4a99f2107bca7b6675"
       url: "https://pub.dev"
     source: hosted
-    version: "23.0.3"
+    version: "23.0.4"
   flutter_local_notifications_linux:
     dependency: transitive
     description:
@@ -809,34 +809,34 @@ packages:
     dependency: "direct main"
     description:
       name: genkit
-      sha256: "13a887363cf0eb0bb265e048573746d68318d005b42afd4a5713ea9e9c645cd6"
+      sha256: d874741730a44ce0615630eac23a930b330056dd1dae1fc7e48fdf99c06c69e8
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.3"
   genkit_anthropic:
     dependency: "direct main"
     description:
       name: genkit_anthropic
-      sha256: "10a5bfbe2a92f6f72bcd5cde18dae0ee66f719f65100dfb604b2680eb58ee77b"
+      sha256: d1c3710216790229bd9af03151fd9820a6a70b2ee69f4dff5664b0d5623d2f1e
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.3"
   genkit_google_genai:
     dependency: "direct main"
     description:
       name: genkit_google_genai
-      sha256: "1641aabfe30dc62a2bc141146371f49b6b699a544a435ea3fc66ad7cfd27d7d0"
+      sha256: "933933f72bbf06b260628823585ce9682e520ca8953c078859a2192fcc87d9fa"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.0"
   genkit_openai:
     dependency: "direct main"
     description:
       name: genkit_openai
-      sha256: b296ebf2568d534735faee1397fe9a3fc7418583167794cc8a72090f9cd6a643
+      sha256: "93b8edadf6d1e83ef05b6d35eb188f544c989d200bd8f1a3c9106ffdfa87b544"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.3"
   glob:
     dependency: transitive
     description:
@@ -913,10 +913,10 @@ packages:
     dependency: "direct main"
     description:
       name: hotkey_manager
-      sha256: d6c11dff6116bffaf11a9423887c32d84991ddbb34590f4ebb29bd88887b57b6
+      sha256: "62346261fedd55c105490b8873d2d0721aed1e12c31ecf77d3d1b33ddf8c2d78"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.0"
+    version: "0.4.1"
   hotkey_manager_platform_interface:
     dependency: transitive
     description:
@@ -1240,18 +1240,18 @@ packages:
     dependency: "direct main"
     description:
       name: nativeapi
-      sha256: c0c566cf6788a6b6a32ce2666f02364b7fb50133f07a744bc1e793b5b8bb2c78
+      sha256: "339b7a91a27ce5c33659cab92cf8e76736142985433652f91a63cc5348135bfb"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.1"
+    version: "0.6.2"
   nativeapi_flutter:
     dependency: transitive
     description:
       name: nativeapi_flutter
-      sha256: "3709b58224473298349375c8a0404d19dc0b5f151397cae2f127fe49a3a1a491"
+      sha256: b0507253748ba9690a295bc162208a91d348809185409e5aee7b09e77ab5d8a3
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.0"
+    version: "0.6.2"
   node_preamble:
     dependency: transitive
     description:
@@ -1940,10 +1940,10 @@ packages:
     dependency: "direct main"
     description:
       name: tray_manager
-      sha256: "7618880ee07c93dc46b1c21288018d9b76f9b2b3b340e9f298ffc17d494fbcc8"
+      sha256: "3a6ceacfdbe35e42049bb34334f30d73e5f1e73f5f04495b299a8c10b6ec5217"
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.0"
+    version: "0.9.1"
   typed_data:
     dependency: transitive
     description:
@@ -2148,10 +2148,10 @@ packages:
     dependency: "direct main"
     description:
       name: window_manager
-      sha256: "43fc05da6cf670b456a758c88b60e2c1371fc32e1030aac308d0087d87c9368d"
+      sha256: "9504ae37e618d31524e337ad3cf9600d252acf11fffa3ddb9b0b5ced634542d9"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.0"
+    version: "0.7.1"
   xdg_directories:
     dependency: transitive
     description:
