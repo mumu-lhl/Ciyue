@@ -909,7 +909,8 @@ class _StoreSettingsDialogState extends State<StoreSettingsDialog> {
       return;
     }
 
-    final id = "custom_${DateTime.now().microsecondsSinceEpoch}_${_customSources.length}";
+    final id =
+        "custom_${DateTime.now().microsecondsSinceEpoch}_${_customSources.length}";
     setState(() {
       _customSources = [
         ..._customSources,
@@ -950,10 +951,7 @@ class _StoreSettingsDialogState extends State<StoreSettingsDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                l10n.storeMirrorMode,
-                style: theme.textTheme.labelLarge,
-              ),
+              Text(l10n.storeMirrorMode, style: theme.textTheme.labelLarge),
               const SizedBox(height: 8),
               AppDropdown<StoreMirrorMode>(
                 value: _mirrorMode,
@@ -1049,9 +1047,7 @@ class _StoreSettingsDialogState extends State<StoreSettingsDialog> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: theme.colorScheme.outlineVariant,
-                    ),
+                    border: Border.all(color: theme.colorScheme.outlineVariant),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

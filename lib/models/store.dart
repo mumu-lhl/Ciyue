@@ -251,12 +251,7 @@ class StoreCatalogSource {
     if (id.isEmpty || id == officialStoreSourceId || url.isEmpty) return null;
     final name = raw["name"]?.toString().trim() ?? "";
     final enabled = raw["enabled"] is bool ? raw["enabled"] as bool : true;
-    return StoreCatalogSource(
-      id: id,
-      name: name,
-      url: url,
-      enabled: enabled,
-    );
+    return StoreCatalogSource(id: id, name: name, url: url, enabled: enabled);
   }
 
   static String encodeList(List<StoreCatalogSource> sources) {

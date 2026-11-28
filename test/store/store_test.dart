@@ -421,34 +421,37 @@ items:
   });
 
   group("StoreCatalogSource", () {
-    test("encodes and decodes custom sources while filtering invalid entries", () {
-      const s1 = StoreCatalogSource(
-        id: "custom_1",
-        name: "Community",
-        url: "https://example.com/a.yaml",
-        enabled: true,
-      );
-      const s2 = StoreCatalogSource(
-        id: "custom_2",
-        name: "",
-        url: "https://mirror.example.org/b.yaml",
-        enabled: false,
-      );
+    test(
+      "encodes and decodes custom sources while filtering invalid entries",
+      () {
+        const s1 = StoreCatalogSource(
+          id: "custom_1",
+          name: "Community",
+          url: "https://example.com/a.yaml",
+          enabled: true,
+        );
+        const s2 = StoreCatalogSource(
+          id: "custom_2",
+          name: "",
+          url: "https://mirror.example.org/b.yaml",
+          enabled: false,
+        );
 
-      final encoded = StoreCatalogSource.encodeList([s1, s2]);
-      final decoded = StoreCatalogSource.decodeList(encoded);
+        final encoded = StoreCatalogSource.encodeList([s1, s2]);
+        final decoded = StoreCatalogSource.decodeList(encoded);
 
-      expect(decoded, hasLength(2));
-      expect(decoded[0].id, "custom_1");
-      expect(decoded[0].displayName("Official"), "Community");
-      expect(decoded[1].id, "custom_2");
-      expect(decoded[1].enabled, isFalse);
-      expect(decoded[1].displayName("Official"), "mirror.example.org");
+        expect(decoded, hasLength(2));
+        expect(decoded[0].id, "custom_1");
+        expect(decoded[0].displayName("Official"), "Community");
+        expect(decoded[1].id, "custom_2");
+        expect(decoded[1].enabled, isFalse);
+        expect(decoded[1].displayName("Official"), "mirror.example.org");
 
-      final official = StoreCatalogSource.official();
-      expect(official.isOfficial, isTrue);
-      expect(official.displayName("Official"), "Official");
-    });
+        final official = StoreCatalogSource.official();
+        expect(official.isOfficial, isTrue);
+        expect(official.displayName("Official"), "Official");
+      },
+    );
 
     test("decodeList ignores official id, empty urls, and duplicates", () {
       const raw = '''
@@ -515,62 +518,65 @@ items:
           filename: b.mdx
 """;
 
-    test("fetches multiple enabled sources and namespaces custom storageKeys", () async {
-      final service = StoreService();
-      final sources = [
-        StoreCatalogSource.official(enabled: true),
-        const StoreCatalogSource(
-          id: "custom_1",
-          name: "Custom",
+    test(
+      "fetches multiple enabled sources and namespaces custom storageKeys",
+      () async {
+        final service = StoreService();
+        final sources = [
+          StoreCatalogSource.official(enabled: true),
+          const StoreCatalogSource(
+            id: "custom_1",
+            name: "Custom",
+            url: "https://custom.example.com/catalog.yaml",
+            enabled: true,
+          ),
+          const StoreCatalogSource(
+            id: "custom_disabled",
+            name: "Disabled",
+            url: "https://disabled.example.com/catalog.yaml",
+            enabled: false,
+          ),
+        ];
+
+        final result = await service.fetchCatalogs(
+          sources: sources,
+          forceRefresh: true,
+          fetcher: (url) async {
+            if (url == defaultStoreCatalogUrl) return yamlA;
+            if (url == "https://custom.example.com/catalog.yaml") return yamlB;
+            throw StateError("Disabled source should not be fetched: $url");
+          },
+        );
+
+        expect(result.enabledSourceCount, 2);
+        expect(result.failures, isEmpty);
+        expect(result.allFailed, isFalse);
+        expect(result.entries, hasLength(2));
+        expect(result.entries[0].item.name, "Dict From Official");
+        expect(result.entries[0].storageKey, "shared-item");
+        expect(result.entries[0].displaySourceName("Official"), "Official");
+        expect(result.entries[1].item.name, "Dict From Custom");
+        expect(result.entries[1].storageKey, "custom_1::shared-item");
+        expect(result.entries[1].catalogName, "Community Repo");
+        expect(result.entries[1].displaySourceName("Official"), "Custom");
+
+        const unnamedCustom = StoreCatalogSource(
+          id: "custom_2",
+          name: "",
           url: "https://custom.example.com/catalog.yaml",
           enabled: true,
-        ),
-        const StoreCatalogSource(
-          id: "custom_disabled",
-          name: "Disabled",
-          url: "https://disabled.example.com/catalog.yaml",
-          enabled: false,
-        ),
-      ];
-
-      final result = await service.fetchCatalogs(
-        sources: sources,
-        forceRefresh: true,
-        fetcher: (url) async {
-          if (url == defaultStoreCatalogUrl) return yamlA;
-          if (url == "https://custom.example.com/catalog.yaml") return yamlB;
-          throw StateError("Disabled source should not be fetched: $url");
-        },
-      );
-
-      expect(result.enabledSourceCount, 2);
-      expect(result.failures, isEmpty);
-      expect(result.allFailed, isFalse);
-      expect(result.entries, hasLength(2));
-      expect(result.entries[0].item.name, "Dict From Official");
-      expect(result.entries[0].storageKey, "shared-item");
-      expect(result.entries[0].displaySourceName("Official"), "Official");
-      expect(result.entries[1].item.name, "Dict From Custom");
-      expect(result.entries[1].storageKey, "custom_1::shared-item");
-      expect(result.entries[1].catalogName, "Community Repo");
-      expect(result.entries[1].displaySourceName("Official"), "Custom");
-
-      const unnamedCustom = StoreCatalogSource(
-        id: "custom_2",
-        name: "",
-        url: "https://custom.example.com/catalog.yaml",
-        enabled: true,
-      );
-      final unnamedResult = await service.fetchCatalogs(
-        sources: [unnamedCustom],
-        forceRefresh: true,
-        fetcher: (_) async => yamlB,
-      );
-      expect(
-        unnamedResult.entries.single.displaySourceName("Official"),
-        "Community Repo",
-      );
-    });
+        );
+        final unnamedResult = await service.fetchCatalogs(
+          sources: [unnamedCustom],
+          forceRefresh: true,
+          fetcher: (_) async => yamlB,
+        );
+        expect(
+          unnamedResult.entries.single.displaySourceName("Official"),
+          "Community Repo",
+        );
+      },
+    );
 
     test("tolerates partial source failure and flags when all fail", () async {
       final service = StoreService();
