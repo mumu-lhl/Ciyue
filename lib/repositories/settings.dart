@@ -113,7 +113,8 @@ class Settings extends ChangeNotifier {
   late bool enableHunspellMorphology;
   late HunspellLookupMode hunspellLookupMode;
 
-  late String storeCatalogUrl;
+  late bool storeOfficialCatalogEnabled;
+  late List<StoreCatalogSource> storeCustomCatalogSources;
   late StoreMirrorMode storeMirrorMode;
   late String storeCustomMirrorPrefix;
 
@@ -357,7 +358,11 @@ class Settings extends ChangeNotifier {
       orElse: () => HunspellLookupMode.fallback,
     );
 
-    storeCatalogUrl = prefs.getString("storeCatalogUrl") ?? "";
+    storeOfficialCatalogEnabled =
+        prefs.getBool("storeOfficialCatalogEnabled") ?? true;
+    storeCustomCatalogSources = StoreCatalogSource.decodeList(
+      prefs.getString("storeCustomCatalogSources"),
+    );
     storeMirrorMode = StoreMirrorMode.tryParse(
       prefs.getString("storeMirrorMode"),
     );
@@ -932,9 +937,25 @@ class Settings extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setStoreCatalogUrl(String value) async {
-    storeCatalogUrl = value.trim();
-    await prefs.setString("storeCatalogUrl", storeCatalogUrl);
+  List<StoreCatalogSource> get storeCatalogSources => [
+    StoreCatalogSource.official(enabled: storeOfficialCatalogEnabled),
+    ...storeCustomCatalogSources,
+  ];
+
+  Future<void> setStoreOfficialCatalogEnabled(bool value) async {
+    storeOfficialCatalogEnabled = value;
+    await prefs.setBool("storeOfficialCatalogEnabled", value);
+    notifyListeners();
+  }
+
+  Future<void> setStoreCustomCatalogSources(
+    List<StoreCatalogSource> sources,
+  ) async {
+    storeCustomCatalogSources = List<StoreCatalogSource>.unmodifiable(sources);
+    await prefs.setString(
+      "storeCustomCatalogSources",
+      StoreCatalogSource.encodeList(storeCustomCatalogSources),
+    );
     notifyListeners();
   }
 

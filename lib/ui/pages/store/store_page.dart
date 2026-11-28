@@ -44,7 +44,9 @@ class _StorePageState extends ConsumerState<StorePage> {
   bool _isLoading = true;
   String? _loadError;
 
-  List<StoreItem> _items = const [];
+  List<StoreItemEntry> _entries = const [];
+  List<StoreCatalogFailure> _sourceFailures = const [];
+  int _enabledSourceCount = 0;
   Map<String, StoreInstalledItem> _installedById = const {};
   final Map<String, bool> _updatesAvailable = {};
   final Map<String, _DownloadProgress> _activeDownloads = {};
@@ -76,12 +78,12 @@ class _StorePageState extends ConsumerState<StorePage> {
     }
 
     try {
-      final catalogFuture = StoreService.instance.fetchCatalog(
+      final resultFuture = StoreService.instance.fetchCatalogs(
         forceRefresh: forceRefresh,
       );
       final installedFuture = storeInstalledItemDao.all();
 
-      final catalog = await catalogFuture;
+      final result = await resultFuture;
       final installed = await installedFuture;
 
       final installedMap = <String, StoreInstalledItem>{
@@ -90,13 +92,20 @@ class _StorePageState extends ConsumerState<StorePage> {
 
       if (!mounted) return;
       setState(() {
-        _items = catalog.items;
+        _entries = result.entries;
+        _sourceFailures = result.failures;
+        _enabledSourceCount = result.enabledSourceCount;
         _installedById = installedMap;
+        _loadError = result.allFailed
+            ? result.failures
+                  .map((f) => "${f.source.url}: ${f.error}")
+                  .join("\n")
+            : null;
         _isLoading = false;
       });
 
       unawaited(
-        _checkUpdatesForInstalled(catalog.items, installedMap, forceRefresh),
+        _checkUpdatesForInstalled(result.entries, installedMap, forceRefresh),
       );
     } catch (e) {
       if (!mounted) return;
@@ -108,25 +117,26 @@ class _StorePageState extends ConsumerState<StorePage> {
   }
 
   Future<void> _checkUpdatesForInstalled(
-    List<StoreItem> items,
+    List<StoreItemEntry> entries,
     Map<String, StoreInstalledItem> installedMap,
     bool forceRefresh,
   ) async {
     final checks = <Future<void>>[];
-    for (final item in items) {
-      final installed = installedMap[item.id];
+    for (final entry in entries) {
+      final key = entry.storageKey;
+      final installed = installedMap[key];
       if (installed == null) continue;
-      if (item.source.type == StoreSourceType.direct) continue;
+      if (entry.item.source.type == StoreSourceType.direct) continue;
 
       checks.add(() async {
         final hasUpdate = await StoreService.instance.hasUpdate(
-          item,
+          entry.item,
           installed,
           forceRefresh: forceRefresh,
         );
         if (mounted) {
           setState(() {
-            _updatesAvailable[item.id] = hasUpdate;
+            _updatesAvailable[key] = hasUpdate;
           });
         }
       }());
@@ -134,8 +144,10 @@ class _StorePageState extends ConsumerState<StorePage> {
     await Future.wait(checks);
   }
 
-  Future<void> _downloadItem(StoreItem item) async {
-    if (_activeDownloads.containsKey(item.id)) return;
+  Future<void> _downloadItem(StoreItemEntry entry) async {
+    final key = entry.storageKey;
+    final item = entry.item;
+    if (_activeDownloads.containsKey(key)) return;
     final l10n = AppLocalizations.of(context)!;
     final displayItem = item.localized(
       Localizations.localeOf(context).toLanguageTag(),
@@ -143,7 +155,7 @@ class _StorePageState extends ConsumerState<StorePage> {
     final cancelToken = CancelToken();
 
     setState(() {
-      _activeDownloads[item.id] = _DownloadProgress(
+      _activeDownloads[key] = _DownloadProgress(
         received: 0,
         total: 0,
         cancelToken: cancelToken,
@@ -153,11 +165,12 @@ class _StorePageState extends ConsumerState<StorePage> {
     try {
       final installed = await StoreService.instance.downloadAndInstall(
         displayItem,
+        storageKey: key,
         cancelToken: cancelToken,
         onProgress: (received, total) {
           if (!mounted) return;
           setState(() {
-            _activeDownloads[item.id] = _DownloadProgress(
+            _activeDownloads[key] = _DownloadProgress(
               received: received,
               total: total,
               cancelToken: cancelToken,
@@ -172,9 +185,9 @@ class _StorePageState extends ConsumerState<StorePage> {
 
       if (!mounted) return;
       setState(() {
-        _activeDownloads.remove(item.id);
-        _installedById = {..._installedById, item.id: installed};
-        _updatesAvailable[item.id] = false;
+        _activeDownloads.remove(key);
+        _installedById = {..._installedById, key: installed};
+        _updatesAvailable[key] = false;
       });
       await ToastService.show(
         l10n.storeInstallSuccess(displayItem.name),
@@ -184,7 +197,7 @@ class _StorePageState extends ConsumerState<StorePage> {
     } on DioException catch (e) {
       if (!mounted) return;
       setState(() {
-        _activeDownloads.remove(item.id);
+        _activeDownloads.remove(key);
       });
       if (CancelToken.isCancel(e)) {
         await ToastService.show(
@@ -202,7 +215,7 @@ class _StorePageState extends ConsumerState<StorePage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _activeDownloads.remove(item.id);
+        _activeDownloads.remove(key);
       });
       await ToastService.show(
         l10n.storeInstallFailed(e.toString()),
@@ -212,14 +225,16 @@ class _StorePageState extends ConsumerState<StorePage> {
     }
   }
 
-  void _cancelDownload(String itemId) {
-    _activeDownloads[itemId]?.cancelToken.cancel("Cancelled by user");
+  void _cancelDownload(String storageKey) {
+    _activeDownloads[storageKey]?.cancelToken.cancel("Cancelled by user");
   }
 
   Future<void> _uninstallItem(
-    StoreItem item,
+    StoreItemEntry entry,
     StoreInstalledItem installed,
   ) async {
+    final key = entry.storageKey;
+    final item = entry.item;
     final l10n = AppLocalizations.of(context)!;
     final displayName = item.localizedName(
       Localizations.localeOf(context).toLanguageTag(),
@@ -251,9 +266,9 @@ class _StorePageState extends ConsumerState<StorePage> {
       if (!mounted) return;
       setState(() {
         final next = Map<String, StoreInstalledItem>.of(_installedById);
-        next.remove(item.id);
+        next.remove(key);
         _installedById = next;
-        _updatesAvailable.remove(item.id);
+        _updatesAvailable.remove(key);
       });
       await ToastService.show(
         l10n.storeUninstallSuccess(displayName),
@@ -273,7 +288,7 @@ class _StorePageState extends ConsumerState<StorePage> {
   Future<void> _openStoreSettings() async {
     final changed = await showDialog<bool>(
       context: context,
-      builder: (_) => const _StoreSettingsDialog(),
+      builder: (_) => const StoreSettingsDialog(),
     );
     if (changed == true && mounted) {
       await _loadStore(forceRefresh: true);
@@ -282,17 +297,18 @@ class _StorePageState extends ConsumerState<StorePage> {
 
   List<String> get _availableLanguages {
     final langs = <String>{};
-    for (final item in _items) {
-      langs.addAll(item.languages);
+    for (final entry in _entries) {
+      langs.addAll(entry.item.languages);
     }
     final sorted = langs.toList()..sort();
     return sorted;
   }
 
-  List<StoreItem> _filteredItems(String localeTag) {
+  List<StoreItemEntry> _filteredEntries(String localeTag) {
     final query = _searchQuery.trim().toLowerCase();
-    return _items
-        .where((item) {
+    return _entries
+        .where((entry) {
+          final item = entry.item;
           if (_selectedType != null && item.type != _selectedType) return false;
           if (_selectedLanguage != null &&
               !item.languages.contains(_selectedLanguage)) {
@@ -317,7 +333,7 @@ class _StorePageState extends ConsumerState<StorePage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final localeTag = Localizations.localeOf(context).toLanguageTag();
-    final filtered = _filteredItems(localeTag);
+    final filtered = _filteredEntries(localeTag);
     final languages = _availableLanguages;
 
     return Scaffold(
@@ -460,11 +476,33 @@ class _StorePageState extends ConsumerState<StorePage> {
   Widget _buildBody(
     BuildContext context,
     AppLocalizations l10n,
-    List<StoreItem> filtered,
+    List<StoreItemEntry> filtered,
     String localeTag,
   ) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_enabledSourceCount == 0) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.source_rounded, size: 48),
+              const SizedBox(height: 12),
+              Text(l10n.storeNoEnabledSources, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: _openStoreSettings,
+                icon: const Icon(Icons.tune_rounded),
+                label: Text(l10n.storeSettings),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     if (_loadError != null) {
@@ -492,11 +530,59 @@ class _StorePageState extends ConsumerState<StorePage> {
       );
     }
 
+    final warningBanner = _sourceFailures.isEmpty
+        ? null
+        : Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Material(
+              color: Theme.of(context).colorScheme.errorContainer,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.onErrorContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.storePartialLoadFailed(
+                          _sourceFailures
+                              .map(
+                                (f) => f.source.displayName(
+                                  l10n.storeOfficialSource,
+                                ),
+                              )
+                              .join(", "),
+                        ),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+
     if (filtered.isEmpty) {
-      return Center(child: Text(l10n.storeEmpty));
+      return Column(
+        children: [
+          ?warningBanner,
+          Expanded(child: Center(child: Text(l10n.storeEmpty))),
+        ],
+      );
     }
 
-    return ListView.builder(
+    final showSourceBadge = _enabledSourceCount > 1;
+    final list = ListView.builder(
       padding: EdgeInsets.fromLTRB(
         16,
         4,
@@ -505,26 +591,39 @@ class _StorePageState extends ConsumerState<StorePage> {
       ),
       itemCount: filtered.length,
       itemBuilder: (context, index) {
-        final item = filtered[index];
+        final entry = filtered[index];
+        final key = entry.storageKey;
         return _StoreItemCard(
-          item: item,
+          item: entry.item,
+          sourceBadge: showSourceBadge
+              ? entry.displaySourceName(l10n.storeOfficialSource)
+              : null,
           localeTag: localeTag,
-          installed: _installedById[item.id],
-          hasUpdate: _updatesAvailable[item.id] ?? false,
-          downloadProgress: _activeDownloads[item.id],
-          onDownload: () => _downloadItem(item),
-          onCancel: () => _cancelDownload(item.id),
-          onUninstall: _installedById[item.id] == null
+          installed: _installedById[key],
+          hasUpdate: _updatesAvailable[key] ?? false,
+          downloadProgress: _activeDownloads[key],
+          onDownload: () => _downloadItem(entry),
+          onCancel: () => _cancelDownload(key),
+          onUninstall: _installedById[key] == null
               ? null
-              : () => _uninstallItem(item, _installedById[item.id]!),
+              : () => _uninstallItem(entry, _installedById[key]!),
         );
       },
+    );
+
+    if (warningBanner == null) return list;
+    return Column(
+      children: [
+        warningBanner,
+        Expanded(child: list),
+      ],
     );
   }
 }
 
 class _StoreItemCard extends StatelessWidget {
   final StoreItem item;
+  final String? sourceBadge;
   final String localeTag;
   final StoreInstalledItem? installed;
   final bool hasUpdate;
@@ -535,6 +634,7 @@ class _StoreItemCard extends StatelessWidget {
 
   const _StoreItemCard({
     required this.item,
+    this.sourceBadge,
     required this.localeTag,
     required this.installed,
     required this.hasUpdate,
@@ -609,6 +709,12 @@ class _StoreItemCard extends StatelessWidget {
                 Wrap(
                   spacing: 6,
                   children: [
+                    if (sourceBadge != null)
+                      Chip(
+                        label: Text(sourceBadge!),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                      ),
                     Chip(
                       label: Text(_typeLabel(l10n)),
                       visualDensity: VisualDensity.compact,
@@ -742,17 +848,24 @@ class _StoreItemCard extends StatelessWidget {
   }
 }
 
-class _StoreSettingsDialog extends StatefulWidget {
-  const _StoreSettingsDialog();
+class StoreSettingsDialog extends StatefulWidget {
+  const StoreSettingsDialog({super.key});
 
   @override
-  State<_StoreSettingsDialog> createState() => _StoreSettingsDialogState();
+  State<StoreSettingsDialog> createState() => _StoreSettingsDialogState();
 }
 
-class _StoreSettingsDialogState extends State<_StoreSettingsDialog> {
+class _StoreSettingsDialogState extends State<StoreSettingsDialog> {
   late StoreMirrorMode _mirrorMode;
   late final TextEditingController _customPrefixController;
-  late final TextEditingController _catalogUrlController;
+  late bool _officialEnabled;
+  late List<StoreCatalogSource> _customSources;
+
+  bool _isAddingSource = false;
+  String? _addSourceError;
+  final TextEditingController _newSourceNameController =
+      TextEditingController();
+  final TextEditingController _newSourceUrlController = TextEditingController();
 
   @override
   void initState() {
@@ -761,22 +874,64 @@ class _StoreSettingsDialogState extends State<_StoreSettingsDialog> {
     _customPrefixController = TextEditingController(
       text: settings.storeCustomMirrorPrefix,
     );
-    _catalogUrlController = TextEditingController(
-      text: settings.storeCatalogUrl,
+    _officialEnabled = settings.storeOfficialCatalogEnabled;
+    _customSources = List<StoreCatalogSource>.of(
+      settings.storeCustomCatalogSources,
     );
   }
 
   @override
   void dispose() {
     _customPrefixController.dispose();
-    _catalogUrlController.dispose();
+    _newSourceNameController.dispose();
+    _newSourceUrlController.dispose();
     super.dispose();
+  }
+
+  void _addCustomSource(AppLocalizations l10n) {
+    final url = _newSourceUrlController.text.trim();
+    if (url.isEmpty) {
+      setState(() => _addSourceError = l10n.storeSourceUrlRequired);
+      return;
+    }
+
+    final uri = Uri.tryParse(url);
+    if (uri == null ||
+        !(uri.isScheme("http") || uri.isScheme("https")) ||
+        uri.host.isEmpty) {
+      setState(() => _addSourceError = l10n.storeSourceUrlInvalid);
+      return;
+    }
+
+    if (url == defaultStoreCatalogUrl ||
+        _customSources.any((source) => source.url == url)) {
+      setState(() => _addSourceError = l10n.storeSourceUrlDuplicate);
+      return;
+    }
+
+    final id = "custom_${DateTime.now().microsecondsSinceEpoch}_${_customSources.length}";
+    setState(() {
+      _customSources = [
+        ..._customSources,
+        StoreCatalogSource(
+          id: id,
+          name: _newSourceNameController.text.trim(),
+          url: url,
+          enabled: true,
+        ),
+      ];
+      _newSourceNameController.clear();
+      _newSourceUrlController.clear();
+      _addSourceError = null;
+      _isAddingSource = false;
+    });
   }
 
   Future<void> _save() async {
     await settings.setStoreMirrorMode(_mirrorMode);
     await settings.setStoreCustomMirrorPrefix(_customPrefixController.text);
-    await settings.setStoreCatalogUrl(_catalogUrlController.text);
+    await settings.setStoreOfficialCatalogEnabled(_officialEnabled);
+    await settings.setStoreCustomCatalogSources(_customSources);
     if (mounted) {
       Navigator.of(context).pop(true);
     }
@@ -785,18 +940,19 @@ class _StoreSettingsDialogState extends State<_StoreSettingsDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return AlertDialog(
       title: Text(l10n.storeSettings),
       content: SingleChildScrollView(
         child: SizedBox(
-          width: 420,
+          width: 460,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
                 l10n.storeMirrorMode,
-                style: Theme.of(context).textTheme.labelLarge,
+                style: theme.textTheme.labelLarge,
               ),
               const SizedBox(height: 8),
               AppDropdown<StoreMirrorMode>(
@@ -834,23 +990,118 @@ class _StoreSettingsDialogState extends State<_StoreSettingsDialog> {
                 ),
               ],
               const SizedBox(height: 16),
-              TextField(
-                controller: _catalogUrlController,
-                decoration: InputDecoration(
-                  labelText: l10n.storeCatalogUrl,
-                  hintText: defaultStoreCatalogUrl,
-                  border: const OutlineInputBorder(),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.storeCatalogSources,
+                      style: theme.textTheme.labelLarge,
+                    ),
+                  ),
+                  if (!_isAddingSource)
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _isAddingSource = true;
+                          _addSourceError = null;
+                        });
+                      },
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: Text(l10n.storeAddSource),
+                    ),
+                ],
               ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    _catalogUrlController.clear();
+              const SizedBox(height: 8),
+              _CatalogSourceTile(
+                title: l10n.storeOfficialSource,
+                subtitle: defaultStoreCatalogUrl,
+                enabled: _officialEnabled,
+                onToggle: (value) {
+                  setState(() => _officialEnabled = value);
+                },
+              ),
+              for (var i = 0; i < _customSources.length; i++) ...[
+                const SizedBox(height: 8),
+                _CatalogSourceTile(
+                  title: _customSources[i].displayName(
+                    l10n.storeOfficialSource,
+                  ),
+                  subtitle: _customSources[i].url,
+                  enabled: _customSources[i].enabled,
+                  onToggle: (value) {
+                    setState(() {
+                      _customSources[i] = _customSources[i].copyWith(
+                        enabled: value,
+                      );
+                    });
                   },
-                  child: Text(l10n.storeResetCatalogUrl),
+                  onDelete: () {
+                    setState(() {
+                      _customSources.removeAt(i);
+                    });
+                  },
+                  deleteTooltip: l10n.delete,
                 ),
-              ),
+              ],
+              if (_isAddingSource) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.colorScheme.outlineVariant,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextField(
+                        controller: _newSourceNameController,
+                        decoration: InputDecoration(
+                          labelText: l10n.storeSourceNameOptional,
+                          isDense: true,
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: _newSourceUrlController,
+                        decoration: InputDecoration(
+                          labelText: l10n.storeSourceUrl,
+                          hintText: "https://example.com/catalog.yaml",
+                          isDense: true,
+                          errorText: _addSourceError,
+                          border: const OutlineInputBorder(),
+                        ),
+                        onSubmitted: (_) => _addCustomSource(l10n),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _isAddingSource = false;
+                                _addSourceError = null;
+                                _newSourceNameController.clear();
+                                _newSourceUrlController.clear();
+                              });
+                            },
+                            child: Text(l10n.cancel),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: () => _addCustomSource(l10n),
+                            child: Text(l10n.add),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -862,6 +1113,74 @@ class _StoreSettingsDialogState extends State<_StoreSettingsDialog> {
         ),
         FilledButton(onPressed: _save, child: Text(l10n.save)),
       ],
+    );
+  }
+}
+
+class _CatalogSourceTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final bool enabled;
+  final ValueChanged<bool> onToggle;
+  final VoidCallback? onDelete;
+  final String? deleteTooltip;
+
+  const _CatalogSourceTile({
+    required this.title,
+    required this.subtitle,
+    required this.enabled,
+    required this.onToggle,
+    this.onDelete,
+    this.deleteTooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.45),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          if (onDelete != null)
+            IconButton(
+              icon: const Icon(Icons.delete_outline_rounded, size: 20),
+              tooltip: deleteTooltip,
+              onPressed: onDelete,
+            ),
+          Switch(value: enabled, onChanged: onToggle),
+        ],
+      ),
     );
   }
 }

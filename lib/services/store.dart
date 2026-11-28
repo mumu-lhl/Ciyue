@@ -20,9 +20,6 @@ import "package:drift/drift.dart";
 import "package:path/path.dart" as p;
 import "package:path_provider/path_provider.dart";
 
-const defaultStoreCatalogUrl =
-    "https://raw.githubusercontent.com/mumu-lhl/Ciyue-Store/main/catalog.yaml";
-
 typedef StoreDownloadProgressCallback = void Function(
   int receivedBytes,
   int totalBytes,
@@ -143,36 +140,58 @@ class _CachedResponse {
   });
 }
 
+class StoreCatalogFailure {
+  final StoreCatalogSource source;
+  final Object error;
+
+  const StoreCatalogFailure({required this.source, required this.error});
+}
+
+class StoreCatalogFetchResult {
+  final List<StoreItemEntry> entries;
+  final List<StoreCatalogFailure> failures;
+  final int enabledSourceCount;
+
+  const StoreCatalogFetchResult({
+    required this.entries,
+    required this.failures,
+    required this.enabledSourceCount,
+  });
+
+  bool get allFailed =>
+      enabledSourceCount > 0 &&
+      entries.isEmpty &&
+      failures.length == enabledSourceCount;
+}
+
 class StoreService {
   static final StoreService instance = StoreService();
 
   static const _cacheTtl = Duration(minutes: 30);
 
-  StoreCatalog? _cachedCatalog;
-  String? _cachedCatalogUrl;
-  DateTime? _cachedCatalogAt;
+  final Map<String, ({StoreCatalog catalog, DateTime fetchedAt})>
+  _catalogCache = {};
   final Map<String, _CachedResponse> _apiCache = {};
 
-  String get activeCatalogUrl {
-    final custom = settings.storeCatalogUrl.trim();
-    return custom.isEmpty ? defaultStoreCatalogUrl : custom;
-  }
-
-  Future<StoreCatalog> fetchCatalog({bool forceRefresh = false}) async {
-    final url = applyStoreMirror(activeCatalogUrl);
+  Future<StoreCatalog> fetchCatalogFromUrl(
+    String rawUrl, {
+    bool forceRefresh = false,
+    Future<String?> Function(String url)? fetcher,
+  }) async {
+    final url = applyStoreMirror(rawUrl);
+    final cached = _catalogCache[url];
     if (!forceRefresh &&
-        _cachedCatalog != null &&
-        _cachedCatalogUrl == url &&
-        _cachedCatalogAt != null &&
-        DateTime.now().difference(_cachedCatalogAt!) < _cacheTtl) {
-      return _cachedCatalog!;
+        cached != null &&
+        DateTime.now().difference(cached.fetchedAt) < _cacheTtl) {
+      return cached.catalog;
     }
 
-    final response = await AppHttp.dio.get<String>(
-      url,
-      options: Options(responseType: ResponseType.plain),
-    );
-    final body = response.data;
+    final body = fetcher != null
+        ? await fetcher(url)
+        : (await AppHttp.dio.get<String>(
+            url,
+            options: Options(responseType: ResponseType.plain),
+          )).data;
     if (body == null || body.trim().isEmpty) {
       throw const FormatException("Empty catalog response");
     }
@@ -181,10 +200,67 @@ class StoreService {
       body,
       onWarning: (msg) => talker.warning("[Store] $msg"),
     );
-    _cachedCatalog = catalog;
-    _cachedCatalogUrl = url;
-    _cachedCatalogAt = DateTime.now();
+    _catalogCache[url] = (catalog: catalog, fetchedAt: DateTime.now());
     return catalog;
+  }
+
+  Future<StoreCatalogFetchResult> fetchCatalogs({
+    List<StoreCatalogSource>? sources,
+    bool forceRefresh = false,
+    Future<String?> Function(String url)? fetcher,
+  }) async {
+    final enabledSources = (sources ?? settings.storeCatalogSources)
+        .where((s) => s.enabled)
+        .toList(growable: false);
+    if (enabledSources.isEmpty) {
+      return const StoreCatalogFetchResult(
+        entries: [],
+        failures: [],
+        enabledSourceCount: 0,
+      );
+    }
+
+    final perSourceResults = await Future.wait(
+      enabledSources.map((source) async {
+        try {
+          final catalog = await fetchCatalogFromUrl(
+            source.url,
+            forceRefresh: forceRefresh,
+            fetcher: fetcher,
+          );
+          return (source: source, catalog: catalog, error: null as Object?);
+        } catch (e) {
+          talker.warning("[Store] Failed to load catalog ${source.url}: $e");
+          return (source: source, catalog: null as StoreCatalog?, error: e);
+        }
+      }),
+    );
+
+    final entries = <StoreItemEntry>[];
+    final failures = <StoreCatalogFailure>[];
+    for (final result in perSourceResults) {
+      if (result.catalog != null) {
+        for (final item in result.catalog!.items) {
+          entries.add(
+            StoreItemEntry(
+              source: result.source,
+              item: item,
+              catalogName: result.catalog!.name,
+            ),
+          );
+        }
+      } else if (result.error != null) {
+        failures.add(
+          StoreCatalogFailure(source: result.source, error: result.error!),
+        );
+      }
+    }
+
+    return StoreCatalogFetchResult(
+      entries: entries,
+      failures: failures,
+      enabledSourceCount: enabledSources.length,
+    );
   }
 
   /// Checks whether an installed item has a newer remote version.
@@ -415,21 +491,32 @@ class StoreService {
     }
   }
 
-  Future<Directory> _managedItemDirectory(StoreItem item) async {
+  String _safeStorageDirName(String storageKey) {
+    return storageKey.replaceAll(RegExp(r"[^a-zA-Z0-9._-]"), "_");
+  }
+
+  Future<Directory> _managedItemDirectory(
+    StoreItem item, {
+    String? storageKey,
+  }) async {
     final supportDir = await getApplicationSupportDirectory();
     final category = switch (item.type) {
       StoreItemType.dictionary => "dictionaries",
       StoreItemType.hunspell => "hunspell",
       StoreItemType.audio => "audio",
     };
-    return Directory(p.join(supportDir.path, "store", category, item.id));
+    final dirName = _safeStorageDirName(storageKey ?? item.id);
+    return Directory(p.join(supportDir.path, "store", category, dirName));
   }
 
   Future<StoreInstalledItem> downloadAndInstall(
     StoreItem item, {
+    String? storageKey,
     required CancelToken cancelToken,
     StoreDownloadProgressCallback? onProgress,
   }) async {
+    final effectiveId = storageKey ?? item.id;
+    final safeDirName = _safeStorageDirName(effectiveId);
     final resolved = await resolveDownload(item);
     final supportDir = await getApplicationSupportDirectory();
     final tmpDir = Directory(
@@ -437,7 +524,7 @@ class StoreService {
         supportDir.path,
         "store",
         ".tmp",
-        "${item.id}_${DateTime.now().millisecondsSinceEpoch}",
+        "${safeDirName}_${DateTime.now().millisecondsSinceEpoch}",
       ),
     );
     await tmpDir.create(recursive: true);
@@ -496,11 +583,14 @@ class StoreService {
       }
 
       // Close active readers before replacing files on disk when updating.
-      final existing = await storeInstalledItemDao.getById(item.id);
+      final existing = await storeInstalledItemDao.getById(effectiveId);
       final existingTargetIds = _parseTargetIds(existing?.targetIds);
       await _prepareExistingTargetsForOverwrite(item, existingTargetIds);
 
-      final targetDir = await _managedItemDirectory(item);
+      final targetDir = await _managedItemDirectory(
+        item,
+        storageKey: effectiveId,
+      );
       if (await targetDir.exists()) {
         await targetDir.delete(recursive: true);
       }
@@ -526,7 +616,7 @@ class StoreService {
       final now = DateTime.now();
       await storeInstalledItemDao.upsert(
         StoreInstalledItemsCompanion(
-          itemId: Value(item.id),
+          itemId: Value(effectiveId),
           type: Value(item.type.name),
           format: Value(item.format.name),
           installDir: Value(targetDir.path),
@@ -536,7 +626,7 @@ class StoreService {
         ),
       );
 
-      return (await storeInstalledItemDao.getById(item.id))!;
+      return (await storeInstalledItemDao.getById(effectiveId))!;
     } finally {
       if (await tmpDir.exists()) {
         try {

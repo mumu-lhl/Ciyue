@@ -1,4 +1,10 @@
+import "dart:convert";
+
 import "package:yaml/yaml.dart";
+
+const defaultStoreCatalogUrl =
+    "https://raw.githubusercontent.com/mumu-lhl/Ciyue-Store/main/catalog.yaml";
+const officialStoreSourceId = "official";
 
 enum StoreItemType {
   dictionary,
@@ -184,11 +190,137 @@ class StoreItem {
   }
 }
 
+class StoreCatalogSource {
+  final String id;
+  final String name;
+  final String url;
+  final bool enabled;
+
+  const StoreCatalogSource({
+    required this.id,
+    required this.name,
+    required this.url,
+    this.enabled = true,
+  });
+
+  factory StoreCatalogSource.official({bool enabled = true}) {
+    return StoreCatalogSource(
+      id: officialStoreSourceId,
+      name: "",
+      url: defaultStoreCatalogUrl,
+      enabled: enabled,
+    );
+  }
+
+  bool get isOfficial => id == officialStoreSourceId;
+
+  String displayName(String officialLabel) {
+    if (isOfficial) return officialLabel;
+    final trimmedName = name.trim();
+    if (trimmedName.isNotEmpty) return trimmedName;
+    final uri = Uri.tryParse(url);
+    if (uri != null && uri.host.isNotEmpty) return uri.host;
+    return url;
+  }
+
+  StoreCatalogSource copyWith({
+    String? id,
+    String? name,
+    String? url,
+    bool? enabled,
+  }) {
+    return StoreCatalogSource(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      url: url ?? this.url,
+      enabled: enabled ?? this.enabled,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "url": url,
+    "enabled": enabled,
+  };
+
+  static StoreCatalogSource? tryFromJson(dynamic raw) {
+    if (raw is! Map) return null;
+    final id = raw["id"]?.toString().trim() ?? "";
+    final url = raw["url"]?.toString().trim() ?? "";
+    if (id.isEmpty || id == officialStoreSourceId || url.isEmpty) return null;
+    final name = raw["name"]?.toString().trim() ?? "";
+    final enabled = raw["enabled"] is bool ? raw["enabled"] as bool : true;
+    return StoreCatalogSource(
+      id: id,
+      name: name,
+      url: url,
+      enabled: enabled,
+    );
+  }
+
+  static String encodeList(List<StoreCatalogSource> sources) {
+    return jsonEncode(sources.map((s) => s.toJson()).toList(growable: false));
+  }
+
+  static List<StoreCatalogSource> decodeList(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return const [];
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return const [];
+      final result = <StoreCatalogSource>[];
+      final seenIds = <String>{};
+      final seenUrls = <String>{};
+      for (final entry in decoded) {
+        final parsed = tryFromJson(entry);
+        if (parsed == null) continue;
+        if (!seenIds.add(parsed.id)) continue;
+        if (!seenUrls.add(parsed.url)) continue;
+        result.add(parsed);
+      }
+      return List<StoreCatalogSource>.unmodifiable(result);
+    } catch (_) {
+      return const [];
+    }
+  }
+}
+
+class StoreItemEntry {
+  final StoreCatalogSource source;
+  final StoreItem item;
+  final String? catalogName;
+
+  const StoreItemEntry({
+    required this.source,
+    required this.item,
+    this.catalogName,
+  });
+
+  /// Storage key used to track installed items, active downloads, and updates
+  /// without colliding across different catalog sources.
+  String get storageKey =>
+      source.isOfficial ? item.id : "${source.id}::${item.id}";
+
+  String displaySourceName(String officialLabel) {
+    if (source.isOfficial) return officialLabel;
+    if (source.name.trim().isNotEmpty) return source.name.trim();
+    if (catalogName != null && catalogName!.trim().isNotEmpty) {
+      return catalogName!.trim();
+    }
+    return source.displayName(officialLabel);
+  }
+}
+
 class StoreCatalog {
   final int schemaVersion;
+  final String? name;
   final List<StoreItem> items;
 
-  const StoreCatalog({required this.schemaVersion, required this.items});
+  const StoreCatalog({
+    required this.schemaVersion,
+    this.name,
+    required this.items,
+  });
 }
 
 class StoreCatalogParser {
@@ -202,9 +334,14 @@ class StoreCatalogParser {
     }
 
     final schemaVersion = _asInt(doc["schemaVersion"]) ?? 1;
+    final name = _nonEmptyString(doc["name"]);
     final rawItems = doc["items"];
     if (rawItems == null) {
-      return StoreCatalog(schemaVersion: schemaVersion, items: const []);
+      return StoreCatalog(
+        schemaVersion: schemaVersion,
+        name: name,
+        items: const [],
+      );
     }
     if (rawItems is! List) {
       throw const FormatException("Catalog 'items' must be a list");
@@ -228,7 +365,7 @@ class StoreCatalogParser {
       items.add(parsed);
     }
 
-    return StoreCatalog(schemaVersion: schemaVersion, items: items);
+    return StoreCatalog(schemaVersion: schemaVersion, name: name, items: items);
   }
 
   static StoreItem? _parseItem(

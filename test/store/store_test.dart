@@ -1,10 +1,17 @@
+import "package:ciyue/core/app_initialization.dart";
 import "package:ciyue/database/app/app.dart";
 import "package:ciyue/database/app/daos.dart";
 import "package:ciyue/models/store.dart";
+import "package:ciyue/repositories/settings.dart";
 import "package:ciyue/services/store.dart";
+import "package:ciyue/src/generated/i18n/app_localizations.dart";
+import "package:ciyue/ui/pages/store/store_page.dart";
 import "package:drift/drift.dart" hide isNotNull, isNull;
 import "package:drift/native.dart";
 import "package:flutter_test/flutter_test.dart";
+import "package:material_ui/material_ui.dart";
+import "package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart";
+import "package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart";
 
 void main() {
   group("StoreCatalogParser", () {
@@ -409,6 +416,265 @@ items:
 
         await dao.remove("hunspell-zh-cn");
         expect(await dao.getById("hunspell-zh-cn"), isNull);
+      },
+    );
+  });
+
+  group("StoreCatalogSource", () {
+    test("encodes and decodes custom sources while filtering invalid entries", () {
+      const s1 = StoreCatalogSource(
+        id: "custom_1",
+        name: "Community",
+        url: "https://example.com/a.yaml",
+        enabled: true,
+      );
+      const s2 = StoreCatalogSource(
+        id: "custom_2",
+        name: "",
+        url: "https://mirror.example.org/b.yaml",
+        enabled: false,
+      );
+
+      final encoded = StoreCatalogSource.encodeList([s1, s2]);
+      final decoded = StoreCatalogSource.decodeList(encoded);
+
+      expect(decoded, hasLength(2));
+      expect(decoded[0].id, "custom_1");
+      expect(decoded[0].displayName("Official"), "Community");
+      expect(decoded[1].id, "custom_2");
+      expect(decoded[1].enabled, isFalse);
+      expect(decoded[1].displayName("Official"), "mirror.example.org");
+
+      final official = StoreCatalogSource.official();
+      expect(official.isOfficial, isTrue);
+      expect(official.displayName("Official"), "Official");
+    });
+
+    test("decodeList ignores official id, empty urls, and duplicates", () {
+      const raw = '''
+      [
+        {"id": "official", "name": "Spoof", "url": "https://a.com/1.yaml"},
+        {"id": "c1", "name": "Valid", "url": "https://a.com/1.yaml"},
+        {"id": "c1", "name": "Dup ID", "url": "https://a.com/2.yaml"},
+        {"id": "c2", "name": "Dup URL", "url": "https://a.com/1.yaml"},
+        {"id": "c3", "name": "Empty URL", "url": ""}
+      ]
+      ''';
+      final decoded = StoreCatalogSource.decodeList(raw);
+      expect(decoded, hasLength(1));
+      expect(decoded.single.id, "c1");
+    });
+  });
+
+  group("StoreService.fetchCatalogs", () {
+    setUpAll(() async {
+      SharedPreferencesAsyncPlatform.instance =
+          InMemorySharedPreferencesAsync.empty();
+      await initPrefs();
+      await settings.setStoreMirrorMode(StoreMirrorMode.none);
+    });
+
+    const yamlA = """
+schemaVersion: 1
+items:
+  - id: shared-item
+    type: dictionary
+    name: Dict From Official
+    description: Official description
+    author: Author A
+    license: MIT
+    sourceUrl: https://example.com/a
+    languages: [en]
+    format: mdx
+    extract: false
+    source:
+      type: direct
+      files:
+        - url: https://example.com/a.mdx
+          filename: a.mdx
+""";
+
+    const yamlB = """
+schemaVersion: 1
+name: Community Repo
+items:
+  - id: shared-item
+    type: dictionary
+    name: Dict From Custom
+    description: Custom description
+    author: Author B
+    license: Apache-2.0
+    sourceUrl: https://example.com/b
+    languages: [zh]
+    format: mdx
+    extract: false
+    source:
+      type: direct
+      files:
+        - url: https://example.com/b.mdx
+          filename: b.mdx
+""";
+
+    test("fetches multiple enabled sources and namespaces custom storageKeys", () async {
+      final service = StoreService();
+      final sources = [
+        StoreCatalogSource.official(enabled: true),
+        const StoreCatalogSource(
+          id: "custom_1",
+          name: "Custom",
+          url: "https://custom.example.com/catalog.yaml",
+          enabled: true,
+        ),
+        const StoreCatalogSource(
+          id: "custom_disabled",
+          name: "Disabled",
+          url: "https://disabled.example.com/catalog.yaml",
+          enabled: false,
+        ),
+      ];
+
+      final result = await service.fetchCatalogs(
+        sources: sources,
+        forceRefresh: true,
+        fetcher: (url) async {
+          if (url == defaultStoreCatalogUrl) return yamlA;
+          if (url == "https://custom.example.com/catalog.yaml") return yamlB;
+          throw StateError("Disabled source should not be fetched: $url");
+        },
+      );
+
+      expect(result.enabledSourceCount, 2);
+      expect(result.failures, isEmpty);
+      expect(result.allFailed, isFalse);
+      expect(result.entries, hasLength(2));
+      expect(result.entries[0].item.name, "Dict From Official");
+      expect(result.entries[0].storageKey, "shared-item");
+      expect(result.entries[0].displaySourceName("Official"), "Official");
+      expect(result.entries[1].item.name, "Dict From Custom");
+      expect(result.entries[1].storageKey, "custom_1::shared-item");
+      expect(result.entries[1].catalogName, "Community Repo");
+      expect(result.entries[1].displaySourceName("Official"), "Custom");
+
+      const unnamedCustom = StoreCatalogSource(
+        id: "custom_2",
+        name: "",
+        url: "https://custom.example.com/catalog.yaml",
+        enabled: true,
+      );
+      final unnamedResult = await service.fetchCatalogs(
+        sources: [unnamedCustom],
+        forceRefresh: true,
+        fetcher: (_) async => yamlB,
+      );
+      expect(
+        unnamedResult.entries.single.displaySourceName("Official"),
+        "Community Repo",
+      );
+    });
+
+    test("tolerates partial source failure and flags when all fail", () async {
+      final service = StoreService();
+      final sources = [
+        StoreCatalogSource.official(enabled: true),
+        const StoreCatalogSource(
+          id: "custom_bad",
+          name: "Broken",
+          url: "https://broken.example.com/catalog.yaml",
+          enabled: true,
+        ),
+      ];
+
+      final partial = await service.fetchCatalogs(
+        sources: sources,
+        forceRefresh: true,
+        fetcher: (url) async {
+          if (url == defaultStoreCatalogUrl) return yamlA;
+          throw Exception("Network error");
+        },
+      );
+
+      expect(partial.enabledSourceCount, 2);
+      expect(partial.entries, hasLength(1));
+      expect(partial.failures, hasLength(1));
+      expect(partial.failures.single.source.id, "custom_bad");
+      expect(partial.allFailed, isFalse);
+
+      final allFailed = await service.fetchCatalogs(
+        sources: sources,
+        forceRefresh: true,
+        fetcher: (url) async => throw Exception("Offline"),
+      );
+
+      expect(allFailed.entries, isEmpty);
+      expect(allFailed.failures, hasLength(2));
+      expect(allFailed.allFailed, isTrue);
+
+      final noneEnabled = await service.fetchCatalogs(
+        sources: [StoreCatalogSource.official(enabled: false)],
+        forceRefresh: true,
+      );
+      expect(noneEnabled.enabledSourceCount, 0);
+      expect(noneEnabled.entries, isEmpty);
+      expect(noneEnabled.allFailed, isFalse);
+    });
+  });
+
+  group("StoreSettingsDialog", () {
+    setUp(() async {
+      await settings.setStoreOfficialCatalogEnabled(true);
+      await settings.setStoreCustomCatalogSources(const []);
+    });
+
+    testWidgets(
+      "toggles official source without delete, adds and deletes custom sources, and saves",
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: ThemeData(splashFactory: InkRipple.splashFactory),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const Scaffold(body: StoreSettingsDialog()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text("Official"), findsOneWidget);
+        expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
+
+        // Toggle official source off
+        await tester.tap(find.byType(Switch).first);
+        await tester.pumpAndSettle();
+
+        // Add a custom source
+        await tester.tap(find.text("Add Source"));
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.widgetWithText(TextField, "Name (optional)"),
+          "My Repo",
+        );
+        await tester.enterText(
+          find.widgetWithText(TextField, "Catalog URL (YAML)"),
+          "https://example.com/custom.yaml",
+        );
+        await tester.tap(find.text("Add"));
+        await tester.pumpAndSettle();
+
+        expect(find.text("My Repo"), findsOneWidget);
+        expect(find.byIcon(Icons.delete_outline_rounded), findsOneWidget);
+
+        // Save
+        await tester.tap(find.text("Save"));
+        await tester.pumpAndSettle();
+
+        expect(settings.storeOfficialCatalogEnabled, isFalse);
+        expect(settings.storeCustomCatalogSources, hasLength(1));
+        expect(settings.storeCustomCatalogSources.single.name, "My Repo");
+        expect(
+          settings.storeCustomCatalogSources.single.url,
+          "https://example.com/custom.yaml",
+        );
+        expect(settings.storeCustomCatalogSources.single.enabled, isTrue);
       },
     );
   });
