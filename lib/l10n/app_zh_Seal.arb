@@ -1615,10 +1615,6 @@
   "@storeMirrorCustom": {},
   "storeCustomMirrorPrefix": "𽨋𾓁𿖀𿦚𾝢𽒰𿭶",
   "@storeCustomMirrorPrefix": {},
-  "storeCatalogUrl": "𽨋𾓁𿖀𿁁𽑏 URL (YAML)",
-  "@storeCatalogUrl": {},
-  "storeResetCatalogUrl": "𾹒𽕴𾱯𽚹",
-  "@storeResetCatalogUrl": {},
   "storeEntryDescription": "𽀑𿫋𽟫𽶑𽂽𿍬𾀝𽻰𾰭𾌀𾧿𽶴、Hunspell 𽢜𽚌𽞲𾨮",
   "@storeEntryDescription": {}
 }
