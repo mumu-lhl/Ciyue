@@ -5,7 +5,7 @@
 [![F-Droid 版本](https://img.shields.io/f-droid/v/org.eu.mumulhl.ciyue)](https://f-droid.org/packages/org.eu.mumulhl.ciyue/)
 [![翻译状态](https://hosted.weblate.org/widget/ciyue/svg-badge.svg)](https://hosted.weblate.org/engage/ciyue/)
 
-[English](./README.md) | 中文
+[English](./README.md) | 中文 | [Türkçe](./README.tr.md)
 
 支持 Android、Windows、Linux、macOS，支持 MDX/MDD、StarDict 与 ZIM 词典。
 
